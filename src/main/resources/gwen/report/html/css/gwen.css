@@ -1,0 +1,159 @@
+/*
+ * Copyright 2014 Branko Juric, Brady Wood
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ body {
+	margin-top: 20px;
+	margin-bottom: 20px;
+	margin-left: 40px;
+	margin-right: 40px;
+}
+
+.breadcrumb {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.list-group {
+	margin-bottom: 0px;
+}
+
+.progress {
+	margin-bottom: 0px;
+}
+
+.panel-body {
+	padding: 10px 10px;
+}
+
+.panel-heading {
+	padding: 10px 10px;
+}
+
+.list-group-item {
+	padding: 1px 10px;
+	color: #333333;
+	border: 0px;
+}
+
+.badge-success {
+  background-color: #5cb85c;
+}
+
+.badge-danger {
+  background-color: #d9534f;
+}
+
+.badge-info {
+  background-color: #5bc0de;
+}
+
+.badge-warning {
+  background-color: #f0ad4e;
+}
+
+.bg-success {
+	background-color: #dff0d8;
+	border-color: #5cb85c;
+}
+
+.bg-danger {
+	background-color: #f2dede;
+	border-color: #d9534f;
+}
+
+.bg-info {
+	background-color: #d9edf7;
+	border-color: #5bc0de;
+}
+
+.bg-warning {
+	background-color: #fcf8e3;
+	border-color: #f0ad4e;
+}
+
+.highlight-danger {
+	background-color: #F0BAB9;
+}
+
+.label {
+	font-size: 100%;
+	margin-right: 5px;
+}
+
+.panel-heading {
+	padding: 10px 10px;
+}
+
+.label-black {
+	background-color: #333333;
+}
+
+.panel {
+	margin-bottom: 10px;
+}
+
+.btn {
+	padding: 0px 3px;
+	font-size: 12px;
+	border-style: none;
+}
+
+.btn-success {
+	background-color: #dff0d8;
+	color: #5cb85c;
+}
+
+.btn-danger {
+	background-color: #f2dede;
+	color: #d9534f;
+}
+
+.btn-info {
+	background-color: #d9edf7;
+	color: #5bc0de;
+}
+
+.btn-warning {
+	background-color: #fcf8e3;
+	color: #f0ad4e;
+}
+
+.dropdown-menu {
+	padding: 0px 0px;
+	margin-top: 0px;
+}
+
+a:link {
+  color:#333333;
+  text-decoration: underline;
+}
+a:visited {
+  color:#333333;
+  text-decoration: underline;
+}
+
+td {
+  padding: 10px;
+}
+
+table tbody.summary td {
+    padding: 0px;
+    text-indent: 0px;
+}
+
+.pull-right {
+  padding-left: 10px;
+}

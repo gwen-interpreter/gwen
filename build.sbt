@@ -1,0 +1,43 @@
+name := "gwen"
+
+description := "Gwen Interpreter"
+
+version := "0.1.0-SNAPSHOT"
+
+organization := "org.gweninterpreter"
+
+organizationHomepage := Some(url("http://gweninterpreter.org"))
+
+startYear := Some(2014)
+
+scalaVersion := "2.10.4"
+
+scalacOptions += "-feature"
+
+scalacOptions += "-language:postfixOps"
+
+licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
+
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+
+javaSource in Compile := baseDirectory.value / "src/main/scala"
+
+javaSource in Test := baseDirectory.value / "src/test/scala"
+
+resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+
+libraryDependencies += "com.typesafe" % "config" % "1.2.0" 
+
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.3"
+
+libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
+
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
+
+libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.7"
+
+libraryDependencies += "jline" % "jline" % "2.11"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.5" % "test"
+
+libraryDependencies += "org.mockito" % "mockito-all" % "1.9.5" % "test"
