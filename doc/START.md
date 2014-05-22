@@ -35,7 +35,7 @@ For this dev guide, we will walk through the sample math interpreter
 implementation included in the test source of this project. The complete 
 source is available here:
 
-- src/test/scala/gwen/sample/MathInterpreter.scala
+- [src/test/scala/gwen/sample/MathInterpreter.scala](../src/test/scala/gwen/sample/MathInterpreter.scala)
 
 This interpreter uses the following math service implementation to perform 
 integer addition: 
@@ -317,7 +317,7 @@ Scenario: 1 plus 2 should yield 3
 
 This feature file can be located in the project here:
 
-- src/test/resources/gwen/sample.BasicMath.feature
+- [src/test/resources/gwen/sample/BasicMath.feature](../src/test/resources/gwen/sample/BasicMath.feature)
 
 Now lets evaluate this feature file using our math interpreter.  We do this 
 by invoking the interpreter in batch mode and passing this file in as a 
@@ -424,7 +424,7 @@ Scenario: ++x
 
 This meta file can be located in the project here:
  
-- src/test/resources/gwen/sample/Math.meta
+- [src/test/resources/gwen/sample/Math.meta](../src/test/resources/gwen/sample/Math.meta)
 
 ### Loading meta
 
@@ -548,7 +548,7 @@ Scenario: Incrementing 0 should yield 1
 
 This feature file can be located in the project here:
 
-- src/test/resources/gwen/sample/MetaMath.feature
+- [src/test/resources/gwen/sample/MetaMath.feature](../src/test/resources/gwen/sample/MetaMath.feature)
 
 We can now evaluate this feature by passing it to the interpreter. Gwen will 
 automatically discover and load the Math.meta file if it finds it in the same 
@@ -688,7 +688,7 @@ class MathInterpreterTest extends FlatSpec {
 
 This test class can be located in the project here:
 
-- src/test/scala/gwen/sample/MathInterpreterTest.scala
+- [src/test/scala/gwen/sample/MathInterpreterTest.scala](../src/test/scala/gwen/sample/MathInterpreterTest.scala)
 
 The test output follows:
 
