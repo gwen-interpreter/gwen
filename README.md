@@ -1,7 +1,7 @@
 ![Gwen](doc/img/gwen-logo.png)
 
-> A <b>G</b>iven-<b>W</b>hen-Th<b>en</b> interpreter that you can mix any 
-> evaluation engine into.
+> A functional specifications interpreter that can evaluate any software 
+> behavior expressed in plain Gherkin text. 
 
 The Gwen Interpreter
 --------------------
