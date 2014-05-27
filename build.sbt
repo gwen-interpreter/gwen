@@ -18,6 +18,8 @@ scalacOptions += "-language:postfixOps"
 
 publishMavenStyle := true
 
+pomIncludeRepository := { _ => false }
+
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (isSnapshot.value)
