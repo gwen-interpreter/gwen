@@ -16,14 +16,14 @@
 
 package gwen.eval
 
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import gwen.dsl.Scenario
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import org.scalatest.FlatSpec
 
-class EnvContextTest extends FlatSpec with ShouldMatchers {
+class EnvContextTest extends FlatSpec with Matchers {
   
   "New env context" should "contain no StepDefs" in {
     val env = newEnv

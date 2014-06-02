@@ -27,7 +27,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 import gwen.Predefs.Kestrel
 import gwen.dsl.Scenario
@@ -36,7 +36,7 @@ import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import org.scalatest.FlatSpec
 
-class GwenInterpreterTest extends FlatSpec with ShouldMatchers with MockitoSugar {
+class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
   val rootDir = new File("target" + File.separator + "GwenInterpreterTest")
   Path(rootDir).createDirectory()
@@ -213,7 +213,9 @@ class GwenInterpreterTest extends FlatSpec with ShouldMatchers with MockitoSugar
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
     val path = Path(file)
-    path.deleteIfExists()
+    if (path.exists) {
+      path.delete()
+    }
     path.createFile(true)
     file
   }

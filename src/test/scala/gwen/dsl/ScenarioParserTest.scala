@@ -17,10 +17,10 @@
 package gwen.dsl
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 
-class ScenarioParserTest extends FlatSpec with ShouldMatchers with SpecParser {
+class ScenarioParserTest extends FlatSpec with Matchers with SpecParser {
 
   private val parse = parseAll(scenario, _: String);
   

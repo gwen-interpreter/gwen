@@ -17,9 +17,9 @@
 package gwen.eval
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
  
-class ScopedDataTest extends FlatSpec with ShouldMatchers {
+class ScopedDataTest extends FlatSpec with Matchers {
 
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("page", "login")

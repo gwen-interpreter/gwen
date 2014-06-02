@@ -19,10 +19,10 @@ package gwen.eval
 import java.io.File
 import java.util.NoSuchElementException
 import scala.reflect.io.Path
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 
-class FeatureStreamTest extends FlatSpec with ShouldMatchers {
+class FeatureStreamTest extends FlatSpec with Matchers {
   
   val rootDir = new File("target" + File.separator + "features")
   Path(rootDir).createDirectory()

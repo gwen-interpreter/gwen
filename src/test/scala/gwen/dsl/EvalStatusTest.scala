@@ -17,10 +17,10 @@
 package gwen.dsl
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
-class EvalStatusTest extends FlatSpec with ShouldMatchers with SpecNormaliser with SpecParser {
+class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with SpecParser {
 
   private val parse = parseAll(spec, _: String);
 

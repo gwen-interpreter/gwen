@@ -17,9 +17,9 @@
 package gwen.dsl
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
-class PrettyPrintParserTest extends FlatSpec with ShouldMatchers with SpecNormaliser with SpecParser {
+class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser with SpecParser {
 
   private val parse = parseAll(spec, _: String);
 

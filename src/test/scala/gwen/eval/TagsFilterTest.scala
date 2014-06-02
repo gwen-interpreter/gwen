@@ -17,12 +17,12 @@
 package gwen.eval
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import gwen.dsl.SpecParser
 import gwen.dsl.Tag.string2Tag
 
-class TagsFilterTest extends FlatSpec with ShouldMatchers with SpecParser { 
+class TagsFilterTest extends FlatSpec with Matchers with SpecParser { 
 
   private val parse = parseAll(spec, _: String);
   

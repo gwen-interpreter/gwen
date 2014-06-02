@@ -10,7 +10,7 @@ If you would like to build a binary from the source:
 
 1. Download a [Git client](http://git-scm.com/downloads)
 2. Clone this Git repository 
-3. Download and install [sbt](http://www.scala-sbt.org/) version 0.13+
+3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
 4. Change to the gwen project directory
 5. Run `sbt test` to compile and run all tests
 6. When successful, run `sbt package` to build the JAR
@@ -20,7 +20,7 @@ If you would like to work with the source in the Scala IDE:
 1. Perform steps 1 to 5 above (if you have not done so already)
 2. Run `sbt eclipse` to create all eclipse files
 3. Download and install the [Scala IDE](http://scala-ide.org/) 
-   for Scala 2.10.x 
+   for Scala (pick the one for the latest version)
 4. Import the project into the IDE 
 
 Quick Start Dev Guide

@@ -50,7 +50,7 @@ Core Requirements
 -----------------
 
 - Java 1.6 or later
-- Scala 2.10.x 
+- Scala 2.11.x, 2.10.x 
 
 Project Status
 --------------
@@ -61,9 +61,6 @@ instructions in the [getting started](doc/START.md) guide.
 
 Things we need to do include: 
 
-- Scala 2.11.x support. This is currently deferred until a pending 2.11 
-  dependency becomes available. We would also like to support multiple scala 
-  versions in our build.
 - Internationalisation support in the parser for all Gherkin keywords.
 
 Supported Grammar

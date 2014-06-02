@@ -21,12 +21,12 @@ import java.io.File
 import scala.reflect.io.Path
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 import gwen.dsl.Tag
 import gwen.dsl.Tag.string2Tag
 
-class GwenOptionsTest extends FlatSpec with ShouldMatchers {
+class GwenOptionsTest extends FlatSpec with Matchers {
   
   val rootDir = new File("target" + File.separator + "props")
   Path(rootDir).createDirectory()
@@ -474,7 +474,9 @@ class GwenOptionsTest extends FlatSpec with ShouldMatchers {
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
     val path = Path(file)
-    path.deleteIfExists()
+    if (path.exists) {
+      path.delete()
+    }
     path.createFile(true)
     file
   }

@@ -17,7 +17,7 @@
 package gwen.report
 
 import java.io.File
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.dsl.Passed
@@ -26,7 +26,7 @@ import gwen.dsl.Skipped
 import gwen.dsl.StatusKeyword
 import org.scalatest.FlatSpec
 
-class FeatureSummaryTest extends FlatSpec with ShouldMatchers {
+class FeatureSummaryTest extends FlatSpec with Matchers {
 
   "Accumulated feature results in summary" should "sum correctly" in {
     

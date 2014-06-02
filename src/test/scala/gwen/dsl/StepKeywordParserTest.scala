@@ -17,9 +17,9 @@
 package gwen.dsl
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
-class StepKeywordParserTest extends FlatSpec with ShouldMatchers with SpecParser {
+class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
 
   private val parse = parseAll(keyword, _: String);
   

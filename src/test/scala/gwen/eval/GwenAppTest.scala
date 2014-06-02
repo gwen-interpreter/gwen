@@ -21,11 +21,11 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.FlatSpec
 
-class GwenAppTest extends FlatSpec with ShouldMatchers with MockitoSugar {
+class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
 
   var ranREPL: Boolean = _ 
   

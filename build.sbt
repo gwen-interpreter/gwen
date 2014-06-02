@@ -10,11 +10,15 @@ organizationHomepage := Some(url("http://gweninterpreter.org"))
 
 startYear := Some(2014)
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
+
+crossScalaVersions := Seq("2.11.1", "2.10.4")
 
 scalacOptions += "-feature"
 
 scalacOptions += "-language:postfixOps"
+
+scalacOptions += "-deprecation"
 
 publishMavenStyle := true
 
@@ -61,9 +65,9 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "com.typesafe" % "config" % "1.2.0" 
+libraryDependencies += "com.typesafe" % "config" % "1.2.1" 
 
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.2.3"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.0"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
@@ -73,6 +77,15 @@ libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.7"
 
 libraryDependencies += "jline" % "jline" % "2.11"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.5" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.7" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.9.5" % "test"
+
+libraryDependencies := {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+      libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
+    case _ =>
+      libraryDependencies.value
+  }
+}

@@ -17,9 +17,9 @@
 package gwen.eval
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
-class ScopedDataStackTest extends FlatSpec with ShouldMatchers {
+class ScopedDataStackTest extends FlatSpec with Matchers {
 
   "get" should "throw error when there are no scopes" in {
     
