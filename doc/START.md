@@ -11,20 +11,21 @@ If you would like to build a binary from the source:
 1. Download a [Git client](http://git-scm.com/downloads)
 2. Clone this Git repository 
 3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
-4. Change to the gwen project directory
-5. Run `sbt test` to compile and run all tests
-6. When successful, run `sbt package` to build the JAR
+4. Change to the gwen directory
+5. Run `sbt test` to compile and run all tests to verify all is OK
+6. When successful, run `sbt` to start the sbt console
 
 If you would like to work with the source in the Scala IDE:
 
-1. Perform steps 1 to 5 above (if you have not done so already)
-2. Run `sbt eclipse` to create all eclipse files
-3. Download and install the [Scala IDE](http://scala-ide.org/) 
-   for Scala (pick the one for the latest version)
-4. Import the project into the IDE 
+- Perform steps 1 to 5 above
+- Run `sbt eclipse` to create all eclipse files
+- Download and install the [Scala IDE](http://scala-ide.org/) for Scala 2.11.
+- Import the project into the IDE 
 
 Quick Start Dev Guide
 ---------------------
+
+> Please ensure that you have performed steps 1 to 6 (above) before proceeding.  
 
 The aim of this guide is to show you how to:
 
@@ -693,15 +694,15 @@ This test class can be located in the project here:
 The test output follows:
 
 ```
-INFO - Found FeatureUnit(target/scala-2.10/test-classes/gwen/sample/BasicMath.feature,List(target/scala-2.10/test-classes/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(target/scala-2.11/test-classes/gwen/sample/BasicMath.feature,List(target/scala-2.11/test-classes/gwen/sample/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: target/scala-2.10/test-classes/gwen/sample/Math.meta
-INFO - Interpreting feature file: target/scala-2.10/test-classes/gwen/sample/Math.meta
+INFO - Loading meta feature: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Math.meta
+INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -712,7 +713,7 @@ INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Math
        Then x = z # Loaded
 
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: target/scala-2.10/test-classes/gwen/sample/BasicMath.feature
+INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
@@ -732,7 +733,7 @@ INFO - Found 'z = 3' in 'default' vars scope
 INFO - [0.0004 secs] Passed Step: Then z == 3
 INFO - [0.0624 secs] Passed Scenario: 1 plus 2 should yield 3
 INFO - [0.0624 secs] Passed FeatureSpec: Integer addition
-INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/BasicMath.feature
+INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/BasicMath.feature
 
    Feature: Integer addition # [0.0624 secs] Passed
 
@@ -743,19 +744,19 @@ INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Basi
        Then z == 3 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/target-scala-2.10-test-classes-gwen-sample-BasicMath.feature.1.meta.html
+INFO - Meta detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-BasicMath.feature.1.meta.html
 INFO - Generating feature detail report [Integer addition]..
-INFO - Feature detail report generated: target/report/target-scala-2.10-test-classes-gwen-sample-BasicMath.feature.html
+INFO - Feature detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-BasicMath.feature.html
 INFO - Closing environment context
-INFO - Found FeatureUnit(target/scala-2.10/test-classes/gwen/sample/MetaMath.feature,List(target/scala-2.10/test-classes/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(target/scala-2.11/test-classes/gwen/sample/MetaMath.feature,List(target/scala-2.11/test-classes/gwen/sample/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: target/scala-2.10/test-classes/gwen/sample/Math.meta
-INFO - Interpreting feature file: target/scala-2.10/test-classes/gwen/sample/Math.meta
+INFO - Loading meta feature: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Math.meta
+INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -766,7 +767,7 @@ INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Math
        Then x = z # Loaded
 
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: target/scala-2.10/test-classes/gwen/sample/MetaMath.feature
+INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/MetaMath.feature
 INFO - Evaluating feature: Increment integer
 INFO - Evaluating Scenario: Incrementing 1 should yield 2
 INFO - Evaluating Step: Given x = 1
@@ -794,7 +795,7 @@ INFO - Found 'x = 2' in 'default' vars scope
 INFO - [0.0004 secs] Passed Step: Then x == 2
 INFO - [0.0014 secs] Passed Scenario: Incrementing 1 should yield 2
 INFO - [0.0014 secs] Passed FeatureSpec: Increment integer
-INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/MetaMath.feature
+INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/MetaMath.feature
 
    Feature: Increment integer # [0.0014 secs] Passed
 
@@ -804,9 +805,9 @@ INFO - Feature file interpreted: target/scala-2.10/test-classes/gwen/sample/Meta
        Then x == 2 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/target-scala-2.10-test-classes-gwen-sample-MetaMath.feature.1.meta.html
+INFO - Meta detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-MetaMath.feature.1.meta.html
 INFO - Generating feature detail report [Increment integer]..
-INFO - Feature detail report generated: target/report/target-scala-2.10-test-classes-gwen-sample-MetaMath.feature.html
+INFO - Feature detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-MetaMath.feature.html
 INFO - Closing environment context
 INFO - Generating feature summary report..
 INFO - Feature summary report generated: target/report/feature-summary.html

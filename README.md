@@ -52,16 +52,36 @@ Core Requirements
 - Java 1.6 or later
 - Scala 2.11.x, 2.10.x 
 
-Project Status
---------------
+Usage
+-----
 
-This a new open source project and we are working to publish a first binary 
-release. In the meantime, you can build the project from source using the 
-instructions in the [getting started](doc/START.md) guide.
+### Binary Dependency
 
-Things we need to do include: 
+To include Gwen as a binary dependency in your sbt project, add the following 
+line to your build.sbt file. The `%%` instructs sbt to pull down the packaged 
+dependency that matches your `scalaVersion` setting.  
 
-- Internationalisation support in the parser for all Gherkin keywords.
+```
+libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
+```
+
+If you are using maven, add the following dependency to your pom.xml file. You 
+will need to explicitly specify the scala version as part of the `artifactId` 
+suffix as shown.    
+
+```
+<dependency>
+	<groupId>org.gweninterpreter</groupId>
+	<artifactId>gwen_2.11</artifactId>       <!-- for scala 2.11.x -->
+	<!--artifactId>gwen_2.10</artifactId-->  <!-- for scala 2.10.x -->
+	<version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+### Source Dependency
+
+To build the project from source, see 
+[Building from Source](doc/START.md#building-from-source).  
 
 Supported Grammar
 -----------------
@@ -115,7 +135,7 @@ tool for authoring executable features and testing them.
 Note that you cannot launch the interpreter without mixing in an engine. The 
 following shows the REPL console for the sample _MathInterpreter_ that is 
 included in the test source of this project and is the focus of our 
-[getting started](doc/START.md) guide.
+[getting started](doc/START.md) dev guide.
 
 ![Gwen REPL Console](doc/img/gwen-repl.png)
 
@@ -174,7 +194,7 @@ tags.
 Getting Started
 ---------------
 
-See our [getting started](doc/START.md) guide for a quick introduction 
+See our [getting started](doc/START.md) dev guide for a quick introduction 
 to the development environment and a short tutorial on how to build an 
 evaluation engine and use it in the interpreter.
 
