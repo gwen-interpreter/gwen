@@ -55,19 +55,28 @@ Core Requirements
 Usage
 -----
 
-### Binary Dependency
+### Getting Started
 
-To include Gwen as a binary dependency in your sbt project, add the following 
-line to your build.sbt file. The `%%` instructs sbt to pull down the packaged 
-dependency that matches your `scalaVersion` setting.  
+See our [getting started](doc/START.md) guide for a quick introduction 
+to the development environment and a short tutorial on how to build an 
+evaluation engine and mix it into the interpreter. Included there are also 
+instructions on how to 
+[build Gwen from source](doc/START.md#building-from-source).
+
+### Adding Gwen as a Binary Dependency
+
+To build a new engine, you will need to create a new scala project and include 
+Gwen as a dependency. To add Gwen as a binary dependency in an sbt project, 
+add the following line to your build.sbt file. The `%%` instructs sbt to pull 
+down the packaged dependency that matches your `scalaVersion` setting. 
 
 ```
 libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
 ```
 
-If you are using maven, add the following dependency to your pom.xml file. You 
-will need to explicitly specify the scala version as part of the `artifactId` 
-suffix as shown.    
+If you are using a maven project, add the following dependency to your pom.xml 
+file. In this case, you will need to explicitly specify the scala version in 
+the `artifactId` suffix as shown.    
 
 ```
 <dependency>
@@ -78,15 +87,10 @@ suffix as shown.
 </dependency>
 ```
 
-### Source Dependency
-
-To build the project from source, see 
-[Building from Source](doc/START.md#building-from-source).  
-
 Supported Grammar
 -----------------
 
-The following subset of the Gherkin grammar is supported (shown in 
+The following subset of the Gherkin grammar is supported (shown here in 
 [EBNF](http://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_Form) 
 notation).
 
@@ -135,7 +139,7 @@ tool for authoring executable features and testing them.
 Note that you cannot launch the interpreter without mixing in an engine. The 
 following shows the REPL console for the sample _MathInterpreter_ that is 
 included in the test source of this project and is the focus of our 
-[getting started](doc/START.md) dev guide.
+[getting started](doc/START.md) guide.
 
 ![Gwen REPL Console](doc/img/gwen-repl.png)
 
@@ -190,13 +194,6 @@ first. Any number of files or directories can be passed to Gwen in a
 single call for sequential or parallel batch execution. Tags can also be 
 passed to include and exclude features and scenarios annotated with those 
 tags.
-
-Getting Started
----------------
-
-See our [getting started](doc/START.md) dev guide for a quick introduction 
-to the development environment and a short tutorial on how to build an 
-evaluation engine and use it in the interpreter.
 
 ***
 
