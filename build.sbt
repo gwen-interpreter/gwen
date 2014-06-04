@@ -1,3 +1,7 @@
+import SonatypeKeys._
+
+sonatypeSettings
+
 name := "gwen"
 
 description := "Gwen Interpreter"
@@ -23,14 +27,6 @@ scalacOptions += "-deprecation"
 publishMavenStyle := true
 
 pomIncludeRepository := { _ => false }
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-}
 
 publishArtifact in Test := false
 
