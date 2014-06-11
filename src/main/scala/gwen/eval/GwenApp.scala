@@ -18,7 +18,6 @@ package gwen.eval
 
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
-import gwen.gwenSetting
 
 /**
  * Gwen interpreter application.
@@ -62,7 +61,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     (if (options.batch) None else Some(interpreter.initialise(options))) tap { envOpt =>
       try {
         interpreter.execute(options, envOpt)
-        envOpt foreach { runRepl(_) }
+        envOpt foreach { createRepl(_).run() }
       } finally {
         envOpt foreach { interpreter.close(_) }
       }
@@ -70,15 +69,11 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   }
   
   /**
-   * Runs the console REPL.
+   * Returns the console REPL.
    * 
    * @param env
    * 			the environment context
    */
-  private[eval] def runRepl(env: EnvContext) {
-    new GwenREPL((step: String) => interpreter.interpretStep(step, env), () => env.toString) tap { repl =>
-      repl.run()
-    }
-  }
+  private[eval] def createRepl(env: EnvContext): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
 }

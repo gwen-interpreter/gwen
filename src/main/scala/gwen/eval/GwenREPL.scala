@@ -35,7 +35,7 @@ import jline.console.completer.StringsCompleter
  * 
  * @author Branko Juric
  */
-class GwenREPL(val interpretStep: (String) => Try[Step], val envDump: () => String) extends ConsoleWriter {
+class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: EnvContext) extends ConsoleWriter {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile())
   
@@ -65,13 +65,13 @@ class GwenREPL(val interpretStep: (String) => Try[Step], val envDump: () => Stri
   private def eval(input: String): Option[Any] = input.trim match {
     case "" => Some("[noop]")
     case "env" => 
-      Some(envDump())
+      Some(env.toString)
     case "exit" | "bye" | "quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None
     case _ =>
       Some {
-        interpretStep(input) match { 
+        interpreter.interpretStep(input, env) match { 
           case Success(step) => s"[${step.evalStatus.status}]"
           case Failure(error) => s"${error}\n[failure]"
         }
