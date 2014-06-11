@@ -234,7 +234,7 @@ listed in the [NOTICE](NOTICE) file.
 Mentions
 --------
 
-- 2013-2014, [Mick Grigg](http://au.linkedin.com/pub/mick-grigg/3/b90/44) for 
+- 2013-2014, [Mick Grigg](http://au.linkedin.com/in/mickgrigg) for 
   involving us in your side project and supporting us in open sourcing this 
   interpreter which we built as part of that. 
 - 2014, [Arun Datta](http://au.linkedin.com/in/arundatta) for reviewing our 
