@@ -1,7 +1,3 @@
-import SonatypeKeys._
-
-sonatypeSettings
-
 name := "gwen"
 
 description := "Gwen Interpreter"
