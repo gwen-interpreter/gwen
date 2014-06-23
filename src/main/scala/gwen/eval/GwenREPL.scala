@@ -42,6 +42,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: En
   private lazy val reader = new ConsoleReader() tap { reader =>
     reader.setHistory(history)
     reader.setBellEnabled(false)
+    reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
     reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "exit")))
   }
