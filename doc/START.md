@@ -31,10 +31,6 @@ scratch in a new Scala project.
 ```
 name := "gwen-math"
 
-description := "Gwen Math Engine"
-
-version := "1.0.0-SNAPSHOT"
-
 scalaVersion := "2.11.1"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
@@ -51,7 +47,9 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.7" % "test"
 ```
 - Create a new sub directory in `gwen-math` called `project` and place in 
   there a new file called `plugins.sbt` containing the following line:
-`addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.5.0")`
+```
+addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.5.0")
+```
 - Open a command prompt to the `gwen-math` directory and type `sbt eclipse`.
   This will create all the necessary eclipse files so that you can readily 
   import the project into the Scala IDE.
@@ -59,6 +57,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.7" % "test"
 - Create a new package called `gwen.sample` in the following source folders:
   - src/main/scala
   - src/main/resources
+  - src/test/scala
 
 ### Defining the sample Math Service
 
@@ -187,11 +186,12 @@ We then mix the above engine into the Gwen interpreter and make it an
 application. Create the following `MathInterpreter` class and object in the 
 `gwen.sample` package in the `src/main/scala` folder:
 
-_GwenInterpreter.scala_
+_MathInterpreter.scala_
 ```
 package gwen.sample
 
 import gwen.eval.GwenInterpreter
+import gwen.eval.GwenApp
 
 class MathInterpreter 
   extends GwenInterpreter[MathEnvContext]
@@ -674,7 +674,7 @@ we will also specify that we want the HTML evaluation reports to be generated
 in the target/report directory.
 
 Create the following `MathInterpreterTest` class in the `gwen.sample` package in the 
-`src/main/test` folder:
+`src/test/scala` folder:
 
 _MathInterpreterTest.scala_
 ```
@@ -706,6 +706,12 @@ class MathInterpreterTest extends FlatSpec {
     }
   }
 }
+```
+
+Enter the following command in the sbt console to run the test:
+
+```
+test
 ```
 
 The test output follows:
@@ -857,6 +863,12 @@ Enter the following command in the sbt console:
 
 ```
 run --parallel -b -r target/report src/main/resources/gwen/sample/BasicMath.feature src/main/resources/gwen/sample/MetaMath.feature
+```
+
+or using short hand pipe `|` switch:
+
+```
+run -|b -r target/report src/main/resources/gwen/sample/BasicMath.feature src/main/resources/gwen/sample/MetaMath.feature
 ```
 
 ### Evaluation reports

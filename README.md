@@ -85,8 +85,8 @@ If you would like to build a binary from the source:
 
 1. Download a [Git client](http://git-scm.com/downloads)
 2. Clone this Git repository using one of the following (SSH or HTTPS) URLs: 
-   - git@github.com:gwen-interpreter/gwen.git
-   - https://github.com/gwen-interpreter/gwen.git
+   - `git@github.com:gwen-interpreter/gwen.git`
+   - `https://github.com/gwen-interpreter/gwen.git`
 3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
 4. Change to the gwen directory
 5. Run `sbt test` to compile and run all tests to verify that all is OK
