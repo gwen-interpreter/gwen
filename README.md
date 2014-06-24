@@ -55,14 +55,6 @@ Core Requirements
 Usage
 -----
 
-### Getting Started
-
-See our [getting started](doc/START.md) guide for a quick introduction 
-to the development environment and a short tutorial on how to build an 
-evaluation engine and mix it into the interpreter. Included there are also 
-instructions on how to 
-[build Gwen from source](doc/START.md#building-from-source).
-
 ### Adding Gwen as a Binary Dependency
 
 To build a new engine, you will need to create a new scala project and include 
@@ -86,6 +78,25 @@ the `artifactId` suffix as shown.
 	<version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
+
+### Building from Source
+
+If you would like to build a binary from the source:
+
+1. Download a [Git client](http://git-scm.com/downloads)
+2. Clone this Git repository using one of the following (SSH or HTTPS) URLs: 
+   - git@github.com:gwen-interpreter/gwen.git
+   - https://github.com/gwen-interpreter/gwen.git
+3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
+4. Change to the gwen directory
+5. Run `sbt test` to compile and run all tests to verify that all is OK
+6. Run `sbt package` to build a JAR file
+
+### Getting Started
+
+See our [getting started](doc/START.md) guide for a quick introduction 
+to the development environment and a short tutorial on how to build an 
+evaluation engine and mix it into the interpreter.
 
 Supported Grammar
 -----------------
