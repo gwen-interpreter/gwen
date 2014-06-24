@@ -16,10 +16,10 @@
  
  Feature: Increment integer
 
-Scenario: Incrementing 1 should yield 2
-    Given x = 1
+Scenario: Incrementing 0 should yield 1
+    Given x = 0
      When ++x
-     Then x == 2
+     Then x == 1
 
 
   
