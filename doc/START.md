@@ -24,9 +24,9 @@ scratch in a new Scala project.
 
 ### Create a new Scala Project
 
-- Create a new directory in your local drive called `gwen-math`.  This
+- Create a new directory in your local drive called _gwen-math_.  This
   will be the root project directory.
-- Create a new file in the project directory called `build.sbt` containing 
+- Create a new file in the project directory called _build.sbt_ containing 
   the following content (preserve all blank lines):
 ```
 name := "gwen-math"
@@ -45,16 +45,16 @@ libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.7" % "test"
 ```
-- Create a new sub directory in `gwen-math` called `project` and place in 
-  there a new file called `plugins.sbt` containing the following line:
+- Create a new sub directory in _gwen-math_ called _project_ and place in 
+  there a new file called _plugins.sbt_ containing the following line:
 ```
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.5.0")
 ```
-- Open a command prompt to the `gwen-math` directory and type `sbt eclipse`.
+- Open a command prompt to the _gwen-math_ directory and type `sbt eclipse`.
   This will create all the necessary eclipse files so that you can readily 
   import the project into the Scala IDE.
-- Import the `gwen-math` project into the Scala IDE.
-- Create a new package called `gwen.sample` in the following source folders:
+- Import the _gwen-math_ project into the Scala IDE.
+- Create a new package called _gwen.sample_ in the following source folders:
   - src/main/scala
   - src/main/resources
   - src/test/scala
@@ -63,7 +63,7 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.5.0")
 
 The sample interpreter in this guide will use the following math service 
 implementation to perform simple integer addition. Create the following 
-`MathService` class in the `gwen.sample` package in the `src/main/scala` 
+_MathService_ class in the _gwen.sample_ package in the _src/main/scala_ 
 folder: 
 
 _MathService.scala_
@@ -94,8 +94,8 @@ to store the following:
 - A data scope for binding named variables
 
 We now define a _MathEnvContext_ to store a reference to our service and 
-provide us with variables. Create the following `MathEnvContext` class in 
-the `gwen.sample` package in the `src/main/scala` folder:
+provide us with variables. Create the following _MathEnvContext_ class in 
+the _gwen.sample_ package in the _src/main/scala_ folder:
 
 _MathEnvContext.scala_
 ```
@@ -142,8 +142,8 @@ notice that this evaluation engine is stateless. It does not store any service
 or state within itself. All of that is stored in the evaluation context (which 
 lives only on the stack). This is to support parallel execution.
 
-Create the following `MathEvalEngine` class in the `gwen.sample` package in 
-the `src/main/scala` folder:
+Create the following _MathEvalEngine_ class in the _gwen.sample_ package in 
+the _src/main/scala_ folder:
 
 _MathEvalEngine.scala_
 ```
@@ -183,8 +183,8 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
 ### Mixing in the evaluation engine
 
 We then mix the above engine into the Gwen interpreter and make it an 
-application. Create the following `MathInterpreter` class and object in the 
-`gwen.sample` package in the `src/main/scala` folder:
+application. Create the following _MathInterpreter_ class and object in the 
+_gwen.sample_ package in the _src/main/scala_ folder:
 
 _MathInterpreter.scala_
 ```
@@ -202,7 +202,7 @@ object MathInterpreter
 ```
 ### Launching the REPL console
 
-Open a command prompt and navigate to your `gwen-math` project directory 
+Open a command prompt and navigate to your _gwen-math_ project directory 
 and type `sbt` to launch sbt in console mode.
 
 We are now ready to start using our math interpreter.  We will start by 
@@ -213,11 +213,11 @@ to launch the math interpreter REPL:
 run
 ```
 
-> The `run` command in sbt simply invokes whatever main class 
+> The _run_ command in sbt simply invokes whatever main class 
 > it finds in the classpath. In our case, it will find and launch the 
-> `MathInterpreter` application (object) we created above. If you have the 
+> _MathInterpreter_ application (object) we created above. If you have the 
 > scala runtime on your system path, you could achieve the same by invoking 
-> `scala gwen.sample.MathInterpreter` directly. Or your could launch the 
+> _scala gwen.sample.MathInterpreter_ directly. Or your could launch the 
 > interpreter in the Scala IDE. The remainder of this guide though, will 
 > assume that you are using the sbt console to launch the interpreter.
 
@@ -338,8 +338,8 @@ steps we just entered and evaluated in the REPL. This will give us an
 equivalent behavioral specification in the form of a plain text feature 
 file. 
 
-Create the following `BasicMath.feature` feature in the `gwen.sample` package 
-in the `src/main/resources` folder:
+Create the following _BasicMath.feature_ file in the _gwen.sample_ package 
+in the _src/main/resources_ folder:
 
 _BasicMath.feature_
 ```
@@ -441,8 +441,8 @@ function will reuse the steps we currently have to increment the value
 contained in the variable named x. We will define this in a meta file so that 
 we can load it into the interpreter first before evaluating any features.
 
-Create the following `Math.meta` file in the `gwen.sample` package in the 
-`src/main/resources` folder:
+Create the following _Math.meta_ file in the _gwen.sample_ package in the 
+_src/main/resources_ folder:
 
 _Math.meta_
 
@@ -560,8 +560,8 @@ gwen>_
 ### Evaluating features with meta
 
 Again, like before, we can capture these exact steps in a feature file.  
-Create the following `MetaMath.feature` file in the `gwen.sample` package in the 
-`src/main/resources` folder:
+Create the following _MetaMath.feature_ file in the _gwen.sample_ package in the 
+_src/main/resources_ folder:
 
 _MetaMath.feature_
 ```
@@ -673,8 +673,8 @@ is: all files in the src/main/resources/gwen/sample directory). In this test
 we will also specify that we want the HTML evaluation reports to be generated 
 in the target/report directory.
 
-Create the following `MathInterpreterTest` class in the `gwen.sample` package in the 
-`src/test/scala` folder:
+Create the following _MathInterpreterTest_ class in the _gwen.sample_ package in the 
+_src/test/scala_ folder:
 
 _MathInterpreterTest.scala_
 ```
