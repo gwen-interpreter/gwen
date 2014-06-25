@@ -89,7 +89,7 @@ If you would like to build a binary from the source:
    - `https://github.com/gwen-interpreter/gwen.git`
 3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
 4. Change to the gwen directory
-5. Run `sbt test` to compile and run all tests to verify that all is OK
+5. Run `sbt test` to compile and run all tests and verify that all is OK
 6. Run `sbt package` to build a JAR file
 
 ### Getting Started
