@@ -372,64 +372,48 @@ following output:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen! 
+Welcome to Gwen!
 
-INFO - Found FeatureUnit(src/main/resources/gwen/sample/BasicMath.feature,List(src/main/resources/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(src\main\resources\gwen\sample\BasicMath.feature,List())
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: src/main/resources/gwen/sample/Math.meta
-INFO - Interpreting feature file: src/main/resources/gwen/sample/Math.meta
-INFO - Evaluating feature: Math functions
-INFO - Loading StepDef: ++x
-INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: src/main/resources/gwen/sample/Math.meta
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
-INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: src/main/resources/gwen/sample/BasicMath.feature
+INFO - Interpreting feature file: src\main\resources\gwen\sample\BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
 INFO - Binding 'x = 1' to 'default' vars scope
-INFO - [0.0173 secs] Passed Step: Given x = 1
+INFO - [0.0359 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
 INFO - Binding 'y = 2' to 'default' vars scope
-INFO - [0.0002 secs] Passed Step: And y = 2
+INFO - [0.0003 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
 INFO - Found 'x = 1' in 'default' vars scope
 INFO - Found 'y = 2' in 'default' vars scope
 INFO - evaluating z = 1 + 2
 INFO - Binding 'z = 3' to 'default' vars scope
-INFO - [0.0529 secs] Passed Step: When z = x + y
+INFO - [0.1587 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
 INFO - Found 'z = 3' in 'default' vars scope
-INFO - [0.0004 secs] Passed Step: Then z == 3
-INFO - [0.0708 secs] Passed Scenario: 1 plus 2 should yield 3
-INFO - [0.0708 secs] Passed FeatureSpec: Integer addition
-INFO - Feature file interpreted: src/main/resources/gwen/sample/BasicMath.feature
+INFO - [0.0005 secs] Passed Step: Then z == 3
+INFO - [0.1954 secs] Passed Scenario: 1 plus 2 should yield 3
+INFO - [0.1954 secs] Passed FeatureSpec: Integer addition
+INFO - Feature file interpreted: src\main\resources\gwen\sample\BasicMath.feature
 
-   Feature: Integer addition # [0.0708 secs] Passed
+   Feature: Integer addition # [0.1954 secs] Passed
 
-  Scenario: 1 plus 2 should yield 3 # [0.0708 secs] Passed
-      Given x = 1 # [0.0173 secs] Passed
-        And y = 2 # [0.0002 secs] Passed
-       When z = x + y # [0.0529 secs] Passed
-       Then z == 3 # [0.0004 secs] Passed
+  Scenario: 1 plus 2 should yield 3 # [0.1954 secs] Passed
+      Given x = 1 # [0.0359 secs] Passed
+        And y = 2 # [0.0003 secs] Passed
+       When z = x + y # [0.1587 secs] Passed
+       Then z == 3 # [0.0005 secs] Passed
 
 INFO - Closing environment context
 
-1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0 
+1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 4 steps: Passed 4, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.0708 secs] Passed
+[0.1954 secs] Passed
 
 [success] Total time: 1 s, completed May 8, 2014 1:41:14 AM
 ```
