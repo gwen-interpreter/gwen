@@ -15,9 +15,9 @@ one thing. That is up to you! It instead provides all the necessary processing
 and tooling required to interpret Gherkin features and abstracts the 
 evaluation engine for you to prescribe what steps you want to support and 
 define what thing you want to evaluate. The intention is that many evaluation 
-engines will emerge out of the community and be shared. Each engine will 
-target a specific system or technology and evaluate behaviour in its own 
-predefined way.
+engines will emerge out of the community and be shared. Each engine can 
+target a specific type of system or technology and evaluate behaviour in its 
+own predefined way.
 
 ```    
    Feature: Gwen Interpreter
@@ -35,7 +35,7 @@ predefined way.
 The Gwen interpreter reads Gherkin features and parses them into an abstract 
 syntax tree for validation and correctness. It then traverses all scenarios 
 and dispatches the processing of each step to an evaluation engine that you 
-define (or provide) and mix in. Your engine performs the actual evaluation 
+define (or provide) and mix in. The engine performs the actual evaluation 
 work required for each step. Gwen then captures and reports the results.
 
 Core Features
@@ -131,7 +131,7 @@ notation).
 Evaluation Engines
 ------------------
 
-Gwen introduces the concept of user defined evaluation engines that can be 
+Gwen introduces the concept of reusable evaluation engines that can be 
 mixed into the interpreter. Evaluation engines map incoming steps to 
 functions and operations on target APIs to evaluate behavior. You prescribe 
 what steps are supported and how they are processed by implementing your own 
