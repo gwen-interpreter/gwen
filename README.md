@@ -1,7 +1,7 @@
 ![Gwen](doc/img/gwen-logo.png)
 
-> A functional specifications interpreter that can evaluate any software 
-> behavior expressed in plain Gherkin text. 
+> A functional specifications interpreter that maps Gherkin features to 
+executable code.
 
 The Gwen Interpreter
 --------------------
