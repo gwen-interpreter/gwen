@@ -7,8 +7,8 @@ The Gwen Interpreter
 --------------------
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter written in [Scala](http://www.scala-lang.org). It is a common 
-platform for translating Gherkin features into executable code. This 
+interpreter written in [Scala](http://www.scala-lang.org). It provides a 
+common platform for mapping Gherkin features to executable code. The 
 executable code evaluates behaviour and is not defined in the interpreter 
 itself, but rather in separate modules called evaluation engines. In this way, 
 the interpreter does not prescribe any set of steps and does not evaluate any 
