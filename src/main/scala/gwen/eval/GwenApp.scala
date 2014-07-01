@@ -35,9 +35,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   |___/                            
 """)
 
-  val implVersion = Option(interpreter.getClass.getPackage.getImplementationVersion)
-  
-  println(s"Welcome to Gwen! ${implVersion.map(version => s" v$version").getOrElse("")}")
+  println(s"Welcome to ${interpreter.name}! ${interpreter.version}")
   println()
    
   GwenOptions.parse(interpreter.getClass().getName(), args) map { options =>

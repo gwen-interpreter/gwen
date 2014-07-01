@@ -52,7 +52,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       FeatureStream.readAll(options.paths) match {
         case featureStream @ _ #:: _ =>
           val reportGenerator = options.reportDir map { reportDir =>
-            new HtmlReportGenerator(reportDir, interpreter.getClass().getSimpleName())
+            new HtmlReportGenerator(reportDir, interpreter.name)
           }
           val summary = {
             if (options.parallel) {

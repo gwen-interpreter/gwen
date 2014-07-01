@@ -54,6 +54,9 @@ import gwen.dsl.prettyPrint
 class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
+  lazy val name: String = Option(this.getClass.getPackage.getImplementationTitle).getOrElse(s"gwen [${this.getClass.getSimpleName}]")
+  lazy val version: String = Option(this.getClass.getPackage.getImplementationVersion).map(ver => s"v${ver}").getOrElse("")
+  
   /**
    * Initialises the interpreter by creating the environment context
    * 

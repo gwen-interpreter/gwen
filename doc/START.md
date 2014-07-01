@@ -230,7 +230,7 @@ The REPL will launch and wait for you to start entering steps:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen!
+Welcome to gwen [MathInterpreter]!
 
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
@@ -372,7 +372,7 @@ following output:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen!
+Welcome to gwen [MathInterpreter]!
 
 INFO - Found FeatureUnit(src\main\resources\gwen\sample\BasicMath.feature,List())
 INFO - Initialising environment context
@@ -459,7 +459,7 @@ The ++x function will load and become available.
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen! 
+Welcome to gwen [MathInterpreter]! 
 
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
@@ -580,7 +580,7 @@ feature:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen! 
+Welcome to gwen [MathInterpreter]! 
 
 INFO - Found FeatureUnit(src/main/resources/gwen/sample/MetaMath.feature,List(src/main/resources/gwen/sample/Math.meta))
 INFO - Initialising environment context
@@ -882,7 +882,7 @@ All the available options will be printed to the console as shown:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to Gwen! 
+Welcome to gwen [MathInterpreter]! 
 
 Usage: scala gwen.sample.MathInterpreter [options] [<feature files and/or directories>]
 
