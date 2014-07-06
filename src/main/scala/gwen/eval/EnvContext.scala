@@ -83,7 +83,6 @@ class EnvContext extends LazyLogging {
       dataScopes(name)
     } else {
       new ScopedDataStack(name) tap { scope =>
-        scope.addScope("default")
         dataScopes += (name -> scope)
       }
     }

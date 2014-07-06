@@ -135,6 +135,8 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
  */
 object ScopedData {
 
+  val GlobalScopeName = "global"
+    
   /**
    * Create a new ScopedData object with an empty attribute list.
    *

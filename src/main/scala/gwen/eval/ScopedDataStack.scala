@@ -71,6 +71,9 @@ class ScopedDataStack(val scopeName: String) {
    */
   private val stack = Stack[ScopedData]()
   
+  // add global scope when stack is created
+  addScope(ScopedData.GlobalScopeName)
+  
   /**
    * Creates and adds a new scope to the internal stack and makes it the 
    * currently active scope.
@@ -187,6 +190,10 @@ class ScopedDataStack(val scopeName: String) {
   def getInOpt(scopeName: String, name: String): Option[String] = 
     stack.toIterator filter(_.name == scopeName) map (_.get(name)) collectFirst { 
       case Some(value) => value 
+    } match {
+      case None if (scopeName != ScopedData.GlobalScopeName) =>
+        getInOpt(ScopedData.GlobalScopeName, name)
+      case x => x
     }
   
   /**
@@ -203,7 +210,11 @@ class ScopedDataStack(val scopeName: String) {
    * @return a sequence of found attribute values or Nil otherwise
    */
   def getAllIn(scopeName: String, name: String): Seq[String] = 
-    stack.toSeq filter(_.name == scopeName) flatMap (_.get(name))
+    stack.toSeq filter(_.name == scopeName) flatMap (_.get(name)) match {
+      case Nil if (scopeName != ScopedData.GlobalScopeName) =>
+        getAllIn(ScopedData.GlobalScopeName, name)
+      case x => x
+    }
     
   /**
    * Returns a string representation of the entire attribute stack.

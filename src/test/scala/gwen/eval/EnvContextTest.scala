@@ -68,10 +68,10 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.toJson.toString should be ("""{"data":[]}""")
   }
   
-  "toJson.toString on new env context with bound var in default scope" should "print the var" in {
+  "toJson.toString on new env context with bound var in global scope" should "print the var" in {
     val env = newEnv
     env.dataScope("vars").set("howdy", "partner")
-    env.toJson.toString should be ("""{"data":[{"vars":[{"scope":"default","atts":[{"howdy":"partner"}]}]}]}""")
+    env.toJson.toString should be ("""{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]}]}]}""")
   }
   
   "toJson.toString on reset env context" should "contain empty scopes" in {

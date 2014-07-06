@@ -257,7 +257,7 @@ step exactly as listed below.
 gwen>Given x = 1
 
 INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0141 secs] Passed Step: Given x = 1
 
     Given x = 1 # [0.0141 secs] Passed
@@ -267,7 +267,7 @@ INFO - [0.0141 secs] Passed Step: Given x = 1
 gwen>And y = 2
 
 INFO - Evaluating Step: And y = 2
-INFO - Binding 'y = 2' to 'default' vars scope
+INFO - Binding 'y = 2' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: And y = 2
 
       And y = 2 # [0.0003 secs] Passed
@@ -277,10 +277,10 @@ INFO - [0.0003 secs] Passed Step: And y = 2
 gwen>When z = x + y
 
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'default' vars scope
-INFO - Found 'y = 2' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'y = 2' in 'global' vars scope
 INFO - evaluating z = 1 + 2
-INFO - Binding 'z = 3' to 'default' vars scope
+INFO - Binding 'z = 3' to 'global' vars scope
 INFO - [0.0547 secs] Passed Step: When z = x + y
 
      When z = x + y # [0.0547 secs] Passed
@@ -290,7 +290,7 @@ INFO - [0.0547 secs] Passed Step: When z = x + y
 gwen>Then z == 3
 
 INFO - Evaluating Step: Then z == 3
-INFO - Found 'z = 3' in 'default' vars scope
+INFO - Found 'z = 3' in 'global' vars scope
 INFO - [0.0006 secs] Passed Step: Then z == 3
 
      Then z == 3 # [0.0006 secs] Passed
@@ -312,7 +312,7 @@ gwen>env
   "env" : {
     "data" : [ {
       "vars" : [ {
-        "scope" : "default",
+        "scope" : "global",
         "atts" : [ {
           "x" : "1"
         }, {
@@ -381,19 +381,19 @@ INFO - Interpreting feature file: src\main\resources\gwen\sample\BasicMath.featu
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0359 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
-INFO - Binding 'y = 2' to 'default' vars scope
+INFO - Binding 'y = 2' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'default' vars scope
-INFO - Found 'y = 2' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'y = 2' in 'global' vars scope
 INFO - evaluating z = 1 + 2
-INFO - Binding 'z = 3' to 'default' vars scope
+INFO - Binding 'z = 3' to 'global' vars scope
 INFO - [0.1587 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
-INFO - Found 'z = 3' in 'default' vars scope
+INFO - Found 'z = 3' in 'global' vars scope
 INFO - [0.0005 secs] Passed Step: Then z == 3
 INFO - [0.1954 secs] Passed Scenario: 1 plus 2 should yield 3
 INFO - [0.1954 secs] Passed FeatureSpec: Integer addition
@@ -498,7 +498,7 @@ the variable x:
 gwen>Given x = 0
 
 INFO - Evaluating Step: Given x = 0
-INFO - Binding 'x = 0' to 'default' vars scope
+INFO - Binding 'x = 0' to 'global' vars scope
 INFO - [0.0122 secs] Passed Step: Given x = 0
 
     Given x = 0 # [0.0122 secs] Passed
@@ -510,17 +510,17 @@ gwen>When ++x
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding 'y = 1' to 'default' vars scope
+INFO - Binding 'y = 1' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 0' in 'default' vars scope
-INFO - Found 'y = 1' in 'default' vars scope
+INFO - Found 'x = 0' in 'global' vars scope
+INFO - Found 'y = 1' in 'global' vars scope
 INFO - evaluating z = 0 + 1
-INFO - Binding 'z = 1' to 'default' vars scope
+INFO - Binding 'z = 1' to 'global' vars scope
 INFO - [0.0552 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found 'z = 1' in 'default' vars scope
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Found 'z = 1' in 'global' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
 INFO - [0.0558 secs] Passed Step: When ++x
@@ -532,7 +532,7 @@ INFO - [0.0558 secs] Passed Step: When ++x
 gwen>Then x == 1
 
 INFO - Evaluating Step: Then x == 1
-INFO - Found 'x = 1' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
 INFO - [0.0007 secs] Passed Step: Then x == 1
 
      Then x == 1 # [0.0007 secs] Passed
@@ -605,27 +605,27 @@ INFO - Interpreting feature file: src/main/resources/gwen/sample/MetaMath.featur
 INFO - Evaluating feature: Increment integer
 INFO - Evaluating Scenario: Incrementing 1 should yield 2
 INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0118 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding 'y = 1' to 'default' vars scope
+INFO - Binding 'y = 1' to 'global' vars scope
 INFO - [0.0002 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'default' vars scope
-INFO - Found 'y = 1' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'y = 1' in 'global' vars scope
 INFO - evaluating z = 1 + 1
-INFO - Binding 'z = 2' to 'default' vars scope
+INFO - Binding 'z = 2' to 'global' vars scope
 INFO - [0.0737 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found 'z = 2' in 'default' vars scope
-INFO - Binding 'x = 2' to 'default' vars scope
+INFO - Found 'z = 2' in 'global' vars scope
+INFO - Binding 'x = 2' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
 INFO - [0.0742 secs] Passed Step: When ++x
 INFO - Evaluating Step: Then x == 2
-INFO - Found 'x = 2' in 'default' vars scope
+INFO - Found 'x = 2' in 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Then x == 2
 INFO - [0.0863 secs] Passed Scenario: Incrementing 1 should yield 2
 INFO - [0.0863 secs] Passed FeatureSpec: Increment integer
@@ -724,19 +724,19 @@ INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Bas
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0138 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
-INFO - Binding 'y = 2' to 'default' vars scope
+INFO - Binding 'y = 2' to 'global' vars scope
 INFO - [0.0002 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'default' vars scope
-INFO - Found 'y = 2' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'y = 2' in 'global' vars scope
 INFO - evaluating z = 1 + 2
-INFO - Binding 'z = 3' to 'default' vars scope
+INFO - Binding 'z = 3' to 'global' vars scope
 INFO - [0.0480 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
-INFO - Found 'z = 3' in 'default' vars scope
+INFO - Found 'z = 3' in 'global' vars scope
 INFO - [0.0004 secs] Passed Step: Then z == 3
 INFO - [0.0624 secs] Passed Scenario: 1 plus 2 should yield 3
 INFO - [0.0624 secs] Passed FeatureSpec: Integer addition
@@ -778,27 +778,27 @@ INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Met
 INFO - Evaluating feature: Increment integer
 INFO - Evaluating Scenario: Incrementing 1 should yield 2
 INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'default' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0002 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding 'y = 1' to 'default' vars scope
+INFO - Binding 'y = 1' to 'global' vars scope
 INFO - [0.0001 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'default' vars scope
-INFO - Found 'y = 1' in 'default' vars scope
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'y = 1' in 'global' vars scope
 INFO - evaluating z = 1 + 1
-INFO - Binding 'z = 2' to 'default' vars scope
+INFO - Binding 'z = 2' to 'global' vars scope
 INFO - [0.0005 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found 'z = 2' in 'default' vars scope
-INFO - Binding 'x = 2' to 'default' vars scope
+INFO - Found 'z = 2' in 'global' vars scope
+INFO - Binding 'x = 2' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
 INFO - [0.0009 secs] Passed Step: When ++x
 INFO - Evaluating Step: Then x == 2
-INFO - Found 'x = 2' in 'default' vars scope
+INFO - Found 'x = 2' in 'global' vars scope
 INFO - [0.0004 secs] Passed Step: Then x == 2
 INFO - [0.0014 secs] Passed Scenario: Incrementing 1 should yield 2
 INFO - [0.0014 secs] Passed FeatureSpec: Increment integer
