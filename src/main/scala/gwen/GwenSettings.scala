@@ -31,8 +31,6 @@ import com.typesafe.config.Config
  *  - gwen.properties in the user's home directory (if found)
  *  - Any default properties found in reference.conf files in the classpath
  *
- * This object can be used like a function to access property values.
- *
  * @author Branko Juric
  */
 object gwenSetting {
@@ -51,7 +49,17 @@ object gwenSetting {
     }
   }
   
-  def apply(path: String): String = sys.props.get(path) match {
+  def getOpt(path: String): Option[String] = sys.props.get(path) match {
+    case None =>
+      if (config.hasPath(path)) {
+    	Option(config.getString(path))
+      } else {
+        None
+      }
+    case value => value
+  }
+  
+  def get(path: String): String = getOpt(path) match {
     case Some(value) => value
     case None => config.getString(path)
   }
