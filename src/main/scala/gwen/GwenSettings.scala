@@ -49,6 +49,11 @@ object gwenSetting {
     }
   }
   
+  /**
+   * Gets an optional setting (returns None if not found)
+   * 
+   * @param path the path of the setting to get
+   */
   def getOpt(path: String): Option[String] = sys.props.get(path) match {
     case None =>
       if (config.hasPath(path)) {
@@ -59,6 +64,11 @@ object gwenSetting {
     case value => value
   }
   
+  /**
+   * Gets a mandatory setting (throws exception if not found)
+   * 
+   * @param path the path of the setting to get
+   */
   def get(path: String): String = getOpt(path) match {
     case Some(value) => value
     case None => config.getString(path)

@@ -89,3 +89,8 @@ libraryDependencies := {
       libraryDependencies.value
   }
 }
+
+mappings in (Compile, packageBin) ++= Seq(
+  file("LICENSE") -> "LICENSE",
+  file("NOTICE") -> "NOTICE"
+)
