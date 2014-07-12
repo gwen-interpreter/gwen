@@ -9,13 +9,16 @@ The aim of this guide is to show you how to:
 For this dev guide, we will walk through the development of the sample math 
 interpreter implementation included in the test source of this project. For 
 your reference, all the source is available here:
-  - [src/test/scala/gwen/sample/MathInterpreter.scala](../src/test/scala/gwen/sample/MathInterpreter.scala)
-  - [src/test/resources/gwen/sample/BasicMath.feature](../src/test/resources/gwen/sample/BasicMath.feature)
-  - [src/test/resources/gwen/sample/Math.meta](../src/test/resources/gwen/sample/Math.meta)
-  - [src/test/resources/gwen/sample/MetaMath.feature](../src/test/resources/gwen/sample/MetaMath.feature)
+  - Scala sources
+    - [MathInterpreter.scala](../src/test/scala/gwen/sample/math/MathInterpreter.scala)
+    - [MathInterpreterTest.scala](../src/test/scala/gwen/sample/math/MathInterpreterTest.scala)
+  - Gherkin features
+    - [BasicMath.feature](../features/sample/math/BasicMath.feature)
+    - [Math.meta](../features/sample/math/Math.meta)
+    - [MetaMath.feature](../features/sample/math/MetaMath.feature)
 
-In this guide though, we will be recreating all of the above sources from 
-scratch in a new Scala project.
+In this guide we will be writing all of the above from scratch in a new Scala 
+project.
 
 ### Install the Scala IDE and sbt build tool
 
@@ -54,21 +57,23 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.5.0")
   This will create all the necessary eclipse files so that you can readily 
   import the project into the Scala IDE.
 - Import the _gwen-math_ project into the Scala IDE.
-- Create a new package called _gwen.sample_ in the following source folders:
+- Create a new package called _gwen.sample.math_ in the main and test source
+  folders
   - src/main/scala
-  - src/main/resources
   - src/test/scala
+- Create the following folder structure in the root of the project:
+  - features/sample/math
 
 ### Defining the sample Math Service
 
 The sample interpreter in this guide will use the following math service 
 implementation to perform simple integer addition. Create the following 
-_MathService_ class in the _gwen.sample_ package in the _src/main/scala_ 
+_MathService_ class in the _gwen.sample.math_ package in the _main_ source 
 folder: 
 
 _MathService.scala_
 ```
-package gwen.sample
+package gwen.sample.math
 
 class MathService {
   def plus(x: Int, y: Int) = x + y
@@ -95,11 +100,11 @@ to store the following:
 
 We now define a _MathEnvContext_ to store a reference to our service and 
 provide us with variables. Create the following _MathEnvContext_ class in 
-the _gwen.sample_ package in the _src/main/scala_ folder:
+the _gwen.sample.math_ package in the _main_ source folder:
 
 _MathEnvContext.scala_
 ```
-package gwen.sample
+package gwen.sample.math
 
 import gwen.eval.EnvContext
 
@@ -142,12 +147,12 @@ notice that this evaluation engine is stateless. It does not store any service
 or state within itself. All of that is stored in the evaluation context (which 
 lives only on the stack). This is to support parallel execution.
 
-Create the following _MathEvalEngine_ class in the _gwen.sample_ package in 
-the _src/main/scala_ folder:
+Create the following _MathEvalEngine_ class in the _gwen.sample.math_ package 
+in the _main_ source folder:
 
 _MathEvalEngine.scala_
 ```
-package gwen.sample
+package gwen.sample.math
 
 import gwen.dsl.Step
 import gwen.eval.EvalEngine
@@ -184,11 +189,11 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
 
 We then mix the above engine into the Gwen interpreter and make it an 
 application. Create the following _MathInterpreter_ class and object in the 
-_gwen.sample_ package in the _src/main/scala_ folder:
+_gwen.sample.math_ package in the _main_ source folder:
 
 _MathInterpreter.scala_
 ```
-package gwen.sample
+package gwen.sample.math
 
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
@@ -217,7 +222,7 @@ run
 > it finds in the classpath. In our case, it will find and launch the 
 > _MathInterpreter_ application (object) we created above. If you have the 
 > scala runtime on your system path, you could achieve the same by invoking 
-> _scala gwen.sample.MathInterpreter_ directly. Or your could launch the 
+> _scala gwen.sample.math.MathInterpreter_ directly. Or your could launch the 
 > interpreter in the Scala IDE. The remainder of this guide though, will 
 > assume that you are using the sbt console to launch the interpreter.
 
@@ -338,8 +343,8 @@ steps we just entered and evaluated in the REPL. This will give us an
 equivalent behavioral specification in the form of a plain text feature 
 file. 
 
-Create the following _BasicMath.feature_ file in the _gwen.sample_ package 
-in the _src/main/resources_ folder:
+Create the following _BasicMath.feature_ file in the _features/sample/math_ 
+folder:
 
 _BasicMath.feature_
 ```
@@ -359,7 +364,7 @@ parameter.
 Enter the following command in the sbt console:
 
 ```
-run -b src/main/resources/gwen/sample/BasicMath.feature
+run -b features/sample/math/BasicMath.feature
 ```
 
 The interpreter will evaluate the feature and exit, and you will see the 
@@ -372,61 +377,76 @@ following output:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to gwen [MathInterpreter]!
+Welcome to gwen [MathInterpreter]! 
 
-INFO - Found FeatureUnit(src\main\resources\gwen\sample\BasicMath.feature,List())
+INFO - Found FeatureUnit(features/sample/math/BasicMath.feature,List(features/sample/math/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Interpreting feature file: src\main\resources\gwen\sample\BasicMath.feature
+INFO - Loading meta feature: features/sample/math/Math.meta
+INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Evaluating feature: Math functions
+INFO - Loading StepDef: ++x
+INFO - Loaded FeatureSpec: Math functions
+INFO - Feature file interpreted: features/sample/math/Math.meta
+
+   Feature: Math functions # Loaded
+
+  @StepDef
+  Scenario: ++x # Loaded
+      Given y = 1 # Loaded
+       When z = x + y # Loaded
+       Then x = z # Loaded
+
+INFO - Loaded meta feature: Math functions
+INFO - Interpreting feature file: features/sample/math/BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
 INFO - Binding 'x = 1' to 'global' vars scope
-INFO - [0.0359 secs] Passed Step: Given x = 1
+INFO - [0.0084 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
 INFO - Binding 'y = 2' to 'global' vars scope
-INFO - [0.0003 secs] Passed Step: And y = 2
+INFO - [0.0001 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
 INFO - Found 'x = 1' in 'global' vars scope
 INFO - Found 'y = 2' in 'global' vars scope
 INFO - evaluating z = 1 + 2
 INFO - Binding 'z = 3' to 'global' vars scope
-INFO - [0.1587 secs] Passed Step: When z = x + y
+INFO - [0.0410 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
 INFO - Found 'z = 3' in 'global' vars scope
-INFO - [0.0005 secs] Passed Step: Then z == 3
-INFO - [0.1954 secs] Passed Scenario: 1 plus 2 should yield 3
-INFO - [0.1954 secs] Passed FeatureSpec: Integer addition
-INFO - Feature file interpreted: src\main\resources\gwen\sample\BasicMath.feature
+INFO - [0.0002 secs] Passed Step: Then z == 3
+INFO - [0.0498 secs] Passed Scenario: 1 plus 2 should yield 3
+INFO - [0.0498 secs] Passed FeatureSpec: Integer addition
+INFO - Feature file interpreted: features/sample/math/BasicMath.feature
 
-   Feature: Integer addition # [0.1954 secs] Passed
+   Feature: Integer addition # [0.0498 secs] Passed
 
-  Scenario: 1 plus 2 should yield 3 # [0.1954 secs] Passed
-      Given x = 1 # [0.0359 secs] Passed
-        And y = 2 # [0.0003 secs] Passed
-       When z = x + y # [0.1587 secs] Passed
-       Then z == 3 # [0.0005 secs] Passed
+  Scenario: 1 plus 2 should yield 3 # [0.0498 secs] Passed
+      Given x = 1 # [0.0084 secs] Passed
+        And y = 2 # [0.0001 secs] Passed
+       When z = x + y # [0.0410 secs] Passed
+       Then z == 3 # [0.0002 secs] Passed
 
 INFO - Closing environment context
 
-1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
+1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0 
 1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 4 steps: Passed 4, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.1954 secs] Passed
+[0.0498 secs] Passed
 
 [success] Total time: 1 s, completed May 8, 2014 1:41:14 AM
 ```
 
 ### Composing steps in meta
 
-We will now compose a ++x increment function as a step definition. This 
+We will now compose an increment function as a step definition. This 
 function will reuse the steps we currently have to increment the value 
 contained in the variable named x. We will define this in a meta file so that 
 we can load it into the interpreter first before evaluating any features.
 
-Create the following _Math.meta_ file in the _gwen.sample_ package in the 
-_src/main/resources_ folder:
+Create the following _Math.meta_ file in the _features/sample/math_ folder:
 
 _Math.meta_
 
@@ -447,7 +467,7 @@ file in as a parameter.
 
 Enter the following command in the sbt console:
 ```
-run -m src/main/resources/gwen/sample/Math.meta
+run -m features/sample/math/Math.meta
 ```
 
 The ++x function will load and become available.
@@ -463,12 +483,12 @@ Welcome to gwen [MathInterpreter]!
 
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: src/main/resources/gwen/sample/Math.meta
-INFO - Interpreting feature file: src/main/resources/gwen/sample/Math.meta
+INFO - Loading meta feature: features/sample/math/Math.meta
+INFO - Interpreting feature file: features/sample/math/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: src/main/resources/gwen/sample/Math.meta
+INFO - Feature file interpreted: features/sample/math/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -484,7 +504,7 @@ REPL Console
 
 Enter steps to evaluate or type exit to quit..
 
-gwen>_
+gwen>
 ```
 
 Now proceed to enter the following steps to initialise and then increment 
@@ -544,8 +564,8 @@ gwen>_
 ### Evaluating features with meta
 
 Again, like before, we can capture these exact steps in a feature file.  
-Create the following _MetaMath.feature_ file in the _gwen.sample_ package in the 
-_src/main/resources_ folder:
+Create the following _MetaMath.feature_ file in the _features/sample/math  
+folder:
 
 _MetaMath.feature_
 ```
@@ -567,7 +587,7 @@ We now evaluate our MetaMath.feature. Enter the following command in the sbt
 console:
 
 ```
-run -b src/main/resources/gwen/sample/MetaMath.feature
+run -b features/sample/math/MetaMath.feature
 ```
 
 The interpreter will discover and load the meta and then evaluate the 
@@ -582,15 +602,15 @@ feature:
 
 Welcome to gwen [MathInterpreter]! 
 
-INFO - Found FeatureUnit(src/main/resources/gwen/sample/MetaMath.feature,List(src/main/resources/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(features/sample/math/MetaMath.feature,List(features/sample/math/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: src/main/resources/gwen/sample/Math.meta
-INFO - Interpreting feature file: src/main/resources/gwen/sample/Math.meta
+INFO - Loading meta feature: features/sample/math/Math.meta
+INFO - Interpreting feature file: features/sample/math/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: src/main/resources/gwen/sample/Math.meta
+INFO - Feature file interpreted: features/sample/math/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -601,42 +621,42 @@ INFO - Feature file interpreted: src/main/resources/gwen/sample/Math.meta
        Then x = z # Loaded
 
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: src/main/resources/gwen/sample/MetaMath.feature
+INFO - Interpreting feature file: features/sample/math/MetaMath.feature
 INFO - Evaluating feature: Increment integer
-INFO - Evaluating Scenario: Incrementing 1 should yield 2
-INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'global' vars scope
-INFO - [0.0118 secs] Passed Step: Given x = 1
+INFO - Evaluating Scenario: Incrementing 0 should yield 1
+INFO - Evaluating Step: Given x = 0
+INFO - Binding 'x = 0' to 'global' vars scope
+INFO - [0.0080 secs] Passed Step: Given x = 0
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
 INFO - Binding 'y = 1' to 'global' vars scope
-INFO - [0.0002 secs] Passed Step: Given y = 1
+INFO - [0.0001 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'x = 0' in 'global' vars scope
 INFO - Found 'y = 1' in 'global' vars scope
-INFO - evaluating z = 1 + 1
-INFO - Binding 'z = 2' to 'global' vars scope
-INFO - [0.0737 secs] Passed Step: When z = x + y
+INFO - evaluating z = 0 + 1
+INFO - Binding 'z = 1' to 'global' vars scope
+INFO - [0.0407 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found 'z = 2' in 'global' vars scope
-INFO - Binding 'x = 2' to 'global' vars scope
-INFO - [0.0003 secs] Passed Step: Then x = z
+INFO - Found 'z = 1' in 'global' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
+INFO - [0.0002 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
-INFO - [0.0742 secs] Passed Step: When ++x
-INFO - Evaluating Step: Then x == 2
-INFO - Found 'x = 2' in 'global' vars scope
-INFO - [0.0003 secs] Passed Step: Then x == 2
-INFO - [0.0863 secs] Passed Scenario: Incrementing 1 should yield 2
-INFO - [0.0863 secs] Passed FeatureSpec: Increment integer
-INFO - Feature file interpreted: src/main/resources/gwen/sample/MetaMath.feature
+INFO - [0.0410 secs] Passed Step: When ++x
+INFO - Evaluating Step: Then x == 1
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - [0.0002 secs] Passed Step: Then x == 1
+INFO - [0.0493 secs] Passed Scenario: Incrementing 0 should yield 1
+INFO - [0.0493 secs] Passed FeatureSpec: Increment integer
+INFO - Feature file interpreted: features/sample/math/MetaMath.feature
 
-   Feature: Increment integer # [0.0863 secs] Passed
+   Feature: Increment integer # [0.0493 secs] Passed
 
-  Scenario: Incrementing 1 should yield 2 # [0.0863 secs] Passed
-      Given x = 1 # [0.0118 secs] Passed
-       When ++x # [0.0742 secs] Passed
-       Then x == 2 # [0.0003 secs] Passed
+  Scenario: Incrementing 0 should yield 1 # [0.0493 secs] Passed
+      Given x = 0 # [0.0080 secs] Passed
+       When ++x # [0.0410 secs] Passed
+       Then x == 1 # [0.0002 secs] Passed
 
 INFO - Closing environment context
 
@@ -644,7 +664,7 @@ INFO - Closing environment context
 1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 3 steps: Passed 3, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.0863 secs] Passed
+[0.0493 secs] Passed
 
 [success] Total time: 0 s, completed May 8, 2014 1:44:29 AM
 ```
@@ -652,17 +672,16 @@ INFO - Closing environment context
 ### Testing the interpreter
 
 To complete the development work, we will implement the following test class 
-to exercise the evaluation of all the feature files we have written (that 
-is: all files in the src/main/resources/gwen/sample directory). In this test 
-we will also specify that we want the HTML evaluation reports to be generated 
-in the target/report directory.
+to exercise the evaluation of all the feature files we have written. In this 
+test we will also specify that we want the HTML evaluation reports to be 
+generated in the target/report directory.
 
-Create the following _MathInterpreterTest_ class in the _gwen.sample_ package in the 
-_src/test/scala_ folder:
+Create the following _MathInterpreterTest_ class in the _gwen.sample.math_ 
+package in the _test_ source folder:
 
 _MathInterpreterTest.scala_
 ```
-package gwen.sample
+package gwen.sample.math
 
 import gwen.dsl.Failed
 import gwen.dsl.Passed
@@ -674,14 +693,12 @@ class MathInterpreterTest extends FlatSpec {
   
   "math features" should "evaluate" in {
     
-    val dir = new File(getClass().getResource("/gwen/sample/BasicMath.feature").getFile()).getParentFile()
-    val relativeDir = new File(new File(".").toURI().relativize(dir.toURI()).getPath());
-    
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report")), 
-      paths = List(relativeDir))
-      
+      paths = List(new File("features/sample/math"))
+    )
+    
     val intepreter = new MathInterpreter()
     intepreter.execute(options, None) match {
       case Passed(_) => // excellent :)
@@ -690,6 +707,7 @@ class MathInterpreterTest extends FlatSpec {
     }
   }
 }
+
 ```
 
 Enter the following command in the sbt console to run the test:
@@ -701,15 +719,15 @@ test
 The test output follows:
 
 ```
-INFO - Found FeatureUnit(target/scala-2.11/test-classes/gwen/sample/BasicMath.feature,List(target/scala-2.11/test-classes/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(features/sample/math/BasicMath.feature,List(features/sample/math/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: target/scala-2.11/test-classes/gwen/sample/Math.meta
-INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Loading meta feature: features/sample/math/Math.meta
+INFO - Interpreting feature file: features/sample/math/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Feature file interpreted: features/sample/math/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -720,12 +738,12 @@ INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math
        Then x = z # Loaded
 
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/BasicMath.feature
+INFO - Interpreting feature file: features/sample/math/BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
 INFO - Binding 'x = 1' to 'global' vars scope
-INFO - [0.0138 secs] Passed Step: Given x = 1
+INFO - [0.0093 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
 INFO - Binding 'y = 2' to 'global' vars scope
 INFO - [0.0002 secs] Passed Step: And y = 2
@@ -734,36 +752,36 @@ INFO - Found 'x = 1' in 'global' vars scope
 INFO - Found 'y = 2' in 'global' vars scope
 INFO - evaluating z = 1 + 2
 INFO - Binding 'z = 3' to 'global' vars scope
-INFO - [0.0480 secs] Passed Step: When z = x + y
+INFO - [0.0470 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
 INFO - Found 'z = 3' in 'global' vars scope
 INFO - [0.0004 secs] Passed Step: Then z == 3
-INFO - [0.0624 secs] Passed Scenario: 1 plus 2 should yield 3
-INFO - [0.0624 secs] Passed FeatureSpec: Integer addition
-INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/BasicMath.feature
+INFO - [0.0569 secs] Passed Scenario: 1 plus 2 should yield 3
+INFO - [0.0569 secs] Passed FeatureSpec: Integer addition
+INFO - Feature file interpreted: features/sample/math/BasicMath.feature
 
-   Feature: Integer addition # [0.0624 secs] Passed
+   Feature: Integer addition # [0.0569 secs] Passed
 
-  Scenario: 1 plus 2 should yield 3 # [0.0624 secs] Passed
-      Given x = 1 # [0.0138 secs] Passed
+  Scenario: 1 plus 2 should yield 3 # [0.0569 secs] Passed
+      Given x = 1 # [0.0093 secs] Passed
         And y = 2 # [0.0002 secs] Passed
-       When z = x + y # [0.0480 secs] Passed
+       When z = x + y # [0.0470 secs] Passed
        Then z == 3 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-BasicMath.feature.1.meta.html
+INFO - Meta detail report generated: /Users/Branko/gwen/target/report/features-sample-math-BasicMath.feature.1.meta.html
 INFO - Generating feature detail report [Integer addition]..
-INFO - Feature detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-BasicMath.feature.html
+INFO - Feature detail report generated: /Users/Branko/gwen/target/report/features-sample-math-BasicMath.feature.html
 INFO - Closing environment context
-INFO - Found FeatureUnit(target/scala-2.11/test-classes/gwen/sample/MetaMath.feature,List(target/scala-2.11/test-classes/gwen/sample/Math.meta))
+INFO - Found FeatureUnit(features/sample/math/MetaMath.feature,List(features/sample/math/Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: target/scala-2.11/test-classes/gwen/sample/Math.meta
-INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Loading meta feature: features/sample/math/Math.meta
+INFO - Interpreting feature file: features/sample/math/Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
 INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math.meta
+INFO - Feature file interpreted: features/sample/math/Math.meta
 
    Feature: Math functions # Loaded
 
@@ -774,56 +792,56 @@ INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/Math
        Then x = z # Loaded
 
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: target/scala-2.11/test-classes/gwen/sample/MetaMath.feature
+INFO - Interpreting feature file: features/sample/math/MetaMath.feature
 INFO - Evaluating feature: Increment integer
-INFO - Evaluating Scenario: Incrementing 1 should yield 2
-INFO - Evaluating Step: Given x = 1
-INFO - Binding 'x = 1' to 'global' vars scope
-INFO - [0.0002 secs] Passed Step: Given x = 1
+INFO - Evaluating Scenario: Incrementing 0 should yield 1
+INFO - Evaluating Step: Given x = 0
+INFO - Binding 'x = 0' to 'global' vars scope
+INFO - [0.0002 secs] Passed Step: Given x = 0
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
 INFO - Binding 'y = 1' to 'global' vars scope
 INFO - [0.0001 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found 'x = 1' in 'global' vars scope
+INFO - Found 'x = 0' in 'global' vars scope
 INFO - Found 'y = 1' in 'global' vars scope
-INFO - evaluating z = 1 + 1
-INFO - Binding 'z = 2' to 'global' vars scope
+INFO - evaluating z = 0 + 1
+INFO - Binding 'z = 1' to 'global' vars scope
 INFO - [0.0005 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found 'z = 2' in 'global' vars scope
-INFO - Binding 'x = 2' to 'global' vars scope
+INFO - Found 'z = 1' in 'global' vars scope
+INFO - Binding 'x = 1' to 'global' vars scope
 INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
 INFO - [0.0009 secs] Passed Step: When ++x
-INFO - Evaluating Step: Then x == 2
-INFO - Found 'x = 2' in 'global' vars scope
-INFO - [0.0004 secs] Passed Step: Then x == 2
-INFO - [0.0014 secs] Passed Scenario: Incrementing 1 should yield 2
-INFO - [0.0014 secs] Passed FeatureSpec: Increment integer
-INFO - Feature file interpreted: target/scala-2.11/test-classes/gwen/sample/MetaMath.feature
+INFO - Evaluating Step: Then x == 1
+INFO - Found 'x = 1' in 'global' vars scope
+INFO - [0.0004 secs] Passed Step: Then x == 1
+INFO - [0.0015 secs] Passed Scenario: Incrementing 0 should yield 1
+INFO - [0.0015 secs] Passed FeatureSpec: Increment integer
+INFO - Feature file interpreted: features/sample/math/MetaMath.feature
 
-   Feature: Increment integer # [0.0014 secs] Passed
+   Feature: Increment integer # [0.0015 secs] Passed
 
-  Scenario: Incrementing 1 should yield 2 # [0.0014 secs] Passed
-      Given x = 1 # [0.0002 secs] Passed
+  Scenario: Incrementing 0 should yield 1 # [0.0015 secs] Passed
+      Given x = 0 # [0.0002 secs] Passed
        When ++x # [0.0009 secs] Passed
-       Then x == 2 # [0.0004 secs] Passed
+       Then x == 1 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-MetaMath.feature.1.meta.html
+INFO - Meta detail report generated: /Users/Branko/gwen/target/report/features-sample-math-MetaMath.feature.1.meta.html
 INFO - Generating feature detail report [Increment integer]..
-INFO - Feature detail report generated: target/report/target-scala-2.11-test-classes-gwen-sample-MetaMath.feature.html
+INFO - Feature detail report generated: /Users/Branko/gwen/target/report/features-sample-math-MetaMath.feature.html
 INFO - Closing environment context
 INFO - Generating feature summary report..
-INFO - Feature summary report generated: target/report/feature-summary.html
+INFO - Feature summary report generated: /Users/Branko/gwen/target/report/feature-summary.html
 
 2 features: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0 
 2 scenarios: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0
 7 steps: Passed 7, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.0639 secs] Passed
+[0.0584 secs] Passed
 ```  
 
 ### Serial execution
@@ -834,7 +852,7 @@ launched directly on the interpreter in serial batch execution mode.
 Enter the following command in the sbt console:
 
 ```
-run -b -r target/report src/main/resources/gwen/sample
+run -b -r target/report features/sample/math
 ```
 
 ### Parallel execution
@@ -846,13 +864,13 @@ two features at the same time on different cores and merge their reports.
 Enter the following command in the sbt console:
 
 ```
-run --parallel -b -r target/report src/main/resources/gwen/sample/BasicMath.feature src/main/resources/gwen/sample/MetaMath.feature
+run --parallel -b -r target/report features/sample/math/BasicMath.feature features/sample/math/MetaMath.feature
 ```
 
 or using short hand pipe `|` switch:
 
 ```
-run -|b -r target/report src/main/resources/gwen/sample/BasicMath.feature src/main/resources/gwen/sample/MetaMath.feature
+run -|b -r target/report features/sample/math/BasicMath.feature features/sample/math/MetaMath.feature
 ```
 
 ### Evaluation reports
@@ -884,7 +902,7 @@ All the available options will be printed to the console as shown:
 
 Welcome to gwen [MathInterpreter]! 
 
-Usage: scala gwen.sample.MathInterpreter [options] [<feature files and/or directories>]
+Usage: scala gwen.sample.math.MathInterpreter [options] [<feature files and/or directories>]
 
   --version
         Prints the implementation version
@@ -903,5 +921,5 @@ Usage: scala gwen.sample.MathInterpreter [options] [<feature files and/or direct
   -m <meta file> | --meta <meta file>
         <meta file> = Path to meta file
   <feature files and/or directories>
-        Space separated list of feature files and/or directories      
+        Space separated list of feature files and/or directories     
 ```

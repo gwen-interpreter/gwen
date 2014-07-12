@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.sample
+package gwen.sample.math
 
 import gwen.eval.EnvContext
 import gwen.dsl.Step
