@@ -769,9 +769,9 @@ INFO - Feature file interpreted: features/sample/math/BasicMath.feature
        Then z == 3 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: /Users/Branko/gwen/target/report/features-sample-math-BasicMath.feature.1.meta.html
+INFO - Meta detail report generated: target/report/features-sample-math-BasicMath.feature.1.meta.html
 INFO - Generating feature detail report [Integer addition]..
-INFO - Feature detail report generated: /Users/Branko/gwen/target/report/features-sample-math-BasicMath.feature.html
+INFO - Feature detail report generated: target/report/features-sample-math-BasicMath.feature.html
 INFO - Closing environment context
 INFO - Found FeatureUnit(features/sample/math/MetaMath.feature,List(features/sample/math/Math.meta))
 INFO - Initialising environment context
@@ -830,12 +830,12 @@ INFO - Feature file interpreted: features/sample/math/MetaMath.feature
        Then x == 1 # [0.0004 secs] Passed
 
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: /Users/Branko/gwen/target/report/features-sample-math-MetaMath.feature.1.meta.html
+INFO - Meta detail report generated: target/report/features-sample-math-MetaMath.feature.1.meta.html
 INFO - Generating feature detail report [Increment integer]..
-INFO - Feature detail report generated: /Users/Branko/gwen/target/report/features-sample-math-MetaMath.feature.html
+INFO - Feature detail report generated: target/report/features-sample-math-MetaMath.feature.html
 INFO - Closing environment context
 INFO - Generating feature summary report..
-INFO - Feature summary report generated: /Users/Branko/gwen/target/report/feature-summary.html
+INFO - Feature summary report generated: target/report/feature-summary.html
 
 2 features: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0 
 2 scenarios: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0

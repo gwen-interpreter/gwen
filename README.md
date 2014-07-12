@@ -83,16 +83,16 @@ the `artifactId` suffix as shown.
 
 If you would like to build a binary from the source:
 
-1. Either
+1. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
+   - Note Java 8 is not recommended at this time of writing
+2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
+3. Either
    - Download a [Git client](http://git-scm.com/downloads) and clone this 
      repository using one of the following (SSH or HTTPS) URLs: 
      - `git@github.com:gwen-interpreter/gwen.git`
      - `https://github.com/gwen-interpreter/gwen.git`
    - Or click the Download ZIP link on this GitHub project page to download 
-     the source archive and extract it to a local folder
-2. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
-   - Note Java 8 is not recommended at this time of writing
-3. Download and install the latest [sbt](http://www.scala-sbt.org/) version 
+     the source archive and extract it to a local folder 
 4. Change to the directory where you cloned/downloaded the gwen source
 5. Run `sbt test` to compile and run all tests and verify that all is OK
 6. Run `sbt package` to build a JAR file
