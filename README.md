@@ -6,18 +6,13 @@ The Gwen Interpreter
 --------------------
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter written in [Scala](http://www.scala-lang.org). It provides a 
-common platform for mapping Gherkin features to executable code. The 
-executable code evaluates behaviour and is not defined in the interpreter 
-itself, but rather in separate modules called evaluation engines. In this way, 
-the interpreter does not prescribe any set of steps and does not evaluate any 
-one thing. That is up to you! It instead provides all the necessary processing 
-and tooling required to interpret Gherkin features and abstracts the 
-evaluation engine for you to prescribe what steps you want to support and 
-define what thing you want to evaluate. The intention is that many evaluation 
-engines will emerge out of the community and be shared. Each engine can 
-target a specific type of system or technology and evaluate behaviour in its 
-own predefined way.
+interpreter written in [Scala](http://www.scala-lang.org). It is a common 
+platform for mapping Gherkin features to executable code. The interpreter does 
+not prescribe any set of steps and does not evaluate any one thing. That is up 
+to you! It instead provides all the necessary processing and tooling required 
+to interpret Gherkin features and abstracts the evaluation engine for you to 
+prescribe what steps you want to support and define what thing you want to 
+evaluate.
 
 ```    
    Feature: Gwen Interpreter
@@ -144,7 +139,20 @@ functions and operations on target APIs to evaluate behavior. You prescribe
 what steps are supported and how they are processed by implementing your own 
 engine using the abstractions provided. Once the interpreter has been loaded 
 with your engine, it can readily execute both individual steps and complete 
-features.   
+features.
+
+###Public Engines
+
+The intention is that many evaluation engines will emerge out of the 
+community and be shared. Each engine can target a specific type of system or 
+technology and evaluate behaviour in its own predefined way.
+
+The following Gwen engines are currently available:
+
+- [gwen-web engine](https://github.com/gwen-interpreter/gwen-web)
+  - A web engine for automating web application testing in a way that requires 
+    no programming on behalf of the user. It was open sourced by us on 
+    28 June 2014.
 
 REPL Console
 ------------
