@@ -131,16 +131,17 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
   private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: EnvContext): Option[FeatureSpec] = 
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
-        TagsFilter.filter(featureSpec, tagFilters) match {
-          case Some(fspec) =>
-            val metaSpecs = loadMeta(metaFiles, tagFilters, env)
-            Some(evaluateFeature(normalise(fspec, Some(featureFile)), metaSpecs, env) tap { feature =>
-              logger.info(s"Feature file interpreted: $featureFile")
-              printNode(feature)
-            })
-          case None => 
-            logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
-            None
+        if (featureFile.getName().endsWith(".meta")) {
+          Some(evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env))
+        } else {
+          TagsFilter.filter(featureSpec, tagFilters) match {
+            case Some(fspec) =>
+              val metaSpecs = loadMeta(metaFiles, tagFilters, env)
+              Some(evaluateFeature(normalise(fspec, Some(featureFile)), metaSpecs, env))
+            case None => 
+              logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
+              None
+          }
         }
       case failure: NoSuccess =>
         sys.error(failure.toString)
@@ -177,7 +178,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
       logger.info(s"Interpreting feature file: $file")
     }
     logger.info(s"Evaluating feature: $featureSpec")
-    FeatureSpec(
+    (FeatureSpec(
       featureSpec.feature, 
       None, 
       featureSpec.scenarios map { scenario =>
@@ -192,7 +193,10 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
         }
       },
       featureSpec.featureFile, 
-      metaSpecs)
+      metaSpecs)) tap { feature =>
+        logger.info(s"Feature file interpreted: $featureSpec.featureFile")
+        printNode(feature)
+      }
   }
   
   /**
