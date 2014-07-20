@@ -91,9 +91,9 @@ object GwenOptions {
         (ts, c) => 
           c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.toString.startsWith("@"))))
       } validate { t => 
-        if (t.matches("""^(~?@\w+,?)+$""")) success 
-        else failure (s"tags must start with @ or ~@ and be separated by commas (no spaces)")
-      } valueName("<include/exclude tags>") text("<include/exclude tags> = Comma separated list of tags to @include or ~@exclude")
+        if (t.matches("""^(!?@\w+,?)+$""")) success 
+        else failure (s"tags must start with @ or !@ and be separated by commas (no spaces)")
+      } valueName("<include/exclude tags>") text("<include/exclude tags> = Comma separated list of tags to @include or !@exclude")
     
       opt[File]('m', "meta") action {
         (f, c) => c.copy(metaFile = Some(f))
