@@ -183,14 +183,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   "Options with tags option and valid single exclude tag" should "parse" in {
-    parseOptions(Array("-t", "!@wip")) match {
+    parseOptions(Array("-t", "~@wip")) match {
       case Some(options) => {
         assertOptions(options, tags = List(("@wip", false)))
       }
       case None =>
         fail("expected options but got None")
     }
-    parseOptions(Array("--tags", "!@wip")) match {
+    parseOptions(Array("--tags", "~@wip")) match {
       case Some(options) => {
         assertOptions(options, tags = List(("@wip", false)))
       }
@@ -234,7 +234,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   "Options with tags option and mutiple exclude tags" should "parse" in {
-    val tags = "!@experimental,!@complex"
+    val tags = "~@experimental,~@complex"
     val expected: List[(Tag, Boolean)] = List(("@experimental", false), ("@complex", false))
     parseOptions(Array("-t", tags)) match {
       case Some(options) => {
@@ -253,7 +253,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   "Options with tags option and mutiple include and exclude tags" should "parse" in {
-    val tags = "@wip,@regression,!@experimental,@transactional,!@complex,@simple"
+    val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val expected: List[(Tag, Boolean)] = List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true))
     parseOptions(Array("-t", tags)) match {
       case Some(options) => {
@@ -408,7 +408,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     val reportDir = new File("target/report")
     val propsFile = createFile("gwen-1.properties")
-    val tags = "@wip,@regression,!@experimental,@transactional,!@complex,@simple"
+    val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val metaFile = createFile("gwen.meta")
     val dir5 = createDir("dir5");
     val feature5 = createFile("dir5/file5.feature");

@@ -917,7 +917,7 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<feature files and/or d
   -r <report directory> | --report <report directory>
         <report directory> Evaluation report output directory
   -t <include/exclude tags> | --tags <include/exclude tags>
-        <include/exclude tags> = Comma separated list of tags to @include or !@exclude
+        <include/exclude tags> = Comma separated list of tags to @include or ~@exclude
   -m <meta file> | --meta <meta file>
         <meta file> = Path to meta file
   <feature files and/or directories>

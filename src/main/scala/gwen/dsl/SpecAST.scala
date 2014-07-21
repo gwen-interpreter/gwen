@@ -191,7 +191,7 @@ case class Tag(name: String) extends SpecNode with Positional {
 object Tag {
   
   val StepDefTag = Tag("StepDef")
-  private val Regex = """!?@(\w+)""".r
+  private val Regex = """~?@(\w+)""".r
   
   import scala.language.implicitConversions
   implicit def string2Tag(value: String) = value match {
