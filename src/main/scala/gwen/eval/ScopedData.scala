@@ -74,14 +74,11 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    * @return Some(value) if the attribute value is found or None otherwise
    */
   def get(name: String): Option[String] = 
-    (atts \\ name).lastOption map (_.as[String]) tap { valueOpt =>
-      valueOpt match {
-        case Some(value) =>
-          logger.info(s"Found '$name = $value' in '${this.name}' ${scope} scope")
-        case None =>
-          logger.info(s"'$name' not found in '${this.name}' ${scope} scope")
+    (atts \\ name).lastOption tap { valueOpt =>
+      valueOpt foreach { value =>
+          logger.info(s"Found ${Json.obj(name -> value)} in ${scope}/scope/${this.name}")
       }
-    }
+    } map (_.as[String])
   
   /**
    * Finds and retrieves all attribute values from the scope by name.
@@ -92,14 +89,9 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    * @return a sequence of Strings of values are found or Nil otherwise
    */
   def getAll(name: String): Seq[String] = 
-    (atts \\ name) map (_.as[String]) tap { values =>
-      values match {
-        case Nil =>
-          logger.info(s"'$name' not found in '${this.name}' ${scope} scope")
-        case _ =>
-          logger.info(s"Found '$name = [${values.mkString(",")}]' in '${this.name}' ${scope} scope")
-      }
-    } 
+    (atts \\ name) tap { values =>
+      logger.info(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in ${scope}/scope/${this.name}")
+    } map (_.as[String])
 
   /**
    * Binds a new attribute value to the scope.  If an attribute of the same
@@ -116,8 +108,10 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    *            newly added attribute
    */
   def set(name: String, value: String): ScopedData = {
-    logger.info(s"Binding '$name = $value' to '${this.name}' ${scope} scope")
-    atts = atts :+ Json.obj(name -> value)
+    Json.obj(name -> value) tap { nvp =>
+      logger.info(s"Binding $nvp to ${scope}/scope/${this.name}")
+      atts = atts :+ nvp
+    }
     this
   }
 
