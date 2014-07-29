@@ -283,7 +283,8 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
         }
       case (Some(stepDef)) =>
         logger.info(s"Evaluating StepDef: ${stepDef.name}")
-        Step(step.keyword, step.expression, EvalStatus(evaluateSteps(stepDef.steps, env).map(_.evalStatus))) tap { step =>
+        val steps = evaluateSteps(stepDef.steps, env)
+        Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
           logger.info(s"StepDef evaluated: ${stepDef.name}")
         }
     }
@@ -305,10 +306,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
       case TrySuccess(step) => 
         Step(step.keyword, step.expression, Passed(System.nanoTime - start))
       case TryFailure(error) =>
-        logger.error(error.getMessage())
-        logger.debug(s"Exception: ", error)
-        logger.error(env.toString)
-        Step(step.keyword, step.expression, Failed(System.nanoTime - start, error))
+        env.fail(step, Failed(System.nanoTime - start, error))
     }
   }
   

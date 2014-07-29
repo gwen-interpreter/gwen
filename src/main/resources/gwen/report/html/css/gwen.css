@@ -84,10 +84,6 @@
 	border-color: #f0ad4e;
 }
 
-.highlight-danger {
-	background-color: #F0BAB9;
-}
-
 .label {
 	font-size: 100%;
 	margin-right: 5px;
@@ -108,7 +104,6 @@
 .btn {
 	padding: 0px 3px;
 	font-size: 12px;
-	border-style: none;
 }
 
 .btn-success {
@@ -118,7 +113,7 @@
 
 .btn-danger {
 	background-color: #f2dede;
-	color: #d9534f;
+	color: #a94442;
 }
 
 .btn-info {
@@ -134,6 +129,7 @@
 .dropdown-menu {
 	padding: 0px 0px;
 	margin-top: 0px;
+	font-size: 12px;
 }
 
 a:link {

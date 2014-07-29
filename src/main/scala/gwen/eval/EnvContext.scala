@@ -16,9 +16,15 @@
 
 package gwen.eval
 
+import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
+import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
+import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
 import play.api.libs.json.JsObject
@@ -113,5 +119,35 @@ class EnvContext extends LazyLogging {
         s
       }) 
     }
+  
+  /**
+   * Fail callback.
+   * 
+   * @param step 
+   * 			the step that failed
+   * @param failed
+   * 			the failed status
+   */
+  def fail(step: Step, failure: Failed): Step = {
+    
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+    failure.error.printStackTrace(pw)
+    pw.flush()
+    pw.close()
+    val errorFile = File.createTempFile("errortrace", ".txt")
+    errorFile.deleteOnExit()
+    errorFile.writeText(sw.toString())
+    
+    val envFile = File.createTempFile("envcontext", ".txt")
+    envFile.deleteOnExit()
+    envFile.writeText(this.toString)
+    
+    logger.error(failure.error.getMessage())
+    logger.debug(s"Exception: ", failure.error)
+    logger.error(this.toString)
+    
+    Step(step.keyword, step.expression, failure, ("Stack trace", errorFile) :: ("Environment context", envFile) :: step.attachments)
+  }
   
 }

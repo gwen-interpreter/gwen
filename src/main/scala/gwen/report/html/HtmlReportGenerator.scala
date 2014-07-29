@@ -16,10 +16,13 @@
 
 package gwen.report.html
 
+import java.io.File
+
+import scala.reflect.io.Path
+
+import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.report.ReportGenerator
-import java.io.File
-import scala.reflect.io.Path
 
 /**
  * Generates a HTML evaluation report. The report includes a feature
@@ -36,13 +39,7 @@ class HtmlReportGenerator(val targetDir: File, val interpreterName: String)
     targetDir.listFiles().filter { file => 
       val name = file.getName
       name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "feature-summary.html" || name =="resources"
-    } foreach { file =>
-        if (file.isDirectory) {
-          deleteDir(file)
-        } else {
-          file.delete()
-        }
-    }
+    } foreach { _.deleteFile() }
   }
   
   // copy in CSS files (if they don't already exist)
@@ -62,15 +59,6 @@ class HtmlReportGenerator(val targetDir: File, val interpreterName: String)
     copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
   }
   
-  private def deleteDir(dir: File) {
-    dir.listFiles() foreach { file =>
-      if (file.isDirectory()) {
-    	  deleteDir(file)
-      } else {
-        file.delete()
-      }
-    }
-    dir.delete()
-  }
+  
   
 }

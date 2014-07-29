@@ -16,6 +16,8 @@
 
 package gwen.dsl
 
+import java.io.File
+
 /**
  * Pretty prints a spec node to a string.  This object recursively prints
  * each node to a string and can be invoked as a function.  For example, 
@@ -54,7 +56,7 @@ object prettyPrint {
         case None => ""
       }) +
       s"\n\n${formatTags("  ", tags)}  Scenario: ${description}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case Step(keyword, expression, evalStatus) =>
+    case Step(keyword, expression, evalStatus, attachments) =>
       rightJustify(keyword) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
   }
   
@@ -69,7 +71,7 @@ object prettyPrint {
     case _ => ""
   }
   
-  private def formatStatus(status: EvalStatus) = status match {
+  private def formatStatus(status: EvalStatus): String = status match {
     case Pending => ""
     case Failed(_, error) => s" # ${status}: ${error.getMessage()}" 
     case _ => s" # ${status}"

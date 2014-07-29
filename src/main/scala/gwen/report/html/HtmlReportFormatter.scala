@@ -310,12 +310,21 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
 						
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
-							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"highlight-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
-								<div class="text-${cssStatus(status)} highlight-${cssStatus(status)}">""" else ""}
+							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
+								<div class="text-${cssStatus(status)} bg-${cssStatus(status)}">""" else ""}
 									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
-									<strong>${step.keyword}</strong> ${step.expression}${if (status == StatusKeyword.Failed) s"""
+									<strong>${step.keyword}</strong> ${step.expression} ${if (!step.attachments.isEmpty) s"""
+									<div class="dropdown bg-${cssStatus(status)}">
+										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+										    Attachments
+											<span class="caret"></span>
+										</button>
+										<ul class="dropdown-menu" role="menu">${(step.attachments map { case (name, file) => s"""
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${name}</a></li>"""}).mkString }
+										</ul>
+									</div>""" else s""}${if (status == StatusKeyword.Failed) s"""
 								</div>
-								<div class="panel-body text-${cssStatus(status)} highlight-${cssStatus(status)}">
+								<div class="panel-body text-${cssStatus(status)} bg-${cssStatus(status)}"> 
 									<strong>${step.evalStatus.asInstanceOf[Failed].error.getMessage()}</strong>
 								</div>""" else ""}  
 							</li>"""

@@ -210,10 +210,16 @@ object Tag {
  * 			free format step expression line (that is: the text following the step keyword)
  * @param evalStatus
  * 			optional evaluation status (default = Pending)
+ * @param attachments
+ * 			file attachments as name-file pairs (default = Nil)
  *    
  * @author Branko Juric
  */
-case class Step(keyword: StepKeyword.Value, expression: String, status: EvalStatus = Pending) extends SpecNode with Positional {
+case class Step(
+    keyword: StepKeyword.Value, 
+    expression: String, 
+    status: EvalStatus = Pending, 
+    attachments: List[(String, File)] = Nil) extends SpecNode with Positional {
   
   /**
    * Returns the evaluation status of this step definition.
