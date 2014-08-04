@@ -41,20 +41,14 @@ object prettyPrint {
     case spec @ FeatureSpec(feature, background, scenarios,  _, _) =>
       apply(feature) +
         formatStatus(spec.evalStatus) +
-        (background match {
-          case Some(backgr) => apply(backgr)
-          case None => ""
-        }) +
+        background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
     case Feature(tags, description) =>
       s"${formatTags("   ", tags)}   Feature: ${description}"
     case background @ Background(description, steps) =>
       s"\n\nBackground: ${description}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, description, background, steps) =>
-      (background match {
-        case Some(backgr) => apply(backgr)
-        case None => ""
-      }) +
+      background.map(apply).getOrElse("") +
       s"\n\n${formatTags("  ", tags)}  Scenario: ${description}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case Step(keyword, expression, evalStatus, attachments) =>
       rightJustify(keyword) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
