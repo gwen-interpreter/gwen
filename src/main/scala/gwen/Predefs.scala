@@ -22,6 +22,8 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.io.FileInputStream
+import java.io.StringWriter
+import java.io.PrintWriter
 
 /**
  * Predefined implicits.
@@ -93,6 +95,22 @@ object Predefs {
       } else {
         file.delete()
       }
+    }
+    
+  }
+  
+  /**
+   * Exception functions.
+   */
+  implicit class Exceptions[T <: Throwable](val error: T) extends AnyVal {
+    
+    def writeStackTrace(): String = {
+      val sw = new StringWriter()
+      val pw = new PrintWriter(sw)
+      error.printStackTrace(pw)
+      pw.flush()
+      pw.close()
+      sw.toString()
     }
     
   }

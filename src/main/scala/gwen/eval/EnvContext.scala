@@ -17,11 +17,10 @@
 package gwen.eval
 
 import java.io.File
-import java.io.PrintWriter
-import java.io.StringWriter
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
+import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.Failed
@@ -114,9 +113,7 @@ class EnvContext extends LazyLogging {
   def getStepDef(expression: String): Option[Scenario] = 
     stepDefs.get(expression) collect { case Scenario(tags, expression, _, steps) => 
       Scenario(tags, expression, steps map { step => 
-        val s = Step(step.keyword, step.expression)
-        s.pos = step.pos
-        s
+        Step(step.keyword, step.expression) tap { _.pos = step.pos }
       }) 
     }
   
@@ -128,26 +125,33 @@ class EnvContext extends LazyLogging {
    * @param failed
    * 			the failed status
    */
-  def fail(step: Step, failure: Failed): Step = {
-    
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    failure.error.printStackTrace(pw)
-    pw.flush()
-    pw.close()
-    val errorFile = File.createTempFile("errortrace", ".txt")
-    errorFile.deleteOnExit()
-    errorFile.writeText(sw.toString())
-    
-    val envFile = File.createTempFile("envcontext", ".txt")
-    envFile.deleteOnExit()
-    envFile.writeText(this.toString)
-    
-    logger.error(failure.error.getMessage())
-    logger.debug(s"Exception: ", failure.error)
-    logger.error(this.toString)
-    
-    Step(step.keyword, step.expression, failure, ("Stack trace", errorFile) :: ("Environment context", envFile) :: step.attachments)
-  }
+  final def fail(step: Step, failure: Failed): Step = 
+    Step(step.keyword, step.expression, failure, step.attachments ++ createAttachments(failure)) tap { step =>
+      logger.error(failure.error.getMessage())
+      logger.debug(s"Exception: ", failure.error)
+      logger.error(this.toString)
+    }
+  
+  /**
+   * Creates and returns the stack trace and environment context dump 
+   * file attachments.
+   * 
+   * @param failed
+   * 			the failed status
+   */
+  def createAttachments(failure: Failed): List[(String, File)] = List( 
+    ("Stack trace", 
+      File.createTempFile("errortrace", ".txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(failure.error.writeStackTrace())
+      }
+    ), 
+    ("Environment context", 
+      File.createTempFile("envcontext", ".txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(this.toString)
+      }
+    )
+  )
   
 }
