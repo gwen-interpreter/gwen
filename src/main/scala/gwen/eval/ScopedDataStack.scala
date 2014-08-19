@@ -76,17 +76,22 @@ class ScopedDataStack(val scopeName: String) {
   
   /**
    * Creates and adds a new scope to the internal stack and makes it the 
-   * currently active scope.
+   * currently active scope. Keeps the current scope if it has the same name.
    * 
    * @param name
    * 			the name of the scope to add
    * @return
    * 			the newly added scope
    */
-  def addScope(name: String): ScopedData = {
-    val scope = ScopedData(scopeName, name)
-    stack push scope
-    scope
+  def addScope(name: String): ScopedData = current match {
+    case None => 
+      stack push ScopedData(scopeName, name) head
+    case Some(scope) =>
+      if (scope.name != name) {
+        stack push ScopedData(scopeName, name) head
+      } else {
+        scope
+      }
   }
   
   /**
@@ -210,7 +215,7 @@ class ScopedDataStack(val scopeName: String) {
    * @return a sequence of found attribute values or Nil otherwise
    */
   def getAllIn(scopeName: String, name: String): Seq[String] = 
-    stack.toSeq filter(_.name == scopeName) flatMap (_.get(name)) match {
+    stack.toList filter(_.name == scopeName) flatMap (_.getAll(name)) match {
       case Nil if (scopeName != ScopedData.GlobalScopeName) =>
         getAllIn(ScopedData.GlobalScopeName, name)
       case x => x
