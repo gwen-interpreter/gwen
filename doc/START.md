@@ -22,7 +22,7 @@ project.
 
 ### Install the Scala IDE and sbt build tool
 
-- Download and install the [Scala IDE](http://scala-ide.org/) for Scala 2.11.
+- Download and install the [Scala IDE](http://scala-ide.org/) for Scala 2.11.x
 - Download and install the latest [sbt](http://www.scala-sbt.org/) version 
 
 ### Create a new Scala Project
@@ -34,7 +34,7 @@ project.
 ```
 name := "gwen-math"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
@@ -46,7 +46,7 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.7" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 ```
 - Create a new sub directory in _gwen-math_ called _project_ and place in 
   there a new file called _plugins.sbt_ containing the following line:
