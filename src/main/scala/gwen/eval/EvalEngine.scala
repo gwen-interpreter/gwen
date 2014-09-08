@@ -52,8 +52,10 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
    * 
    * @param options
    * 			command line options
+   * @param dataScopes
+   * 			initial data scopes
    */
-  private [eval] def init(options: GwenOptions): T
+  private [eval] def init(options: GwenOptions, dataScopes: DataScopes): T
 
   /**
    * Should be overridden to evaluate a given step (this implementation 

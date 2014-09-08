@@ -40,12 +40,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
  * 
  * @author Branko Juric
  */
-class EnvContext extends LazyLogging {
-  
-  /**
-   * Map of scoped data keyed by name.
-   */
-  private var dataScopes = Map[String, ScopedDataStack]()
+class EnvContext(dataScopes: DataScopes) extends LazyLogging {
   
   /**
    * Map of step definitions keyed by callable expression name.
@@ -62,16 +57,14 @@ class EnvContext extends LazyLogging {
    * Resets the current context but does not close it so it can be reused.
    */
   def reset() {
-    dataScopes = Map[String, ScopedDataStack]()
+    dataScopes.reset()
     stepDefs = Map[String, Scenario]()
   }
   
   /**
    * Returns the current state of all scoped attributes as a Json object.
    */  
-  def toJson: JsObject = {
-    Json.obj("data" -> dataScopes.map { case (name, scope) => scope.toJson })
-  }
+  def toJson: JsObject = dataScopes.toJson
   
   /**
    * Writes the environment context scopes to a Json string.
@@ -81,16 +74,10 @@ class EnvContext extends LazyLogging {
   /**
    * Gets a named data scope (creates it if it does not exist)
    * 
-   * @param the name of the data scope to get (or create and get)
+   * @param name
+   * 			the name of the data scope to get (or create and get)
    */
-  def dataScope(name: String) = 
-    if (dataScopes.contains(name)) {
-      dataScopes(name)
-    } else {
-      new ScopedDataStack(name) tap { scope =>
-        dataScopes += (name -> scope)
-      }
-    }
+  def dataScope(name: String) = dataScopes.scope(name)
   
   /**
    * Adds a step definition to the context.

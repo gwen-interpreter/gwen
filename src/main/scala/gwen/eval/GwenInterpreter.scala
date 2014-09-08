@@ -65,7 +65,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    */
   private[eval] def initialise(options: GwenOptions): EnvContext = {
     logger.info("Initialising environment context")
-    engine.init(options) tap { env =>
+    engine.init(options,  new DataScopes()) tap { env =>
       logger.info(s"${env.getClass().getSimpleName()} initialised")
     }
   }

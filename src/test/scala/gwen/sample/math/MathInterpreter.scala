@@ -22,22 +22,22 @@ import gwen.eval.EvalEngine
 import gwen.eval.GwenOptions
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
+import gwen.eval.EnvContext
+import gwen.eval.DataScopes
 
 class MathService {
   def plus(x: Int, y: Int) = x + y
 }
 
-import gwen.eval.EnvContext
-
-class MathEnvContext(val mathService: MathService) 
-  extends EnvContext {
+class MathEnvContext(val mathService: MathService, val dataScopes: DataScopes) 
+  extends EnvContext(dataScopes) {
   def vars = dataScope("vars")
 }
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
-  override def init(options: GwenOptions): MathEnvContext =
-    new MathEnvContext(new MathService())
+  override def init(options: GwenOptions, dataScopes: DataScopes): MathEnvContext =
+    new MathEnvContext(new MathService(), dataScopes)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars

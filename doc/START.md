@@ -107,9 +107,10 @@ _MathEnvContext.scala_
 package gwen.sample.math
 
 import gwen.eval.EnvContext
+import gwen.eval.DataScopes
 
-class MathEnvContext(val mathService: MathService) 
-  extends EnvContext {
+class MathEnvContext(val mathService: MathService, val dataScopes: DataScopes) 
+  extends EnvContext(dataScopes) {
   def vars = dataScope("vars")
 }
 ```
@@ -157,11 +158,12 @@ package gwen.sample.math
 import gwen.dsl.Step
 import gwen.eval.EvalEngine
 import gwen.eval.GwenOptions
+import gwen.eval.DataScopes
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
-  override def init(options: GwenOptions): MathEnvContext =
-    new MathEnvContext(new MathService())
+  override def init(options: GwenOptions, dataScopes: DataScopes): MathEnvContext =
+    new MathEnvContext(new MathService(), dataScopes)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars

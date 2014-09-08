@@ -46,7 +46,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   private def interpreter(mockEnv: EnvContext) = {
     trait MockEvalEngine extends EvalEngine[EnvContext] {
       type EnvContextType = EnvContext
-      override private [eval] def init(options: GwenOptions): EnvContextType = mockEnv
+      override private [eval] def init(options: GwenOptions, dataScopes: DataScopes): EnvContextType = mockEnv
       override def evaluate(step: Step, env: EnvContextType) { }
     }
     new GwenInterpreter[EnvContext] with MockEvalEngine

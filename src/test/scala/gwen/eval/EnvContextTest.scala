@@ -88,7 +88,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.toJson.toString should be ("""{"data":[]}""")
   }
   
-  private def newEnv: EnvContext = new EnvContext { 
+  private def newEnv: EnvContext = new EnvContext(new DataScopes()) { 
     var closed = false
     override def close() {
       super.reset()
