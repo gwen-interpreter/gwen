@@ -142,3 +142,5 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
   )
   
 }
+
+class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val dataScopes: DataScopes) extends EnvContext(dataScopes)

@@ -70,6 +70,45 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   def evaluate(step: Step, env: T) {
     throw new UnsupportedStepException(step)
   }
+
+  /**
+   * Adds another engine to this one to create a new hybrid engine.
+   * 
+   * @param otherEngine
+   * 			the other engine
+   */
+  def +[U <: EnvContext](otherEngine: EvalEngine[U]) = new HybridEvalEngine[T, U] {
+	override val engineA = EvalEngine.this
+	override val engineB = otherEngine
+  }
 }
 
+/**
+ * Hybrid engine trait
+ */
+trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[HybridEnvContext[A, B]] {
+  
+  val engineA: EvalEngine[A]
+  val engineB: EvalEngine[B]
+  
+  override def init(options: GwenOptions, dataScopes: DataScopes): HybridEnvContext[A, B] = 
+    new HybridEnvContext(
+      engineA.init(options, dataScopes), 
+      engineB.init(options, dataScopes), 
+      dataScopes)
+  
+  override def evaluate(step: Step, env: HybridEnvContext[A, B]) {
+    try {
+  	  engineA.evaluate(step, env.envA)
+    } catch {
+      case _: UnsupportedStepException => 
+        engineB.evaluate(step, env.envB)
+    }
+  }
+  
+}
+
+/**
+ * Thrown when an engine does not support a step.
+ */
 class UnsupportedStepException(step: Step) extends Exception(s"Unsupported step: ${step}")
