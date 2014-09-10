@@ -143,4 +143,15 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
   
 }
 
-class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val dataScopes: DataScopes) extends EnvContext(dataScopes)
+/**
+ * Merges two contexts into one.
+ */
+class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val dataScopes: DataScopes) extends EnvContext(dataScopes) {
+  override def close() {
+    try {
+      envB.close()
+    } finally {
+      envA.close()
+    }
+  }
+}
