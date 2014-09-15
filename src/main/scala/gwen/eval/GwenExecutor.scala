@@ -46,7 +46,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
    * 			optional environment context (None to have Gwen create an env context for each feature unit, 
    *    		Some(env) to reuse an environment context for all, default is None)
    */
-  def execute(options: GwenOptions, optEnv: Option[EnvContext] = None): EvalStatus = {
+  def execute(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
     val start = System.nanoTime
     try {
       FeatureStream.readAll(options.paths) match {
@@ -102,7 +102,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
    * 		optional environment context (reused across all feature units if provided, 
    *    	otherwise a new context is created for each unit)
    */
-  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], reportGenerator: Option[ReportGenerator], envOpt: Option[EnvContext]): Stream[FeatureSummary] = 
+  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], reportGenerator: Option[ReportGenerator], envOpt: Option[T]): Stream[FeatureSummary] = 
     featureStream.flatMap { unit =>
       val env = envOpt.getOrElse(interpreter.initialise(options))
       try {

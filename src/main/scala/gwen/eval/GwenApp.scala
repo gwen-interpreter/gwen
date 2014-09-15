@@ -72,6 +72,6 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
    * @param env
    * 			the environment context
    */
-  private[eval] def createRepl(env: EnvContext): GwenREPL[T] = new GwenREPL[T](interpreter, env)
+  private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
 }

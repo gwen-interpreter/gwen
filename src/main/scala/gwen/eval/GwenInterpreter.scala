@@ -63,7 +63,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param options
    * 			command line options
    */
-  private[eval] def initialise(options: GwenOptions): EnvContext = {
+  private[eval] def initialise(options: GwenOptions): T = {
     logger.info("Initialising environment context")
     engine.init(options,  new DataScopes()) tap { env =>
       logger.info(s"${env.getClass().getSimpleName()} initialised")
@@ -76,7 +76,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param env
    * 			the environment context to close
    */
-  private[eval] def close(env: EnvContext) {
+  private[eval] def close(env: T) {
     logger.info("Closing environment context")
     env.close();
   }
@@ -87,7 +87,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param env
    * 			the environment context to reset
    */
-  private[eval] def reset(env: EnvContext) {
+  private[eval] def reset(env: T) {
     logger.info("Resetting environment context")
     env.reset();
   }
@@ -102,7 +102,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated step (or an exception if a runtime error occurs)
    */
-  private[eval] def interpretStep(input: String, env: EnvContext): Try[Step] = Try {
+  private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
     (parseAll(step, input) match {
       case success @ Success(step, _) => 
         evaluateStep(step, env)
@@ -128,7 +128,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    *            the evaluated feature or nothing if the feature does not 
    *            satisfy specified tag filters
    */
-  private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: EnvContext): Option[FeatureSpec] = 
+  private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): Option[FeatureSpec] = 
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
         if (featureFile.getName().endsWith(".meta")) {
@@ -158,7 +158,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param executor
    * 			implicit executor
    */
-  def execute(options: GwenOptions, optEnv: Option[EnvContext] = None)(implicit executor: GwenExecutor[T] = new GwenExecutor(this)) = 
+  def execute(options: GwenOptions, optEnv: Option[T] = None)(implicit executor: GwenExecutor[T] = new GwenExecutor(this)) = 
     executor.execute(options, optEnv)
   
   /**
@@ -173,7 +173,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated Gwen feature
    */
-  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: EnvContext): FeatureSpec = logStatus {
+  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T): FeatureSpec = logStatus {
     featureSpec.featureFile foreach { file =>
       logger.info(s"Interpreting feature file: $file")
     }
@@ -209,7 +209,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated scenario
    */
-  private def evaluateScenario(scenario: Scenario, env: EnvContext): Scenario = logStatus {
+  private def evaluateScenario(scenario: Scenario, env: T): Scenario = logStatus {
     logger.info(s"Evaluating Scenario: $scenario")
     scenario.background map(evaluateBackground(_, env)) match {
       case None => 
@@ -238,7 +238,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated background
    */
-  private def evaluateBackground(background: Background, env: EnvContext): Background = logStatus {
+  private def evaluateBackground(background: Background, env: T): Background = logStatus {
     logger.info(s"Evaluating Background: $background")
     Background(background.name, evaluateSteps(background.steps, env))
   }
@@ -253,7 +253,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 		the list of evaluated steps
    */
-  private def evaluateSteps(steps: List[Step], env: EnvContext): List[Step] = steps.foldLeft(List[Step]()) {
+  private def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
         case Failed(_, _) => Step(step.keyword, step.expression, Skipped)
@@ -271,13 +271,13 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated step
    */
-  private def evaluateStep(step: Step, env: EnvContext): Step = logStatus {
+  private def evaluateStep(step: Step, env: T): Step = logStatus {
     logger.info(s"Evaluating Step: $step")
     env.getStepDef(step.expression) match {
       case None =>
-        evaluate(step, env) { step =>  
+        doEvaluate(step, env) { step =>  
           Try {
-            engine.evaluate(step, env.asInstanceOf[T])
+            engine.evaluate(step, env)
             step
           }
         }
@@ -300,7 +300,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param evalFunction
    * 		the step evaluation function
    */
-  private def evaluate(step: Step, env: EnvContext)(evalFunction: (Step) => Try[Step]): Step = {
+  private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Try[Step]): Step = {
     val start = System.nanoTime
     evalFunction(step) match {
       case TrySuccess(step) => 
@@ -320,7 +320,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @param env
    * 			the environment context
    */
-  private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: EnvContext): List[FeatureSpec] =
+  private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
       logger.info(s"Loading meta feature: $metaFile")
       interpretFeature(metaFile, Nil, tagFilters, env) tap { metaOpt =>

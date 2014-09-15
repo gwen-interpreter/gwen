@@ -35,7 +35,7 @@ import jline.console.completer.StringsCompleter
  * 
  * @author Branko Juric
  */
-class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: EnvContext) extends ConsoleWriter {
+class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) extends ConsoleWriter {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile())
   
