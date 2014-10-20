@@ -168,7 +168,7 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.getAll("username")   should be (Nil)
     scopes.getAll("password")   should be (Nil)
     scopes.getAll("firstName")  should be (Seq("gwen", "gwen1"))
-    scopes.getAll("lastName")   should be (Seq("tester", "tester"))
+    scopes.getAll("lastName")   should be (Seq("tester"))
     scopes.getAll("middleName") should be (Seq("chaos"))
     scopes.getAll("maidenName") should be (Nil)
     

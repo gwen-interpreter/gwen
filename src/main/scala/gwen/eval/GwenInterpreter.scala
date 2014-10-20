@@ -17,16 +17,13 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.Option.option2Iterable
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
@@ -43,6 +40,7 @@ import gwen.dsl.SpecParser
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
+import gwen.gwenSetting
 
 /**
  * Interprets incoming feature specs by parsing and evaluating
@@ -181,17 +179,25 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
     (FeatureSpec(
       featureSpec.feature, 
       None, 
-      featureSpec.scenarios map { scenario =>
-        if (scenario.isStepDef) {
-          logger.info(s"Loading StepDef: ${scenario.name}")
-          env.addStepDef(scenario) 
-          Scenario(scenario.tags, scenario.name, scenario.steps map { step =>
-            Step(step.keyword, step.expression, Loaded)
-          })
-        } else {
-          evaluateScenario(scenario, env)
-        }
-      },
+      featureSpec.scenarios.foldLeft(List[Scenario]()) {
+        (acc: List[Scenario], scenario: Scenario) => 
+          (EvalStatus(acc.map(_.evalStatus)) match {
+            case Failed(_, _) =>
+              gwenSetting.getOpt("gwen.feature.failfast") match {
+                case Some("true") => 
+                  Scenario(
+                    scenario.tags, 
+                    scenario.name, 
+                    scenario.background.map(bg => Background(bg.name, bg.steps.map(step => Step(step.keyword, step.expression, Skipped)))),
+                    scenario.steps.map(step => Step(step.keyword, step.expression, Skipped))
+                  )
+                case _ =>
+                  evaluateScenario(scenario, env)
+              }
+            case _ => 
+              evaluateScenario(scenario, env)
+          }) :: acc
+      } reverse,
       featureSpec.featureFile, 
       metaSpecs)) tap { feature =>
         logger.info(s"Feature file interpreted: $featureSpec.featureFile")
@@ -210,21 +216,29 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * 			the evaluated scenario
    */
   private def evaluateScenario(scenario: Scenario, env: T): Scenario = logStatus {
-    logger.info(s"Evaluating Scenario: $scenario")
-    scenario.background map(evaluateBackground(_, env)) match {
-      case None => 
-        Scenario(scenario.tags, scenario.name, None, evaluateSteps(scenario.steps, env))
-      case Some(background) => 
-        Scenario(
-          scenario.tags,
-          scenario.name,
-          Some(background),
-          background.evalStatus match {
-            case Passed(_) => evaluateSteps(scenario.steps, env)
-            case _ => scenario.steps map { step =>
-              Step(step.keyword, step.expression, Skipped)
-            }
-          })
+    if (scenario.isStepDef) {
+      logger.info(s"Loading StepDef: ${scenario.name}")
+      env.addStepDef(scenario) 
+      Scenario(scenario.tags, scenario.name, scenario.steps map { step =>
+        Step(step.keyword, step.expression, Loaded)
+      })
+    } else {
+      logger.info(s"Evaluating Scenario: $scenario")
+      scenario.background map(evaluateBackground(_, env)) match {
+        case None => 
+          Scenario(scenario.tags, scenario.name, None, evaluateSteps(scenario.steps, env))
+        case Some(background) => 
+          Scenario(
+            scenario.tags,
+            scenario.name,
+            Some(background),
+            background.evalStatus match {
+              case Passed(_) => evaluateSteps(scenario.steps, env)
+              case _ => scenario.steps map { step =>
+                Step(step.keyword, step.expression, Skipped)
+              }
+            })
+      }
     }
   }
   
@@ -353,7 +367,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the input node 
    */
-  private def logStatus[T <: SpecNode](node: T) = node tap { node =>
+  private def logStatus[U <: SpecNode](node: U) = node tap { node =>
     node.evalStatus tap { status =>
       val statusMsg = s"$status ${node.getClass.getSimpleName}: ${node}"
       status match {

@@ -108,9 +108,11 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    *            newly added attribute
    */
   def set(name: String, value: String): ScopedData = {
-    Json.obj(name -> value) tap { nvp =>
-      logger.info(s"Binding $nvp to ${scope}/scope/${this.name}")
-      atts = atts :+ nvp
+    if(!((atts \\ name).lastOption.map(_.as[String] == value).getOrElse(false))) {
+      Json.obj(name -> value) tap { nvp =>
+        logger.info(s"Binding $nvp to ${scope}/scope/${this.name}")
+        atts = atts :+ nvp
+      }
     }
     this
   }

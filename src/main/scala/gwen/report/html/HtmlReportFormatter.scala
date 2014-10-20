@@ -35,8 +35,8 @@ trait HtmlReportFormatter extends ReportFormatter {
   private val cssStatus = Map(
       StatusKeyword.Passed -> "success", 
       StatusKeyword.Failed -> "danger", 
-      StatusKeyword.Skipped -> "info", 
-      StatusKeyword.Pending -> "warning",
+      StatusKeyword.Skipped -> "warning", 
+      StatusKeyword.Pending -> "info",
       StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")
@@ -74,7 +74,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatReportHeader(title, interpreterName)}
 		<ol class="breadcrumb">${(backlinks map { case (backName, backFile) => s"""
 			<li>
-				<a href="${backFile.getName()}">&lt; ${backName}</a>
+				<a href="${backFile.getName()}">&lt; ${escape(backName)}</a>
 			</li>"""}).mkString}
 			<li>
 				Evaluation Status
@@ -83,15 +83,15 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
 			</li>
 			<li>
-				${featureName}
+				${escape(featureName)}
 			</li>
 		</ol>
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
-					<span><p>${spec.feature.tags.mkString(" ")}</p></span>""" else ""}
+					<span><p>${escape(spec.feature.tags.mkString(" "))}</p></span>""" else ""}
 				<span class="label label-black">Feature:</span>
 				<span class="pull-right">${durationOrStatus(spec.evalStatus)}</span>
-				${spec.feature.name}
+				${escape(spec.feature.name)}
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Scenario", scenarios.map(_.evalStatus))}
@@ -121,7 +121,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			  					s"""
 								<tr>
 			  						<td>
-										<a class="text-${cssStatus(status)}" href="${metaResult.reportFile.get.getName()}">${metaFeature.feature.name}</a>
+										<a class="text-${cssStatus(status)}" href="${metaResult.reportFile.get.getName()}">${escape(metaFeature.feature.name)}</a>
 									</td>
 									<td>&nbsp; &nbsp; </td>
 									<td>
@@ -141,10 +141,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (scenario.tags.size > 0) s"""
-					<span><p class="text-${cssStatus(status)}">${scenario.tags.mkString(" ")}</p></span>""" else ""}
+					<span><p class="text-${cssStatus(status)}">${escape(scenario.tags.mkString(" "))}</p></span>""" else ""}
 					<span class="label label-${cssStatus(status)}">Scenario:</span>${if (scenario.allSteps.size > 1) s"""
 					<span class="pull-right">${durationOrStatus(scenario.evalStatus)}</span>""" else ""}
-					${scenario.name}
+					${escape(scenario.name)}
 				</li>
 			</ul>
 			<div class="panel-body">${(scenario.background map { background => 
@@ -155,7 +155,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 						<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
 							<span class="label label-${cssStatus(status)}">Background:</span>${if (background.steps.size > 1) s"""
 							<span class="pull-right">${durationOrStatus(background.evalStatus)}</span>""" else ""}
-							${background.name}
+							${escape(background.name)}
 						</li>
 					</ul>
 					<div class="panel-body">
@@ -241,7 +241,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 							<tbody class="summary">${(results map { featureResult => s"""
 								<tr>
 								  <td>
-										<a class="text-${cssStatus(status)}" href="${featureResult.reportFile.get.getName()}">${featureResult.featureName}</a>
+										<a class="text-${cssStatus(status)}" href="${featureResult.reportFile.get.getName()}">${escape(featureResult.featureName)}</a>
 								  </td>
 								  <td>&nbsp; &nbsp; </td>
 								  <td>
@@ -281,10 +281,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<h3>
   				<span class="pull-right" style="white-space: nowrap;">
 					<center>
-						<span class="badge">${interpreterName}</span>
+						<span class="badge">${escape(interpreterName)}</span>
 					</center>
 				</span>
-				${heading}
+				${escape(heading)}
 			</h3>
 			<small>${new Date()}</small>
 		</div></tr></table>"""
@@ -313,19 +313,19 @@ trait HtmlReportFormatter extends ReportFormatter {
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
 								<div class="text-${cssStatus(status)} bg-${cssStatus(status)}">""" else ""}
 									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
-									<strong>${step.keyword}</strong> ${step.expression} ${if (!step.attachments.isEmpty) s"""
+									<strong>${step.keyword}</strong> ${escape(step.expression)} ${if (!step.attachments.isEmpty) s"""
 									<div class="dropdown bg-${cssStatus(status)}">
 										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
 										    Attachments
 											<span class="caret"></span>
 										</button>
 										<ul class="dropdown-menu" role="menu">${(step.attachments map { case (name, file) => s"""
-											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${name}</a></li>"""}).mkString }
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
 										</ul>
 									</div>""" else s""}${if (status == StatusKeyword.Failed) s"""
 								</div>
 								<div class="panel-body text-${cssStatus(status)} bg-${cssStatus(status)}"> 
-									<strong>${step.evalStatus.asInstanceOf[Failed].error.getMessage()}</strong>
+									<strong>${escape(step.evalStatus.asInstanceOf[Failed].error.getMessage())}</strong>
 								</div>""" else ""}  
 							</li>"""
 
@@ -341,5 +341,5 @@ trait HtmlReportFormatter extends ReportFormatter {
     case _ => evalStatus.status
   }
   private def secs(duration: Long) = EvalStatus.formatSecs(duration)
-  
+  private def escape(text: String) = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 }

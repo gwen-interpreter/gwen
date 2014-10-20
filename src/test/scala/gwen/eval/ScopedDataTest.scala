@@ -49,6 +49,12 @@ class ScopedDataTest extends FlatSpec with Matchers {
     scope.get("name") should be (Some("gwen"))
   }
   
+  "binding the same name and value" should "should not recreate the binding" in {
+    val scope = ScopedData("page", "register").set("name", "gwen").set("name", "gwen")
+    scope.toJson.toString  should be ("""{"scope":"register","atts":[{"name":"gwen"}]}""")
+    scope.get("name") should be (Some("gwen"))
+  }
+  
   "getAll lookup on scope with two same named attributes" should "return both" in {
     val scope = ScopedData("page", "register").set("name", "todd").set("name", "gwen")
     scope.toJson.toString     should be ("""{"scope":"register","atts":[{"name":"todd"},{"name":"gwen"}]}""")
