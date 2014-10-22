@@ -35,8 +35,8 @@ trait HtmlReportFormatter extends ReportFormatter {
   private val cssStatus = Map(
       StatusKeyword.Passed -> "success", 
       StatusKeyword.Failed -> "danger", 
-      StatusKeyword.Skipped -> "warning", 
-      StatusKeyword.Pending -> "info",
+      StatusKeyword.Skipped -> "info", 
+      StatusKeyword.Pending -> "warning",
       StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")
@@ -325,7 +325,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 									</div>""" else s""}${if (status == StatusKeyword.Failed) s"""
 								</div>
 								<div class="panel-body text-${cssStatus(status)} bg-${cssStatus(status)}"> 
-									<strong>${escape(step.evalStatus.asInstanceOf[Failed].error.getMessage())}</strong>
+									<strong>${escape(String.valueOf(step.evalStatus.asInstanceOf[Failed].error.getMessage()))}</strong>
 								</div>""" else ""}  
 							</li>"""
 
