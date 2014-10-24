@@ -67,9 +67,9 @@ object FeatureStream extends LazyLogging {
     } else {
       val metas = if (isFeatureFile(location)) {
         if (location.getParentFile() == null) {
-          accumulateMeta(location.getAbsoluteFile().getParentFile())
+          accumulateMeta(location.getAbsoluteFile().getParentFile(), Nil)
         } else {
-          accumulateParentMeta(location.getParentFile()).reverse
+          accumulateParentMeta(location.getParentFile(), Nil).reverse
         }
       } else {
         Nil
@@ -111,33 +111,38 @@ object FeatureStream extends LazyLogging {
    * 
    * @param dir
    * 			the directory to scan for meta
-   * @param accumulatedMeta
+   * @param metaFiles
    * 			the currently accumulated list of meta files
    */
-  private def accumulateMeta(dir: File, accumulatedMeta: List[File] = Nil): List[File] = 
-    dir.listFiles.filter(isMetaFile).toList match {
-      case next :: Nil =>
-        accumulatedMeta ::: List(next)
-      case metas @ _ :: _ => 
+  private def accumulateMeta(dir: File, metaFiles: List[File]): List[File] = { 
+    val metas = dir.listFiles.filter(isMetaFile).toList
+    metas match {
+      case metaFile :: Nil =>
+        metaFiles ::: List(metaFile)
+      case _ :: _ => 
         sys.error(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
-      case _ => accumulatedMeta
+      case _ => metaFiles
     }
+  }
   
   /**
    * Scans for a meta file up the parent hierarchy starting from the given directory.
    * 
    * @param dir
    * 			the directory to scan for meta from
-   * @param accumulatedMeta
+   * @param metaFiles
    * 			the currently accumulated list of meta files
    */
   @tailrec
-  private def accumulateParentMeta(dir: File, accumulatedMeta: List[File] = Nil): List[File] = 
-    if (!hasParentDirectory(dir)) {
-      accumulatedMeta
+  private def accumulateParentMeta(dir: File, metaFiles: List[File]): List[File] = { 
+    val hasParentDir = hasParentDirectory(dir) 
+    if (!hasParentDir) {
+      accumulateMeta(dir, metaFiles)
     } else {
-      accumulateParentMeta(dir.getParentFile, accumulatedMeta ::: accumulateMeta(dir))
+      val parent = dir.getParentFile
+      accumulateParentMeta(parent, accumulateMeta(dir, metaFiles))
     }
+  }
   
   private def isDirectory(location: File): Boolean = location != null && location.isDirectory()
   private def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile())
