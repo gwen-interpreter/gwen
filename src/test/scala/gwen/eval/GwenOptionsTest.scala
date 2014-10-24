@@ -17,14 +17,14 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.reflect.io.Path
-
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-
 import gwen.dsl.Tag
 import gwen.dsl.Tag.string2Tag
+import scala.util.Success
+import scala.util.Try
+import scala.util.Failure
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -33,184 +33,219 @@ class GwenOptionsTest extends FlatSpec with Matchers {
 
   "Options with no command line args" should "parse" in {
     parseOptions(Array[String]()) match {
-      case Some(options) => { 
+      case Success(options) => { 
         assertOptions(options)
       }
-      case None => fail("expected options but got None")
+      case _ => fail("expected options but failed")
     }
   }
   
-  "Options with batch option" should "parse" in {
+  "Options with batch option and no files" should "fail" in {
     parseOptions(Array("-b")) match {
-      case Some(options) => { 
-        assertOptions(options, true)
+      case Success(options) => { 
+        fail("expected failure but was successful")
       }
-      case None => fail("expected options but got None")
+      case Failure(error) => 
+        error.getMessage() should be ("No feature files and/or directories specified")
     }
     parseOptions(Array("--batch")) match {
-      case Some(options) => { 
-        assertOptions(options, true)
+      case Success(options) => { 
+        fail("expected failure but was successful")
       }
-      case None => fail("expected options but got None")
+      case Failure(error) => 
+        error.getMessage() should be ("No feature files and/or directories specified")
     }
   }
   
-  "Options with parallel option" should "parse" in {
-    parseOptions(Array("-|")) match {
-      case Some(options) => { 
-        assertOptions(options, parallel = true)
+  "Options with batch option and files " should "parse" in {
+    parseOptions(Array("-b", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, true, paths = List(new File(".")))
+
       }
-      case None => fail("expected options but got None")
+      case _ => 
+        fail("expected options but failed")
     }
-    parseOptions(Array("--parallel")) match {
-      case Some(options) => { 
-        assertOptions(options, parallel = true)
+    parseOptions(Array("--batch", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, true, paths = List(new File(".")))
       }
-      case None => fail("expected options but got None")
+      case _ => 
+        fail("expected options but failed")
+    }
+  }
+  
+  "Options with parallel option with implied batch mode" should "parse" in {
+    parseOptions(Array("-|", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+      }
+      case _ => fail("expected options but failed")
+    }
+    parseOptions(Array("--parallel", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+      }
+      case _ => fail("expected options but failed")
+    }
+  }
+  
+  "Options with parallel option with explicit batch mode" should "parse" in {
+    parseOptions(Array("-|b", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+      }
+      case _ => fail("expected options but failed")
+    }
+    parseOptions(Array("--parallel", "--batch", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+      }
+      case _ => fail("expected options but failed")
     }
   }
   
   "Options with report option but no target report directory" should "not parse" in {
     parseOptions(Array("-r")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--report")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with report option and report directory" should "parse" in {
     parseOptions(Array("-r", "target/report")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--report", "target/report")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with properties option with no properties file" should "not parse" in {
      parseOptions(Array("-p")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--properties")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with properties option with non existing properties file" should "not parse" in {
      parseOptions(Array("-p", "nonexisting.properties")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--properties", "nonexisting.properties")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with properties option and existing properties file" should "parse" in {
     val propsFile = createFile("gwen.properties")
     parseOptions(Array("-p", propsFile.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, propertiesFile = Some(propsFile))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--properties", propsFile.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, propertiesFile = Some(propsFile))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with tags option with no tags" should "not parse" in {
      parseOptions(Array("-t")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--tags")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with tags option and valid single include tag" should "parse" in {
     parseOptions(Array("-t", "@wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = List(("@wip", true)))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--tags", "@wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = List(("@wip", true)))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with tags option and valid single exclude tag" should "parse" in {
     parseOptions(Array("-t", "~@wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = List(("@wip", false)))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--tags", "~@wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = List(("@wip", false)))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with tags option and invalid single tag" should "not parse" in {
     parseOptions(Array("-t", "wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--tags", "!wip")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
   }
   
@@ -218,18 +253,18 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val tags = "@wip,@regression,@transactional,@simple"
     val expected: List[(Tag, Boolean)] = List(("@wip", true), ("@regression", true), ("@transactional", true), ("@simple", true))
     parseOptions(Array("-t", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--tags", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
@@ -237,18 +272,18 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val tags = "~@experimental,~@complex"
     val expected: List[(Tag, Boolean)] = List(("@experimental", false), ("@complex", false))
     parseOptions(Array("-t", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--tags", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
@@ -256,98 +291,98 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val expected: List[(Tag, Boolean)] = List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true))
     parseOptions(Array("-t", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--tags", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with tags option and two tags separated by space" should "not parse" in {
     val tags = "@wip @regression"
     parseOptions(Array("-t", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
     parseOptions(Array("--tags", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
   }
   
   "Options with tags option and one valid tag and one invalid tag" should "not parse" in {
     val tags = "@valid,invalid"
     parseOptions(Array("-t", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
     parseOptions(Array("--tags", tags)) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
   }
   
   "Options with meta option with no meta file" should "not parse" in {
      parseOptions(Array("-m")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--meta")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with meta option with non existing meta file" should "not parse" in {
      parseOptions(Array("-m", "nonexisting.meta")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
     parseOptions(Array("--meta", "nonexisting.meta")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None => 
+      case _ => 
     }
   }
   
   "Options with meta option and existing meta file" should "parse" in {
     val metaFile = createFile("gwen.meta")
     parseOptions(Array("-m", metaFile.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, metaFile = Some(metaFile))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--meta", metaFile.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, metaFile = Some(metaFile))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
@@ -357,11 +392,11 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val feature1 = createFile("dir1/file1.feature");
     
     parseOptions(Array(feature1.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, paths = List(feature1))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
@@ -370,11 +405,11 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val dir2 = createDir("dir2");
     
     parseOptions(Array(dir2.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, paths = List(dir2))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     
   }
@@ -386,21 +421,21 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val dir4 = createDir("dir4");
     
     parseOptions(Array(dir3.getPath(), feature3.getPath(), dir4.getPath())) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(options, paths = List(dir3, feature3, dir4))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   
   "Options with nonexisting paths" should "not parse" in {
     
     parseOptions(Array("nonexistindir", "nonexisting.file")) match {
-      case Some(options) => {
+      case Success(options) => {
         fail("expected None but got options")
       }
-      case None =>
+      case _ =>
     }
   }
   
@@ -415,7 +450,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val dir6 = createDir("dir6");
     
     parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(
           options,
           true,
@@ -426,12 +461,12 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(metaFile),
           List(dir5, feature5, dir6))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     
     parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
-      case Some(options) => {
+      case Success(options) => {
         assertOptions(
           options,
           true,
@@ -442,13 +477,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(metaFile),
           List(dir5, feature5, dir6))
       }
-      case None =>
-        fail("expected options but got None")
+      case _ =>
+        fail("expected options but failed")
     }
     
   }
   
-  private def parseOptions(args: Array[String]): Option[GwenOptions] =
+  private def parseOptions(args: Array[String]): Try[GwenOptions] =
     GwenOptions.parse("GwenInterpreter", args)
     
   private def assertOptions(

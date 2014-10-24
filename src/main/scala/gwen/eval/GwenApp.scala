@@ -18,6 +18,8 @@ package gwen.eval
 
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
+import scala.util.Success
+import scala.util.Failure
 
 /**
  * Gwen interpreter application.
@@ -38,15 +40,19 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   println(s"Welcome to ${interpreter.name}! ${interpreter.version}")
   println()
    
-  GwenOptions.parse(interpreter.getClass().getName(), args) map { options =>
-    try {
-      run(options)
-      System.exit(0)
-    } catch {
-      case e: Throwable =>
-        e.printStackTrace()
-        System.exit(1)
-    }
+  GwenOptions.parse(interpreter.getClass().getName(), args) match { 
+    case Success(options) =>
+      try {
+        run(options)
+        System.exit(0)
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace()
+          System.exit(1)
+      }
+    case Failure(error) =>
+      println(error.getMessage())
+      System.exit(1)
   }
   
   /** 

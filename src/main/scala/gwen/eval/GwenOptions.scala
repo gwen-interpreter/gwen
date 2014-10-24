@@ -20,6 +20,7 @@ import java.io.File
 import gwen.dsl.Tag
 import scopt.OptionParser
 import gwen.Predefs.Kestrel
+import scala.util.Try
 
 /**
  * Captures gwen command line options.
@@ -50,7 +51,7 @@ case class GwenOptions(
     propertiesFile: Option[File] = None,
     tags: List[(Tag, Boolean)] = Nil,
     metaFile: Option[File] = None, 
-    paths: List[File] = Nil)
+    paths: List[File] = Nil) 
     
 object GwenOptions {
   
@@ -60,7 +61,7 @@ object GwenOptions {
    * @param interpreterClassName
    * 				the fully qualified interpreter class name
    */
-  private [eval] def parse(interpreterClassName: String, args: Array[String]): Option[GwenOptions] = {
+  private [eval] def parse(interpreterClassName: String, args: Array[String]): Try[GwenOptions] = {
     
     val parser = new OptionParser[GwenOptions]("scala " + interpreterClassName) {
     
@@ -73,8 +74,10 @@ object GwenOptions {
       } text("Batch/server mode")
       
       opt[Unit]('|', "parallel") action {
-        (_, c) => c.copy(parallel = true)  
-      } text("Parallel execution mode")
+        (_, c) => { 
+          c.copy(parallel = true, batch = true)
+        }
+      } text("Parallel batch execution mode)")
     
       opt[File]('p', "properties") action {
         (f, c) => 
@@ -110,19 +113,20 @@ object GwenOptions {
     
     }
   
-    parser.parse(args, GwenOptions()) tap { options =>
-      options map { opt =>
-        if (opt.batch && opt.paths.isEmpty) {
-          println("No feature files and/or directories specified")
+    Try (
+      (parser.parse(args, GwenOptions()) tap { (options: Option[GwenOptions]) =>
+        options map { opt =>
+          if (opt.batch && opt.paths.isEmpty) {
+            sys.error("No feature files and/or directories specified")
+          }
+          opt.propertiesFile match {
+            case (Some(propsFile)) =>
+              sys.props += (("config.file", propsFile.getAbsolutePath()))
+            case None => { }
+          }
         }
-        opt.propertiesFile match {
-          case (Some(propsFile)) =>
-            sys.props += (("config.file", propsFile.getAbsolutePath()))
-          case None => { }
-        }
-      }
-    }
-  
+      }).getOrElse(sys.error(""))
+    )
   }
   
 }
