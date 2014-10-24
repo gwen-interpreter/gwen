@@ -38,7 +38,7 @@ class HtmlReportGenerator(val targetDir: File, val interpreterName: String)
   if (targetDir.exists()) {
     targetDir.listFiles().filter { file => 
       val name = file.getName
-      name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "feature-summary.html" || name =="resources"
+      name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "feature-summary.html" || name =="resources" || name =="attachments"
     } foreach { _.deleteFile() }
   }
   
