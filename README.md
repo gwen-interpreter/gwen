@@ -263,7 +263,7 @@ See also: [LICENSE](LICENSE).
 This project has dependencies on other open source projects, all of which are 
 listed in the [NOTICE](NOTICE) file.
 
-Open sourced 14 May 2014 10:06 pm AEST
+Open sourced 14 May 2014 09:30 pm AEST
 
 Mentions
 --------
