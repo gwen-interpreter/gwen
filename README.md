@@ -33,8 +33,8 @@ and dispatches the processing of each step to an evaluation engine that you
 define (or provide) and mix in. The engine performs the actual evaluation 
 work required for each step. Gwen then captures and reports the results.
 
-Core Features
--------------
+Key Features
+------------
 
 - Gherkin feature parser
 - Evaluation abstraction
@@ -52,8 +52,8 @@ Core Requirements
 - Java 1.6 or later
 - Scala 2.11.x, 2.10.x 
 
-Usage
------
+Development
+-----------
 
 ### Adding Gwen as a Binary Dependency
 
@@ -169,7 +169,7 @@ tool for authoring executable features and testing them.
 Note that you cannot launch the interpreter without mixing in an engine. The 
 following shows the REPL console for the sample _MathInterpreter_ that is 
 included in the test source of this project and is the focus of our 
-[getting started](doc/START.md) guide.
+[getting started](#getting-started) guide.
 
 ![Gwen REPL Console](doc/img/gwen-repl.png)
 
