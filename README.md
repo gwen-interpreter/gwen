@@ -1,12 +1,9 @@
-![Gwen-web](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
-
-gwen-interpreter
-================
+![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-logo.png)
 
 > A common platform for mapping Gherkin features to executable code.
 
-Introduction
-------------
+The gwen-interpreter
+--------------------
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter written in [Scala](http://www.scala-lang.org). It does 
