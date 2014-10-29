@@ -1,13 +1,15 @@
-![Gwen](doc/img/gwen-logo.png)
+![Gwen-web](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
+
+gwen-interpreter
+================
 
 > A common platform for mapping Gherkin features to executable code.
 
-The Gwen Interpreter
---------------------
+Introduction
+------------
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter written in [Scala](http://www.scala-lang.org). It is a common 
-platform for mapping Gherkin features to executable code. The interpreter does 
+interpreter written in [Scala](http://www.scala-lang.org). It does 
 not prescribe any set of steps and does not evaluate any one thing. That is up 
 to you! It instead provides all the necessary processing and tooling required 
 to interpret Gherkin features and abstracts the evaluation engine for you to 
@@ -256,10 +258,12 @@ Copyright 2014 Branko Juric, Brady Wood
 This software is open sourced under the 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
-See also: [LICENSE](LICENSE)
+See also: [LICENSE](LICENSE).
 
 This project has dependencies on other open source projects, all of which are 
 listed in the [NOTICE](NOTICE) file.
+
+Open sourced 14 May 2014 10:06 pm AEST
 
 Mentions
 --------
