@@ -3,7 +3,7 @@
 > <b>G</b>iven-<b>W</b>hen-Th<b>en</b>
 
 The gwen-interpreter
---------------------
+====================
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter written in [Scala](http://www.scala-lang.org). It does 
