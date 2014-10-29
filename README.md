@@ -1,6 +1,4 @@
-![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-logo.png)
-
-> <b>G</b>iven-<b>W</b>hen-Th<b>en</b>
+![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
 
 The gwen-interpreter
 ====================
