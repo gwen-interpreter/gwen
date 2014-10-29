@@ -153,7 +153,7 @@ The following Gwen engines are currently available:
 
 - [gwen-web engine](https://github.com/gwen-interpreter/gwen-web)
   - A web engine for automating web application testing in a way that requires 
-    no development on behalf of the user. Open sourced 28 June 2014.
+    no development on behalf of the user.
 
 REPL Console
 ------------
