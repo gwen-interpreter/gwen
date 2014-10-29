@@ -1,6 +1,6 @@
 ![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-logo.png)
 
-> A common platform for mapping Gherkin features to executable code.
+> <b>G</b>iven-<b>W</b>hen-Th<b>en</b>
 
 The gwen-interpreter
 --------------------
