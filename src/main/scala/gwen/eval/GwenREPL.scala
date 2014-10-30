@@ -29,6 +29,7 @@ import gwen.gwenSetting
 import jline.console.history.FileHistory
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
+import gwen.dsl.prettyPrint
 
 /**
  * Read-Eval-Print-Loop console.
@@ -52,9 +53,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
    */
   private def read(): String = {
     println()
-    val input = reader.readLine()
-    println()
-    input
+    reader.readLine() tap { input => println() }
   }
   
   /**
@@ -63,7 +62,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
    * @param input
    * 			an input step or command
    */
-  private def eval(input: String): Option[Any] = input.trim match {
+  private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
     case "env" => 
       Some(env.toString)
@@ -73,8 +72,8 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     case _ =>
       Some {
         interpreter.interpretStep(input, env) match { 
-          case Success(step) => s"[${step.evalStatus.status}]"
-          case Failure(error) => s"${error}\n[failure]"
+          case Success(step) => s"\n[${step.evalStatus.status}]"
+          case Failure(error) => s"\n${error}\n\n[failure]"
         }
       }
   }
@@ -87,12 +86,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     println("REPL Console")
     println()
     println("Enter steps to evaluate or type exit to quit..")
-    while (true) {
-      eval(read()) match {
-        case Some(result) => println(result)
-        case _ => return
-      }
-    }  
+    while(eval(read()).map(println).isDefined) { }
   }
   
 }

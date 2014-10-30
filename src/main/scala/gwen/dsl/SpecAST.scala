@@ -30,6 +30,7 @@ trait SpecNode {
    * Returns the evaluation status of this node.
    */
   lazy val evalStatus: EvalStatus = Pending
+  
 }
 
 /**
@@ -86,7 +87,7 @@ case class FeatureSpec(
     }
   }
   
-  override def toString = s"${feature.name}"  
+  override def toString = feature.name 
 }
 object FeatureSpec {
   def apply(spec: FeatureSpec, featureFile: File, metaSpecs: List[FeatureSpec]) =
@@ -108,7 +109,9 @@ object FeatureSpec {
  *
  * @author Branko Juric
  */
-case class Feature(tags: Set[Tag], name: String) extends SpecNode with Positional
+case class Feature(tags: Set[Tag], name: String) extends SpecNode with Positional {
+  override def toString = name
+}
 object Feature {
   def apply(name: String) = new Feature(Set(), name)
 }
@@ -130,7 +133,7 @@ case class Background(name: String, steps: List[Step]) extends SpecNode with Pos
    */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
-  override def toString = s"$name"
+  override def toString = name
   
 }
 
@@ -164,7 +167,7 @@ case class Scenario(tags: Set[Tag], name: String, background: Option[Background]
   override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
 
   
-  override def toString = s"$name"
+  override def toString = name
   
 }
 object Scenario {

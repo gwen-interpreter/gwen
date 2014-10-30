@@ -37,7 +37,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   |___/                            
 """)
 
-  println(s"Welcome to ${interpreter.name}! ${interpreter.version}")
+  println(s"Welcome to ${interpreter.name} ${interpreter.version}")
   println()
    
   GwenOptions.parse(interpreter.getClass().getName(), args) match { 

@@ -76,7 +76,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   def get(name: String): Option[String] = 
     (atts \\ name).lastOption tap { valueOpt =>
       valueOpt foreach { value =>
-          logger.info(s"Found ${Json.obj(name -> value)} in ${scope}/scope/${this.name}")
+          logger.debug(s"Found ${Json.obj(name -> value)} in ${scope}/scope/${this.name}")
       }
     } map (_.as[String])
   
@@ -90,7 +90,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    */
   def getAll(name: String): Seq[String] = 
     (atts \\ name) tap { values =>
-      logger.info(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in ${scope}/scope/${this.name}")
+      logger.debug(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in ${scope}/scope/${this.name}")
     } map (_.as[String])
 
   /**
@@ -110,7 +110,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   def set(name: String, value: String): ScopedData = {
     if(!((atts \\ name).lastOption.map(_.as[String] == value).getOrElse(false))) {
       Json.obj(name -> value) tap { nvp =>
-        logger.info(s"Binding $nvp to ${scope}/scope/${this.name}")
+        logger.debug(s"Binding $nvp to ${scope}/scope/${this.name}")
         atts = atts :+ nvp
       }
     }

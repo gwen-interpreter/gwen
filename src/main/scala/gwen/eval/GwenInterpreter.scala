@@ -17,14 +17,16 @@
 package gwen.eval
 
 import java.io.File
+
 import scala.Option.option2Iterable
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import gwen.ConsoleWriter
+
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
 import gwen.dsl.EvalStatus
@@ -34,7 +36,6 @@ import gwen.dsl.Loaded
 import gwen.dsl.Passed
 import gwen.dsl.Scenario
 import gwen.dsl.Skipped
-import gwen.dsl.SpecNode
 import gwen.dsl.SpecNormaliser
 import gwen.dsl.SpecParser
 import gwen.dsl.Step
@@ -49,7 +50,7 @@ import gwen.gwenSetting
  * 
  * @author Branko Juric
  */
-class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter with SpecNormaliser with LazyLogging {
+class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
   lazy val name: String = Option(this.getClass.getPackage.getImplementationTitle).getOrElse(s"gwen [${this.getClass.getSimpleName}]")
@@ -101,13 +102,11 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * 			the evaluated step (or an exception if a runtime error occurs)
    */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
-    (parseAll(step, input) match {
+    parseAll(step, input) match {
       case success @ Success(step, _) => 
         evaluateStep(step, env)
       case failure: NoSuccess => 
         sys.error(failure.toString)
-    }) tap { result =>
-      printNode(result)
     }
   }
   
@@ -171,12 +170,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated Gwen feature
    */
-  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T): FeatureSpec = logStatus {
+  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T): FeatureSpec = {
     featureSpec.featureFile foreach { file =>
       logger.info(s"Interpreting feature file: $file")
     }
-    logger.info(s"Evaluating feature: $featureSpec")
-    (FeatureSpec(
+    logger.info(s"Evaluating feature: ${featureSpec.feature}")
+    val result = FeatureSpec(
       featureSpec.feature, 
       None, 
       featureSpec.scenarios.foldLeft(List[Scenario]()) {
@@ -199,10 +198,14 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
           }) :: acc
       } reverse,
       featureSpec.featureFile, 
-      metaSpecs)) tap { feature =>
-        logger.info(s"Feature file interpreted: $featureSpec.featureFile")
-        printNode(feature)
+      metaSpecs)
+    result tap { featureSpec =>
+      logStatus("Feature", featureSpec.toString, featureSpec.evalStatus)
+      featureSpec.featureFile foreach { file =>
+        logger.info(s"Feature file interpreted: ${file}")
       }
+      logger.debug(prettyPrint(featureSpec))
+    }
   }
   
   /**
@@ -215,8 +218,8 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated scenario
    */
-  private def evaluateScenario(scenario: Scenario, env: T): Scenario = logStatus {
-    if (scenario.isStepDef) {
+  private def evaluateScenario(scenario: Scenario, env: T): Scenario = {
+    val result = if (scenario.isStepDef) {
       logger.info(s"Loading StepDef: ${scenario.name}")
       env.addStepDef(scenario) 
       Scenario(scenario.tags, scenario.name, scenario.steps map { step =>
@@ -240,6 +243,9 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
             })
       }
     }
+    result tap { scenario =>
+      logStatus("Scenario", scenario.toString, scenario.evalStatus)
+    }
   }
   
   /**
@@ -252,9 +258,11 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated background
    */
-  private def evaluateBackground(background: Background, env: T): Background = logStatus {
+  private def evaluateBackground(background: Background, env: T): Background = {
     logger.info(s"Evaluating Background: $background")
-    Background(background.name, evaluateSteps(background.steps, env))
+    Background(background.name, evaluateSteps(background.steps, env)) tap { background =>
+      logStatus("Background", background.toString, background.evalStatus)
+    }
   }
   
   /**
@@ -285,9 +293,9 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the evaluated step
    */
-  private def evaluateStep(step: Step, env: T): Step = logStatus {
+  private def evaluateStep(step: Step, env: T): Step = {
     logger.info(s"Evaluating Step: $step")
-    env.getStepDef(step.expression) match {
+    val result = env.getStepDef(step.expression) match {
       case None =>
         doEvaluate(step, env) { step =>  
           Try {
@@ -301,6 +309,9 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
         Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
           logger.info(s"StepDef evaluated: ${stepDef.name}")
         }
+    }
+    result tap { step =>
+      logStatus("Step", step.toString, step.evalStatus)
     }
   }
   
@@ -353,12 +364,6 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
       } 
     }
   
-  private def printNode(node: SpecNode) {
-    println
-    println(prettyPrint(node))
-    println
-  } 
-  
   /**
    * Logs the evaluation status of the given node.
    * 
@@ -367,9 +372,8 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
    * @return
    * 			the input node 
    */
-  private def logStatus[U <: SpecNode](node: U) = node tap { node =>
-    node.evalStatus tap { status =>
-      val statusMsg = s"$status ${node.getClass.getSimpleName}: ${node}"
+  private def logStatus(node: String, name: String, status: EvalStatus): Unit = {
+      val statusMsg = s"$status $node: $name"
       status match {
         case Passed(_) | Loaded => 
           logger.info(statusMsg)
@@ -378,7 +382,6 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with ConsoleWriter wit
         case _ => 
           logger.warn(statusMsg)
       }
-    }
   }
   
 }

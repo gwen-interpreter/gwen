@@ -114,9 +114,9 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
    */
   final def fail(step: Step, failure: Failed): Step = 
     Step(step.keyword, step.expression, failure, step.attachments ++ createAttachments(failure)) tap { step =>
+      logger.error(this.toString)
       logger.error(failure.error.getMessage())
       logger.debug(s"Exception: ", failure.error)
-      logger.error(this.toString)
     }
   
   /**
