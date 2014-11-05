@@ -64,12 +64,12 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
   /**
    * Returns the current state of all scoped attributes as a Json object.
    */  
-  def toJson: JsObject = dataScopes.toJson
+  def toJson: JsObject = Json.obj("env -all" -> dataScopes.toJson)
   
-  /**
-   * Writes the environment context scopes to a Json string.
-   */
-  override def toString = Json.prettyPrint(Json.obj("env" -> this.toJson))
+   /**
+   * Returns the current visible attributes as a Json object.
+   */  
+  def visibleJson: JsObject = Json.obj("env -visible" -> dataScopes.visibleJson)
   
   /**
    * Gets a named data scope (creates it if it does not exist)
@@ -114,7 +114,7 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
    */
   final def fail(step: Step, failure: Failed): Step = 
     Step(step.keyword, step.expression, failure, step.attachments ++ createAttachments(failure)) tap { step =>
-      logger.error(this.toString)
+      logger.error(Json.prettyPrint(this.visibleJson))
       logger.error(failure.error.getMessage())
       logger.debug(s"Exception: ", failure.error)
     }
@@ -128,15 +128,21 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
    */
   def createAttachments(failure: Failed): List[(String, File)] = List( 
     ("Stack trace", 
-      File.createTempFile("errortrace", ".txt") tap { f =>
+      File.createTempFile("stack-trace-", ".txt") tap { f =>
         f.deleteOnExit()
         f.writeText(failure.error.writeStackTrace())
       }
     ), 
-    ("Environment context", 
-      File.createTempFile("envcontext", ".txt") tap { f =>
+    ("Environment (all)", 
+      File.createTempFile("env-all-", ".txt") tap { f =>
         f.deleteOnExit()
-        f.writeText(this.toString)
+        f.writeText(Json.prettyPrint(this.toJson))
+      }
+    ),
+    ("Environment (visible)", 
+      File.createTempFile("env-visible-", ".txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(Json.prettyPrint(this.visibleJson))
       }
     )
   )

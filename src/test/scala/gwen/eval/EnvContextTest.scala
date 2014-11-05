@@ -65,27 +65,62 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "toJson.toString on new env context" should "contain empty scopes" in {
     val env = newEnv
-    env.toJson.toString should be ("""{"data":[]}""")
+    env.toJson.toString should be ("""{"env -all":{"data":[]}}""")
+  }
+  
+  "visibleJson.toString on new env context" should "contain empty scopes" in {
+    val env = newEnv
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[]}}""")
   }
   
   "toJson.toString on new env context with bound var in global scope" should "print the var" in {
     val env = newEnv
     env.dataScope("vars").set("howdy", "partner")
-    env.toJson.toString should be ("""{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]}]}]}""")
+    env.toJson.toString should be ("""{"env -all":{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]}]}]}}""")
+  }
+  
+  "visibleJson.toString on new env context with bound var in global scope" should "print the var" in {
+    val env = newEnv
+    env.dataScope("vars").set("howdy", "partner")
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]}]}]}}""")
   }
   
   "toJson.toString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.dataScope("vars").set("howdy", "partner")
     env.reset
-    env.toJson.toString should be ("""{"data":[]}""")
+    env.toJson.toString should be ("""{"env -all":{"data":[]}}""")
+  }
+  
+  "visibleJson.toString on reset env context" should "contain empty scopes" in {
+    val env = newEnv
+    env.dataScope("vars").set("howdy", "partner")
+    env.reset
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[]}}""")
   }
   
   "toJson.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.dataScope("vars").set("howdy", "partner")
     env.close
-    env.toJson.toString should be ("""{"data":[]}""")
+    env.toJson.toString should be ("""{"env -all":{"data":[]}}""")
+  }
+  
+  "visibleJson.toString on closed env context" should "contain empty scopes" in {
+    val env = newEnv
+    env.dataScope("vars").set("howdy", "partner")
+    env.close
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[]}}""")
+  }
+  
+  "visibleJson.toString on loaded env context" should "returned only visible data" in {
+    val env = newEnv
+    val vars = env.dataScope("vars")
+    vars.set("howdy", "partner")
+    vars.addScope("home page").set("page", "home")
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]},{"scope":"home page","atts":[{"page":"home"}]}]}]}}""")
+    vars.addScope("landing page").set("page", "dashboard")
+    env.visibleJson.toString should be ("""{"env -visible":{"data":[{"vars":[{"scope":"global","atts":[{"howdy":"partner"}]},{"scope":"landing page","atts":[{"page":"dashboard"}]}]}]}}""")
   }
   
   private def newEnv: EnvContext = new EnvContext(new DataScopes()) { 

@@ -18,9 +18,9 @@ package gwen.eval
 
 import scala.Option.option2Iterable
 import scala.collection.mutable.Stack
-
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import play.api.libs.json.JsObject
 
 /**
  * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -103,6 +103,15 @@ class ScopedDataStack(val scopeName: String) {
   def current: Option[ScopedData] = stack.headOption
   
   /**
+   * Gets the currently visible data stack
+   * 
+   */
+  def visibleStack: Stack[ScopedData] = stack.reverse.filter {
+    (data: ScopedData) => 
+      ScopedData.GlobalScopeName == data.name || current.map(_.name == data.name).getOrElse(false) 
+  }
+  
+  /**
    * Binds an attribute to the currently active scope.  An error is thrown
    * if no current scope is set.
    * 
@@ -128,7 +137,7 @@ class ScopedDataStack(val scopeName: String) {
    * @return Some(value) if the attribute found or None otherwise
    */
   def get(name: String): String = 
-    getOpt(name).getOrElse(throw new AttrNotFoundException(name, current.map(_.name).getOrElse(""), this))
+    getOpt(name).getOrElse(throw new AttrNotFoundException(name, current.map(_.name).getOrElse(""), this.scopeName))
   
   /**
    * Finds and retrieves an attribute in the currently active scope by scanning
@@ -176,7 +185,7 @@ class ScopedDataStack(val scopeName: String) {
    * @throws AttrNotFoundException if the attribute is not found
    */
   def getIn(scopeName: String, name: String): String = 
-    getInOpt(scopeName, name).getOrElse(throw new AttrNotFoundException(name, scopeName, this))
+    getInOpt(scopeName, name).getOrElse(throw new AttrNotFoundException(name, scopeName, this.scopeName))
   
   /**
    * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -193,7 +202,7 @@ class ScopedDataStack(val scopeName: String) {
    * @return Some(value) if the attribute found or None otherwise
    */
   def getInOpt(scopeName: String, name: String): Option[String] = 
-    stack.toIterator filter(_.name == scopeName) map (_.get(name)) collectFirst { 
+    stack.toIterator filter(_.name == scopeName) map (_.getOpt(name)) collectFirst { 
       case Some(value) => value 
     } match {
       case None if (scopeName != ScopedData.GlobalScopeName) =>
@@ -225,10 +234,10 @@ class ScopedDataStack(val scopeName: String) {
    * Returns a string representation of the entire attribute stack.
    * Each scope entry is printed in JSON format.
    */
-  def toJson = {
+  def toJson: JsObject = {
     Json.obj(scopeName -> (stack.reverse map (_.toJson)))
   }
 }
 
-class AttrNotFoundException(attrName: String, scopeName: String, stack: ScopedDataStack) 
-	extends Exception(s"$attrName not found in ${scopeName} ${stack.scopeName} scope")
+class AttrNotFoundException(attrName: String, scopeName: String, scope: String) 
+	extends Exception(s"$attrName not found in ${scopeName} ${scope} scope")

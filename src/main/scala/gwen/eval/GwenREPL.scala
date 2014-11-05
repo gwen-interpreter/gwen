@@ -30,6 +30,7 @@ import jline.console.history.FileHistory
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import gwen.dsl.prettyPrint
+import play.api.libs.json.Json
 
 /**
  * Read-Eval-Print-Loop console.
@@ -64,8 +65,10 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
    */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
-    case "env" => 
-      Some(env.toString)
+    case "env" | "env -visible" => 
+      Some(Json.prettyPrint(env.visibleJson))
+    case "env -all" => 
+      Some(Json.prettyPrint(env.toJson))
     case "exit" | "bye" | "quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None

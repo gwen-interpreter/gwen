@@ -57,8 +57,16 @@ class DataScopes(val dataScopes: Map[String, ScopedDataStack]) {
     }
   
   /**
-   * Returns the current state of all scoped data as a Json object.
+   * Returns the entire state of all scoped data as a Json object.
    */  
   def toJson: JsObject = Json.obj("data" -> scopes.map { case (name, scope) => scope.toJson })
+  
+  /**
+   * Gets all the currently visible data as a Json object.
+   */
+  def visibleJson: JsObject = 
+    Json.obj("data" -> scopes.map { case (name, scope) => 
+       Json.obj(name -> (scope.visibleStack map (_.toJson)))
+    })
   
 }

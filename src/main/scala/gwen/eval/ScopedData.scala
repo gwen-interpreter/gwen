@@ -73,12 +73,23 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    *
    * @return Some(value) if the attribute value is found or None otherwise
    */
-  def get(name: String): Option[String] = 
+  def getOpt(name: String): Option[String] = 
     (atts \\ name).lastOption tap { valueOpt =>
       valueOpt foreach { value =>
           logger.debug(s"Found ${Json.obj(name -> value)} in ${scope}/scope/${this.name}")
       }
     } map (_.as[String])
+    
+  /**
+   * Finds and retrieves an attribute from the scope (throws error if not found)
+   *
+   * @param name
+   * 			the name of the attribute to find
+   *
+   * @return the attribute value if found (throws error otherwise)
+   */
+  def get(name: String): String = 
+    getOpt(name).getOrElse(throw new AttrNotFoundException(name, this.name, this.scope))
   
   /**
    * Finds and retrieves all attribute values from the scope by name.

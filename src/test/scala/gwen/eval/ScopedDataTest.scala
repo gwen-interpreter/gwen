@@ -24,35 +24,35 @@ class ScopedDataTest extends FlatSpec with Matchers {
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("page", "login")
     scope.toJson.toString    should be ("""{"scope":"login","atts":[]}""")
-    scope.get("userId") should be (None)
+    scope.getOpt("userId") should be (None)
   }
   
   "scope with one attribute" should "contain only that attribute" in {
     val scope = ScopedData("page", "login").set("userId", "gwen")
     scope.toJson.toString    should be ("""{"scope":"login","atts":[{"userId":"gwen"}]}""")
-    scope.get("userId") should be (Some("gwen"))
-    scope.get("UserId") should be (None)
+    scope.getOpt("userId") should be (Some("gwen"))
+    scope.getOpt("UserId") should be (None)
   }
   
   "scope with two attributes" should "contain those two attributes" in {
     val scope = ScopedData("page", "login").set("userId", "gwen").set("password", "pwd")
     scope.toJson.toString      should be ("""{"scope":"login","atts":[{"userId":"gwen"},{"password":"pwd"}]}""")
-    scope.get("userId")   should be (Some("gwen"))
-    scope.get("password") should be (Some("pwd"))
-    scope.get("UserId")   should be (None)
-    scope.get("Password") should be (None)
+    scope.getOpt("userId")   should be (Some("gwen"))
+    scope.getOpt("password") should be (Some("pwd"))
+    scope.getOpt("UserId")   should be (None)
+    scope.getOpt("Password") should be (None)
   }
   
   "get lookup on scope with two same named attributes" should "return the most recently added one" in {
     val scope = ScopedData("page", "register").set("name", "todd").set("name", "gwen")
     scope.toJson.toString  should be ("""{"scope":"register","atts":[{"name":"todd"},{"name":"gwen"}]}""")
-    scope.get("name") should be (Some("gwen"))
+    scope.getOpt("name") should be (Some("gwen"))
   }
   
   "binding the same name and value" should "should not recreate the binding" in {
     val scope = ScopedData("page", "register").set("name", "gwen").set("name", "gwen")
     scope.toJson.toString  should be ("""{"scope":"register","atts":[{"name":"gwen"}]}""")
-    scope.get("name") should be (Some("gwen"))
+    scope.getOpt("name") should be (Some("gwen"))
   }
   
   "getAll lookup on scope with two same named attributes" should "return both" in {
