@@ -55,13 +55,27 @@ Development
 ### Adding Gwen as a Binary Dependency
 
 To build a new engine, you will need to create a new scala project and include 
-Gwen as a dependency. To add Gwen as a binary dependency in an sbt project, 
-add the following line to your build.sbt file. The `%%` instructs sbt to pull 
+Gwen as a dependency.
+
+#### SBT
+
+To add Gwen as a binary dependency in an sbt project, add the following line to 
+your build.sbt file. The `%%` instructs sbt to pull 
 down the packaged dependency that matches your `scalaVersion` setting. 
 
 ```
 libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
 ```
+
+Also add the following repositories:
+
+```
+resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+
+resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+```
+
+#### Maven
 
 If you are using a maven project, add the following dependency to your pom.xml 
 file. In this case, you will need to explicitly specify the scala version in 
@@ -73,7 +87,23 @@ the `artifactId` suffix as shown.
 	<artifactId>gwen_2.11</artifactId>       <!-- for scala 2.11.x -->
 	<!--artifactId>gwen_2.10</artifactId-->  <!-- for scala 2.10.x -->
 	<version>0.1.0-SNAPSHOT</version>
+	<type>jar</type>
 </dependency>
+```
+
+Also add the following repositories:
+
+```
+<repository>
+	<id>typesafe-releases-repo</id>
+	<name>Typesafe Releases Repo</name>
+	<url>http://repo.typesafe.com/typesafe/releases/</url>
+</repository>
+<repository>
+	<id>sonatype-snapshots-repo</id>
+	<name>Sonatype Snapshots</name>
+	<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+</repository>
 ```
 
 ### Building from Source
