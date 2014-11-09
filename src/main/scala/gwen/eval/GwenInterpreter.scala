@@ -219,15 +219,17 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
    * 			the evaluated scenario
    */
   private def evaluateScenario(scenario: Scenario, env: T): Scenario = {
-    val result = if (scenario.isStepDef) {
+    if (scenario.isStepDef) {
       logger.info(s"Loading StepDef: ${scenario.name}")
       env.addStepDef(scenario) 
       Scenario(scenario.tags, scenario.name, scenario.steps map { step =>
         Step(step.keyword, step.expression, Loaded)
-      })
+      }) tap { scenario =>
+        logStatus("StepDef", scenario.toString, scenario.evalStatus)
+      }
     } else {
       logger.info(s"Evaluating Scenario: $scenario")
-      scenario.background map(evaluateBackground(_, env)) match {
+      (scenario.background map(evaluateBackground(_, env)) match {
         case None => 
           Scenario(scenario.tags, scenario.name, None, evaluateSteps(scenario.steps, env))
         case Some(background) => 
@@ -241,10 +243,9 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
                 Step(step.keyword, step.expression, Skipped)
               }
             })
-      }
-    }
-    result tap { scenario =>
-      logStatus("Scenario", scenario.toString, scenario.evalStatus)
+      }) tap { scenario =>
+        logStatus("Scenario", scenario.toString, scenario.evalStatus)
+      } 
     }
   }
   

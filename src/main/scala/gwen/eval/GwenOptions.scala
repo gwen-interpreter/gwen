@@ -37,8 +37,8 @@ import scala.util.Try
  *          optional properties file to load into system properties
  * @param tags
  * 			list of tags to include and exclude (tag, True=include|False=exclude) 
- * @param metaFile
- *          optional meta file override
+ * @param metaFiles
+ *          optional list of meta file overrides
  * @param paths
  * 			optional list of feature file and/or directory paths
  *    
@@ -50,7 +50,7 @@ case class GwenOptions(
     reportDir: Option[File] = None,
     propertiesFile: Option[File] = None,
     tags: List[(Tag, Boolean)] = Nil,
-    metaFile: Option[File] = None, 
+    metaFiles: List[File] = Nil, 
     paths: List[File] = Nil) 
     
 object GwenOptions {
@@ -93,16 +93,26 @@ object GwenOptions {
       opt[String]('t', "tags") action {
         (ts, c) => 
           c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.toString.startsWith("@"))))
-      } validate { t => 
-        if (t.matches("""^(~?@\w+,?)+$""")) success 
-        else failure (s"tags must start with @ or ~@ and be separated by commas (no spaces)")
-      } valueName("<include/exclude tags>") text("<include/exclude tags> = CSV list of tags to @include or ~@exclude")
+      } validate { ts =>
+        ((ts.split(",") flatMap { t => 
+          if (t.matches("""^(~?@\w+,?)+$""")) None 
+          else Some(s"Invalid tag $t: tags must start with @ or ~@")
+        }) collectFirst {
+          case error => failure(error)
+        }).getOrElse(success)
+      } valueName("<include/exclude tags>") text("<include/exclude tags> = Comma separated list of tags to @include or ~@exclude")
     
-      opt[File]('m', "meta") action {
-        (f, c) => c.copy(metaFile = Some(f))
-      } validate {
-        f => if (f.exists) success else failure(s"Specified meta file not found: $f")
-      } valueName("<meta file>") text("<meta file> = Path to meta file")
+      opt[String]('m', "meta") action {
+        (ms, c) => 
+          c.copy(metaFiles = ms.split(",").toList.map(new File(_)))
+      } validate { ms => 
+        ((ms.split(",") flatMap { m => 
+          if (new File(m).exists()) None 
+          else Some(s"Specified meta file not found: $m")
+        }) collectFirst {
+          case error => failure(error)
+        }).getOrElse(success)
+      } valueName("<meta file(s)>") text("<meta file(s)> = Comma separated list of meta files")
     
       arg[File]("<feature files and/or directories>") unbounded() optional() action { 
         (f, c) => 

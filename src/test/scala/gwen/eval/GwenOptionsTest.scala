@@ -353,7 +353,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
   }
   
-  "Options with meta option with non existing meta file" should "not parse" in {
+  "Options with with non existing meta file" should "not parse" in {
      parseOptions(Array("-m", "nonexisting.meta")) match {
       case Success(options) => {
         fail("expected None but got options")
@@ -368,18 +368,80 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
   }
   
-  "Options with meta option and existing meta file" should "parse" in {
+  "Options with one existing meta file" should "parse" in {
     val metaFile = createFile("gwen.meta")
     parseOptions(Array("-m", metaFile.getPath())) match {
       case Success(options) => {
-        assertOptions(options, metaFile = Some(metaFile))
+        assertOptions(options, metaFiles = List(metaFile))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--meta", metaFile.getPath())) match {
       case Success(options) => {
-        assertOptions(options, metaFile = Some(metaFile))
+        assertOptions(options, metaFiles = List(metaFile))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+  
+  "Options with multiple existing meta files" should "parse" in {
+    val metaFile1 = createFile("gwen1.meta") 
+    val metaFile2 = createFile("gwen2.meta")
+    val metaFiles = List(metaFile1, metaFile2)
+    val metaPaths = metaFiles.map(_.getPath).mkString(",")
+    parseOptions(Array("-m", metaPaths)) match {
+      case Success(options) => {
+        assertOptions(options, metaFiles = metaFiles)
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--meta", metaPaths)) match {
+      case Success(options) => {
+        assertOptions(options, metaFiles = metaFiles)
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+  
+  "Options with multiple existing and one missing meta file" should "not parse" in {
+    val metaFile1 = createFile("gwen1.meta")
+    val metaFile2 = new File("gwen2.meta")
+    val metaFile3 = createFile("gwen3.meta")
+    val metaFiles = List(metaFile1, metaFile2, metaFile3)
+    val metaPaths = metaFiles.map(_.getPath).mkString(",")
+    parseOptions(Array("-m", metaPaths)) match {
+      case Success(files) => {
+        fail("expected None but got options")
+      }
+      case _ => 
+    }
+    parseOptions(Array("--meta", metaPaths)) match {
+      case Success(files) => {
+        fail("expected None but got options")
+      }
+      case _ =>
+    }
+  }
+  
+  "Options with meta multiple meta files" should "parse" in {
+    val metaFile1 = createFile("gwen1.meta") 
+    val metaFile2 = createFile("gwen2.meta")
+    val metaFiles = List(metaFile1, metaFile2)
+    val metaPaths = metaFiles.map(_.getPath).mkString(",")
+    parseOptions(Array("-m", metaPaths)) match {
+      case Success(options) => {
+        assertOptions(options, metaFiles = metaFiles)
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--meta", metaPaths)) match {
+      case Success(options) => {
+        assertOptions(options, metaFiles = metaFiles)
       }
       case _ =>
         fail("expected options but failed")
@@ -458,7 +520,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           Some(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
-          Some(metaFile),
+          List(metaFile),
           List(dir5, feature5, dir6))
       }
       case _ =>
@@ -474,7 +536,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           Some(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
-          Some(metaFile),
+          List(metaFile),
           List(dir5, feature5, dir6))
       }
       case _ =>
@@ -493,7 +555,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     reportDir: Option[File] = None,
     propertiesFile: Option[File] = None,
     tags: List[(Tag, Boolean)] = Nil,
-    metaFile: Option[File] = None, 
+    metaFiles: List[File] = Nil, 
     paths: List[File] = Nil) {
     
     options.batch should be (batch)
@@ -501,7 +563,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.reportDir should be (reportDir)
     options.propertiesFile should be (propertiesFile)
     options.tags should be (tags)
-    options.metaFile should be (metaFile)
+    options.metaFiles should be (metaFiles)
     options.paths should be (paths)
     
   }

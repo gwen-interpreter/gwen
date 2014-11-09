@@ -70,7 +70,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             println
           }
         case _ =>
-          options.metaFile foreach { metaFile =>
+          options.metaFiles foreach { metaFile =>
             optEnv foreach { env =>
               interpreter.loadMeta(List(metaFile), Nil, env) 
             }
@@ -107,7 +107,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       val env = envOpt.getOrElse(interpreter.initialise(options))
       try {
         if (envOpt.isDefined) { interpreter.reset(env) }
-        val metaFiles = unit.metaFiles ++ options.metaFile.toList
+        val metaFiles = (unit.metaFiles ++ options.metaFiles).distinct
         interpreter.interpretFeature(unit.featureFile, metaFiles, options.tags, env).map { spec =>
           FeatureSummary(spec, reportGenerator map { _.reportDetail(spec) })
         }

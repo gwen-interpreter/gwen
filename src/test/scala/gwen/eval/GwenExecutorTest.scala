@@ -105,7 +105,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta st ep", Passed(10)))))
+      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
     )
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
@@ -114,6 +114,38 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(meta3, Nil, Nil, mockEnv)).thenReturn(Some(meta))
     when(mockInterpreter.interpretFeature(feature3, List(meta3), Nil, mockEnv)).thenReturn(Some(feature))
+    
+    val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
+    
+    verify(mockInterpreter).reset(mockEnv)
+    verify(mockInterpreter, never()).close(mockEnv)
+    
+    evalStatus should be (Passed(10))
+    
+  }
+  
+  "test executor with duplicate meta" should "should not load duplicate" in {
+    
+    val dir31 = createDir("dir31")
+    val dirmeta32 = createDir("dirmeta32");
+    val feature3 = createFile("dir31/file3.feature");
+    val meta31 = createFile("dir31/file31.meta");
+    val meta32 = createFile("dirmeta32/file32.meta");
+    
+    val options = GwenOptions(paths = List(dir31), parallel = true, metaFiles=List(meta31, meta32))
+    
+    val meta = new FeatureSpec(
+      Feature("meta feature"), 
+      None, 
+      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
+    )
+    
+    val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockEnv = mock[EnvContext]
+    
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
+    when(mockInterpreter.interpretFeature(meta31, Nil, Nil, mockEnv)).thenReturn(Some(meta))
+    when(mockInterpreter.interpretFeature(feature3, options.metaFiles, Nil, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
