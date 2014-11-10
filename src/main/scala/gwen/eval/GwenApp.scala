@@ -43,8 +43,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   GwenOptions.parse(interpreter.getClass().getName(), args) match { 
     case Success(options) =>
       try {
-        run(options)
-        System.exit(0)
+        System.exit(run(options))
       } catch {
         case e: Throwable =>
           e.printStackTrace()
@@ -60,15 +59,17 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
    * 
    * @param options
    * 			the command line options
+   * @returns
+   * 		0 if successful; 1 otherwise 
    */  
-  private[eval] def run(options: GwenOptions) {
-    (if (options.batch) None else Some(interpreter.initialise(options))) tap { envOpt =>
-      try {
-        interpreter.execute(options, envOpt)
+  private[eval] def run(options: GwenOptions): Int = {
+    val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
+    try {
+      interpreter.execute(options, envOpt).code tap { exitCode =>
         envOpt foreach { createRepl(_).run() }
-      } finally {
-        envOpt foreach { interpreter.close(_) }
       }
+    } finally {
+      envOpt foreach { interpreter.close(_) }
     }
   }
   

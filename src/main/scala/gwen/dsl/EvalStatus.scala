@@ -32,6 +32,7 @@ import java.text.DecimalFormat
 sealed trait EvalStatus {
   val status: StatusKeyword.Value
   val duration: Long
+  def code: Int
   override def toString = 
     if (duration > 0) {
       s"[${EvalStatus.formatSecs(duration)}] ${status}"
@@ -46,6 +47,7 @@ sealed trait EvalStatus {
  */
 case class Passed(val duration: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
+  def code = 0
 }
 
 /**
@@ -58,6 +60,7 @@ case class Passed(val duration: Long) extends EvalStatus {
  */
 case class Failed(val duration: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
+  def code = 1
 }
 
 /**
@@ -66,6 +69,7 @@ case class Failed(val duration: Long, val error: Throwable) extends EvalStatus {
 case object Skipped extends EvalStatus {
   val duration = 0L
   val status = StatusKeyword.Skipped
+  def code = 2
 }
 
 /**
@@ -77,6 +81,7 @@ case object Skipped extends EvalStatus {
 case object Pending extends EvalStatus {
   val duration = 0L
   val status = StatusKeyword.Pending
+  def code = 3
 }
 
 /**
@@ -85,6 +90,7 @@ case object Pending extends EvalStatus {
 case object Loaded extends EvalStatus {
   val duration = 0L
   val status = StatusKeyword.Loaded
+  def code = 0
 }
 
 object EvalStatus {
