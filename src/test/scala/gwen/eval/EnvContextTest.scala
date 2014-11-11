@@ -63,6 +63,29 @@ class EnvContextTest extends FlatSpec with Matchers {
     
   }
   
+  "New feature env context" should "have global feature scope" in {
+    val env = newEnv
+    env.featureScope.current.get.scope should be ("feature")
+    env.featureScope.current.get.name should be ("global") 
+  }
+  
+  "Bound feature scope attribute" should "be removed after reset" in {
+    val env = newEnv
+    env.featureScope.set("engineName", "Gwen-Core")
+    env.featureScope.get("engineName") should be ("Gwen-Core")
+    env.reset
+    env.featureScope.getOpt("engineName") should be (None)
+    env.featureScope.current.get.scope should be ("feature")
+    env.featureScope.current.get.name should be ("global")
+  }
+  
+  "Bound feature scope attribute" should "show up in JSON string" in {
+    val env = newEnv
+    env.featureScope.set("firstName", "Gwen")
+    env.featureScope.get("firstName") should be ("Gwen")
+    env.toJson.toString should be ("""{"env -all":{"data":[{"feature":[{"scope":"global","atts":[{"firstName":"Gwen"}]}]}]}}""")
+  }
+  
   "toJson.toString on new env context" should "contain empty scopes" in {
     val env = newEnv
     env.toJson.toString should be ("""{"env -all":{"data":[]}}""")
