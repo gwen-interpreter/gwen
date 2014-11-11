@@ -1,6 +1,6 @@
 name := "gwen"
 
-description := "Gwen Interpreter"
+description := "A common platform for mapping Gherkin features to exectuable code."
 
 version := "0.1.0-SNAPSHOT"
 
