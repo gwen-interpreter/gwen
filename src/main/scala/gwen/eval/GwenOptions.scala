@@ -84,11 +84,11 @@ object GwenOptions {
           c.copy(propertiesFile = Some(f))
       } validate {
         f => if (f.exists) success else failure(s"Specified properties file not found: $f")
-      } valueName("<properties file>") text("<properties file> = User properties file")
+      } valueName("<properties file>") text("User properties file")
     
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f)) 
-      } valueName("<report directory>") text("<report directory> Evaluation report output directory")
+      } valueName("<report directory>") text("Evaluation report output directory")
 
       opt[String]('t', "tags") action {
         (ts, c) => 
@@ -100,7 +100,7 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<include/exclude tags>") text("<include/exclude tags> = Comma separated list of tags to @include or ~@exclude")
+      } valueName("<tags>") text("Comma separated list of @include or ~@exclude tags")
     
       opt[String]('m', "meta") action {
         (ms, c) => 
@@ -112,14 +112,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<meta file(s)>") text("<meta file(s)> = Comma separated list of meta files")
+      } valueName("<meta files>") text("Comma separated list of meta file paths")
     
-      arg[File]("<feature files and/or directories>") unbounded() optional() action { 
+      arg[File]("<feature paths>") unbounded() optional() action { 
         (f, c) => 
           c.copy(paths = c.paths :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified path not found: $f")
-      } text("Space separated list of feature files and/or directories")
+      } text("Space separated list of feature file and/or directory paths")
     
     }
   
