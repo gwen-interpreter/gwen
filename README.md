@@ -1,7 +1,7 @@
 ![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
 
-The gwen-interpreter
-====================
+gwen-interpreter
+================
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter written in [Scala](http://www.scala-lang.org). It does 
