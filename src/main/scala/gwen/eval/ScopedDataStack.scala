@@ -88,6 +88,9 @@ class ScopedDataStack(val scopeName: String) {
       stack push ScopedData(scopeName, name) head
     case Some(scope) =>
       if (scope.name != name) {
+        if (scope.isEmpty) {
+          stack pop
+        }
         stack push ScopedData(scopeName, name) head
       } else {
         scope
@@ -121,7 +124,10 @@ class ScopedDataStack(val scopeName: String) {
    * 			the value to bind to the attribute
    */
   def set(name: String, value: String) = current match {
-    case (Some(scope)) => scope.set(name, value)
+    case (Some(scope)) =>
+      if (!getOpt(name).map(_ == value).getOrElse(false)) {
+        scope.set(name, value)
+      }
     case _ => sys.error(s"""No currently active data scope found in $scopeName scopes. Please call addScope("name") first to create and activate one.""")
   }
   

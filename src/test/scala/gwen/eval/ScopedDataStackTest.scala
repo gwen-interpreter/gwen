@@ -54,7 +54,9 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getOpt" should "get all current page scope attributes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
     
     scopes.getOpt("username") should be (Some("gwen"))
     scopes.getOpt("password") should be (Some("pwd"))
@@ -65,7 +67,9 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "get" should "get all current page scope attributes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
     
     scopes.get("username") should be ("gwen")
     scopes.get("password") should be ("pwd")
@@ -75,7 +79,9 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getAll" should "get all current page scope attributes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
     
     scopes.getAll("username") should be (Seq("gwen"))
     scopes.getAll("password") should be (Seq("pwd"))
@@ -85,8 +91,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getOpt" should "ignore inactive page scopes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
     
     scopes.getOpt("username")   should be (None)
     scopes.getOpt("password")   should be (None)
@@ -99,8 +109,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "get" should "ignore inactive page scopes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
     
     intercept[AttrNotFoundException] { scopes.get("username") }
     intercept[AttrNotFoundException] { scopes.get("password") }
@@ -113,8 +127,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getAll" should "ignore inactive page scopes" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
     
     scopes.getAll("username")   should be (Nil)
     scopes.getAll("password")   should be (Nil)
@@ -127,9 +145,15 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getOpt" should "get latest attributes in active page scopes only" in {
     
     val scopes = new ScopedDataStack("page")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope1 = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
-    val registerScope2 = scopes.addScope("register").set("firstName", "gwen1").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope1 = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
+    val registerScope2 = scopes.addScope("register")
+    scopes.set("firstName", "gwen1")
+    scopes.set("lastName", "tester")
     
     scopes.getOpt("username")   should be (None)
     scopes.getOpt("password")   should be (None)
@@ -143,9 +167,15 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     val scopes = new ScopedDataStack("page")
     scopes.set("middleName", "chaos")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope1 = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
-    val registerScope2 = scopes.addScope("register").set("firstName", "gwen1").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope1 = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
+    val registerScope2 = scopes.addScope("register")
+    scopes.set("firstName", "gwen1")
+    scopes.set("lastName", "tester")
     
     intercept[AttrNotFoundException] { scopes.get("username") }
     intercept[AttrNotFoundException] { scopes.get("password") }
@@ -161,9 +191,15 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     val scopes = new ScopedDataStack("page")
     scopes.set("middleName", "chaos")
-    val loginScope = scopes.addScope("login").set("username", "gwen").set("password", "pwd")
-    val registerScope1 = scopes.addScope("register").set("firstName", "gwen").set("lastName", "tester")
-    val registerScope2 = scopes.addScope("register").set("firstName", "gwen1").set("lastName", "tester")
+    val loginScope = scopes.addScope("login")
+    scopes.set("username", "gwen")
+    scopes.set("password", "pwd")
+    val registerScope1 = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "tester")
+    val registerScope2 = scopes.addScope("register")
+    scopes.set("firstName", "gwen1")
+    scopes.set("lastName", "tester")
     
     scopes.getAll("username")   should be (Nil)
     scopes.getAll("password")   should be (Nil)
@@ -178,8 +214,13 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     val scopes = new ScopedDataStack("page")
     scopes.set("middleName", "chaos")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person").set("middleName", "chaos2")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
+    scopes.set("middleName", "chaos2")
     
     scopes.getOpt("firstName")  should be (Some("gwen"))
     scopes.getOpt("lastName")   should be (Some("person"))
@@ -191,8 +232,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "get" should "ignore same name attributes in non active scopes" in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.get("firstName")  should be ("gwen")
     scopes.get("lastName")   should be ("person")
@@ -203,8 +248,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getAll" should "get same name attributes in currently active scope" in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.getAll("firstName")  should be (Seq("gwen"))
     scopes.getAll("lastName")   should be (Seq("person"))
@@ -214,8 +263,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getAll" should "ignore same name attributes in non active scopes" in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.getAll("firstName")  should be (Seq("gwen"))
     scopes.getAll("lastName")   should be (Seq("person"))
@@ -230,8 +283,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getInOpt" should "get any attribute in any page scope for nominated page " in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.getInOpt("register", "firstName")  should be (Some("gwen"))
     scopes.getInOpt("register", "lastName")   should be (Some("register"))
@@ -245,8 +302,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getIn" should "get any attribute in any page scope for nominated page " in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.getIn("register", "firstName")  should be ("gwen")
     scopes.getIn("register", "lastName")   should be ("register")
@@ -259,8 +320,12 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   "getAllIn" should "get any attribute in any page scope for nominated page " in {
     
     val scopes = new ScopedDataStack("page")
-    val registerScope = scopes.addScope("register").set("firstName", "gwen").set("lastName", "register")
-    val personScope = scopes.addScope("person").set("firstName", "gwen").set("lastName", "person")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
     
     scopes.getAllIn("register", "firstName")  should be (List("gwen"))
     scopes.getAllIn("register", "lastName")   should be (List("register"))
@@ -282,6 +347,26 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     val scope1 = scopes.addScope("home1")
     val scope2 = scopes.addScope("home2")
     scope1 should not be (scope2)
+  }
+  
+  "set" should "should not replicate already visible attributes with same name and value" in {
+    
+    val scopes = new ScopedDataStack("page")
+    val registerScope = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    val personScope = scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
+    val registerScope2 = scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "web")
+    
+    scopes.get("firstName")  should be ("gwen")
+    scopes.get("lastName")   should be ("web")
+    
+    scopes.toJson.toString should be ("""{"page":[{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"person","atts":[{"firstName":"gwen"},{"lastName":"person"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
+                                         
   }
   
 }

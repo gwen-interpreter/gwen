@@ -62,6 +62,13 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    * back to this variable.
    */
   private[this] var atts = Json.arr()
+  
+  /**
+   * Checks if the scoped data is empty.
+   * 
+   * @returns true if empty; false otherwise
+   */
+  def isEmpty = atts.value.isEmpty
 
   /**
    * Finds and retrieves an attribute value from the scope by name.  If 
