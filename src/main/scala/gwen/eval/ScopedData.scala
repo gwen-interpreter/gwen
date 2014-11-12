@@ -66,7 +66,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   /**
    * Checks if the scoped data is empty.
    * 
-   * @returns true if empty; false otherwise
+   * @return true if empty; false otherwise
    */
   def isEmpty = atts.value.isEmpty
 
