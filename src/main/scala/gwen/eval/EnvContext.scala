@@ -80,6 +80,11 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
   def dataScope(name: String) = dataScopes.scope(name)
   
   /**
+   * Provides access to the global feature scope.
+   */
+  def featureScope = dataScope("feature")
+  
+  /**
    * Adds a step definition to the context.
    * 
    * @param stepDef
