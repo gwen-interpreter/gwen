@@ -68,7 +68,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     case "env" | "env -visible" => 
       Some(Json.prettyPrint(env.visibleJson))
     case "env -all" => 
-      Some(Json.prettyPrint(env.toJson))
+      Some(Json.prettyPrint(env.json))
     case "exit" | "bye" | "quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None

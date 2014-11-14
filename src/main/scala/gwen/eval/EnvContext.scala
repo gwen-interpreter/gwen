@@ -40,12 +40,17 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
  * 
  * @author Branko Juric
  */
-class EnvContext(dataScopes: DataScopes) extends LazyLogging {
+class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   
   /**
    * Map of step definitions keyed by callable expression name.
    */
   private var stepDefs = Map[String, Scenario]()
+  
+  /**
+   * Provides access to the global feature scope.
+   */
+  def featureScope = scopes.featureScope
   
   /**
    * Closes any resources associated with the evaluation context. This implementation
@@ -57,19 +62,19 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
    * Resets the current context but does not close it so it can be reused.
    */
   def reset() {
-    dataScopes.reset()
+    scopes.reset()
     stepDefs = Map[String, Scenario]()
   }
   
   /**
    * Returns the current state of all scoped attributes as a Json object.
    */  
-  def toJson: JsObject = Json.obj("env -all" -> dataScopes.toJson)
+  def json: JsObject = scopes.json
   
    /**
    * Returns the current visible attributes as a Json object.
    */  
-  def visibleJson: JsObject = Json.obj("env -visible" -> dataScopes.visibleJson)
+  def visibleJson: JsObject = scopes.visibleJson
   
   /**
    * Gets a named data scope (creates it if it does not exist)
@@ -77,12 +82,7 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
    * @param name
    * 			the name of the data scope to get (or create and get)
    */
-  def dataScope(name: String) = dataScopes.scope(name)
-  
-  /**
-   * Provides access to the global feature scope.
-   */
-  def featureScope = dataScope("feature")
+  def addScope(name: String) = scopes.addScope(name)
   
   /**
    * Adds a step definition to the context.
@@ -141,7 +141,7 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
     ("Environment (all)", 
       File.createTempFile("env-all-", ".txt") tap { f =>
         f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.toJson))
+        f.writeText(Json.prettyPrint(this.json))
       }
     ),
     ("Environment (visible)", 
@@ -157,7 +157,7 @@ class EnvContext(dataScopes: DataScopes) extends LazyLogging {
 /**
  * Merges two contexts into one.
  */
-class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val dataScopes: DataScopes) extends EnvContext(dataScopes) {
+class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val scopes: ScopedDataStack) extends EnvContext(scopes) {
   override def close() {
     try {
       envB.close()

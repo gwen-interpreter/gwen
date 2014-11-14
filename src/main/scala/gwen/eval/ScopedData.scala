@@ -52,8 +52,10 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
  * Data attributes are internally stored in immutable JSON data structures.
  * 
  * @author Branko Juric
+ * 
+ * @param scope the scope name
  */
-class ScopedData(val scope: String, val name: String) extends LazyLogging {
+class ScopedData(val scope: String) extends LazyLogging {
   
   /**
    * The internal JSON object where attributes are stored.  When a new 
@@ -83,7 +85,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   def getOpt(name: String): Option[String] = 
     (atts \\ name).lastOption tap { valueOpt =>
       valueOpt foreach { value =>
-          logger.debug(s"Found ${Json.obj(name -> value)} in ${scope}/scope/${this.name}")
+          logger.debug(s"Found ${Json.obj(name -> value)} in scope/$scope")
       }
     } map (_.as[String])
     
@@ -96,7 +98,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    * @return the attribute value if found (throws error otherwise)
    */
   def get(name: String): String = 
-    getOpt(name).getOrElse(throw new AttrNotFoundException(name, this.name, this.scope))
+    getOpt(name).getOrElse(throw new AttrNotFoundException(name, scope))
   
   /**
    * Finds and retrieves all attribute values from the scope by name.
@@ -108,7 +110,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
    */
   def getAll(name: String): Seq[String] = 
     (atts \\ name) tap { values =>
-      logger.debug(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in ${scope}/scope/${this.name}")
+      logger.debug(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in scope/$scope")
     } map (_.as[String])
 
   /**
@@ -128,7 +130,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   def set(name: String, value: String): ScopedData = {
     if(!((atts \\ name).lastOption.map(_.as[String] == value).getOrElse(false))) {
       Json.obj(name -> value) tap { nvp =>
-        logger.debug(s"Binding $nvp to ${scope}/scope/${this.name}")
+        logger.debug(s"Binding $nvp to scope/$scope")
         atts = atts :+ nvp
       }
     }
@@ -138,7 +140,7 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
   /**
    * Returns this entire scope as a JSON object.
    */
-  def toJson = Json.obj("scope" -> name, "atts" -> atts)
+  def json = Json.obj("scope" -> scope, "atts" -> atts)
 
 }
 
@@ -149,16 +151,12 @@ class ScopedData(val scope: String, val name: String) extends LazyLogging {
  */
 object ScopedData {
 
-  val GlobalScopeName = "global"
-    
   /**
    * Create a new ScopedData object with an empty attribute list.
    *
-   * @param scope
-   * 			the data scope
    * @param name
    * 			the scope name 
    */
-  def apply(scope: String, name: String): ScopedData = new ScopedData(scope, name)
+  def apply(name: String): ScopedData = new ScopedData(name)
 
 }

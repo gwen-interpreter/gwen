@@ -52,10 +52,10 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
    * 
    * @param options
    * 			command line options
-   * @param dataScopes
+   * @param scopes
    * 			initial data scopes
    */
-  private [eval] def init(options: GwenOptions, dataScopes: DataScopes): T
+  private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): T
 
   /**
    * Should be overridden to evaluate a given step (this implementation 
@@ -91,11 +91,11 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
   val engineA: EvalEngine[A]
   val engineB: EvalEngine[B]
   
-  override def init(options: GwenOptions, dataScopes: DataScopes): HybridEnvContext[A, B] = 
+  override def init(options: GwenOptions, scopes: ScopedDataStack): HybridEnvContext[A, B] = 
     new HybridEnvContext(
-      engineA.init(options, dataScopes), 
-      engineB.init(options, dataScopes), 
-      dataScopes)
+      engineA.init(options, scopes), 
+      engineB.init(options, scopes), 
+      scopes)
   
   override def evaluate(step: Step, env: HybridEnvContext[A, B]) {
     try {

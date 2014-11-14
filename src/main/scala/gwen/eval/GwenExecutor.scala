@@ -17,17 +17,16 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
-import gwen.dsl.Pending
 import gwen.report.FeatureSummary
 import gwen.report.ReportGenerator
 import gwen.report.html.HtmlReportGenerator
+import gwen.dsl.Passed
+import gwen.dsl.Failed
 
 /**
  * Executes user provided options on the given interpreter.
@@ -70,15 +69,15 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             println
           }
         case _ =>
-          options.metaFiles foreach { metaFile =>
-            optEnv foreach { env =>
-              interpreter.loadMeta(List(metaFile), Nil, env) 
+          EvalStatus { 
+            optEnv.toList flatMap { env =>
+             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.evalStatus)
+            }
+          } tap { status =>
+            if (!options.paths.isEmpty) {
+              logger.info("No features found in specified files and/or directories!")
             }
           }
-          if (!options.paths.isEmpty) {
-            logger.info("No features found in specified files and/or directories!")
-         }
-          Pending
       }
     } catch {
       case e: Throwable =>

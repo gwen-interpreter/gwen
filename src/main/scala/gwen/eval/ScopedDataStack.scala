@@ -21,6 +21,7 @@ import scala.collection.mutable.Stack
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.JsObject
+import gwen.Predefs.Kestrel
 
 /**
  * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -50,7 +51,7 @@ import play.api.libs.json.JsObject
  *    - This lookup scans the currently active scope and all other scopes below 
  *      it in the stack that have the same name.
  *  
- *  - Or by a nominated scope name: using the `getIn` method
+ *  - Or by a nominated scope: using the `getIn` method
  *    
  *    - This lookup scans all scopes in the stack that have the nominated scope 
  *      name.
@@ -62,56 +63,61 @@ import play.api.libs.json.JsObject
  * 
  * @author Branko Juric  
  */
-class ScopedDataStack(val scopeName: String) {
+class ScopedDataStack() {
 
   /**
    * The scoped attribute stack.  The 'current' scope is always the one that is 
    * on the top of the stack.  All other scopes that are not at the
    * top of the stack are 'historical' scopes.
    */
-  private val stack = Stack[ScopedData]()
+  private var scopes: Stack[ScopedData] = _
   
-  // add global scope when stack is created
-  addScope(ScopedData.GlobalScopeName)
+  reset()
+  
+  /**
+   * Resets the data stack.
+   */
+  def reset() {
+      scopes = Stack[ScopedData]() tap { _ push ScopedData("feature") }
+  }
+  
+  /**
+   * Provides access to the global features scope (which is always at the
+   * bottom of the stack).
+   */
+  private[eval] def featureScope =  scopes.last
   
   /**
    * Creates and adds a new scope to the internal stack and makes it the 
    * currently active scope. Keeps the current scope if it has the same name.
    * 
-   * @param name
+   * @param scope
    * 			the name of the scope to add
    * @return
    * 			the newly added scope
    */
-  def addScope(name: String): ScopedData = current match {
-    case None => 
-      stack push ScopedData(scopeName, name) head
-    case Some(scope) =>
-      if (scope.name != name) {
-        if (scope.isEmpty) {
-          stack pop
-        }
-        stack push ScopedData(scopeName, name) head
-      } else {
-        scope
+  def addScope(scope: String): ScopedData = 
+    if (current.scope != scope) {
+      if (current != featureScope && current.isEmpty) {
+        scopes pop
       }
-  }
+      scopes push ScopedData(scope) head
+    } else current
   
   /**
-   * Provides access to the currently active scope (if one exists).
+   * Provides access to the currently active scope.
    * 
-   * @return Some(ScopedData) if a currently active scope exists or None 
-   *         otherwise
+   * @return the currently active scope
    */
-  def current: Option[ScopedData] = stack.headOption
+  def current: ScopedData = scopes.head
   
   /**
-   * Gets the currently visible data stack
+   * Gets the currently visible scoped data
    * 
    */
-  def visibleStack: Stack[ScopedData] = stack.reverse.filter {
-    (data: ScopedData) => 
-      ScopedData.GlobalScopeName == data.name || current.map(_.name == data.name).getOrElse(false) 
+  def visibleScopes: Stack[ScopedData] = scopes.reverse.filter {
+    (scopedData: ScopedData) => 
+      featureScope == scopedData || current.scope == scopedData.scope 
   }
   
   /**
@@ -123,12 +129,10 @@ class ScopedDataStack(val scopeName: String) {
    * @return
    * 			the value to bind to the attribute
    */
-  def set(name: String, value: String) = current match {
-    case (Some(scope)) =>
+  def set(name: String, value: String) { 
       if (!getOpt(name).map(_ == value).getOrElse(false)) {
-        scope.set(name, value)
+        current.set(name, value)
       }
-    case _ => sys.error(s"""No currently active data scope found in $scopeName scopes. Please call addScope("name") first to create and activate one.""")
   }
   
   /**
@@ -143,7 +147,7 @@ class ScopedDataStack(val scopeName: String) {
    * @return Some(value) if the attribute found or None otherwise
    */
   def get(name: String): String = 
-    getOpt(name).getOrElse(throw new AttrNotFoundException(name, current.map(_.name).getOrElse(""), this.scopeName))
+    getOpt(name).getOrElse(throw new AttrNotFoundException(name, current.scope))
   
   /**
    * Finds and retrieves an attribute in the currently active scope by scanning
@@ -156,10 +160,7 @@ class ScopedDataStack(val scopeName: String) {
    *
    * @return Some(value) if the attribute found or None otherwise
    */
-  def getOpt(name: String): Option[String] = current match {
-    case Some(scope) => getInOpt(scope.name, name)
-    case _ => None
-  }
+  def getOpt(name: String): Option[String] = getInOpt(current.scope, name)
   
   /**
    * Finds and retrieves all attributes in the currently active scope by scanning
@@ -171,10 +172,7 @@ class ScopedDataStack(val scopeName: String) {
    *
    * @return a sequence of found attribute values or Nil otherwise
    */
-  def getAll(name: String): Seq[String] = current match {
-    case Some(scope) => getAllIn(scope.name, name)
-    case _ => Nil
-  }
+  def getAll(name: String): Seq[String] = getAllIn(current.scope, name)
     
   /**
    * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -182,7 +180,7 @@ class ScopedDataStack(val scopeName: String) {
    * name and working down).  The value in the first scope found to contain 
    * the attribute is the one that is returned.
    *
-   * @param scopeName
+   * @param scope
    * 			the scope name to scan
    * @param name
    * 			the name of the attribute to find
@@ -190,8 +188,8 @@ class ScopedDataStack(val scopeName: String) {
    *
    * @throws AttrNotFoundException if the attribute is not found
    */
-  def getIn(scopeName: String, name: String): String = 
-    getInOpt(scopeName, name).getOrElse(throw new AttrNotFoundException(name, scopeName, this.scopeName))
+  def getIn(scope: String, name: String): String = 
+    getInOpt(scope, name).getOrElse(throw new AttrNotFoundException(name, scope))
   
   /**
    * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -199,7 +197,7 @@ class ScopedDataStack(val scopeName: String) {
    * name and working down).  The value in the first scope found to contain 
    * the attribute is the one that is returned.
    *
-   * @param scopeName
+   * @param scope
    * 			the scope name to scan
    * @param name
    * 			the name of the attribute to find
@@ -207,12 +205,12 @@ class ScopedDataStack(val scopeName: String) {
    *
    * @return Some(value) if the attribute found or None otherwise
    */
-  def getInOpt(scopeName: String, name: String): Option[String] = 
-    stack.toIterator filter(_.name == scopeName) map (_.getOpt(name)) collectFirst { 
+  def getInOpt(scope: String, name: String): Option[String] = 
+    scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst { 
       case Some(value) => value 
     } match {
-      case None if (scopeName != ScopedData.GlobalScopeName) =>
-        getInOpt(ScopedData.GlobalScopeName, name)
+      case None if (scope != featureScope.scope) =>
+        getInOpt(featureScope.scope, name)
       case x => x
     }
   
@@ -222,28 +220,32 @@ class ScopedDataStack(val scopeName: String) {
    * top most scope with that name and working down).  All values found are 
    * returned.
    *
-   * @param scopeName
+   * @param scope
    * 			the scope name to scan
    * @param name
    * 			the name of the attribute to find
    *
    * @return a sequence of found attribute values or Nil otherwise
    */
-  def getAllIn(scopeName: String, name: String): Seq[String] = 
-    stack.toList filter(_.name == scopeName) flatMap (_.getAll(name)) match {
-      case Nil if (scopeName != ScopedData.GlobalScopeName) =>
-        getAllIn(ScopedData.GlobalScopeName, name)
+  def getAllIn(scope: String, name: String): Seq[String] = 
+    scopes.toList filter(_.scope == scope) flatMap (_.getAll(name)) match {
+      case Nil if (scope != featureScope.scope) =>
+        getAllIn(featureScope.scope, name)
       case x => x
     }
     
   /**
-   * Returns a string representation of the entire attribute stack.
-   * Each scope entry is printed in JSON format.
+   * Returns a string representation of the entire attribute stack 
+   * as a JSON object.
    */
-  def toJson: JsObject = {
-    Json.obj(scopeName -> (stack.reverse map (_.toJson)))
-  }
+  def json: JsObject = Json.obj("scopes" -> (scopes.reverse map (_.json)))
+  
+  /**
+   * Returns a string representation of the visible attribute stack
+   * as a JSON object.
+   */
+  def visibleJson = Json.obj("scopes" -> (visibleScopes map (_.json)))
 }
 
-class AttrNotFoundException(attrName: String, scopeName: String, scope: String) 
-	extends Exception(s"$attrName not found in ${scopeName} ${scope} scope")
+class AttrNotFoundException(name: String, scope: String) 
+	extends Exception(s"$name not found in $scope scope")

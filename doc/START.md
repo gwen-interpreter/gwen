@@ -107,11 +107,11 @@ _MathEnvContext.scala_
 package gwen.sample.math
 
 import gwen.eval.EnvContext
-import gwen.eval.DataScopes
+import gwen.eval.ScopedDataStack
 
-class MathEnvContext(val mathService: MathService, val dataScopes: DataScopes) 
-  extends EnvContext(dataScopes) {
-  def vars = dataScope("vars")
+class MathEnvContext(val mathService: MathService, val scopes: ScopedDataStack) 
+  extends EnvContext(scopes) {
+  def vars = addScope("vars")
 }
 ```
 
@@ -158,12 +158,12 @@ package gwen.sample.math
 import gwen.dsl.Step
 import gwen.eval.EvalEngine
 import gwen.eval.GwenOptions
-import gwen.eval.DataScopes
+import gwen.eval.ScopedDataStack
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
-  override def init(options: GwenOptions, dataScopes: DataScopes): MathEnvContext =
-    new MathEnvContext(new MathService(), dataScopes)
+  override def init(options: GwenOptions, scopes: ScopedDataStack): MathEnvContext =
+    new MathEnvContext(new MathService(), scopes)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars
@@ -237,7 +237,7 @@ The REPL will launch and wait for you to start entering steps:
   \__, | \_/\_/ \___|_| |_|   `    
   |___/                            
 
-Welcome to gwen [MathInterpreter]!
+Welcome to gwen [MathInterpreter]
 
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
@@ -264,43 +264,29 @@ step exactly as listed below.
 gwen>Given x = 1
 
 INFO - Evaluating Step: Given x = 1
-INFO - Binding {"x":"1"} to vars/scope/global
-INFO - [0.1393 secs] Passed Step: Given x = 1
-
-    Given x = 1 # [0.1393 secs] Passed
+INFO - [0.0093 secs] Passed Step: Given x = 1
 
 [Passed]
 
 gwen>And y = 2
 
 INFO - Evaluating Step: And y = 2
-INFO - Binding {"y":"2"} to vars/scope/global
-INFO - [0.0004 secs] Passed Step: And y = 2
-
-      And y = 2 # [0.0004 secs] Passed
+INFO - [0.0021 secs] Passed Step: And y = 2
 
 [Passed]
 
 gwen>When z = x + y
 
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - Found {"y":"2"} in vars/scope/global
 INFO - evaluating z = 1 + 2
-INFO - Binding {"z":"3"} to vars/scope/global
-INFO - [0.0446 secs] Passed Step: When z = x + y
-
-     When z = x + y # [0.0446 secs] Passed
+INFO - [0.0802 secs] Passed Step: When z = x + y
 
 [Passed]
 
 gwen>Then z == 3
 
 INFO - Evaluating Step: Then z == 3
-INFO - Found {"z":"3"} in vars/scope/global
-INFO - [0.0005 secs] Passed Step: Then z == 3
-
-     Then z == 3 # [0.0005 secs] Passed
+INFO - [0.0006 secs] Passed Step: Then z == 3
 
 [Passed]
 
@@ -316,20 +302,19 @@ variables currently in memory:
 gwen>env
 
 {
-  "env" : {
-    "data" : [ {
-      "vars" : [ {
-        "scope" : "global",
-        "atts" : [ {
-          "x" : "1"
-        }, {
-          "y" : "2"
-        }, {
-          "z" : "3"
-        } ]
-      } ]
+  "scopes" : [ {
+    "scope" : "feature",
+    "atts" : [ ]
+  }, {
+    "scope" : "vars",
+    "atts" : [ {
+      "x" : "1"
+    }, {
+      "y" : "2"
+    }, {
+      "z" : "3"
     } ]
-  }
+  } ]
 }
 
 gwen>_
@@ -373,72 +358,49 @@ The interpreter will evaluate the feature and exit, and you will see the
 following output: 
 
 ```
-   __ ___      _____ _ __     _    
-  / _` \ \ /\ / / _ \ '_ \   { \," 
- | (_| |\ V  V /  __/ | | | {_`/   
-  \__, | \_/\_/ \___|_| |_|   `    
-  |___/                            
+   __ ___      _____ _ __     _
+  / _` \ \ /\ / / _ \ '_ \   { \,"
+ | (_| |\ V  V /  __/ | | | {_`/
+  \__, | \_/\_/ \___|_| |_|   `
+  |___/
 
-Welcome to gwen [MathInterpreter]! 
+Welcome to gwen [MathInterpreter]
 
-INFO - Found FeatureUnit(features/sample/math/BasicMath.feature,List(features/sample/math/Math.meta))
+INFO - Found FeatureUnit(features\sample\math\BasicMath.feature,List(features\sample\math\Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: features/sample/math/Math.meta
-INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Loading meta feature: features\sample\math\Math.meta
+INFO - Interpreting feature file: features\sample\math\Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
-INFO - Feature file interpreted: Math functions.featureFile
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
-INFO - Loaded FeatureSpec: Math functions
+INFO - Loaded StepDef: ++x
+INFO - Loaded Feature: Math functions
+INFO - Feature file interpreted: features\sample\math\Math.meta
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: features/sample/math/BasicMath.feature
+INFO - Interpreting feature file: features\sample\math\BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
-INFO - Binding {"x":"1"} to vars/scope/global
-INFO - [0.1321 secs] Passed Step: Given x = 1
+INFO - [0.0088 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
-INFO - Binding {"y":"2"} to vars/scope/global
-INFO - [0.0002 secs] Passed Step: And y = 2
+INFO - [0.0007 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - Found {"y":"2"} in vars/scope/global
 INFO - evaluating z = 1 + 2
-INFO - Binding {"z":"3"} to vars/scope/global
-INFO - [0.0431 secs] Passed Step: When z = x + y
+INFO - [0.0471 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
-INFO - Found {"z":"3"} in vars/scope/global
-INFO - [0.0002 secs] Passed Step: Then z == 3
-INFO - [0.1756 secs] Passed Scenario: 1 plus 2 should yield 3
-INFO - Feature file interpreted: Integer addition.featureFile
-
-   Feature: Integer addition # [0.1756 secs] Passed
-
-  Scenario: 1 plus 2 should yield 3 # [0.1756 secs] Passed
-      Given x = 1 # [0.1321 secs] Passed
-        And y = 2 # [0.0002 secs] Passed
-       When z = x + y # [0.0431 secs] Passed
-       Then z == 3 # [0.0002 secs] Passed
-
-INFO - [0.1756 secs] Passed FeatureSpec: Integer addition
+INFO - [0.0003 secs] Passed Step: Then z == 3
+INFO - [0.0568 secs] Passed Scenario: 1 plus 2 should yield 3
+INFO - [0.0568 secs] Passed Feature: Integer addition
+INFO - Feature file interpreted: features\sample\math\BasicMath.feature
 INFO - Closing environment context
 
-1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0 
+1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 4 steps: Passed 4, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.1756 secs] Passed
+[0.0568 secs] Passed
 
-[success] Total time: 1 s, completed May 8, 2014 1:41:14 AM
+[success] Total time: 0 s, completed 14/11/2014 9:37:01 AM
 ```
 
 ### Composing steps in meta
@@ -475,31 +437,23 @@ run -m features/sample/math/Math.meta
 The ++x function will load and become available.
 
 ```
-   __ ___      _____ _ __     _    
-  / _` \ \ /\ / / _ \ '_ \   { \," 
- | (_| |\ V  V /  __/ | | | {_`/   
-  \__, | \_/\_/ \___|_| |_|   `    
-  |___/                            
+   __ ___      _____ _ __     _
+  / _` \ \ /\ / / _ \ '_ \   { \,"
+ | (_| |\ V  V /  __/ | | | {_`/
+  \__, | \_/\_/ \___|_| |_|   `
+  |___/
 
-Welcome to gwen [MathInterpreter]! 
+Welcome to gwen [MathInterpreter]
 
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: features/sample/math/Math.meta
-INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Loading meta feature: features\sample\math\Math.meta
+INFO - Interpreting feature file: features\sample\math\Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
-INFO - Loaded FeatureSpec: Math functions
-INFO - Feature file interpreted: features/sample/math/Math.meta
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
+INFO - Loaded StepDef: ++x
+INFO - Loaded Feature: Math functions
+INFO - Feature file interpreted: features\sample\math\Math.meta
 INFO - Loaded meta feature: Math functions
 
 REPL Console
@@ -520,10 +474,7 @@ the variable x:
 gwen>Given x = 0
 
 INFO - Evaluating Step: Given x = 0
-INFO - Binding {"x":"0"} to vars/scope/global
-INFO - [0.1245 secs] Passed Step: Given x = 0
-
-    Given x = 0 # [0.1245 secs] Passed
+INFO - [0.0179 secs] Passed Step: Given x = 0
 
 [Passed]
 
@@ -532,32 +483,21 @@ gwen>When ++x
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding {"y":"1"} to vars/scope/global
-INFO - [0.0003 secs] Passed Step: Given y = 1
+INFO - [0.0017 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"0"} in vars/scope/global
-INFO - Found {"y":"1"} in vars/scope/global
 INFO - evaluating z = 0 + 1
-INFO - Binding {"z":"1"} to vars/scope/global
-INFO - [0.0420 secs] Passed Step: When z = x + y
+INFO - [0.0726 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found {"z":"1"} in vars/scope/global
-INFO - Binding {"x":"1"} to vars/scope/global
-INFO - [0.0002 secs] Passed Step: Then x = z
+INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
-INFO - [0.0425 secs] Passed Step: When ++x
-
-     When ++x # [0.0425 secs] Passed
+INFO - [0.0746 secs] Passed Step: When ++x
 
 [Passed]
 
 gwen>Then x == 1
 
 INFO - Evaluating Step: Then x == 1
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - [0.0004 secs] Passed Step: Then x == 1
-
-     Then x == 1 # [0.0004 secs] Passed
+INFO - [0.0006 secs] Passed Step: Then x == 1
 
 [Passed]
 
@@ -596,79 +536,56 @@ The interpreter will discover and load the meta and then evaluate the
 feature:
 
 ```
-   __ ___      _____ _ __     _    
-  / _` \ \ /\ / / _ \ '_ \   { \," 
- | (_| |\ V  V /  __/ | | | {_`/   
-  \__, | \_/\_/ \___|_| |_|   `    
-  |___/                            
 
-Welcome to gwen [MathInterpreter]! 
+   __ ___      _____ _ __     _
+  / _` \ \ /\ / / _ \ '_ \   { \,"
+ | (_| |\ V  V /  __/ | | | {_`/
+  \__, | \_/\_/ \___|_| |_|   `
+  |___/
 
-INFO - Found FeatureUnit(features/sample/math/MetaMath.feature,List(features/sample/math/Math.meta))
+Welcome to gwen [MathInterpreter]
+
+INFO - Found FeatureUnit(features\sample\math\MetaMath.feature,List(features\sample\math\Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: features/sample/math/Math.meta
-INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Loading meta feature: features\sample\math\Math.meta
+INFO - Interpreting feature file: features\sample\math\Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
-INFO - Feature file interpreted: Math functions.featureFile
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
-INFO - Loaded FeatureSpec: Math functions
+INFO - Loaded StepDef: ++x
+INFO - Loaded Feature: Math functions
+INFO - Feature file interpreted: features\sample\math\Math.meta
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: features/sample/math/MetaMath.feature
+INFO - Interpreting feature file: features\sample\math\MetaMath.feature
 INFO - Evaluating feature: Increment integer
 INFO - Evaluating Scenario: Incrementing 0 should yield 1
 INFO - Evaluating Step: Given x = 0
-INFO - Binding {"x":"0"} to vars/scope/global
-INFO - [0.1237 secs] Passed Step: Given x = 0
+INFO - [0.0083 secs] Passed Step: Given x = 0
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding {"y":"1"} to vars/scope/global
-INFO - [0.0002 secs] Passed Step: Given y = 1
+INFO - [0.0008 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"0"} in vars/scope/global
-INFO - Found {"y":"1"} in vars/scope/global
 INFO - evaluating z = 0 + 1
-INFO - Binding {"z":"1"} to vars/scope/global
-INFO - [0.0379 secs] Passed Step: When z = x + y
+INFO - [0.0449 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found {"z":"1"} in vars/scope/global
-INFO - Binding {"x":"1"} to vars/scope/global
-INFO - [0.0002 secs] Passed Step: Then x = z
+INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
-INFO - [0.0384 secs] Passed Step: When ++x
+INFO - [0.0459 secs] Passed Step: When ++x
 INFO - Evaluating Step: Then x == 1
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - [0.0002 secs] Passed Step: Then x == 1
-INFO - [0.1622 secs] Passed Scenario: Incrementing 0 should yield 1
-INFO - Feature file interpreted: Increment integer.featureFile
-
-   Feature: Increment integer # [0.1622 secs] Passed
-
-  Scenario: Incrementing 0 should yield 1 # [0.1622 secs] Passed
-      Given x = 0 # [0.1237 secs] Passed
-       When ++x # [0.0384 secs] Passed
-       Then x == 1 # [0.0002 secs] Passed
-
-INFO - [0.1622 secs] Passed FeatureSpec: Increment integer
+INFO - [0.0003 secs] Passed Step: Then x == 1
+INFO - [0.0545 secs] Passed Scenario: Incrementing 0 should yield 1
+INFO - [0.0545 secs] Passed Feature: Increment integer
+INFO - Feature file interpreted: features\sample\math\MetaMath.feature
 INFO - Closing environment context
 
-1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0 
+1 feature: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0, Loaded 0
 3 steps: Passed 3, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.1622 secs] Passed
+[0.0545 secs] Passed
 
-[success] Total time: 0 s, completed May 8, 2014 1:44:29 AM
+[success] Total time: 0 s, completed 14/11/2014 9:40:12 AM
 ```
 
 ### Testing the interpreter
@@ -700,7 +617,7 @@ class MathInterpreterTest extends FlatSpec {
       reportDir = Some(new File("target/report")), 
       paths = List(new File("features/sample/math"))
     )
-    
+      
     val intepreter = new MathInterpreter()
     intepreter.execute(options, None) match {
       case Passed(_) => // excellent :)
@@ -721,129 +638,82 @@ test
 The test output follows:
 
 ```
-INFO - Found FeatureUnit(features/sample/math/BasicMath.feature,List(features/sample/math/Math.meta))
+INFO - Found FeatureUnit(features\sample\math\BasicMath.feature,List(features\sample\math\Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: features/sample/math/Math.meta
-INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Loading meta feature: features\sample\math\Math.meta
+INFO - Interpreting feature file: features\sample\math\Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
-INFO - Feature file interpreted: Math functions.featureFile
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
-INFO - Loaded FeatureSpec: Math functions
+INFO - Loaded StepDef: ++x
+INFO - Loaded Feature: Math functions
+INFO - Feature file interpreted: features\sample\math\Math.meta
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: features/sample/math/BasicMath.feature
+INFO - Interpreting feature file: features\sample\math\BasicMath.feature
 INFO - Evaluating feature: Integer addition
 INFO - Evaluating Scenario: 1 plus 2 should yield 3
 INFO - Evaluating Step: Given x = 1
-INFO - Binding {"x":"1"} to vars/scope/global
-INFO - [0.1264 secs] Passed Step: Given x = 1
+INFO - [0.0091 secs] Passed Step: Given x = 1
 INFO - Evaluating Step: And y = 2
-INFO - Binding {"y":"2"} to vars/scope/global
-INFO - [0.0002 secs] Passed Step: And y = 2
+INFO - [0.0006 secs] Passed Step: And y = 2
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - Found {"y":"2"} in vars/scope/global
 INFO - evaluating z = 1 + 2
-INFO - Binding {"z":"3"} to vars/scope/global
-INFO - [0.0520 secs] Passed Step: When z = x + y
+INFO - [0.0521 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then z == 3
-INFO - Found {"z":"3"} in vars/scope/global
-INFO - [0.0005 secs] Passed Step: Then z == 3
-INFO - [0.1791 secs] Passed Scenario: 1 plus 2 should yield 3
-INFO - Feature file interpreted: Integer addition.featureFile
-
-   Feature: Integer addition # [0.1791 secs] Passed
-
-  Scenario: 1 plus 2 should yield 3 # [0.1791 secs] Passed
-      Given x = 1 # [0.1264 secs] Passed
-        And y = 2 # [0.0002 secs] Passed
-       When z = x + y # [0.0520 secs] Passed
-       Then z == 3 # [0.0005 secs] Passed
-
-INFO - [0.1791 secs] Passed FeatureSpec: Integer addition
+INFO - [0.0004 secs] Passed Step: Then z == 3
+INFO - [0.0622 secs] Passed Scenario: 1 plus 2 should yield 3
+INFO - [0.0622 secs] Passed Feature: Integer addition
+INFO - Feature file interpreted: features\sample\math\BasicMath.feature
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/features-sample-math-BasicMath.feature.1.meta.html
+INFO - Meta detail report generated: target\report\features-sample-math-BasicMath.feature.1.meta.html
 INFO - Generating feature detail report [Integer addition]..
-INFO - Feature detail report generated: target/report/features-sample-math-BasicMath.feature.html
+INFO - Feature detail report generated: target\report\features-sample-math-BasicMath.feature.html
 INFO - Closing environment context
-INFO - Found FeatureUnit(features/sample/math/MetaMath.feature,List(features/sample/math/Math.meta))
+INFO - Found FeatureUnit(features\sample\math\MetaMath.feature,List(features\sample\math\Math.meta))
 INFO - Initialising environment context
 INFO - MathEnvContext initialised
-INFO - Loading meta feature: features/sample/math/Math.meta
-INFO - Interpreting feature file: features/sample/math/Math.meta
+INFO - Loading meta feature: features\sample\math\Math.meta
+INFO - Interpreting feature file: features\sample\math\Math.meta
 INFO - Evaluating feature: Math functions
 INFO - Loading StepDef: ++x
-INFO - Feature file interpreted: Math functions.featureFile
-
-   Feature: Math functions # Loaded
-
-  @StepDef
-  Scenario: ++x # Loaded
-      Given y = 1 # Loaded
-       When z = x + y # Loaded
-       Then x = z # Loaded
-
-INFO - Loaded FeatureSpec: Math functions
+INFO - Loaded StepDef: ++x
+INFO - Loaded Feature: Math functions
+INFO - Feature file interpreted: features\sample\math\Math.meta
 INFO - Loaded meta feature: Math functions
-INFO - Interpreting feature file: features/sample/math/MetaMath.feature
+INFO - Interpreting feature file: features\sample\math\MetaMath.feature
 INFO - Evaluating feature: Increment integer
 INFO - Evaluating Scenario: Incrementing 0 should yield 1
 INFO - Evaluating Step: Given x = 0
-INFO - Binding {"x":"0"} to vars/scope/global
 INFO - [0.0002 secs] Passed Step: Given x = 0
 INFO - Evaluating Step: When ++x
 INFO - Evaluating StepDef: ++x
 INFO - Evaluating Step: Given y = 1
-INFO - Binding {"y":"1"} to vars/scope/global
 INFO - [0.0002 secs] Passed Step: Given y = 1
 INFO - Evaluating Step: When z = x + y
-INFO - Found {"x":"0"} in vars/scope/global
-INFO - Found {"y":"1"} in vars/scope/global
 INFO - evaluating z = 0 + 1
-INFO - Binding {"z":"1"} to vars/scope/global
-INFO - [0.0006 secs] Passed Step: When z = x + y
+INFO - [0.0004 secs] Passed Step: When z = x + y
 INFO - Evaluating Step: Then x = z
-INFO - Found {"z":"1"} in vars/scope/global
-INFO - Binding {"x":"1"} to vars/scope/global
 INFO - [0.0003 secs] Passed Step: Then x = z
 INFO - StepDef evaluated: ++x
-INFO - [0.0010 secs] Passed Step: When ++x
+INFO - [0.0008 secs] Passed Step: When ++x
 INFO - Evaluating Step: Then x == 1
-INFO - Found {"x":"1"} in vars/scope/global
-INFO - [0.0004 secs] Passed Step: Then x == 1
-INFO - [0.0016 secs] Passed Scenario: Incrementing 0 should yield 1
-INFO - Feature file interpreted: Increment integer.featureFile
-
-   Feature: Increment integer # [0.0016 secs] Passed
-
-  Scenario: Incrementing 0 should yield 1 # [0.0016 secs] Passed
-      Given x = 0 # [0.0002 secs] Passed
-       When ++x # [0.0010 secs] Passed
-       Then x == 1 # [0.0004 secs] Passed
-
-INFO - [0.0016 secs] Passed FeatureSpec: Increment integer
+INFO - [0.0003 secs] Passed Step: Then x == 1
+INFO - [0.0013 secs] Passed Scenario: Incrementing 0 should yield 1
+INFO - [0.0013 secs] Passed Feature: Increment integer
+INFO - Feature file interpreted: features\sample\math\MetaMath.feature
 INFO - Generating meta detail report [Math functions]..
-INFO - Meta detail report generated: target/report/features-sample-math-MetaMath.feature.1.meta.html
+INFO - Meta detail report generated: target\report\features-sample-math-MetaMath.feature.1.meta.html
 INFO - Generating feature detail report [Increment integer]..
-INFO - Feature detail report generated: target/report/features-sample-math-MetaMath.feature.html
+INFO - Feature detail report generated: target\report\features-sample-math-MetaMath.feature.html
 INFO - Closing environment context
 INFO - Generating feature summary report..
-INFO - Feature summary report generated: target/report/feature-summary.html
+INFO - Feature summary report generated: target\report\feature-summary.html
 
 2 features: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0 
 2 scenarios: Passed 2, Failed 0, Skipped 0, Pending 0, Loaded 0
 7 steps: Passed 7, Failed 0, Skipped 0, Pending 0, Loaded 0
 
-[0.1808 secs] Passed
+[0.0635 secs] Passed
 ```  
 
 ### Serial execution
@@ -896,15 +766,15 @@ run --help
 All the available options will be printed to the console as shown: 
 
 ```
-   __ ___      _____ _ __     _    
-  / _` \ \ /\ / / _ \ '_ \   { \," 
- | (_| |\ V  V /  __/ | | | {_`/   
-  \__, | \_/\_/ \___|_| |_|   `    
-  |___/                            
+   __ ___      _____ _ __     _
+  / _` \ \ /\ / / _ \ '_ \   { \,"
+ | (_| |\ V  V /  __/ | | | {_`/
+  \__, | \_/\_/ \___|_| |_|   `
+  |___/
 
-Welcome to gwen [MathInterpreter]! 
+Welcome to gwen [MathInterpreter]
 
-Usage: scala gwen.sample.math.MathInterpreter [options] [<feature files and/or directories>]
+Usage: scala gwen.sample.math.MathInterpreter [options] [<feature paths>]
 
   --version
         Prints the implementation version
@@ -913,15 +783,15 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<feature files and/or d
   -b | --batch
         Batch/server mode
   -| | --parallel
-        Parallel execution mode
+        Parallel batch execution mode)
   -p <properties file> | --properties <properties file>
-        <properties file> = User properties file
+        User properties file
   -r <report directory> | --report <report directory>
-        <report directory> Evaluation report output directory
-  -t <include/exclude tags> | --tags <include/exclude tags>
-        <include/exclude tags> = CSV list of tags to @include or ~@exclude
-  -m <meta file> | --meta <meta file>
-        <meta file> = Path to meta file
-  <feature files and/or directories>
-        Space separated list of feature files and/or directories     
+        Evaluation report output directory
+  -t <tags> | --tags <tags>
+        Comma separated list of @include or ~@exclude tags
+  -m <meta files> | --meta <meta files>
+        Comma separated list of meta file paths
+  <feature paths>
+        Space separated list of feature file and/or directory paths     
 ```
