@@ -349,6 +349,15 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scope1 should not be (scope2)
   }
   
+  "addScope" should "should maintain only one feature scope" in {
+    val scopes = new ScopedDataStack()
+    scopes.current should be (scopes.featureScope)
+    val home = scopes.addScope("home")
+    home should be (scopes.current)
+    val feature = scopes.addScope("feature")
+    feature should be (scopes.featureScope)
+  }
+  
   "set" should "should not replicate already visible attributes with same name and value" in {
     
     val scopes = new ScopedDataStack()

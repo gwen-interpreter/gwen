@@ -97,12 +97,18 @@ class ScopedDataStack() {
    * 			the newly added scope
    */
   def addScope(scope: String): ScopedData = 
-    if (current.scope != scope) {
-      if (current != featureScope && current.isEmpty) {
-        scopes pop
+    if (scope != current.scope) {
+      if (scope == featureScope.scope) {
+        featureScope
+      } else {
+        if (current != featureScope && current.isEmpty) {
+          scopes pop
+        }
+        scopes push ScopedData(scope) head
       }
-      scopes push ScopedData(scope) head
-    } else current
+    } else {
+      current
+    }
   
   /**
    * Provides access to the currently active scope.
