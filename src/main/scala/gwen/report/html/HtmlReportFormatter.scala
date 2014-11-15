@@ -278,16 +278,17 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  </td>
 		  <td>
 		<div class="panel-heading">
-			<h3>
-  				<span class="pull-right" style="white-space: nowrap;">
-					<center>
-						<span class="badge">${escape(interpreterName)}</span>
-					</center>
-				</span>
-				${escape(heading)}
-			</h3>
+			<h3>${escape(heading)}</h3>
+  			<span class="pull-right" style="white-space: nowrap;">
+				<center>
+					<span class="badge" style="background-color: #1f23ae;">${escape(interpreterName)}</span>
+				</center>
+			</span>
 			<small>${new Date()}</small>
-		</div></tr></table>"""
+		</div>
+		  </td>
+		  </tr>
+	    </table>"""
 						
   private def formatProgressBar(name: String, evalStatuses: List[EvalStatus]): String = formatProgressBar(name, StatusKeyword.countsByStatus(evalStatuses))
 							
