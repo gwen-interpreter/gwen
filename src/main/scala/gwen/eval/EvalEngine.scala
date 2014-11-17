@@ -16,12 +16,12 @@
 
 package gwen.eval
 
-import scala.sys.process.stringToProcess
+//import scala.sys.process.stringToProcess
+import scala.sys.process._
 import scala.util.matching.Regex
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.dsl.Step
+import scala.sys.process.ProcessBuilderImpl
 
 /**
  * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -72,6 +72,17 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {
       case r"""I execute system process "(.+?)"$$$systemproc""" =>
+        
+        systemproc.split(" ").foreach{ str => 
+        	str match {
+        		case ">" => println (s"Redirect detected")
+        		case "|" => println (s"Pipe detected")
+        		case default => println (s"Item: $str") 
+        	}
+        }
+        val sp: ProcessBuilder = scala.sys.process.ProcessBuilderImpl.stringToProcess(systemproc)
+        val arr = systemproc
+        println(s"Hello $arr")
         systemproc.! match {
           case 0 => 
           case _ => sys.error(s"The call to $systemproc has failed.")
