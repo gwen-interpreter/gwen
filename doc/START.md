@@ -148,7 +148,7 @@ notice that this evaluation engine is stateless. It does not store any service
 or state within itself. All of that is stored in the evaluation context (which 
 lives only on the stack). This is to support parallel execution.
 
-Create the following _MathEvalEngine_ class in the _gwen.sample.math_ package 
+Create the following _MathEvalEngine_ trait in the _gwen.sample.math_ package 
 in the _main_ source folder:
 
 _MathEvalEngine.scala_
@@ -506,7 +506,7 @@ gwen>_
 ### Evaluating features with meta
 
 Again, like before, we can capture these exact steps in a feature file.  
-Create the following _MetaMath.feature_ file in the _features/sample/math  
+Create the following _MetaMath.feature_ file in the _features/sample/math_  
 folder:
 
 _MetaMath.feature_
