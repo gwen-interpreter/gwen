@@ -3,7 +3,7 @@
 gwen-interpreter
 ================
 
->> [G]iven-[W]hen-Th[en]
+> [G]iven-[W]hen-Th[en]
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter written in [Scala](http://www.scala-lang.org). It provides all the 
