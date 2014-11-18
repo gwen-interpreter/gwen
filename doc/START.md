@@ -609,15 +609,17 @@ import java.io.File
 import org.scalatest.FlatSpec
 
 class MathInterpreterTest extends FlatSpec {
-  
+
   "math features" should "evaluate" in {
-    
+
+    val dir = new File(getClass().getResource("/gwen/sample/BasicMath.feature").getFile()).getParentFile()
+    val relativeDir = new File(new File(".").toURI().relativize(dir.toURI()).getPath());
+
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report")), 
-      paths = List(new File("features/sample/math"))
-    )
-      
+      paths = List(relativeDir))
+
     val intepreter = new MathInterpreter()
     intepreter.execute(options, None) match {
       case Passed(_) => // excellent :)

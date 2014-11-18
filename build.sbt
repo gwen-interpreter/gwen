@@ -36,7 +36,7 @@ publishArtifact in Test := false
 
 licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
 
-homepage := Some(url("https://github.com/gwen-interpreter/gwen"))
+homepage := Some(url("http://gwen-interpreter.github.io/gwen/"))
 
 pomExtra := (
   <scm>

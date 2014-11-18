@@ -32,5 +32,5 @@ takes place on an attractor if the plotted trajectory of a large proportion of
 these conditions converges to and orbits around a chaotic region. The Lorenz 
 attractor, discovered by 
 [Edward Lorenz](http://en.wikipedia.org/wiki/Edward_Lorenz) shows one such 
-trajectory that looks like a butterfly. The Gwen logo captures this beautiful 
-image with the proposition that Gwen can detect chaotic behavior.
+trajectory that looks like a butterfly. The logo captures this image with 
+the proposition that Gwen can detect chaotic behavior.
