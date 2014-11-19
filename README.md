@@ -148,11 +148,17 @@ The following subset of the Gherkin grammar is supported (shown here in
 notation).
 
 ```
+ {{{
+      
   spec        = feature, 
                 [background], 
                 {scenario}
   feature     = {tag}, 
                 "Feature:", name
+                [narrative]
+  narrative     "As a ", expression
+                "I want ", expression
+                ["So that ", expression]
   background  = "Background:", name
                 {step}
   scenario    = {tag}, 
@@ -163,6 +169,9 @@ notation).
   keyword     = "Given" | "When" | "Then" | "And" | "But"
   expression  = character, {character}
   name        = {character}
+  comment     = "#", expression
+ 
+ }}}
 ```
 
 Evaluation Engines
