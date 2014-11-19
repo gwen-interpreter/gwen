@@ -25,9 +25,12 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
   
   private val featureString = """
    
-       Feature: Gwen
-	
-  Background: The butterfly effect
+     Feature: Gwen
+         As a tester
+       I want to automate tests
+      So that gwen can run them
+
+    Background: The butterfly effect
         Given a deterministic nonlinear system
          When a small change is initially applied
          Then a large change will eventually result
@@ -59,7 +62,7 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
     
     val featureSpec = parse(featureString) match {
       case Success(featureSpec, _) => 
-        featureSpec.feature should be (Feature("Gwen"))
+        featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
           Background("The butterfly effect", 
             List(

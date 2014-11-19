@@ -43,15 +43,25 @@ object prettyPrint {
         formatStatus(spec.evalStatus) +
         background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
-    case Feature(tags, description) =>
-      s"${formatTags("   ", tags)}   Feature: ${description}"
+    case Feature(tags, name, narrative) =>
+      if (narrative.isEmpty) {
+    	s"${formatTags("   ", tags)}   Feature: ${name}"
+      } else {
+        val narrativeLines = narrative.map {line =>
+          val words = line.split(" ")
+          val keyword = s"${words(0)} ${words(1)}"
+          val expression = words.drop(2).mkString(" ")
+          s"\n${rightJustify(keyword)}  ${keyword} ${expression}"
+        }
+        s"${formatTags("   ", tags)}   Feature: ${name}${narrativeLines.mkString}"
+      }
     case background @ Background(description, steps) =>
       s"\n\nBackground: ${description}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, description, background, steps) =>
       background.map(apply).getOrElse("") +
       s"\n\n${formatTags("  ", tags)}  Scenario: ${description}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case Step(keyword, expression, evalStatus, attachments) =>
-      rightJustify(keyword) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
+      rightJustify(keyword.toString) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
   }
   
   /**
@@ -76,8 +86,8 @@ object prettyPrint {
    * ensures that when steps are listed one after the other, their
    * clauses line up.
    */
-  private def rightJustify(keyword: StepKeyword.Value) = (" " * (9  - keyword.toString.length))
-
+  private def rightJustify(keyword: String) = (" " * (9  - keyword.length))
+  
   /**
    * Prints a list of nodes, giving each node a prefix and separator.
    * 

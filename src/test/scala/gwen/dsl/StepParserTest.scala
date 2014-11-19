@@ -47,10 +47,10 @@ class StepParserTest extends FlatSpec with Matchers with SpecParser {
     
     StepKeyword.values foreach { keyword =>
       
-      assertFail(s"$keyword",   "incomplete step expression")
-      assertFail(s"$keyword ",  "incomplete step expression")
-      assertFail(s"$keyword\t", "incomplete step expression")
-      assertFail(s"$keyword\n", "incomplete step expression")
+      assertFail(s"$keyword",   "incomplete expression")
+      assertFail(s"$keyword ",  "incomplete expression")
+      assertFail(s"$keyword\t", "incomplete expression")
+      assertFail(s"$keyword\n", "incomplete expression")
       
       assertFail(s"I do not start with the $keyword clause", "'Given|When|Then|And|But' expected")
     }

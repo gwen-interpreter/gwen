@@ -91,7 +91,12 @@ trait HtmlReportFormatter extends ReportFormatter {
 					<span><p>${escape(spec.feature.tags.mkString(" "))}</p></span>""" else ""}
 				<span class="label label-black">Feature:</span>
 				<span class="pull-right">${durationOrStatus(spec.evalStatus)}</span>
-				${escape(spec.feature.name)}
+				${escape(spec.feature.name)}${if (!spec.feature.narrative.isEmpty) s"""
+				<p>
+				<ul class="list-group bg-default">${(spec.feature.narrative  map { line => 
+					s"""<li class="list-group-item bg-default">${line}</li>"""}).mkString}
+				</ul>
+				</p>""" else ""}
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Scenario", scenarios.map(_.evalStatus))}

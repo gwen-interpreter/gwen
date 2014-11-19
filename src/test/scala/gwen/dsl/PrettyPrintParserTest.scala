@@ -27,6 +27,9 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
    
      @wip
      Feature: Gwen
+         As a tester
+       I want to automate tests
+      So that gwen can run them
 	
   Background: The butterfly effect
 	    Given a deterministic nonlinear system
@@ -57,8 +60,12 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
   "pretty print of normalised Gwen feature" should "replicate background for each scenario" in {
     
     val specFeature = normalise(parse(featureString).get)
+    println(prettyPrint(specFeature).replace("\r", ""))
     prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
    Feature: Gwen
+       As a tester
+     I want to automate tests
+    So that gwen can run them
 
 Background: The butterfly effect
       Given a deterministic nonlinear system

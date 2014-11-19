@@ -106,14 +106,17 @@ object FeatureSpec {
  * 			set of tags
  * @param name
  * 			the feature name
+ * @param narrative
+ * 			optional narrative (As a.. I want.. So that..)
  *
  * @author Branko Juric
  */
-case class Feature(tags: Set[Tag], name: String) extends SpecNode with Positional {
+case class Feature(tags: Set[Tag], name: String, narrative: List[String]) extends SpecNode with Positional {
   override def toString = name
 }
 object Feature {
-  def apply(name: String) = new Feature(Set(), name)
+  def apply(name: String) = new Feature(Set(), name, Nil)
+  def apply(name: String, narrative: List[String]) = new Feature(Set(), name, narrative)
 }
 
 /**

@@ -32,6 +32,10 @@ import scala.util.parsing.combinator.JavaTokenParsers
  *                   {scenario}
  *     feature     = {tag}, 
  *                   "Feature:", name
+ *                   [narrative]
+ *     narrative     "As a ", expression
+ *                   "I want ", expression
+ *                   ["So that ", expression]
  *     background  = "Background:", name
  *                   {step}
  *     scenario    = {tag}, 
@@ -42,6 +46,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
  *     keyword     = "Given" | "When" | "Then" | "And" | "But"
  *     expression  = character, {character}
  *     name        = {character}
+ *     comment     = "#", expression
  *  
  *  }}}
  * 
@@ -84,7 +89,7 @@ trait SpecParser extends JavaTokenParsers {
    * White space, hash or double slash line comments, and multiple-line comments 
    * will be ignored by all parsers.
    */
-  protected override val whiteSpace = """(\s|(//|#).*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+  protected override val whiteSpace = """(\s|#.*)+""".r
 
   /**
    * Produces a complete feature spec tree.
@@ -99,14 +104,23 @@ trait SpecParser extends JavaTokenParsers {
   }
 
   /**
-   * Produces a feature node.
+   * Produces a feature node with optional narrative.
    */
   def feature: Parser[Feature] = positioned {
-    (tag*) ~ (token("Feature") ~ ":" ~> name) ^^ {
-      case tags ~ name => 
-        new Feature(tags.toSet, trim(name))
+    (tag*) ~ (token("Feature") ~ ":" ~> name) ~ ((asA ~ iWant ~ (soThat?))?) ^^ {
+      case tags ~ name ~ narrative => narrative match {
+        case None => new Feature(tags.toSet, trim(name), Nil)
+        case Some(asA ~ iWant ~ soThat) => soThat match {
+          case None => new Feature(tags.toSet, trim(name), List(trim(asA)))
+          case Some(soThat) => new Feature(tags.toSet, trim(name), List(trim(asA), trim(iWant), trim(soThat)))
+        }
+      }
     }
   }
+  
+  private def asA = """\s*As (a|an) .+""".r
+  private def iWant = """\s*I want .+""".r
+  private def soThat = """\s*So that .+""".r
   
   /**
    * Produces a background node.
@@ -155,11 +169,10 @@ trait SpecParser extends JavaTokenParsers {
     { case name if StepKeyword.names.contains(name) => StepKeyword.names(name) }
   ) withFailureMessage s"'${StepKeyword.values.mkString("|")}' expected"
 
-  
   /**
-   * Parses a step expression line to ensure it is not empty. 
+   * Parses an expression line to ensure it is not empty. 
    */
-  private def expression = ".+".r withFailureMessage ("incomplete step expression")
+  private def expression = ".+".r withFailureMessage ("incomplete expression")
   
   /**
    * Parses a name string (allows blanks). 

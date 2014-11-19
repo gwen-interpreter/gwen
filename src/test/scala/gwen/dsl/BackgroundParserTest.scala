@@ -27,8 +27,6 @@ class BackgroundParserTest extends FlatSpec with Matchers with SpecParser {
   private val step2 = Step(StepKeyword.Then, "I am not step 1")
   
   private val comment1 = "# I am single line hash comment"
-  private val comment2 = "// I am single line double slash comment"
-  private val comment3 = "/* I am a\nmulti line\ncomment */"
   
   "Valid backgrounds" should "parse" in {
       
@@ -55,16 +53,6 @@ class BackgroundParserTest extends FlatSpec with Matchers with SpecParser {
       parse(s"Background: name\n$step1\n$step2\n$comment1").get    should be (Background("name", List(step1, step2)))
       parse(s"Background: name\n$step1\n$comment1\n$step2").get    should be (Background("name", List(step1, step2)))
       parse(s"Background: name\n$comment1\n$step1\n$step2").get    should be (Background("name", List(step1, step2)))
-      parse(s"Background: name\n$comment1\n$step1\n$comment2").get should be (Background("name", List(step1)))
-      
-      parse(s"Background: name\n$step1\n$comment3").get            should be (Background("name", List(step1)))
-      parse(s"Background: name\n$step1\n$step2\n$comment3").get    should be (Background("name", List(step1, step2)))
-      parse(s"Background: name\n$step1\n$comment3\n$step2").get    should be (Background("name", List(step1, step2)))
-      parse(s"Background: name\n$comment3\n$step1\n$step2").get    should be (Background("name", List(step1, step2)))
-      parse(s"Background: name\n$comment3\n$step1\n$comment3").get should be (Background("name", List(step1)))
-      
-      parse(s"Background: name\n$comment1\n$step1\n$comment3").get should be (Background("name", List(step1)))
-      parse(s"Background: name\n$comment3\n$step1\n$comment1").get should be (Background("name", List(step1)))
       
       parse(s"Background:\n$step1\n$step2").get    should be (Background(s"$step1", List(step2)))
       parse(s"Background: \n$step1\n$step2").get   should be (Background(s"$step1", List(step2)))
@@ -73,8 +61,6 @@ class BackgroundParserTest extends FlatSpec with Matchers with SpecParser {
       parse(s"Background: \t\n$step1\n$step2").get should be (Background(s"$step1", List(step2)))
       
       parse("Background: I dont have any steps").get should be (Background("I dont have any steps", Nil))
-      
-      parse(s"Background: All my steps are commented out\n$comment1\n$comment2\n$comment3").get should be (Background("All my steps are commented out", Nil))
       
       StepKeyword.values foreach { clause =>
         parse(s"Background: I contain a $clause keyword in name\n$step1").get should be (Background(s"I contain a $clause keyword in name", List(step1)))

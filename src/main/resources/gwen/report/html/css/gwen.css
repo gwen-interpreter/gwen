@@ -84,6 +84,11 @@
 	border-color: #f0ad4e;
 }
 
+.bg-default {
+	background-color: #f5f5f5;
+	border-color: #0d0d0d;
+}
+
 .label {
 	font-size: 100%;
 	margin-right: 5px;
