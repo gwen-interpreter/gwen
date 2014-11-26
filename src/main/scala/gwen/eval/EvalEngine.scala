@@ -16,12 +16,13 @@
 
 package gwen.eval
 
-//import scala.sys.process.stringToProcess
-import scala.sys.process._
+import scala.sys.process.stringSeqToProcess
+import scala.sys.process.stringToProcess
 import scala.util.matching.Regex
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import gwen.dsl.Step
-import scala.sys.process.ProcessBuilderImpl
 
 /**
  * Base trait for gwen evaluation engines. An evaluation engine performs the
