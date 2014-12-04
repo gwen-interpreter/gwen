@@ -6,20 +6,30 @@ gwen-interpreter
 > [G]iven-[W]hen-Th[en]
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter written in [Scala](http://www.scala-lang.org). It provides all the 
-necessary processing and tooling required to interpret Gherkin features and 
-abstracts the evaluation engine for you to prescribe what steps you want to 
-support and define what thing you want to evaluate.
+interpreter with an abstracted evaluation engine. The following concrete 
+implementations are available:
+
+- [gwen-web](https://github.com/gwen-interpreter/gwen-web)
+  - A web engine for automating web application testing in a way that requires 
+    no development on behalf of the user.
+
+If you are a user who would like to start using gwen, then you can download 
+and install one of the above implementations. If on the other hand you are a 
+developer who would like to develop a new engine implementation or are 
+interested in a technical overview, then please read on.
+
+Feature Evaluation
+------------------
 
 ```    
    Feature: Gwen Interpreter
     
-  Scenario: Evaluate a behavior
+  Scenario: Evaluation by interpretation
       Given a software system
         And a feature specification
        When Gwen is invoked
        Then interpretation will occur
-	    And evaluation will result
+        And evaluation will result
 ```
 
 ### How does it work?
@@ -29,14 +39,6 @@ syntax tree for validation and correctness. It then traverses all scenarios
 and dispatches the processing of each step to an evaluation engine that you 
 define (or provide) and mix in. Your engine performs the actual evaluation 
 work required for each step. Gwen then captures and reports the results.
-
-###Public engines
-
-The following Gwen engines are currently available:
-
-- [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - A web engine for automating web application testing in a way that requires 
-    no development on behalf of the user.
 
 Key Features
 ------------
