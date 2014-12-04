@@ -6,17 +6,17 @@ gwen-interpreter
 > [G]iven-[W]hen-Th[en]
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter with an abstracted evaluation engine. The following concrete 
-implementations are available:
+interpreter with an abstracted evaluation engine. The following implementation 
+is currently available:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - A web engine for automating web application testing in a way that requires 
     no development on behalf of the user.
 
 If you are a user who would like to start using gwen, then you can download 
-and install one of the above implementations. If on the other hand you are a 
-developer who would like to develop a new engine implementation or are 
-interested in a technical overview, then please read on.
+and install the above implementation. If on the other hand you are a developer 
+who would like to build a new engine implementation or are interested in a 
+technical overview of the platform, then please read on.
 
 Feature Evaluation
 ------------------
