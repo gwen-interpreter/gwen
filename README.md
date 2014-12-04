@@ -18,18 +18,18 @@ and install the above implementation. If on the other hand you are a developer
 who would like to build a new engine implementation or are interested in a 
 technical overview of the platform, then please read on.
 
-Feature Evaluation
-------------------
+Automation by Interpretation
+----------------------------
 
 ```    
    Feature: Gwen Interpreter
     
-  Scenario: Evaluation by interpretation
+  Scenario: Automation by interpretation
       Given a software system
-        And a feature specification
+        And a behavioral specification
        When Gwen is invoked
-       Then interpretation will occur
-        And evaluation will result
+       Then the specification is interpreted
+        And the behavior is evaluated
 ```
 
 ### How does it work?
