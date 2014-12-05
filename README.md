@@ -6,21 +6,21 @@ gwen-interpreter
 > [G]iven-[W]hen-Th[en]
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter and an automation platform. It accepts Given-When-Then 
+interpreter and universal automation platform. It accepts Given-When-Then 
 specifications as input and produces dynamically executing instructions as 
 output. It has an abstracted evaluation engine that allows you to prescribe 
-what steps you want to support and define what things you want to automate. 
+what DSL you want to support and define what things you want to automate. 
 Any engine implementation can be developed and mixed in. We have developed 
-the following engine and made it available for public use:
+the following engine and shared it for public use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - A web engine for automating web application testing in a way that requires 
     no development on behalf of the user.
 
-If a front end web automation tool is what you need, then you can download and 
+If a front end web automation tool is what you need, then you can download 
 and start using _gwen-web_ straight away. If on the other hand you would like 
-to use gherkin to drive a different type of automation activity then you can 
-develop your own engine and mix it in (and share it if you like).
+to use gherkin features to drive a different type of automation then you can 
+develop a new engine for that purpose (and share it too if you like).
 
 Automation by Interpretation
 ----------------------------
@@ -29,10 +29,11 @@ Automation by Interpretation
    Feature: Gwen Interpreter
     
   Scenario: Automation by interpretation
-      Given an acceptance specification
-        And a software system
+      Given a feature specification
+        And a target system
        When gwen is invoked
        Then the specification is interpreted
+        And the feature is executed
         And the system is evaluated
 ```
 
