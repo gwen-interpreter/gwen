@@ -17,10 +17,10 @@ the following engine and made it available for public use:
   - A web engine for automating web application testing in a way that requires 
     no development on behalf of the user.
 
-If the above engine meets your current needs, then you can download and start 
-using it straight away. If on the other hand you would like to develop a new 
-type of automation engine or are interested in a more technical overview, then 
-please read on..
+If a front end web automation tool is what you need, then you can download and 
+and start using _gwen-web_ straight away. If on the other hand you would like 
+to use gherkin to drive a different type of automation activity then you can 
+develop your own engine and mix it in (and share it if you like).
 
 Automation by Interpretation
 ----------------------------
@@ -29,11 +29,11 @@ Automation by Interpretation
    Feature: Gwen Interpreter
     
   Scenario: Automation by interpretation
-      Given a software system
-        And a behavioral specification
-       When Gwen is invoked
+      Given an acceptance specification
+        And a software system
+       When gwen is invoked
        Then the specification is interpreted
-        And the behavior is evaluated
+        And the system is evaluated
 ```
 
 ### How does it work?
