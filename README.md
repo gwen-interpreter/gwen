@@ -11,8 +11,8 @@ specifications as input and produces dynamically executing instructions as
 output. It has an abstracted evaluation engine so that you can prescribe 
 what DSL you want to support and define what things you want to automate in 
 your implementation. Any new or existing engine implementation can be mixed 
-in. We have developed the following engine and shared it here for everyone 
-to contribute to and use:
+into the interpreter. We have developed the following engine and shared it 
+here for everyone to use (and hopefully contribute to):
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An acceptance driven web engine for automating web testing 
