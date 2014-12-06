@@ -1,9 +1,9 @@
 ![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
 
-gwen-interpreter
-================
+gwen
+====
 
-> [G]iven-[W]hen-Th[en]
+> A [G]iven-[W]hen-Th[en] interpreter
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 driven automation platform. It is an interpreter that accepts Given-When-Then 
