@@ -10,7 +10,7 @@ driven automation platform. It is an interpreter that accepts Given-When-Then
 specifications as input and produces dynamically executing instructions as 
 output. It has an abstracted evaluation engine allowing you to prescribe 
 what DSL you want to support and define what things you want to automate in 
-a custom implementation. Any custom owned or publically shared engine can be 
+custom implementations. Any custom owned or publically shared engine can be 
 mixed into the interpreter. We have developed the following engine and 
 shared it here for everyone to use (and hopefully contribute to):
 
