@@ -19,10 +19,9 @@ for everyone to use:
     in a way that requires no development on behalf of the user.
 
 If the above engine suits your automation needs, then you can download 
-and start using the above engine straight away. If on the other hand you 
-would like to use gherkin features to drive a different type of automation 
-then you can develop a new engine for that purpose (and share it too if you 
-like).
+and start using it straight away. If on the other hand you would like to 
+use gherkin features to drive a different type of automation then you can 
+develop a new engine for that purpose (and share it too if you like).
 
 Automation by Interpretation
 ----------------------------
