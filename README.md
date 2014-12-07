@@ -50,7 +50,7 @@ Key Features
 ------------
 
 - Gherkin feature parser
-- Evaluation abstraction
+- Evaluation engine abstraction
 - REPL console
 - Evaluation reports
 - Data scopes
@@ -191,7 +191,7 @@ functions and operations on target APIs to evaluate behavior. You prescribe
 what steps are supported and how they are processed by implementing your own 
 engine using the abstractions provided. Once the interpreter has been loaded 
 with your engine, it can readily execute both individual steps and complete 
-features.
+feature files.
 
 REPL Console
 ------------
