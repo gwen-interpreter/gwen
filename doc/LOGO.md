@@ -18,19 +18,18 @@ butterfly.
  
 Dynamic systems can be observed to possess chaotic behavior and this is common 
 in software. The smallest of changes to programs and environments can give 
-rise to the most erratic effects. Gwen evaluates software behavior by 
+rise to the most erratic effects. Gwen evaluates software systems by 
 interpreting Gherkin features and dispatching their _Given-When-Then_ steps to 
-evaluation engines that you define. These in turn map individual steps to 
-discrete units of work to create conditions (_Givens_), perform operations 
+evaluation engines that in turn map all of those 
+to discrete units of work to create conditions (_Givens_), perform operations 
 (_Whens_), and assert expectations (_Thens_). The cumulative result is a chain 
-of events that evaluate in sequence to model cause and effect. When a change 
+of actions that execute in sequence to model cause and effect. When a change 
 to the initial conditions of a deterministic system cannot guarantee a 
 predictable outcome, then the behavior of that system can be said to be 
 chaotic. Software systems that are generally stable can still exhibit chaotic 
 behavior for perhaps only a subset of initial conditions. The chaotic behavior 
-takes place on an attractor if the plotted trajectory of a large proportion of 
-these conditions converges to and orbits around a chaotic region. The Lorenz 
-attractor, discovered by 
-[Edward Lorenz](http://en.wikipedia.org/wiki/Edward_Lorenz) shows one such 
-trajectory that looks like a butterfly. The logo captures this image with 
+takes place on an attractor if a large proportion of these conditions converges 
+to and orbits around a chaotic region. The Lorenz attractor, discovered by 
+[Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) shows one such 
+orbit that looks like a butterfly. The logo captures this image with 
 the proposition that Gwen can detect chaotic behavior.
