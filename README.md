@@ -1,4 +1,4 @@
-![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)
+[![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
 
 gwen
 ====
