@@ -37,4 +37,4 @@ with the proposition that Gwen can detect chaotic behavior.
 
 ***
 
-<em>Gwen Logo developed by [Nascent Creative](http://www.nascentcreative.com.au)</em>
+<em>Gwen logo developed by [Nascent Creative](http://www.nascentcreative.com.au)</em>
