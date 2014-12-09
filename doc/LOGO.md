@@ -33,4 +33,4 @@ behavior takes place on an attractor if a large proportion of these conditions
 converges to and orbits around a chaotic region. The Lorenz attractor, 
 discovered by [Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) 
 shows one such orbit that looks like a butterfly. The logo captures this image 
-with theproposition that Gwen can detect chaotic behavior.
+with the proposition that Gwen can detect chaotic behavior.
