@@ -34,7 +34,7 @@ project.
 ```
 name := "gwen-math"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 

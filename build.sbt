@@ -2,17 +2,15 @@ name := "gwen"
 
 description := "A common platform for mapping Gherkin features to exectuable code."
 
-version := "0.1.0-SNAPSHOT"
-
 organization := "org.gweninterpreter"
 
 organizationHomepage := Some(url("http://gweninterpreter.org"))
 
 startYear := Some(2014)
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
-crossScalaVersions := Seq("2.11.2", "2.10.4")
+crossScalaVersions := Seq("2.11.4", "2.10.4")
 
 scalacOptions += "-feature"
 
@@ -67,7 +65,7 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "com.typesafe" % "config" % "1.2.1" 
 
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.2"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.6"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
@@ -79,7 +77,7 @@ libraryDependencies += "jline" % "jline" % "2.12"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 
-libraryDependencies += "org.mockito" % "mockito-all" % "1.9.5" % "test"
+libraryDependencies += "org.mockito" % "mockito-all" % "1.10.14" % "test"
 
 libraryDependencies := {
   CrossVersion.partialVersion(scalaVersion.value) match {
