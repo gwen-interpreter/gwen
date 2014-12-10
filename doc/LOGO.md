@@ -20,8 +20,9 @@ Dynamic systems can be observed to possess chaotic behavior and this is common
 in software. The smallest of changes to programs and environments can give 
 rise to the most erratic effects. Gwen evaluates software systems by 
 interpreting Gherkin features and dispatching their _Given-When-Then_ steps to 
-evaluation engines that in turn map those to discrete units of work to perform 
+evaluation engines that in turn map those to discrete units of work that perform 
 the following:
+
 - create conditions (_Givens_)
 - perform operations (_Whens_)
 - and assert expectations (_Thens_). 
