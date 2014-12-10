@@ -1,5 +1,5 @@
-About the Gwen Logo
-===================
+About the Logo
+==============
 
 ![Gwen Logo](img/gwen-attractor.png)
 
