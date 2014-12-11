@@ -4,10 +4,10 @@ gwen
 ====
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts feature specifications as input and produces 
+interpreter that accepts plain text specifications as input and produces 
 dynamically executing instructions as output. It has an abstracted 
 evaluation engine allowing you to prescribe what DSL you want to support 
-and define what things you want to automate. Any user owned or publically 
+and define what things you want to automate. Any custom built or publically 
 shared engine implementation can be mixed into the interpreter. We have 
 developed the following engine and shared it here for everyone to use:
 
