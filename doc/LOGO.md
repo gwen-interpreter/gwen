@@ -25,7 +25,7 @@ the following:
 
 - create conditions (_Givens_)
 - perform operations (_Whens_)
-- and assert expectations (_Thens_). 
+- and assert expectations (_Thens_)
 
 The cumulative result is a chain of actions that execute in sequence 
 to model cause and effect. 
