@@ -1,4 +1,4 @@
-[![Gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
+[![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
 
 gwen
 ====
@@ -7,9 +7,22 @@ Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin)
 interpreter that accepts plain text specifications as input and produces 
 dynamically executing instructions as output. It has an abstracted 
 evaluation engine allowing you to prescribe what steps you want to support 
-and define what things you want to automate. Any custom built or publically 
-shared engine implementation can be mixed into the interpreter. We have 
-developed the following engine and shared it here for everyone to use:
+and define what things you want to automate.
+
+Evaluation Engines
+------------------
+
+Gwen uses evaluation engines to map incoming steps to functions and operations 
+on target APIs to achieve automation by:
+
+- Creating conditions (_Givens_)
+- Performing operations (_Whens_)
+- Asserting expectations (_Thens_)
+
+Once the interpreter has been loaded with an engine, it can readily execute 
+both individual steps and complete feature files. Any custom built or 
+publically shared engine implementation can be mixed into the interpreter. We 
+have developed the following engine and shared it here for everyone to use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An acceptance driven web engine for automating web testing 
@@ -27,22 +40,21 @@ Automation by Interpretation
 ```    
    Feature: Gwen Interpreter
     
-  Scenario: Automation by interpretation
+  Scenario: Automate
       Given a feature specification
         And a target system
+        And an evaluation engine
        When gwen is invoked
        Then the specification is interpreted
         And the steps are executed
         And the system is evaluated
 ```
 
-### How does it work?
-
-The Gwen interpreter reads Gherkin features and parses them into an abstract 
+The gwen interpreter reads Gherkin features and parses them into an abstract 
 syntax tree for validation and correctness. It then traverses all scenarios 
 and dispatches the processing of each step to an evaluation engine that you 
-define (or provide) and mix in. The engine performs the actual evaluation 
-work required for each step. Gwen then captures and reports the results.
+define (or provide) and mix in. The engine performs the automation work on the 
+target system. Gwen then captures and reports the results.
 
 Key Features
 ------------
@@ -63,89 +75,6 @@ Core Requirements
 - Java 1.6 or later
 - Scala 2.11.x, 2.10.x 
 
-Development
------------
-
-### Adding Gwen as a Binary Dependency
-
-To build a new engine, you will need to create a new scala project and include 
-Gwen as a dependency.
-
-#### SBT
-
-To add Gwen as a binary dependency in an sbt project, add the following line to 
-your build.sbt file. The `%%` instructs sbt to pull 
-down the packaged dependency that matches your `scalaVersion` setting. 
-
-```
-libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
-```
-
-Also add the following repositories:
-
-```
-resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
-
-resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-```
-
-#### Maven
-
-If you are using a maven project, add the following dependency to your pom.xml 
-file. In this case, you will need to explicitly specify the scala version in 
-the `artifactId` suffix as shown.    
-
-```
-<dependency>
-	<groupId>org.gweninterpreter</groupId>
-	<artifactId>gwen_2.11</artifactId>       <!-- for scala 2.11.x -->
-	<!--artifactId>gwen_2.10</artifactId-->  <!-- for scala 2.10.x -->
-	<version>0.1.0-SNAPSHOT</version>
-	<type>jar</type>
-</dependency>
-```
-
-Also add the following repositories:
-
-```
-<repository>
-	<id>typesafe-releases-repo</id>
-	<name>Typesafe Releases Repo</name>
-	<url>http://repo.typesafe.com/typesafe/releases/</url>
-</repository>
-<repository>
-	<id>sonatype-snapshots-repo</id>
-	<name>Sonatype Snapshots</name>
-	<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-</repository>
-```
-
-### Building from Source
-
-If you would like to build a binary from the source:
-
-1. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
-   - Note Java 8 is not recommended at this time of writing
-2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
-3. Either
-   - Download a [Git client](http://git-scm.com/downloads) and clone this 
-     repository using one of the following (SSH or HTTPS) URLs: 
-     - `git@github.com:gwen-interpreter/gwen.git`
-     - `https://github.com/gwen-interpreter/gwen.git`
-   - Or click the Download ZIP link on this GitHub project page to download 
-     the source archive and extract it to a local folder 
-4. Change to the directory where you cloned/downloaded the gwen source
-5. Run `sbt test` to compile and run all tests and verify that all is OK
-6. Run `sbt package` to build a JAR file
-   - This will create a _gwen-[version].jar_ file in the 
-     _target/scala-[version]_ folder relative to your current directory
-
-### Getting Started
-
-See our [getting started](doc/START.md) guide for a quick introduction 
-to the development environment and a short tutorial on how to build an 
-evaluation engine and mix it into the interpreter.
-
 Supported Grammar
 -----------------
 
@@ -162,7 +91,7 @@ notation).
   feature     = {tag}, 
                 "Feature:", name
                 [narrative]
-  narrative     "As a ", expression
+  narrative     "As ", "a " | "an ", expression
                 "I want ", expression
                 ["So that ", expression]
   background  = "Background:", name
@@ -179,17 +108,6 @@ notation).
  
  }}}
 ```
-
-Evaluation Engines
-------------------
-
-Gwen introduces the concept of reusable evaluation engines that can be 
-mixed into the interpreter. Evaluation engines map incoming steps to 
-functions and operations on target APIs to evaluate behavior. You prescribe 
-what steps are supported and how they are processed by implementing your own 
-engine using the abstractions provided. Once the interpreter has been loaded 
-with your engine, it can readily execute both individual steps and complete 
-feature files.
 
 REPL Console
 ------------
@@ -231,7 +149,7 @@ lifecycle.
 Meta Features
 -------------
 
-In addition to standard Gherkin features, Gwen also supports and introduces 
+In addition to standard Gherkin features, gwen also supports and introduces 
 meta features. These are also defined in Gherkin and can provide powerful 
 capabilities for eliminating redundancy. They also provide a clean separation 
 between evaluation and configuration. Meta features are loaded into the 
@@ -254,14 +172,102 @@ Execution Modes
 ---------------
 
 Gwen can interpret single feature files and suites of feature files in a 
-directory.  When a single feature file is passed to Gwen, only that file 
-is interpreted.  When a directory is passed to Gwen, all feature files in the 
+directory.  When a single feature file is passed to gwen, only that file 
+is interpreted.  When a directory is passed to gwen, all feature files in the 
 directory and its subdirectories are interpreted. For any given feature file, 
 all existing meta files in the feature file's path are discovered and loaded 
-first. Any number of files or directories can be passed to Gwen in a 
+first. Any number of files or directories can be passed to gwen in a 
 single call for sequential or parallel batch execution. Tags can also be 
 passed to include and exclude features and scenarios annotated with those 
 tags.
+
+***
+
+Development
+===========
+
+Getting Started
+---------------
+
+See our [getting started](doc/START.md) guide for a quick introduction 
+to the development environment and a short tutorial on how to build an 
+evaluation engine and mix it into the interpreter.
+
+Adding Gwen as a Binary Dependency
+----------------------------------
+
+To build a new engine, you will need to create a new scala project and include 
+gwen as a dependency.
+
+### SBT
+
+To add gwen as a binary dependency in an sbt project, add the following line to 
+your build.sbt file. The `%%` instructs sbt to pull 
+down the packaged dependency that matches your `scalaVersion` setting. 
+
+```
+libraryDependencies += "org.gweninterpreter" %% "gwen" % "0.1.0-SNAPSHOT"
+```
+
+Also add the following repositories:
+
+```
+resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+
+resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+```
+
+### Maven
+
+If you are using a maven project, add the following dependency to your pom.xml 
+file. In this case, you will need to explicitly specify the scala version in 
+the `artifactId` suffix as shown.    
+
+```
+<dependency>
+	<groupId>org.gweninterpreter</groupId>
+	<artifactId>gwen_2.11</artifactId>       <!-- for scala 2.11.x -->
+	<!--artifactId>gwen_2.10</artifactId-->  <!-- for scala 2.10.x -->
+	<version>0.1.0-SNAPSHOT</version>
+	<type>jar</type>
+</dependency>
+```
+
+Also add the following repositories:
+
+```
+<repository>
+	<id>typesafe-releases-repo</id>
+	<name>Typesafe Releases Repo</name>
+	<url>http://repo.typesafe.com/typesafe/releases/</url>
+</repository>
+<repository>
+	<id>sonatype-snapshots-repo</id>
+	<name>Sonatype Snapshots</name>
+	<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+</repository>
+```
+
+Building from Source
+--------------------
+
+If you would like to build a binary from the source:
+
+1. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
+   - Note Java 8 is not recommended at this time of writing
+2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
+3. Either
+   - Download a [Git client](http://git-scm.com/downloads) and clone this 
+     repository using one of the following (SSH or HTTPS) URLs: 
+     - `git@github.com:gwen-interpreter/gwen.git`
+     - `https://github.com/gwen-interpreter/gwen.git`
+   - Or click the Download ZIP link on this GitHub project page to download 
+     the source archive and extract it to a local folder 
+4. Change to the directory where you cloned/downloaded the gwen source
+5. Run `sbt test` to compile and run all tests and verify that all is OK
+6. Run `sbt package` to build a JAR file
+   - This will create a _gwen-[version].jar_ file in the 
+     _target/scala-[version]_ folder relative to your current directory
 
 ***
 

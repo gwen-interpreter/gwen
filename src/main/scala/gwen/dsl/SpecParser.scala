@@ -33,7 +33,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
  *     feature     = {tag}, 
  *                   "Feature:", name
  *                   [narrative]
- *     narrative     "As a ", expression
+ *     narrative     "As ", "a " | "an ", expression
  *                   "I want ", expression
  *                   ["So that ", expression]
  *     background  = "Background:", name
