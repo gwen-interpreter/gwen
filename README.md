@@ -5,22 +5,21 @@ gwen
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter that accepts plain text specifications as input and produces 
-automated processes as output. It has an abstracted 
-evaluation engine allowing you to prescribe what steps you want to support 
-and define what things you want to automate.
+automated processes as output. It has an abstracted evaluation engine 
+allowing any type of automation to be mixed in. 
 
 Evaluation Engines
 ------------------
 
 Gwen uses evaluation engines to map incoming steps to functions and operations 
-on target APIs to achieve automation by:
+on target systems to achieve automation by:
 
 - Creating conditions (_Givens_)
-- Performing operations (_Whens_)
+- Performing actions (_Whens_)
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-both individual steps and complete feature files. Any custom built or 
+both individual feature steps and complete feature files. Any custom built or 
 publically shared engine implementation can be mixed into the interpreter. We 
 have developed the following engine and shared it here for everyone to use:
 
