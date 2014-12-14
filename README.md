@@ -19,8 +19,8 @@ on target systems to achieve automation by:
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-both individual feature steps and complete feature files. Any custom built or 
-publically shared engine implementation can be mixed into the interpreter. We 
+both individual Gherkin steps and complete feature files. Any custom built or 
+publically shared engine implementation can run inside the interpreter. We 
 have developed the following engine and shared it here for everyone to use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
