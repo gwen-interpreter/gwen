@@ -19,7 +19,7 @@ on target systems to achieve automation by:
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-individual Gherkin steps and complete feature files. Any custom built or 
+individual steps and complete feature files. Any custom built or 
 publically shared engine implementation can run inside the interpreter. We 
 have developed the following engine and shared it here for everyone to use:
 
