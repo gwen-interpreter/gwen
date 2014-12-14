@@ -19,7 +19,7 @@ on target systems to achieve automation by:
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-both individual Gherkin steps and complete feature files. Any custom built or 
+individual Gherkin steps and complete feature files. Any custom built or 
 publically shared engine implementation can run inside the interpreter. We 
 have developed the following engine and shared it here for everyone to use:
 
@@ -51,9 +51,9 @@ Automation by Interpretation
 
 The gwen interpreter reads Gherkin features and parses them into an abstract 
 syntax tree for validation and correctness. It then traverses all scenarios 
-and dispatches the processing of each step to an evaluation engine that you 
-define (or provide) and mix in. The engine performs the automation work on the 
-target system. Gwen then captures and reports the results.
+and dispatches the processing of each step to a mixed in evaluation engine. 
+The engine performs the automation work on the target system. Gwen then 
+captures and reports the results.
 
 Key Features
 ------------
