@@ -19,9 +19,9 @@ on target systems to achieve automation by:
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-individual steps and complete feature files. Any custom built or 
-publically shared engine implementation can run inside the interpreter. We 
-have developed the following engine and shared it here for everyone to use:
+individual steps and complete feature files. Any custom built or publically 
+shared engine implementation can run inside the interpreter. We have developed 
+the following engine and shared it here for everyone to use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An acceptance driven web engine for automating web testing 
@@ -30,8 +30,8 @@ have developed the following engine and shared it here for everyone to use:
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a new gwen engine](doc/START.md) for that purpose (and share it 
-too if you like).
+[develop a new engine](doc/START.md) for that purpose (and share it too if you 
+like).
 
 Automation by Interpretation
 ----------------------------

@@ -164,7 +164,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
    * 			the attachment file
    */
   def addAttachment(attachment: (String, File)): Unit = {
-    attachments = attachment :: attachments
+    attachments = attachment :: attachments.filter(_._1 != attachment._1)
   } 
   
   /**

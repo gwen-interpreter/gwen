@@ -325,8 +325,8 @@ trait HtmlReportFormatter extends ReportFormatter {
 										    <strong><em>attachments</em></strong>
 											<span class="caret"></span>
 										</button>
-										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments.zipWithIndex map { case ((name, file), idx) => s"""
-											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${idx + 1} - ${escape(name)}</a></li>"""}).mkString }
+										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
 										</ul>
 									</div>""" else s""" 
 									<strong>${step.keyword}</strong> ${escape(step.expression)}"""}${if (status == StatusKeyword.Failed) s"""

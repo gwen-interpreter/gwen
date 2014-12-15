@@ -307,7 +307,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
       case (Some(stepDef)) =>
         logger.info(s"Evaluating StepDef: ${stepDef.name}")
         val steps = evaluateSteps(stepDef.steps, env)
-        Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
+        Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
           logger.info(s"StepDef evaluated: ${stepDef.name}")
         }
     }
