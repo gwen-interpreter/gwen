@@ -48,6 +48,11 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   private var stepDefs = Map[String, Scenario]()
   
   /**
+   * List of current attachments (name-file pairs).
+   */
+  private[eval] var attachments: List[(String, File)] = Nil
+  
+  /**
    * Provides access to the global feature scope.
    */
   def featureScope = scopes.featureScope
@@ -64,6 +69,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   def reset() {
     scopes.reset()
     stepDefs = Map[String, Scenario]()
+    resetAttachments
   }
   
   /**
@@ -110,30 +116,27 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     }
   
   /**
-   * Fail callback.
+   * Fail handler.
    * 
-   * @param step 
-   * 			the step that failed
    * @param failed
    * 			the failed status
    */
-  final def fail(step: Step, failure: Failed): Step = 
-    Step(step.keyword, step.expression, failure, step.attachments ++ createAttachments(failure)) tap { step =>
-      logger.error(Json.prettyPrint(this.visibleJson))
-      logger.error(failure.error.getMessage())
-      logger.debug(s"Exception: ", failure.error)
-    }
+  final def fail(failure: Failed): Unit = { 
+    attachments = createErrorAttachments(failure)
+    logger.error(Json.prettyPrint(this.visibleJson))
+    logger.error(failure.error.getMessage())
+    logger.debug(s"Exception: ", failure.error)
+  }
   
   /**
-   * Creates and returns the stack trace and environment context dump 
-   * file attachments.
+   * Adds error attachments to the current context.
    * 
    * @param failed
    * 			the failed status
    */
-  def createAttachments(failure: Failed): List[(String, File)] = List( 
-    ("Stack trace", 
-      File.createTempFile("stack-trace-", ".txt") tap { f =>
+  def createErrorAttachments(failure: Failed): List[(String, File)] = List( 
+    ("Error details", 
+      File.createTempFile("error-details-", ".txt") tap { f =>
         f.deleteOnExit()
         f.writeText(failure.error.writeStackTrace())
       }
@@ -151,6 +154,25 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
       }
     )
   )
+  
+  /**
+   * Adds an attachment to the current context.
+   * 
+   * @param attachment
+   * 			the attachment (name-file pair) to add
+   * @param file
+   * 			the attachment file
+   */
+  def addAttachment(attachment: (String, File)): Unit = {
+    attachments = attachment :: attachments
+  } 
+  
+  /**
+   * Resets/clears current attachments.
+   */
+  private[eval] def resetAttachments() {
+    attachments = Nil
+  }
   
 }
 

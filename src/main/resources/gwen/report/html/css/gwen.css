@@ -131,6 +131,14 @@
 	color: #f0ad4e;
 }
 
+.dropdown {
+	display:inline;
+}
+
+.dropdown-toggle {
+	border:none;
+}
+
 .dropdown-menu {
 	padding: 0px 0px;
 	margin-top: 0px;

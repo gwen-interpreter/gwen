@@ -318,20 +318,18 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
 								<div class="text-${cssStatus(status)} bg-${cssStatus(status)}">""" else ""}
-									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
-									<strong>${step.keyword}</strong> ${escape(step.expression)} ${if (!step.attachments.isEmpty) s"""
+									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>${if (!step.attachments.isEmpty) s"""
 									<div class="dropdown bg-${cssStatus(status)}">
+									    <strong>${step.keyword}</strong> ${escape(step.expression)}
 										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-										    Attachments
+										    <strong><em>attachments</em></strong>
 											<span class="caret"></span>
 										</button>
-										<ul class="dropdown-menu" role="menu">${(step.attachments map { case (name, file) => s"""
-											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
+										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments.zipWithIndex map { case ((name, file), idx) => s"""
+											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${idx + 1} - ${escape(name)}</a></li>"""}).mkString }
 										</ul>
-									</div>""" else s""}${if (status == StatusKeyword.Failed) s"""
-								</div>
-								<div class="panel-body text-${cssStatus(status)} bg-${cssStatus(status)}"> 
-									<strong>${escape(String.valueOf(step.evalStatus.asInstanceOf[Failed].error.getMessage()))}</strong>
+									</div>""" else s""" 
+									<strong>${step.keyword}</strong> ${escape(step.expression)}"""}${if (status == StatusKeyword.Failed) s"""
 								</div>""" else ""}  
 							</li>"""
 

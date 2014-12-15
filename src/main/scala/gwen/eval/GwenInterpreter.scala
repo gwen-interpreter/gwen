@@ -328,11 +328,15 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
    */
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Try[Step]): Step = {
     val start = System.nanoTime
-    evalFunction(step) match {
+    (evalFunction(step) match {
       case TrySuccess(step) => 
-        Step(step.keyword, step.expression, Passed(System.nanoTime - start))
+        Step(step.keyword, step.expression, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
-        env.fail(step, Failed(System.nanoTime - start, error))
+        val failure = Failed(System.nanoTime - start, error)
+        env.fail(failure)
+        Step(step.keyword, step.expression, failure, env.attachments)
+    }) tap { step =>
+      env.resetAttachments
     }
   }
   

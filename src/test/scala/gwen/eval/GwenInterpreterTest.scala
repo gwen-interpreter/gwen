@@ -115,6 +115,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val stepdef = Scenario("I am a valid stepdef", None, List(Step(StepKeyword.Given, "I am a step in the stepdef")))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
+    when(mockEnv.attachments).thenReturn(Nil)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid stepdef", mockEnv)
     result match {
       case TrySuccess(step) =>
@@ -193,6 +194,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
+    when(mockEnv.attachments).thenReturn(Nil)
     val result = interpreter(mockEnv).interpretFeature(featureFile, List(metaFile), Nil, mockEnv)
     result match {
       case Some(feature) =>
