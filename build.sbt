@@ -1,3 +1,5 @@
+import com.typesafe.sbt.SbtGit._
+
 name := "gwen"
 
 description := "A common platform for mapping Gherkin features to exectuable code."
@@ -18,42 +20,9 @@ scalacOptions += "-language:postfixOps"
 
 scalacOptions += "-deprecation"
 
-publishMavenStyle := true
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-}
-
-pomIncludeRepository := { _ => false }
-
-publishArtifact in Test := false
-
 licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
 
 homepage := Some(url("http://gwen-interpreter.github.io/gwen/"))
-
-pomExtra := (
-  <scm>
-    <connection>scm:git:git@github.com:gwen-interpreter/gwen.git</connection>
-    <developerConnection>scm:git:git@github.com:gwen-interpreter/gwen.git</developerConnection>
-    <url>git@github.com:gwen-interpreter/gwen.git</url>
-  </scm>
-  <developers>
-    <developer>
-      <id>bjuric</id>
-      <name>Branko Juric</name>
-      <url>https://github.com/bjuric</url>
-    </developer>
-    <developer>
-      <id>bradywood</id>
-      <name>Brady Wood</name>
-      <url>https://github.com/bradywood</url>
-    </developer>
-  </developers>)
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
