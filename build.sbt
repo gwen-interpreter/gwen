@@ -1,5 +1,7 @@
 import com.typesafe.sbt.SbtGit._
 
+import SonatypeKeys._
+
 name := "gwen"
 
 description := "A common platform for mapping Gherkin features to exectuable code."
