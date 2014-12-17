@@ -12,7 +12,7 @@ Evaluation Engines
 ------------------
 
 Gwen uses evaluation engines to map incoming steps to functions and operations 
-on target systems to achieve automation by:
+on target systems. Automation is achieved by:  
 
 - Creating conditions (_Givens_)
 - Performing actions (_Whens_)
@@ -208,7 +208,7 @@ wish to fix this to the resolved version after gwen has downloaded, or to a
 release version that you wish to target).
 
 ```
-libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration" // or 1.0.0
+libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration"
 ```
 
 Also add the following repositories:

@@ -44,7 +44,7 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration" // or 1.0.0
+libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 ```
