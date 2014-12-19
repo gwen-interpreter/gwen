@@ -4,7 +4,7 @@ gwen
 ====
 
 Gwen is an interpreter that accepts 
-[Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
+[Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) specifications 
 as input and produces automated processes as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in. 
 
