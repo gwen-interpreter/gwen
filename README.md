@@ -11,16 +11,17 @@ evaluation engine allowing any type of automation to be mixed in.
 Evaluation Engines
 ------------------
 
-Gwen uses evaluation engines to map plain text specifications to functions 
-and operations on target systems. Automation is achieved by:  
+Gwen uses evaluation engines to map incoming 
+[steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) to 
+functions and operations on target systems. Automation is achieved by:  
 
 - Creating conditions (_Givens_)
 - Performing actions (_Whens_)
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-both individual [steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) 
-and complete [feature files](https://github.com/cucumber/cucumber/wiki/Feature-Introduction). 
+both individual steps and complete 
+[feature files](https://github.com/cucumber/cucumber/wiki/Feature-Introduction). 
 Any custom built or publically shared engine implementation can run inside 
 the interpreter. We have developed the following engine and shared it here 
 for everyone to use:
