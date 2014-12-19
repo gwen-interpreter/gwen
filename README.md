@@ -11,8 +11,8 @@ evaluation engine allowing any type of automation to be mixed in.
 Evaluation Engines
 ------------------
 
-Gwen uses evaluation engines to map incoming steps to functions and operations 
-on target systems. Automation is achieved by:  
+Gwen uses evaluation engines to map plain text specifications to functions 
+and operations on target systems. Automation is achieved by:  
 
 - Creating conditions (_Givens_)
 - Performing actions (_Whens_)
