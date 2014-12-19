@@ -3,10 +3,10 @@
 gwen
 ====
 
-Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts plain text specifications as input and produces 
-automated processes as output. It has an abstracted evaluation engine 
-allowing any type of automation to be mixed in. 
+Gwen is an interpreter that accepts 
+[Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
+as input and produces automated processes as output. It has an abstracted 
+evaluation engine allowing any type of automation to be mixed in. 
 
 Evaluation Engines
 ------------------
@@ -19,9 +19,11 @@ on target systems. Automation is achieved by:
 - Asserting expectations (_Thens_)
 
 Once the interpreter has been loaded with an engine, it can readily execute 
-individual steps and complete feature files. Any custom built or publically 
-shared engine implementation can run inside the interpreter. We have developed 
-the following engine and shared it here for everyone to use:
+both individual [steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) 
+and complete [feature files](https://github.com/cucumber/cucumber/wiki/Feature-Introduction). 
+Any custom built or publically shared engine implementation can run inside 
+the interpreter. We have developed the following engine and shared it here 
+for everyone to use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An acceptance driven web engine for automating web testing 
