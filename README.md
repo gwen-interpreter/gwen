@@ -22,9 +22,8 @@ functions and operations on target systems. Automation is achieved by:
 Once the interpreter has been loaded with an engine, it can readily execute 
 both individual steps and complete 
 [feature files](https://github.com/cucumber/cucumber/wiki/Feature-Introduction). 
-Any custom built or publically shared engine implementation can run inside 
-the interpreter. We have developed the following engine and shared it here 
-for everyone to use:
+Any custom or public engine implementation can run inside the interpreter. We 
+have developed the following engine and shared it here for everyone to use:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An acceptance driven web engine for automating web testing 
@@ -45,7 +44,6 @@ Automation by Interpretation
   Scenario: Automate
       Given a feature specification
         And a target system
-        And an evaluation engine
        When gwen is invoked
        Then the specification is interpreted
         And the steps are executed
