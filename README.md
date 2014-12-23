@@ -3,8 +3,10 @@
 gwen
 ====
 
-Gwen is an interpreter that accepts 
-[Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) specifications 
+Gwen is a 
+[Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
+interpreter that accepts 
+[feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 as input and produces automated processes as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in. 
 
@@ -19,21 +21,19 @@ functions and operations on target systems. Automation is achieved by:
 - Performing actions (_Whens_)
 - Asserting expectations (_Thens_)
 
+Any custom or public engine implementation can run inside the interpreter. 
 Once the interpreter has been loaded with an engine, it can readily execute 
-both individual steps and complete 
-[feature files](https://github.com/cucumber/cucumber/wiki/Feature-Introduction). 
-Any custom or public engine implementation can run inside the interpreter. We 
-have developed the following engine and shared it here for everyone to use:
+both individual steps and complete feature files. We have developed and 
+shared the following engine:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - An acceptance driven web engine for automating web testing 
+  - A web engine for automating web application testing 
     in a way that requires no development on behalf of the user.
 
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a new engine](doc/START.md) for that purpose (and share it too if you 
-like).
+[develop a new engine](doc/START.md) for that purpose.
 
 Automation by Interpretation
 ----------------------------
@@ -45,8 +45,8 @@ Automation by Interpretation
       Given a feature specification
         And a target system
        When gwen is invoked
-       Then the specification is interpreted
-        And the steps are executed
+       Then the feature is interpreted
+        And its steps are executed
         And the system is evaluated
 ```
 
