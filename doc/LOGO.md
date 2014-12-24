@@ -20,14 +20,14 @@ Dynamic systems can be observed to possess chaotic behavior and this is common
 in software. The smallest of changes to programs and environments can give 
 rise to the most erratic effects. Gwen evaluates software systems by 
 interpreting Gherkin features and dispatching their _Given-When-Then_ steps to 
-evaluation engines that in turn map those to discrete units of work that:
+evaluation engines that:
 
 - Create conditions (_Givens_)
 - Perform actions (_Whens_)
 - Assert expectations (_Thens_)
 
-The cumulative result is a chain of events that occur in sequence 
-to model cause and effect. 
+The cumulative result is a chain of events that occur in sequence to model cause 
+and effect. 
 
 When a small change to the initial conditions of a deterministic and dynamic 
 system cannot guarantee a predictable outcome, then the behavior of that system 
