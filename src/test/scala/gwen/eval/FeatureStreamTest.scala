@@ -167,13 +167,13 @@ class FeatureStreamTest extends FlatSpec with Matchers {
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
     assertFeatureFile(featureFileAB1, unit.featureFile)
-    assertMetaFiles(List(metaFileAB), unit.metaFiles)
+    assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit = units.next
     assertFeatureFile(featureFileAB2, unit.featureFile)
-    assertMetaFiles(List(metaFileAB, metaFileAB2), unit.metaFiles)
+    assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     unit = units.next
     assertFeatureFile(featureFileAB, unit.featureFile)
-    assertMetaFiles(List(metaFileAB), unit.metaFiles)
+    assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     assertEndOfStream(units.next)
     
     // dir AB1 suite
@@ -181,7 +181,7 @@ class FeatureStreamTest extends FlatSpec with Matchers {
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
     assertFeatureFile(featureFileAB1, unit.featureFile)
-    assertMetaFiles(Nil, unit.metaFiles)
+    assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     assertEndOfStream(units.next)
     
     // dir AB2 suite
@@ -189,7 +189,7 @@ class FeatureStreamTest extends FlatSpec with Matchers {
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
     assertFeatureFile(featureFileAB2, unit.featureFile)
-    assertMetaFiles(List(metaFileAB2), unit.metaFiles)
+    assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     assertEndOfStream(units.next)
     
     // featureFile AB2 suite

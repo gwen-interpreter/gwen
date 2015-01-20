@@ -62,20 +62,13 @@ object FeatureStream extends LazyLogging {
    * 			a stream of [FeatureUnit]s found at the location
    */
   def read(location: File): Stream[FeatureUnit] = {
-    if (isDirectory(location)) {
-      deepRead(location)
-    } else {
-      val metas = if (isFeatureFile(location)) {
+      val metas = 
         if (location.getParentFile() == null) {
           accumulateMeta(location.getAbsoluteFile().getParentFile(), Nil)
         } else {
           accumulateParentMeta(location.getParentFile(), Nil).reverse
         }
-      } else {
-        Nil
-      }
       deepRead(location, metas)
-    }
   }
   
   /**
