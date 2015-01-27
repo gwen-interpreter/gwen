@@ -38,8 +38,7 @@ class HtmlReportGenerator(val targetDir: File, val interpreterName: String)
   if (targetDir.exists()) {
     targetDir.listFiles().filter { file => 
       val name = file.getName
-      name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "feature-summary.html" || name =="resources" || name =="attachments"
-    } foreach { _.deleteFile() }
+      name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "index.html" || name == "feature-summary.html" || name =="resources" || name =="attachments"   } foreach { _.deleteFile() }
   }
   
   // copy in CSS files (if they don't already exist)
@@ -59,6 +58,7 @@ class HtmlReportGenerator(val targetDir: File, val interpreterName: String)
     copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
   }
   
-  
+  // copy in index file
+  copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", reportDir)
   
 }
