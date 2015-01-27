@@ -786,8 +786,8 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<feature paths>]
         Batch/server mode
   -| | --parallel
         Parallel batch execution mode)
-  -p <properties file> | --properties <properties file>
-        User properties file
+  -p <properties files> | --properties <properties files>
+        Comma separated list of properties file paths
   -r <report directory> | --report <report directory>
         Evaluation report output directory
   -t <tags> | --tags <tags>

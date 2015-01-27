@@ -171,14 +171,33 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val propsFile = createFile("gwen.properties")
     parseOptions(Array("-p", propsFile.getPath())) match {
       case Success(options) => {
-        assertOptions(options, propertiesFile = Some(propsFile))
+        assertOptions(options, properties = List(propsFile))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--properties", propsFile.getPath())) match {
       case Success(options) => {
-        assertOptions(options, propertiesFile = Some(propsFile))
+        assertOptions(options, properties = List(propsFile))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+  
+  "Options with properties option and multiple existing properties file" should "parse" in {
+    val propsFileA = createFile("gwen-a.properties")
+    val propsFileB = createFile("gwen-b.properties")
+    parseOptions(Array("-p", propsFileA.getPath() + "," + propsFileB.getPath())) match {
+      case Success(options) => {
+        assertOptions(options, properties = List(propsFileA, propsFileB))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--properties", propsFileA.getPath() + "," + propsFileB.getPath())) match {
+      case Success(options) => {
+        assertOptions(options, properties = List(propsFileA, propsFileB))
       }
       case _ =>
         fail("expected options but failed")
@@ -518,7 +537,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           true,
           true,
           Some(reportDir),
-          Some(propsFile),
+          List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           List(metaFile),
           List(dir5, feature5, dir6))
@@ -534,7 +553,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           true,
           true,
           Some(reportDir),
-          Some(propsFile),
+          List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           List(metaFile),
           List(dir5, feature5, dir6))
@@ -553,7 +572,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     batch: Boolean = false,
     parallel: Boolean = false,
     reportDir: Option[File] = None,
-    propertiesFile: Option[File] = None,
+    properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     metaFiles: List[File] = Nil, 
     paths: List[File] = Nil) {
@@ -561,7 +580,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.reportDir should be (reportDir)
-    options.propertiesFile should be (propertiesFile)
+    options.properties should be (properties)
     options.tags should be (tags)
     options.metaFiles should be (metaFiles)
     options.paths should be (paths)

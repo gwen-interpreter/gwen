@@ -21,6 +21,9 @@ import gwen.dsl.Tag
 import scopt.OptionParser
 import gwen.Predefs.Kestrel
 import scala.util.Try
+import java.util.Properties
+import java.io.FileReader
+import scala.collection.JavaConverters._
 
 /**
  * Captures gwen command line options.
@@ -33,8 +36,8 @@ import scala.util.Try
  *    		(default is false)      
  * @param reportDir
  * 			optional directory to generate evaluation report into
- * @param propertiesFile
- *          optional properties file to load into system properties
+ * @param properties
+ *          list of properties files to load into system properties
  * @param tags
  * 			list of tags to include and exclude (tag, True=include|False=exclude) 
  * @param metaFiles
@@ -48,7 +51,7 @@ case class GwenOptions(
     batch: Boolean = false,
     parallel: Boolean = false,
     reportDir: Option[File] = None,
-    propertiesFile: Option[File] = None,
+    properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     metaFiles: List[File] = Nil, 
     paths: List[File] = Nil) 
@@ -79,12 +82,17 @@ object GwenOptions {
         }
       } text("Parallel batch execution mode)")
     
-      opt[File]('p', "properties") action {
-        (f, c) => 
-          c.copy(propertiesFile = Some(f))
-      } validate {
-        f => if (f.exists) success else failure(s"Specified properties file not found: $f")
-      } valueName("<properties file>") text("User properties file")
+      opt[String]('p', "properties") action {
+        (ps, c) => 
+          c.copy(properties = ps.split(",").toList.map(new File(_)))
+      } validate { ps => 
+        ((ps.split(",") flatMap { p => 
+          if (new File(p).exists()) None 
+          else Some(s"Specified properties file not found: $p")
+        }) collectFirst {
+          case error => failure(error)
+        }).getOrElse(success)
+      } valueName("<properties files>") text("Comma separated list of properties file paths")
     
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f)) 
@@ -129,10 +137,12 @@ object GwenOptions {
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }
-          opt.propertiesFile match {
-            case (Some(propsFile)) =>
-              sys.props += (("config.file", propsFile.getAbsolutePath()))
-            case None => { }
+          opt.properties foreach { propsFile =>
+            val props = new Properties()
+            props.load(new FileReader(propsFile))
+            props.asScala.foreach{
+              case (name, value) => sys.props += ((name, value))
+            }
           }
         }
       }).getOrElse(sys.error(""))
