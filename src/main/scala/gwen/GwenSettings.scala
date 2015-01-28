@@ -17,61 +17,63 @@
 package gwen
 
 import scala.collection.JavaConversions._
-
 import java.io.File
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.Config
+import scala.util.Properties
+import java.util.Properties
+import java.io.FileReader
 
 /**
- * Provides access to system properties and default configuration settings.
- * This class uses the [[https://github.com/typesafehub/config Config]] 
- * library to load properties from the following sources:
- *
- *  - System properties
- *  - gwen.properties in the user's home directory (if found)
- *  - Any default properties found in reference.conf files in the classpath
+ * Provides access to system properties loaded from properties files.
+ * If a gwen.properties file exists in the user's home directory, then
+ * its properties are loaded first. Once a property is loaded it is never
+ * replaced. Therefore it is important to load properties in the right 
+ * order.
  *
  * @author Branko Juric
  */
 object gwenSetting {
   
-  val config = 
-    ConfigFactory.load()
-      .withFallback(ConfigFactory.parseFile(
-        new File(sys.props.get("user.home").get, "gwen.properties")))
-      .withFallback(ConfigFactory.load("gwen"))
-  
-  // copy all loaded properties to system properties
-  config.entrySet() foreach { entry =>
-    val key = entry.getKey()
-    if (!sys.props.contains(key)) {
-      sys.props += ((key, config.getString(key)))
+  // load gwen.properties from user directory if found
+  sys.props.get("user.home") foreach { 
+    dir => loadAll(List(new File(dir, "gwen.properties"))) 
+  }
+
+  /**
+   * Loads all properties from the given files.
+   * 
+   * @param propsFiles
+   * 			the properties files to load
+   */
+  def loadAll(propsFiles: List[File]): Unit = {
+    val props = propsFiles.foldLeft(new Properties()) { 
+      (props, file) => 
+        props.load(new FileReader(file))
+        props
+    }
+    props.entrySet() foreach { entry =>
+      val key = entry.getKey().asInstanceOf[String]
+      if (!sys.props.contains(key)) {
+        sys.props += ((key, props.getProperty(key)))
+      }
     }
   }
   
   /**
-   * Gets an optional setting (returns None if not found)
+   * Gets an optional property (returns None if not found)
    * 
-   * @param path the path of the setting to get
+   * @param name 
+   * 			the name of the property to get
    */
-  def getOpt(path: String): Option[String] = sys.props.get(path) match {
-    case None =>
-      if (config.hasPath(path)) {
-    	Option(config.getString(path))
-      } else {
-        None
-      }
-    case value => value
-  }
+  def getOpt(name: String): Option[String] = sys.props.get(name)
   
   /**
-   * Gets a mandatory setting (throws exception if not found)
+   * Gets a mandatory property (throws exception if not found)
    * 
-   * @param path the path of the setting to get
+   * @param name 
+   * 			the name of the property to get
    */
-  def get(path: String): String = getOpt(path) match {
-    case Some(value) => value
-    case None => config.getString(path)
-  }
+  def get(name: String): String = getOpt(name).getOrElse(sys.error(s"System property $name not set"))
   
 }

@@ -17,13 +17,13 @@
 package gwen.eval
 
 import java.io.File
-import gwen.dsl.Tag
-import scopt.OptionParser
-import gwen.Predefs.Kestrel
+
 import scala.util.Try
-import java.util.Properties
-import java.io.FileReader
-import scala.collection.JavaConverters._
+
+import gwen.Predefs.Kestrel
+import gwen.dsl.Tag
+import gwen.gwenSetting
+import scopt.OptionParser
 
 /**
  * Captures gwen command line options.
@@ -137,15 +137,9 @@ object GwenOptions {
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }
-          opt.properties foreach { propsFile =>
-            val props = new Properties()
-            props.load(new FileReader(propsFile))
-            props.asScala.foreach{
-              case (name, value) => sys.props += ((name, value))
-            }
-          }
+          gwenSetting.loadAll(opt.properties.reverse)
         }
-      }).getOrElse(sys.error(""))
+      }).getOrElse(sys.error("Failed to parse gwen arguments"))
     )
   }
   

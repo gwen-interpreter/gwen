@@ -34,8 +34,6 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "com.typesafe" % "config" % "1.2.1" 
-
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.6"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"

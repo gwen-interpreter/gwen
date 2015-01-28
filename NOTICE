@@ -24,13 +24,6 @@
       https://github.com/scala/scala-parser-combinators/blob/master/LICENSE.md
       https://github.com/scala/scala-parser-combinators
       
-   config
-      Version 1.2.1
-      Copyright (C) 2011-2012 Typesafe Inc. <http://typesafe.com>
-      Apache License, Version 2.0  
-      https://github.com/typesafehub/config/blob/master/LICENSE-2.0.txt
-      https://github.com/typesafehub/config
-      
    play-json
       Version 2.3.6
       Copyright 2013 Typesafe (http://www.typesafe.com)
@@ -131,7 +124,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 
    ----------------------------------------------------------------------------
-                                                                      config
                                                                    play-json
                                                          scala-logging-slf4j
    Apache License, Version 2.0                                     scalatest
