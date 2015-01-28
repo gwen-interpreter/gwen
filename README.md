@@ -267,7 +267,7 @@ the license that covers this software.
 License
 -------
 
-Copyright 2014 Branko Juric, Brady Wood
+Copyright 2014-2015 Branko Juric, Brady Wood
 
 This software is open sourced under the 
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).

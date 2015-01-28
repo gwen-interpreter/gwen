@@ -2,7 +2,7 @@
                                      gwen
                                      ====
                                
-                    Copyright 2014 Branko Juric, Brady Wood
+                  Copyright 2014-2015 Branko Juric, Brady Wood
 
    This product depends on the following open source projects:
    
@@ -10,8 +10,8 @@
 
    scala 
       Version 2.11.4, 2.10.4
-      Copyright (c) 2002-2014 EPFL
-      Copyright (c) 2011-2014 Typesafe, Inc.
+      Copyright (c) 2002-2015 EPFL
+      Copyright (c) 2011-2015 Typesafe, Inc.
       Scala license 
       http://www.scala-lang.org/license.html
       http://www.scala-lang.org     
