@@ -258,9 +258,10 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   }
   
   private def assertMetaFiles(expecteds: List[File], actuals: List[File]) {
-    expecteds zip actuals foreach { case (expected, actual) =>
-      actual.getPath().startsWith("target") should be (true)
-      actual.getPath() should be (expected.getPath)
+    (expecteds ++ FeatureUnit.UserMeta) zip actuals foreach { case (expected, actual) =>
+      val path = actual.getPath() 
+      path.startsWith("target") || path.startsWith(sys.props.get("user.home").get) should be (true)
+      path should be (expected.getPath)
     }
   }
   

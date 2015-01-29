@@ -18,6 +18,7 @@ package gwen.eval
 
 import java.io.File
 
+import scala.Stream
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
 
@@ -86,7 +87,7 @@ object FeatureStream extends LazyLogging {
       val metas = accumulateMeta(location, metaFiles)
       location.listFiles().toStream.flatMap(deepRead(_, metas)) 
     } else if (isFeatureFile(location)) {
-      Stream(FeatureUnit(location, metaFiles) tap { unit =>
+      Stream(new FeatureUnit(location, metaFiles) tap { unit =>
         logger.info(s"Found $unit")
       }) 
     } else {
@@ -144,12 +145,3 @@ object FeatureStream extends LazyLogging {
   private def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName().endsWith(s".${extension}")
 }
 
-/**
- * Captures a feature file and its associated meta as a unit.
- * 
- * @param featureFile
- * 				the feature file
- * @param metaFiles
- * 				the associated meta files (if any)
- */
-case class FeatureUnit(featureFile: File, metaFiles: List[File])

@@ -61,7 +61,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature1, Nil, Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature1, metaFiles(Nil), Nil, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -83,7 +83,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature2, Nil, Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature2, metaFiles(Nil), Nil, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -110,10 +110,10 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
+    val metas = metaFiles(List(meta3))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(meta3, Nil, Nil, mockEnv)).thenReturn(Some(meta))
-    when(mockInterpreter.interpretFeature(feature3, List(meta3), Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -144,8 +144,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(meta31, Nil, Nil, mockEnv)).thenReturn(Some(meta))
-    when(mockInterpreter.interpretFeature(feature3, options.metaFiles, Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature3, metaFiles(options.metaFiles), Nil, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -174,7 +173,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature4, List(meta4), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
+    when(mockInterpreter.interpretFeature(feature4, metaFiles(List(meta4)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
     
     try {
       executor(mockInterpreter).execute(options, Some(mockEnv))
@@ -207,7 +206,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature5, List(meta5), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
+    when(mockInterpreter.interpretFeature(feature5, metaFiles(List(meta5)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
 
@@ -255,9 +254,9 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
     when(mockInterpreter.name).thenReturn("gwen")
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature6a, Nil, Nil, mockEnv)).thenReturn(Some(feature6A))
-    when(mockInterpreter.interpretFeature(feature6b, Nil, Nil, mockEnv)).thenReturn(Some(feature6B))
-    when(mockInterpreter.interpretFeature(feature7a, Nil, Nil, mockEnv)).thenReturn(Some(feature7A))
+    when(mockInterpreter.interpretFeature(feature6a, metaFiles(Nil), Nil, mockEnv)).thenReturn(Some(feature6A))
+    when(mockInterpreter.interpretFeature(feature6b, metaFiles(Nil), Nil, mockEnv)).thenReturn(Some(feature6B))
+    when(mockInterpreter.interpretFeature(feature7a, metaFiles(Nil), Nil, mockEnv)).thenReturn(Some(feature7A))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -285,7 +284,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature8, Nil, tagFilters, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature8, metaFiles(Nil), tagFilters, mockEnv)).thenReturn(Some(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -313,5 +312,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     path.createFile(true)
     file
   }
+  
+  private def metaFiles(metas: List[File]) = metas ++ FeatureUnit.UserMeta 
   
 }
