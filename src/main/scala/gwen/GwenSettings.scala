@@ -35,11 +35,8 @@ import java.io.FileReader
  */
 object gwenSetting {
   
-  // load gwen.properties from user directory if found
-  sys.props.get("user.home") foreach { 
-    dir => loadAll(List(new File(dir, "gwen.properties"))) 
-  }
-
+  loadAll(UserOverrides.UserProperties.toList)
+  
   /**
    * Loads all properties from the given files.
    * 
@@ -75,5 +72,17 @@ object gwenSetting {
    * 			the name of the property to get
    */
   def get(name: String): String = getOpt(name).getOrElse(sys.error(s"System property $name not set"))
+  
+  /**
+   * Adds a property.
+   * 
+   * @param name
+   * 			the name of the property to add
+   * @param value
+   * 			the value to bind to the property
+   */
+  def add(name: String, value: String): Unit = {
+    sys.props += ((name, value))
+  }
   
 }

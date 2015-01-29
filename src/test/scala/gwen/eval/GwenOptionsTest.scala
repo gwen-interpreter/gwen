@@ -25,6 +25,7 @@ import gwen.dsl.Tag.string2Tag
 import scala.util.Success
 import scala.util.Try
 import scala.util.Failure
+import gwen.UserOverrides
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -580,9 +581,9 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.reportDir should be (reportDir)
-    options.properties should be (properties)
+    options.properties should be (UserOverrides.addUserProperties(properties))
     options.tags should be (tags)
-    options.metaFiles should be (metaFiles)
+    options.metaFiles should be (UserOverrides.addUserMeta(metaFiles))
     options.paths should be (paths)
     
   }

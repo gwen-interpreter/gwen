@@ -129,12 +129,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
         if (featureFile.getName().endsWith(".meta")) {
-          Some(evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env))
+          Some(evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env, "Meta"))
         } else {
           TagsFilter.filter(featureSpec, tagFilters) match {
             case Some(fspec) =>
               val metaSpecs = loadMeta(metaFiles, tagFilters, env)
-              Some(evaluateFeature(normalise(fspec, Some(featureFile)), metaSpecs, env))
+              Some(evaluateFeature(normalise(fspec, Some(featureFile)), metaSpecs, env, "Feature"))
             case None => 
               logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
               None
@@ -164,17 +164,19 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
    * @param featureSpec
    * 			the Gwen feature to evaluate
    * @param metaSpecs
-   * 			the loaded meta features
+   * 			the loaded meta features (Nil if featureSpec is a meta file)
    * @param env
    * 			the environment context
+   * @param specType
+   * 			"Feature" if the featureSpec is a feature file, or "Meta" otherwise
    * @return
    * 			the evaluated Gwen feature
    */
-  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T): FeatureSpec = {
+  private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T, specType: String): FeatureSpec = {
     featureSpec.featureFile foreach { file =>
-      logger.info(s"Interpreting feature file: $file")
+      logger.info(s"Interpreting ${specType.toLowerCase()} file: $file")
     }
-    logger.info(s"Evaluating feature: ${featureSpec.feature}")
+    logger.info(s"Evaluating ${specType.toLowerCase()}: ${featureSpec.feature}")
     val result = FeatureSpec(
       featureSpec.feature, 
       None, 
@@ -200,9 +202,9 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
       featureSpec.featureFile, 
       metaSpecs)
     result tap { featureSpec =>
-      logStatus("Feature", featureSpec.toString, featureSpec.evalStatus)
+      logStatus(specType, featureSpec.toString, featureSpec.evalStatus)
       featureSpec.featureFile foreach { file =>
-        logger.info(s"Feature file interpreted: ${file}")
+        logger.info(s"Interpreted ${specType.toLowerCase()} file: ${file}")
       }
       logger.debug(prettyPrint(featureSpec))
     }
@@ -352,17 +354,16 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
    */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
-      logger.info(s"Loading meta feature: $metaFile")
+      logger.info(s"Loading meta: $metaFile")
       interpretFeature(metaFile, Nil, tagFilters, env) tap { metaOpt =>
         metaOpt match {
           case Some(meta) =>
             meta.evalStatus match {
               case Passed(_) | Loaded =>
-                logger.info(s"Loaded meta feature: $meta")
               case Failed(_, error) =>
-                sys.error(s"Failed to load meta feature: $meta: ${error.getMessage()}")
+                sys.error(s"Failed to load meta: $meta: ${error.getMessage()}")
               case _ =>
-                sys.error(s"Failed to load meta feature: $meta")
+                sys.error(s"Failed to load meta: $meta")
             }
           case None => None
         }

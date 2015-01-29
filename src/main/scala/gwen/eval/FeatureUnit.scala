@@ -19,22 +19,11 @@ package gwen.eval
 import java.io.File
 
 /**
- * Captures a feature file and its associated meta as a unit. If a gwen.meta
- * file exists in the user home directory, it is implicitly added to the
- * end of the list of meta to provide user override capability.
+ * Captures a feature file and its associated meta as a unit.
  * 
  * @param featureFile
  * 				the feature file
- * @param metas
+ * @param metaFiles
  * 				the associated meta files (if any)
  */
-class FeatureUnit(val featureFile: File, private val metas: List[File]) {
-  val metaFiles = (metas.filter(!_.getCanonicalPath().equals(FeatureUnit.UserMeta.map(_.getCanonicalPath()).getOrElse(""))) ++ FeatureUnit.UserMeta).distinct
-}
-
-/**
- * Feature unit factory.
- */
-object FeatureUnit {
-  val UserMeta = sys.props.get("user.home").map(new File(_, "gwen.meta")).filter(_.exists())
-}
+case class FeatureUnit(featureFile: File, metaFiles: List[File])

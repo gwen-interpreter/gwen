@@ -18,9 +18,11 @@ package gwen.eval
 
 import java.io.File
 import java.util.NoSuchElementException
+
 import scala.reflect.io.Path
-import org.scalatest.Matchers
+
 import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
 class FeatureStreamTest extends FlatSpec with Matchers {
   
@@ -258,9 +260,9 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   }
   
   private def assertMetaFiles(expecteds: List[File], actuals: List[File]) {
-    (expecteds ++ FeatureUnit.UserMeta) zip actuals foreach { case (expected, actual) =>
+    expecteds zip actuals foreach { case (expected, actual) =>
       val path = actual.getPath() 
-      path.startsWith("target") || path.startsWith(sys.props.get("user.home").get) should be (true)
+      path.startsWith("target") should be (true)
       path should be (expected.getPath)
     }
   }

@@ -17,12 +17,11 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.util.Try
-
 import gwen.Predefs.Kestrel
 import gwen.dsl.Tag
 import gwen.gwenSetting
+import gwen.UserOverrides
 import scopt.OptionParser
 
 /**
@@ -54,7 +53,19 @@ case class GwenOptions(
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     metaFiles: List[File] = Nil, 
-    paths: List[File] = Nil) 
+    paths: List[File] = Nil) {
+
+  private[eval] def withUserOverrides() = new GwenOptions(
+      batch,
+      parallel,
+      reportDir,
+      UserOverrides.addUserProperties(properties),
+      tags,
+      UserOverrides.addUserMeta(metaFiles),
+      paths
+  )
+  
+}
     
 object GwenOptions {
   
@@ -132,8 +143,8 @@ object GwenOptions {
     }
   
     Try (
-      (parser.parse(args, GwenOptions()) tap { (options: Option[GwenOptions]) =>
-        options map { opt =>
+      (parser.parse(args, GwenOptions()).map(_.withUserOverrides()) tap { options =>
+        options foreach { opt =>
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }

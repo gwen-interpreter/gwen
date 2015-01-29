@@ -25,12 +25,11 @@ import gwen.dsl.Failed
 import gwen.report.FeatureSummary
 import gwen.report.ReportGenerator
 import gwen.report.html.HtmlReportGenerator
-import gwen.dsl.Passed
-import gwen.dsl.Failed
+import gwen.UserOverrides
 
 /**
- * Executes user provided options on the given interpreter.
  * 
+ * Executes user provided options on the given interpreter.
  * @param interpreter
  * 			the gwen interpreter to execute on
  */
@@ -102,11 +101,11 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
    *    	otherwise a new context is created for each unit)
    */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], reportGenerator: Option[ReportGenerator], envOpt: Option[T]): Stream[FeatureSummary] = 
-    featureStream.map(unit => new FeatureUnit(unit.featureFile, unit.metaFiles ++ options.metaFiles)).flatMap { unit =>
+    featureStream.flatMap { unit =>
       val env = envOpt.getOrElse(interpreter.initialise(options))
       try {
         if (envOpt.isDefined) { interpreter.reset(env) }
-        interpreter.interpretFeature(unit.featureFile, unit.metaFiles, options.tags, env).map { spec =>
+        interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.tags, env).map { spec =>
           FeatureSummary(spec, reportGenerator map { _.reportDetail(spec) })
         }
       } finally {
