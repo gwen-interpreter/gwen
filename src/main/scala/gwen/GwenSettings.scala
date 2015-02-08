@@ -23,6 +23,7 @@ import com.typesafe.config.Config
 import scala.util.Properties
 import java.util.Properties
 import java.io.FileReader
+import scala.annotation.tailrec
 
 /**
  * Provides access to system properties loaded from properties files.
@@ -34,6 +35,8 @@ import java.io.FileReader
  * @author Branko Juric
  */
 object gwenSetting {
+  
+  private val InlineProperty = """.*\$\{(.+?)\}.*""".r
   
   loadAll(UserOverrides.UserProperties.toList)
   
@@ -52,9 +55,21 @@ object gwenSetting {
     props.entrySet() foreach { entry =>
       val key = entry.getKey().asInstanceOf[String]
       if (!sys.props.contains(key)) {
-        sys.props += ((key, props.getProperty(key)))
+        val value = resolve(props.getProperty(key), props)
+        sys.props += ((key, value))
       }
     }
+  }
+  
+  @tailrec
+  private def resolve(value: String, props: Properties): String = value match {
+    case InlineProperty(key) =>
+      if (props.containsKey(key)) {
+        resolve(value.replaceAll("""\$\{""" + key + """\}""", props.getProperty(key)), props)
+      } else {
+        sys.error(s"Property not found: $key")
+      }
+    case _ => value
   }
   
   /**
