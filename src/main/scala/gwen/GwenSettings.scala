@@ -62,13 +62,14 @@ object gwenSetting {
   }
   
   @tailrec
-  private def resolve(value: String, props: Properties): String = value match {
+  private[gwen] def resolve(value: String, props: Properties): String = value match {
     case InlineProperty(key) =>
-      if (props.containsKey(key)) {
-        resolve(value.replaceAll("""\$\{""" + key + """\}""", props.getProperty(key)), props)
+      val inline = if (props.containsKey(key)) {
+        props.getProperty(key)
       } else {
-        sys.error(s"Property not found: $key")
+        sys.props.get(key).getOrElse(sys.error(s"Property not found: $key"))
       }
+      resolve(value.replaceAll("""\$\{""" + key + """\}""", inline), props)
     case _ => value
   }
   
