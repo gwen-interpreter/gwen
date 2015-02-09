@@ -65,11 +65,11 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
    */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
-    case "env" | "env -v" | "env -visible" => 
+    case "env" | "env -v" | "env --visible" => 
       Some(Json.prettyPrint(env.visibleJson))
-    case "env -f" | "env -feature" => 
+    case "env -f" | "env --feature" => 
       Some(Json.prettyPrint(env.featureScope.json))
-    case "env -a" | "env -all" => 
+    case "env -a" | "env --all" => 
       Some(Json.prettyPrint(env.json))
     case "exit" | "bye" | "quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
