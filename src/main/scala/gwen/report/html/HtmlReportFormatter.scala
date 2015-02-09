@@ -114,7 +114,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
 					<span class="label label-${cssStatus(status)}">Meta:</span>
 					${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
-					<span class="pull-right">${secs(evalStatus.duration)}</span>""" else ""}
+					<span class="pull-right">${formatDuration(evalStatus.duration)}</span>""" else ""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -130,7 +130,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 									</td>
 									<td>&nbsp; &nbsp; </td>
 									<td>
-										<span class="pull-right">${secs(metaResult.evalStatus.duration)}</span>${metaFeature.featureFile.map(file => s"""
+										<span class="pull-right">${formatDuration(metaResult.evalStatus.duration)}</span>${metaFeature.featureFile.map(file => s"""
 										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
 									</td>
 								</tr>"""}).mkString}
@@ -215,7 +215,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
 				<span class="label label-black">Results</span>
-				<span class="pull-right">${secs(summary.featureResults.map(_.evalStatus.duration).sum)}</span>
+				<span class="pull-right">${formatDuration(summary.featureResults.map(_.evalStatus.duration).sum)}</span>
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Feature", summary.featureResults.map(_.evalStatus))}
@@ -236,7 +236,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					val total = summary.featureResults.size
 					val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
 					s"""${countOfTotal}${if (count > 1) s"""
-					<span class="pull-right">${secs(results.map(_.evalStatus.duration).sum)}</span>""" else ""}"""}
+					<span class="pull-right">${formatDuration(results.map(_.evalStatus.duration).sum)}</span>""" else ""}"""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -250,7 +250,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 								  </td>
 								  <td>&nbsp; &nbsp; </td>
 								  <td>
-										<span class="pull-right">${secs(featureResult.evalStatus.duration)}</span>${featureResult.featureFile.map(file => s"""
+										<span class="pull-right">${formatDuration(featureResult.evalStatus.duration)}</span>${featureResult.featureFile.map(file => s"""
 										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
 								  </td>
 								</tr>"""}).mkString}
@@ -341,9 +341,9 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
   private def durationOrStatus(evalStatus: EvalStatus) = evalStatus.status match {
-    case StatusKeyword.Passed | StatusKeyword.Failed => secs(evalStatus.duration)
+    case StatusKeyword.Passed | StatusKeyword.Failed => formatDuration(evalStatus.duration)
     case _ => evalStatus.status
   }
-  private def secs(duration: Long) = EvalStatus.formatSecs(duration)
+  private def formatDuration(duration: Long) = EvalStatus.formatDuration(duration)
   private def escape(text: String) = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 }

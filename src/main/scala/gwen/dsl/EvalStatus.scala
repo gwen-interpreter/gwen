@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ sealed trait EvalStatus {
   def code: Int
   override def toString = 
     if (duration > 0) {
-      s"[${EvalStatus.formatSecs(duration)}] ${status}"
+      s"[${EvalStatus.formatDuration(duration)}] ${status}"
     } else status.toString
 }
 
@@ -95,7 +95,7 @@ case object Loaded extends EvalStatus {
 
 object EvalStatus {
 
-  private val secsFormatter = new DecimalFormat("0.0000")
+  private val durationFormatter = new DecimalFormat("0.0000")
   
   /**
    * Function for getting the effective evaluation status of a given list of statuses.
@@ -124,11 +124,18 @@ object EvalStatus {
     }
   }
   
-  def formatSecs(durationNano: Long): String = 
+  def formatDuration(durationNano: Long): String = {
+    def formatDuration(duration: Double, unit: String): String = {
+      if (duration < 60) s"${durationFormatter.format(duration)} $unit"
+      else unit match {
+        case "secs" => formatDuration(duration / 60, "mins")
+        case "mins" => formatDuration(duration / 60, "hrs")
+      }
+    }
     if (durationNano > 0) { 
-      s"${secsFormatter.format(durationNano.toDouble / 1000000000)} secs"
+      formatDuration(durationNano.toDouble / 1000000000, "secs")
     } else ""
-  
+  }
 }
 
 /**
