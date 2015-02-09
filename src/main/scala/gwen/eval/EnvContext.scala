@@ -174,6 +174,15 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     attachments = Nil
   }
   
+  /**
+   * Can be overridden by subclasses to parse and resolve the given step 
+   * before it is evaluated. This implementation simply returns the step 
+   * as is.
+   * 
+   * @param step the step to resolve
+   * @return the resolved step
+   */
+  def resolve(step: Step): Step = step
 }
 
 /**

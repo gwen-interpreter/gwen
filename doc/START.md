@@ -139,8 +139,8 @@ Where:
 We now define our evaluation engine by extending the _EvalEngine_ trait over 
 the _MathEnvContext_ type we defined above. We implement the two abstract 
 methods _init_ and _evaluate_ to initialize the context and evaluate steps 
-respectively. Note that we use the inherited logger for logging and regex 
-string interpolator for matching step expressions and capturing their 
+respectively. Note that we use the inherited logger for logging and imported 
+the regex string interpolator for matching step expressions and capturing their 
 parameters. Note also that the step expressions are just strings. We do not 
 necessarily have to match them using the regex interpolator. In this instance 
 we choose to use it for the expressive power it provides.  Also, you will 
@@ -159,6 +159,7 @@ import gwen.dsl.Step
 import gwen.eval.EvalEngine
 import gwen.eval.GwenOptions
 import gwen.eval.ScopedDataStack
+import gwen.Predefs.RegexContext
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  

@@ -24,6 +24,7 @@ import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
 import gwen.eval.EnvContext
 import gwen.eval.ScopedDataStack
+import gwen.Predefs.RegexContext
 
 class MathService {
   def plus(x: Int, y: Int) = x + y

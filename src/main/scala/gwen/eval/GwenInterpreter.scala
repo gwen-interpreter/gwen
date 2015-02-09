@@ -297,25 +297,28 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
    * 			the evaluated step
    */
   private def evaluateStep(step: Step, env: T): Step = {
-    logger.info(s"Evaluating Step: $step")
-    val result = env.getStepDef(step.expression) match {
-      case None =>
-        doEvaluate(step, env) { step =>  
-          Try {
-            engine.evaluate(step, env)
-            step
+    def evaluateResolvedStep(step: Step, env: T): Step = {
+      logger.info(s"Evaluating Step: $step")
+      val result = env.getStepDef(step.expression) match {
+        case None =>
+          doEvaluate(step, env) { step =>  
+            Try {
+              engine.evaluate(step, env)
+              step
+            }
           }
-        }
-      case (Some(stepDef)) =>
-        logger.info(s"Evaluating StepDef: ${stepDef.name}")
-        val steps = evaluateSteps(stepDef.steps, env)
-        Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
-          logger.info(s"StepDef evaluated: ${stepDef.name}")
-        }
+        case (Some(stepDef)) =>
+          logger.info(s"Evaluating StepDef: ${stepDef.name}")
+          val steps = evaluateSteps(stepDef.steps, env)
+          Step(step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
+            logger.info(s"StepDef evaluated: ${stepDef.name}")
+          }
+      }
+      result tap { step =>
+        logStatus("Step", step.toString, step.evalStatus)
+      }
     }
-    result tap { step =>
-      logStatus("Step", step.toString, step.evalStatus)
-    }
+    evaluateResolvedStep(env.resolve(step), env);
   }
   
   /**

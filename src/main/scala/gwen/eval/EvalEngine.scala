@@ -18,10 +18,10 @@ package gwen.eval
 
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
-import scala.util.matching.Regex
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
+import gwen.Predefs.RegexContext
 import gwen.dsl.Step
 
 /**
@@ -39,14 +39,6 @@ import gwen.dsl.Step
  * @author Branko Juric
  */
 trait EvalEngine[T <: EnvContext] extends LazyLogging {
-  
-  /**
-   * Implicit regex string interpolator.  This makes it easy to match 
-   * incoming steps against regular expressions and capture their parameters.
-   */
-  implicit class RegexContext(sc: StringContext) {
-    def r = new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
-  }
   
   /**
    * Initialises the engine and returns a bootstrapped evaluation context.

@@ -24,6 +24,7 @@ import java.io.FileOutputStream
 import java.io.FileInputStream
 import java.io.StringWriter
 import java.io.PrintWriter
+import scala.util.matching.Regex
 
 /**
  * Predefined implicits.
@@ -113,6 +114,14 @@ object Predefs {
       sw.toString()
     }
     
+  }
+  
+  /**
+   * Implicit regex string interpolator.  This makes it easy to match 
+   * incoming steps against regular expressions and capture their parameters.
+   */
+  implicit class RegexContext(val sc: StringContext) extends AnyVal {
+    def r = new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
   }
   
 }
