@@ -44,7 +44,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   val feature = new FeatureSpec(
       Feature("test-feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a test", Passed  (10)))))
+      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a test", Passed(10)))))
   )
   
   private def executor(mockInterpreter: GwenInterpreter[EnvContext]) = {
@@ -235,21 +235,21 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature6A = new FeatureSpec(
       Feature("test-feature-6a"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario6A", List(Step(StepKeyword.Given, "I am a test 6A", Passed  (1000))))),
+      List(Scenario(Set[Tag](), "scenario6A", List(Step(StepKeyword.Given, "I am a test 6A", Passed(1000))))),
       Some(feature6a)
     )
       
     val feature6B = new FeatureSpec(
       Feature("test-feature-6b"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario6B", List(Step(StepKeyword.Given, "I am a test 6B", Passed  (2000))))),
+      List(Scenario(Set[Tag](), "scenario6B", List(Step(StepKeyword.Given, "I am a test 6B", Passed(2000))))),
       Some(feature6b)
     )
     
     val feature7A = new FeatureSpec(
       Feature("test-feature-7a"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario7A", List(Step(StepKeyword.Given, "I am a test 7A", Passed  (3000))))),
+      List(Scenario(Set[Tag](), "scenario7A", List(Step(StepKeyword.Given, "I am a test 7A", Passed(3000))))),
       Some(feature7a)
     )
     

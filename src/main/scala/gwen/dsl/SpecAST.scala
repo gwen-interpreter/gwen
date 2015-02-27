@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ case class FeatureSpec(
       case _ =>
         val totalStatus = EvalStatus((metaSpecs.flatMap(_.steps) ++ steps).map(_.evalStatus))
         specStatus match {
-          case Passed(_) => Passed(totalStatus.duration)
+          case Passed(_) => Passed(totalStatus.nanos)
           case _ => totalStatus
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import gwen.report.ReportFormatter
 import gwen.dsl.StatusKeyword
 import java.io.File
 import gwen.report.FeatureResult
+import scala.concurrent.duration.Duration
+import gwen.dsl.DurationFormatter
 
 /**
  * Formats the feature summary and detail reports in HTML.
@@ -215,7 +217,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
 				<span class="label label-black">Results</span>
-				<span class="pull-right">${formatDuration(summary.featureResults.map(_.evalStatus.duration).sum)}</span>
+				<span class="pull-right">${formatDuration(summary.featureResults.map(_.evalStatus.duration).reduceLeft(_+_))}</span>
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Feature", summary.featureResults.map(_.evalStatus))}
@@ -236,7 +238,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					val total = summary.featureResults.size
 					val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
 					s"""${countOfTotal}${if (count > 1) s"""
-					<span class="pull-right">${formatDuration(results.map(_.evalStatus.duration).sum)}</span>""" else ""}"""}
+					<span class="pull-right">${formatDuration(results.map(_.evalStatus.duration).reduceLeft(_+_))}</span>""" else ""}"""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -344,6 +346,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     case StatusKeyword.Passed | StatusKeyword.Failed => formatDuration(evalStatus.duration)
     case _ => evalStatus.status
   }
-  private def formatDuration(duration: Long) = EvalStatus.formatDuration(duration)
+  private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package gwen.dsl
 
-import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
@@ -65,15 +64,15 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Pending)
-	featureSpec.scenarios(0).background.get.evalStatus.status should be (StatusKeyword.Pending)
-	featureSpec.scenarios(0).evalStatus.status                should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.evalStatus.status should be (StatusKeyword.Pending)
-	featureSpec.scenarios(1).evalStatus.status                should be (StatusKeyword.Pending)
-    featureSpec.scenarios(2).background                       should be (None)    
-	featureSpec.scenarios(2).evalStatus.status                should be (StatusKeyword.Pending)
+	featureSpec.evalStatus                             should be (Pending)
+	featureSpec.scenarios(0).background.get.evalStatus should be (Pending)
+	featureSpec.scenarios(0).evalStatus                should be (Pending)
+    featureSpec.scenarios(1).background.get.evalStatus should be (Pending)
+	featureSpec.scenarios(1).evalStatus                should be (Pending)
+    featureSpec.scenarios(2).background                should be (None)    
+	featureSpec.scenarios(2).evalStatus                should be (Pending)
 	featureSpec.steps foreach {
-	  _.evalStatus.status should be (StatusKeyword.Pending)
+	  _.evalStatus should be (Pending)
 	}
   
   }
@@ -103,13 +102,13 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Passed)
-	featureSpec.scenarios(0).background.get.evalStatus.status should be (StatusKeyword.Passed)
-	featureSpec.scenarios(0).evalStatus.status                should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).background.get.evalStatus.status should be (StatusKeyword.Passed)
-	featureSpec.scenarios(1).evalStatus.status                should be (StatusKeyword.Passed)
-    featureSpec.scenarios(2).background                       should be (None)    
-	featureSpec.scenarios(2).evalStatus.status                should be (StatusKeyword.Loaded)
+	featureSpec.evalStatus                             should be (Passed(24))
+	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+	featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+	featureSpec.scenarios(1).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(2).background                should be (None)    
+	featureSpec.scenarios(2).evalStatus                should be (Loaded)
   
   }
   
@@ -117,6 +116,7 @@ Background: The tester
     
     // setup
     
+    val error = new Exception(StatusKeyword.Failed.toString())
     var featureSpec = normalise(parse(featureString).get)
     
     featureSpec = FeatureSpec(
@@ -132,7 +132,7 @@ Background: The tester
               val (step, stepIndex) = zip
               Step(step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex == 0) => Passed(1)
-                case 3 if (scenarioIndex == 0) => Failed(99, new Exception(StatusKeyword.Failed.toString()))
+                case 3 if (scenarioIndex == 0) => Failed(99, error)
                 case _ => step.evalStatus
               })
             }) 
@@ -142,31 +142,31 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
+	featureSpec.evalStatus should be (Failed(102, error))
     
-	featureSpec.scenarios(0).background.get.evalStatus.status          should be (StatusKeyword.Failed)
-    featureSpec.scenarios(0).background.get.steps(0).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(1).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(2).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(3).evalStatus.status should be (StatusKeyword.Failed)
-    featureSpec.scenarios(0).background.get.steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(0).background.get.steps(5).evalStatus.status should be (StatusKeyword.Pending)
+	featureSpec.scenarios(0).background.get.evalStatus          should be (Failed(102, error))
+    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(3).evalStatus should be (Failed(99, error))
+    featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (Pending)
     
-    featureSpec.scenarios(1).background.get.evalStatus.status          should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(0).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(1).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(2).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(3).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(5).evalStatus.status should be (StatusKeyword.Pending)
+    featureSpec.scenarios(1).background.get.evalStatus          should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(3).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(5).evalStatus should be (Pending)
     
     featureSpec.scenarios(2).background should be (None)
     
 	featureSpec.scenarios.tail foreach {
 	  scenario => 
-	    scenario.evalStatus.status should be (StatusKeyword.Pending)
+	    scenario.evalStatus should be (Pending)
 	    scenario.steps foreach {
-	      _.evalStatus.status should be (StatusKeyword.Pending)
+	      _.evalStatus should be (Pending)
 	    }
 	}
   
@@ -176,6 +176,7 @@ Background: The tester
     
     // setup
     
+    val error = new Exception(StatusKeyword.Failed.toString())
     var featureSpec = normalise(parse(featureString).get)
     
     featureSpec = FeatureSpec(
@@ -191,7 +192,7 @@ Background: The tester
               val (step, stepIndex) = zip
               Step(step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex < 2) => Passed(1)
-                case 3 if (scenarioIndex == 1) => Failed(99, new Exception(StatusKeyword.Failed.toString()))
+                case 3 if (scenarioIndex == 1) => Failed(99, error)
                 case _ => if (scenarioIndex < 1) Passed(1) else step.evalStatus
               })
             }) 
@@ -201,31 +202,31 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
+	featureSpec.evalStatus should be (Failed(108, error))
     
-    featureSpec.scenarios(0).background.get.evalStatus.status          should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(0).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(1).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(2).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(3).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(4).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).background.get.steps(5).evalStatus.status should be (StatusKeyword.Passed)
+    featureSpec.scenarios(0).background.get.evalStatus          should be (Passed(6))
+    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(3).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (Passed(1))
     
-	featureSpec.scenarios(1).background.get.evalStatus.status          should be (StatusKeyword.Failed)
-    featureSpec.scenarios(1).background.get.steps(0).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).background.get.steps(1).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).background.get.steps(2).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).background.get.steps(3).evalStatus.status should be (StatusKeyword.Failed)
-    featureSpec.scenarios(1).background.get.steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(5).evalStatus.status should be (StatusKeyword.Pending)
+	featureSpec.scenarios(1).background.get.evalStatus          should be (Failed(102, error))
+    featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).background.get.steps(3).evalStatus should be (Failed(99, error))
+    featureSpec.scenarios(1).background.get.steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(5).evalStatus should be (Pending)
     
     featureSpec.scenarios(2).background should be (None)
     
 	featureSpec.scenarios.drop(2) foreach {
 	  scenario => 
-	    scenario.evalStatus.status should be (StatusKeyword.Pending)
+	    scenario.evalStatus should be (Pending)
 	    scenario.steps foreach {
-	      _.evalStatus.status should be (StatusKeyword.Pending)
+	      _.evalStatus should be (Pending)
 	    }
 	}
   
@@ -235,6 +236,7 @@ Background: The tester
     
     // setup 
     
+    val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get)
     
     featureSpec = FeatureSpec(
@@ -257,7 +259,7 @@ Background: The tester
             val (step, stepIndex) = zip
             Step(step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if (scenarioIndex == 0) => Passed(1)
-              case 3 if (scenarioIndex == 0) => Failed(99, new Exception(StatusKeyword.Failed.toString))
+              case 3 if (scenarioIndex == 0) => Failed(99, error)
               case _ => step.evalStatus
             })
           }) 
@@ -267,31 +269,31 @@ Background: The tester
     
 	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
     
-	featureSpec.scenarios(0).background.get.evalStatus.status should be (StatusKeyword.Passed)
+	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
     
-    featureSpec.scenarios(0).evalStatus.status          should be (StatusKeyword.Failed)
-    featureSpec.scenarios(0).steps(0).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).steps(1).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).steps(2).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).steps(3).evalStatus.status should be (StatusKeyword.Failed)
-    featureSpec.scenarios(0).steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(0).steps(5).evalStatus.status should be (StatusKeyword.Pending)
+    featureSpec.scenarios(0).evalStatus          should be (Failed(108, error))
+    featureSpec.scenarios(0).steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).steps(3).evalStatus should be (Failed(99, error))
+    featureSpec.scenarios(0).steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(0).steps(5).evalStatus should be (Pending)
     
-    featureSpec.scenarios(1).background.get.evalStatus.status          should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(0).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(1).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(2).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(3).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).background.get.steps(5).evalStatus.status should be (StatusKeyword.Pending)
+    featureSpec.scenarios(1).background.get.evalStatus          should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(3).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(1).background.get.steps(5).evalStatus should be (Pending)
     
     featureSpec.scenarios(2).background should be (None)
     
 	featureSpec.scenarios.tail foreach {
 	  scenario => 
-	    scenario.evalStatus.status should be (StatusKeyword.Pending)
+	    scenario.evalStatus should be (Pending)
 	    scenario.steps foreach {
-	      _.evalStatus.status should be (StatusKeyword.Pending)
+	      _.evalStatus should be (Pending)
 	    }
 	}
   
@@ -301,6 +303,7 @@ Background: The tester
     
     // setup
     
+    val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get)
     
     featureSpec = FeatureSpec(
@@ -320,7 +323,7 @@ Background: The tester
             val (step, stepIndex) = zip
             Step(step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if (scenarioIndex < 2) => Passed(1)
-              case 3 if (scenarioIndex == 1) => Failed(99, new Exception(StatusKeyword.Failed.toString))
+              case 3 if (scenarioIndex == 1) => Failed(99, error)
               case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus
             })
           }) 
@@ -330,23 +333,23 @@ Background: The tester
     
 	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
     
-	featureSpec.scenarios(0).background.get.evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(0).evalStatus.status                should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).background.get.evalStatus.status should be (StatusKeyword.Passed)
+	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
     
-    featureSpec.scenarios(1).evalStatus.status should be (StatusKeyword.Failed)
-    featureSpec.scenarios(1).steps(0).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).steps(1).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).steps(2).evalStatus.status should be (StatusKeyword.Passed)
-    featureSpec.scenarios(1).steps(3).evalStatus.status should be (StatusKeyword.Failed)
-    featureSpec.scenarios(1).steps(4).evalStatus.status should be (StatusKeyword.Pending)
-    featureSpec.scenarios(1).steps(5).evalStatus.status should be (StatusKeyword.Pending)
+    featureSpec.scenarios(1).evalStatus should be (Failed(108, error))
+    featureSpec.scenarios(1).steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).steps(3).evalStatus should be (Failed(99, error))
+    featureSpec.scenarios(1).steps(4).evalStatus should be (Pending)
+    featureSpec.scenarios(1).steps(5).evalStatus should be (Pending)
     
 	featureSpec.scenarios.drop(2) foreach {
 	  scenario => 
-	    scenario.evalStatus.status should be (StatusKeyword.Pending)
+	    scenario.evalStatus should be (Pending)
 	    scenario.steps foreach {
-	    _.evalStatus.status should be (StatusKeyword.Pending)
+	    _.evalStatus should be (Pending)
 	  }
 	}
   

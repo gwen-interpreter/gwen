@@ -21,31 +21,35 @@ import java.text.DecimalFormat
 
 /**
  * Captures the evaluation status of a [[SpecNode]].
- * 
- * @param status
- * 			the status keyword
- * @param duration
- * 			the duration in nanoseconds
- * @param message
- * 			optional message
  */
 sealed trait EvalStatus {
+  
   val status: StatusKeyword.Value
-  val duration: Long
+  val nanos: Long
+  
+  /**
+   * Returns the duration in nanoseconds
+   */
+  def duration: Duration = Duration.fromNanos(nanos)
+  
+  /**
+   * Must be overriden to return status code
+   */
   def code: Int
+  
   override def toString = 
-    if (duration > 0) {
-      s"[${EvalStatus.formatDuration(duration)}] ${status}"
+    if (nanos > 0) {
+      s"[${DurationFormatter.format(duration)}] ${status}"
     } else status.toString
 }
 
 /**
  * Defines a passed evaluation status.
  * 
- * @param duration
+ * @param nanos
  * 		the duration in nanoseconds
  */
-case class Passed(val duration: Long) extends EvalStatus {
+case class Passed(val nanos: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
   def code = 0
 }
@@ -53,12 +57,12 @@ case class Passed(val duration: Long) extends EvalStatus {
 /**
  * Defines a failed evaluation status.
  * 
- * @param duration
+ * @param nanos
  * 		the duration in nanoseconds
  * @param error
  * 		the error message
  */
-case class Failed(val duration: Long, val error: Throwable) extends EvalStatus {
+case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
   def code = 1
 }
@@ -67,7 +71,7 @@ case class Failed(val duration: Long, val error: Throwable) extends EvalStatus {
  * Defines the skipped status.
  */
 case object Skipped extends EvalStatus {
-  val duration = 0L
+  val nanos = 0L
   val status = StatusKeyword.Skipped
   def code = 2
 }
@@ -76,10 +80,10 @@ case object Skipped extends EvalStatus {
  * Defines the pending status.
  * 
  * @param duration
- * 		the duration in nanoseconds (default value is zero)
+ * 		the duration (default value is zero)
  */
 case object Pending extends EvalStatus {
-  val duration = 0L
+  val nanos = 0L 
   val status = StatusKeyword.Pending
   def code = 3
 }
@@ -88,15 +92,13 @@ case object Pending extends EvalStatus {
  * Defines the loaded status.
  */
 case object Loaded extends EvalStatus {
-  val duration = 0L
+  val nanos = 0L
   val status = StatusKeyword.Loaded
   def code = 0
 }
 
 object EvalStatus {
 
-  private val durationFormatter = new DecimalFormat("0.0000")
-  
   /**
    * Function for getting the effective evaluation status of a given list of statuses.
    * 
@@ -105,7 +107,7 @@ object EvalStatus {
    *  
    */
   def apply(statuses: List[EvalStatus]): EvalStatus = {
-    val duration = (statuses map (_.duration)).sum
+    val duration = (statuses map (_.nanos)).sum
     statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
       case Some(failed) => Failed(duration, failed.error)  
       case None =>
@@ -124,18 +126,6 @@ object EvalStatus {
     }
   }
   
-  def formatDuration(durationNano: Long): String = {
-    def formatDuration(duration: Double, unit: String): String = {
-      if (duration < 60) s"${durationFormatter.format(duration)} $unit"
-      else unit match {
-        case "secs" => formatDuration(duration / 60, "mins")
-        case "mins" => formatDuration(duration / 60, "hrs")
-      }
-    }
-    if (durationNano > 0) { 
-      formatDuration(durationNano.toDouble / 1000000000, "secs")
-    } else ""
-  }
 }
 
 /**
