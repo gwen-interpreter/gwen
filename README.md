@@ -226,7 +226,6 @@ Building from Source
 If you would like to build a binary from the source:
 
 1. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
-   - Note Java 8 is not recommended at this time of writing
 2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
 3. Either
    - Download a [Git client](http://git-scm.com/downloads) and clone this 
