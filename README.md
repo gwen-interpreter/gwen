@@ -72,7 +72,7 @@ Key Features
 Core Requirements
 -----------------
 
-- Java 1.6 or later
+- Java 6 or 7
 - Scala 2.11.x, 2.10.x 
 
 Supported Grammar
@@ -225,7 +225,7 @@ Building from Source
 
 If you would like to build a binary from the source:
 
-1. Download and install [Java SDK 1.6 or later](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
+1. Download and install [Java SDK 6 or 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
 2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
 3. Either
    - Download a [Git client](http://git-scm.com/downloads) and clone this 
