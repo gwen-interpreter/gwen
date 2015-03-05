@@ -20,7 +20,7 @@ import java.io.File
 import scala.util.Try
 import gwen.Predefs.Kestrel
 import gwen.dsl.Tag
-import gwen.gwenSetting
+import gwen.Settings
 import gwen.UserOverrides
 import scopt.OptionParser
 
@@ -148,7 +148,7 @@ object GwenOptions {
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }
-          gwenSetting.loadAll(opt.properties.reverse)
+          Settings.loadAll(opt.properties.reverse)
         }
       }).getOrElse(sys.error("Failed to parse gwen arguments"))
     )

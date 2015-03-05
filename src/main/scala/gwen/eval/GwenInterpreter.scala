@@ -41,7 +41,7 @@ import gwen.dsl.SpecParser
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
-import gwen.gwenSetting
+import gwen.GwenSettings
 
 /**
  * Interprets incoming feature specs by parsing and evaluating
@@ -184,15 +184,14 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
         (acc: List[Scenario], scenario: Scenario) => 
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
-              gwenSetting.getOpt("gwen.feature.failfast") match {
-                case Some("true") => 
-                  Scenario(
-                    scenario.tags, 
-                    scenario.name, 
-                    scenario.background.map(bg => Background(bg.name, bg.steps.map(step => Step(step.keyword, step.expression, Skipped)))),
-                    scenario.steps.map(step => Step(step.keyword, step.expression, Skipped))
-                  )
-                case _ =>
+              if (GwenSettings.`gwen.feature.failfast`) {
+                Scenario(
+                  scenario.tags, 
+                  scenario.name, 
+                  scenario.background.map(bg => Background(bg.name, bg.steps.map(step => Step(step.keyword, step.expression, Skipped)))),
+                  scenario.steps.map(step => Step(step.keyword, step.expression, Skipped))
+                )
+              } else {
                   evaluateScenario(scenario, env)
               }
             case _ => 

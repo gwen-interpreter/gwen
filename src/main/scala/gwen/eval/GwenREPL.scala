@@ -17,19 +17,17 @@
 package gwen.eval
 
 import java.io.File
+
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.util.Failure
 import scala.util.Success
-import scala.util.Try
+
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
-import gwen.dsl.Step
 import gwen.dsl.StepKeyword
-import gwen.gwenSetting
-import jline.console.history.FileHistory
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
-import gwen.dsl.prettyPrint
+import jline.console.history.FileHistory
 import play.api.libs.json.Json
 
 /**

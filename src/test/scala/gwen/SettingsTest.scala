@@ -20,10 +20,10 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import java.util.Properties
 
-class GwenSettingTest extends FlatSpec with Matchers {
+class SettingsTest extends FlatSpec with Matchers {
 
   "user.home system property" should "be available" in {
-    gwenSetting.getOpt("user.home") should not be (None)
+    Settings.getOpt("user.home") should not be (None)
   }
   
   "inline properties" should "resolve" in {
@@ -32,6 +32,6 @@ class GwenSettingTest extends FlatSpec with Matchers {
     sys.props.put("prop.port", "8090")
     props.put("prop.url", "http://${prop.host}:${prop.port}/howdy")
     
-    gwenSetting.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
+    Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
   }
 }
