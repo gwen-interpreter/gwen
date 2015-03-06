@@ -16,12 +16,8 @@
 
 package gwen.eval
 
-import scala.sys.process.stringSeqToProcess
-import scala.sys.process.stringToProcess
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
-import gwen.Predefs.RegexContext
 import gwen.dsl.Step
 
 /**
@@ -63,19 +59,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
    * 			the environment context
    */
   def evaluate(step: Step, env: T): Unit = {
-    step.expression match {
-      case r"""I execute system process "(.+?)"$$$systemproc""" =>
-        systemproc.! match {
-          case 0 => 
-          case _ => sys.error(s"The call to $systemproc has failed.")
-        }
-      case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
-        Seq("/bin/sh", "-c", systemproc).! match {
-          case 0 => 
-          case _ => sys.error(s"The call to $systemproc has failed.")
-        }
-      case _ => throw new UnsupportedStepException(step)
-    }
+    throw new UnsupportedStepException(step)
   }
 
   /**

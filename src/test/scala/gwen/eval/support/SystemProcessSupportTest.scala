@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,35 @@
  * limitations under the License.
  */
 
-package gwen.eval
+package gwen.eval.support
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-
+import gwen.eval.ScopedDataStack
+import gwen.eval.EnvContext
+import gwen.eval.EvalEngine
+import gwen.eval.GwenOptions
 import gwen.dsl.Step
+import java.io.IOException
 import gwen.dsl.StepKeyword
 
 class TestEnvContext(val scopes: ScopedDataStack) extends EnvContext(scopes)
-class TestEvalEngine extends EvalEngine[TestEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(scopes)
+class TestEvalEngine extends SystemProcessSupport[TestEnvContext] {
+  def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(scopes)
 }
-  
-class EvalEngineTest extends FlatSpec with Matchers {
+
+class SystemProcessSupportTest extends FlatSpec with Matchers {
 
   val engine = new TestEvalEngine
   val env = engine.init(new GwenOptions(), new ScopedDataStack())
   
-  "Unsupported step" should "fail with UnsupportedStepException" in {
-    intercept[UnsupportedStepException] {
-      engine.evaluate(Step(StepKeyword.Given, " I am unsupported"), env)
+  "Execute system process 'hostname'" should "be successful" in {
+    engine.evaluate(Step(StepKeyword.Given, """I execute system process "hostname""""), env)
+  }
+  
+  "Execute system process 'undefined'" should "fail with IOException" in {
+    intercept[IOException] {
+    	engine.evaluate(Step(StepKeyword.Given, """I execute system process "undefined""""), env)
     }
   }
   
