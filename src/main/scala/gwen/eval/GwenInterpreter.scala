@@ -302,7 +302,7 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
       case TrySuccess(step) => 
         Step(step.keyword, step.expression, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
-        val failure = Failed(System.nanoTime - start, error)
+        val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)
         Step(step.keyword, step.expression, failure, env.attachments)
     }) tap { step =>
@@ -339,18 +339,25 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
     * Logs the evaluation status of the given node.
     * 
     * @param node the node to log the evaluation status of
-    * @return the input node 
+    * @param name the name of the node that failed
+    * @param status the evaluation status
+    * @return the logged status message
     */
-  private def logStatus(node: String, name: String, status: EvalStatus): Unit = {
-      val statusMsg = s"$status $node: $name"
-      status match {
-        case Passed(_) | Loaded => 
-          logger.info(statusMsg)
-        case Failed(_, _) => 
-          logger.error(statusMsg)
-        case _ => 
-          logger.warn(statusMsg)
+  private def logStatus(node: String, name: String, status: EvalStatus): String = {
+      s"$status $node: $name" tap { statusMsg =>
+        status match {
+          case Passed(_) | Loaded => 
+            logger.info(statusMsg)
+          case Failed(_, _) => 
+            logger.error(statusMsg)
+          case _ => 
+            logger.warn(statusMsg)
+        }
       }
   }
   
 }
+
+/** Signals a step that failed to execute. */
+class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step: ${step}", cause)
+
