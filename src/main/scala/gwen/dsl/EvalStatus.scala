@@ -19,22 +19,16 @@ package gwen.dsl
 import scala.concurrent.duration._
 import java.text.DecimalFormat
 
-/**
- * Captures the evaluation status of a [[SpecNode]].
- */
+/** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {
   
   val status: StatusKeyword.Value
   val nanos: Long
   
-  /**
-   * Returns the duration in nanoseconds
-   */
+  /** Returns the duration in nanoseconds. */
   def duration: Duration = Duration.fromNanos(nanos)
   
-  /**
-   * Must be overriden to return status code
-   */
+  /** Must be overriden to return status code. */
   def code: Int
   
   override def toString = 
@@ -44,32 +38,27 @@ sealed trait EvalStatus {
 }
 
 /**
- * Defines a passed evaluation status.
- * 
- * @param nanos
- * 		the duration in nanoseconds
- */
+  * Defines a passed evaluation status.
+  * 
+  * @param nanos the duration in nanoseconds
+  */
 case class Passed(val nanos: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
   def code = 0
 }
 
 /**
- * Defines a failed evaluation status.
- * 
- * @param nanos
- * 		the duration in nanoseconds
- * @param error
- * 		the error message
- */
+  * Defines a failed evaluation status.
+  * 
+  * @param nanos the duration in nanoseconds
+  * @param error the error message
+  */
 case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
   def code = 1
 }
 
-/**
- * Defines the skipped status.
- */
+/** Defines the skipped status. */
 case object Skipped extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Skipped
@@ -77,20 +66,17 @@ case object Skipped extends EvalStatus {
 }
 
 /**
- * Defines the pending status.
- * 
- * @param duration
- * 		the duration (default value is zero)
- */
+  * Defines the pending status.
+  * 
+  * @param duration the duration (default value is zero)
+  */
 case object Pending extends EvalStatus {
   val nanos = 0L 
   val status = StatusKeyword.Pending
   def code = 3
 }
 
-/**
- * Defines the loaded status.
- */
+/** Defines the loaded status. */
 case object Loaded extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Loaded
@@ -100,12 +86,10 @@ case object Loaded extends EvalStatus {
 object EvalStatus {
 
   /**
-   * Function for getting the effective evaluation status of a given list of statuses.
-   * 
-   * @param statuses
-   * 			the list of evaluation statuses
-   *  
-   */
+    * Function for getting the effective evaluation status of a given list of statuses.
+    * 
+    * @param statuses the list of evaluation statuses
+    */
   def apply(statuses: List[EvalStatus]): EvalStatus = {
     val duration = (statuses map (_.nanos)).sum
     statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
@@ -129,10 +113,10 @@ object EvalStatus {
 }
 
 /**
- * Enumeration of supported status keywords.
- * 
- * @author Branko Juric
- */
+  * Enumeration of supported status keywords.
+  * 
+  * @author Branko Juric
+  */
 object StatusKeyword extends Enumeration {
 
   val Passed, Failed, Skipped, Pending, Loaded = Value
@@ -140,11 +124,10 @@ object StatusKeyword extends Enumeration {
   val valuesFixedOrder = List(Passed, Failed, Skipped, Pending, Loaded)
 
   /**
-   * Groups counts by status.
-   * 
-   * @param statuses
-   * 		the statuses to group
-   */
+    * Groups counts by status.
+    * 
+    * @param statuses the statuses to group
+    */
   def countsByStatus(statuses: List[EvalStatus]): Map[StatusKeyword.Value, Int] = 
     statuses.groupBy(_.status) map { case (k, v) => (k, v.size) }
 }

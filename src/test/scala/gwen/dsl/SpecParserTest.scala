@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,10 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
          When a small change is initially applied
          Then a large change will eventually result
     
-	Scenario: Evaluation
-	    Given any software behavior
-	     When expressed in Gherkin
-	     Then Gwen can evaluate it
+    Scenario: Evaluation
+        Given any software behavior
+         When expressed in Gherkin
+         Then Gwen can evaluate it
     
     Scenario: The useless test
         Given I am a test

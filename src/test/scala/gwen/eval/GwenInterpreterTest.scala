@@ -154,9 +154,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   Background: The observer
         Given I am an observer
     Scenario: The butterfly effect
-	    Given a deterministic nonlinear system
-	     When a small change is initially applied
-	     Then a large change will eventually result"""
+        Given a deterministic nonlinear system
+         When a small change is initially applied
+         Then a large change will eventually result"""
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
     val mockEnv = mock[EnvContext]
@@ -183,15 +183,15 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
      Feature: Gwen meta
      @Stepdef
     Scenario: the butterfly flaps its wings
-	    Given a deterministic nonlinear system
-	     When a small change is initially applied
-	     Then a large change will eventually result"""
+        Given a deterministic nonlinear system
+         When a small change is initially applied
+         Then a large change will eventually result"""
     val featureString = """
      Feature: Gwen
   Background: The observer
         Given I am an observer
     Scenario: The butterfly effect
-	    Given the butterfly flaps its wings"""
+        Given the butterfly flaps its wings"""
     
     val metaFile = writeToFile(metaString, createFile("test2.meta"))
     val featureFile = writeToFile(featureString, createFile("test2.feature"))
@@ -250,8 +250,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   private def writeToFile(content: String, targetFile: File): File = 
     targetFile tap { file =>
       new FileWriter(file) tap { fw =>
-	    try {
-	      fw.write(content)
+        try {
+          fw.write(content)
         } finally {
           fw.close
         }

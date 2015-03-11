@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,93 +47,93 @@ class TagsFilterTest extends FlatSpec with Matchers with SpecParser {
           Given I do work 4"""
     
   "No tags" should "return same feature" in {
-	  val source = parse(featureString).get
-	  TagsFilter.filter(source, Nil) match {
-	    case Some(target) => source should be (target)
-	    case None => fail("same feature expected")
-	  }
+      val source = parse(featureString).get
+      TagsFilter.filter(source, Nil) match {
+        case Some(target) => source should be (target)
+        case None => fail("same feature expected")
+      }
   }
   
   "Include feature level tag" should "return same feature" in {
-	  val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@wip", true))) match {
-	    case Some(target) => source should be (target)
-	    case None => fail("same feature expected")
-	  }
+      val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@wip", true))) match {
+        case Some(target) => source should be (target)
+        case None => fail("same feature expected")
+      }
   }
   
   "Exclude feature level tag" should "return no feature" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@wip", false))) match {
-	    case Some(target) => fail("None expected")
-	    case None => // success
-	  }
+      TagsFilter.filter(source, List(("@wip", false))) match {
+        case Some(target) => fail("None expected")
+        case None => // success
+      }
   }
   
   "Include scenario level tag" should "return scenarios with only those tagged scenarios" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@work", true))) match {
-	    case Some(target) =>
-	      val scenarios = target.scenarios
-	      scenarios.size should be (2)
-	      scenarios(0).name should be ("Work unit 2")
-	      scenarios(1).name should be ("Work unit 3")
-	      
-	    case None => fail("feature expected")
-	  }
+      TagsFilter.filter(source, List(("@work", true))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 3")
+          
+        case None => fail("feature expected")
+      }
   }
   
   "Exclude scenario level tag" should "return scenarios without those tagged scenarios" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@work", false))) match {
-	    case Some(target) =>
-	      val scenarios = target.scenarios
-	      scenarios.size should be (2)
-	      scenarios(0).name should be ("Work unit 1")
-	      scenarios(1).name should be ("Work unit 4")
-	      
-	    case None => fail("feature expected")
-	  }
+      TagsFilter.filter(source, List(("@work", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 1")
+          scenarios(1).name should be ("Work unit 4")
+          
+        case None => fail("feature expected")
+      }
   }
   
   "Include and exclude scenario level tags" should "return scenarios with include tag minus exclude tag" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@play", true), ("@work", false))) match {
-	    case Some(target) =>
-	      val scenarios = target.scenarios
-	      scenarios.size should be (1)
-	      scenarios(0).name should be ("Work unit 4")
-	      
-	    case None => fail("feature expected")
-	  }
+      TagsFilter.filter(source, List(("@play", true), ("@work", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (1)
+          scenarios(0).name should be ("Work unit 4")
+          
+        case None => fail("feature expected")
+      }
   }
   
   "Exclude and include scenario level tags" should "return scenarios without exclude tag plus include tag" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@play", false), ("@work", true))) match {
-	    case Some(target) =>
-	      val scenarios = target.scenarios
-	      scenarios.size should be (1)
-	      scenarios(0).name should be ("Work unit 2")
-	      
-	    case None => fail("feature expected")
-	  }
+      TagsFilter.filter(source, List(("@play", false), ("@work", true))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (1)
+          scenarios(0).name should be ("Work unit 2")
+          
+        case None => fail("feature expected")
+      }
   }
   
   "Include and exclude of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@play", true), ("@play", false))) match {
-	    case Some(target) => fail("None expected")
-	    case None => // success
-	  }
+      TagsFilter.filter(source, List(("@play", true), ("@play", false))) match {
+        case Some(target) => fail("None expected")
+        case None => // success
+      }
   }
   
   "Exclude and include of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
-	  TagsFilter.filter(source, List(("@play", false), ("@play", true))) match {
-	    case Some(target) => fail("None expected")
-	    case None => // success
-	  }
+      TagsFilter.filter(source, List(("@play", false), ("@play", true))) match {
+        case Some(target) => fail("None expected")
+        case None => // success
+      }
   }
   
 }

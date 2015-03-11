@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +21,22 @@ import java.io.File
 import gwen.Predefs.Kestrel
 
 /**
- * Normalises a parsed feature spec in preparation for 
- * [[gwen.eval.EvalEngine evaluation]].
- * 
- * @author Branko Juric
- */
+  * Normalises a parsed feature spec in preparation for 
+  * [[gwen.eval.EvalEngine evaluation]].
+  * 
+  * @author Branko Juric
+  */
 trait SpecNormaliser {
-	
+  
   /**
-   * Normalises a given [[gwen.dsl.FeatureSpec]].  If the feature has a 
-   * background, then the  background is copied to each contained scenario and 
-   * removed from the top level.  Positional information is preserved. The 
-   * source feature file is also bound (if provided).
-   * 
-   * @param spec
-   * 		the feature spec
-   * @param featureFile
-   * 		optional source feature file
-   */
+    * Normalises a given [[gwen.dsl.FeatureSpec]].  If the feature has a 
+    * background, then the  background is copied to each contained scenario and 
+    * removed from the top level.  Positional information is preserved. The 
+    * source feature file is also bound (if provided).
+    * 
+    * @param spec the feature spec
+    * @param featureFile optional source feature file
+    */
   def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = 
     FeatureSpec(
       spec.feature, 
@@ -62,7 +60,7 @@ trait SpecNormaliser {
                 scenario.steps) tap { s => s.pos = scenario.pos }
           }
       },
-  	  featureFile
+      featureFile
    )
   
 }

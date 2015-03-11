@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package gwen
 
 /**
- * Console writer that implicitly flushes every print operation.
- * 
- * @author Branko Juric
- */
+  * Console writer that implicitly flushes every print operation.
+  * 
+  * @author Branko Juric
+  */
 trait ConsoleWriter {
-	
+
   private val out = Console.out
   
   def print(any: Any) = write {

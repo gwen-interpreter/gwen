@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,14 @@ import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
 
 /**
- * Captures the feature summary results of an evaluated feature.
- * 
- * @param featureResults
- * 			list of feature results
- * @param scenarioCounts
- * 			number of scenarios by status
- * @param stepCounts
- * 			number of steps by status
- * 
- * @author Branko Juric
- */
+  * Captures the feature summary results of an evaluated feature.
+  * 
+  * @param featureResults list of feature results
+  * @param scenarioCounts number of scenarios by status
+  * @param stepCounts number of steps by status
+  * 
+  * @author Branko Juric
+  */
 case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: Map[StatusKeyword.Value, Int], stepCounts: Map[StatusKeyword.Value, Int]) {
   
   def accumulate(featureResult: FeatureResult, scenarioStatuses: List[EvalStatus], stepStatuses: List[EvalStatus]) =
@@ -72,9 +69,7 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
   
 }
 
-/**
- * Feature summary factory.
- */
+/** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
   def apply(spec: FeatureSpec, reportFile: Option[File]): FeatureSummary =
@@ -85,22 +80,16 @@ object FeatureSummary {
 }
 
 /**
- * Captures the results of an evaluated feature.
- * 
- * @param name
- * 			the feature name
- * @param evalStatus
- * 			the evaluated status
- * @param featureFile
- * 			the optional feature file
- * @param reportFile
- * 			feature report file
- */
+  * Captures the results of an evaluated feature.
+  * 
+  * @param name the feature name
+  * @param evalStatus the evaluated status
+  * @param featureFile the optional feature file
+  * @param reportFile feature report file
+  */
 case class FeatureResult(featureName: String, evalStatus: EvalStatus, featureFile: Option[File], reportFile: Option[File])
 
-/**
- * Feature result factory.
- */
+/** Feature result factory. */
 object FeatureResult {
   def apply(spec: FeatureSpec, reportFile: Option[File]) = 
     new FeatureResult(spec.feature.name, spec.evalStatus, spec.featureFile, reportFile)

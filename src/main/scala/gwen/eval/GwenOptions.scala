@@ -25,27 +25,20 @@ import gwen.UserOverrides
 import scopt.OptionParser
 
 /**
- * Captures gwen command line options.
- *
- * @param batch
- * 			true to run in batch mode, false for interactive REPL
- *    		(default is false)
- * @param parallel
- * 			true to run each given file/dir entry in parallel, false for serial
- *    		(default is false)      
- * @param reportDir
- * 			optional directory to generate evaluation report into
- * @param properties
- *          list of properties files to load into system properties
- * @param tags
- * 			list of tags to include and exclude (tag, True=include|False=exclude) 
- * @param metaFiles
- *          optional list of meta file overrides
- * @param paths
- * 			optional list of feature file and/or directory paths
- *    
- * @author Branko Juric
- */
+  * Captures gwen command line options.
+  *
+  * @param batch true to run in batch mode, false for interactive REPL
+  *              (default is false)
+  * @param parallel true to run each given file/dir entry in parallel, false for serial
+  *                 (default is false)      
+  * @param reportDir optional directory to generate evaluation report into
+  * @param properties list of properties files to load into system properties
+  * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
+  * @param metaFiles optional list of meta file overrides
+  * @param paths optional list of feature file and/or directory paths
+  *    
+  * @author Branko Juric
+  */
 case class GwenOptions(
     batch: Boolean = false,
     parallel: Boolean = false,
@@ -70,11 +63,10 @@ case class GwenOptions(
 object GwenOptions {
   
   /**
-   * Gets the command line options parser.
-   * 
-   * @param interpreterClassName
-   * 				the fully qualified interpreter class name
-   */
+    * Gets the command line options parser.
+    * 
+    * @param interpreterClassName the fully qualified interpreter class name
+    */
   private [eval] def parse(interpreterClassName: String, args: Array[String]): Try[GwenOptions] = {
     
     val parser = new OptionParser[GwenOptions]("scala " + interpreterClassName) {

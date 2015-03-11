@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@ import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
 
 /**
- * Base class for report generators.
- * 
- * @author Branko Juric
- */
+  * Base class for report generators.
+  * 
+  * @author Branko Juric
+  */
 class ReportGenerator (
     private val targetDir: File, 
     private val interpreterName: String, 
@@ -42,22 +42,17 @@ class ReportGenerator (
     
   private val summaryFileName = s"${summaryFilePrefix}.${fileExtension}"
   
-  /**
-   * Lazily creates and returns the target report directory.
-   */
+  /** Lazily creates and returns the target report directory. */
   private[report] lazy val reportDir = new File(Path(targetDir).createDirectory().path)
   
-  /**
-   * Lazily creates and returns the target report attachments directory.
-   */
+  /** Lazily creates and returns the target report attachments directory. */
   private[report] lazy val attachmentsDir = new File(Path(new File(targetDir, "attachments")).createDirectory().path)
 
   /**
-   * Must be implemented to generate and return a detail feature report.
-   * 
-   * @param spec
-   * 			the feature spec to report
-   */
+    * Must be implemented to generate and return a detail feature report.
+    * 
+    * @param spec the feature spec to report
+    */
   final def reportDetail(spec: FeatureSpec): File =
     new File(reportDir, s"${getNamePrefix(spec)}.${fileExtension}") tap { featureReportFile =>
       spec.metaSpecs.zipWithIndex map { case (meta, idx) =>
@@ -85,17 +80,16 @@ class ReportGenerator (
   }
   
   /**
-   * Must be implemented to generate and return a summary report file.
-   * 
-   * @param featureSummary
-   * 			the feature summary to report
-   */
+    * Must be implemented to generate and return a summary report file.
+    * 
+    * @param featureSummary the feature summary to report
+    */
   final def reportSummary(featureSummary: FeatureSummary): Option[File] =
     if (!featureSummary.featureResults.isEmpty) {
       Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
-	    file.writeText(formatSummary(featureSummary, interpreterName))
-	    logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
+        file.writeText(formatSummary(featureSummary, interpreterName))
+        logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
       })
     } else {
       None

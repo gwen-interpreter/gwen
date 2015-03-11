@@ -44,12 +44,12 @@ import gwen.dsl.prettyPrint
 import gwen.GwenSettings
 
 /**
- * Interprets incoming feature specs by parsing and evaluating
- * them.  All parsing is performed in the inherited [[gwen.dsl.SpecParser]].
- * All evaluation is dispatched to a mixed in [[gwen.eval.EvalEngine]].
- * 
- * @author Branko Juric
- */
+  * Interprets incoming feature specs by parsing and evaluating
+  * them.  All parsing is performed in the inherited [[gwen.dsl.SpecParser]].
+  * All evaluation is dispatched to a mixed in [[gwen.eval.EvalEngine]].
+  * 
+  * @author Branko Juric
+  */
 class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
@@ -57,11 +57,10 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   lazy val version: String = Option(this.getClass.getPackage.getImplementationVersion).map(ver => s"v${ver}").getOrElse("")
   
   /**
-   * Initialises the interpreter by creating the environment context
-   * 
-   * @param options
-   * 			command line options
-   */
+    * Initialises the interpreter by creating the environment context
+    * 
+    * @param options command line options
+    */
   private[eval] def initialise(options: GwenOptions): T = {
     logger.info("Initialising environment context")
     engine.init(options,  new ScopedDataStack()) tap { env =>
@@ -70,37 +69,32 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Closes the given environment context.
-   * 
-   * @param env
-   * 			the environment context to close
-   */
+    * Closes the given environment context.
+    * 
+    * @param env the environment context to close
+    */
   private[eval] def close(env: T) {
     logger.info("Closing environment context")
     env.close();
   }
   
   /**
-   * Resets the given environment context without closing it so it can be reused.
-   * 
-   * @param env
-   * 			the environment context to reset
-   */
+    * Resets the given environment context without closing it so it can be reused.
+    * 
+    * @param env the environment context to reset
+    */
   private[eval] def reset(env: T) {
     logger.info("Resetting environment context")
     env.reset();
   }
   
   /**
-   * Interprets a single step and dispatches it for evaluation.
-   *
-   * @param input
-   * 			the input step
-   * @param env
-   * 			the environment context
-   * @return
-   * 			the evaluated step (or an exception if a runtime error occurs)
-   */
+    * Interprets a single step and dispatches it for evaluation.
+    *
+    * @param input the input step
+    * @param env the environment context
+    * @return the evaluated step (or an exception if a runtime error occurs)
+    */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
     parseAll(step, input) match {
       case success @ Success(step, _) => 
@@ -111,20 +105,15 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Interprets an incoming feature.
-   *
-   * @param featureFile
-   * 			the feature file
-   * @param metaFiles
-   * 			the meta files to load
-   * @param tagFilters
-   * 			user provided tag filters (includes:(tag, true) and excludes:(tag, false))
-   * @param env
-   * 			the environment context
-   * @return
-   *            the evaluated feature or nothing if the feature does not 
-   *            satisfy specified tag filters
-   */
+    * Interprets an incoming feature.
+    *
+    * @param featureFile the feature file
+    * @param metaFiles the meta files to load
+    * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
+    * @param env the environment context
+    * @return the evaluated feature or nothing if the feature does not 
+    *         satisfy specified tag filters
+    */
   private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): Option[FeatureSpec] = 
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
@@ -145,33 +134,25 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
     }
   
   /**
-   * Executes the given options.
-   * 
-   * @param options
-   * 			the command line options
-   * @param optEnv
-   * 			optional environment context (None to have Gwen create an env context for each feature unit, 
-   *    		Some(env) to reuse an environment context for all, default is None)
-   * @param executor
-   * 			implicit executor
-   */
+    * Executes the given options.
+    * 
+    * @param options the command line options
+    * @param optEnv optional environment context (None to have Gwen create an env context for each feature unit, 
+    *               Some(env) to reuse an environment context for all, default is None)
+    * @param executor implicit executor
+    */
   def execute(options: GwenOptions, optEnv: Option[T] = None)(implicit executor: GwenExecutor[T] = new GwenExecutor(this)) = 
     executor.execute(options, optEnv)
   
   /**
-   * Evaluates a given Gwen feature.
-   * 
-   * @param featureSpec
-   * 			the Gwen feature to evaluate
-   * @param metaSpecs
-   * 			the loaded meta features (Nil if featureSpec is a meta file)
-   * @param env
-   * 			the environment context
-   * @param specType
-   * 			"Feature" if the featureSpec is a feature file, or "Meta" otherwise
-   * @return
-   * 			the evaluated Gwen feature
-   */
+    * Evaluates a given Gwen feature.
+    * 
+    * @param featureSpec the Gwen feature to evaluate
+    * @param metaSpecs the loaded meta features (Nil if featureSpec is a meta file)
+    * @param env the environment context
+    * @param specType "Feature" if the featureSpec is a feature file, or "Meta" otherwise
+    * @return the evaluated Gwen feature
+    */
   private def evaluateFeature(featureSpec: FeatureSpec, metaSpecs: List[FeatureSpec], env: T, specType: String): FeatureSpec = {
     featureSpec.featureFile foreach { file =>
       logger.info(s"Interpreting ${specType.toLowerCase()} file: $file")
@@ -210,15 +191,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Evaluates a given scenario.
-   * 
-   * @param scenario
-   * 			the scenario to evaluate
-   * @param env
-   * 			the environment context
-   * @return
-   * 			the evaluated scenario
-   */
+    * Evaluates a given scenario.
+    * 
+    * @param scenario the scenario to evaluate
+    * @param env the environment context
+    * @return the evaluated scenario
+    */
   private def evaluateScenario(scenario: Scenario, env: T): Scenario = {
     if (scenario.isStepDef) {
       logger.info(s"Loading StepDef: ${scenario.name}")
@@ -251,15 +229,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Evaluates a given background.
-   * 
-   * @param background
-   * 			the background to evaluate
-   * @param env
-   * 			the environment context
-   * @return
-   * 			the evaluated background
-   */
+    * Evaluates a given background.
+    * 
+    * @param background the background to evaluate
+    * @param env the environment context
+    * @return the evaluated background
+    */
   private def evaluateBackground(background: Background, env: T): Background = {
     logger.info(s"Evaluating Background: $background")
     Background(background.name, evaluateSteps(background.steps, env)) tap { background =>
@@ -268,15 +243,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Evaluates a list of steps.
-   * 
-   * @param steps 
-   * 			the steps to evaluate
-   * @param env
-   * 			the environment context
-   * @return
-   * 		the list of evaluated steps
-   */
+    * Evaluates a list of steps.
+    * 
+    * @param steps the steps to evaluate
+    * @param env the environment context
+    * @return the list of evaluated steps
+    */
   private def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
@@ -286,15 +258,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   } reverse
   
   /**
-   * Evaluates a given step.
-   * 
-   * @param step
-   * 			the step to evaluate
-   * @param env
-   * 			the environment context
-   * @return
-   * 			the evaluated step
-   */
+    * Evaluates a given step.
+    * 
+    * @param step the step to evaluate
+    * @param env the environment context
+    * @return the evaluated step
+    */
   private def evaluateStep(step: Step, env: T): Step = {
     def evaluateResolvedStep(step: Step, env: T): Step = {
       logger.info(s"Evaluating Step: $step")
@@ -321,15 +290,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Evaluates a step and captures the result.
-   * 
-   * @param step 
-   * 			the step to evaluate
-   * @param env
-   * 			the environment context
-   * @param evalFunction
-   * 		the step evaluation function
-   */
+    * Evaluates a step and captures the result.
+    * 
+    * @param step the step to evaluate
+    * @param env the environment context
+    * @param evalFunction the step evaluation function
+    */
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Try[Step]): Step = {
     val start = System.nanoTime
     (evalFunction(step) match {
@@ -345,15 +311,12 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
   }
   
   /**
-   * Loads the meta.
-   * 
-   * @param metaFiles
-   * 			the meta files to load
-   * @param tagFilters
-   * 			user provided tag filters (includes:(tag, true) and excludes:(tag, false))
-   * @param env
-   * 			the environment context
-   */
+    * Loads the meta.
+    * 
+    * @param metaFiles the meta files to load
+    * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
+    * @param env the environment context
+    */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
       logger.info(s"Loading meta: $metaFile")
@@ -373,13 +336,11 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
     }
   
   /**
-   * Logs the evaluation status of the given node.
-   * 
-   * @param node
-   * 			the node to log the evaluation status of
-   * @return
-   * 			the input node 
-   */
+    * Logs the evaluation status of the given node.
+    * 
+    * @param node the node to log the evaluation status of
+    * @return the input node 
+    */
   private def logStatus(node: String, name: String, status: EvalStatus): Unit = {
       val statusMsg = s"$status $node: $name"
       status match {

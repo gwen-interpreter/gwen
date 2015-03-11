@@ -25,11 +25,11 @@ import gwen.Predefs.Kestrel
 import gwen.report.ReportGenerator
 
 /**
- * Generates a HTML evaluation report. The report includes a feature
- * summary and all evaluation features details.
- * 
- * @author Branko Juric
- */
+  * Generates a HTML evaluation report. The report includes a feature
+  * summary and all evaluation features details.
+  * 
+  * @author Branko Juric
+  */
 class HtmlReportGenerator(val targetDir: File, val interpreterName: String) 
   extends ReportGenerator(targetDir, interpreterName, "feature-summary", "html") 
   with HtmlReportFormatter {

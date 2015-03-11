@@ -27,27 +27,25 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.Predefs.Kestrel
 
 /**
- * Reads and streams individual features and feature suites from the file system.  
- * An individual feature is a single feature file and optional meta file pair, 
- * whereas a feature suite is a directory containing one or many feature files, 
- * an optional meta file, and zero or many sub directories repeating the same 
- * structure. Both individual features and feature suites are streamed as 
- * [FeatureUnit] units. The former yields only one element and the latter 
- * yields many.  
- *  
- * @author Branko Juric
- */
+  * Reads and streams individual features and feature suites from the file system.  
+  * An individual feature is a single feature file and optional meta file pair, 
+  * whereas a feature suite is a directory containing one or many feature files, 
+  * an optional meta file, and zero or many sub directories repeating the same 
+  * structure. Both individual features and feature suites are streamed as 
+  * [FeatureUnit] units. The former yields only one element and the latter 
+  * yields many.  
+  *  
+  * @author Branko Juric
+  */
 object FeatureStream extends LazyLogging {
   
   /**
-   * Reads and streams features from multiple file system locations.  
-   * 
-   * @param locations
-   * 		the list of file system locations to read; each location is either a  
-   *        feature file or a directory
-   * @return
-   * 		a stream of nested streams (one nested stream per given location)
-   */
+    * Reads and streams features from multiple file system locations.  
+    * 
+    * @param locations the list of file system locations to read; each location is either a  
+    *        feature file or a directory
+    * @return a stream of nested streams (one nested stream per given location)
+    */
   def readAll(locations: List[File]): Stream[Stream[FeatureUnit]] = locations.foldLeft(Stream[Stream[FeatureUnit]]()) { 
     (suites: Stream[Stream[FeatureUnit]], location: File) => {
       suites #::: Stream(read(location)) 
@@ -55,13 +53,11 @@ object FeatureStream extends LazyLogging {
   } 
   
   /**
-   * Reads and streams features from a single file system location.
-   *
-   * @param location
-   * 			a file system location to read
-   * @return 
-   * 			a stream of [FeatureUnit]s found at the location
-   */
+    * Reads and streams features from a single file system location.
+    *
+    * @param location a file system location to read
+    * @return a stream of [FeatureUnit]s found at the location
+    */
   def read(location: File): Stream[FeatureUnit] = {
       val metas = 
         if (location.getParentFile() == null) {
@@ -73,15 +69,12 @@ object FeatureStream extends LazyLogging {
   }
   
   /**
-   * Recursively reads and streams features from a single file system location.
-   *
-   * @param location
-   * 			a file system location to read
-   * @param metaFiles
-   * 			optionally accumulated meta files (default is Nil)
-   * @return 
-   * 			a stream of [FeatureUnit]s found at the location
-   */
+    * Recursively reads and streams features from a single file system location.
+    *
+    * @param location a file system location to read
+    * @param metaFiles optionally accumulated meta files (default is Nil)
+    * @return a stream of [FeatureUnit]s found at the location
+    */
   private def deepRead(location: File, metaFiles: List[File] = Nil): Stream[FeatureUnit] = {
     if (isDirectory(location)) {
       val metas = accumulateMeta(location, metaFiles)
@@ -99,15 +92,13 @@ object FeatureStream extends LazyLogging {
   }
   
   /**
-   * Scans for a meta file in the specified directory and appends it to the 
-   * currently accumulated list of meta files if found. An error is thrown if more 
-   * than one meta file is found in the specifid directory.
-   * 
-   * @param dir
-   * 			the directory to scan for meta
-   * @param metaFiles
-   * 			the currently accumulated list of meta files
-   */
+    * Scans for a meta file in the specified directory and appends it to the 
+    * currently accumulated list of meta files if found. An error is thrown if more 
+    * than one meta file is found in the specifid directory.
+    * 
+    * @param dir the directory to scan for meta
+    * @param metaFiles the currently accumulated list of meta files
+    */
   private def accumulateMeta(dir: File, metaFiles: List[File]): List[File] = { 
     val metas = dir.listFiles.filter(isMetaFile).toList
     metas match {
@@ -120,13 +111,11 @@ object FeatureStream extends LazyLogging {
   }
   
   /**
-   * Scans for a meta file up the parent hierarchy starting from the given directory.
-   * 
-   * @param dir
-   * 			the directory to scan for meta from
-   * @param metaFiles
-   * 			the currently accumulated list of meta files
-   */
+    * Scans for a meta file up the parent hierarchy starting from the given directory.
+    * 
+    * @param dir the directory to scan for meta from
+    * @param metaFiles the currently accumulated list of meta files
+    */
   @tailrec
   private def accumulateParentMeta(dir: File, metaFiles: List[File]): List[File] = { 
     val hasParentDir = hasParentDirectory(dir) 

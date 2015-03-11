@@ -26,14 +26,14 @@ import java.io.FileReader
 import scala.annotation.tailrec
 
 /**
- * Provides access to system properties loaded from properties files.
- * If a gwen.properties file exists in the user's home directory, then
- * its properties are loaded first. Once a property is loaded it is never
- * replaced. Therefore it is important to load properties in the right 
- * order.
- *
- * @author Branko Juric
- */
+  * Provides access to system properties loaded from properties files.
+  * If a gwen.properties file exists in the user's home directory, then
+  * its properties are loaded first. Once a property is loaded it is never
+  * replaced. Therefore it is important to load properties in the right 
+  * order.
+  *
+  * @author Branko Juric
+  */
 object Settings {
   
   private val InlineProperty = """.*\$\{(.+?)\}.*""".r
@@ -41,11 +41,10 @@ object Settings {
   loadAll(UserOverrides.UserProperties.toList)
   
   /**
-   * Loads all properties from the given files.
-   * 
-   * @param propsFiles
-   * 			the properties files to load
-   */
+    * Loads all properties from the given files.
+    * 
+    * @param propsFiles the properties files to load
+    */
   def loadAll(propsFiles: List[File]): Unit = {
     val props = propsFiles.foldLeft(new Properties()) { 
       (props, file) => 
@@ -74,29 +73,25 @@ object Settings {
   }
   
   /**
-   * Gets an optional property (returns None if not found)
-   * 
-   * @param name 
-   * 			the name of the property to get
-   */
+    * Gets an optional property (returns None if not found)
+    * 
+    * @param name the name of the property to get
+    */
   def getOpt(name: String): Option[String] = sys.props.get(name)
   
   /**
-   * Gets a mandatory property (throws exception if not found)
-   * 
-   * @param name 
-   * 			the name of the property to get
-   */
+    * Gets a mandatory property (throws exception if not found)
+    * 
+    * @param name the name of the property to get
+    */
   def get(name: String): String = getOpt(name).getOrElse(sys.error(s"System property $name not set"))
   
   /**
-   * Adds a property.
-   * 
-   * @param name
-   * 			the name of the property to add
-   * @param value
-   * 			the value to bind to the property
-   */
+    * Adds a property.
+    * 
+    * @param name the name of the property to add
+    * @param value the value to bind to the property
+    */
   def add(name: String, value: String): Unit = {
     sys.props += ((name, value))
   }

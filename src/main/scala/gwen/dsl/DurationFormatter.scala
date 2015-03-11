@@ -1,4 +1,3 @@
-package gwen.dsl
 /*
  * Copyright 2015 Branko Juric, Brady Wood
  * 
@@ -14,12 +13,15 @@ package gwen.dsl
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package gwen.dsl
+
 import scala.concurrent.duration._
 import java.text.DecimalFormat
 
 /**
- * Formats durations for presentation purposes.
- */
+  * Formats durations for presentation purposes.
+  */
 object DurationFormatter {
   
   private val Formatters = List(
@@ -30,11 +32,10 @@ object DurationFormatter {
   )
 
   /**
-   * Formats a given duration to ##h ##m ##s ###ms format.
-   * 
-   * @param duration
-   * 			the duration to format
-   */
+    * Formats a given duration to ##h ##m ##s ###ms format.
+    * 
+    * @param duration the duration to format
+    */
   def format(duration: Duration): String = {
     val nanos = duration.toNanos
     val msecs = (nanos / 1000000) + (if ((nanos % 1000000) < 500000) 0 else 1)

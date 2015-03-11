@@ -35,9 +35,7 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-/**
- * Can be mixed into evaluation engines to provide XPath support.
- */
+/** Can be mixed into evaluation engines to provide XPath support. */
 trait XPathSupport {
 
   object XMLNodeType extends Enumeration {
@@ -45,14 +43,14 @@ trait XPathSupport {
   }
   
   /**
-   * Evaluates an xpath expression against an xml source string and returns 
-   * the result.
-   * 
-   * @param xpath the expath expression
-   * @param source the xml source string
-   * @param targetType the target node type
-   * @return the result of evaluationg the xpath expression
-   */
+    * Evaluates an xpath expression against an xml source string and returns 
+    * the result.
+    * 
+    * @param xpath the expath expression
+    * @param source the xml source string
+    * @param targetType the target node type
+    * @return the result of evaluationg the xpath expression
+    */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = 
     withXPath(xpath) { (xPath, expr) =>
       val qname = targetType match {

@@ -42,7 +42,7 @@ class SystemProcessSupportTest extends FlatSpec with Matchers {
   
   "Execute system process 'undefined'" should "fail with IOException" in {
     intercept[IOException] {
-    	engine.evaluate(Step(StepKeyword.Given, """I execute system process "undefined""""), env)
+      engine.evaluate(Step(StepKeyword.Given, """I execute system process "undefined""""), env)
     }
   }
   

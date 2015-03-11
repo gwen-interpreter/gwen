@@ -20,15 +20,13 @@ import scala.util.parsing.input.Positional
 import java.io.File
 
 /**
- * Base trait for capturing a feature spec in an abstract syntax tree.  
- * An spec node is the raw output produced by the [[SpecParser]].
- *
- * @author Branko Juric
- */
+  * Base trait for capturing a feature spec in an abstract syntax tree.  
+  * An spec node is the raw output produced by the [[SpecParser]].
+  *
+  * @author Branko Juric
+  */
 trait SpecNode {
-  /**
-   * Returns the evaluation status of this node.
-   */
+  /** Returns the evaluation status of this node. */
   lazy val evalStatus: EvalStatus = Pending
   
 }
@@ -41,16 +39,11 @@ trait SpecNode {
  * [[gwen.eval.EvalEngine evaluation engine]] and lower layers for 
  * processing.
  *
- * @param feature
- * 		the feature
- * @param background
- * 		optional background
- * @param scenarios
- * 		list of scenarios
- * @param featureFile
- * 		optional source feature file
- * @param metaSpecs
- * 		optional list of meta specs
+ * @param feature the feature
+ * @param background optional background
+ * @param scenarios list of scenarios
+ * @param featureFile optional source feature file
+ * @param metaSpecs optional list of meta specs
  *
  * @author Branko Juric
  */
@@ -63,17 +56,15 @@ case class FeatureSpec(
   metaSpecs: List[FeatureSpec] = Nil) extends SpecNode {
   
   /**
-   * Gets the list of all steps contained in the feature spec. The list includes
-   * all meta steps (if any) and all scenario steps (including any background 
-   * steps).
-   * 
-   * @return a list containing all the steps (or an empty list if none exist)
-   */
+    * Gets the list of all steps contained in the feature spec. The list includes
+    * all meta steps (if any) and all scenario steps (including any background 
+    * steps).
+    * 
+    * @return a list containing all the steps (or an empty list if none exist)
+    */
   def steps: List[Step] = scenarios.flatMap(_.allSteps)
   
-  /**
-   * Returns the evaluation status of this feature spec.
-   */
+  /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {
     val specStatus = EvalStatus(steps.map(_.evalStatus))
     metaSpecs match {
@@ -100,17 +91,14 @@ object FeatureSpec {
 }
 
 /**
- * Captures a gherkin feature node.
- *
- * @param tags
- * 			set of tags
- * @param name
- * 			the feature name
- * @param narrative
- * 			optional narrative (As a.. I want.. So that..)
- *
- * @author Branko Juric
- */
+  * Captures a gherkin feature node.
+  *
+  * @param tags set of tags
+  * @param name the feature name
+  * @param narrative optional narrative (As a.. I want.. So that..)
+  *
+  * @author Branko Juric
+  */
 case class Feature(tags: Set[Tag], name: String, narrative: List[String]) extends SpecNode with Positional {
   override def toString = name
 }
@@ -120,20 +108,16 @@ object Feature {
 }
 
 /**
- * Captures a gherkin background node.
- *
- * @param name
- * 			the background name
- * @param steps
- * 			list of background steps
- *
- * @author Branko Juric
+  * Captures a gherkin background node.
+  *
+  * @param name the background name
+  * @param steps list of background steps
+  *
+  * @author Branko Juric
  */
 case class Background(name: String, steps: List[Step]) extends SpecNode with Positional {
   
-  /**
-   * Returns the evaluation status of this background.
-   */
+  /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
   override def toString = name
@@ -141,32 +125,26 @@ case class Background(name: String, steps: List[Step]) extends SpecNode with Pos
 }
 
 /**
- * Captures a gherkin scenario.
- *
- * @param tags
- * 			set of tags
- * @param name
- * 			the scenario name
- * @param background
- * 		optional background
- * @param steps
- * 			list of scenario steps
- *
- * @author Branko Juric
- */
+  * Captures a gherkin scenario.
+  *
+  * @param tags set of tags
+  * @param name the scenario name
+  * @param background optional background
+  * @param steps list of scenario steps
+  *
+  * @author Branko Juric
+  */
 case class Scenario(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) extends SpecNode with Positional {
   
   /**
-   * Returns a list containing all the background steps (if any) followed by 
-   * all the scenario steps.
-   */
+    * Returns a list containing all the background steps (if any) followed by 
+    * all the scenario steps.
+    */
   def allSteps = background.map(_.steps).getOrElse(Nil) ++ steps
   
   def isStepDef = tags.contains(Tag.StepDefTag)
   
-  /**
-   * Returns the evaluation status of this scenario.
-   */
+  /** Returns the evaluation status of this scenario. */
   override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
 
   
@@ -179,18 +157,15 @@ object Scenario {
 }
 
 /**
- * Captures a gherkin tag.
- *
- * @param name
- * 			name the tag name
- *    
- * @author Branko Juric
- */
+  * Captures a gherkin tag.
+  *
+  * @param name name the tag name
+  *    
+  * @author Branko Juric
+  */
 case class Tag(name: String) extends SpecNode with Positional {
   
-  /**
-   * Returns a string representation of this tag.
-   */
+  /** Returns a string representation of this tag. */
   override def toString = s"@$name"
   
 }
@@ -208,33 +183,25 @@ object Tag {
 }
 
 /**
- * Captures a gherkin step.
- *
- * @param keyword
- * 			keyword identifier (Given, When, Then, etc..)
- * @param expression
- * 			free format step expression line (that is: the text following the step keyword)
- * @param evalStatus
- * 			optional evaluation status (default = Pending)
- * @param attachments
- * 			file attachments as name-file pairs (default = Nil)
- *    
- * @author Branko Juric
- */
+  * Captures a gherkin step.
+  *
+  * @param keyword keyword identifier (Given, When, Then, etc..)
+  * @param expression free format step expression line (that is: the text following the step keyword)
+  * @param evalStatus optional evaluation status (default = Pending)
+  * @param attachments file attachments as name-file pairs (default = Nil)
+  *    
+  * @author Branko Juric
+  */
 case class Step(
     keyword: StepKeyword.Value, 
     expression: String, 
     status: EvalStatus = Pending, 
     attachments: List[(String, File)] = Nil) extends SpecNode with Positional {
   
-  /**
-   * Returns the evaluation status of this step definition.
-   */
+  /** Returns the evaluation status of this step definition. */
   override lazy val evalStatus: EvalStatus = status
   
-  /**
-   * Returns a string representation of this step.
-   */
+  /** Returns a string representation of this step. */
   override def toString = s"$keyword $expression"
   
 }

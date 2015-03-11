@@ -83,7 +83,6 @@ The following subset of the Gherkin grammar is supported (shown here in
 notation).
 
 ```
- {{{
       
   spec        = feature, 
                 [background], 
@@ -106,7 +105,6 @@ notation).
   name        = {character}
   comment     = "#", expression
  
- }}}
 ```
 
 REPL Console

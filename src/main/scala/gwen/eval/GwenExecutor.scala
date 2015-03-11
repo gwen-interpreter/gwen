@@ -28,22 +28,19 @@ import gwen.report.html.HtmlReportGenerator
 import gwen.UserOverrides
 
 /**
- * 
- * Executes user provided options on the given interpreter.
- * @param interpreter
- * 			the gwen interpreter to execute on
- */
+  * Executes user provided options on the given interpreter.
+  * 
+  * @param interpreter the gwen interpreter to execute on
+  */
 class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging with ConsoleWriter {
   
   /**
-   * Executes the given options.
-   * 
-   * @param options
-   * 			the command line options
-   * @param @param optEnv
-   * 			optional environment context (None to have Gwen create an env context for each feature unit, 
-   *    		Some(env) to reuse an environment context for all, default is None)
-   */
+    * Executes the given options.
+    * 
+    * @param options the command line options
+    * @param optEnv optional environment context (None to have Gwen create an env context for each feature unit, 
+    *               Some(env) to reuse an environment context for all, default is None)
+    */
   def execute(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
     val start = System.nanoTime
     try {
@@ -90,16 +87,13 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
   
   /**
-   * Executes all feature units in the given stream.
-   * 
-   * @param options
-   * 		the command line options
-   * @param featureStream
-   * 		the feature stream to execute
-   * @param envOpt
-   * 		optional environment context (reused across all feature units if provided, 
-   *    	otherwise a new context is created for each unit)
-   */
+    * Executes all feature units in the given stream.
+    * 
+    * @param options the command line options
+    * @param featureStream the feature stream to execute
+    * @param envOpt optional environment context (reused across all feature units if provided, 
+    *               otherwise a new context is created for each unit)
+    */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], reportGenerator: Option[ReportGenerator], envOpt: Option[T]): Stream[FeatureSummary] = 
     featureStream.flatMap { unit =>
       val env = envOpt.getOrElse(interpreter.initialise(options))

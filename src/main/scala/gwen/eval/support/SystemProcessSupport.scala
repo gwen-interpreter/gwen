@@ -23,19 +23,15 @@ import gwen.Predefs.RegexContext
 import gwen.dsl.Step
 import gwen.eval.EnvContext
 
-/**
- * Can be mixed into evaluation engines to provide system process support.
- */
+/** Can be mixed into evaluation engines to provide system process support. */
 trait SystemProcessSupport[T <: EnvContext] {
 
   /**
-   * Defines steps to perform system processes.
-   *
-   * @param step
-   * 			the step to evaluate
-   * @param env
-   * 			the environment context
-   */
+    * Defines steps to perform system processes.
+    *
+    * @param step the step to evaluate
+    * @param env the environment context
+    */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {
       case r"""I execute system process "(.+?)"$$$systemproc""" =>

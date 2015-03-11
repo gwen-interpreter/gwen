@@ -269,7 +269,7 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   
   private def assertEndOfStream(next: () => Unit) {
     intercept[NoSuchElementException] {
-    	next()
+      next()
     }
   }
   

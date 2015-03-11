@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
   "Valid step keywords" should "parse" in {
     StepKeyword.values foreach { keyword =>
       parse(keyword.toString).get should be (keyword)
-	  parse(s"\t$keyword").get    should be (keyword)
-	  parse(s" $keyword").get     should be (keyword)
-	  parse(s"$keyword ").get     should be (keyword)
-	  parse(s"$keyword\t").get    should be (keyword)
+      parse(s"\t$keyword").get    should be (keyword)
+      parse(s" $keyword").get     should be (keyword)
+      parse(s"$keyword ").get     should be (keyword)
+      parse(s"$keyword\t").get    should be (keyword)
       parse(s"$keyword\n").get    should be (keyword)
     }
   }
@@ -40,10 +40,10 @@ class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
     
     StepKeyword.values foreach { keyword =>
       assertFail(keyword.toString.toLowerCase())
-	  assertFail(keyword.toString.toUpperCase())
+      assertFail(keyword.toString.toUpperCase())
       assertFail(keyword + "x")
       assertFail("x" + keyword)
-	  
+      
     }
     
   }

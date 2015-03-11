@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@ package gwen.dsl
 import scala.language.postfixOps
 
 /**
- * Enumeration of supported step keywords.  Every [[Step]] 
- * expression starts with one of the keywords defined here.
- * 
- * @author Branko Juric
- */
+  * Enumeration of supported step keywords.  Every [[Step]] 
+  * expression starts with one of the keywords defined here.
+  * 
+  * @author Branko Juric
+  */
 object StepKeyword extends Enumeration {
 
   val Given, When, Then, And, But = Value
 
   /**
-   * Map of step keywords keyed by name. This can be used to lookup
-   * keywords by name.
-   */
+    * Map of step keywords keyed by name. This can be used to lookup
+    * keywords by name.
+    */
   val names = values map { k => (k.toString -> k) } toMap
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,33 +18,25 @@ package gwen.report
 import gwen.dsl.FeatureSpec
 import java.io.File
 
-/**
- * Trait for formatting the feature summary and detail reports.
- */
+/** Trait for formatting the feature summary and detail reports. */
 trait ReportFormatter {
 
   /**
-   * Formats the feature detail report.
-   * 
-   * @param spec
-   * 			the feature spec to report
-   * @param interpreterName
-   * 			the gwen interpreter name
-   * @param backlinks
-   *   			names and references for linking back to parent reports
-   * @param metaReportFiles
-   *   			list of meta report files (if any)
-   */
+    * Formats the feature detail report.
+    * 
+    * @param spec the feature spec to report
+    * @param interpreterName the gwen interpreter name
+    * @param backlinks names and references for linking back to parent reports
+    * @param metaReportFiles list of meta report files (if any)
+    */
   def formatDetail(spec: FeatureSpec, interpreterName: String, backlinks: List[(String, File)], metaReportFiles: List[File]): String
   
   /**
-   * Formats the feature summary report.
-   * 
-   * @param summary
-   * 			the accumulated feature results summary
-   * @param interpreterName
-   * 			the gwen interpreter name
-   */
+    * Formats the feature summary report.
+    * 
+    * @param summary the accumulated feature results summary
+    * @param interpreterName the gwen interpreter name
+    */
   def formatSummary(summary: FeatureSummary, interpreterName: String): String
   
 }

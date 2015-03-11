@@ -48,7 +48,7 @@ class DurationFormatterTest extends FlatSpec with Matchers with SpecParser {
   }
 
   "1 hour duration" should "format to " in { 
-	DurationFormatter.format(Duration.fromNanos(3600000000000L)) should be ("1h 00m 00s 000ms")
+    DurationFormatter.format(Duration.fromNanos(3600000000000L)) should be ("1h 00m 00s 000ms")
   }
     
   "1 hour 1 minute duration" should "format to " in {

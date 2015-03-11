@@ -19,47 +19,41 @@ package gwen
 import java.io.File
 
 /**
- * Applies user overrides to properties and meta files before they are loaded 
- * into the interpreter. The overrides are only applied when either or both the 
- * gwen.properties and gwen.meta files exist in the user's home directory.
- */
+  * Applies user overrides to properties and meta files before they are loaded 
+  * into the interpreter. The overrides are only applied when either or both the 
+  * gwen.properties and gwen.meta files exist in the user's home directory.
+  */
 object UserOverrides {
 
   val UserProperties = getUserFile("gwen.properties")
   val UserMeta = getUserFile("gwen.meta")
 
   /**
-   * Adds the gwen.properties user override file (if it exists) to the end of the given 
-   * list of properties files and removes any duplicates.
-   * 
-   * @param properties
-   * 			the list of properties files to add the user override 
-   *    		properties file to
-   *    
-   * @return
-   * 			the list of properties files (including the user override properties file)
-   */
+    * Adds the gwen.properties user override file (if it exists) to the end of the given 
+    * list of properties files and removes any duplicates.
+    * 
+    * @param properties the list of properties files to add the user override 
+    *                   properties file to
+    * @return the list of properties files (including the user override properties file)
+    */
   def addUserProperties(properties: List[File]) = addUserFile(properties, UserProperties)
   
   /**
-   * Adds the gwen.meta user override file (if it exists) to the end of the given list 
-   * of meta files and removes any duplicates.
-   * 
-   * @param metaFiles
-   * 			the list of meta files to add the override meta file to
-   * @return
-   * 			the list of properties files (including the user override meta file)
-   */
+    * Adds the gwen.meta user override file (if it exists) to the end of the given list 
+    * of meta files and removes any duplicates.
+    * 
+    * @param metaFiles the list of meta files to add the override meta file to
+    * @return the list of properties files (including the user override meta file)
+    */
   def addUserMeta(metaFiles: List[File]) = addUserFile(metaFiles, UserMeta)
   
   /**
-   * Merges two lists of meta files together, making sure that there are no 
-   * duplicates and that the gwen.meta user override file (if it exists) is 
-   * appended to the end of the merged list.
-   * 
-   * @return 
-   * 		the merged meta file list
-   */
+    * Merges two lists of meta files together, making sure that there are no 
+    * duplicates and that the gwen.meta user override file (if it exists) is 
+    * appended to the end of the merged list.
+    * 
+    * @return the merged meta file list
+    */
   def mergeMetaFiles(metaFiles: List[File], metaOverrides: List[File]) = 
     addUserMeta(metaFiles ++ metaOverrides)
   

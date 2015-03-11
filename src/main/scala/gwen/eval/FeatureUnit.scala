@@ -19,11 +19,9 @@ package gwen.eval
 import java.io.File
 
 /**
- * Captures a feature file and its associated meta as a unit.
- * 
- * @param featureFile
- * 				the feature file
- * @param metaFiles
- * 				the associated meta files (if any)
- */
+  * Captures a feature file and its associated meta as a unit.
+  * 
+  * @param featureFile the feature file
+  * @param metaFiles the associated meta files (if any)
+  */
 case class FeatureUnit(featureFile: File, metaFiles: List[File])

@@ -21,62 +21,55 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.dsl.Step
 
 /**
- * Base trait for gwen evaluation engines. An evaluation engine performs the
- * actual processing work required to evaluate individual
- * [[gwen.dsl.Step Step]] expressions. This work can be done using various
- * available frameworks and technologies. This trait serves as a base for
- * concrete engine implementations coupled to specific such frameworks or
- * technologies.
- *
- * Evaluation engines are never invoked directly, but are rather invoked by
- * the [[GwenInterpreter]].  This interpreter can mix in any evaluation engine 
- * that has this trait.
- *
- * @author Branko Juric
- */
+  * Base trait for gwen evaluation engines. An evaluation engine performs the
+  * actual processing work required to evaluate individual
+  * [[gwen.dsl.Step Step]] expressions. This work can be done using various
+  * available frameworks and technologies. This trait serves as a base for
+  * concrete engine implementations coupled to specific such frameworks or
+  * technologies.
+  *
+  * Evaluation engines are never invoked directly, but are rather invoked by
+  * the [[GwenInterpreter]].  This interpreter can mix in any evaluation engine 
+  * that has this trait.
+  *
+  * @author Branko Juric
+  */
 trait EvalEngine[T <: EnvContext] extends LazyLogging {
   
   /**
-   * Initialises the engine and returns a bootstrapped evaluation context.
-   * This is a lifecycle method and as such it is called by the
-   * [[GwenInterpreter]] at the appropriate times.
-   * 
-   * @param options
-   * 			command line options
-   * @param scopes
-   * 			initial data scopes
-   */
+    * Initialises the engine and returns a bootstrapped evaluation context.
+    * This is a lifecycle method and as such it is called by the
+    * [[GwenInterpreter]] at the appropriate times.
+    * 
+    * @param options command line options
+    * @param scopes initial data scopes
+    */
   private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): T
 
   /**
-   * Should be overridden to evaluate a given step (this implementation 
-   * can be used as a fallback as it simply throws an unsupported step 
-   * exception)
-   *
-   * @param step
-   * 			the step to evaluate
-   * @param env
-   * 			the environment context
-   */
+    * Should be overridden to evaluate a given step (this implementation 
+    * can be used as a fallback as it simply throws an unsupported step 
+    * exception)
+    *
+    * @param step the step to evaluate
+    * @param env the environment context
+    */
   def evaluate(step: Step, env: T): Unit = {
     throw new UnsupportedStepException(step)
   }
 
   /**
-   * Adds another engine to this one to create a new hybrid engine.
-   * 
-   * @param otherEngine
-   * 			the other engine
-   */
+    * Adds another engine to this one to create a new hybrid engine.
+    * 
+    * @param otherEngine the other engine
+    */
   def +[U <: EnvContext](otherEngine: EvalEngine[U]) = new HybridEvalEngine[T, U] {
-	override val engineA = EvalEngine.this
-	override val engineB = otherEngine
+    override val engineA = EvalEngine.this
+    override val engineB = otherEngine
   }
 }
 
-/**
- * Hybrid engine trait
- */
+/** Hybrid engine trait. */
 trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[HybridEnvContext[A, B]] {
   
   val engineA: EvalEngine[A]
@@ -90,7 +83,7 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
   
   override def evaluate(step: Step, env: HybridEnvContext[A, B]) {
     try {
-  	  engineA.evaluate(step, env.envA)
+      engineA.evaluate(step, env.envA)
     } catch {
       case _: UnsupportedStepException => 
         engineB.evaluate(step, env.envB)
@@ -99,7 +92,5 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
   
 }
 
-/**
- * Thrown when an engine does not support a step.
- */
+/** Thrown when an engine does not support a step. */
 class UnsupportedStepException(step: Step) extends Exception(s"Unsupported step: ${step}")

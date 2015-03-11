@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import scala.util.Success
 import scala.util.Failure
 
 /**
- * Gwen interpreter application.
- * 
- * @param interpreter
- * 			the gwen interpreter
- */
+  * Gwen interpreter application.
+  * 
+  * @param interpreter the gwen interpreter
+  */
 class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with ConsoleWriter {
     
   println("""
@@ -55,13 +54,11 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   }
   
   /** 
-   * Runs the interpreter with the given options
-   * 
-   * @param options
-   * 			the command line options
-   * @returns
-   * 		0 if successful; 1 otherwise 
-   */  
+    * Runs the interpreter with the given options
+    * 
+    * @param options the command line options
+    * @returns 0 if successful; 1 otherwise 
+    */  
   private[eval] def run(options: GwenOptions): Int = {
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
@@ -74,11 +71,10 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   }
   
   /**
-   * Returns the console REPL.
-   * 
-   * @param env
-   * 			the environment context
-   */
+    * Returns the console REPL.
+    * 
+    * @param env the environment context
+    */
   private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
 }

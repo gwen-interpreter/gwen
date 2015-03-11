@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,27 +20,24 @@ import gwen.dsl.FeatureSpec
 import gwen.dsl.Tag
 
 /**
- * Checks that a feature satisfies all user provided include/exclude tags.
- * Features that do not satisfy any of the provided tags are filtered out 
- * and returned as None types. Features having scenarios that satisfy all 
- * tags are pruned of all scenarios that do not and are wrapped and 
- * returned as Some types.
- * 
- * @author Branko Juric
- */
+  * Checks that a feature satisfies all user provided include/exclude tags.
+  * Features that do not satisfy any of the provided tags are filtered out 
+  * and returned as None types. Features having scenarios that satisfy all 
+  * tags are pruned of all scenarios that do not and are wrapped and 
+  * returned as Some types.
+  * 
+  * @author Branko Juric
+  */
 object TagsFilter {
 
   /**
-   * Filters a feature using the given include/exclude tag filters.
-   * 
-   * @param spec
-   * 			the parsed feature spec to check
-   * @param tagFilters
-   * 			user provided tag filters (includes:(tag, true) and excludes:(tag, false))
-   * @return
-   * 			None if the given feature does not have any scenarios that satisfy all tags; 
-   *            Some otherwise (with only the scenarios that do)
-   */
+    * Filters a feature using the given include/exclude tag filters.
+    * 
+    * @param spec the parsed feature spec to check
+    * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
+    * @return None if the given feature does not have any scenarios that satisfy all tags; 
+    *         Some otherwise (with only the scenarios that do)
+    */
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = 
     tagFilters match {
       case Nil => Some(spec)

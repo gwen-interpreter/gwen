@@ -64,16 +64,16 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus                             should be (Pending)
-	featureSpec.scenarios(0).background.get.evalStatus should be (Pending)
-	featureSpec.scenarios(0).evalStatus                should be (Pending)
+    featureSpec.evalStatus                             should be (Pending)
+    featureSpec.scenarios(0).background.get.evalStatus should be (Pending)
+    featureSpec.scenarios(0).evalStatus                should be (Pending)
     featureSpec.scenarios(1).background.get.evalStatus should be (Pending)
-	featureSpec.scenarios(1).evalStatus                should be (Pending)
+    featureSpec.scenarios(1).evalStatus                should be (Pending)
     featureSpec.scenarios(2).background                should be (None)    
-	featureSpec.scenarios(2).evalStatus                should be (Pending)
-	featureSpec.steps foreach {
-	  _.evalStatus should be (Pending)
-	}
+    featureSpec.scenarios(2).evalStatus                should be (Pending)
+    featureSpec.steps foreach {
+      _.evalStatus should be (Pending)
+    }
   
   }
   
@@ -102,13 +102,13 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus                             should be (Passed(24))
-	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
-	featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
     featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
-	featureSpec.scenarios(1).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)    
-	featureSpec.scenarios(2).evalStatus                should be (Loaded)
+    featureSpec.scenarios(2).evalStatus                should be (Loaded)
   
   }
   
@@ -142,9 +142,9 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus should be (Failed(102, error))
+    featureSpec.evalStatus should be (Failed(102, error))
     
-	featureSpec.scenarios(0).background.get.evalStatus          should be (Failed(102, error))
+    featureSpec.scenarios(0).background.get.evalStatus          should be (Failed(102, error))
     featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
     featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (Passed(1))
     featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (Passed(1))
@@ -162,13 +162,13 @@ Background: The tester
     
     featureSpec.scenarios(2).background should be (None)
     
-	featureSpec.scenarios.tail foreach {
-	  scenario => 
-	    scenario.evalStatus should be (Pending)
-	    scenario.steps foreach {
-	      _.evalStatus should be (Pending)
-	    }
-	}
+    featureSpec.scenarios.tail foreach {
+      scenario => 
+        scenario.evalStatus should be (Pending)
+        scenario.steps foreach {
+          _.evalStatus should be (Pending)
+        }
+    }
   
   }
   
@@ -202,7 +202,7 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus should be (Failed(108, error))
+    featureSpec.evalStatus should be (Failed(108, error))
     
     featureSpec.scenarios(0).background.get.evalStatus          should be (Passed(6))
     featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
@@ -212,7 +212,7 @@ Background: The tester
     featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (Passed(1))
     featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (Passed(1))
     
-	featureSpec.scenarios(1).background.get.evalStatus          should be (Failed(102, error))
+    featureSpec.scenarios(1).background.get.evalStatus          should be (Failed(102, error))
     featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (Passed(1))
     featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (Passed(1))
     featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (Passed(1))
@@ -222,13 +222,13 @@ Background: The tester
     
     featureSpec.scenarios(2).background should be (None)
     
-	featureSpec.scenarios.drop(2) foreach {
-	  scenario => 
-	    scenario.evalStatus should be (Pending)
-	    scenario.steps foreach {
-	      _.evalStatus should be (Pending)
-	    }
-	}
+    featureSpec.scenarios.drop(2) foreach {
+      scenario => 
+        scenario.evalStatus should be (Pending)
+        scenario.steps foreach {
+          _.evalStatus should be (Pending)
+        }
+    }
   
   }
   
@@ -267,9 +267,9 @@ Background: The tester
     
     // assert
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
+    featureSpec.evalStatus.status should be (StatusKeyword.Failed)
     
-	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
     
     featureSpec.scenarios(0).evalStatus          should be (Failed(108, error))
     featureSpec.scenarios(0).steps(0).evalStatus should be (Passed(1))
@@ -289,13 +289,13 @@ Background: The tester
     
     featureSpec.scenarios(2).background should be (None)
     
-	featureSpec.scenarios.tail foreach {
-	  scenario => 
-	    scenario.evalStatus should be (Pending)
-	    scenario.steps foreach {
-	      _.evalStatus should be (Pending)
-	    }
-	}
+    featureSpec.scenarios.tail foreach {
+      scenario => 
+        scenario.evalStatus should be (Pending)
+        scenario.steps foreach {
+          _.evalStatus should be (Pending)
+        }
+    }
   
   }
   
@@ -331,9 +331,9 @@ Background: The tester
     
     // assert 
     
-	featureSpec.evalStatus.status should be (StatusKeyword.Failed)
+    featureSpec.evalStatus.status should be (StatusKeyword.Failed)
     
-	featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
     featureSpec.scenarios(0).evalStatus                should be (Passed(12))
     featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
     
@@ -345,13 +345,13 @@ Background: The tester
     featureSpec.scenarios(1).steps(4).evalStatus should be (Pending)
     featureSpec.scenarios(1).steps(5).evalStatus should be (Pending)
     
-	featureSpec.scenarios.drop(2) foreach {
-	  scenario => 
-	    scenario.evalStatus should be (Pending)
-	    scenario.steps foreach {
-	    _.evalStatus should be (Pending)
-	  }
-	}
+    featureSpec.scenarios.drop(2) foreach {
+      scenario => 
+        scenario.evalStatus should be (Pending)
+        scenario.steps foreach {
+        _.evalStatus should be (Pending)
+      }
+    }
   
   }
 

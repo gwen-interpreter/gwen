@@ -29,9 +29,7 @@ import gwen.report.FeatureResult
 import scala.concurrent.duration.Duration
 import gwen.dsl.DurationFormatter
 
-/**
- * Formats the feature summary and detail reports in HTML.
- */
+/** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
   
   private val cssStatus = Map(
@@ -44,17 +42,13 @@ trait HtmlReportFormatter extends ReportFormatter {
   private val percentFormatter = new DecimalFormat("#.##")
 
   /**
-   * Formats the feature detail report as HTML.
-   * 
-   * @param feature
-   * 			the feature to report
-   * @param interpreterName
-   * 			the gwen interpreter name
-   * @param backlinks
-   *   			names and references for linking back to parent reports
-   * @param metaReportFiles
-   *   			list of meta report files (if any)
-   */
+    * Formats the feature detail report as HTML.
+    * 
+    * @param spec the feature spec to report
+    * @param interpreterName the gwen interpreter name
+    * @param backlinks names and references for linking back to parent reports
+    * @param metaReportFiles list of meta report files (if any)
+    */
   override def formatDetail(spec: FeatureSpec, interpreterName: String, backlinks: List[(String, File)], metaReportFiles: List[File] = Nil): String = {
     
     val metaResults = spec.metaSpecs zip metaReportFiles map { case(meta, metaReport) => FeatureResult(meta, Some(metaReport)) }
@@ -124,10 +118,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
 							<tbody class="summary">${(metas map { case (metaFeature, metaResult) => 
-			  					val status = metaResult.evalStatus.status
-			  					s"""
+								val status = metaResult.evalStatus.status
+								s"""
 								<tr>
-			  						<td>
+									<td>
 										<a class="text-${cssStatus(status)}" href="${metaResult.reportFile.get.getName()}">${escape(metaFeature.feature.name)}</a>
 									</td>
 									<td>&nbsp; &nbsp; </td>
@@ -142,9 +136,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</ul>
 			</div>
 		</div>"""} else ""}${(scenarios map { scenario => 
-	  	val status = scenario.evalStatus.status
-	  	val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-	  	s"""
+		val status = scenario.evalStatus.status
+		val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
+		s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (scenario.tags.size > 0) s"""
@@ -184,13 +178,11 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   
   /**
-   * Formats the feature summary report as HTML.
-   * 
-   * @param results
-   * 			the list of evaluated feature results
-   * @param interpreterName
-   * 			the name of the engine implementation
-   */
+    * Formats the feature summary report as HTML.
+    * 
+    * @param results the list of evaluated feature results
+    * @param interpreterName the name of the engine implementation
+    */
   override def formatSummary(summary: FeatureSummary, interpreterName: String): String = {
     
     val title = "Feature Summary Report";
@@ -247,14 +239,14 @@ trait HtmlReportFormatter extends ReportFormatter {
 						<table width="100%">
 							<tbody class="summary">${(results map { featureResult => s"""
 								<tr>
-								  <td>
+									<td>
 										<a class="text-${cssStatus(status)}" href="${featureResult.reportFile.get.getName()}">${escape(featureResult.featureName)}</a>
-								  </td>
-								  <td>&nbsp; &nbsp; </td>
-								  <td>
+									</td>
+									<td>&nbsp; &nbsp; </td>
+									<td>
 										<span class="pull-right">${formatDuration(featureResult.evalStatus.duration)}</span>${featureResult.featureFile.map(file => s"""
 										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
-								  </td>
+									</td>
 								</tr>"""}).mkString}
 							</tbody>
 						</table>
@@ -279,26 +271,26 @@ trait HtmlReportFormatter extends ReportFormatter {
     
   private def formatReportHeader(heading: String, interpreterName: String) = s"""
 		<table width="100%" cellpadding="5">
-		  <tr>
-		  <td width="100px">
-		  <img src="resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img>
-		  </td>
-		  <td>
-		<div class="panel-heading">
-			<h3>${escape(heading)}</h3>
-  			<span class="pull-right" style="white-space: nowrap;">
-				<center>
-					<span class="badge" style="background-color: #1f23ae;">${escape(interpreterName)}</span>
-				</center>
-			</span>
-			<small>${new Date()}</small>
-		</div>
-		  </td>
-		  </tr>
-	    </table>"""
-						
+			<tr>
+				<td width="100px">
+					<img src="resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img>
+				</td>
+				<td>
+					<div class="panel-heading">
+						<h3>${escape(heading)}</h3>
+						<span class="pull-right" style="white-space: nowrap;">
+							<center>
+								<span class="badge" style="background-color: #1f23ae;">${escape(interpreterName)}</span>
+							</center>
+						</span>
+						<small>${new Date()}</small>
+					</div>
+				</td>
+			</tr>
+		</table>"""
+
   private def formatProgressBar(name: String, evalStatuses: List[EvalStatus]): String = formatProgressBar(name, StatusKeyword.countsByStatus(evalStatuses))
-							
+
   private def formatProgressBar(name: String, statusCounts: Map[StatusKeyword.Value, Int]): String = { 
     val total = (statusCounts map { case (_, count) => count }).sum
     s"""
@@ -316,15 +308,15 @@ trait HtmlReportFormatter extends ReportFormatter {
 							</div>
 						</td></tr>"""
   }
-						
+
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
 								<div class="text-${cssStatus(status)} bg-${cssStatus(status)}">""" else ""}
 									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>${if (!step.attachments.isEmpty) s"""
 									<div class="dropdown bg-${cssStatus(status)}">
-									    <strong>${step.keyword}</strong> ${escape(step.expression)}
+										<strong>${step.keyword}</strong> ${escape(step.expression)}
 										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-										    <strong><em>attachments</em></strong>
+											<strong><em>attachments</em></strong>
 											<span class="caret"></span>
 										</button>
 										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""

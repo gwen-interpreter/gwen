@@ -31,10 +31,10 @@ import jline.console.history.FileHistory
 import play.api.libs.json.Json
 
 /**
- * Read-Eval-Print-Loop console.
- * 
- * @author Branko Juric
- */
+  * Read-Eval-Print-Loop console.
+  * 
+  * @author Branko Juric
+  */
 class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) extends ConsoleWriter {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile())
@@ -47,20 +47,18 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "exit")))
   }
   
-  /**
-   * Reads an input string or command from the command line.
-   */
+  /** Reads an input string or command from the command line. */
   private def read(): String = {
     println()
     reader.readLine() tap { input => println() }
   }
   
   /**
-   * Evaluates a given input string or command.
-   * 
-   * @param input
-   * 			an input step or command
-   */
+    * Evaluates a given input string or command.
+    * 
+    * @param input an input step or command
+    * @return optional result of the command as a string
+    */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
     case "env" | "env -v" | "env --visible" => 
@@ -81,9 +79,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       }
   }
   
-  /**
-   * Runs the read-eval-print-loop.
-   */
+  /** Runs the read-eval-print-loop. */
   def run() {
     println()
     println("REPL Console")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2015 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,22 +30,22 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
          As a tester
        I want to automate tests
       So that gwen can run them
-	
+
   Background: The butterfly effect
-	    Given a deterministic nonlinear system
-	     When a small change is initially applied
-	     Then a large change will eventually result
+        Given a deterministic nonlinear system
+         When a small change is initially applied
+         Then a large change will eventually result
 
     @wip @test
     Scenario: Evaluation
-	    Given any software behavior
-	     When expressed in Gherkin
-	     Then Gwen can evaluate it
+        Given any software behavior
+         When expressed in Gherkin
+         Then Gwen can evaluate it
  
     Scenario: Evaluation
-	    Given any software behavior
-	     When expressed in Gherkin
-	     Then Gwen can evaluate it
+        Given any software behavior
+         When expressed in Gherkin
+         Then Gwen can evaluate it
  """
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {

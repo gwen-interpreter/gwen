@@ -27,29 +27,25 @@ import java.io.PrintWriter
 import scala.util.matching.Regex
 
 /**
- * Predefined implicits.
- * 
- * @author Branko Juric
- */
+  * Predefined implicits.
+  * 
+  * @author Branko Juric
+  */
 object Predefs {
 
-  /**
-   * Kestrel function for tapping in side effects.
-   */
+  /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
     def tap[B](f: A => B) = { f(value); value } 
   }
   
-  /**
-   * Implicit File IO functions.
-   */
+  /** Implicit File IO functions. */
   implicit class FileIO[F <: File](val file: F) extends AnyVal {
     
     def writeText(text: String): File = 
       file tap { f =>
         new FileWriter(f) tap { fw =>
-	      try {
-	        fw.write(text)
+          try {
+            fw.write(text)
           } finally {
             fw.close
           }
@@ -59,11 +55,11 @@ object Predefs {
     def writeBinary(bis: BufferedInputStream): File = 
       file tap { f =>
         new BufferedOutputStream(new FileOutputStream(f)) tap { bos =>
-	      try {
-	        var c = 0
-	        while ({c = bis.read(); c != -1}) {
-	          bos.write(c)
-	        }
+          try {
+            var c = 0
+            while ({c = bis.read(); c != -1}) {
+              bos.write(c)
+            }
           } finally {
             try {
               bis.close
@@ -92,7 +88,7 @@ object Predefs {
     
     def deleteFile() {
       if (file.isDirectory()) {
-  	    file.deleteDir()
+        file.deleteDir()
       } else {
         file.delete()
       }
@@ -100,9 +96,7 @@ object Predefs {
     
   }
   
-  /**
-   * Exception functions.
-   */
+  /** Exception functions. */
   implicit class Exceptions[T <: Throwable](val error: T) extends AnyVal {
     
     def writeStackTrace(): String = {
@@ -117,9 +111,9 @@ object Predefs {
   }
   
   /**
-   * Implicit regex string interpolator.  This makes it easy to match 
-   * incoming steps against regular expressions and capture their parameters.
-   */
+    * Implicit regex string interpolator.  This makes it easy to match 
+    * incoming steps against regular expressions and capture their parameters.
+    */
   implicit class RegexContext(val sc: StringContext) extends AnyVal {
     def r = new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
   }
