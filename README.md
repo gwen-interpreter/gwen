@@ -183,6 +183,8 @@ include and exclude features and scenarios annotated with those tags.
 Development
 ===========
 
+> See also: [gwen FAQ](doc/FAQ.md)
+
 Getting Started
 ---------------
 
