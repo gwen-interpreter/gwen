@@ -13,7 +13,7 @@ evaluation engine allowing any type of automation to be mixed in.
 Evaluation Engines
 ------------------
 
-Gwen uses evaluation engines to map incoming 
+Evaluation engines map incoming 
 [steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) to 
 functions and operations on target systems. Automation is achieved by:  
 
@@ -60,7 +60,7 @@ Key Features
 ------------
 
 - Gherkin feature parser
-- Evaluation engine abstraction
+- Abstract evaluation engine
 - REPL console
 - Evaluation reports
 - Data scopes
@@ -175,9 +175,8 @@ is interpreted.  When a directory is passed to gwen, all feature files in the
 directory and its subdirectories are interpreted. For any given feature file, 
 all existing meta files in the feature file's path are discovered and loaded 
 first. Any number of files or directories can be passed to gwen in a 
-single call for sequential or parallel batch execution. Tags can also be 
-passed to include and exclude features and scenarios annotated with those 
-tags.
+single call for sequential or parallel execution. Tags can also be passed to 
+include and exclude features and scenarios annotated with those tags.
 
 ***
 

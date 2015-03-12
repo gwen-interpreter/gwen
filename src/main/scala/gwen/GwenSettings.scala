@@ -25,10 +25,10 @@ package gwen
 object GwenSettings {
   
   /**
-    * Provides access to the `gwen.feature.failfast` used to enable or disable fail 
-    * fast mode at the feature level (default value is `true`). Enabling this feature 
-    * will fail a feature as soon as the first scenario in that feature fails.  Other 
-    * features (if provided) will resume.
+    * Provides access to the `gwen.feature.failfast` property setting used to enable 
+    * or disable fail fast mode at the feature level (default value is `true`). 
+    * Enabling this feature will fail a feature as soon as the first scenario in that 
+    * feature fails.  Other features (if provided) will resume.
     */
   def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").getOrElse("true").toBoolean
   
