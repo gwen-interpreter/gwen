@@ -17,7 +17,7 @@ bin/gwen --batch features
 REPL (Read-Eval-Print-Loop) mode leaves the interpreter session open after a given feature 
 (or features) are executed, allowing you to enter additional steps to execute and inspect the 
 currently bound data in memory interactively at the gwen prompt. You should use this mode when 
-you want to verify the execution of your features as you write them or to when you want to 
+you want to verify the execution of your features as you write them or when you want to 
 diagnose why a feature is failing. Gwen runs in this mode by default (in the absence of the 
 `-b` or `--batch` switch).
 
