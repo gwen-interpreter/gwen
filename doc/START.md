@@ -72,7 +72,7 @@ _MathService_ class in the _gwen.sample.math_ package in the _main_ source
 folder: 
 
 _MathService.scala_
-```
+```scala
 package gwen.sample.math
 
 class MathService {
@@ -103,7 +103,7 @@ provide us with variables. Create the following _MathEnvContext_ class in
 the _gwen.sample.math_ package in the _main_ source folder:
 
 _MathEnvContext.scala_
-```
+```scala
 package gwen.sample.math
 
 import gwen.eval.EnvContext
@@ -152,7 +152,7 @@ Create the following _MathEvalEngine_ trait in the _gwen.sample.math_ package
 in the _main_ source folder:
 
 _MathEvalEngine.scala_
-```
+```scala
 package gwen.sample.math
 
 import gwen.dsl.Step
@@ -195,7 +195,7 @@ application. Create the following _MathInterpreter_ class and object in the
 _gwen.sample.math_ package in the _main_ source folder:
 
 _MathInterpreter.scala_
-```
+```scala
 package gwen.sample.math
 
 import gwen.eval.GwenInterpreter
@@ -600,7 +600,7 @@ Create the following _MathInterpreterTest_ class in the _gwen.sample.math_
 package in the _test_ source folder:
 
 _MathInterpreterTest.scala_
-```
+```scala
 package gwen.sample.math
 
 import gwen.dsl.Failed
