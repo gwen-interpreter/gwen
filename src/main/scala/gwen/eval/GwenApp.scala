@@ -28,17 +28,8 @@ import scala.util.Failure
   */
 class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with ConsoleWriter {
     
-  println("""
-   __ ___      _____ _ __     _    
-  / _` \ \ /\ / / _ \ '_ \   { \," 
- | (_| |\ V  V /  __/ | | | {_`/   
-  \__, | \_/\_/ \___|_| |_|   `    
-  |___/                            
-""")
+  printBanner("Welcome to ")
 
-  println(s"Welcome to ${interpreter.name} ${interpreter.version}")
-  println()
-   
   GwenOptions.parse(interpreter.getClass().getName(), args) match { 
     case Success(options) =>
       try {
@@ -63,7 +54,12 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
       interpreter.execute(options, envOpt).code tap { exitCode =>
-        envOpt foreach { createRepl(_).run() }
+        envOpt foreach {
+          if (!options.paths.isEmpty || !options.metaFiles.isEmpty) {
+            printBanner("")
+          }
+          createRepl(_).run() 
+        }
       }
     } finally {
       envOpt foreach { interpreter.close(_) }
@@ -76,5 +72,17 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     * @param env the environment context
     */
   private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
+  
+  private def printBanner(intro: String) {
+    println(("""|                                   
+                |   __ ___      _____ _ __     _    
+                |  / _` \ \ /\ / / _ \ '_ \   { \," 
+                | | (_| |\ V  V /  __/ | | | {_`/   
+                |  \__, | \_/\_/ \___|_| |_|   `    
+                |  |___/                            
+                |                                   
+                |""" + intro + Option(interpreter.name).getOrElse("gwen") + Option(interpreter.version).map(" " + _).getOrElse("") + """
+                |""").stripMargin)
+  }
   
 }
