@@ -56,11 +56,63 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser{
   
   "Invalid features" should "not parse" in {
 
-    assertFail("Feature",    "`:' expected but end of source found")
-    assertFail("I am not a valid feature",                      "'Feature' expected")
-    assertFail("Feature hey I dont have a colon after 'Feature'", "`:' expected but `h' found")
-    assertFail("Hey I dont start with 'Feature:'",              "'Feature' expected")
+    val expected = "Invalid feature declaration, expected >> Feature: name<eol>, [As ..<eol> I want ..<eol> [So that ..<eol>]]"
+    assertFail("Feature", expected)
+    assertFail("I am not a valid feature", expected)
+    assertFail("Feature hey I dont have a colon after 'Feature'", expected)
+    assertFail("Hey I dont start with 'Feature:'", expected)
     
+  }
+  
+  "Features with valid narratives" should "parse" in {
+
+    var feature = parse(
+      """Feature: let me tell you something
+           As a tester
+           I want to test all behavior
+           So that there are no suprises""").get
+     
+    feature.name should be ("let me tell you something")
+    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior So that there are no suprises")
+    
+    feature = parse(
+      """Feature: let me tell you something
+           As a tester
+           I want to test all behavior""").get
+     
+    feature.name should be ("let me tell you something")
+    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior")
+    
+    feature = parse(
+      """Feature: let me tell you something
+           As an experienced tester
+           I want to test all behavior
+           So that there are no suprises""").get
+     
+    feature.name should be ("let me tell you something")
+    feature.narrative.mkString(" ") should be ("As an experienced tester I want to test all behavior So that there are no suprises")
+    
+    feature = parse(
+      """Feature: let me tell you something
+           As TESTCO
+           I want to test all behavior
+           So that there are no suprises""").get
+     
+    feature.name should be ("let me tell you something")
+    feature.narrative.mkString(" ") should be ("As TESTCO I want to test all behavior So that there are no suprises")
+    
+  }
+  
+  "Features with invalid narratives" should "not parse" in {
+    assertFail("""Feature: let me tell you something
+                    As a tester
+                    I wish to test all behavior
+                    So that there are no suprises""", "I want ..<eol> expected")
+     
+    assertFail("""Feature: let me tell you something
+                    As an experienced tester
+                    I want to test all behavior
+                    So there are no suprises""", "So that ..<eol> expected")
   }
   
   private def assertFail(input: String, expected: String) {

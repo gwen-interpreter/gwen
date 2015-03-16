@@ -26,9 +26,9 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
   private val featureString = """
    
      Feature: Gwen
-         As a tester
+       As a tester
        I want to automate tests
-      So that gwen can run them
+       So that gwen can run them
 
     Background: The butterfly effect
         Given a deterministic nonlinear system

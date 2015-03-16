@@ -33,7 +33,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
   *     feature     = {tag}, 
   *                   "Feature:", name
   *                   [narrative]
-  *     narrative     "As ", "a " | "an ", expression
+  *     narrative     "As ", expression
   *                   "I want ", expression
   *                   ["So that ", expression]
   *     background  = "Background:", name
@@ -103,20 +103,18 @@ trait SpecParser extends JavaTokenParsers {
 
   /** Produces a feature node with optional narrative. */
   def feature: Parser[Feature] = positioned {
-    (tag*) ~ (token("Feature") ~ ":" ~> name) ~ ((asA ~ iWant ~ (soThat?))?) ^^ {
+    (tag*) ~ (token("Feature") ~ ":" ~> name) ~ ((as ~ iWant ~ soThat)?) ^^ {
       case tags ~ name ~ narrative => narrative match {
         case None => new Feature(tags.toSet, trim(name), Nil)
-        case Some(asA ~ iWant ~ soThat) => soThat match {
-          case None => new Feature(tags.toSet, trim(name), List(trim(asA)))
-          case Some(soThat) => new Feature(tags.toSet, trim(name), List(trim(asA), trim(iWant), trim(soThat)))
-        }
+        case Some(asA ~ iWant ~ soThat) => 
+          new Feature(tags.toSet, trim(name), List(trim(asA), trim(iWant), trim(soThat)).filter(_ != ""))
       }
-    }
+    } withFailureMessage ("Invalid feature declaration, expected >> Feature: name<eol>, [As ..<eol> I want ..<eol> [So that ..<eol>]]")
   }
   
-  private def asA = """\s*As (a|an) .+""".r
-  private def iWant = """\s*I want .+""".r
-  private def soThat = """\s*So that .+""".r
+  private def as = """\s*As .+""".r withFailureMessage ("As ..<eol> expected")
+  private def iWant = """\s*I want .+""".r withFailureMessage ("I want ..<eol> expected")
+  private def soThat = """\s*((So that .+)|^$)""".r withFailureMessage ("So that ..<eol> expected") 
   
   /** Produces a background node. */
   def background: Parser[Background] = positioned {
