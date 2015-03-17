@@ -44,9 +44,9 @@ import scala.util.parsing.combinator.JavaTokenParsers
   *     tag         = "@", name
   *     step        = keyword, expression
   *     keyword     = "Given" | "When" | "Then" | "And" | "But"
-  *     expression  = character, {character}
-  *     name        = {character}
+  *     name        = expression
   *     comment     = "#", expression
+  *     expression  = character, {character}
   *  
   *  }}}
   * 
