@@ -33,7 +33,7 @@ shared the following engine:
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a new engine](doc/START.md) for that purpose.
+[develop a custom engine](doc/START.md) for that purpose.
 
 Automation by Interpretation
 ----------------------------
@@ -183,8 +183,6 @@ include and exclude features and scenarios annotated with those tags.
 Development
 ===========
 
-> See also: [gwen FAQ](doc/FAQ.md)
-
 Getting Started
 ---------------
 
@@ -226,18 +224,18 @@ If you would like to build a binary from the source:
 
 1. Download and install [Java SDK 6 or 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
 2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
-3. Either
-   - Download a [Git client](http://git-scm.com/downloads) and clone this 
-     repository using one of the following (SSH or HTTPS) URLs: 
-     - `git@github.com:gwen-interpreter/gwen.git`
-     - `https://github.com/gwen-interpreter/gwen.git`
-   - Or click the Download ZIP link on this GitHub project page to download 
-     the source archive and extract it to a local folder 
-4. Change to the directory where you cloned/downloaded the gwen source
-5. Run `sbt test` to compile and run all tests and verify that all is OK
-6. Run `sbt package` to build a JAR file
+3. Download a [Git client](http://git-scm.com/downloads) 
+4. Clone the gwen source repository at https://github.com/gwen-interpreter/gwen 
+5. Change to the directory where you cloned the gwen source
+6. Run `sbt test` to compile and run all tests and verify that all is OK
+7. Run `sbt package` to build a JAR file
    - This will create a _gwen-[version].jar_ file in the 
      _target/scala-[version]_ folder relative to your current directory
+
+FAQ
+---
+
+> See [gwen FAQ](doc/FAQ.md)
 
 ***
 
