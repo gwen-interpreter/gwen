@@ -112,7 +112,7 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser{
     assertFail("""Feature: let me tell you something
                     As an experienced tester
                     I want to test all behavior
-                    So there are no suprises""", "So that ..<eol> expected")
+                    So there are no suprises""", """string matching regex `\z' expected but `S' found""")
   }
   
   private def assertFail(input: String, expected: String) {

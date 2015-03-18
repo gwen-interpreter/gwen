@@ -19,7 +19,7 @@ package gwen.dsl
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class SpecParserTest extends FlatSpec with Matchers with SpecParser {
+class SpecParser2Test extends FlatSpec with Matchers with SpecParser {
 
   private val parse = parseAll(spec, _: String);
   
@@ -28,7 +28,6 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
      Feature: Gwen
        As a tester
        I want to automate tests
-       So that gwen can run them
 
     Background: The butterfly effect
         Given a deterministic nonlinear system
@@ -62,7 +61,7 @@ class SpecParserTest extends FlatSpec with Matchers with SpecParser {
     
     val featureSpec = parse(featureString) match {
       case Success(featureSpec, _) => 
-        featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests")))
         featureSpec.background.get should be {
           Background("The butterfly effect", 
             List(

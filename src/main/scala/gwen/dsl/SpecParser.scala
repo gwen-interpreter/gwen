@@ -114,7 +114,7 @@ trait SpecParser extends JavaTokenParsers {
   
   private def as = """\s*As .+""".r withFailureMessage ("As ..<eol> expected")
   private def iWant = """\s*I want .+""".r withFailureMessage ("I want ..<eol> expected")
-  private def soThat = """\s*((So that .+)|^$)""".r withFailureMessage ("So that ..<eol> expected") 
+  private def soThat = """\s*(So that .+)?""".r withFailureMessage ("So that ..<eol> expected") 
   
   /** Produces a background node. */
   def background: Parser[Background] = positioned {
