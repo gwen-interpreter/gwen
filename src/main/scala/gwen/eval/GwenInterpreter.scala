@@ -358,5 +358,5 @@ class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser wi
 }
 
 /** Signals a step that failed to execute. */
-class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step: ${step}", cause)
+class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step: ${step}: ${cause.getMessage()}", cause)
 

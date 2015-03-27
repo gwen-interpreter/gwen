@@ -18,10 +18,10 @@ package gwen.eval.support
 
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
-
 import gwen.Predefs.RegexContext
 import gwen.dsl.Step
 import gwen.eval.EnvContext
+import gwen.eval.UnsupportedStepException
 
 /** Can be mixed into evaluation engines to provide system process support. */
 trait SystemProcessSupport[T <: EnvContext] {
@@ -44,6 +44,7 @@ trait SystemProcessSupport[T <: EnvContext] {
           case 0 => 
           case _ => sys.error(s"The call to $systemproc has failed.")
         }
+      case _ => throw new UnsupportedStepException(step)
     }
   }
   

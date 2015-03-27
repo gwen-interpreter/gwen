@@ -55,7 +55,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param env the environment context
     */
   def evaluate(step: Step, env: T): Unit = {
-    throw new UnsupportedStepException(step)
+    step.expression match {
+      case _ => throw new UnsupportedStepException(step)
+    }
   }
 
   /**

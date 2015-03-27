@@ -316,13 +316,14 @@ trait HtmlReportFormatter extends ReportFormatter {
 									<div class="dropdown bg-${cssStatus(status)}">
 										<strong>${step.keyword}</strong> ${escape(step.expression)}
 										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-											<strong><em>attachments</em></strong>
+											<strong><em>failed</em></strong>
 											<span class="caret"></span>
 										</button>
 										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
 											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
 										</ul>
-									</div>""" else s""" 
+									</div>
+									<span class="text-${cssStatus(status)} small-font"><em> ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</em></span>""" else s""" 
 									<strong>${step.keyword}</strong> ${escape(step.expression)}"""}${if (status == StatusKeyword.Failed) s"""
 								</div>""" else ""}  
 							</li>"""
