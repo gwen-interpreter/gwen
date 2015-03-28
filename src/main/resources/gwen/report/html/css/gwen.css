@@ -111,8 +111,32 @@
 	font-size: 12px;
 }
 
+.btn-success {
+	background-color: #dff0d8;
+	color: #5cb85c;
+}
+
+.btn-danger {
+	background-color: #f2dede;
+	color: #a94442;
+}
+
+.btn-info {
+	background-color: #d9edf7;
+	color: #5bc0de;
+}
+
+.btn-warning {
+	background-color: #fcf8e3;
+	color: #f0ad4e;
+}
+
 .dropdown {
 	display:inline;
+}
+
+.dropdown-toggle {
+	border:none;
 }
 
 .dropdown-menu {

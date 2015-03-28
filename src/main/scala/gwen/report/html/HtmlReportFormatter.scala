@@ -310,22 +310,23 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
 
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
-							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">${if (status == StatusKeyword.Failed) s"""
-								<div class="text-${cssStatus(status)} bg-${cssStatus(status)}">""" else ""}
-									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>${if (!step.attachments.isEmpty) s"""
+							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+								<div class="bg-${cssStatus(status)}">
+									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
+                  <strong>${step.keyword}</strong> ${escape(step.expression)}
+                  ${if (!step.attachments.isEmpty) s"""
 									<div class="dropdown bg-${cssStatus(status)}">
-										<strong>${step.keyword}</strong> ${escape(step.expression)}
-										<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-											<strong><em>failed</em></strong>
-											<span class="caret"></span>
-										</button>
-										<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
-											<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
-										</ul>
-									</div>
-									<span class="text-${cssStatus(status)} small-font"><em> ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</em></span>""" else s""" 
-									<strong>${step.keyword}</strong> ${escape(step.expression)}"""}${if (status == StatusKeyword.Failed) s"""
-								</div>""" else ""}  
+									  <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+										  <strong>attachments</strong>
+						  			  <span class="caret"></span>
+					 				  </button>
+									  <ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
+										  <li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}">${escape(name)}</a></li>"""}).mkString }
+									  </ul>
+									</div>""" else ""}
+                  ${if (status == StatusKeyword.Failed) s"""
+									<span class="text-${cssStatus(status)} small-font"><span class="badge badge-${cssStatus(status)}">${status}</span> ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</span>""" else ""}
+								</div>
 							</li>"""
 
   private def formatJsFooter = """ 
