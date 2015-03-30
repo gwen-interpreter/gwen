@@ -348,5 +348,5 @@ trait HtmlReportFormatter extends ReportFormatter {
     case _ => evalStatus.status
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
-  private def escape(text: String) = text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+  private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 }
