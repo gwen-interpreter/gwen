@@ -118,22 +118,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(metaResults map { metaResult =>  
-								val status = metaResult.spec.evalStatus.status
-								s"""
-								<tr>
-									<td width="20%">
-										<span class="text-${cssStatus(status)}">${metaResult.timestamp}</span>
-									</td>
-									<td>
-										<a class="text-${cssStatus(status)}" href="${metaReports(metaResult).getName()}">${escape(metaResult.spec.feature.name)}</a>
-									</td>
-									<td>
-										<span class="pull-right">${formatDuration(metaResult.evalStatus.duration)}</span>
-										${metaResult.spec.featureFile.map(file => s"""
-										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
-									</td>
-								</tr>"""}).mkString}
+							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, metaReports(result).getName())}).mkString}
 							</tbody>
 						</table>
 					</li>
@@ -242,20 +227,11 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(results map { featureResult => 
-							    val featureReport = featureReports(featureResult); s"""
-								<tr>
-									<td width="20%">
-										<span class="text-${cssStatus(status)}">${featureResult.timestamp}</span>
-									</td>
-									<td>
-										<a class="text-${cssStatus(status)}" href="${featureReport.getParentFile().getName()}${java.io.File.separator}${featureReport.getName()}">${escape(featureResult.featureName)}</a>
-									</td>
-									<td>
-										<span class="pull-right">${formatDuration(featureResult.evalStatus.duration)}</span>${featureResult.featureFile.map(file => s"""
-										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
-									</td>
-								</tr>"""}).mkString}
+							<tbody class="summary">${
+                (results map { result => 
+                  val report = featureReports(result)
+                  formatSummaryLine(result, s"${report.getParentFile().getName()}${java.io.File.separator}${report.getName()}")
+                }).mkString}
 							</tbody>
 						</table>
 					</li>
@@ -314,6 +290,21 @@ trait HtmlReportFormatter extends ReportFormatter {
 							</div>
 						</td></tr>"""
   }
+  
+  private def formatSummaryLine(result: FeatureResult, reportPath: String): String = s"""
+                 <tr>
+                  <td>
+                    <span class="text-${cssStatus(result.evalStatus.status)}">${result.timestamp}</span>
+                  </td>
+                  <td>
+                    <a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
+                  </td>
+                  <td>
+                    <span class="pull-right">${formatDuration(result.evalStatus.duration)}</span>
+                    ${result.spec.featureFile.map(file => s"""
+                    <span class="text-${cssStatus(result.evalStatus.status)}">${file.getPath()}</span>""").getOrElse("")}
+                  </td>
+                </tr>"""
 
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
