@@ -15,19 +15,20 @@
  */
 package gwen.report.html
 
+import java.io.File
 import java.text.DecimalFormat
 import java.util.Date
+
+import scala.concurrent.duration.Duration
+
+import gwen.dsl.DurationFormatter
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Step
-import gwen.report.FeatureSummary
-import gwen.report.ReportFormatter
 import gwen.dsl.StatusKeyword
-import java.io.File
-import gwen.report.FeatureResult
-import scala.concurrent.duration.Duration
-import gwen.dsl.DurationFormatter
+import gwen.dsl.Step
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureSummary
+import gwen.report.ReportFormatter
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -44,15 +45,15 @@ trait HtmlReportFormatter extends ReportFormatter {
   /**
     * Formats the feature detail report as HTML.
     * 
-    * @param spec the feature spec to report
     * @param interpreterName the gwen interpreter name
-    * @param backlinks names and references for linking back to parent reports
-    * @param metaReportFiles list of meta report files (if any)
+    * @param result the feature result to report
+    * @param metaReports the generated meta reports keyed by meta result
+    * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(spec: FeatureSpec, interpreterName: String, backlinks: List[(String, File)], metaReportFiles: List[File] = Nil): String = {
+  override def formatDetail(interpreterName: String, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String = {
     
-    val metaResults = spec.metaSpecs zip metaReportFiles map { case(meta, metaReport) => FeatureResult(meta, Some(metaReport)) }
-    val metas = spec.metaSpecs zip metaResults
+    val spec = result.spec
+    val metaResults = result.metaResults 
     val featureName = spec.featureFile.map(_.getPath()).getOrElse(spec.feature.name)
     val scenarios = spec.scenarios
     val steps = spec.steps
@@ -64,13 +65,13 @@ trait HtmlReportFormatter extends ReportFormatter {
     s"""<!DOCTYPE html>
 <html lang="en">
 	<head>
-		${formatHtmlHead(s"${title} - ${featureName}")}
+		${formatHtmlHead(s"${title} - ${featureName}", "../")}
 	</head>
 	<body>
-		${formatReportHeader(title, interpreterName)}
-		<ol class="breadcrumb">${(backlinks map { case (backName, backFile) => s"""
+		${formatReportHeader(title, interpreterName, result.timestamp, "../")}
+		<ol class="breadcrumb">${(breadcrumbs map { case (text, report) => s"""
 			<li>
-				<a href="${backFile.getName()}">&lt; ${escape(backName)}</a>
+				<a href="${report}">&lt; ${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
 				Evaluation Status
@@ -100,33 +101,36 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</table>
 				</div>
 			</div>
-		</div>${if (!metas.isEmpty) { 
-		val count = metas.size
-		val evalStatus = EvalStatus(metaResults.map(_.evalStatus))
-		val status = evalStatus.status
+		</div>${if (!metaResults.isEmpty) { 
+		val count = metaResults.size
+		val metaStatus = EvalStatus(spec.metaSpecs.map(_.evalStatus))
+		val status = metaStatus.status
 		s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
 					<span class="label label-${cssStatus(status)}">Meta:</span>
 					${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
-					<span class="pull-right">${formatDuration(evalStatus.duration)}</span>""" else ""}
+					<span class="pull-right">${formatDuration(metaStatus.duration)}</span>""" else ""}
 				</li>
 			</ul>
 			<div class="panel-body">
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(metas map { case (metaFeature, metaResult) => 
-								val status = metaResult.evalStatus.status
+							<tbody class="summary">${(metaResults map { metaResult =>  
+								val status = metaResult.spec.evalStatus.status
 								s"""
 								<tr>
-									<td>
-										<a class="text-${cssStatus(status)}" href="${metaResult.reportFile.get.getName()}">${escape(metaFeature.feature.name)}</a>
+									<td width="20%">
+										<span class="text-${cssStatus(status)}">${metaResult.timestamp}</span>
 									</td>
-									<td>&nbsp; &nbsp; </td>
 									<td>
-										<span class="pull-right">${formatDuration(metaResult.evalStatus.duration)}</span>${metaFeature.featureFile.map(file => s"""
+										<a class="text-${cssStatus(status)}" href="${metaReports(metaResult).getName()}">${escape(metaResult.spec.feature.name)}</a>
+									</td>
+									<td>
+										<span class="pull-right">${formatDuration(metaResult.evalStatus.duration)}</span>
+										${metaResult.spec.featureFile.map(file => s"""
 										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
 									</td>
 								</tr>"""}).mkString}
@@ -171,7 +175,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</ul>
 				</div>
 			</div>
-		</div>"""}).mkString}${formatJsFooter}
+		</div>"""}).mkString}${formatJsFooter("../")}
 	</body>
 </html>
 """
@@ -180,10 +184,11 @@ trait HtmlReportFormatter extends ReportFormatter {
   /**
     * Formats the feature summary report as HTML.
     * 
-    * @param results the list of evaluated feature results
     * @param interpreterName the name of the engine implementation
+    * @param summary the accumulated feature results summary
+    * @param featureReports the generated feature reports keyed by feature result
     */
-  override def formatSummary(summary: FeatureSummary, interpreterName: String): String = {
+  override def formatSummary(interpreterName: String, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String = {
     
     val title = "Feature Summary Report";
     val status = EvalStatus(summary.featureResults.map(_.evalStatus)).status
@@ -191,10 +196,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     s"""<!DOCTYPE html>
 <html lang="en">
 	<head>
-		${formatHtmlHead(title)}
+		${formatHtmlHead(title, "")}
 	</head>
 	<body>
-		${formatReportHeader(title, interpreterName)}
+		${formatReportHeader(title, interpreterName, summary.timestamp, "")}
 		<ol class="breadcrumb">
 			<li>
 				&nbsp; &nbsp;Summary
@@ -237,12 +242,15 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(results map { featureResult => s"""
+							<tbody class="summary">${(results map { featureResult => 
+							    val featureReport = featureReports(featureResult); s"""
 								<tr>
-									<td>
-										<a class="text-${cssStatus(status)}" href="${featureResult.reportFile.get.getName()}">${escape(featureResult.featureName)}</a>
+									<td width="20%">
+										<span class="text-${cssStatus(status)}">${featureResult.timestamp}</span>
 									</td>
-									<td>&nbsp; &nbsp; </td>
+									<td>
+										<a class="text-${cssStatus(status)}" href="${featureReport.getParentFile().getName()}${java.io.File.separator}${featureReport.getName()}">${escape(featureResult.featureName)}</a>
+									</td>
 									<td>
 										<span class="pull-right">${formatDuration(featureResult.evalStatus.duration)}</span>${featureResult.featureFile.map(file => s"""
 										<span class="text-${cssStatus(status)}">${file.getPath()}</span>""").getOrElse("")}
@@ -253,27 +261,25 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</li>
 				</ul>
 			</div>
-		</div>"""}}).mkString}${formatJsFooter}
+		</div>"""}}).mkString}${formatJsFooter("")}
 	</body>
 </html>
     """
   }
   
-  private def formatHtmlHead(title: String) = s"""
+  private def formatHtmlHead(title: String, rootDir: String) = s"""
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>${title}</title>
-		<!-- Bootstrap -->
-		<link href="resources/css/bootstrap.min.css" rel="stylesheet" />
-		<!-- Customisations -->
-		<link href="resources/css/gwen.css" rel="stylesheet" />"""
+		<link href="${rootDir}resources/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="${rootDir}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(heading: String, interpreterName: String) = s"""
+  private def formatReportHeader(heading: String, interpreterName: String, timestamp: Date, rootDir: String) = s"""
 		<table width="100%" cellpadding="5">
 			<tr>
 				<td width="100px">
-					<img src="resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img>
+					<img src="${rootDir}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img>
 				</td>
 				<td>
 					<div class="panel-heading">
@@ -283,7 +289,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 								<span class="badge" style="background-color: #1f23ae;">${escape(interpreterName)}</span>
 							</center>
 						</span>
-						<small>${new Date()}</small>
+						<small>${timestamp}</small>
 					</div>
 				</td>
 			</tr>
@@ -313,13 +319,13 @@ trait HtmlReportFormatter extends ReportFormatter {
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
 								<div class="bg-${cssStatus(status)}">
 									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
-									<strong>${step.keyword}</strong> ${escape(step.expression)}
+									<div class="keyword-right"><strong>${step.keyword}</strong></div> ${escape(step.expression)}
 									${formatAttachments(step, status)}
 								</div>
 								${if (status == StatusKeyword.Failed) s"""
 								<ul><li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
 									<div class="bg-${cssStatus(status)}">
-										<span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)} small-font">${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</span>
+										<span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)} small-font">[ ${step.evalStatus.asInstanceOf[Failed].timestamp} ] - ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</span>
 									</div>
 								</li></ul>""" else ""}
 							</li>"""
@@ -336,10 +342,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 								  </ul>
 								</div>""" else ""}"""
 
-  private def formatJsFooter = """ 
-		<!-- Include all compiled plugins (below), or include individual files as needed -->
-		<script src="resources/js/jquery-1.11.0.min.js"></script>
-		<script src="resources/js/bootstrap.min.js"></script>"""
+  private def formatJsFooter(rootDir: String) = s""" 
+		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
+		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
     
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble

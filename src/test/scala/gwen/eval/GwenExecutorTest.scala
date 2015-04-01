@@ -33,8 +33,8 @@ import gwen.dsl.StatusKeyword
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
-import org.scalatest.FlatSpec
 import gwen.UserOverrides
+import org.scalatest.FlatSpec
 
 class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   
@@ -62,7 +62,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -84,7 +84,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -114,7 +114,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val metas = UserOverrides.addUserMeta(List(meta3))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -145,7 +145,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -238,7 +238,6 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       List(Scenario(Set[Tag](), "scenario6A", List(Step(StepKeyword.Given, "I am a test 6A", Passed(1000))))),
       Some(feature6a)
     )
-      
     val feature6B = new FeatureSpec(
       Feature("test-feature-6b"), 
       None, 
@@ -255,9 +254,9 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
     when(mockInterpreter.name).thenReturn("gwen")
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(feature6A))
-    when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(feature6B))
-    when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(feature7A))
+    when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, Nil)))
+    when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, Nil)))
+    when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature7A, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -266,10 +265,11 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
     evalStatus should be (Passed(6000))
     
-    new File(reportDir, "target-GwenExecutorTest-dir6-file6a.feature.html").exists should be (true)
-    new File(reportDir, "target-GwenExecutorTest-dir6-file6b.feature.html").exists should be (true)
-    new File(reportDir, "target-GwenExecutorTest-dir7-file7a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6", "file6a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6", "file6b.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir7", "file7a.feature.html").exists should be (true)
     new File(reportDir, "feature-summary.html").exists should be (true)
+    new File(reportDir, "index.html").exists should be (true)
     
   }
   
@@ -285,7 +285,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(Some(feature))
+    when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     

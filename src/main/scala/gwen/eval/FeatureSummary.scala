@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package gwen.report
+package gwen.eval
 
-import java.io.File
-import gwen.dsl.EvalStatus
-import gwen.dsl.StatusKeyword
-import gwen.Predefs.Kestrel
+import java.util.Date
+
 import gwen.dsl.FeatureSpec
+import gwen.dsl.StatusKeyword
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -33,17 +32,13 @@ import gwen.dsl.FeatureSpec
   */
 case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: Map[StatusKeyword.Value, Int], stepCounts: Map[StatusKeyword.Value, Int]) {
   
-  def accumulate(featureResult: FeatureResult, scenarioStatuses: List[EvalStatus], stepStatuses: List[EvalStatus]) =
+  val timestamp = new Date()
+  
+  def +(featureResult: FeatureResult) =
     new FeatureSummary(
       this.featureResults ++ List(featureResult),
-      addCounts(this.scenarioCounts, StatusKeyword.countsByStatus(scenarioStatuses)),
-      addCounts(this.stepCounts, StatusKeyword.countsByStatus(stepStatuses)))
-  
-  def + (featureSummary: FeatureSummary): FeatureSummary = 
-    new FeatureSummary(
-      featureResults ::: featureSummary.featureResults,
-      addCounts(this.scenarioCounts, featureSummary.scenarioCounts),
-      addCounts(this.stepCounts, featureSummary.stepCounts))
+      addCounts(this.scenarioCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.map(_.evalStatus))),
+      addCounts(this.stepCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))))
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.values map { status => 
@@ -72,25 +67,20 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
 /** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(spec: FeatureSpec, reportFile: Option[File]): FeatureSummary =
-    FeatureSummary().accumulate(
-       FeatureResult(spec.feature.name, spec.evalStatus, spec.featureFile, reportFile), 
-       spec.scenarios.map(_.evalStatus), 
-       spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
+  def apply(spec: FeatureSpec, metaResults: List[FeatureResult]): FeatureSummary =
+    FeatureSummary() + new FeatureResult(spec, metaResults)
 }
 
 /**
   * Captures the results of an evaluated feature.
   * 
-  * @param name the feature name
-  * @param evalStatus the evaluated status
-  * @param featureFile the optional feature file
-  * @param reportFile feature report file
+  * @param spec the evaluated feature
+  * @param metaResults the evaluated meta results
   */
-case class FeatureResult(featureName: String, evalStatus: EvalStatus, featureFile: Option[File], reportFile: Option[File])
-
-/** Feature result factory. */
-object FeatureResult {
-  def apply(spec: FeatureSpec, reportFile: Option[File]) = 
-    new FeatureResult(spec.feature.name, spec.evalStatus, spec.featureFile, reportFile)
+class FeatureResult(val spec: FeatureSpec, val metaResults: List[FeatureResult]) {
+  val timestamp = new Date()
+  def featureName = spec.feature.name
+  def featureFile = spec.featureFile 
+  def evalStatus = spec.evalStatus
 }
+

@@ -18,6 +18,7 @@ package gwen.dsl
 
 import scala.concurrent.duration._
 import java.text.DecimalFormat
+import java.util.Date
 
 /** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {
@@ -55,6 +56,7 @@ case class Passed(val nanos: Long) extends EvalStatus {
   */
 case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
+  val timestamp = new Date()
   def code = 1
 }
 

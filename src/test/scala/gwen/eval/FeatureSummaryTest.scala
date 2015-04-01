@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.report
+package gwen.eval
 
 import java.io.File
 import org.scalatest.Matchers
@@ -25,6 +25,11 @@ import gwen.dsl.Pending
 import gwen.dsl.Skipped
 import gwen.dsl.StatusKeyword
 import org.scalatest.FlatSpec
+import gwen.dsl.FeatureSpec
+import gwen.dsl.Scenario
+import gwen.dsl.Step
+import gwen.dsl.StepKeyword
+import gwen.dsl.Feature
 
 class FeatureSummaryTest extends FlatSpec with Matchers {
 
@@ -33,10 +38,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     var summary = FeatureSummary()
     
     // add 1 passed scenario
-    summary = summary.accumulate(
-      FeatureResult("feature1", Passed(10), Some(new File("f1.feature")), Some(new File("f1.html"))),
-      List(Passed(5)),
-      List(Passed(2), Passed(1), Passed(2)))
+    val feature1 = FeatureSpec(
+      Feature("feature1"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(1)),
+          Step(StepKeyword.Given, "step 3", Passed(2)))
+        )))
+    summary = summary + new FeatureResult(feature1, Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Passed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (1)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (0)
@@ -53,10 +62,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts(StatusKeyword.Pending) should be (0)
     
     // add 1 failed scenario
-    summary = summary.accumulate(
-      FeatureResult("feature2", Failed(5, new Exception()), Some(new File("f2.feature")), Some(new File("f2.html"))),
-      List(Failed(5, new Exception())),
-      List(Passed(2), Failed(3, new Exception()), Skipped))
+    val feature2 = FeatureSpec(
+      Feature("feature2"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Failed(3, new Exception())),
+          Step(StepKeyword.Given, "step 3", Skipped))
+        )))
+    summary = summary + new FeatureResult(feature2 ,Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (1)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
@@ -73,10 +86,19 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts(StatusKeyword.Pending) should be (0)
     
     // add 2 passed scenarios
-    summary = summary.accumulate(
-      FeatureResult("feature3", Passed(10), Some(new File("f3.feature")), Some(new File("f3.html"))),
-      List(Passed(5), Passed(5)),
-      List(Passed(2), Passed(1), Passed(2), Passed(2), Passed(1), Passed(2)))
+    val feature3 = FeatureSpec(
+      Feature("feature3"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(1)),
+          Step(StepKeyword.Given, "step 3", Passed(2)))
+        ), 
+        Scenario("scenario2", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(1)),
+          Step(StepKeyword.Given, "step 3", Passed(2)))
+        )))
+    summary = summary + new FeatureResult(feature3 ,Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
@@ -93,10 +115,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts(StatusKeyword.Pending) should be (0)
     
     // add 1 skipped scenario
-    summary = summary.accumulate(
-      FeatureResult("feature4", Skipped, Some(new File("f4.feature")), Some(new File("f4.html"))),
-      List(Skipped),
-      List(Skipped, Skipped, Skipped))
+    val feature4 = FeatureSpec(
+      Feature("feature4"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Skipped),
+          Step(StepKeyword.Given, "step 2", Skipped),
+          Step(StepKeyword.Given, "step 3", Skipped))
+        )))
+    summary = summary + new FeatureResult(feature4 ,Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
@@ -113,10 +139,13 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts(StatusKeyword.Pending) should be (0)
     
     // add 1 pending scenario
-    summary = summary.accumulate(
-      FeatureResult("feature5", Pending, Some(new File("f5.feature")), Some(new File("f5.html"))),
-      List(Pending),
-      List(Pending, Pending))
+    val feature5 = FeatureSpec(
+      Feature("feature5"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Pending),
+          Step(StepKeyword.Given, "step 2", Pending))
+        )))
+    summary = summary + new FeatureResult(feature5 ,Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
@@ -133,10 +162,33 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts(StatusKeyword.Pending) should be (2)
     
     // add 4 passed and 1 failed scenario
-    summary = summary.accumulate(
-      FeatureResult("feature6", Failed(25, new Exception()), Some(new File("f6.feature")), Some(new File("f6.html"))),
-      List(Passed(5), Passed(5), Passed(5), Passed(5), Failed(5, new Exception())),
-      List(Passed(2), Passed(1), Passed(2), Passed(4), Passed(1), Passed(2), Passed(1), Passed(2), Passed(2), Passed(3), Passed(1), Failed(4, new Exception()), Skipped, Skipped))
+    val feature6 = FeatureSpec(
+      Feature("feature6"), None, List(
+        Scenario("scenario1", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(1)),
+          Step(StepKeyword.Given, "step 3", Passed(2)))
+        ), 
+        Scenario("scenario2", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(4)),
+          Step(StepKeyword.Given, "step 2", Passed(1)))
+        ),
+        Scenario("scenario3", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(1)),
+          Step(StepKeyword.Given, "step 3", Passed(2)))
+        ),
+        Scenario("scenario4", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(2)),
+          Step(StepKeyword.Given, "step 2", Passed(3)))
+        ),
+        Scenario("scenario5", None, List(
+          Step(StepKeyword.Given, "step 1", Passed(1)),
+          Step(StepKeyword.Given, "step 2", Failed(4, new Exception())),
+          Step(StepKeyword.Given, "step 3", Skipped),
+          Step(StepKeyword.Given, "step 3", Skipped))
+        )))
+    summary = summary + new FeatureResult(feature6 ,Nil)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
     summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (2)

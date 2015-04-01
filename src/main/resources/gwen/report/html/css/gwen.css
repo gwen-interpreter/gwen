@@ -170,3 +170,9 @@ table tbody.summary td {
 .small-font {
   font-size: 12px;
 }
+
+.keyword-right {
+  text-align: right; 
+  display: inline-table; 
+  width: 45px;
+}

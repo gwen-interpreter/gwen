@@ -15,8 +15,10 @@
  */
 package gwen.report
 
-import gwen.dsl.FeatureSpec
 import java.io.File
+
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureSummary
 
 /** Trait for formatting the feature summary and detail reports. */
 trait ReportFormatter {
@@ -24,19 +26,20 @@ trait ReportFormatter {
   /**
     * Formats the feature detail report.
     * 
-    * @param spec the feature spec to report
     * @param interpreterName the gwen interpreter name
-    * @param backlinks names and references for linking back to parent reports
-    * @param metaReportFiles list of meta report files (if any)
+    * @param result the feature result
+    * @param metaReports the generated meta reports keyed by meta result
+    * @param breadcrumbs names and references for linking back to parent reports
     */
-  def formatDetail(spec: FeatureSpec, interpreterName: String, backlinks: List[(String, File)], metaReportFiles: List[File]): String
+  def formatDetail(interpreterName: String, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String
   
   /**
     * Formats the feature summary report.
     * 
-    * @param summary the accumulated feature results summary
     * @param interpreterName the gwen interpreter name
+    * @param summary the accumulated feature results summary
+    * @param featureReports the generated feature reports keyed by feature result
     */
-  def formatSummary(summary: FeatureSummary, interpreterName: String): String
+  def formatSummary(interpreterName: String, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String
   
 }

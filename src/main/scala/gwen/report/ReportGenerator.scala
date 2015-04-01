@@ -27,6 +27,8 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureSummary
 
 /**
   * Base class for report generators.
@@ -45,62 +47,88 @@ class ReportGenerator (
   /** Lazily creates and returns the target report directory. */
   private[report] lazy val reportDir = new File(Path(targetDir).createDirectory().path)
   
-  /** Lazily creates and returns the target report attachments directory. */
-  private[report] lazy val attachmentsDir = new File(Path(new File(targetDir, "attachments")).createDirectory().path)
-
   /**
     * Must be implemented to generate and return a detail feature report.
     * 
     * @param spec the feature spec to report
     */
-  final def reportDetail(spec: FeatureSpec): File =
-    new File(reportDir, s"${getNamePrefix(spec)}.${fileExtension}") tap { featureReportFile =>
-      spec.metaSpecs.zipWithIndex map { case (meta, idx) =>
-        new File(reportDir, s"${getNamePrefix(spec)}.${idx + 1}.meta.${fileExtension}") tap { metaReportFile =>
-          reportMetaDetail(featureReportFile, meta, metaReportFile)
-        }
-      } tap { metaReportFiles =>
-        reportFeatureDetail(spec, featureReportFile, metaReportFiles)
+  final def reportDetail(result: FeatureResult): File = {
+    val featureReportFile = createReportFile(createReportDir(reportDir, result.spec), "", result.spec)
+    val metaReportFiles = result.metaResults.zipWithIndex map { case (res, idx) => 
+      (reportMetaDetail(res, featureReportFile, s"${createReportFileName(result.spec)}.${idx + 1}.")) 
+    }
+    reportFeatureDetail(result, featureReportFile, metaReportFiles)
+  }
+  
+  private final def reportMetaDetail(result: FeatureResult, featureReportFile: File, prefix: String): File =
+    createReportFile(featureReportFile.getParentFile(), prefix, result.spec) tap { file => 
+      logger.info(s"Generating meta detail report [${result.spec.feature.name}]..")
+      file.writeText(
+        formatDetail(
+          interpreterName, 
+          result, 
+          Map(), 
+          List(("Summary", s"../${summaryFileName}"), ("Feature", featureReportFile.getName()))))
+      logger.info(s"Meta detail report generated: ${file.getAbsolutePath()}")
+    }
+  
+  private final def reportFeatureDetail(result: FeatureResult, featureReportFile: File, metaReportFiles: List[File]): File = 
+    featureReportFile tap { file =>
+      val spec = result.spec
+      logger.info(s"Generating feature detail report [${spec.feature.name}]..")
+      file.writeText(
+        formatDetail(
+          interpreterName, 
+          result, 
+          (result.metaResults zip metaReportFiles).toMap, 
+          List(("Summary", s"../${summaryFileName}"))))
+      val attachmentsDir = new File(Path(new File(featureReportFile.getParentFile(), "attachments")).createDirectory().path)
+      spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
+        new File(attachmentsDir, file.getName()).writeFile(file)
       }
+      logger.info(s"Feature detail report generated: ${file.getAbsolutePath()}")
     }
-  
-  private final def reportFeatureDetail(spec: FeatureSpec, featureReportFile: File, metaReportFiles: List[File]) { 
-    logger.info(s"Generating feature detail report [${spec.feature.name}]..")
-    featureReportFile.writeText(formatDetail(spec, interpreterName, List(("Summary", new File(summaryFileName))), metaReportFiles))
-    spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
-      new File(attachmentsDir, file.getName()).writeFile(file)
-    }
-    logger.info(s"Feature detail report generated: ${featureReportFile.getAbsolutePath()}")
-  }
-  
-  private final def reportMetaDetail(featureReportFile: File, metaFeature: FeatureSpec, metaReportFile: File) { 
-    logger.info(s"Generating meta detail report [${metaFeature.feature.name}]..")
-    metaReportFile.writeText(formatDetail(metaFeature, interpreterName, List(("Summary", new File(summaryFileName)), ("Feature", featureReportFile)), Nil))
-    logger.info(s"Meta detail report generated: ${metaReportFile.getAbsolutePath()}")
-  }
   
   /**
     * Must be implemented to generate and return a summary report file.
     * 
-    * @param featureSummary the feature summary to report
+    * @param summary the feature summary to report
+    * @param featureReportFiles list of feature reports
     */
-  final def reportSummary(featureSummary: FeatureSummary): Option[File] =
-    if (!featureSummary.featureResults.isEmpty) {
+  final def reportSummary(summary: FeatureSummary, featureReportFiles: List[File]): Option[File] =
+    if (!summary.featureResults.isEmpty) {
       Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
-        file.writeText(formatSummary(featureSummary, interpreterName))
+        file.writeText(
+          formatSummary(
+            interpreterName,
+            summary,
+            (summary.featureResults zip featureReportFiles).toMap))
         logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
       })
     } else {
       None
     }
-    
-  private def getNamePrefix(spec: FeatureSpec): String = spec.featureFile match {
-    case Some(file) => encodePath(file.getParent()) + file.getName()
-    case None => spec.feature.name
+   
+  private def createReportDir(baseDir: File, spec: FeatureSpec): File = spec.featureFile match {
+    case Some(file) =>
+      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent())).createDirectory().path)
+    case None => 
+      new File(Path(baseDir.getPath() + File.separator + encodeDir(spec.feature.name)).createDirectory().path)
   }
   
-  private def encodePath(path: String): String = if (path != null) path.replaceAll("[/\\:\\\\]", "-") + "-" else "";
+  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec): File = 
+    new File(toDir, s"${prefix}${createReportFileName(spec)}.${fileExtension}")
+  
+  private def createReportFileName(spec: FeatureSpec): String = spec.featureFile match {
+    case Some(file) =>
+      s"${file.getName()}"
+    case None => 
+      s"${spec.feature.name}.${fileExtension}"
+  }
+  
+  private def encodeDir(dirpath: String): String = 
+    if (dirpath != null) dirpath.replaceAll("[/\\:\\\\]", "-") else "";
   
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
