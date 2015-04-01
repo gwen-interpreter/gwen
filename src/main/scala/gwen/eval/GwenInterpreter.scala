@@ -17,16 +17,14 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.Option.option2Iterable
+import scala.annotation.migration
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
@@ -43,6 +41,7 @@ import gwen.dsl.SpecType
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
+import gwen.GwenInfo
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -51,12 +50,9 @@ import gwen.dsl.prettyPrint
   * 
   * @author Branko Juric
   */
-class GwenInterpreter[T <: EnvContext] extends SpecParser with SpecNormaliser with LazyLogging {
+class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  lazy val name: String = Option(this.getClass.getPackage.getImplementationTitle).getOrElse(s"gwen")
-  lazy val version: String = Option(this.getClass.getPackage.getImplementationVersion).map(ver => s"v${ver}").getOrElse("")
-  
   /**
     * Initialises the interpreter by creating the environment context
     * 

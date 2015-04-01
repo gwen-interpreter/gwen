@@ -20,6 +20,7 @@ import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import scala.util.Success
 import scala.util.Failure
+import gwen.GwenInfo
 
 /**
   * Gwen interpreter application.
@@ -81,7 +82,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
                 |  \__, | \_/\_/ \___|_| |_|   `    
                 |  |___/                            
                 |                                   
-                |""" + intro + Option(interpreter.name).getOrElse("gwen") + Option(interpreter.version).map(" " + _).getOrElse("") + """
+                |""" + intro + interpreter.implName + " " + interpreter.implVersion + """
                 |""").stripMargin)
   }
   

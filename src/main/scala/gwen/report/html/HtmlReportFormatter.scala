@@ -18,9 +18,7 @@ package gwen.report.html
 import java.io.File
 import java.text.DecimalFormat
 import java.util.Date
-
 import scala.concurrent.duration.Duration
-
 import gwen.dsl.DurationFormatter
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
@@ -29,6 +27,7 @@ import gwen.dsl.Step
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.report.ReportFormatter
+import gwen.GwenInfo
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -45,12 +44,12 @@ trait HtmlReportFormatter extends ReportFormatter {
   /**
     * Formats the feature detail report as HTML.
     * 
-    * @param interpreterName the gwen interpreter name
+    * @param info the gwen implementation info
     * @param result the feature result to report
     * @param metaReports the generated meta reports keyed by meta result
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(interpreterName: String, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String = {
+  override def formatDetail(info: GwenInfo, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String = {
     
     val spec = result.spec
     val metaResults = result.metaResults 
@@ -68,10 +67,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
 	</head>
 	<body>
-		${formatReportHeader(title, interpreterName, result.timestamp, "../")}
+		${formatReportHeader(info, title, result.timestamp, "../")}
 		<ol class="breadcrumb">${(breadcrumbs map { case (text, report) => s"""
 			<li>
-				<a href="${report}">&lt; ${escape(text)}</a>
+				<span class="caret-left"></span> <a href="${report}">${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
 				Evaluation Status
@@ -169,11 +168,11 @@ trait HtmlReportFormatter extends ReportFormatter {
   /**
     * Formats the feature summary report as HTML.
     * 
-    * @param interpreterName the name of the engine implementation
+    * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     * @param featureReports the generated feature reports keyed by feature result
     */
-  override def formatSummary(interpreterName: String, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String = {
+  override def formatSummary(info: GwenInfo, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String = {
     
     val title = "Feature Summary Report";
     val status = EvalStatus(summary.featureResults.map(_.evalStatus)).status
@@ -184,10 +183,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatHtmlHead(title, "")}
 	</head>
 	<body>
-		${formatReportHeader(title, interpreterName, summary.timestamp, "")}
+		${formatReportHeader(info, title, summary.timestamp, "")}
 		<ol class="breadcrumb">
 			<li>
-				&nbsp; &nbsp;Summary
+				Summary
 			</li>
 			<li>
 				Evaluation Status
@@ -251,21 +250,21 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<link href="${rootDir}resources/css/bootstrap.min.css" rel="stylesheet" />
 		<link href="${rootDir}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(heading: String, interpreterName: String, timestamp: Date, rootDir: String) = s"""
+  private def formatReportHeader(info: GwenInfo, heading: String, timestamp: Date, rootDir: String) = s"""
 		<table width="100%" cellpadding="5">
 			<tr>
 				<td width="100px">
-					<img src="${rootDir}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img>
+					<a href="${info.gwenHome}"><img src="${rootDir}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
 				</td>
 				<td>
 					<div class="panel-heading">
 						<h3>${escape(heading)}</h3>
 						<span class="pull-right" style="white-space: nowrap;">
 							<center>
-								<span class="badge" style="background-color: #1f23ae;">${escape(interpreterName)}</span>
+								<a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
 							</center>
 						</span>
-						<small>${timestamp}</small>
+						${timestamp}
 					</div>
 				</td>
 			</tr>
@@ -294,15 +293,14 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatSummaryLine(result: FeatureResult, reportPath: String): String = s"""
                  <tr>
                   <td>
-                    <span class="text-${cssStatus(result.evalStatus.status)}">${result.timestamp}</span>
+                    ${result.timestamp}
                   </td>
                   <td>
                     <a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
                   </td>
                   <td>
                     <span class="pull-right">${formatDuration(result.evalStatus.duration)}</span>
-                    ${result.spec.featureFile.map(file => s"""
-                    <span class="text-${cssStatus(result.evalStatus.status)}">${file.getPath()}</span>""").getOrElse("")}
+                    ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
                   </td>
                 </tr>"""
 
@@ -316,7 +314,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 								${if (status == StatusKeyword.Failed) s"""
 								<ul><li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
 									<div class="bg-${cssStatus(status)}">
-										<span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)} small-font">[ ${step.evalStatus.asInstanceOf[Failed].timestamp} ] - ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</span>
+										<span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)} small-font">${step.evalStatus.asInstanceOf[Failed].timestamp} <span class="caret-right"></span>${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</span>
 									</div>
 								</li></ul>""" else ""}
 							</li>"""
@@ -325,7 +323,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  						${if (!step.attachments.isEmpty) s"""
 								<div class="dropdown bg-${cssStatus(status)}">
 								  <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-									  <strong><em>attachments</em></strong>
+									  <strong>attachments</strong>
 						  		  <span class="caret"></span>
 					 			  </button>
 								  <ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""

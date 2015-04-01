@@ -252,7 +252,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       Some(feature7a)
     )
     
-    when(mockInterpreter.name).thenReturn("gwen")
+    when(mockInterpreter.implName).thenReturn("gwen")
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, Nil)))
     when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, Nil)))

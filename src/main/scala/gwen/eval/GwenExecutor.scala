@@ -17,11 +17,8 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.Option.option2Iterable
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.UserOverrides
@@ -29,6 +26,7 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.report.ReportGenerator
 import gwen.report.html.HtmlReportGenerator
+import gwen.GwenInfo
 
 /**
   * Executes user provided options on the given interpreter.
@@ -50,7 +48,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       FeatureStream.readAll(options.paths) match {
         case featureStream @ _ #:: _ =>
           val reportGenerator = options.reportDir map { reportDir =>
-            new HtmlReportGenerator(reportDir, interpreter.name)
+            new HtmlReportGenerator(reportDir)
           }
           val results = {
             if (options.parallel) {
@@ -62,7 +60,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           val summary = results.foldLeft(FeatureSummary()) (_+_._1)
           reportGenerator foreach {
             val reports = results.flatMap { case (_, report) => report }
-            _.reportSummary(summary, reports)
+            _.reportSummary(interpreter, summary, reports)
           }
           EvalStatus(summary.featureResults.map(_.evalStatus)) tap { status =>
             printStatus(summary, status)
@@ -103,7 +101,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       try {
         if (envOpt.isDefined) { interpreter.reset(env) }
         val result = interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.tags, env)
-        val report = result.flatMap(res => reportGenerator.map(_.reportDetail(res)))
+        val report = result.flatMap(res => reportGenerator.map(_.reportDetail(interpreter, res)))
         result.map((_, report))
       } finally {
         if (!envOpt.isDefined) { interpreter.close(env) }

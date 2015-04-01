@@ -17,12 +17,11 @@
 package gwen.report.html
 
 import java.io.File
-
 import scala.reflect.io.Path
-
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.report.ReportGenerator
+import gwen.GwenInfo
 
 /**
   * Generates a HTML evaluation report. The report includes a feature
@@ -30,8 +29,8 @@ import gwen.report.ReportGenerator
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val targetDir: File, val interpreterName: String) 
-  extends ReportGenerator(targetDir, interpreterName, "feature-summary", "html") 
+class HtmlReportGenerator(val targetDir: File) 
+  extends ReportGenerator(targetDir, "feature-summary", "html") 
   with HtmlReportFormatter {
 
   // delete any previously generated reports

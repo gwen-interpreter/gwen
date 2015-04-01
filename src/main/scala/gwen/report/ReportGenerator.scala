@@ -18,17 +18,15 @@ package gwen.report
 
 import java.io.BufferedInputStream
 import java.io.File
-
 import scala.io.Source
 import scala.reflect.io.Path
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
+import gwen.GwenInfo
 
 /**
   * Base class for report generators.
@@ -37,7 +35,6 @@ import gwen.eval.FeatureSummary
   */
 class ReportGenerator (
     private val targetDir: File, 
-    private val interpreterName: String, 
     private val summaryFilePrefix: String, 
     private val fileExtension: String) extends LazyLogging {
   formatter: ReportFormatter => 
@@ -52,33 +49,33 @@ class ReportGenerator (
     * 
     * @param spec the feature spec to report
     */
-  final def reportDetail(result: FeatureResult): File = {
+  final def reportDetail(info: GwenInfo, result: FeatureResult): File = {
     val featureReportFile = createReportFile(createReportDir(reportDir, result.spec), "", result.spec)
     val metaReportFiles = result.metaResults.zipWithIndex map { case (res, idx) => 
-      (reportMetaDetail(res, featureReportFile, s"${createReportFileName(result.spec)}.${idx + 1}.")) 
+      (reportMetaDetail(info, res, featureReportFile, s"${createReportFileName(result.spec)}.${idx + 1}.")) 
     }
-    reportFeatureDetail(result, featureReportFile, metaReportFiles)
+    reportFeatureDetail(info, result, featureReportFile, metaReportFiles)
   }
   
-  private final def reportMetaDetail(result: FeatureResult, featureReportFile: File, prefix: String): File =
+  private final def reportMetaDetail(info: GwenInfo, result: FeatureResult, featureReportFile: File, prefix: String): File =
     createReportFile(featureReportFile.getParentFile(), prefix, result.spec) tap { file => 
       logger.info(s"Generating meta detail report [${result.spec.feature.name}]..")
       file.writeText(
         formatDetail(
-          interpreterName, 
+          info, 
           result, 
           Map(), 
           List(("Summary", s"../${summaryFileName}"), ("Feature", featureReportFile.getName()))))
       logger.info(s"Meta detail report generated: ${file.getAbsolutePath()}")
     }
   
-  private final def reportFeatureDetail(result: FeatureResult, featureReportFile: File, metaReportFiles: List[File]): File = 
+  private final def reportFeatureDetail(info: GwenInfo, result: FeatureResult, featureReportFile: File, metaReportFiles: List[File]): File = 
     featureReportFile tap { file =>
       val spec = result.spec
       logger.info(s"Generating feature detail report [${spec.feature.name}]..")
       file.writeText(
         formatDetail(
-          interpreterName, 
+          info, 
           result, 
           (result.metaResults zip metaReportFiles).toMap, 
           List(("Summary", s"../${summaryFileName}"))))
@@ -95,13 +92,13 @@ class ReportGenerator (
     * @param summary the feature summary to report
     * @param featureReportFiles list of feature reports
     */
-  final def reportSummary(summary: FeatureSummary, featureReportFiles: List[File]): Option[File] =
+  final def reportSummary(info: GwenInfo, summary: FeatureSummary, featureReportFiles: List[File]): Option[File] =
     if (!summary.featureResults.isEmpty) {
       Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
         file.writeText(
           formatSummary(
-            interpreterName,
+            info,
             summary,
             (summary.featureResults zip featureReportFiles).toMap))
         logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
