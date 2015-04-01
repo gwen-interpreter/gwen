@@ -29,6 +29,8 @@ import gwen.dsl.Passed
 class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
 
   private def createApp(options: GwenOptions, interpreter: GwenInterpreter[EnvContext], repl: GwenREPL[EnvContext]) = {
+    when(interpreter.implName).thenReturn("")
+    when(interpreter.implVersion).thenReturn("")
     new GwenApp(interpreter) {
       override private[eval] def createRepl(env: EnvContext): GwenREPL[EnvContext] = repl
     }
