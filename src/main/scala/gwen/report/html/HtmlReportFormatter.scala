@@ -229,7 +229,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 							<tbody class="summary">${
                 (results map { result => 
                   val report = featureReports(result)
-                  formatSummaryLine(result, s"${report.getParentFile().getName()}${java.io.File.separator}${report.getName()}")
+                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}")
                 }).mkString}
 							</tbody>
 						</table>
