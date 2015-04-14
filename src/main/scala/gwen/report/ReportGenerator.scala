@@ -42,7 +42,12 @@ class ReportGenerator (
   private val summaryFileName = s"${summaryFilePrefix}.${fileExtension}"
   
   /** Lazily creates and returns the target report directory. */
-  private[report] lazy val reportDir = new File(Path(targetDir).createDirectory().path)
+  private[report] lazy val reportDir = {
+    if (targetDir.exists) {
+      targetDir.renameTo(new File(s"${targetDir.getAbsolutePath()}-${System.currentTimeMillis()}"))
+    }
+    new File(Path(targetDir).createDirectory().path)
+  }
   
   /**
     * Must be implemented to generate and return a detail feature report.
