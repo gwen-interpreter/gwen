@@ -33,13 +33,6 @@ class HtmlReportGenerator(val targetDir: File)
   extends ReportGenerator(targetDir, "feature-summary", "html") 
   with HtmlReportFormatter {
 
-  // delete any previously generated reports
-  if (targetDir.exists()) {
-    targetDir.listFiles().filter { file => 
-      val name = file.getName
-      name.endsWith(".feature.html") || name.endsWith(".meta.html") || name == "index.html" || name == "feature-summary.html" || name =="resources" || name =="attachments"   } foreach { _.deleteFile() }
-  }
-  
   // copy in CSS files (if they don't already exist)
   new File(Path(new File(reportDir, "resources/css")).createDirectory().path) tap { dir =>
     copyClasspathTextResourceToFile("/gwen/report/html/css/gwen.css", dir)
