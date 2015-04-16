@@ -140,7 +140,7 @@ object GwenOptions {
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }
-          Settings.loadAll(opt.properties.reverse)
+          Settings.loadAll(opt.properties)
         }
       }).getOrElse(sys.error("Failed to parse gwen arguments"))
     )
