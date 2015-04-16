@@ -53,10 +53,8 @@ object Settings {
     }
     props.entrySet() foreach { entry =>
       val key = entry.getKey().asInstanceOf[String]
-      if (!sys.props.contains(key)) {
-        val value = resolve(props.getProperty(key), props)
-        sys.props += ((key, value))
-      }
+      val value = resolve(props.getProperty(key), props)
+      sys.props += ((key, value))
     }
   }
   
