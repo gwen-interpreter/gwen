@@ -34,4 +34,13 @@ class SettingsTest extends FlatSpec with Matchers {
     
     Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
   }
+  
+  "nested properties" should "resolve" in {
+    val props = new Properties()
+    props.put("prop.host", "localhost")
+    sys.props.put("prop.host.port", "${prop.host}:8090")
+    props.put("prop.url", "http://${prop.host.port}/howdy")
+    
+    Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
+  }
 }

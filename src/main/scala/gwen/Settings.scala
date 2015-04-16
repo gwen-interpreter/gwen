@@ -60,7 +60,6 @@ object Settings {
     }
   }
   
-  @tailrec
   private[gwen] def resolve(value: String, props: Properties): String = value match {
     case InlineProperty(key) =>
       val inline = if (props.containsKey(key)) {
@@ -68,7 +67,11 @@ object Settings {
       } else {
         sys.props.get(key).getOrElse(sys.error(s"Property not found: $key"))
       }
-      resolve(value.replaceAll("""\$\{""" + key + """\}""", inline), props)
+      val resolved = inline match {
+        case InlineProperty(_) => resolve(inline, props)
+        case _ => inline
+      }
+      resolve(value.replaceAll("""\$\{""" + key + """\}""", resolved), props)
     case _ => value
   }
   
