@@ -18,6 +18,7 @@ package gwen.eval
 
 import gwen.dsl.FeatureSpec
 import gwen.dsl.Tag
+import gwen.Predefs.Kestrel
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -30,6 +31,8 @@ import gwen.dsl.Tag
   */
 object TagsFilter {
 
+  private val DefaultTags = List((Tag("Ignore"), false))
+  
   /**
     * Filters a feature using the given include/exclude tag filters.
     * 
@@ -38,23 +41,22 @@ object TagsFilter {
     * @return None if the given feature does not have any scenarios that satisfy all tags; 
     *         Some otherwise (with only the scenarios that do)
     */
-  def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = 
-    tagFilters match {
-      case Nil => Some(spec)
-      case _ => 
-        spec.scenarios flatMap { scenario =>
-          val effectiveTags = spec.feature.tags ++ scenario.tags
-          val allSatisfied = tagFilters.foldLeft(true) { 
-            case (satisfied, (tag, include)) =>
-              val hasTag = effectiveTags.contains(tag)
-              satisfied && ((include && hasTag) || (!include && !hasTag))
-          }
-          if (allSatisfied) Some(scenario)
-          else None
-        } match {
-          case Nil => None
-          case scenarios => Some(FeatureSpec(spec.feature, spec.background, scenarios, None, Nil))
-        }
+  def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
+    val filters = tagFilters ++ DefaultTags
+    println(filters)
+    spec.scenarios flatMap { scenario =>
+      val effectiveTags = spec.feature.tags ++ scenario.tags
+      val allSatisfied = filters.foldLeft(true) { 
+        case (satisfied, (tag, include)) =>
+          val hasTag = effectiveTags.contains(tag)
+          satisfied && ((include && hasTag) || (!include && !hasTag))
+      }
+      if (allSatisfied) Some(scenario)
+      else None
+    } match {
+      case Nil => None
+      case scenarios => Some(FeatureSpec(spec.feature, spec.background, scenarios, None, Nil))
     }
+  }
   
 }

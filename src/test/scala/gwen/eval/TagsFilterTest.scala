@@ -136,4 +136,22 @@ class TagsFilterTest extends FlatSpec with Matchers with SpecParser {
       }
   }
   
+  "@Ignore tag" should "should be excluded by default" in {
+    val source = parse(featureString + """
+      @Ignore
+      Scenario: Work unit 5
+          Given I do work 5""").get
+      TagsFilter.filter(source, Nil) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (4)
+          scenarios(0).name should be ("Work unit 1")
+          scenarios(1).name should be ("Work unit 2")
+          scenarios(2).name should be ("Work unit 3")
+          scenarios(3).name should be ("Work unit 4")
+          
+        case None => fail("feature expected")
+      }
+  }
+  
 }
