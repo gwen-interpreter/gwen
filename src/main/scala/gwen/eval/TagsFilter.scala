@@ -43,7 +43,6 @@ object TagsFilter {
     */
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
     val filters = tagFilters ++ DefaultTags
-    println(filters)
     spec.scenarios flatMap { scenario =>
       val effectiveTags = spec.feature.tags ++ scenario.tags
       val allSatisfied = filters.foldLeft(true) { 
