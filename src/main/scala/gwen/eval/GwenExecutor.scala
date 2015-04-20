@@ -27,6 +27,7 @@ import gwen.dsl.Failed
 import gwen.report.ReportGenerator
 import gwen.report.html.HtmlReportGenerator
 import gwen.GwenInfo
+import gwen.dsl.FeatureSpec
 
 /**
   * Executes user provided options on the given interpreter.
@@ -47,21 +48,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     try {
       FeatureStream.readAll(options.paths) match {
         case featureStream @ _ #:: _ =>
-          val reportGenerator = options.reportDir map { reportDir =>
-            new HtmlReportGenerator(reportDir)
-          }
-          val results = {
-            if (options.parallel) {
-              featureStream.par flatMap (executeFeatureUnits(options, _, reportGenerator, optEnv))
-            } else {
-              executeFeatureUnits(options, featureStream.flatten, reportGenerator, optEnv)
-            }
-          }.toList
-          val summary = results.foldLeft(FeatureSummary()) (_+_._1)
-          reportGenerator foreach {
-            val reports = results.flatMap { case (_, report) => report }
-            _.reportSummary(interpreter, summary, reports)
-          }
+          val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
           EvalStatus(summary.featureResults.map(_.evalStatus)) tap { status =>
             printStatus(summary, status)
           }
@@ -95,18 +82,52 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
     */
-  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], reportGenerator: Option[ReportGenerator], envOpt: Option[T]): Stream[(FeatureResult, Option[File])] = 
-    featureStream.flatMap { unit =>
-      val env = envOpt.getOrElse(interpreter.initialise(options))
-      try {
-        if (envOpt.isDefined) { interpreter.reset(env) }
-        val result = interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.tags, env)
-        val report = result.flatMap(res => reportGenerator.map(_.reportDetail(interpreter, res)))
-        result.map((_, report))
-      } finally {
-        if (!envOpt.isDefined) { interpreter.close(env) }
+  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
+    val reportGenerator = options.reportDir map { reportDir =>
+      new HtmlReportGenerator(reportDir)
+    }
+    if (options.parallel) {
+      val results = featureStream.par.flatMap { unit =>
+        evaluateUnit(options, envOpt, reportGenerator, unit) { specs => 
+          specs match { 
+            case Nil => None
+            case _ => Some(toFeatureResult(reportGenerator, specs))
+          }
+        }
+      }
+      results.foldLeft(FeatureSummary()) (_+_) tap { summary => 
+        reportGenerator foreach { _.reportSummary(interpreter, summary) }
+      }
+    } else {
+      featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
+        evaluateUnit(options, envOpt, reportGenerator, unit) { specs =>
+          specs match { 
+            case Nil => summary
+            case specs => 
+              val result = toFeatureResult(reportGenerator, specs)
+              summary + result tap { accSummary =>
+                if (!options.parallel) {
+                  reportGenerator foreach { _.reportSummary(interpreter, accSummary) }
+                }
+              }
+          }
+        }
       }
     }
+  }
+  
+  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], reportGenerator: Option[ReportGenerator], unit: FeatureUnit)(f: (List[FeatureSpec] => U)): U = {
+    val env = envOpt.getOrElse(interpreter.initialise(options))
+    try {
+      if (envOpt.isDefined) { interpreter.reset(env) }
+      f(interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.tags, env))
+    } finally {
+      if (!envOpt.isDefined) { interpreter.close(env) }
+    }
+  }
+    
+  private def toFeatureResult(reportGenerator: Option[ReportGenerator], specs: List[FeatureSpec]): FeatureResult = 
+    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(new FeatureResult(specs.head, specs.map(new FeatureResult(_, Nil, None)), None))
   
   private def printStatus(summary: FeatureSummary, status: EvalStatus) {
     println

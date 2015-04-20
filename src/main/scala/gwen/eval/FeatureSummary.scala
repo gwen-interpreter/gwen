@@ -17,9 +17,9 @@
 package gwen.eval
 
 import java.util.Date
-
 import gwen.dsl.FeatureSpec
 import gwen.dsl.StatusKeyword
+import java.io.File
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -34,6 +34,11 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
   
   val timestamp = new Date()
   
+  /** 
+    * Adds the given feature result to the current summary (accumulates). 
+    * 
+    * @param featureResult the feature result to add
+    */
   def +(featureResult: FeatureResult) =
     new FeatureSummary(
       this.featureResults ++ List(featureResult),
@@ -67,8 +72,8 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
 /** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(spec: FeatureSpec, metaResults: List[FeatureResult]): FeatureSummary =
-    FeatureSummary() + new FeatureResult(spec, metaResults)
+  def apply(spec: FeatureSpec, metaResults: List[FeatureResult], report: Option[File]): FeatureSummary =
+    FeatureSummary() + new FeatureResult(spec, metaResults, report)
 }
 
 /**
@@ -76,8 +81,9 @@ object FeatureSummary {
   * 
   * @param spec the evaluated feature
   * @param metaResults the evaluated meta results
+  * @param report the list of report
   */
-class FeatureResult(val spec: FeatureSpec, val metaResults: List[FeatureResult]) {
+class FeatureResult(val spec: FeatureSpec, val metaResults: List[FeatureResult], val report: Option[File]) {
   val timestamp = new Date()
   def featureName = spec.feature.name
   def featureFile = spec.featureFile 

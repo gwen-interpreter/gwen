@@ -52,60 +52,59 @@ class ReportGenerator (
   /**
     * Must be implemented to generate and return a detail feature report.
     * 
-    * @param spec the feature spec to report
+    * @param info the gwen implementation info
+    * @param specs the list of evaluated specs (head = feature spec, tail = meta specs)
+    * @return the reported feature result
     */
-  final def reportDetail(info: GwenInfo, result: FeatureResult): File = {
-    val featureReportFile = createReportFile(createReportDir(reportDir, result.spec), "", result.spec)
-    val metaReportFiles = result.metaResults.zipWithIndex map { case (res, idx) => 
-      (reportMetaDetail(info, res, featureReportFile, s"${createReportFileName(result.spec)}.${idx + 1}.")) 
+  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec]): FeatureResult = {
+    val (featureSpec::metaSpecs) = specs
+    val featureReportFile = createReportFile(createReportDir(reportDir, featureSpec), "", featureSpec)
+    val metaResults = metaSpecs.zipWithIndex map { case (res, idx) => 
+      (reportMetaDetail(info, res, featureReportFile, s"${createReportFileName(featureSpec)}.${idx + 1}.")) 
     }
-    reportFeatureDetail(info, result, featureReportFile, metaReportFiles)
+    reportFeatureDetail(info, featureSpec, featureReportFile, metaResults)
   }
   
-  private final def reportMetaDetail(info: GwenInfo, result: FeatureResult, featureReportFile: File, prefix: String): File =
-    createReportFile(featureReportFile.getParentFile(), prefix, result.spec) tap { file => 
-      logger.info(s"Generating meta detail report [${result.spec.feature.name}]..")
+  private final def reportMetaDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, prefix: String): FeatureResult = {
+    val file = createReportFile(featureReportFile.getParentFile(), prefix, spec) 
+    logger.info(s"Generating meta detail report [${spec.feature.name}]..")
+    new FeatureResult(spec, Nil, Some(file)) tap { metaResult =>
       file.writeText(
         formatDetail(
           info, 
-          result, 
-          Map(), 
+          metaResult, 
           List(("Summary", s"../${summaryFileName}"), ("Feature", featureReportFile.getName()))))
       logger.info(s"Meta detail report generated: ${file.getAbsolutePath()}")
     }
+  }
   
-  private final def reportFeatureDetail(info: GwenInfo, result: FeatureResult, featureReportFile: File, metaReportFiles: List[File]): File = 
-    featureReportFile tap { file =>
-      val spec = result.spec
-      logger.info(s"Generating feature detail report [${spec.feature.name}]..")
-      file.writeText(
+  private final def reportFeatureDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]): FeatureResult = { 
+    logger.info(s"Generating feature detail report [${spec.feature.name}]..")
+    new FeatureResult(spec, metaResults, Some(featureReportFile)) tap { featureResult =>
+      featureReportFile.writeText(
         formatDetail(
           info, 
-          result, 
-          (result.metaResults zip metaReportFiles).toMap, 
+          featureResult, 
           List(("Summary", s"../${summaryFileName}"))))
       val attachmentsDir = new File(Path(new File(featureReportFile.getParentFile(), "attachments")).createDirectory().path)
       spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
         new File(attachmentsDir, file.getName()).writeFile(file)
       }
-      logger.info(s"Feature detail report generated: ${file.getAbsolutePath()}")
+      logger.info(s"Feature detail report generated: ${featureReportFile.getAbsolutePath()}")
     }
+  }
   
   /**
     * Must be implemented to generate and return a summary report file.
     * 
+    * @param info the gwen info
     * @param summary the feature summary to report
-    * @param featureReportFiles list of feature reports
     */
-  final def reportSummary(info: GwenInfo, summary: FeatureSummary, featureReportFiles: List[File]): Option[File] =
-    if (!summary.featureResults.isEmpty) {
+  final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
+    if (!summary.featureResults.map(_.report).isEmpty) {
       Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
-        file.writeText(
-          formatSummary(
-            info,
-            summary,
-            (summary.featureResults zip featureReportFiles).toMap))
+        file.writeText(formatSummary(info, summary))
         logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
       })
     } else {

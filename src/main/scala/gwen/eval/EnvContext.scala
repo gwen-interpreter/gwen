@@ -17,9 +17,7 @@
 package gwen.eval
 
 import java.io.File
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
@@ -29,6 +27,8 @@ import gwen.dsl.Step
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import gwen.dsl.EvalStatus
+import gwen.dsl.Pending
 
 
 /**
@@ -94,9 +94,9 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @return the step definition if a match is found; false otherwise
     */
   def getStepDef(expression: String): Option[Scenario] = 
-    stepDefs.get(expression) collect { case Scenario(tags, expression, _, steps) => 
-      Scenario(tags, expression, steps map { step => 
-        Step(step.keyword, step.expression) tap { _.pos = step.pos }
+    stepDefs.get(expression) collect { case s @ Scenario(tags, expression, _, steps) => 
+      Scenario(s.pos, tags, expression, steps map { step => 
+        Step(step.pos, step.keyword, step.expression, Pending, Nil)
       }) 
     }
   

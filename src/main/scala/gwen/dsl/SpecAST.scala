@@ -18,6 +18,8 @@ package gwen.dsl
 
 import scala.util.parsing.input.Positional
 import java.io.File
+import gwen.Predefs.Kestrel
+import scala.util.parsing.input.Position
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -124,6 +126,10 @@ case class Background(name: String, steps: List[Step]) extends SpecNode with Pos
   
 }
 
+object Background {
+  def apply(pos: Position, name: String, steps: List[Step]) = new Background(name, steps) tap { _.pos = pos }
+}
+
 /**
   * Captures a gherkin scenario.
   *
@@ -152,8 +158,9 @@ case class Scenario(tags: Set[Tag], name: String, background: Option[Background]
   
 }
 object Scenario {
-  def apply(tags: Set[Tag], name: String, steps: List[Step]) = new Scenario(tags, name, None, steps)
-  def apply(name: String, background: Option[Background], steps: List[Step]) = new Scenario(Set(), name, background, steps)
+  def apply(pos: Position, tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) = new Scenario(tags, name, background, steps) tap { _.pos = pos }
+  def apply(pos: Position, tags: Set[Tag], name: String, steps: List[Step]) = new Scenario(tags, name, None, steps) tap { _.pos = pos }
+  def apply(pos: Position, name: String, background: Option[Background], steps: List[Step]) = new Scenario(Set(), name, background, steps) tap { _.pos = pos }
 }
 
 /**
@@ -204,4 +211,9 @@ case class Step(
   /** Returns a string representation of this step. */
   override def toString = s"$keyword $expression"
   
+}
+
+object Step {
+  def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus, attachments: List[(String, File)]) =
+    new Step(keyword, expression, status, attachments) tap { _.pos = pos }
 }

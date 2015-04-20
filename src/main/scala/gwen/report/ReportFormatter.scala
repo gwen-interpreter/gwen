@@ -26,20 +26,18 @@ trait ReportFormatter {
   /**
     * Formats the feature detail report.
     * 
-    * @param info the gwen implementaiton info
+    * @param info the gwen implementation info
     * @param result the feature result
-    * @param metaReports the generated meta reports keyed by meta result
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  def formatDetail(info: GwenInfo, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String
+  def formatDetail(info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, String)]): String
   
   /**
     * Formats the feature summary report.
     * 
-    * @param info the gwen implementaiton info
+    * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
-    * @param featureReports the generated feature reports keyed by feature result
     */
-  def formatSummary(info: GwenInfo, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String
+  def formatSummary(info: GwenInfo, summary: FeatureSummary): String
   
 }

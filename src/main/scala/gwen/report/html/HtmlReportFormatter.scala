@@ -46,10 +46,9 @@ trait HtmlReportFormatter extends ReportFormatter {
     * 
     * @param info the gwen implementation info
     * @param result the feature result to report
-    * @param metaReports the generated meta reports keyed by meta result
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(info: GwenInfo, result: FeatureResult, metaReports: Map[FeatureResult, File], breadcrumbs: List[(String, String)]): String = {
+  override def formatDetail(info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, String)]): String = {
     
     val spec = result.spec
     val metaResults = result.metaResults 
@@ -117,7 +116,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, metaReports(result).getName())}).mkString}
+							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName())}).mkString}
 							</tbody>
 						</table>
 					</li>
@@ -170,9 +169,8 @@ trait HtmlReportFormatter extends ReportFormatter {
     * 
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
-    * @param featureReports the generated feature reports keyed by feature result
     */
-  override def formatSummary(info: GwenInfo, summary: FeatureSummary, featureReports: Map[FeatureResult, File]): String = {
+  override def formatSummary(info: GwenInfo, summary: FeatureSummary): String = {
     
     val title = "Feature Summary Report";
     val status = EvalStatus(summary.featureResults.map(_.evalStatus)).status
@@ -228,7 +226,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 						<table width="100%">
 							<tbody class="summary">${
                 (results map { result => 
-                  val report = featureReports(result)
+                  val report = result.report.get
                   formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}")
                 }).mkString}
 							</tbody>
@@ -308,6 +306,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
 								<div class="bg-${cssStatus(status)}">
 									<span class="pull-right">${durationOrStatus(step.evalStatus)}</span>
+									<div class="line-no"><small>${step.pos.line}</small></div>
 									<div class="keyword-right"><strong>${step.keyword}</strong></div> ${escape(step.expression)}
 									${formatAttachments(step, status)}
 								</div>

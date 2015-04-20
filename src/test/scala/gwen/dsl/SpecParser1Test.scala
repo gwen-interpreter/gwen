@@ -74,14 +74,14 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
         }
         featureSpec.scenarios should be {
           List(
-            Scenario("Evaluation", None,
+            Scenario(Set[Tag](), "Evaluation", None,
               List(
                 Step(StepKeyword.Given, "any software behavior"),
                 Step(StepKeyword.When,  "expressed in Gherkin"),
                 Step(StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario("The useless test", None, 
+            Scenario(Set[Tag](), "The useless test", None, 
               List(
                 Step(StepKeyword.Given, "I am a test"),
                 Step(StepKeyword.And,   "I am generated from code"),
@@ -91,7 +91,7 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
                 Step(StepKeyword.And,   "that's why I'm useless")
               )
             ),
-            Scenario("The useful test", None, 
+            Scenario(Set[Tag](), "The useful test", None, 
               List(
                 Step(StepKeyword.Given, "I am a test"),
                 Step(StepKeyword.And,   "I am written by a human"),

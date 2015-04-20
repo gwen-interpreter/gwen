@@ -177,6 +177,13 @@ table tbody.summary td {
   width: 45px;
 }
 
+.line-no {
+  text-align: right; 
+  display: inline-table; 
+  width: 30px;
+  color: gray;
+}
+
 .caret-left {
     border: 4px solid transparent;
     display: inline-block;

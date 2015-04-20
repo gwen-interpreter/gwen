@@ -37,7 +37,7 @@ class EnvContextTest extends FlatSpec with Matchers {
       Step(StepKeyword.And, """I submit the search field""")
     )
     
-    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", steps)
+    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -53,7 +53,7 @@ class EnvContextTest extends FlatSpec with Matchers {
       Step(StepKeyword.And, """I submit the search field""")
     )
     
-    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", steps)
+    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     

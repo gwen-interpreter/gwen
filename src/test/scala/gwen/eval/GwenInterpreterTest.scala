@@ -36,6 +36,7 @@ import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import org.scalatest.FlatSpec
 import org.mockito.ArgumentCaptor
+import gwen.dsl.Tag
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -117,7 +118,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
-    val stepdef = Scenario("I am a valid stepdef", None, List(step1))
+    val stepdef = Scenario(Set[Tag](), "I am a valid stepdef", None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
@@ -171,10 +172,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.resolve(step4)).thenReturn(step4)
     val result = interpreter(mockEnv).interpretFeature(featureFile, Nil, Nil, mockEnv)
     result match {
-      case Some(feature) =>
+      case feature::_ =>
         feature.evalStatus.status should be (StatusKeyword.Passed)
-      case None => 
-        fail("Some(feature) expected")
+      case Nil => 
+        fail("List(feature) expected")
     }
   }
   
@@ -196,6 +197,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val metaFile = writeToFile(metaString, createFile("test2.meta"))
     val featureFile = writeToFile(featureString, createFile("test2.feature"))
     val stepdef = Scenario(
+      Set[Tag](),
       "the butterfly flaps its wings", 
       None, 
       List(
@@ -222,10 +224,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.resolve(step5)).thenReturn(step5)
     val result = interpreter(mockEnv).interpretFeature(featureFile, List(metaFile), Nil, mockEnv)
     result match {
-      case Some(feature) =>
+      case feature::_ =>
         feature.evalStatus.status should be (StatusKeyword.Passed)
-      case None => 
-        fail("Some(feature) expected")
+      case Nil => 
+        fail("List(feature) expected")
     }
   }
   

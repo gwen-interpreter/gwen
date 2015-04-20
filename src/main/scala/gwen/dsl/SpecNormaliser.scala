@@ -46,18 +46,19 @@ trait SpecNormaliser {
         case Some(_) => 
           spec.scenarios map { scenario => 
             Scenario(
+                scenario.pos,
                 scenario.tags, 
                 scenario.name,
                 if (scenario.isStepDef) {
                   None
                 } else {
                   spec.background map { background =>
-                    Background(background.name, background.steps map { step => 
-                      Step(step.keyword, step.expression) tap { s => s.pos = step.pos }
-                    }) tap { b => b.pos = background.pos }
+                    Background(background.pos, background.name, background.steps map { step => 
+                      Step(step.pos, step.keyword, step.expression, Pending, Nil)
+                    })
                   }
                 }, 
-                scenario.steps) tap { s => s.pos = scenario.pos }
+                scenario.steps)
           }
       },
       featureFile

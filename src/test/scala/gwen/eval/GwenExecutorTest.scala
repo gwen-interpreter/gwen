@@ -44,7 +44,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
   val feature = new FeatureSpec(
       Feature("test-feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a test", Passed(10)))))
+      List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a test", Passed(10)))))
   )
   
   private def executor(mockInterpreter: GwenInterpreter[EnvContext]) = {
@@ -62,7 +62,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
+    when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -84,7 +84,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
+    when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -106,7 +106,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
+      List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
     )
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
@@ -114,7 +114,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val metas = UserOverrides.addUserMeta(List(meta3))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
+    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -138,14 +138,14 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
+      List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
     )
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
+    when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
     
@@ -165,7 +165,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta st ep", Failed(5, new Exception("failed"))))))
+      List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a meta st ep", Failed(5, new Exception("failed"))))))
     )
     
     val options = GwenOptions(batch = false, paths = List(dir4))
@@ -200,7 +200,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario1", List(Step(StepKeyword.Given, "I am a meta st ep", failedStatus))))
+      List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a meta st ep", failedStatus))))
     )
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
@@ -235,28 +235,28 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature6A = new FeatureSpec(
       Feature("test-feature-6a"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario6A", List(Step(StepKeyword.Given, "I am a test 6A", Passed(1000))))),
+      List(Scenario(Set[Tag](), "scenario6A", None, List(Step(StepKeyword.Given, "I am a test 6A", Passed(1000))))),
       Some(feature6a)
     )
     val feature6B = new FeatureSpec(
       Feature("test-feature-6b"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario6B", List(Step(StepKeyword.Given, "I am a test 6B", Passed(2000))))),
+      List(Scenario(Set[Tag](), "scenario6B", None, List(Step(StepKeyword.Given, "I am a test 6B", Passed(2000))))),
       Some(feature6b)
     )
     
     val feature7A = new FeatureSpec(
       Feature("test-feature-7a"), 
       None, 
-      List(Scenario(Set[Tag](), "scenario7A", List(Step(StepKeyword.Given, "I am a test 7A", Passed(3000))))),
+      List(Scenario(Set[Tag](), "scenario7A", None, List(Step(StepKeyword.Given, "I am a test 7A", Passed(3000))))),
       Some(feature7a)
     )
     
     when(mockInterpreter.implName).thenReturn("gwen")
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, Nil)))
-    when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, Nil)))
-    when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature7A, Nil)))
+    when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature6A))
+    when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature6B))
+    when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature7A))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
@@ -285,7 +285,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(Some(new FeatureResult(feature, Nil)))
+    when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = executor(mockInterpreter).execute(options)
     
