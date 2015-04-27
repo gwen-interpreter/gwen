@@ -152,11 +152,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated Gwen feature
     */
   private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureSpec], env: T, specType: SpecType.Value): List[FeatureSpec] = {
-    logger.info(("""|       
-                    |  _    
-                    | { \," """ + (if(SpecType.meta.equals(specType)) "Loading " else "Evaluating ") + specType + ": " + featureSpec.feature.name + """
-                    |{_`/   """ + featureSpec.featureFile.map("File: " + _.toString).getOrElse("") + """
-                    |   `   """).stripMargin)
+    (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
+      logger.info("");
+      featureSpec.featureFile.foreach { file =>
+        logger.info(s"${action} ${specType} file: ${file}")
+      }
+      logger.info(s"${action} ${specType}: ${featureSpec.feature.name}")
+    }
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
       None, 
@@ -343,17 +345,17 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param status the evaluation status
     * @return the logged status message
     */
-  private def logStatus(node: String, name: String, status: EvalStatus): String = {
-      s"$status $node: $name" tap { statusMsg =>
-        status match {
-          case Passed(_) | Loaded => 
-            logger.info(statusMsg)
-          case Failed(_, _) => 
-            logger.error(statusMsg)
-          case _ => 
-            logger.warn(statusMsg)
-        }
-      }
+  private def logStatus(node: String, name: String, status: EvalStatus) = {
+      logStatusMsg(s"$status $node: $name", status)
+  }
+  
+  private def logStatusMsg(msg: String, status: EvalStatus) = status match {
+    case Passed(_) | Loaded => 
+      logger.info(msg)
+    case Failed(_, _) => 
+      logger.error(msg)
+    case _ => 
+      logger.warn(msg)
   }
   
 }

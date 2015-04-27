@@ -18,6 +18,7 @@ package gwen.eval
 
 import java.io.File
 import scala.util.Try
+import gwen.GwenInfo
 import gwen.Predefs.Kestrel
 import gwen.dsl.Tag
 import gwen.Settings
@@ -46,7 +47,8 @@ case class GwenOptions(
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     metaFiles: List[File] = Nil, 
-    paths: List[File] = Nil) {
+    paths: List[File] = Nil,
+    args: Option[Array[String]] = None) {
 
   private[eval] def withUserOverrides() = new GwenOptions(
       batch,
@@ -55,8 +57,30 @@ case class GwenOptions(
       UserOverrides.addUserProperties(properties),
       tags,
       UserOverrides.addUserMeta(metaFiles),
-      paths
+      paths,
+      args
   )
+  
+  private[eval] def withArgs(args: Array[String]) = new GwenOptions(
+      batch,
+      parallel,
+      reportDir,
+      properties,
+      tags,
+      metaFiles,
+      paths,
+      Some(args)
+  )
+  
+  /**
+    * Gets the command and arguments used to invoke gwen.
+    * 
+    *  @param info the gwen implementation info
+    */
+  def command(info: GwenInfo) = args match {
+    case (Some(args)) => s"${info.implName}.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${args.mkString(" ")}"
+    case _ => ""
+  }
   
 }
     
@@ -67,7 +91,7 @@ object GwenOptions {
     * 
     * @param interpreterClassName the fully qualified interpreter class name
     */
-  private [eval] def parse(interpreterClassName: String, args: Array[String]): Try[GwenOptions] = {
+  def parse(interpreterClassName: String, args: Array[String]): Try[GwenOptions] = {
     
     val parser = new OptionParser[GwenOptions]("scala " + interpreterClassName) {
     
@@ -135,7 +159,7 @@ object GwenOptions {
     }
   
     Try (
-      (parser.parse(args, GwenOptions()).map(_.withUserOverrides()) tap { options =>
+      (parser.parse(args, GwenOptions()).map(_.withArgs(args)).map(_.withUserOverrides()) tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")

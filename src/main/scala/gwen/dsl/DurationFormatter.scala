@@ -50,7 +50,7 @@ object DurationFormatter {
           s"$acc ${formatter.format(unitValue)}$unitName"
         }
       }.trim.replaceFirst("^0+(?!$)", "")
-    } else ""
+    } else "~0ms"
   }
   
 }

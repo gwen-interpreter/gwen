@@ -27,6 +27,7 @@ import gwen.dsl.FeatureSpec
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
+import gwen.eval.GwenOptions
 
 /**
   * Base class for report generators.
@@ -34,7 +35,7 @@ import gwen.GwenInfo
   * @author Branko Juric
   */
 class ReportGenerator (
-    private val targetDir: File, 
+    private val options: GwenOptions, 
     private val summaryFilePrefix: String, 
     private val fileExtension: String) extends LazyLogging {
   formatter: ReportFormatter => 
@@ -43,6 +44,7 @@ class ReportGenerator (
   
   /** Lazily creates and returns the target report directory. */
   private[report] lazy val reportDir = {
+    val targetDir = options.reportDir.getOrElse(new File("target/reports"))
     if (targetDir.exists) {
       targetDir.renameTo(new File(s"${targetDir.getAbsolutePath()}-${System.currentTimeMillis()}"))
     }
@@ -104,7 +106,7 @@ class ReportGenerator (
     if (!summary.featureResults.map(_.report).isEmpty) {
       Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
-        file.writeText(formatSummary(info, summary))
+        file.writeText(formatSummary(options, info, summary))
         logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
       })
     } else {

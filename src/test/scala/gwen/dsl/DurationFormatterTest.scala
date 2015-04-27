@@ -23,8 +23,8 @@ import scala.concurrent.duration.Duration
 
 class DurationFormatterTest extends FlatSpec with Matchers with SpecParser {
 
-  "Zero duration" should "format to blank" in {
-    DurationFormatter.format(Duration.fromNanos(0)) should be ("")
+  "Zero duration" should "format to ~0ms" in {
+    DurationFormatter.format(Duration.fromNanos(0)) should be ("~0ms")
   }
   
   "1 millisecond duration" should "format to 1ms" in {

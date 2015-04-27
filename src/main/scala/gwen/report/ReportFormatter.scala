@@ -19,6 +19,7 @@ import java.io.File
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
+import gwen.eval.GwenOptions
 
 /** Trait for formatting the feature summary and detail reports. */
 trait ReportFormatter {
@@ -35,9 +36,10 @@ trait ReportFormatter {
   /**
     * Formats the feature summary report.
     * 
+    * @param options gwen command line options
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  def formatSummary(info: GwenInfo, summary: FeatureSummary): String
+  def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): String
   
 }

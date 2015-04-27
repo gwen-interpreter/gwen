@@ -44,6 +44,9 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     *               Some(env) to reuse an environment context for all, default is None)
     */
   def execute(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
+    if (options.args.isDefined) {
+    	logger.info(options.command(interpreter))
+    }
     val start = System.nanoTime
     try {
       FeatureStream.readAll(options.paths) match {
@@ -84,7 +87,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerator = options.reportDir map { reportDir =>
-      new HtmlReportGenerator(reportDir)
+      new HtmlReportGenerator(options)
     }
     if (options.parallel) {
       val results = featureStream.par.flatMap { unit =>
@@ -117,6 +120,11 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
   
   private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], reportGenerator: Option[ReportGenerator], unit: FeatureUnit)(f: (List[FeatureSpec] => U)): U = {
+    logger.info(("""|       
+                    |  _    
+                    | { \," Evaluating feature..
+                    |{_`/   """ + unit.featureFile.toString + """
+                    |   `   """).stripMargin)
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
@@ -127,13 +135,18 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
     
   private def toFeatureResult(reportGenerator: Option[ReportGenerator], specs: List[FeatureSpec]): FeatureResult = 
-    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(new FeatureResult(specs.head, specs.map(new FeatureResult(_, Nil, None)), None))
+    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(new FeatureResult(specs.head, specs.map(new FeatureResult(_, Nil, None)), None)) tap { result =>
+      val status = result.spec.evalStatus
+      logger.info("");
+      logger.info(s"${status} ${status.emoticon} ${result.timestamp}", status)
+      logger.info("");
+    }
   
   private def printStatus(summary: FeatureSummary, status: EvalStatus) {
     println
     println(summary.toString)
     println
-    println(status)
+    println(s"${status} ${status.emoticon} ${summary.timestamp}")
     println
   }
 }

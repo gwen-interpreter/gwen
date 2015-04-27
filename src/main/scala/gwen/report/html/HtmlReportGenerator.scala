@@ -22,6 +22,7 @@ import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.report.ReportGenerator
 import gwen.GwenInfo
+import gwen.eval.GwenOptions
 
 /**
   * Generates a HTML evaluation report. The report includes a feature
@@ -29,8 +30,8 @@ import gwen.GwenInfo
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val targetDir: File) 
-  extends ReportGenerator(targetDir, "feature-summary", "html") 
+class HtmlReportGenerator(val options: GwenOptions) 
+  extends ReportGenerator(options, "feature-summary", "html") 
   with HtmlReportFormatter {
 
   // copy in CSS files (if they don't already exist)

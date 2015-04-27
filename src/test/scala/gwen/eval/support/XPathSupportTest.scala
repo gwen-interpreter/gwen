@@ -22,7 +22,7 @@ import org.scalatest.Matchers
 class XPathSupportTest extends FlatSpec with Matchers with XPathSupport {
 
   val XmlSource = 
-    """<root><parent><name>P1</name><children><child><name>C1</name></child><child><name>C2</name></child></children></parent></root>"""
+    """<root><parent><name>P1</name><surname>O'Reilly</surname><children><child><name>C1</name></child><child><name>C2</name></child></children></parent></root>"""
  
   "root node" should "return root node" in {
     compact(evaluateXPath("root",XmlSource, XMLNodeType.node)) should be (XmlSource)
@@ -44,6 +44,10 @@ class XPathSupportTest extends FlatSpec with Matchers with XPathSupport {
   
   "root/parent/children/child[2]/name text" should "return second child name" in {
     compact(evaluateXPath("root/parent/children/child[2]/name",XmlSource, XMLNodeType.text)) should be ("C2")
+  }
+  
+  "match on surname with single quote" should "return surname node" in {
+    compact(evaluateXPath("""root/parent/surname[text()="O'Reilly"]""",XmlSource, XMLNodeType.text)) should be ("O'Reilly")
   }
   
   private def compact(source: String): String = source.replace("\r", "").split('\n').map(_.trim()).mkString
