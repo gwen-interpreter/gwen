@@ -45,7 +45,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     */
   def execute(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
     if (options.args.isDefined) {
-    	logger.info(options.command(interpreter))
+    	logger.info(options.commandString(interpreter))
     }
     val start = System.nanoTime
     try {

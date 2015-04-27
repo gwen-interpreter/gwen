@@ -26,31 +26,31 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser{
   
   "Valid features" should "parse" in {
 
-      parse("Feature:").get     should be (Feature(""))
-      parse("Feature:\n\n").get should be (Feature(""))
+      parse("Feature:").get     should be (Feature("", Nil))
+      parse("Feature:\n\n").get should be (Feature("", Nil))
     
-      parse(s"Feature: Let me show you a feature\n").get       should be (Feature("Let me show you a feature"))
-      parse(s"Feature:Let me show you a feature\n").get        should be (Feature("Let me show you a feature"))
-      parse(s"Feature\t:Let me show you a feature\n").get      should be (Feature("Let me show you a feature"))
-      parse(s"\tFeature\t:Let me show you a feature\n").get    should be (Feature("Let me show you a feature"))
-      parse(s"\tFeature\t:\tLet me show you a feature\n").get  should be (Feature("Let me show you a feature"))
+      parse(s"Feature: Let me show you a feature\n").get       should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature:Let me show you a feature\n").get        should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature\t:Let me show you a feature\n").get      should be (Feature("Let me show you a feature", Nil))
+      parse(s"\tFeature\t:Let me show you a feature\n").get    should be (Feature("Let me show you a feature", Nil))
+      parse(s"\tFeature\t:\tLet me show you a feature\n").get  should be (Feature("Let me show you a feature", Nil))
       
-      parse(s"Feature :Let me show you a feature\n").get should be (Feature("Let me show you a feature"))
+      parse(s"Feature :Let me show you a feature\n").get should be (Feature("Let me show you a feature", Nil))
       
-      parse(s"\tFeature:Let me show you a feature\n").get     should be (Feature("Let me show you a feature"))
-      parse(s"Feature:\tLet me show you a feature\n").get     should be (Feature("Let me show you a feature"))
-      parse(s"Feature:\tLet me show you a feature\t\n").get   should be (Feature("Let me show you a feature"))
-      parse(s"Feature:\tLet me show you a feature \n").get    should be (Feature("Let me show you a feature"))
-      parse(s"Feature:\tLet me show you a feature\t \n").get  should be (Feature("Let me show you a feature"))
+      parse(s"\tFeature:Let me show you a feature\n").get     should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature:\tLet me show you a feature\n").get     should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature:\tLet me show you a feature\t\n").get   should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature:\tLet me show you a feature \n").get    should be (Feature("Let me show you a feature", Nil))
+      parse(s"Feature:\tLet me show you a feature\t \n").get  should be (Feature("Let me show you a feature", Nil))
       
-      parse(s"Feature: Let me show you a Background feature\n").get       should be (Feature("Let me show you a Background feature"))
-      parse(s"Feature: Let me show you a Background: feature\n").get      should be (Feature("Let me show you a Background: feature"))
+      parse(s"Feature: Let me show you a Background feature\n").get       should be (Feature("Let me show you a Background feature", Nil))
+      parse(s"Feature: Let me show you a Background: feature\n").get      should be (Feature("Let me show you a Background: feature", Nil))
       
-      parse(s"Feature: Let me show you a Scenario feature\n").get       should be (Feature("Let me show you a Scenario feature"))
-      parse(s"Feature: Let me show you a Scenario: feature\n").get      should be (Feature("Let me show you a Scenario: feature"))
+      parse(s"Feature: Let me show you a Scenario feature\n").get       should be (Feature("Let me show you a Scenario feature", Nil))
+      parse(s"Feature: Let me show you a Scenario: feature\n").get      should be (Feature("Let me show you a Scenario: feature", Nil))
       
       StepKeyword.values foreach { keyword =>
-        parse(s"Feature: I contain a $keyword keyword\n").get should be (Feature(s"I contain a $keyword keyword"))
+        parse(s"Feature: I contain a $keyword keyword\n").get should be (Feature(s"I contain a $keyword keyword", Nil))
       }
   }
   

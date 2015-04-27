@@ -31,17 +31,11 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     
   printBanner("Welcome to ")
 
-  GwenOptions.parse(interpreter.getClass().getName(), args) match { 
-    case Success(options) =>
-      try {
-        System.exit(run(options))
-      } catch {
-        case e: Throwable =>
-          e.printStackTrace()
-          System.exit(1)
-      }
-    case Failure(error) =>
-      println(error.getMessage())
+  try {
+    System.exit(run(GwenOptions(interpreter.getClass, args)))
+  } catch {
+    case e: Throwable =>
+      e.printStackTrace()
       System.exit(1)
   }
   

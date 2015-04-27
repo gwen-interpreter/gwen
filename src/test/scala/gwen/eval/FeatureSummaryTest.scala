@@ -40,7 +40,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 1 passed scenario
     val feature1 = FeatureSpec(
-      Feature("feature1"), None, List(
+      Feature("feature1", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
@@ -64,7 +64,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 1 failed scenario
     val feature2 = FeatureSpec(
-      Feature("feature2"), None, List(
+      Feature("feature2", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Failed(3, new Exception())),
@@ -88,7 +88,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 2 passed scenarios
     val feature3 = FeatureSpec(
-      Feature("feature3"), None, List(
+      Feature("feature3", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
@@ -117,7 +117,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 1 skipped scenario
     val feature4 = FeatureSpec(
-      Feature("feature4"), None, List(
+      Feature("feature4", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Skipped),
           Step(StepKeyword.Given, "step 2", Skipped),
@@ -141,7 +141,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 1 pending scenario
     val feature5 = FeatureSpec(
-      Feature("feature5"), None, List(
+      Feature("feature5", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Pending),
           Step(StepKeyword.Given, "step 2", Pending))
@@ -164,7 +164,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     
     // add 4 passed and 1 failed scenario
     val feature6 = FeatureSpec(
-      Feature("feature6"), None, List(
+      Feature("feature6", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),

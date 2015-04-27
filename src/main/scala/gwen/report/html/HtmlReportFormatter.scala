@@ -208,7 +208,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">${if (options.args.isDefined) {s"""
 					<p>
 						<ul class="list-group bg-default"> 
-							<li class="list-group-item bg-default">${escape(options.command(info))}</li>
+							<li class="list-group-item bg-default">${escape(options.commandString(info))}</li>
 						</ul>
 					</p>"""} else ""}
 					<table width="100%" cellpadding="5">

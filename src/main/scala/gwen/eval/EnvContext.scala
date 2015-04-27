@@ -93,12 +93,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[Scenario] = 
-    stepDefs.get(expression) collect { case s @ Scenario(tags, expression, _, steps) => 
-      Scenario(s.pos, tags, expression, steps map { step => 
-        Step(step.pos, step.keyword, step.expression, Pending, Nil)
-      }) 
-    }
+  def getStepDef(expression: String): Option[Scenario] = stepDefs.get(expression)
   
   /**
     * Fail handler.

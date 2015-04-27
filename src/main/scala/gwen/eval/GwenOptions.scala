@@ -49,35 +49,13 @@ case class GwenOptions(
     metaFiles: List[File] = Nil, 
     paths: List[File] = Nil,
     args: Option[Array[String]] = None) {
-
-  private[eval] def withUserOverrides() = new GwenOptions(
-      batch,
-      parallel,
-      reportDir,
-      UserOverrides.addUserProperties(properties),
-      tags,
-      UserOverrides.addUserMeta(metaFiles),
-      paths,
-      args
-  )
-  
-  private[eval] def withArgs(args: Array[String]) = new GwenOptions(
-      batch,
-      parallel,
-      reportDir,
-      properties,
-      tags,
-      metaFiles,
-      paths,
-      Some(args)
-  )
   
   /**
-    * Gets the command and arguments used to invoke gwen.
+    * Gets the command string used to invoke gwen.
     * 
     *  @param info the gwen implementation info
     */
-  def command(info: GwenInfo) = args match {
+  def commandString(info: GwenInfo) = args match {
     case (Some(args)) => s"${info.implName}.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${args.mkString(" ")}"
     case _ => ""
   }
@@ -87,13 +65,14 @@ case class GwenOptions(
 object GwenOptions {
   
   /**
-    * Gets the command line options parser.
+    * Creates a new options object from the given command line arguments.
     * 
-    * @param interpreterClassName the fully qualified interpreter class name
+    * @param interpreterClass the interpreter implementation class
+    * @param args the command line arguments
     */
-  def parse(interpreterClassName: String, args: Array[String]): Try[GwenOptions] = {
+  def apply(interpreterClass: Class[_], args: Array[String]): GwenOptions = { 
     
-    val parser = new OptionParser[GwenOptions]("scala " + interpreterClassName) {
+    val parser = new OptionParser[GwenOptions]("scala " + interpreterClass.getName) {
     
       version("version") text("Prints the implementation version")
     
@@ -158,8 +137,17 @@ object GwenOptions {
     
     }
   
-    Try (
-      (parser.parse(args, GwenOptions()).map(_.withArgs(args)).map(_.withUserOverrides()) tap { options =>
+    (parser.parse(args, GwenOptions()).map { options => 
+      new GwenOptions(
+        options.batch,
+        options.parallel,
+        options.reportDir,
+        UserOverrides.addUserProperties(options.properties),
+        options.tags,
+        UserOverrides.addUserMeta(options.metaFiles),
+        options.paths,
+        Some(args)) 
+      } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.paths.isEmpty) {
             sys.error("No feature files and/or directories specified")
@@ -167,7 +155,6 @@ object GwenOptions {
           Settings.loadAll(opt.properties)
         }
       }).getOrElse(sys.error("Failed to parse gwen arguments"))
-    )
   }
   
 }

@@ -26,6 +26,7 @@ import scala.util.Success
 import scala.util.Try
 import scala.util.Failure
 import gwen.UserOverrides
+import gwen.sample.math.MathInterpreter
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -565,8 +566,9 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
   }
   
-  private def parseOptions(args: Array[String]): Try[GwenOptions] =
-    GwenOptions.parse("GwenInterpreter", args)
+  private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
+    GwenOptions(MathInterpreter.getClass, args)
+  }
     
   private def assertOptions(
     options: GwenOptions, 

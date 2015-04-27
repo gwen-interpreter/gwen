@@ -168,11 +168,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
             case Failed(_, _) =>
               if (GwenSettings.`gwen.feature.failfast`) {
                 Scenario(
-                  scenario.pos,
-                  scenario.tags, 
-                  scenario.name, 
-                  scenario.background.map(bg => Background(bg.pos, bg.name, bg.steps.map(step => Step(step.pos, step.keyword, step.expression, Skipped, step.attachments)))),
-                  scenario.steps.map(step => Step(step.pos, step.keyword, step.expression, Skipped, step.attachments))
+                  scenario, 
+                  scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
+                  scenario.steps.map(step => Step(step, Skipped, step.attachments))
                 )
               } else {
                   evaluateScenario(scenario, env)
@@ -203,8 +201,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     if (scenario.isStepDef) {
       logger.info(s"Loading StepDef: ${scenario.name}")
       env.addStepDef(scenario) 
-      Scenario(scenario.pos, scenario.tags, scenario.name, scenario.steps map { step =>
-        Step(step.pos, step.keyword, step.expression, Loaded, step.attachments)
+      Scenario(scenario, None, scenario.steps map { step =>
+        Step(step, Loaded, step.attachments)
       }) tap { scenario =>
         logStatus("StepDef", scenario.toString, scenario.evalStatus)
       }
@@ -212,17 +210,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
       logger.info(s"Evaluating Scenario: $scenario")
       (scenario.background map(evaluateBackground(_, env)) match {
         case None => 
-          Scenario(scenario.pos, scenario.tags, scenario.name, None, evaluateSteps(scenario.steps, env))
+          Scenario(scenario, None, evaluateSteps(scenario.steps, env))
         case Some(background) => 
           Scenario(
-            scenario.pos,
-            scenario.tags,
-            scenario.name,
+            scenario,
             Some(background),
             background.evalStatus match {
               case Passed(_) => evaluateSteps(scenario.steps, env)
               case _ => scenario.steps map { step =>
-                Step(step.pos, step.keyword, step.expression, Skipped, step.attachments)
+                Step(step, Skipped, step.attachments)
               }
             })
       }) tap { scenario =>
@@ -240,7 +236,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     */
   private def evaluateBackground(background: Background, env: T): Background = {
     logger.info(s"Evaluating Background: $background")
-    Background(background.pos, background.name, evaluateSteps(background.steps, env)) tap { bg =>
+    Background(background, evaluateSteps(background.steps, env)) tap { bg =>
       logStatus("Background", bg.toString, bg.evalStatus)
     }
   }
@@ -255,7 +251,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, _) => Step(step.pos, step.keyword, step.expression, Skipped, step.attachments)
+        case Failed(_, _) => Step(step, Skipped, step.attachments)
         case _ => evaluateStep(step, env)
       }) :: acc
   } reverse
@@ -281,7 +277,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         case (Some(stepDef)) =>
           logger.info(s"Evaluating StepDef: ${stepDef.name}")
           val steps = evaluateSteps(stepDef.steps, env)
-          Step(step.pos, step.keyword, step.expression, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
+          Step(step, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
             logger.info(s"StepDef evaluated: ${stepDef.name}")
           }
       }
@@ -303,11 +299,11 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     val start = System.nanoTime
     (evalFunction(step) match {
       case TrySuccess(step) => 
-        Step(step.pos, step.keyword, step.expression, Passed(System.nanoTime - start), env.attachments)
+        Step(step, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)
-        Step(step.pos, step.keyword, step.expression, failure, env.attachments)
+        Step(step, failure, env.attachments)
     }) tap { step =>
       env.resetAttachments
     }

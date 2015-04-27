@@ -105,7 +105,6 @@ case class Feature(tags: Set[Tag], name: String, narrative: List[String]) extend
   override def toString = name
 }
 object Feature {
-  def apply(name: String) = new Feature(Set(), name, Nil)
   def apply(name: String, narrative: List[String]) = new Feature(Set(), name, narrative)
 }
 
@@ -127,7 +126,7 @@ case class Background(name: String, steps: List[Step]) extends SpecNode with Pos
 }
 
 object Background {
-  def apply(pos: Position, name: String, steps: List[Step]) = new Background(name, steps) tap { _.pos = pos }
+  def apply(background: Background, steps: List[Step]) = new Background(background.name, steps) tap { _.pos = background.pos }
 }
 
 /**
@@ -158,9 +157,8 @@ case class Scenario(tags: Set[Tag], name: String, background: Option[Background]
   
 }
 object Scenario {
-  def apply(pos: Position, tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) = new Scenario(tags, name, background, steps) tap { _.pos = pos }
-  def apply(pos: Position, tags: Set[Tag], name: String, steps: List[Step]) = new Scenario(tags, name, None, steps) tap { _.pos = pos }
-  def apply(pos: Position, name: String, background: Option[Background], steps: List[Step]) = new Scenario(Set(), name, background, steps) tap { _.pos = pos }
+  def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
+    new Scenario(scenario.tags, scenario.name, background, steps) tap { _.pos = scenario.pos }
 }
 
 /**
@@ -214,6 +212,8 @@ case class Step(
 }
 
 object Step {
-  def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus, attachments: List[(String, File)]) =
-    new Step(keyword, expression, status, attachments) tap { _.pos = pos }
+	def apply(step: Step, expression: String): Step =
+			new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
+  def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
+    new Step(step.keyword, step.expression, status, attachments) tap { _.pos = step.pos }
 }
