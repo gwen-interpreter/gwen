@@ -105,7 +105,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			</div>
 		</div>${if (!metaResults.isEmpty) { 
 		val count = metaResults.size
-		val metaStatus = EvalStatus(spec.metaSpecs.map(_.evalStatus))
+		val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
 		val status = metaStatus.status
 		s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -113,7 +113,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
 					<span class="label label-${cssStatus(status)}">Meta:</span>
 					${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
-					<span class="pull-right"><small>${formatDuration(metaStatus.duration)}</small></span>""" else ""}
+					<span class="pull-right"><small>${durationOrStatus(metaStatus)}</small></span>""" else ""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -309,7 +309,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
   									</td>
 									<td>
-  										<span class="pull-right"><small>${formatDuration(result.evalStatus.duration)}</small></span>${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+  										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span>${result.spec.featureFile.map(_.getPath()).getOrElse("")}
   									</td>
 								</tr>"""
 
