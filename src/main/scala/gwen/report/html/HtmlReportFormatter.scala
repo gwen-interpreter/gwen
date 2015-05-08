@@ -345,7 +345,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 
   private def formatJsFooter(rootDir: String) = s""" 
 		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
-		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
+		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
+  		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
+		
     
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
