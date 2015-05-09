@@ -107,6 +107,14 @@ trait HtmlReportFormatter extends ReportFormatter {
 		val count = metaResults.size
 		val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
 		val status = metaStatus.status
+		s"""<img id="seq" src="image-sequence-01.png" width="468" height="426" />"""
+		val images = scenarios map { scenario => 
+					scenario.steps map { step =>
+				  		step.attachments map { case (name, file) => s"""
+		  								attachments/${file.getName()}"""; 
+				}
+			}
+		}
 		s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
