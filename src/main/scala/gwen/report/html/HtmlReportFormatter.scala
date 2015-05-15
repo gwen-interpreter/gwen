@@ -103,19 +103,33 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</table>
 				</div>
 			</div>
-		</div>${if (!metaResults.isEmpty) { 
+		</div>
+		<div id="thisalso3">				
+		
+						
+						
+		${
+		scenarios.map(_.steps.map(formatAttachmentsForMovie(_)))
+		
+		/*scenarios map { scenario => 
+		        s"""<li class="list-group-item bg-default">${scenario.name}</li>"""
+				scenario.steps map { step =>
+				    s"""<li class="list-group-item bg-default">${step.keyword}</li>"""
+			  		formatAttachmentsForMovie(step);
+				}
+			}  
+		  */
+		  
+		if (!metaResults.isEmpty) { 
 		val count = metaResults.size
 		val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
 		val status = metaStatus.status
-		s"""<img id="seq" src="image-sequence-01.png" width="468" height="426" />"""
-		val images = scenarios map { scenario => 
-					scenario.steps map { step =>
-				  		step.attachments map { case (name, file) => s"""
-		  								attachments/${file.getName()}"""; 
-				}
-			}
-		}
+
+		
+		
+		 
 		s"""
+		</div>
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
@@ -338,7 +352,13 @@ trait HtmlReportFormatter extends ReportFormatter {
 									</li>
 								</ul>""" else ""}
 							</li>"""
-									
+
+  private def formatAttachmentsForMovie(step: Step) = s"""
+		  						${if (!step.attachments.isEmpty) s"""
+	  							<ul>${(step.attachments map { case (name, file) => s"""
+		  							<li><a tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
+		  						</ul>""" else ""}"""
+								
   private def formatAttachments(step: Step, status: StatusKeyword.Value) = s"""
 		  						${if (!step.attachments.isEmpty) s"""
 								<div class="dropdown bg-${cssStatus(status)}">
