@@ -84,6 +84,13 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<li>
 				${escape(featureName)}
 			</li>
+			<li>${
+			  //val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+			  
+			  formatVideoReplay(result)
+			  
+			}
+			</li>
 		</ol>
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
@@ -104,21 +111,19 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</div>
 			</div>
 		</div>
-		<div id="thisalso3">				
+		<div id="thisalso5">				
 		
+		<ul>
 						
+						<p>${
+						  val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+		  
+						  screenshots.toString()
+						  
+						}</p>
 						
 		${
-		scenarios.map(_.steps.map(formatAttachmentsForMovie(_)))
-		
-		/*scenarios map { scenario => 
-		        s"""<li class="list-group-item bg-default">${scenario.name}</li>"""
-				scenario.steps map { step =>
-				    s"""<li class="list-group-item bg-default">${step.keyword}</li>"""
-			  		formatAttachmentsForMovie(step);
-				}
-			}  
-		  */
+		  
 		  
 		if (!metaResults.isEmpty) { 
 		val count = metaResults.size
@@ -129,6 +134,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		
 		 
 		s"""
+		</ul>
 		</div>
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
@@ -352,12 +358,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 									</li>
 								</ul>""" else ""}
 							</li>"""
-
-  private def formatAttachmentsForMovie(step: Step) = s"""
-		  						${if (!step.attachments.isEmpty) s"""
-	  							<ul>${(step.attachments map { case (name, file) => s"""
-		  							<li><a tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
-		  						</ul>""" else ""}"""
+  
 								
   private def formatAttachments(step: Step, status: StatusKeyword.Value) = s"""
 		  						${if (!step.attachments.isEmpty) s"""
@@ -385,4 +386,38 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+
+ private def formatVideoReplay(result : FeatureResult) = s"""
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
+ <div class="modal-dialog">
+  <div class="modal-content">
+   <div class="modal-body">
+<img id="seq" src="${val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2); screenshots.head }" srcold="${val ss = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2); "sizeofss=" + ss(0).toString  }" width="540" height="540" />
+ <p>img id="seq" src="attachments/screenshot2095515087720399931.png" width="540" height="540"</p>
+ <script>
+    ${ ("$('#seq').reel({").toString() }
+	${ ("annotations: {").toString() }
+            "name_of_feature": {
+              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
+              start: 1,
+              end: 3,
+              x: 0,
+              y: 5
+            }
+          },
+          images: [ ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2).mkString("'","','","'")} ],
+      frames:  3,
+      footage: 1,
+      speed:   0.1
+    });
+   </script>
+   </div> <!-- model body -->
+  </div> <!-- modal content -->
+</div>
+</div> <!-- modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+  Launch demo modal
+</button>
+  """
+          
 }
