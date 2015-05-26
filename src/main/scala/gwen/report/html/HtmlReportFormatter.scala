@@ -387,7 +387,18 @@ trait HtmlReportFormatter extends ReportFormatter {
       indicator: 5
       //cursor: default
     });
+    ${  "$('#seq').on('loaded', function(){ $(this).trigger('reach', [ 16, 0.1 ]); });" }
+    ${ ("  $('#stop').click( function(){").toString() }
+    ${ ("     $('#seq').trigger(\"stop\");  ").toString() }
+    ${ "} );" }
+   
+        
    </script>
+    <button id="play">play</button>
+   <button id="stop">stop</button>
+    <script>
+${ "$('#stop').bind('click', function() { $('#seq').trigger(\"stop\"); }), $('#play').bind('click', function() { $('#seq').trigger(\"play\"); })" }
+    </script>
    </div> <!-- model body -->
   </div> <!-- modal content -->
 </div>
