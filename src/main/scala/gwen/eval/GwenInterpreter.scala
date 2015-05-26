@@ -264,7 +264,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step
     */
   private def evaluateStep(step: Step, env: T): Step = {
-    def evaluateResolvedStep(step: Step, env: T): Step = {
+    def evaluateParsedStep(step: Step, env: T): Step = {
       logger.info(s"Evaluating Step: $step")
       val result = env.getStepDef(step.expression) match {
         case None =>
@@ -285,7 +285,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         logStatus("Step", step.toString, step.evalStatus)
       }
     }
-    evaluateResolvedStep(env.resolve(step), env);
+    evaluateParsedStep(env.parse(step), env);
   }
   
   /**
