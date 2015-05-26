@@ -120,7 +120,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName())}).mkString}
+							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName(), None)}).mkString}
 							</tbody>
 						</table>
 					</li>
@@ -238,9 +238,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
 							<tbody class="summary">${
-                (results map { result => 
+                (results.zipWithIndex map { case (result, index) => 
                   val report = result.report.get
-                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}")
+                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(index + 1))
                 }).mkString}
 							</tbody>
 						</table>
@@ -300,16 +300,19 @@ trait HtmlReportFormatter extends ReportFormatter {
 						</tr>"""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: String): String = s"""
-								<tr>
-		  							<td>
+  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int]): String = s"""
+								<tr>${sequenceNo.map(seq => s"""
+								    <td>
+		  							    <div class="line-no"><small>${seq}</small></div>
+									</td>""").getOrElse("")}
+  									<td>
 		  								<small>${escape(result.timestamp.toString)}</small>
   									</td>
 									<td>
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
   									</td>
 									<td>
-  										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span>${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+  										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
   									</td>
 								</tr>"""
 
