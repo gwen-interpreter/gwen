@@ -16,6 +16,7 @@
 package gwen.eval.support
 
 import gwen.Predefs.RegexContext
+import scala.annotation.tailrec
 
 /**
  * Provides support for string interpolation.
@@ -24,13 +25,14 @@ trait InterpolationSupport {
 
   private val substPattern = """^(.*)\$\{(.+?)\}(.*)$""".r
   
-  def interpolate(source: String)(resolve: String => String): String = source match {
+  @tailrec
+  final def interpolate(source: String)(resolve: String => String): String = source match {
       // interpolate substitution: prefix${binding}suffix
       case substPattern(prefix, binding, suffix) =>
-        s"$prefix${resolve(binding)}$suffix"
+        interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
       // interpolate concatenation: "prefix" + binding + "suffix"
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" => 
-        s"$prefix${resolve(binding)}$suffix"
+        interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
       // interpolate concatenation: "prefix" + binding
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" => 
         interpolate(s"""$prefix${resolve(binding)}"""") { resolve }
