@@ -380,6 +380,15 @@ trait HtmlReportFormatter extends ReportFormatter {
    <img id="seq" src="${result.spec.steps.view.flatMap(_.attachments).find(_._1 == "Screenshot").map(_._2.getName()).mkString("attachments/","","")}" width="540" height="540" />
  <script>
     ${ ("$('#seq').reel({").toString() }
+      annotations: {
+            "name_of_feature": {
+              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
+              start: 1,
+              end: 4,
+              x: 0,
+              y: 5
+            }
+          },
       images: [ ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).length },
       //footage: 1,
