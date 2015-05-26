@@ -86,9 +86,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 				${escape(featureName)}
 			</li>
 			<li>${
-			  //val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+			  //val screenshots = attachments.filter(_._1 == "Screenshot").map(_._2)
 			  
-			  formatVideoReplay(result)
+			  formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2))
 			  
 			}
 			</li>
@@ -372,14 +372,14 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 
   //("$('#seq').trigger('play').bind('frameChange', function(e, depr_frame, frame){ if (frame == 16){ $ (this).trigger('stop'); }") 
- private def formatVideoReplay(result : FeatureResult) = s""" 
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
- <div class="modal-dialog">
+ private def formatVideoReplay(screenshots: List[File]) = s"""
+   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
+  <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
-   <img id="seq" src="${result.spec.steps.view.flatMap(_.attachments).find(_._1 == "Screenshot").map(_._2.getName()).mkString("attachments/","","")}" width="540" height="540" />
- <script>
-    ${ ("$('#seq').reel({").toString() }
+   <img id="seq" src="${screenshots.headOption.mkString("attachments/","","")}" width="540" height="540" />
+   <script>
+    $$('#seq').reel({
       annotations: {
             "name_of_feature": {
               node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
@@ -389,24 +389,23 @@ trait HtmlReportFormatter extends ReportFormatter {
               y: 5
             }
           },
-      images: [ ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).mkString("'attachments/","','attachments/","'")} ],
-      frames:  ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).length },
+      images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
+      frames:  ${screenshots.length },
       //footage: 1,
       speed:   0.1,
       indicator: 5
       //cursor: default
     });
-    ${  "$('#seq').on('loaded', function(){ $(this).trigger('reach', [ 16, 0.1 ]); });" }
-    ${ ("  $('#stop').click( function(){").toString() }
-    ${ ("     $('#seq').trigger(\"stop\");  ").toString() }
-    ${ "} );" }
-   
-        
+    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ 16, 0.1 ]); });
+    $$('#stop').click( function(){
+      $$('#seq').trigger(\"stop\");
+    });
    </script>
-    <button id="play">play</button>
+   <button id="play">play</button>
    <button id="stop">stop</button>
     <script>
-${ "$('#stop').bind('click', function() { $('#seq').trigger(\"stop\"); }), $('#play').bind('click', function() { $('#seq').trigger(\"play\"); })" }
+    $$('#stop').bind('click', function() { $$('#seq').trigger(\"stop\"); });
+    $$('#play').bind('click', function() { $$('#seq').trigger(\"play\"); });
     </script>
    </div> <!-- model body -->
   </div> <!-- modal content -->
