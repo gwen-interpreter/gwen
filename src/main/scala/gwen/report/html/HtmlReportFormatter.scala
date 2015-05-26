@@ -65,6 +65,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
+    	${formatJsHeader("../")}
 	</head>
 	<body>
 		${formatReportHeader(info, title, "../")}
@@ -111,31 +112,13 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</div>
 			</div>
 		</div>
-		<div id="thisalso5">				
-		
-		<ul>
-						
-						<p>${
-						  val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-		  
-						  screenshots.toString()
-						  
-						}</p>
-						
 		${
-		  
-		  
 		if (!metaResults.isEmpty) { 
 		val count = metaResults.size
 		val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
 		val status = metaStatus.status
-
-		
-		
-		 
+ 
 		s"""
-		</ul>
-		</div>
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
@@ -190,7 +173,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</ul>
 				</div>
 			</div>
-		</div>"""}).mkString}${formatJsFooter("../")}
+		</div>"""}).mkString}
 	</body>
 </html>
 """
@@ -212,6 +195,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(title, "")}
+    	${formatJsHeader("")}
 	</head>
 	<body>
 		${formatReportHeader(info, title, "")}
@@ -275,7 +259,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</li>
 				</ul>
 			</div>
-		</div>"""}}).mkString}${formatJsFooter("")}
+		</div>"""}}).mkString}
 	</body>
 </html>
     """
@@ -372,7 +356,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  							</ul>
 		  						</div>""" else ""}"""
 
-  private def formatJsFooter(rootDir: String) = s""" 
+  private def formatJsHeader(rootDir: String) = s""" 
 		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
 		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
   		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
@@ -387,28 +371,21 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
 
- private def formatVideoReplay(result : FeatureResult) = s"""
+  //("$('#seq').trigger('play').bind('frameChange', function(e, depr_frame, frame){ if (frame == 16){ $ (this).trigger('stop'); }") 
+ private def formatVideoReplay(result : FeatureResult) = s""" 
   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
  <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
-<img id="seq" src="${val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2); screenshots.head }" srcold="${val ss = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2); "sizeofss=" + ss(0).toString  }" width="540" height="540" />
- <p>img id="seq" src="attachments/screenshot2095515087720399931.png" width="540" height="540"</p>
+   <img id="seq" src="${result.spec.steps.view.flatMap(_.attachments).find(_._1 == "Screenshot").map(_._2.getName()).mkString("attachments/","","")}" width="540" height="540" />
  <script>
     ${ ("$('#seq').reel({").toString() }
-	${ ("annotations: {").toString() }
-            "name_of_feature": {
-              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
-              start: 1,
-              end: 3,
-              x: 0,
-              y: 5
-            }
-          },
-          images: [ ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2).mkString("'","','","'")} ],
-      frames:  3,
-      footage: 1,
-      speed:   0.1
+      images: [ ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).mkString("'attachments/","','attachments/","'")} ],
+      frames:  ${result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2.getName()).length },
+      //footage: 1,
+      speed:   0.1,
+      indicator: 5
+      //cursor: default
     });
    </script>
    </div> <!-- model body -->
