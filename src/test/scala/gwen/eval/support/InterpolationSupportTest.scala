@@ -41,6 +41,16 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     interpolate("""hello ${binding} good thing""") { binding => "you" } should be ("""hello you good thing""") 
   }
   
+  """interpolate nested substitution: ${binding1${binding0}}"""" should "resolve" in {
+    interpolate("""Hey you ${binding-${id}} thing!""") { binding => 
+      binding match {
+        case "id" => "0"
+        case "binding-0" => "good"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you good thing!""") 
+  }
+  
   """interpolate concatenation: prefix "" + binding + " suffix""" should "resolve" in {
     interpolate("""hello "" + binding + " good thing"""") { binding => "you" } should be ("""hello "you good thing"""") 
   }

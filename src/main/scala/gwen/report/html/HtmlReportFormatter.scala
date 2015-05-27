@@ -218,8 +218,8 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</table>
 				</div>
 			</div>
-		</div>${(StatusKeyword.valuesFixedOrder map { status => 
-		summary.featureResults.filter { _.evalStatus.status == status } match {
+		</div>${(StatusKeyword.valuesFixedOrder.reverse map { status => 
+		summary.featureResults.zipWithIndex.filter { _._1.evalStatus.status == status } match {
 		  case Nil => ""
 		  case results => s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -230,7 +230,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					val total = summary.featureResults.size
 					val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
 					s"""${countOfTotal}${if (count > 1) s"""
-					<span class="pull-right"><small>${formatDuration(results.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
+					<span class="pull-right"><small>${formatDuration(results.map(_._1.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -238,7 +238,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
 							<tbody class="summary">${
-                (results.zipWithIndex map { case (result, index) => 
+                (results map { case (result, index) => 
                   val report = result.report.get
                   formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(index + 1))
                 }).mkString}
