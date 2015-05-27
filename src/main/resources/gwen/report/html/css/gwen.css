@@ -154,6 +154,10 @@ a:visited {
   text-decoration: underline;
 }
 
+a:hover{
+  text-decoration: none;
+}
+
 td {
   padding: 10px;
 }

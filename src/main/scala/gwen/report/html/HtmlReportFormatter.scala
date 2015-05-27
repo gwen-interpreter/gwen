@@ -335,14 +335,16 @@ trait HtmlReportFormatter extends ReportFormatter {
 							</li>"""
 									
   private def formatAttachments(step: Step, status: StatusKeyword.Value) = s"""
-		  						${if (!step.attachments.isEmpty) s"""
+		  						${if (step.attachments.size == 1) s"""${(step.attachments map { case (name, file) => s"""
+	  							<small><a class="text-${cssStatus(status)}" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></small>"""}).mkString}
+								""" else if (!step.attachments.isEmpty) s"""
 								<div class="dropdown bg-${cssStatus(status)}">
 		  							<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
 		  								<strong>attachments</strong>
 		  								<span class="caret"></span>
 		  							</button>
 		  							<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
-		  								<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
+		  								<li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
 		  							</ul>
 		  						</div>""" else ""}"""
 
