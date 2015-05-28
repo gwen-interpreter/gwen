@@ -302,16 +302,16 @@ trait HtmlReportFormatter extends ReportFormatter {
   
   private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int]): String = s"""
 								<tr>${sequenceNo.map(seq => s"""
-								    <td>
+								    <td width="10%">
 		  							    <div class="line-no"><small>${seq}</small></div>
 									</td>""").getOrElse("")}
-  									<td>
+  									<td width="25%">
 		  								<small>${escape(result.timestamp.toString)}</small>
   									</td>
-									<td>
+									<td width="25%">
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
   									</td>
-									<td>
+									<td width="40%">
   										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
   									</td>
 								</tr>"""
