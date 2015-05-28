@@ -49,7 +49,7 @@ trait XPathSupport {
     * @param xpath the expath expression
     * @param source the xml source string
     * @param targetType the target node type
-    * @return the result of evaluationg the xpath expression
+    * @return the result of evaluating the xpath expression
     */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = 
     withXPath(xpath) { (xPath, expr) =>

@@ -67,22 +67,16 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
 	</head>
 	<body>
-		${formatReportHeader(info, title, "../")}
+		${formatReportHeader(info, title, featureName, "../")}
 		<ol class="breadcrumb">${(breadcrumbs map { case (text, report) => s"""
 			<li>
 				<span class="caret-left"></span> <a href="${report}">${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
-				Evaluation Status
-			</li>
-			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
 			</li>
 			<li>
 				<small>${escape(result.timestamp.toString)}</small>
-			</li>
-			<li>
-				${escape(featureName)}
 			</li>
 		</ol>
 		<div class="panel panel-default">
@@ -186,13 +180,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatHtmlHead(title, "")}
 	</head>
 	<body>
-		${formatReportHeader(info, title, "")}
+		${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
 		<ol class="breadcrumb">
-			<li>
-				Summary
-			</li>
-			<li>
-				Evaluation Status
+			<li style="color: gray">
+				<span class="caret-left" style="color: #f5f5f5;"></span> Summary
 			</li>
 			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
@@ -205,12 +196,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
 				<span class="label label-black">Results</span>
 				<span class="pull-right"><small>${formatDuration(summary.featureResults.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>
-				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">${if (options.args.isDefined) {s"""
-					<p>
-						<ul class="list-group bg-default"> 
-							<li class="list-group-item bg-default">${escape(options.commandString(info))}</li>
-						</ul>
-					</p>"""} else ""}
+				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Feature", summary.featureResults.map(_.evalStatus))}
 						${formatProgressBar("Scenario", summary.scenarioCounts)}
@@ -261,7 +247,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<link href="${rootDir}resources/css/bootstrap.min.css" rel="stylesheet" />
 		<link href="${rootDir}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(info: GwenInfo, heading: String, rootDir: String) = s"""
+  private def formatReportHeader(info: GwenInfo, heading: String, path: String, rootDir: String) = s"""
 		<table width="100%" cellpadding="5">
 			<tr>
 		  		<td width="100px">
@@ -269,10 +255,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</td>
 				<td>
 					<h3>${escape(heading)}</h3>
-					Evaluation Report
+					${escape(path)}
 				</td>
 				<td align="right">
-					<small>${escape(new Date().toString)}</small><h3></h3>
+          <h3>&nbsp;</h3>
 					<a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
 				</td>
 			</tr>
