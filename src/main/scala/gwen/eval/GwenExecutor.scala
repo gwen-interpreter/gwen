@@ -98,7 +98,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           }
         }
       }
-      results.foldLeft(FeatureSummary()) (_+_) tap { summary => 
+      results.toList.sortBy(_.timestamp).foldLeft(FeatureSummary()) (_+_) tap { summary => 
         reportGenerator foreach { _.reportSummary(interpreter, summary) }
       }
     } else {
