@@ -37,6 +37,7 @@ import gwen.dsl.StepKeyword
 import org.scalatest.FlatSpec
 import org.mockito.ArgumentCaptor
 import gwen.dsl.Tag
+import gwen.dsl.SpecType
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -161,6 +162,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
     val mockEnv = mock[EnvContext]
+    when(mockEnv.specType).thenReturn(SpecType.feature) 
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     val step1 = Step(StepKeyword.Given, "I am an observer")
     val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
@@ -205,6 +207,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         Step(StepKeyword.When, "a small change is initially applied"),
         Step(StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
+    when(mockEnv.specType).thenReturn(SpecType.feature)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
     when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)

@@ -29,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import gwen.dsl.EvalStatus
 import gwen.dsl.Pending
+import gwen.dsl.SpecType
 
 
 /**
@@ -47,6 +48,9 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   
   /** List of current attachments (name-file pairs). */
   private var _attachments: List[(String, File)] = Nil
+  
+  /** The current type of specification being interpreted. */
+  var specType = SpecType.feature
   
   /** Provides access to the global feature scope. */
   def featureScope = scopes.featureScope
