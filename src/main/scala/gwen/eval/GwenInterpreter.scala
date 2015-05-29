@@ -115,10 +115,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
         if (featureFile.getName().endsWith(".meta")) {
-          env.specType = SpecType.meta
           evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env)
         } else {
-          env.specType = SpecType.feature
           TagsFilter.filter(featureSpec, tagFilters) match {
             case Some(fspec) =>
               val metaResults = loadMeta(metaFiles, tagFilters, env)
@@ -319,6 +317,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
+      env.specType = SpecType.meta
       interpretFeature(metaFile, Nil, tagFilters, env) tap { metas =>
         metas match {
           case meta::Nil =>
@@ -331,7 +330,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
             }
           case _ => Nil
         }
-      } 
+      } tap { result =>
+        env.specType = SpecType.feature
+      }
     }
   
   /**
