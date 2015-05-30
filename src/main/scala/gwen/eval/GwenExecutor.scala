@@ -98,7 +98,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           }
         }
       }
-      results.foldLeft(FeatureSummary()) (_+_) tap { summary => 
+      results.toList.sortBy(_.timestamp).foldLeft(FeatureSummary()) (_+_) tap { summary => 
         reportGenerator foreach { _.reportSummary(interpreter, summary) }
       }
     } else {
@@ -138,7 +138,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(new FeatureResult(specs.head, specs.map(new FeatureResult(_, Nil, None)), None)) tap { result =>
       val status = result.spec.evalStatus
       logger.info("");
-      logger.info(s"${status} ${status.emoticon} ${result.timestamp}", status)
+      logger.info(s"${status} ${result.timestamp} ${status.emoticon}", status)
       logger.info("");
     }
   
@@ -146,7 +146,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     println
     println(summary.toString)
     println
-    println(s"${status} ${status.emoticon} ${summary.timestamp}")
+    println(s"${status} ${summary.timestamp} ${status.emoticon}")
     println
   }
 }

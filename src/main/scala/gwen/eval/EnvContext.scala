@@ -29,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import gwen.dsl.EvalStatus
 import gwen.dsl.Pending
+import gwen.dsl.SpecType
 
 
 /**
@@ -46,7 +47,10 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   private var stepDefs = Map[String, Scenario]()
   
   /** List of current attachments (name-file pairs). */
-  private[eval] var attachments: List[(String, File)] = Nil
+  private var _attachments: List[(String, File)] = Nil
+  
+  /** The current type of specification being interpreted. */
+  var specType = SpecType.feature
   
   /** Provides access to the global feature scope. */
   def featureScope = scopes.featureScope
@@ -101,7 +105,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @param failed the failed status
     */
   final def fail(failure: Failed): Unit = { 
-    attachments = createErrorAttachments(failure)
+    _attachments = createErrorAttachments(failure)
     logger.error(Json.prettyPrint(this.visibleJson))
     logger.error(failure.error.getMessage())
     logger.debug(s"Exception: ", failure.error)
@@ -140,23 +144,26 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @param file the attachment file
     */
   def addAttachment(attachment: (String, File)): Unit = {
-    attachments = attachment :: attachments.filter(_._1 != attachment._1)
+    _attachments = attachment :: _attachments
   } 
   
   /** Resets/clears current attachments. */
   private[eval] def resetAttachments() {
-    attachments = Nil
+    _attachments = Nil
   }
   
+  /** Gets the list of attachments (in attached order).*/
+  def attachments = _attachments.reverse
+  
   /**
-    * Can be overridden by subclasses to parse and resolve the given step 
+    * Can be overridden by subclasses to parse the given step 
     * before it is evaluated. This implementation simply returns the step 
     * as is.
     * 
-    * @param step the step to resolve
+    * @param step the step to parse
     * @return the resolved step
     */
-  def resolve(step: Step): Step = step
+  def parse(step: Step): Step = step
 }
 
 /** Merges two contexts into one. */

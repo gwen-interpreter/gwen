@@ -37,6 +37,7 @@ import gwen.dsl.StepKeyword
 import org.scalatest.FlatSpec
 import org.mockito.ArgumentCaptor
 import gwen.dsl.Tag
+import gwen.dsl.SpecType
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -102,7 +103,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
     val step = Step(StepKeyword.Given, "I am a valid step")
-    when(mockEnv.resolve(step)).thenReturn(step)
+    when(mockEnv.parse(step)).thenReturn(step)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid step", mockEnv)
     result match {
       case TrySuccess(step) =>
@@ -122,8 +123,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
-    when(mockEnv.resolve(step1)).thenReturn(step1)
-    when(mockEnv.resolve(step2)).thenReturn(step2)
+    when(mockEnv.parse(step1)).thenReturn(step1)
+    when(mockEnv.parse(step2)).thenReturn(step2)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid stepdef", mockEnv)
     result match {
       case TrySuccess(step) =>
@@ -161,15 +162,16 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
     val mockEnv = mock[EnvContext]
+    when(mockEnv.specType).thenReturn(SpecType.feature) 
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     val step1 = Step(StepKeyword.Given, "I am an observer")
     val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
     val step3 = Step(StepKeyword.When, "a small change is initially applied")
     val step4 = Step(StepKeyword.Then, "a large change will eventually result")
-    when(mockEnv.resolve(step1)).thenReturn(step1)
-    when(mockEnv.resolve(step2)).thenReturn(step2)
-    when(mockEnv.resolve(step3)).thenReturn(step3)
-    when(mockEnv.resolve(step4)).thenReturn(step4)
+    when(mockEnv.parse(step1)).thenReturn(step1)
+    when(mockEnv.parse(step2)).thenReturn(step2)
+    when(mockEnv.parse(step3)).thenReturn(step3)
+    when(mockEnv.parse(step4)).thenReturn(step4)
     val result = interpreter(mockEnv).interpretFeature(featureFile, Nil, Nil, mockEnv)
     result match {
       case feature::_ =>
@@ -205,6 +207,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         Step(StepKeyword.When, "a small change is initially applied"),
         Step(StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
+    when(mockEnv.specType).thenReturn(SpecType.feature)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
     when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
@@ -217,11 +220,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val step3 = Step(StepKeyword.Given, "a deterministic nonlinear system")
     val step4 = Step(StepKeyword.When, "a small change is initially applied")
     val step5 = Step(StepKeyword.Then, "a large change will eventually result")
-    when(mockEnv.resolve(step1)).thenReturn(step1)
-    when(mockEnv.resolve(step2)).thenReturn(step2)
-    when(mockEnv.resolve(step3)).thenReturn(step3)
-    when(mockEnv.resolve(step4)).thenReturn(step4)
-    when(mockEnv.resolve(step5)).thenReturn(step5)
+    when(mockEnv.parse(step1)).thenReturn(step1)
+    when(mockEnv.parse(step2)).thenReturn(step2)
+    when(mockEnv.parse(step3)).thenReturn(step3)
+    when(mockEnv.parse(step4)).thenReturn(step4)
+    when(mockEnv.parse(step5)).thenReturn(step5)
     val result = interpreter(mockEnv).interpretFeature(featureFile, List(metaFile), Nil, mockEnv)
     result match {
       case feature::_ =>

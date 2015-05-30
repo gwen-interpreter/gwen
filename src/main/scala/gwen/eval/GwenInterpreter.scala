@@ -115,12 +115,12 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
         if (featureFile.getName().endsWith(".meta")) {
-          evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env, SpecType.meta)
+          evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env)
         } else {
           TagsFilter.filter(featureSpec, tagFilters) match {
             case Some(fspec) =>
               val metaResults = loadMeta(metaFiles, tagFilters, env)
-              evaluateFeature(normalise(fspec, Some(featureFile)), metaResults, env, SpecType.feature)
+              evaluateFeature(normalise(fspec, Some(featureFile)), metaResults, env)
             case None => 
               logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
               Nil
@@ -148,16 +148,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param featureSpec the Gwen feature to evaluate
     * @param metaResults the evaluated meta results (Nil if featureSpec is a meta file)
     * @param env the environment context
-    * @param specType the spec type
     * @return the evaluated Gwen feature
     */
-  private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureSpec], env: T, specType: SpecType.Value): List[FeatureSpec] = {
-    (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
+  private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureSpec], env: T): List[FeatureSpec] = {
+    (if(SpecType.meta.equals(env.specType)) "Loading" else "Evaluating") tap {action =>
       logger.info("");
       featureSpec.featureFile.foreach { file =>
-        logger.info(s"${action} ${specType} file: ${file}")
+        logger.info(s"${action} ${env.specType} file: ${file}")
       }
-      logger.info(s"${action} ${specType}: ${featureSpec.feature.name}")
+      logger.info(s"${action} ${env.specType}: ${featureSpec.feature.name}")
     }
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
@@ -182,9 +181,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
       featureSpec.featureFile 
     )
     (resultSpec::metaResults) tap { results =>
-      logStatus(specType.toString, resultSpec.toString, resultSpec.evalStatus)
+      logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
       resultSpec.featureFile foreach { file =>
-        logger.info(s"${(if(SpecType.meta.equals(specType)) "Loaded" else "Evaluated")} ${specType} file: ${file}")
+        logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType} file: ${file}")
       }
       logger.debug(prettyPrint(resultSpec))
     }
@@ -264,7 +263,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step
     */
   private def evaluateStep(step: Step, env: T): Step = {
-    def evaluateResolvedStep(step: Step, env: T): Step = {
+    def evaluateParsedStep(step: Step, env: T): Step = {
       logger.info(s"Evaluating Step: $step")
       val result = env.getStepDef(step.expression) match {
         case None =>
@@ -277,7 +276,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         case (Some(stepDef)) =>
           logger.info(s"Evaluating StepDef: ${stepDef.name}")
           val steps = evaluateSteps(stepDef.steps, env)
-          Step(step, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments).groupBy(_._1).values.map(_.last).toList) tap { step =>
+          Step(step, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
             logger.info(s"StepDef evaluated: ${stepDef.name}")
           }
       }
@@ -285,7 +284,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         logStatus("Step", step.toString, step.evalStatus)
       }
     }
-    evaluateResolvedStep(env.resolve(step), env);
+    evaluateParsedStep(env.parse(step), env);
   }
   
   /**
@@ -318,6 +317,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
+      env.specType = SpecType.meta
       interpretFeature(metaFile, Nil, tagFilters, env) tap { metas =>
         metas match {
           case meta::Nil =>
@@ -330,7 +330,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
             }
           case _ => Nil
         }
-      } 
+      } tap { result =>
+        env.specType = SpecType.feature
+      }
     }
   
   /**

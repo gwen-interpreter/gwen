@@ -65,32 +65,18 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
-    	${formatJsHeader("../")}
 	</head>
 	<body>
-		${formatReportHeader(info, title, "../")}
+		${formatReportHeader(info, title, featureName, "../")}
 		<ol class="breadcrumb">${(breadcrumbs map { case (text, report) => s"""
 			<li>
 				<span class="caret-left"></span> <a href="${report}">${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
-				Evaluation Status
-			</li>
-			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
 			</li>
 			<li>
 				<small>${escape(result.timestamp.toString)}</small>
-			</li>
-			<li>
-				${escape(featureName)}
-			</li>
-			<li>${
-			  //val screenshots = attachments.filter(_._1 == "Screenshot").map(_._2)
-			  
-			  formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2))
-			  
-			}
 			</li>
 		</ol>
 		<div class="panel panel-default">
@@ -111,13 +97,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</table>
 				</div>
 			</div>
-		</div>
-		${
-		if (!metaResults.isEmpty) { 
+		</div>${if (!metaResults.isEmpty) { 
 		val count = metaResults.size
 		val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
 		val status = metaStatus.status
- 
 		s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
@@ -131,7 +114,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
-							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName())}).mkString}
+							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName(), None)}).mkString}
 							</tbody>
 						</table>
 					</li>
@@ -173,7 +156,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</ul>
 				</div>
 			</div>
-		</div>"""}).mkString}
+		</div>"""}).mkString}${formatJsFooter("../")}
 	</body>
 </html>
 """
@@ -195,16 +178,12 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(title, "")}
-    	${formatJsHeader("")}
 	</head>
 	<body>
-		${formatReportHeader(info, title, "")}
+		${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
 		<ol class="breadcrumb">
-			<li>
-				Summary
-			</li>
-			<li>
-				Evaluation Status
+			<li style="color: gray">
+				<span class="caret-left" style="color: #f5f5f5;"></span> Summary
 			</li>
 			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
@@ -217,12 +196,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
 				<span class="label label-black">Results</span>
 				<span class="pull-right"><small>${formatDuration(summary.featureResults.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>
-				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">${if (options.args.isDefined) {s"""
-					<p>
-						<ul class="list-group bg-default"> 
-							<li class="list-group-item bg-default">${escape(options.commandString(info))}</li>
-						</ul>
-					</p>"""} else ""}
+				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
 						${formatProgressBar("Feature", summary.featureResults.map(_.evalStatus))}
 						${formatProgressBar("Scenario", summary.scenarioCounts)}
@@ -230,8 +204,8 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</table>
 				</div>
 			</div>
-		</div>${(StatusKeyword.valuesFixedOrder map { status => 
-		summary.featureResults.filter { _.evalStatus.status == status } match {
+		</div>${(StatusKeyword.valuesFixedOrder.reverse map { status => 
+		summary.featureResults.zipWithIndex.filter { _._1.evalStatus.status == status } match {
 		  case Nil => ""
 		  case results => s"""
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -242,7 +216,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					val total = summary.featureResults.size
 					val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
 					s"""${countOfTotal}${if (count > 1) s"""
-					<span class="pull-right"><small>${formatDuration(results.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
+					<span class="pull-right"><small>${formatDuration(results.map(_._1.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
 				</li>
 			</ul>
 			<div class="panel-body">
@@ -250,16 +224,16 @@ trait HtmlReportFormatter extends ReportFormatter {
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<table width="100%">
 							<tbody class="summary">${
-                (results map { result => 
+                (results map { case (result, index) => 
                   val report = result.report.get
-                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}")
+                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(index + 1))
                 }).mkString}
 							</tbody>
 						</table>
 					</li>
 				</ul>
 			</div>
-		</div>"""}}).mkString}
+		</div>"""}}).mkString}${formatJsFooter("")}
 	</body>
 </html>
     """
@@ -273,7 +247,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<link href="${rootDir}resources/css/bootstrap.min.css" rel="stylesheet" />
 		<link href="${rootDir}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(info: GwenInfo, heading: String, rootDir: String) = s"""
+  private def formatReportHeader(info: GwenInfo, heading: String, path: String, rootDir: String) = s"""
 		<table width="100%" cellpadding="5">
 			<tr>
 		  		<td width="100px">
@@ -281,10 +255,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</td>
 				<td>
 					<h3>${escape(heading)}</h3>
-					Evaluation Report
+					${escape(path)}
 				</td>
 				<td align="right">
-					<small>${escape(new Date().toString)}</small><h3></h3>
+          <h3>&nbsp;</h3>
 					<a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
 				</td>
 			</tr>
@@ -312,16 +286,19 @@ trait HtmlReportFormatter extends ReportFormatter {
 						</tr>"""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: String): String = s"""
-								<tr>
-		  							<td>
+  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int]): String = s"""
+								<tr>${sequenceNo.map(seq => s"""
+								    <td width="10%">
+		  							    <div class="line-no"><small>${seq}</small></div>
+									</td>""").getOrElse("")}
+  									<td width="25%">
 		  								<small>${escape(result.timestamp.toString)}</small>
   									</td>
-									<td>
+									<td width="25%">
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
   									</td>
-									<td>
-  										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span>${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+									<td width="40%">
+  										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
   									</td>
 								</tr>"""
 
@@ -331,7 +308,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 									<span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
 									<div class="line-no"><small>${step.pos.line}</small></div>
 									<div class="keyword-right"><strong>${step.keyword}</strong></div> ${escape(step.expression)}
-									${formatAttachments(step, status)}
+									${formatAttachments(step.attachments, status)}
 								</div>
 								${if (status == StatusKeyword.Failed) s"""
 								<ul>
@@ -342,25 +319,22 @@ trait HtmlReportFormatter extends ReportFormatter {
 									</li>
 								</ul>""" else ""}
 							</li>"""
-  
-								
-  private def formatAttachments(step: Step, status: StatusKeyword.Value) = s"""
-		  						${if (!step.attachments.isEmpty) s"""
+									
+  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value) = s"""
+		  						${if (!attachments.isEmpty) s"""
 								<div class="dropdown bg-${cssStatus(status)}">
 		  							<button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-		  								<strong>attachments</strong>
+		  								<strong>attachment${if (attachments.size > 1) "s" else ""}</strong>
 		  								<span class="caret"></span>
 		  							</button>
-		  							<ul class="dropdown-menu pull-right" role="menu">${(step.attachments map { case (name, file) => s"""
-		  								<li role="presentation"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
+		  							<ul class="dropdown-menu pull-right" role="menu">${(attachments map { case (name, file) => s"""
+		  								<li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
 		  							</ul>
 		  						</div>""" else ""}"""
 
-  private def formatJsHeader(rootDir: String) = s""" 
+  private def formatJsFooter(rootDir: String) = s""" 
 		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
-		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
-  		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
-		
+		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
     
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
@@ -370,50 +344,4 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
-
-  //("$('#seq').trigger('play').bind('frameChange', function(e, depr_frame, frame){ if (frame == 16){ $ (this).trigger('stop'); }") 
- private def formatVideoReplay(screenshots: List[File]) = s"""
-   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
-  <div class="modal-dialog">
-  <div class="modal-content">
-   <div class="modal-body">
-   <img id="seq" src="${screenshots.headOption.mkString("attachments/","","")}" width="540" height="540" />
-   <script>
-    $$('#seq').reel({
-      annotations: {
-            "name_of_feature": {
-              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
-              start: 1,
-              end: 4,
-              x: 0,
-              y: 5
-            }
-          },
-      images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
-      frames:  ${screenshots.length },
-      //footage: 1,
-      speed:   0.1,
-      indicator: 5
-      //cursor: default
-    });
-    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ 16, 0.1 ]); });
-    $$('#stop').click( function(){
-      $$('#seq').trigger(\"stop\");
-    });
-   </script>
-   <button id="play">play</button>
-   <button id="stop">stop</button>
-    <script>
-    $$('#stop').bind('click', function() { $$('#seq').trigger(\"stop\"); });
-    $$('#play').bind('click', function() { $$('#seq').trigger(\"play\"); });
-    </script>
-   </div> <!-- model body -->
-  </div> <!-- modal content -->
-</div>
-</div> <!-- modal -->
-<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
-  Launch demo modal
-</button>
-  """
-          
 }
