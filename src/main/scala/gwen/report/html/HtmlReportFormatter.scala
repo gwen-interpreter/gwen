@@ -82,7 +82,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
 					<span><p>${escape(spec.feature.tags.mkString(" "))}</p></span>""" else ""}
-				<span class="label label-black">Feature:</span>
+				<span class="label label-black">Feature</span>
 				<span class="pull-right"><small>${durationOrStatus(spec.evalStatus)}</small></span>
 				${escape(spec.feature.name)}${if (!spec.feature.narrative.isEmpty) s"""
 				<p>
@@ -105,7 +105,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
-					<span class="label label-${cssStatus(status)}">Meta:</span>
+					<span class="label label-${cssStatus(status)}">Meta</span>
 					${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
 					<span class="pull-right"><small>${durationOrStatus(metaStatus)}</small></span>""" else ""}
 				</li>
@@ -113,10 +113,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<div class="panel-body">
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
-						<table width="100%">
-							<tbody class="summary">${(metaResults map { result => formatSummaryLine(result, result.report.get.getName(), None)}).mkString}
-							</tbody>
-						</table>
+						<div class="container-fluid" style="padding: 0px 0px">
+							${(metaResults map { result => formatSummaryLine(result, result.report.get.getName(), None)}).mkString}
+						</div>
 					</li>
 				</ul>
 			</div>
@@ -128,7 +127,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (scenario.tags.size > 0) s"""
 					<span><p class="text-${cssStatus(status)}">${escape(scenario.tags.mkString(" "))}</p></span>""" else ""}
-					<span class="label label-${cssStatus(status)}">Scenario:</span>${if (scenario.allSteps.size > 1) s"""
+					<span class="label label-${cssStatus(status)}">Scenario</span>${if (scenario.allSteps.size > 1) s"""
 					<span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
 					${escape(scenario.name)}
 				</li>
@@ -139,7 +138,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
 					<ul class="list-group">
 						<li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
-							<span class="label label-${cssStatus(status)}">Background:</span>${if (background.steps.size > 1) s"""
+							<span class="label label-${cssStatus(status)}">Background</span>${if (background.steps.size > 1) s"""
 							<span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>""" else ""}
 							${escape(background.name)}
 						</li>
@@ -222,14 +221,12 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<div class="panel-body">
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
-						<table width="100%">
-							<tbody class="summary">${
+						<div class="container-fluid" style="padding: 0px 0px">${
                 (results map { case (result, index) => 
                   val report = result.report.get
                   formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(index + 1))
                 }).mkString}
-							</tbody>
-						</table>
+						</div>
 					</li>
 				</ul>
 			</div>
@@ -287,20 +284,18 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   
   private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int]): String = s"""
-								<tr>${sequenceNo.map(seq => s"""
-								    <td width="10%">
-		  							    <div class="line-no"><small>${seq}</small></div>
-									</td>""").getOrElse("")}
-  									<td width="25%">
-		  								<small>${escape(result.timestamp.toString)}</small>
-  									</td>
-									<td width="25%">
+								<div class="row">
+								    <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
+		  							    <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
+		  								  <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.timestamp.toString)}</small></span>
+  									</div>
+									  <div class="col-md-4">
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
-  									</td>
-									<td width="40%">
+  									</div>
+									  <div class="col-md-5">
   										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
-  									</td>
-								</tr>"""
+  									</div>
+								</div>"""
 
   private def formatStepLine(step: Step, status: StatusKeyword.Value): String = s"""
 							<li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
