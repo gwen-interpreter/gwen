@@ -359,17 +359,20 @@ trait HtmlReportFormatter extends ReportFormatter {
       speed:   0.1,
       indicator: 5
     });
-    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ ${screenshots.length }, 0.1 ]); });
-    $$('#stop').click( function(){
-      $$('#seq').trigger(\"stop\");
-    });
+	function reel_stop() {
+	    $$('#seq').trigger("stop"); 
+	}
+	function reel_play() {
+	    if ($$('#seq').data("backwards")) { 
+	        $$('#seq').data("backwards", false)         
+            $$('#seq').trigger('play');
+	    } else {
+	        $$('#seq').trigger('play'); 
+	    }    
+	}        
    </script>
-   <button id="play" class="btn btn-primary btn-lg">play</button>
-   <button id="stop" class="btn btn-primary btn-lg">stop</button>
-    <script>
-    $$('#stop').bind('click', function() { $$('#seq').trigger(\"stop\"); });
-    $$('#play').bind('click', function() { $$('#seq').trigger(\"play\"); });
-    </script>
+   <button id="play" class="btn btn-primary btn-lg" onclick="reel_play()">play</button>
+   <button id="stop" class="btn btn-primary btn-lg" onclick="reel_stop()">stop</button>
    </div>
   </div>
 </div>
