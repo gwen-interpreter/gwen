@@ -84,6 +84,22 @@
 	border-color: #f0ad4e;
 }
 
+.bg-altrow-success {
+	background-color: #e9f4e4;
+}
+
+.bg-altrow-danger {
+	background-color: #f6e8e8;
+}
+
+.bg-altrow-info {
+	background-color: #5bc0de;
+}
+
+.bg-altrow-warning {
+	background-color: #f0ad4e;
+}
+
 .bg-default {
 	background-color: #f5f5f5;
 	border-color: #0d0d0d;
