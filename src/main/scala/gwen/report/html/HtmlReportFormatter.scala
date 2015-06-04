@@ -114,7 +114,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<div class="container-fluid" style="padding: 0px 0px">
-							${(metaResults map { result => formatSummaryLine(result, result.report.get.getName(), None)}).mkString}
+							${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, result.report.get.getName(), None, rowIndex)}).mkString}
 						</div>
 					</li>
 				</ul>
@@ -222,9 +222,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<div class="container-fluid" style="padding: 0px 0px">${
-                (results map { case (result, index) => 
+                (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
                   val report = result.report.get
-                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(index + 1))
+                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(resultIndex + 1), rowIndex)
                 }).mkString}
 						</div>
 					</li>
@@ -283,8 +283,8 @@ trait HtmlReportFormatter extends ReportFormatter {
 						</tr>"""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int]): String = s"""
-								<div class="row">
+  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
+								<div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }">
 								    <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
 		  							    <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
 		  								  <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.timestamp.toString)}</small></span>
