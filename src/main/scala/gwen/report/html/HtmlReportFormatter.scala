@@ -365,26 +365,24 @@ trait HtmlReportFormatter extends ReportFormatter {
           },
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${screenshots.length },
-      //footage: 1,
       speed:   0.1,
       indicator: 5
-      //cursor: default
     });
-    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ 16, 0.1 ]); });
+    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ ${screenshots.length }, 0.1 ]); });
     $$('#stop').click( function(){
       $$('#seq').trigger(\"stop\");
     });
    </script>
-   <button id="play">play</button>
-   <button id="stop">stop</button>
+   <button id="play" class="btn btn-primary btn-lg">play</button>
+   <button id="stop" class="btn btn-primary btn-lg">stop</button>
     <script>
     $$('#stop').bind('click', function() { $$('#seq').trigger(\"stop\"); });
     $$('#play').bind('click', function() { $$('#seq').trigger(\"play\"); });
     </script>
-   </div> <!-- model body -->
-  </div> <!-- modal content -->
+   </div>
+  </div>
 </div>
-</div> <!-- modal -->
+</div>
 <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
   Video Recording
 </button>
