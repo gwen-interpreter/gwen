@@ -65,6 +65,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
+        ${formatJsHeader("../")}
 	</head>
 	<body>
 		${formatReportHeader(info, title, featureName, "../")}
@@ -77,6 +78,9 @@ trait HtmlReportFormatter extends ReportFormatter {
 			</li>
 			<li>
 				<small>${escape(result.timestamp.toString)}</small>
+			</li>
+			<li>
+				${ formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)) }
 			</li>
 		</ol>
 		<div class="panel panel-default">
@@ -155,7 +159,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</ul>
 				</div>
 			</div>
-		</div>"""}).mkString}${formatJsFooter("../")}
+		</div>"""}).mkString}
 	</body>
 </html>
 """
@@ -177,6 +181,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(title, "")}
+    	${formatJsHeader("../")}
 	</head>
 	<body>
 		${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
@@ -190,6 +195,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<li>
 				<small>${escape(summary.timestamp.toString)}</small>
 			</li>
+			
 		</ol>
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
@@ -230,7 +236,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 					</li>
 				</ul>
 			</div>
-		</div>"""}}).mkString}${formatJsFooter("")}
+		</div>"""}}).mkString}
 	</body>
 </html>
     """
@@ -327,10 +333,11 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  							</ul>
 		  						</div>""" else ""}"""
 
-  private def formatJsFooter(rootDir: String) = s""" 
+    private def formatJsHeader(rootDir: String) = s""" 
 		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
-		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
-    
+		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
+  		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
+      
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
   private def durationOrStatus(evalStatus: EvalStatus) = evalStatus.status match {
@@ -339,4 +346,47 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+  private def formatVideoReplay(screenshots: List[File]) = s"""
+   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
+  <div class="modal-dialog">
+  <div class="modal-content">
+   <div class="modal-body">
+   <img id="seq" src="${screenshots.headOption.mkString("attachments/","","")}" width="540" height="540" />
+   <script>
+    $$('#seq').reel({
+      annotations: {
+            "name_of_feature": {
+              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
+              start: 1,
+              end: 4,
+              x: 0,
+              y: 5
+            }
+          },
+      images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
+      frames:  ${screenshots.length },
+      //footage: 1,
+      speed:   0.1,
+      indicator: 5
+      //cursor: default
+    });
+    $$('#seq').on('loaded', function(){ $$(this).trigger('reach', [ 16, 0.1 ]); });
+    $$('#stop').click( function(){
+      $$('#seq').trigger(\"stop\");
+    });
+   </script>
+   <button id="play">play</button>
+   <button id="stop">stop</button>
+    <script>
+    $$('#stop').bind('click', function() { $$('#seq').trigger(\"stop\"); });
+    $$('#play').bind('click', function() { $$('#seq').trigger(\"play\"); });
+    </script>
+   </div> <!-- model body -->
+  </div> <!-- modal content -->
+</div>
+</div> <!-- modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+  Video Recording
+</button>
+  """
 }
