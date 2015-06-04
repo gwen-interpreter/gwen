@@ -354,15 +354,6 @@ trait HtmlReportFormatter extends ReportFormatter {
    <img id="seq" src="${screenshots.headOption.mkString("attachments/","","")}" width="540" height="540" />
    <script>
     $$('#seq').reel({
-      annotations: {
-            "name_of_feature": {
-              node: { text: 'The name of the feature under test', css: { width: '95%', textAlign: 'right', fontSize: '12px' } },
-              start: 1,
-              end: 4,
-              x: 0,
-              y: 5
-            }
-          },
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${screenshots.length },
       speed:   0.1,
