@@ -80,7 +80,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<small>${escape(result.timestamp.toString)}</small>
 			</li>
 			<li>
-				${ formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)) }
+				${ if (!isMeta) formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)) }
 			</li>
 		</ol>
 		<div class="panel panel-default">
@@ -378,7 +378,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 </div>
 </div>
 <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
-  Video Recording
+  Slideshow
 </button>
   """
 }
