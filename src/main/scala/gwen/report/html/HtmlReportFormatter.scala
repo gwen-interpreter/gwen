@@ -79,9 +79,15 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<li>
 				<small>${escape(result.timestamp.toString)}</small>
 			</li>
-			<li>
-				${ if (!isMeta) formatVideoReplay(result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)) }
-			</li>
+				${ if (!isMeta) {
+             val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+             if (!screenshots.isEmpty) { s"""
+               <li>
+                 ${formatSlideShow(screenshots)} 
+               </li>"""
+             } else ""
+           } else ""
+        }
 		</ol>
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
@@ -346,38 +352,45 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
-  private def formatVideoReplay(screenshots: List[File]) = s"""
+  private def formatSlideShow(screenshots: List[File]) = s"""
    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
   <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
-   <img id="seq" src="${screenshots.headOption.mkString("attachments/","","")}" width="540" height="540" />
+   <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
     $$('#seq').reel({
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${screenshots.length },
-      speed:   0.1,
-      indicator: 5
+      speed:   0,
+      indicator: 5,
+      responsive: true,
+      loops: true
+    }).bind("frameChange", function(e, d, frame){
+        if (frame == 1) {
+          $$('#control').text("play");
+          $$('#seq').trigger("stop");
+        }
     });
-	function reel_stop() {
-	    $$('#seq').trigger("stop"); 
-	}
-	function reel_play() {
-	    if ($$('#seq').data("backwards")) { 
-	        $$('#seq').data("backwards", false)         
-            $$('#seq').trigger('play');
-	    } else {
-	        $$('#seq').trigger('play'); 
-	    }    
-	}        
+  $$(function() {
+    $$('#control').click(function() {
+      var action = $$(this).text();
+      if (action == "play") {
+        $$(this).text("stop");
+        $$('#seq').trigger("play", 0.1);
+      } else {
+        $$(this).text("play");
+        $$('#seq').trigger("stop");
+      }
+    });
+  });
    </script>
-   <button id="play" class="btn btn-primary btn-lg" onclick="reel_play()">play</button>
-   <button id="stop" class="btn btn-primary btn-lg" onclick="reel_stop()">stop</button>
+   <button id="control" class="btn btn-default btn-lg">play</button>
    </div>
   </div>
 </div>
 </div>
-<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#myModal">
   Slideshow
 </button>
   """
