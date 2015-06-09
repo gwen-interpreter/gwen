@@ -44,6 +44,7 @@ class HtmlReportGenerator(val options: GwenOptions)
   new File(Path(new File(reportDir, "resources/js")).createDirectory().path) tap { dir =>
     copyClasspathTextResourceToFile("/gwen/report/html/js/jquery-1.11.0.min.js", dir)
     copyClasspathTextResourceToFile("/gwen/report/html/js/bootstrap.min.js", dir)
+    copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.reel-min.js", dir)
   }
   
   // copy in image files (if they don't already exist)
