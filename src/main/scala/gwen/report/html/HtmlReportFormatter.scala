@@ -81,7 +81,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 			</li>
 				${ if (!isMeta) {
              val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-             if (!screenshots.isEmpty) { s"""
+             if (screenshots.size > 1) { s"""
                <li>
                  ${formatSlideShow(screenshots)} 
                </li>"""
