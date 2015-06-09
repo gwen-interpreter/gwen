@@ -357,6 +357,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
+   <button id="control" class="btn btn-default btn-lg">play</button>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
     $$('#seq').reel({
@@ -385,7 +386,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     });
   });
    </script>
-   <button id="control" class="btn btn-default btn-lg">play</button>
    </div>
   </div>
 </div>
