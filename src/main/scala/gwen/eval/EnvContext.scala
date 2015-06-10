@@ -17,7 +17,6 @@
 package gwen.eval
 
 import java.io.File
-import com.typesafe.scalalogging.LazyLogging
 import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
@@ -30,6 +29,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import gwen.dsl.EvalStatus
 import gwen.dsl.Pending
 import gwen.dsl.SpecType
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 
 /**

@@ -17,14 +17,11 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.Stream
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
-
-import com.typesafe.scalalogging.LazyLogging
-
 import gwen.Predefs.Kestrel
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Reads and streams individual features and feature suites from the file system.  

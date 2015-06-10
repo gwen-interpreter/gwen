@@ -16,9 +16,8 @@
 
 package gwen.eval
 
-import com.typesafe.scalalogging.LazyLogging
-
 import gwen.dsl.Step
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the

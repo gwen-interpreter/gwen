@@ -16,11 +16,10 @@
 
 package gwen.eval
 
-import com.typesafe.scalalogging.LazyLogging
-
 import gwen.Predefs.Kestrel
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 

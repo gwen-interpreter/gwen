@@ -20,7 +20,6 @@ import java.io.BufferedInputStream
 import java.io.File
 import scala.io.Source
 import scala.reflect.io.Path
-import com.typesafe.scalalogging.LazyLogging
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
@@ -28,6 +27,7 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Base class for report generators.

@@ -24,7 +24,6 @@ import scala.language.postfixOps
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
-import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
@@ -42,6 +41,7 @@ import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.GwenInfo
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Interprets incoming feature specs by parsing and evaluating

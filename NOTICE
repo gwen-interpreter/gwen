@@ -38,8 +38,8 @@
       https://github.com/scopt/scopt#license
       https://github.com/scopt/scopt
                
-   scala-logging
-      Version 3.1.0
+   scala-logging-slf4j
+      Version 2.1.2
       Copyright (C) 2011-2012 Typesafe Inc. <http://typesafe.com>
       Apache License, Version 2.0
       https://github.com/typesafehub/scala-logging#license
@@ -132,7 +132,7 @@
 
    ----------------------------------------------------------------------------
                                                                    play-json
-                                                               scala-logging
+                                                         scala-logging-slf4j
    Apache License, Version 2.0                                     scalatest
    ----------------------------------------------------------------------------
    

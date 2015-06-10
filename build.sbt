@@ -38,7 +38,7 @@ libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.9"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0"
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2"
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.7"
 

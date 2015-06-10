@@ -18,7 +18,6 @@ package gwen.eval
 
 import java.io.File
 import scala.Option.option2Iterable
-import com.typesafe.scalalogging.LazyLogging
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.UserOverrides
@@ -28,6 +27,7 @@ import gwen.report.ReportGenerator
 import gwen.report.html.HtmlReportGenerator
 import gwen.GwenInfo
 import gwen.dsl.FeatureSpec
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Executes user provided options on the given interpreter.
