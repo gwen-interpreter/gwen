@@ -22,7 +22,7 @@ import scala.Stream
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 import gwen.Predefs.Kestrel
 

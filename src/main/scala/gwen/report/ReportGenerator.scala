@@ -20,7 +20,7 @@ import java.io.BufferedInputStream
 import java.io.File
 import scala.io.Source
 import scala.reflect.io.Path
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec

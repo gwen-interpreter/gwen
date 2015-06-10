@@ -9,7 +9,7 @@
    - Source Dependencies -
 
    scala 
-      Version 2.11.4, 2.10.4
+      Version 2.11.6, 2.10.4
       Copyright (c) 2002-2015 EPFL
       Copyright (c) 2011-2015 Typesafe, Inc.
       Scala license 
@@ -17,7 +17,7 @@
       http://www.scala-lang.org     
          
    scala-parser-combinators
-      Version 1.0.2
+      Version 1.0.4
       Copyright (c) 2002-2013 EPFL 
       Copyright (c) 2011-2013 Typesafe, Inc.
       Scala license
@@ -25,21 +25,21 @@
       https://github.com/scala/scala-parser-combinators
       
    play-json
-      Version 2.3.6
+      Version 2.3.9
       Copyright 2013 Typesafe (http://www.typesafe.com)
       Apache License, Version 2.0
       https://github.com/playframework/playframework#license
       https://github.com/playframework/playframework
 
    scopt
-      Version 3.2.0
+      Version 3.3.0
       Copyright not specified
       MIT License
       https://github.com/scopt/scopt#license
       https://github.com/scopt/scopt
                
-   scala-logging-slf4j
-      Version 2.1.2
+   scala-logging
+      Version 3.1.0
       Copyright (C) 2011-2012 Typesafe Inc. <http://typesafe.com>
       Apache License, Version 2.0
       https://github.com/typesafehub/scala-logging#license
@@ -53,21 +53,21 @@
       http://www.slf4j.org
       
    jline
-      Version 2.12
+      Version 2.12.1
       Copyright (c) 2002-2012, the original author or authors.
       BSD License
       https://github.com/jline/jline2/blob/master/LICENSE.txt
       https://github.com/jline/jline2
          
    Bootstrap
-      Version 3.1.1
+      Version 3.3.4
       Copyright (c) 2011-2014 Twitter, Inc
       MIT License
       https://github.com/twbs/bootstrap/blob/master/LICENSE
       http://getbootstrap.com
          
    JQuery
-      Version 1.11.0
+      Version 2.1.4
       Copyright 2014 The jQuery Foundation
       MIT License
       https://jquery.org/license/
@@ -83,18 +83,18 @@
    - Test Dependencies -
    
    scalatest
-      Version 2.2.1
+      Version 2.2.4
       Copyright 2001-2013 Artima, Inc.
       Apache License, Version 2.0 
       https://github.com/scalatest/scalatest/blob/master/LICENSE
       http://www.scalatest.org
       
    mockito
-      Version 1.10.14
+      Version 1.10.19
       Copyright (c) 2007 Mockito contributors
       MIT License
       https://github.com/mockito/mockito/blob/master/LICENSE
-      http://code.google.com/p/mockito/
+      https://github.com/mockito/mockito
       
    ----------------------------------------------------------------------------
                                                                        scala
@@ -132,7 +132,7 @@
 
    ----------------------------------------------------------------------------
                                                                    play-json
-                                                         scala-logging-slf4j
+                                                               scala-logging
    Apache License, Version 2.0                                     scalatest
    ----------------------------------------------------------------------------
    

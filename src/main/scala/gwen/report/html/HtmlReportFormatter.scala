@@ -340,7 +340,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  						</div>""" else ""}"""
 
     private def formatJsHeader(rootDir: String) = s""" 
-		<script src="${rootDir}resources/js/jquery-1.11.0.min.js"></script>
+		<script src="${rootDir}resources/js/jquery.min.js"></script>
 		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
   		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
       

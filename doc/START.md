@@ -34,7 +34,7 @@ project.
 ```
 name := "gwen-math"
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.6"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
@@ -46,7 +46,7 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 ```
 - Create a new sub directory in _gwen-math_ called _project_ and place in 
   there a new file called _plugins.sbt_ containing the following line:

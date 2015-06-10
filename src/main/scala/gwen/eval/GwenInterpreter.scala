@@ -24,7 +24,7 @@ import scala.language.postfixOps
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
