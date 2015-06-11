@@ -354,7 +354,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   <div class="modal-content">
    <div class="modal-body">
    <p>
-   <center><button id="control" class="btn btn-default btn-lg">Play</button>
+   <center><button id="control" class="btn btn-default btn-lg">Play</button></center>
    <hr>
    </p>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
