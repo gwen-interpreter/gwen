@@ -353,19 +353,20 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
   private def formatSlideShow(screenshots: List[File]) = s"""
-   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">>
-  <div class="modal-dialog">
+   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" style="width: 70%;">
   <div class="modal-content">
    <div class="modal-body">
    <p>
-   <button id="control" class="btn btn-default btn-lg">Play</button>
+   <center><button id="control" class="btn btn-default btn-lg">Play</button>
+   <hr>
    </p>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
     var revolution = $$('#seq').width();
     $$('#seq').reel({
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
-      frames:  ${screenshots.length },
+      frames:  ${screenshots.length},
       speed:   0,
       indicator: 5,
       responsive: true,
@@ -385,7 +386,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       var action = $$(this).text();
       if (action == "Play") {
         $$(this).text("Stop");
-        $$('#seq').trigger("play", 0.1);
+        $$('#seq').trigger("play", 1 / ${screenshots.length });
       } else {
         $$(this).text("Play");
         $$('#seq').trigger("stop");
