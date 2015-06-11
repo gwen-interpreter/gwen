@@ -131,7 +131,7 @@ object StatusKeyword extends Enumeration {
 
   val Passed, Failed, Skipped, Pending, Loaded = Value
   
-  val valuesFixedOrder = List(Passed, Failed, Skipped, Pending, Loaded)
+  val reportables = List(Passed, Failed, Skipped, Pending)
 
   /**
     * Groups counts by status.

@@ -57,15 +57,16 @@ trait HtmlReportFormatter extends ReportFormatter {
     val scenarios = spec.scenarios
     val steps = spec.steps
     val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
-    
     val title = s"${if(isMeta) "Meta" else "Feature"} Detail"
     val status = spec.evalStatus.status
+    val summary = result.summary
+    val screenshots = result.screenshots
     
     s"""<!DOCTYPE html>
 <html lang="en">
 	<head>
 		${formatHtmlHead(s"${title} - ${featureName}", "../")}
-        ${formatJsHeader("../")}
+        ${formatJsHeader("../", screenshots.size > 1)}
 	</head>
 	<body>
 		${formatReportHeader(info, title, featureName, "../")}
@@ -79,15 +80,12 @@ trait HtmlReportFormatter extends ReportFormatter {
 			<li>
 				<small>${escape(result.timestamp.toString)}</small>
 			</li>
-				${ if (!isMeta) {
-             val screenshots = result.spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-             if (screenshots.size > 1) { s"""
-               <li>
-                 ${formatSlideShow(screenshots)} 
-               </li>"""
-             } else ""
+				${ if (screenshots.size > 1) { s"""
+             <li>
+               ${formatSlideShow(screenshots)} 
+             </li>"""
            } else ""
-        }
+         }
 		</ol>
 		<div class="panel panel-default">
 			<div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
@@ -102,8 +100,8 @@ trait HtmlReportFormatter extends ReportFormatter {
 				</p>""" else ""}
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
-						${formatProgressBar("Scenario", scenarios.map(_.evalStatus))}
-						${formatProgressBar("Step", steps.map(_.evalStatus))}
+						${formatProgressBar("Scenario", summary.scenarioCounts)}
+						${formatProgressBar("Step", summary.stepCounts)}
 					</table>
 				</div>
 			</div>
@@ -187,7 +185,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
 	<head>
 		${formatHtmlHead(title, "")}
-    	${formatJsHeader("../")}
+    	${formatJsHeader("../", false)}
 	</head>
 	<body>
 		${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
@@ -209,13 +207,13 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<span class="pull-right"><small>${formatDuration(summary.featureResults.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>
 				<div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
 					<table width="100%" cellpadding="5">
-						${formatProgressBar("Feature", summary.featureResults.map(_.evalStatus))}
+						${formatProgressBar("Feature", summary.featureCounts)}
 						${formatProgressBar("Scenario", summary.scenarioCounts)}
 						${formatProgressBar("Step", summary.stepCounts)}
 					</table>
 				</div>
 			</div>
-		</div>${(StatusKeyword.valuesFixedOrder.reverse map { status => 
+		</div>${(StatusKeyword.reportables.reverse map { status => 
 		summary.featureResults.zipWithIndex.filter { _._1.evalStatus.status == status } match {
 		  case Nil => ""
 		  case results => s"""
@@ -273,18 +271,16 @@ trait HtmlReportFormatter extends ReportFormatter {
 			</tr>
 		</table>"""
 
-  private def formatProgressBar(name: String, evalStatuses: List[EvalStatus]): String = formatProgressBar(name, StatusKeyword.countsByStatus(evalStatuses))
-
-  private def formatProgressBar(name: String, statusCounts: Map[StatusKeyword.Value, Int]): String = { 
-    val total = (statusCounts map { case (_, count) => count }).sum
-    s"""
+  private def formatProgressBar(name: String, counts: Map[StatusKeyword.Value, Int]): String = { 
+    val total = counts.map(_._2).sum
+    if (total > 0) {s"""
 						<tr>
     						<td align="right">
 								<span style="white-space: nowrap;">${total} ${name}${if (total > 1) "s" else ""}</span>
 							</td>
 							<td width="99%">
-								<div class="progress">${(StatusKeyword.valuesFixedOrder map { status =>
-							  val count = statusCounts.get(status).getOrElse(0)
+								<div class="progress">${(StatusKeyword.reportables map { status =>
+							  val count = counts.get(status).getOrElse(0)
 							  val percentage = calcPercentage(count, total)
 							  s"""
 								<div class="progress-bar progress-bar-${cssStatus(status)}" style="width: ${percentage}%">
@@ -292,7 +288,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 								</div>"""}).mkString}
 							</div>
 							</td>
-						</tr>"""
+						</tr>"""} else ""
   }
   
   private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
@@ -339,10 +335,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  							</ul>
 		  						</div>""" else ""}"""
 
-    private def formatJsHeader(rootDir: String) = s""" 
+    private def formatJsHeader(rootDir: String, withReel: Boolean) = s""" 
 		<script src="${rootDir}resources/js/jquery.min.js"></script>
-		<script src="${rootDir}resources/js/jquery.reel-min.js"></script>
-  		<script src="${rootDir}resources/js/bootstrap.min.js"></script>"""
+  	<script src="${rootDir}resources/js/bootstrap.min.js"></script>
+  	${ if (withReel) { s"""<script src="${rootDir}resources/js/jquery.reel-min.js"></script>""" } else ""}"""
       
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
@@ -386,7 +382,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       var action = $$(this).text();
       if (action == "Play") {
         $$(this).text("Stop");
-        $$('#seq').trigger("play", 1 / ${screenshots.length });
+        $$('#seq').trigger("play", 2 / ${screenshots.length});
       } else {
         $$(this).text("Play");
         $$('#seq').trigger("stop");

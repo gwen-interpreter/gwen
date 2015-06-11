@@ -48,19 +48,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature1, Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Passed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (0)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (0)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (0)
     summary.featureResults.size should be (1)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (0)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (0)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (0)
-    summary.stepCounts(StatusKeyword.Passed) should be (3)
-    summary.stepCounts(StatusKeyword.Failed) should be (0)
-    summary.stepCounts(StatusKeyword.Skipped) should be (0)
-    summary.stepCounts(StatusKeyword.Pending) should be (0)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 3)))
+    summary.toString.replace("\r", "") should be (
+      """|1 feature: Passed 1, Failed 0, Skipped 0, Pending 0 
+         |1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0
+         |3 steps: Passed 3, Failed 0, Skipped 0, Pending 0""".stripMargin)
     
     // add 1 failed scenario
     val feature2 = FeatureSpec(
@@ -72,19 +67,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature2 ,Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (0)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (0)
     summary.featureResults.size should be (2)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (0)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (0)
-    summary.stepCounts(StatusKeyword.Passed) should be (4)
-    summary.stepCounts(StatusKeyword.Failed) should be (1)
-    summary.stepCounts(StatusKeyword.Skipped) should be (1)
-    summary.stepCounts(StatusKeyword.Pending) should be (0)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1), (StatusKeyword.Failed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 1), (StatusKeyword.Failed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 4), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.toString.replace("\r", "") should be (
+      """|2 features: Passed 1, Failed 1, Skipped 0, Pending 0 
+         |2 scenarios: Passed 1, Failed 1, Skipped 0, Pending 0
+         |6 steps: Passed 4, Failed 1, Skipped 1, Pending 0""".stripMargin)
     
     // add 2 passed scenarios
     val feature3 = FeatureSpec(
@@ -101,19 +91,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature3 ,Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (0)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (0)
     summary.featureResults.size should be (3)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (3)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (0)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (0)
-    summary.stepCounts(StatusKeyword.Passed) should be (10)
-    summary.stepCounts(StatusKeyword.Failed) should be (1)
-    summary.stepCounts(StatusKeyword.Skipped) should be (1)
-    summary.stepCounts(StatusKeyword.Pending) should be (0)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.toString.replace("\r", "") should be (
+      """|3 features: Passed 2, Failed 1, Skipped 0, Pending 0 
+         |4 scenarios: Passed 3, Failed 1, Skipped 0, Pending 0
+         |12 steps: Passed 10, Failed 1, Skipped 1, Pending 0""".stripMargin)
     
     // add 1 skipped scenario
     val feature4 = FeatureSpec(
@@ -125,19 +110,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature4 ,Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (0)    
     summary.featureResults.size should be (4)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (3)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (1)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (0)
-    summary.stepCounts(StatusKeyword.Passed) should be (10)
-    summary.stepCounts(StatusKeyword.Failed) should be (1)
-    summary.stepCounts(StatusKeyword.Skipped) should be (4)
-    summary.stepCounts(StatusKeyword.Pending) should be (0)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4)))
+    summary.toString.replace("\r", "") should be (
+      """|4 features: Passed 2, Failed 1, Skipped 1, Pending 0 
+         |5 scenarios: Passed 3, Failed 1, Skipped 1, Pending 0
+         |15 steps: Passed 10, Failed 1, Skipped 4, Pending 0""".stripMargin)
     
     // add 1 pending scenario
     val feature5 = FeatureSpec(
@@ -148,19 +128,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature5 ,Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (1)
     summary.featureResults.size should be (5)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (3)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (1)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (1)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (1)
-    summary.stepCounts(StatusKeyword.Passed) should be (10)
-    summary.stepCounts(StatusKeyword.Failed) should be (1)
-    summary.stepCounts(StatusKeyword.Skipped) should be (4)
-    summary.stepCounts(StatusKeyword.Pending) should be (2)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4), (StatusKeyword.Pending -> 2)))
+    summary.toString.replace("\r", "") should be (
+      """|5 features: Passed 2, Failed 1, Skipped 1, Pending 1 
+         |6 scenarios: Passed 3, Failed 1, Skipped 1, Pending 1
+         |17 steps: Passed 10, Failed 1, Skipped 4, Pending 2""".stripMargin)
     
     // add 4 passed and 1 failed scenario
     val feature6 = FeatureSpec(
@@ -191,19 +166,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         )))
     summary = summary + new FeatureResult(feature6 ,Nil, None)
     EvalStatus(summary.featureResults.map(_.evalStatus)).status should be (StatusKeyword.Failed)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Passed).size should be (2)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Failed).size should be (2)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Skipped).size should be (1)
-    summary.featureResults.filter(_.evalStatus.status == StatusKeyword.Pending).size should be (1)
     summary.featureResults.size should be (6)
-    summary.scenarioCounts(StatusKeyword.Passed) should be (7)
-    summary.scenarioCounts(StatusKeyword.Failed) should be (2)
-    summary.scenarioCounts(StatusKeyword.Skipped) should be (1)
-    summary.scenarioCounts(StatusKeyword.Pending) should be (1)
-    summary.stepCounts(StatusKeyword.Passed) should be (21)
-    summary.stepCounts(StatusKeyword.Failed) should be (2)
-    summary.stepCounts(StatusKeyword.Skipped) should be (6)
-    summary.stepCounts(StatusKeyword.Pending) should be (2)
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 7), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 21), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 6), (StatusKeyword.Pending -> 2)))
+    summary.toString.replace("\r", "") should be (
+      """|6 features: Passed 2, Failed 2, Skipped 1, Pending 1 
+         |11 scenarios: Passed 7, Failed 2, Skipped 1, Pending 1
+         |31 steps: Passed 21, Failed 2, Skipped 6, Pending 2""".stripMargin)
     
   }
   

@@ -34,6 +34,8 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
   
   val timestamp = new Date()
   
+  val featureCounts = StatusKeyword.countsByStatus(featureResults.map(_.evalStatus))
+  
   /** 
     * Adds the given feature result to the current summary (accumulates). 
     * 
@@ -46,23 +48,24 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
       addCounts(this.stepCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))))
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
-    (StatusKeyword.values map { status => 
+    (StatusKeyword.reportables flatMap { status => 
       val a = countsA.get(status).getOrElse(0)
       val b = countsB.get(status).getOrElse(0)
-      (status, a + b)
+      val sum = a + b
+      if (sum > 0) Some((status, sum)) else None
     }).toMap
   
   override def toString = { 
-    val featureCount = featureResults.size
-    val scenarioCount = (scenarioCounts map { case (_, count) => count }).sum
-    val stepCount = (stepCounts map { case (_, count) => count }).sum
-    s"""|${featureCount} feature${if (featureCount == 1) "" else "s"}: ${formatCounts(StatusKeyword.countsByStatus(featureResults.map(_.evalStatus)))} 
+    val featureCount = featureCounts.map(_._2).sum
+    val scenarioCount = scenarioCounts.map(_._2).sum
+    val stepCount = stepCounts.map(_._2).sum
+    s"""|${featureCount} feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)} 
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
-    StatusKeyword.valuesFixedOrder map { status =>
+    StatusKeyword.reportables map { status =>
       val count = counts.get(status).getOrElse(0)
       s"${status} ${count}"
     } mkString(", ")
@@ -85,8 +88,10 @@ object FeatureSummary {
   */
 class FeatureResult(val spec: FeatureSpec, val metaResults: List[FeatureResult], val report: Option[File]) {
   val timestamp = new Date()
-  def featureName = spec.feature.name
-  def featureFile = spec.featureFile 
-  def evalStatus = spec.evalStatus
+  val featureName = spec.feature.name
+  val featureFile = spec.featureFile 
+  val evalStatus = spec.evalStatus
+  val summary = FeatureSummary() + this
+  val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
 }
 
