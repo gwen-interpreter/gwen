@@ -357,30 +357,35 @@ trait HtmlReportFormatter extends ReportFormatter {
   <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
-   <button id="control" class="btn btn-default btn-lg">play</button>
+   <button id="control" class="btn btn-default btn-lg">Play</button>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
+    var revolution = $$('#seq').width();
     $$('#seq').reel({
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${screenshots.length },
       speed:   0,
       indicator: 5,
       responsive: true,
-      loops: true
+      loops: true,
+      cursor: 'auto',
+	  revolution: revolution,
+	  steppable: false,
+	  preload: 'linear'
     }).bind("frameChange", function(e, d, frame){
         if (frame == 1) {
-          $$('#control').text("play");
+          $$('#control').text("Play");
           $$('#seq').trigger("stop");
         }
     });
   $$(function() {
     $$('#control').click(function() {
       var action = $$(this).text();
-      if (action == "play") {
-        $$(this).text("stop");
+      if (action == "Play") {
+        $$(this).text("Stop");
         $$('#seq').trigger("play", 0.1);
       } else {
-        $$(this).text("play");
+        $$(this).text("Play");
         $$('#seq').trigger("stop");
       }
     });
