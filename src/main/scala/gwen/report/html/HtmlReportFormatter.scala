@@ -354,7 +354,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
   private def formatSlideShow(screenshots: List[File]) = s"""
    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog" style="width: 70%;">
+  <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
    <div class="modal-body">
    <p>
