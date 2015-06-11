@@ -357,7 +357,9 @@ trait HtmlReportFormatter extends ReportFormatter {
   <div class="modal-dialog">
   <div class="modal-content">
    <div class="modal-body">
+   <p>
    <button id="control" class="btn btn-default btn-lg">Play</button>
+   </p>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
     var revolution = $$('#seq').width();
