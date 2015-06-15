@@ -47,6 +47,15 @@ class HtmlReportGenerator(val options: GwenOptions)
     copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.reel-min.js", dir)
   }
   
+  // copy in font files (if they don't already exist)
+  new File(Path(new File(reportDir, "resources/fonts")).createDirectory().path) tap { dir =>
+    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.eot", dir)
+    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.svg", dir)
+    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.ttf", dir)
+    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff", dir)
+    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
+  }
+  
   // copy in image files (if they don't already exist)
   new File(Path(new File(reportDir, "resources/img")).createDirectory().path) tap { dir =>
     copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)

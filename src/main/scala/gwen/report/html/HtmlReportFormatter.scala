@@ -349,12 +349,22 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
   private def formatSlideShow(screenshots: List[File]) = s"""
-   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
    <div class="modal-body">
+   <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
    <p>
-   <center><button id="control" class="btn btn-default btn-lg">Play</button></center>
+   <center>
+  		<button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
+    	<button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+		<button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+		<button id="step-fwd-btn" class="btn btn-default btn-lg" title="Step forward"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+		<button id="fast-fwd-btn" class="btn btn-default btn-lg" title="Forward to end"><span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span></button>
+  		<select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
+  			<option>${i}</option>""").mkString}  			
+  		</select> of ${screenshots.length}
+  	</center>
    <hr>
    </p>
    <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
@@ -372,29 +382,44 @@ trait HtmlReportFormatter extends ReportFormatter {
 	  steppable: false,
 	  preload: 'linear'
     }).bind("frameChange", function(e, d, frame){
-        if (frame == 1) {
-          $$('#control').text("Play");
-          $$('#seq').trigger("stop");
-        }
+        if (frame == ${screenshots.length}) { stop(); } 
+		$$('#current-frame').val(frame);
     });
+  function play() {
+    $$('#play-pause').removeClass("glyphicon-play");
+    $$('#play-pause').addClass("glyphicon-pause");
+    $$('#play-pause').attr("title", "Pause");
+	if ($$('#seq').reel('frame') == ${screenshots.length}) { $$('#seq').reel('frame', 1); }
+    $$('#seq').trigger("play", 2 / ${screenshots.length});
+  }
+  function stop() {
+	$$('#seq').trigger("stop");
+    $$('#play-pause').removeClass("glyphicon-pause");
+    $$('#play-pause').addClass("glyphicon-play");
+    $$('#play-pause').attr("title", "Play");
+  }
   $$(function() {
-    $$('#control').click(function() {
-      var action = $$(this).text();
-      if (action == "Play") {
-        $$(this).text("Stop");
-        $$('#seq').trigger("play", 2 / ${screenshots.length});
-      } else {
-        $$(this).text("Play");
-        $$('#seq').trigger("stop");
-      }
+	$$('#fast-back-btn').click(function(e) { $$('#seq').reel('frame', 1); stop(); });
+	$$('#step-back-btn').click(function(e) { $$('#seq').trigger('stepRight'); stop(); });
+	$$('#play-pause-btn').click(function() { 
+      if ($$('#play-pause').hasClass("glyphicon-play")) { play(); } 
+      else if ($$('#play-pause').hasClass("glyphicon-pause")) { stop(); } 
     });
+	$$('#step-fwd-btn').click(function(e) { $$('#seq').trigger('stepLeft'); stop(); });
+	$$('#fast-fwd-btn').click(function(e) { $$('#seq').reel('frame', ${screenshots.length}); stop(); });
+	$$('#current-frame').change(function(e) { $$('#seq').reel('frame', parseInt($$(this).val())); stop(); });
+	$$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
+	$$('#slideshow').on('show.bs.modal', function (e) { $$('#seq').reel('frame', 1); stop(); });
+	$$('#slideshow').on('shown.bs.modal', function (e) { $$('#seq').reel('frame', 1); stop(); });
+	$$('#slideshow').on('hide.bs.modal', function (e) { $$('#seq').trigger('stop') });
+	$$('#slideshow').on('hidden.bs.modal', function (e) { $$('#seq').trigger('stop') });
   });
    </script>
    </div>
   </div>
 </div>
 </div>
-<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#myModal">
+<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#slideshow">
   Slideshow
 </button>
   """
