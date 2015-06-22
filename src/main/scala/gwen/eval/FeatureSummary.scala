@@ -59,7 +59,7 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
     val featureCount = featureCounts.map(_._2).sum
     val scenarioCount = scenarioCounts.map(_._2).sum
     val stepCount = stepCounts.map(_._2).sum
-    s"""|${featureCount} feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)} 
+    s"""|${featureCount} feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}""".stripMargin
   }

@@ -113,11 +113,26 @@ class ScopedDataStack() {
     */
   def current: ScopedData = scopes.head
   
+  /**
+   * Filters scoped data based on a predicate.
+   * 
+   * @param pred the predicate to filter with
+   */
+  def filterData(pred: ScopedData => Boolean): ScopedDataStack = ScopedDataStack(scopes.filter(pred))
+  
   /** Gets the currently visible scoped data. */
-  def visibleScopes: Stack[ScopedData] = scopes.reverse.filter {
-    (scopedData: ScopedData) => 
-      featureScope == scopedData || current.scope == scopedData.scope 
+  def visible: ScopedDataStack = filterData { data => 
+      featureScope == data || current.scope == data.scope 
   }
+  
+  /**
+   * Filters all attributes in all scopes based on the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return a new Scoped data stack containing only the attributes accepted by the predicate; 
+   */
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = 
+    ScopedDataStack(scopes.flatMap(_.filterAtts(pred)))
   
   /**
     * Binds an attribute to the currently active scope.  An error is thrown
@@ -220,11 +235,23 @@ class ScopedDataStack() {
     */
   def json: JsObject = Json.obj("scopes" -> (scopes.reverse map (_.json)))
   
+}
+
+object ScopedDataStack {
+  
   /**
-    * Returns a string representation of the visible attribute stack
-    * as a JSON object.
-    */
-  def visibleJson = Json.obj("scopes" -> (visibleScopes map (_.json)))
+   * Merges a stack of scopes into a single ScopedDataStack object.
+   * 
+   * @param scopes the scopes to merge
+   */
+  def apply(scopes: Stack[ScopedData]): ScopedDataStack = {
+    val stack = new ScopedDataStack()
+    stack.scopes.pop // pop empty feature scope off
+    scopes.reverse.foldLeft(stack) { (stack, data) =>
+      stack tap { _.scopes push data }
+    }
+  }
+  
 }
 
 class AttrNotFoundException(name: String, scope: String) 

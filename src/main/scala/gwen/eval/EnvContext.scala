@@ -30,6 +30,7 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Pending
 import gwen.dsl.SpecType
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import scala.collection.mutable.Stack
 
 
 /**
@@ -67,12 +68,19 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     stepDefs = Map[String, Scenario]()
     resetAttachments
   }
-  
-  /** Returns the current state of all scoped attributes as a Json object. */  
+    
   def json: JsObject = scopes.json
   
   /** Returns the current visible attributes as a Json object. */  
-  def visibleJson: JsObject = scopes.visibleJson
+  def visible: ScopedDataStack = scopes.visible
+  
+  /**
+   * Filters all attributes in all scopes based on the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return a new Scoped data stack containing only the attributes accepted by the predicate; 
+   */
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = scopes.filterAtts(pred) 
   
   /**
     * Gets a named data scope (creates it if it does not exist)
@@ -106,7 +114,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     */
   final def fail(failure: Failed): Unit = { 
     _attachments = createErrorAttachments(failure)
-    logger.error(Json.prettyPrint(this.visibleJson))
+    logger.error(Json.prettyPrint(this.scopes.visible.json))
     logger.error(failure.error.getMessage())
     logger.debug(s"Exception: ", failure.error)
   }
@@ -126,13 +134,13 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     ("Environment (all)", 
       File.createTempFile("env-all-", ".txt") tap { f =>
         f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.json))
+        f.writeText(Json.prettyPrint(this.scopes.json))
       }
     ),
     ("Environment (visible)", 
       File.createTempFile("env-visible-", ".txt") tap { f =>
         f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.visibleJson))
+        f.writeText(Json.prettyPrint(this.scopes.visible.json))
       }
     )
   )

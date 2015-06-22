@@ -265,10 +265,11 @@ trait HtmlReportFormatter extends ReportFormatter {
 					${escape(path)}
 				</td>
 				<td align="right">
-          <h3>&nbsp;</h3>
+					<h3>&nbsp;</h3>
 					<a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
-					<br></br>
-					<small style="white-space: nowrap; color: #1f23ae;">${info.implVersion}</small>
+					<p>
+					<small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small>
+					</p>
 				</td>
 			</tr>
 		</table>"""

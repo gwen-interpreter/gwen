@@ -24,6 +24,7 @@ import scala.util.Success
 
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
+import gwen.Predefs.RegexContext
 import gwen.dsl.StepKeyword
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
@@ -61,11 +62,17 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
-    case "env" | "env -v" | "env --visible" => 
-      Some(Json.prettyPrint(env.visibleJson))
-    case "env -f" | "env --feature" => 
+    case r"""(?:env|env -v|env --visible) "(.+?)"?$$$name""" =>
+      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.visible.json))
+    case r"env|env -v|env --visible" =>
+      Some(Json.prettyPrint(env.visible.json))
+    case r"""(?:env|env -f|env --feature) "(.+?)"?$$$name""" =>
+      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.filterData(_.scope == "feature").json))
+    case r"env|env -f|env --feature" =>
       Some(Json.prettyPrint(env.featureScope.json))
-    case "env -a" | "env --all" => 
+    case r"""(?:env|env -a|env --all) "(.+?)"?$$$name""" =>
+      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.json))
+    case r"env|env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
     case "exit" | "bye" | "quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()

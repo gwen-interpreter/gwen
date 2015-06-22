@@ -18,8 +18,11 @@ package gwen.eval
 
 import gwen.Predefs.Kestrel
 import play.api.libs.json.Json
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsObject
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
@@ -62,7 +65,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * the existing sequence to create a new sequence that is then assigned 
     * back to this variable.
     */
-  private[this] var atts = Json.arr()
+  private var atts = Json.arr()
   
   /**
     * Checks if the scoped data is empty.
@@ -125,6 +128,25 @@ class ScopedData(val scope: String) extends LazyLogging {
     }
     this
   }
+    
+  /**
+   * Filters all contained attributes based on the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return Some(ScopedData) containing only the attributes accepted by the predicate; 
+   *         or None if no attributes are accepted
+   */
+  def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
+    val filteredAtts = (atts.value.flatMap { 
+      case JsObject(values) => 
+        values.map(nvp => (nvp._1, nvp._2.as[String]))
+      case _ => None
+      }).filter(pred(_))
+    val result = filteredAtts.foldLeft(ScopedData(scope)) { (data, attr) =>
+      data tap { _.set(attr._1, attr._2 ) }
+    }
+    if (result.isEmpty) None else Some(result)
+  }
 
   /**
     * Returns this entire scope as a JSON object.
@@ -146,5 +168,13 @@ object ScopedData {
     * @param name the scope name 
     */
   def apply(name: String): ScopedData = new ScopedData(name)
+  
+  /**
+    * Create a new ScopedData object with the given attribute list.
+    *
+    * @param name the scope name 
+    * @param atts the list of attributes to include in the scope
+    */
+  def apply(name: String, atts: JsArray) = new ScopedData(name) tap { _.atts = atts }
 
 }
