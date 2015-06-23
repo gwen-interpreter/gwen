@@ -66,15 +66,15 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrNameFilter(name)).json))
     case r"env|env -v|env --visible" =>
       Some(Json.prettyPrint(env.visibleScopes.json))
-    case r"""(?:env|env -f|env --feature) "(.+?)"?$$$name""" =>
+    case r"""(?:env -f|env --feature) "(.+?)"?$$$name""" =>
       Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrNameFilter(name))).json))
-    case r"env|env -f|env --feature" =>
+    case r"env -f|env --feature" =>
       Some(Json.prettyPrint(env.featureScope.json))
-    case r"""(?:env|env -a|env --all) "(.+?)"?$$$name""" =>
+    case r"""(?:env -a|env --all) "(.+?)"?$$$name""" =>
       Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrNameFilter(name)).json))
-    case r"env|env -a|env --all" =>
+    case r"env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
-    case "exit" | "bye" | "quit" => 
+    case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None
     case _ =>
