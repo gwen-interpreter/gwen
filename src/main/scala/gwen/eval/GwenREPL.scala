@@ -63,15 +63,15 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
     case r"""(?:env|env -v|env --visible) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.visible.json))
+      Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrNameFilter(name)).json))
     case r"env|env -v|env --visible" =>
-      Some(Json.prettyPrint(env.visible.json))
+      Some(Json.prettyPrint(env.visibleScopes.json))
     case r"""(?:env|env -f|env --feature) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.filterData(_.scope == "feature").json))
+      Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrNameFilter(name))).json))
     case r"env|env -f|env --feature" =>
       Some(Json.prettyPrint(env.featureScope.json))
     case r"""(?:env|env -a|env --all) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(env.filterAtts{case (n, _) => n == name || n.startsWith(name + "/") }.json))
+      Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrNameFilter(name)).json))
     case r"env|env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
     case "exit" | "bye" | "quit" => 
@@ -95,5 +95,11 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     while(eval(read()).map(println).isDefined) { }
   }
   
+}
+
+object GwenREPL {
+  def attrNameFilter(name: String): PartialFunction[(String, String), Boolean] = { 
+    case (n, _) => n == name || n.startsWith(name + "/") 
+  }
 }
 

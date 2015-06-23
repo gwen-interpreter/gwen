@@ -244,6 +244,14 @@ object ScopedDataStack {
    * 
    * @param scopes the scopes to merge
    */
+  def apply(scope: Option[ScopedData]): ScopedDataStack = 
+    scope.map(x => ScopedDataStack(Stack(x))).getOrElse(ScopedDataStack(Stack[ScopedData]()))
+  
+  /**
+   * Merges a stack of scopes into a single ScopedDataStack object.
+   * 
+   * @param scopes the scopes to merge
+   */
   def apply(scopes: Stack[ScopedData]): ScopedDataStack = {
     val stack = new ScopedDataStack()
     stack.scopes.pop // pop empty feature scope off

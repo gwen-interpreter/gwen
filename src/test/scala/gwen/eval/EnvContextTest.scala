@@ -90,9 +90,9 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
-  "visible.json.toString on new env context" should "contain empty scopes" in {
+  "visibleScopes.json.toString on new env context" should "contain empty scopes" in {
     val env = newEnv
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
   "json.toString on new env context with bound var in global scope" should "print the var" in {
@@ -101,10 +101,10 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"}]}]}""")
   }
   
-  "visible.json.toString on new env context with bound var in global scope" should "print the var" in {
+  "visibleScopes.json.toString on new env context with bound var in global scope" should "print the var" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"}]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"}]}]}""")
   }
   
   "json.toString on reset env context" should "contain empty scopes" in {
@@ -114,11 +114,11 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
-  "visible.json.toString on reset env context" should "contain empty scopes" in {
+  "visibleScopes.json.toString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.reset
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
   "json.toString on closed env context" should "contain empty scopes" in {
@@ -128,21 +128,21 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
-  "visible.json.toString on closed env context" should "contain empty scopes" in {
+  "visibleScopes.json.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.close
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
   }
   
-  "visible.json.toString on loaded env context" should "returned only visible data" in {
+  "visibleScopes.json.toString on loaded env context" should "returned only visible data" in {
     val env = newEnv
     val vars = env.addScope("vars")
     vars.set("howdy", "partner")
     vars.set("page", "home")
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"},{"page":"home"}]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"},{"page":"home"}]}]}""")
     vars.set("page", "dashboard")
-    env.visible.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"},{"page":"home"},{"page":"dashboard"}]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"},{"page":"home"},{"page":"dashboard"}]}]}""")
   }
   
   "env.filterAtts on loaded env context" should "should filter attributes correctly" in {

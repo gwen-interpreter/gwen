@@ -71,8 +71,8 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     
   def json: JsObject = scopes.json
   
-  /** Returns the current visible attributes as a Json object. */  
-  def visible: ScopedDataStack = scopes.visible
+  /** Returns the current visible scopes. */  
+  def visibleScopes: ScopedDataStack = scopes.visible
   
   /**
    * Filters all attributes in all scopes based on the given predicate.
