@@ -49,6 +49,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
   
   /** List of current attachments (name-file pairs). */
   private var _attachments: List[(String, File)] = Nil
+  private var _attachmentNo = 0
   
   /** The current type of specification being interpreted. */
   var specType = SpecType.feature
@@ -67,6 +68,7 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     scopes.reset()
     stepDefs = Map[String, Scenario]()
     resetAttachments
+    _attachmentNo = 0
   }
     
   def json: JsObject = scopes.json
@@ -125,25 +127,24 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @param failed the failed status
     */
   def createErrorAttachments(failure: Failed): List[(String, File)] = List( 
-    ("Error details", 
-      File.createTempFile("error-details-", ".txt") tap { f =>
-        f.deleteOnExit()
-        f.writeText(failure.error.writeStackTrace())
-      }
-    ), 
-    ("Environment (all)", 
-      File.createTempFile("env-all-", ".txt") tap { f =>
-        f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.scopes.json))
-      }
-    ),
-    ("Environment (visible)", 
-      File.createTempFile("env-visible-", ".txt") tap { f =>
+    ("Error details", createAttachmentFile("error-details", "txt")), 
+    ("Environment (all)", createAttachmentFile("env-all", "txt")),
+    ("Environment (visible)", createAttachmentFile("env-visible", "txt"))
+  )
+  
+  /**
+   * Creates an attachment file.
+   * 
+   * @param prefix the filename prefix
+   * @param extenstion the filename extension
+   */
+  def createAttachmentFile(prefix: String, extension: String): File = {
+      _attachmentNo = _attachmentNo + 1
+      File.createTempFile(s"${"%04d".format(_attachmentNo)}-${prefix}-", s".${extension}") tap { f =>
         f.deleteOnExit()
         f.writeText(Json.prettyPrint(this.scopes.visible.json))
       }
-    )
-  )
+  }
   
   /**
     * Adds an attachment to the current context.

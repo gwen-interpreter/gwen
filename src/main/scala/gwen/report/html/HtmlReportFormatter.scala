@@ -45,11 +45,12 @@ trait HtmlReportFormatter extends ReportFormatter {
   /**
     * Formats the feature detail report as HTML.
     * 
+    * @param options gwen command line options
     * @param info the gwen implementation info
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, String)]): String = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
     
     val spec = result.spec
     val metaResults = result.metaResults 
@@ -61,18 +62,19 @@ trait HtmlReportFormatter extends ReportFormatter {
     val status = spec.evalStatus.status
     val summary = result.summary
     val screenshots = result.screenshots
+    val rootPath = relativePath(result.report.get, options.reportDir.get).filter(_ == File.separatorChar).flatMap(c => "../")
     
     s"""<!DOCTYPE html>
 <html lang="en">
 	<head>
-		${formatHtmlHead(s"${title} - ${featureName}", "../")}
-        ${formatJsHeader("../", screenshots.size > 1)}
+		${formatHtmlHead(s"${title} - ${featureName}", rootPath)}
+        ${formatJsHeader(rootPath, screenshots.size > 1)}
 	</head>
 	<body>
-		${formatReportHeader(info, title, featureName, "../")}
-		<ol class="breadcrumb">${(breadcrumbs map { case (text, report) => s"""
+		${formatReportHeader(info, title, featureName, rootPath)}
+		<ol class="breadcrumb">${(breadcrumbs map { case (text, reportFile) => s"""
 			<li>
-				<span class="caret-left"></span> <a href="${report}">${escape(text)}</a>
+				<span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else ""}${reportFile.getName()}">${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
@@ -234,7 +236,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 						<div class="container-fluid" style="padding: 0px 0px">${
                 (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
                   val report = result.report.get
-                  formatSummaryLine(result, s"${report.getParentFile().getName()}/${report.getName()}", Some(resultIndex + 1), rowIndex)
+                  formatSummaryLine(result, s"${relativePath(report, options.reportDir.get).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
                 }).mkString}
 						</div>
 					</li>
@@ -246,19 +248,19 @@ trait HtmlReportFormatter extends ReportFormatter {
     """
   }
   
-  private def formatHtmlHead(title: String, rootDir: String) = s"""
+  private def formatHtmlHead(title: String, rootPath: String) = s"""
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>${title}</title>
-		<link href="${rootDir}resources/css/bootstrap.min.css" rel="stylesheet" />
-		<link href="${rootDir}resources/css/gwen.css" rel="stylesheet" />"""
+		<link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(info: GwenInfo, heading: String, path: String, rootDir: String) = s"""
+  private def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
 		<table width="100%" cellpadding="5">
 			<tr>
 		  		<td width="100px">
-					<a href="${info.gwenHome}"><img src="${rootDir}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
+					<a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
 				</td>
 				<td>
 					<h3>${escape(heading)}</h3>
@@ -338,10 +340,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  							</ul>
 		  						</div>""" else ""}"""
 
-    private def formatJsHeader(rootDir: String, withReel: Boolean) = s""" 
-		<script src="${rootDir}resources/js/jquery.min.js"></script>
-  	<script src="${rootDir}resources/js/bootstrap.min.js"></script>
-  	${ if (withReel) { s"""<script src="${rootDir}resources/js/jquery.reel-min.js"></script>""" } else ""}"""
+    private def formatJsHeader(rootPath: String, withReel: Boolean) = s""" 
+		<script src="${rootPath}resources/js/jquery.min.js"></script>
+  	<script src="${rootPath}resources/js/bootstrap.min.js"></script>
+  	${ if (withReel) { s"""<script src="${rootPath}resources/js/jquery.reel-min.js"></script>""" } else ""}"""
       
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
@@ -351,6 +353,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+  private def relativePath(reportFile: File, reportDir: File) = reportFile.getPath.substring(reportDir.getPath().length() + 1)
   private def formatSlideShow(screenshots: List[File]) = s"""
    <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">

@@ -265,9 +265,9 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
     evalStatus should be (Passed(6000))
     
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6", "file6a.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6", "file6b.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir7", "file7a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6" + File.separator + "file6a.feature", "file6a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6" + File.separator + "file6b.feature", "file6b.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir7" + File.separator + "file7a.feature", "file7a.feature.html").exists should be (true)
     new File(reportDir, "feature-summary.html").exists should be (true)
     new File(reportDir, "index.html").exists should be (true)
     

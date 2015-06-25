@@ -40,7 +40,7 @@ class ReportGenerator (
     private val fileExtension: String) extends LazyLogging {
   formatter: ReportFormatter => 
     
-  private val summaryFileName = s"${summaryFilePrefix}.${fileExtension}"
+  private val summaryReportFile = new File(reportDir, s"${summaryFilePrefix}.${fileExtension}")
   
   /** Lazily creates and returns the target report directory. */
   private[report] lazy val reportDir = {
@@ -73,9 +73,10 @@ class ReportGenerator (
     new FeatureResult(spec, Nil, Some(file)) tap { metaResult =>
       file.writeText(
         formatDetail(
+          options,
           info, 
           metaResult, 
-          List(("Summary", s"../${summaryFileName}"), ("Feature", featureReportFile.getName()))))
+          List(("Summary", summaryReportFile), ("Feature", featureReportFile))))
       logger.info(s"Meta detail report generated: ${file.getAbsolutePath()}")
     }
   }
@@ -85,9 +86,10 @@ class ReportGenerator (
     new FeatureResult(spec, metaResults, Some(featureReportFile)) tap { featureResult =>
       featureReportFile.writeText(
         formatDetail(
+          options,
           info, 
           featureResult, 
-          List(("Summary", s"../${summaryFileName}"))))
+          List(("Summary", summaryReportFile))))
       val attachmentsDir = new File(Path(new File(featureReportFile.getParentFile(), "attachments")).createDirectory().path)
       spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
         new File(attachmentsDir, file.getName()).writeFile(file)
@@ -104,18 +106,17 @@ class ReportGenerator (
     */
   final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
     if (!summary.featureResults.map(_.report).isEmpty) {
-      Some(new File(reportDir, summaryFileName) tap { file =>
         logger.info(s"Generating feature summary report..")
-        file.writeText(formatSummary(options, info, summary))
-        logger.info(s"Feature summary report generated: ${file.getAbsolutePath()}")
-      })
+        summaryReportFile.writeText(formatSummary(options, info, summary))
+        logger.info(s"Feature summary report generated: ${summaryReportFile.getAbsolutePath()}")
+        Some(summaryReportFile)
     } else {
       None
     }
    
   private def createReportDir(baseDir: File, spec: FeatureSpec): File = spec.featureFile match {
     case Some(file) =>
-      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent())).createDirectory().path)
+      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent()) + File.separator + encodeDir(file.getName())).createDirectory().path)
     case None => 
       new File(Path(baseDir.getPath() + File.separator + encodeDir(spec.feature.name)).createDirectory().path)
   }

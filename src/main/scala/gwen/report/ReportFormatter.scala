@@ -27,11 +27,12 @@ trait ReportFormatter {
   /**
     * Formats the feature detail report.
     * 
+    * @param options gwen command line options
     * @param info the gwen implementation info
     * @param result the feature result
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  def formatDetail(info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, String)]): String
+  def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String
   
   /**
     * Formats the feature summary report.
