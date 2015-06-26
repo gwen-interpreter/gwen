@@ -127,9 +127,18 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @param failed the failed status
     */
   def createErrorAttachments(failure: Failed): List[(String, File)] = List( 
-    ("Error details", createAttachmentFile("error-details", "txt")), 
-    ("Environment (all)", createAttachmentFile("env-all", "txt")),
-    ("Environment (visible)", createAttachmentFile("env-visible", "txt"))
+    ("Error details", createAttachmentFile("error-details", "txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(failure.error.writeStackTrace())
+    }), 
+    ("Environment (all)", createAttachmentFile("env-all", "txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(Json.prettyPrint(this.scopes.json))
+    }),
+    ("Environment (visible)", createAttachmentFile("env-visible", "txt") tap { f =>
+        f.deleteOnExit()
+        f.writeText(Json.prettyPrint(this.scopes.visible.json))
+    })
   )
   
   /**
