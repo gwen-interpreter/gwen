@@ -36,8 +36,8 @@ trait HtmlReportFormatter extends ReportFormatter {
   private val cssStatus = Map(
       StatusKeyword.Passed -> "success", 
       StatusKeyword.Failed -> "danger", 
-      StatusKeyword.Skipped -> "info", 
-      StatusKeyword.Pending -> "warning",
+      StatusKeyword.Skipped -> "warning", 
+      StatusKeyword.Pending -> "info",
       StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")

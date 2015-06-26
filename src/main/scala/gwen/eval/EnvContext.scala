@@ -161,8 +161,8 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     _attachments = Nil
   }
   
-  /** Gets the list of attachments (in attached order).*/
-  def attachments = _attachments.reverse
+  /** Gets the list of attachments (sorted by file name).*/
+  def attachments = _attachments.sortBy(_._2 .getName())
   
   /**
     * Can be overridden by subclasses to parse the given step 

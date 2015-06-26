@@ -57,11 +57,11 @@
 }
 
 .badge-info {
-  background-color: #5bc0de;
+  background-color: #f0ad4e;
 }
 
 .badge-warning {
-  background-color: #f0ad4e;
+  background-color: #5bc0de;
 }
 
 .bg-success {
@@ -93,11 +93,11 @@
 }
 
 .bg-altrow-info {
-	background-color: #5bc0de;
+	background-color: #f0ad4e;
 }
 
 .bg-altrow-warning {
-	background-color: #f0ad4e;
+	background-color: #5bc0de;
 }
 
 .bg-default {
@@ -138,13 +138,13 @@
 }
 
 .btn-info {
-	background-color: #d9edf7;
-	color: #5bc0de;
+	background-color: #fcf8e3;
+	color: #f0ad4e;
 }
 
 .btn-warning {
-	background-color: #fcf8e3;
-	color: #f0ad4e;
+	background-color: #d9edf7;
+	color: #5bc0de;
 }
 
 .dropdown {
