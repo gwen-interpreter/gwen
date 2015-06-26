@@ -74,7 +74,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 		${formatReportHeader(info, title, featureName, rootPath)}
 		<ol class="breadcrumb">${(breadcrumbs map { case (text, reportFile) => s"""
 			<li>
-				<span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else ""}${reportFile.getName()}">${escape(text)}</a>
+				<span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else "../"}${reportFile.getName()}">${escape(text)}</a>
 			</li>"""}).mkString}
 			<li>
 				<span class="badge badge-${cssStatus(status)}">${status}</span>
@@ -124,7 +124,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-${cssStatus(status)}">
 						<div class="container-fluid" style="padding: 0px 0px">
-							${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, result.report.get.getName(), None, rowIndex)}).mkString}
+							${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, s"meta/${result.report.get.getName()}", None, rowIndex)}).mkString}
 						</div>
 					</li>
 				</ul>

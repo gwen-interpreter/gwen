@@ -62,15 +62,15 @@ class ReportGenerator (
     val (featureSpec::metaSpecs) = specs
     val featureReportFile = createReportFile(createReportDir(reportDir, featureSpec), "", featureSpec)
     val metaResults = metaSpecs.zipWithIndex map { case (res, idx) => 
-      (reportMetaDetail(info, res, featureReportFile, s"${createReportFileName(featureSpec)}.${idx + 1}.")) 
+      (reportMetaDetail(info, res, featureReportFile, s"${"%04d".format(idx + 1)}-")) 
     }
     reportFeatureDetail(info, featureSpec, featureReportFile, metaResults)
   }
   
-  private final def reportMetaDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, prefix: String): FeatureResult = {
-    val file = createReportFile(featureReportFile.getParentFile(), prefix, spec) 
-    logger.info(s"Generating meta detail report [${spec.feature.name}]..")
-    new FeatureResult(spec, Nil, Some(file)) tap { metaResult =>
+  private final def reportMetaDetail(info: GwenInfo, metaspec: FeatureSpec, featureReportFile: File, prefix: String): FeatureResult = {
+    val file = createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec) 
+    logger.info(s"Generating meta detail report [${metaspec.feature.name}]..")
+    new FeatureResult(metaspec, Nil, Some(file)) tap { metaResult =>
       file.writeText(
         formatDetail(
           options,
@@ -116,12 +116,12 @@ class ReportGenerator (
    
   private def createReportDir(baseDir: File, spec: FeatureSpec): File = spec.featureFile match {
     case Some(file) =>
-      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent()) + File.separator + encodeDir(file.getName())).createDirectory().path)
+      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent()) + File.separator + encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))).createDirectory().path)
     case None => 
       new File(Path(baseDir.getPath() + File.separator + encodeDir(spec.feature.name)).createDirectory().path)
   }
   
-  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec): File = 
+  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec): File =
     new File(toDir, s"${prefix}${createReportFileName(spec)}.${fileExtension}")
   
   private def createReportFileName(spec: FeatureSpec): String = spec.featureFile match {
