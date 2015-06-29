@@ -36,7 +36,7 @@ the plotted trajectory of a large proportion of these conditions converges to
 and orbits around a chaotic region. The Lorenz attractor, discovered by 
 [Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) shows one such orbit 
 that looks like a butterfly. The logo captures this image with the proposition 
-that gwen can detect chaotic behavior.
+that gwen can detect chaos.
 
 ***
 
