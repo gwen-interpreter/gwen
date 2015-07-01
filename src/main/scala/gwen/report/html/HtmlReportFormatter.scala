@@ -302,10 +302,10 @@ trait HtmlReportFormatter extends ReportFormatter {
 		  							    <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
 		  								  <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.timestamp.toString)}</small></span>
   									</div>
-									  <div class="col-md-4">
+									<div class="col-md-4">
   										<a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
   									</div>
-									  <div class="col-md-5">
+									<div class="col-md-5">
   										<span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
   									</div>
 								</div>"""
@@ -362,14 +362,17 @@ trait HtmlReportFormatter extends ReportFormatter {
    <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
    <p>
    <center>
-  		<button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
-    	<button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-		<button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-		<button id="step-fwd-btn" class="btn btn-default btn-lg" title="Step forward"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
-		<button id="fast-fwd-btn" class="btn btn-default btn-lg" title="Forward to end"><span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span></button>
-  		<select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
-  			<option>${i}</option>""").mkString}  			
-  		</select> of ${screenshots.length}
+  		<div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading frames, please wait..</div>
+        <div id="controls-div" style="display: none;">
+	  		<button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
+	    	<button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
+			<button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+			<button id="step-fwd-btn" class="btn btn-default btn-lg" title="Step forward"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
+			<button id="fast-fwd-btn" class="btn btn-default btn-lg" title="Forward to end"><span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span></button>
+	  		<select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
+	  			<option>${i}</option>""").mkString}  			
+	  		</select> of ${screenshots.length}
+	  	</div>
   	</center>
    <hr>
    </p>
@@ -390,7 +393,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     }).bind("frameChange", function(e, d, frame){
         if (frame == ${screenshots.length}) { stop(); } 
 		$$('#current-frame').val(frame);
-    });
+    }).bind("loaded", function(ev){
+	    $$('#loading-div').hide();
+		$$('#controls-div').show();
+	});
   function play() {
     $$('#play-pause').removeClass("glyphicon-play");
     $$('#play-pause').addClass("glyphicon-pause");
