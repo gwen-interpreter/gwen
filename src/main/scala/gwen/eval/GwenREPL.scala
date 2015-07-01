@@ -62,16 +62,16 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
-    case r"""(?:env|env -v|env --visible) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrNameFilter(name)).json))
+    case r"""(?:env|env -v|env --visible) "(.+?)"?$$$expression""" =>
+      Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrFilter(expression)).json))
     case r"env|env -v|env --visible" =>
       Some(Json.prettyPrint(env.visibleScopes.json))
-    case r"""(?:env -f|env --feature) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrNameFilter(name))).json))
+    case r"""(?:env -f|env --feature) "(.+?)"?$$$expression""" =>
+      Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(expression))).json))
     case r"env -f|env --feature" =>
       Some(Json.prettyPrint(env.featureScope.json))
-    case r"""(?:env -a|env --all) "(.+?)"?$$$name""" =>
-      Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrNameFilter(name)).json))
+    case r"""(?:env -a|env --all) "(.+?)"?$$$expression""" =>
+      Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(expression)).json))
     case r"env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
     case r"exit|bye|quit" => 
@@ -98,8 +98,9 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
 }
 
 object GwenREPL {
-  def attrNameFilter(name: String): PartialFunction[(String, String), Boolean] = { 
-    case (n, _) => n == name || n.startsWith(name + "/") 
+  /** Filters attributes containing or matching given expression (both names and values are checked). */
+  def attrFilter(expression: String): PartialFunction[(String, String), Boolean] = { 
+    case (n, v) => n.contains(expression) || n.matches(expression) || v.contains(expression) || v.matches(expression)
   }
 }
 
