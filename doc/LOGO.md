@@ -26,8 +26,8 @@ engines that:
 - Perform actions (_Whens_)
 - Assert expectations (_Thens_)
 
-The cumulative result is a chain of events that occur in sequence to model cause 
-and effect. 
+The cumulative result is a chain of events that execute in sequence to model 
+cause and effect. 
 
 When a small change to the initial conditions of a system cannot guarantee a 
 predictable outcome, then the behavior of that system can be said to be chaotic. 
