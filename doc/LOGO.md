@@ -31,9 +31,9 @@ and effect.
 
 When a small change to the initial conditions of a system cannot guarantee a 
 predictable outcome, then the behavior of that system can be said to be chaotic. 
-The chaotic behavior takes place on an attractor if the trajectories of a large 
-proportion of these conditions converge to and orbit around a chaotic region. 
-The Lorenz attractor, discovered by 
+The chaotic behavior takes place on an attractor a large proportion of these 
+conditions result in trajectories that converge to and orbit around a chaotic 
+region. The Lorenz attractor, discovered by 
 [Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) shows one such orbit 
 that looks like a butterfly. The logo captures this image with the proposition 
 that gwen can detect chaos.
