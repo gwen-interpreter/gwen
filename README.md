@@ -10,6 +10,8 @@ interpreter that accepts
 as input and produces automated processes as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in. 
 
+> Gwen ~ [G]iven [W]hen Th[en]
+
 Evaluation Engines
 ------------------
 
@@ -33,7 +35,7 @@ shared the following engine:
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a custom engine](doc/START.md) for that purpose.
+[develop a custom engine](doc/START.md) for that.
 
 Automation by Interpretation
 ----------------------------
@@ -42,11 +44,11 @@ Automation by Interpretation
    Feature: Gwen Interpreter
     
   Scenario: Automate
-      Given a feature specification
+      Given a specification
         And a target system
        When gwen is invoked
-       Then the feature is interpreted
-        And its steps are executed
+       Then the specification is interpreted
+        And the steps are executed
         And the system is evaluated
 ```
 
