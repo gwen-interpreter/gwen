@@ -49,7 +49,7 @@ sealed trait EvalStatus {
 case class Passed(val nanos: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
   def code = 0
-  def emoticon = ":)"
+  def emoticon = "[:)]"
 }
 
 /**
@@ -62,7 +62,7 @@ case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
   val timestamp = new Date()
   def code = 1
-  def emoticon = ":("
+  def emoticon = "[:(]"
 }
 
 /** Defines the skipped status. */
@@ -70,7 +70,7 @@ case object Skipped extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Skipped
   def code = 2
-  def emoticon = ":|"
+  def emoticon = "[:|]"
 }
 
 /**
@@ -82,7 +82,7 @@ case object Pending extends EvalStatus {
   val nanos = 0L 
   val status = StatusKeyword.Pending
   def code = 3
-  def emoticon = ":|"
+  def emoticon = "[:|]"
 }
 
 /** Defines the loaded status. */
@@ -90,7 +90,7 @@ case object Loaded extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Loaded
   def code = 0
-  def emoticon = ":)"
+  def emoticon = "[:)]"
 }
 
 object EvalStatus {
