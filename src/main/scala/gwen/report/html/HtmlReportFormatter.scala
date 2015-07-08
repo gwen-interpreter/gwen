@@ -362,7 +362,7 @@ trait HtmlReportFormatter extends ReportFormatter {
    <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
    <p>
    <center>
-  		<div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading frames, please wait..</div>
+  		<div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading slides, please wait..</div>
         <div id="controls-div" style="display: none;">
 	  		<button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
 	    	<button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
@@ -376,10 +376,10 @@ trait HtmlReportFormatter extends ReportFormatter {
   	</center>
    <hr>
    </p>
-   <img id="seq" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
+   <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
    <script>
-    var revolution = $$('#seq').width();
-    $$('#seq').reel({
+    var revolution = $$('#slides').width();
+    $$('#slides').reel({
       images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
       frames:  ${screenshots.length},
       speed:   0,
@@ -396,35 +396,36 @@ trait HtmlReportFormatter extends ReportFormatter {
     }).bind("loaded", function(ev){
 	    $$('#loading-div').hide();
 		$$('#controls-div').show();
+        if($$('#controls-div').is(':visible')) play();
 	});
   function play() {
     $$('#play-pause').removeClass("glyphicon-play");
     $$('#play-pause').addClass("glyphicon-pause");
     $$('#play-pause').attr("title", "Pause");
-	if ($$('#seq').reel('frame') == ${screenshots.length}) { $$('#seq').reel('frame', 1); }
-    $$('#seq').trigger("play", 2 / ${screenshots.length});
+	if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
+    $$('#slides').trigger("play", 3 / ${screenshots.length});
   }
   function stop() {
-	$$('#seq').trigger("stop");
+	$$('#slides').trigger("stop");
     $$('#play-pause').removeClass("glyphicon-pause");
     $$('#play-pause').addClass("glyphicon-play");
     $$('#play-pause').attr("title", "Play");
   }
   $$(function() {
-	$$('#fast-back-btn').click(function(e) { $$('#seq').reel('frame', 1); stop(); });
-	$$('#step-back-btn').click(function(e) { $$('#seq').trigger('stepRight'); stop(); });
+	$$('#fast-back-btn').click(function(e) { $$('#slides').reel('frame', 1); stop(); });
+	$$('#step-back-btn').click(function(e) { $$('#slides').trigger('stepRight'); stop(); });
 	$$('#play-pause-btn').click(function() { 
       if ($$('#play-pause').hasClass("glyphicon-play")) { play(); } 
       else if ($$('#play-pause').hasClass("glyphicon-pause")) { stop(); } 
     });
-	$$('#step-fwd-btn').click(function(e) { $$('#seq').trigger('stepLeft'); stop(); });
-	$$('#fast-fwd-btn').click(function(e) { $$('#seq').reel('frame', ${screenshots.length}); stop(); });
-	$$('#current-frame').change(function(e) { $$('#seq').reel('frame', parseInt($$(this).val())); stop(); });
+	$$('#step-fwd-btn').click(function(e) { $$('#slides').trigger('stepLeft'); stop(); });
+	$$('#fast-fwd-btn').click(function(e) { $$('#slides').reel('frame', ${screenshots.length}); stop(); });
+	$$('#current-frame').change(function(e) { $$('#slides').reel('frame', parseInt($$(this).val())); stop(); });
 	$$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
-	$$('#slideshow').on('show.bs.modal', function (e) { $$('#seq').reel('frame', 1); stop(); });
-	$$('#slideshow').on('shown.bs.modal', function (e) { $$('#seq').reel('frame', 1); stop(); });
-	$$('#slideshow').on('hide.bs.modal', function (e) { $$('#seq').trigger('stop') });
-	$$('#slideshow').on('hidden.bs.modal', function (e) { $$('#seq').trigger('stop') });
+	$$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
+	$$('#slideshow').on('shown.bs.modal', function (e) { $$('#slides').reel('frame', 1); if($$('#controls-div').is(':visible')) play(); });
+	$$('#slideshow').on('hide.bs.modal', function (e) { $$('#slides').trigger('stop') });
+	$$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
   });
    </script>
    </div>
