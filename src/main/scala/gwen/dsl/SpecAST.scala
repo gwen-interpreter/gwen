@@ -212,8 +212,8 @@ case class Step(
 }
 
 object Step {
-	def apply(step: Step, expression: String): Step =
-			new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
+  def apply(step: Step, expression: String): Step =
+    new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.keyword, step.expression, status, attachments) tap { _.pos = step.pos }
 }
