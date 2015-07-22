@@ -403,7 +403,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#play-pause').addClass("glyphicon-pause");
         $$('#play-pause').attr("title", "Pause");
         if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
-        $$('#slides').trigger("play", 3 / ${screenshots.length});
+        $$('#slides').trigger("play", 2 / ${screenshots.length});
       }
       function stop() {
         $$('#slides').trigger("stop");
