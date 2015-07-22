@@ -30,15 +30,15 @@ class MathService {
   def plus(x: Int, y: Int) = x + y
 }
 
-class MathEnvContext(val mathService: MathService, val scopes: ScopedDataStack) 
-  extends EnvContext(scopes) {
+class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
+  extends EnvContext(options, scopes) {
   def vars = addScope("vars")
 }
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
   override def init(options: GwenOptions, scopes: ScopedDataStack): MathEnvContext =
-    new MathEnvContext(new MathService(), scopes)
+    new MathEnvContext(new MathService(), options, scopes)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars

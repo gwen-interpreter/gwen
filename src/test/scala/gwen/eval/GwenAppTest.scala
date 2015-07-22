@@ -88,7 +88,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
   
   "Running interactive app with feature file" should "execute options and run repl" in {
 
-    val options = GwenOptions(paths = List(new File("file.feature")))
+    val options = GwenOptions(features = List(new File("file.feature")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
@@ -121,7 +121,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
   
   "Running batch app with feature file" should "execute options and not run repl" in {
     
-    val options = GwenOptions(batch = true, paths = List(new File("file.feature")))
+    val options = GwenOptions(batch = true, features = List(new File("file.feature")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)

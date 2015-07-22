@@ -51,7 +51,10 @@ trait XPathSupport {
     * @param targetType the target node type
     * @return the result of evaluating the xpath expression
     */
-  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = 
+  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = {
+    if (source.trim().length() == 0) {
+      sys.error("Cannot evaluate XPath on empty source")
+    }
     withXPath(xpath) { (xPath, expr) =>
       val qname = targetType match {
         case XMLNodeType.text => XPathConstants.STRING
@@ -66,6 +69,7 @@ trait XPathSupport {
         case XMLNodeType.nodeset => nodeListToString(result.asInstanceOf[NodeList])
       }
     }
+  }
 
   private def withXPath[T](expression: String)(f: (XPath, String) => T): T = expression match {
     case r"""(.+?)$expr where (.+?)$$$namespaces""" =>

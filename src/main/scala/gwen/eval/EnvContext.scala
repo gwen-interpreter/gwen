@@ -42,7 +42,7 @@ import scala.collection.mutable.Stack
   * 
   * @author Branko Juric
   */
-class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
+class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -182,10 +182,19 @@ class EnvContext(scopes: ScopedDataStack) extends LazyLogging {
     * @return the resolved step
     */
   def parse(step: Step): Step = step
+  
+  /**
+   * Executes the given instruction if if dry run mode is disabled 
+   * (and skips the action otherwise).
+   * 
+   * @param action: the action to perform
+   */
+  def execute[U](instruction: => U): Option[U] = if (!options.dryRun) Some(instruction) else None
+  
 }
 
 /** Merges two contexts into one. */
-class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val scopes: ScopedDataStack) extends EnvContext(scopes) {
+class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes) {
   override def close() {
     try {
       envB.close()

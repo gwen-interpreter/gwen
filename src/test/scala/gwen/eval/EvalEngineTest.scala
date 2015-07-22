@@ -22,9 +22,9 @@ import org.scalatest.Matchers
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 
-class TestEnvContext(val scopes: ScopedDataStack) extends EnvContext(scopes)
+class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
 class TestEvalEngine extends EvalEngine[TestEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(scopes)
+  override def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
 }
   
 class EvalEngineTest extends FlatSpec with Matchers {

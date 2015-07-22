@@ -34,16 +34,18 @@ trait SystemProcessSupport[T <: EnvContext] {
     */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {
-      case r"""I execute system process "(.+?)"$$$systemproc""" =>
+      case r"""I execute system process "(.+?)"$$$systemproc""" => env.execute {
         systemproc.! match {
           case 0 => 
           case _ => sys.error(s"The call to $systemproc has failed.")
         }
-      case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
+      }
+      case r"""I execute a unix system process "(.+?)"$$$systemproc""" => env.execute {
         Seq("/bin/sh", "-c", systemproc).! match {
           case 0 => 
           case _ => sys.error(s"The call to $systemproc has failed.")
         }
+      }
       case _ => throw new UnsupportedStepException(step)
     }
   }

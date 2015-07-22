@@ -26,9 +26,9 @@ import gwen.dsl.Step
 import java.io.IOException
 import gwen.dsl.StepKeyword
 
-class TestEnvContext(val scopes: ScopedDataStack) extends EnvContext(scopes)
+class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
 class TestEvalEngine extends SystemProcessSupport[TestEnvContext] {
-  def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(scopes)
+  def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
 }
 
 class SystemProcessSupportTest extends FlatSpec with Matchers {

@@ -158,7 +158,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     newEnv.filterAtts { case (name, _) => name == "page"}.visible.json.toString should be ("""{"scopes":[]}""")
   }
   
-  private def newEnv: EnvContext = new EnvContext(new ScopedDataStack()) { 
+  private def newEnv: EnvContext = new EnvContext(GwenOptions(), new ScopedDataStack()) { 
     var closed = false
     override def close() {
       super.reset()

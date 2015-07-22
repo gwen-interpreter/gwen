@@ -62,7 +62,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with batch option and files " should "parse" in {
     parseOptions(Array("-b", ".")) match {
       case Success(options) => { 
-        assertOptions(options, true, paths = List(new File(".")))
+        assertOptions(options, true, features = List(new File(".")))
 
       }
       case _ => 
@@ -70,23 +70,58 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
     parseOptions(Array("--batch", ".")) match {
       case Success(options) => { 
-        assertOptions(options, true, paths = List(new File(".")))
+        assertOptions(options, true, features = List(new File(".")))
       }
       case _ => 
         fail("expected options but failed")
     }
   }
   
+ "Options with dry run option and no files" should "fail" in {
+    parseOptions(Array("-n")) match {
+      case Success(options) => { 
+        fail("expected failure but was successful")
+      }
+      case Failure(error) => 
+        error.getMessage() should be ("No feature files and/or directories specified")
+    }
+    parseOptions(Array("--dry-run")) match {
+      case Success(options) => { 
+        fail("expected failure but was successful")
+      }
+      case Failure(error) => 
+        error.getMessage() should be ("No feature files and/or directories specified")
+    }
+  }
+  
+  "Options with dry run option and files " should "parse" in {
+    parseOptions(Array("-n", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, false, dryRun = true, features = List(new File(".")))
+
+      }
+      case _ => 
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--dry-run", ".")) match {
+      case Success(options) => { 
+        assertOptions(options, false, dryRun = true, features = List(new File(".")))
+      }
+      case _ => 
+        fail("expected options but failed")
+    }
+  } 
+  
   "Options with parallel option with implied batch mode" should "parse" in {
     parseOptions(Array("-|", ".")) match {
       case Success(options) => { 
-        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+        assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
       case _ => fail("expected options but failed")
     }
     parseOptions(Array("--parallel", ".")) match {
       case Success(options) => { 
-        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+        assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
       case _ => fail("expected options but failed")
     }
@@ -95,13 +130,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with parallel option with explicit batch mode" should "parse" in {
     parseOptions(Array("-|b", ".")) match {
       case Success(options) => { 
-        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+        assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
       case _ => fail("expected options but failed")
     }
     parseOptions(Array("--parallel", "--batch", ".")) match {
       case Success(options) => { 
-        assertOptions(options, batch = true, parallel = true, paths = List(new File(".")))
+        assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
       case _ => fail("expected options but failed")
     }
@@ -476,7 +511,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     parseOptions(Array(feature1.getPath())) match {
       case Success(options) => {
-        assertOptions(options, paths = List(feature1))
+        assertOptions(options, features = List(feature1))
       }
       case _ =>
         fail("expected options but failed")
@@ -489,7 +524,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     parseOptions(Array(dir2.getPath())) match {
       case Success(options) => {
-        assertOptions(options, paths = List(dir2))
+        assertOptions(options, features = List(dir2))
       }
       case _ =>
         fail("expected options but failed")
@@ -505,7 +540,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     parseOptions(Array(dir3.getPath(), feature3.getPath(), dir4.getPath())) match {
       case Success(options) => {
-        assertOptions(options, paths = List(dir3, feature3, dir4))
+        assertOptions(options, features = List(dir3, feature3, dir4))
       }
       case _ =>
         fail("expected options but failed")
@@ -541,6 +576,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          false,
           List(metaFile),
           List(dir5, feature5, dir6))
       }
@@ -557,6 +593,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          false,
           List(metaFile),
           List(dir5, feature5, dir6))
       }
@@ -577,16 +614,18 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     reportDir: Option[File] = None,
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
+    dryRun: Boolean = false,
     metaFiles: List[File] = Nil, 
-    paths: List[File] = Nil) {
+    features: List[File] = Nil) {
     
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.reportDir should be (reportDir)
     options.properties should be (UserOverrides.addUserProperties(properties))
     options.tags should be (tags)
+    options.dryRun should be (dryRun)
     options.metaFiles should be (UserOverrides.addUserMeta(metaFiles))
-    options.paths should be (paths)
+    options.features should be (features)
     
   }
   

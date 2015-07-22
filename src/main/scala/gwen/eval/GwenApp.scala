@@ -50,7 +50,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     try {
       interpreter.execute(options, envOpt).code tap { exitCode =>
         envOpt foreach {
-          if (!options.paths.isEmpty || !options.metaFiles.isEmpty) {
+          if (!options.features.isEmpty || !options.metaFiles.isEmpty) {
             printBanner("")
           }
           createRepl(_).run() 

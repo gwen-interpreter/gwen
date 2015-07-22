@@ -107,10 +107,11 @@ _MathEnvContext.scala_
 package gwen.sample.math
 
 import gwen.eval.EnvContext
+import gwen.eval.GwenOptions
 import gwen.eval.ScopedDataStack
 
-class MathEnvContext(val mathService: MathService, val scopes: ScopedDataStack) 
-  extends EnvContext(scopes) {
+class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
+  extends EnvContext(options, scopes) {
   def vars = addScope("vars")
 }
 ```
@@ -164,7 +165,7 @@ import gwen.Predefs.RegexContext
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
   override def init(options: GwenOptions, scopes: ScopedDataStack): MathEnvContext =
-    new MathEnvContext(new MathService(), scopes)
+    new MathEnvContext(new MathService(), options, scopes)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars
@@ -619,7 +620,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report")), 
-      paths = List(relativeDir))
+      features = List(relativeDir))
 
     val intepreter = new MathInterpreter()
     intepreter.execute(options, None) match {
@@ -777,7 +778,7 @@ All the available options will be printed to the console as shown:
 
 Welcome to gwen [MathInterpreter]
 
-Usage: scala gwen.sample.math.MathInterpreter [options] [<feature paths>]
+Usage: scala gwen.sample.math.MathInterpreter [options] [<features>]
 
   --version
         Prints the implementation version
@@ -793,8 +794,10 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<feature paths>]
         Evaluation report output directory
   -t <tags> | --tags <tags>
         Comma separated list of @include or ~@exclude tags
+  -n | --dry-run
+        Do not evaluate steps on engine (validate for correctness only)
   -m <meta files> | --meta <meta files>
         Comma separated list of meta file paths
-  <feature paths>
+  <features>
         Space separated list of feature file and/or directory paths     
 ```

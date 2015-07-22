@@ -42,6 +42,7 @@ import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.GwenInfo
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import gwen.dsl.StatusKeyword
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -165,7 +166,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         (acc: List[Scenario], scenario: Scenario) => 
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
-              if (GwenSettings.`gwen.feature.failfast`) {
+              val failfast = env.execute(GwenSettings.`gwen.feature.failfast`).getOrElse(false)
+              if (failfast) {
                 Scenario(
                   scenario, 
                   scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
@@ -250,7 +252,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, _) => Step(step, Skipped, step.attachments)
+        case Failed(_, _) => env.execute(Step(step, Skipped, step.attachments)).getOrElse(evaluateStep(step, env))
         case _ => evaluateStep(step, env)
       }) :: acc
   } reverse
@@ -263,28 +265,29 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step
     */
   private def evaluateStep(step: Step, env: T): Step = {
-    def evaluateParsedStep(step: Step, env: T): Step = {
-      logger.info(s"Evaluating Step: $step")
-      val result = env.getStepDef(step.expression) match {
-        case None =>
-          doEvaluate(step, env) { step =>  
-            Try {
-              engine.evaluate(step, env)
-              step
-            }
+    logger.info(s"Evaluating Step: $step")
+    val result = env.getStepDef(step.expression) match {
+      case None =>
+        val parsedStep = doEvaluate(step, env) { env.parse(_) }
+        if (parsedStep.evalStatus.status != StatusKeyword.Failed) {
+          doEvaluate(parsedStep, env) { step => 
+            step tap { 
+              engine.evaluate(_, env) 
+             }  
           }
-        case (Some(stepDef)) =>
-          logger.info(s"Evaluating StepDef: ${stepDef.name}")
-          val steps = evaluateSteps(stepDef.steps, env)
-          Step(step, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
-            logger.info(s"StepDef evaluated: ${stepDef.name}")
-          }
-      }
-      result tap { step =>
-        logStatus("Step", step.toString, step.evalStatus)
-      }
+        } else {
+          parsedStep
+        }
+      case (Some(stepDef)) =>
+        logger.info(s"Evaluating StepDef: ${stepDef.name}")
+        val steps = evaluateSteps(stepDef.steps, env)
+        Step(step, EvalStatus(steps.map(_.evalStatus)), steps.flatMap(_.attachments)) tap { step =>
+          logger.info(s"StepDef evaluated: ${stepDef.name}")
+        }
     }
-    evaluateParsedStep(env.parse(step), env);
+    result tap { step =>
+      logStatus("Step", step.toString, step.evalStatus)
+    }
   }
   
   /**
@@ -294,9 +297,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param env the environment context
     * @param evalFunction the step evaluation function
     */
-  private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Try[Step]): Step = {
+  private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime
-    (evalFunction(step) match {
+    (Try(evalFunction(step)) match {
       case TrySuccess(step) => 
         Step(step, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
@@ -359,5 +362,5 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
 }
 
 /** Signals a step that failed to execute. */
-class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step: ${step}: ${cause.getMessage()}", cause)
+class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
 

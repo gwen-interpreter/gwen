@@ -49,7 +49,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val start = System.nanoTime
     try {
-      FeatureStream.readAll(options.paths) match {
+      FeatureStream.readAll(options.features) match {
         case featureStream @ _ #:: _ =>
           val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
           EvalStatus(summary.featureResults.map(_.evalStatus)) tap { status =>
@@ -61,7 +61,7 @@ class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
              interpreter.loadMeta(options.metaFiles, Nil, env).map(_.evalStatus)
             }
           } tap { status =>
-            if (!options.paths.isEmpty) {
+            if (!options.features.isEmpty) {
               logger.info("No features found in specified files and/or directories!")
             }
           }

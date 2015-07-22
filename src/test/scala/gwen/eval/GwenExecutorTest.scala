@@ -56,7 +56,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val dir1 = createDir("dir1");
     val feature1 = createFile("dir1/file1.feature");
     
-    val options = GwenOptions(paths = List(dir1), parallel = true)
+    val options = GwenOptions(features = List(dir1), parallel = true)
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -78,7 +78,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val dir2 = createDir("dir2");
     val feature2 = createFile("dir2/file2.feature");
     
-    val options = GwenOptions(paths = List(dir2))
+    val options = GwenOptions(features = List(dir2))
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -101,7 +101,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature3 = createFile("dir3/file3.feature");
     val meta3 = createFile("dir3/file3.meta");
     
-    val options = GwenOptions(paths = List(dir3), parallel = true)
+    val options = GwenOptions(features = List(dir3), parallel = true)
     
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
@@ -133,7 +133,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val meta31 = createFile("dir31/file31.meta");
     val meta32 = createFile("dirmeta32/file32.meta");
     
-    val options = GwenOptions(paths = List(dir31), parallel = true, metaFiles=List(meta31, meta32))
+    val options = GwenOptions(features = List(dir31), parallel = true, metaFiles=List(meta31, meta32))
     
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
@@ -168,7 +168,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a meta st ep", Failed(5, new Exception("failed"))))))
     )
     
-    val options = GwenOptions(batch = false, paths = List(dir4))
+    val options = GwenOptions(batch = false, features = List(dir4))
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -194,7 +194,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature5 = createFile("dir5/file5.feature");
     val meta5 = createFile("dir5/file5.meta");
     
-    val options = GwenOptions(batch = true, parallel = true, paths = List(dir5))
+    val options = GwenOptions(batch = true, parallel = true, features = List(dir5))
     
     val failedStatus = Failed(5, new Exception("failed"))
     val meta = new FeatureSpec(
@@ -227,7 +227,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature7a = createFile("dir7/file7a.feature");
     val reportDir = createDir("report");
     
-    val options = GwenOptions(paths = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir))
+    val options = GwenOptions(features = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir))
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -279,7 +279,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     val feature8 = createFile("dir8/file8.feature");
     val tagFilters = List((Tag("wip"), true))
     
-    val options = GwenOptions(paths = List(dir8), parallel = true, tags = tagFilters)
+    val options = GwenOptions(features = List(dir8), parallel = true, tags = tagFilters)
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]

@@ -13,7 +13,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report")), 
-      paths = List(new File("features/sample/math"))
+      features = List(new File("features/sample/math"))
     )
       
     val intepreter = new MathInterpreter()

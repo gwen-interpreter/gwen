@@ -35,8 +35,9 @@ import scopt.OptionParser
   * @param reportDir optional directory to generate evaluation report into
   * @param properties list of properties files to load into system properties
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
+  * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param metaFiles optional list of meta file overrides
-  * @param paths optional list of feature file and/or directory paths
+  * @param features optional list of feature file and/or directory paths
   *    
   * @author Branko Juric
   */
@@ -46,8 +47,9 @@ case class GwenOptions(
     reportDir: Option[File] = None,
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
+    dryRun: Boolean = false,
     metaFiles: List[File] = Nil, 
-    paths: List[File] = Nil,
+    features: List[File] = Nil,
     args: Option[Array[String]] = None) {
   
   /**
@@ -116,6 +118,10 @@ object GwenOptions {
         }).getOrElse(success)
       } valueName("<tags>") text("Comma separated list of @include or ~@exclude tags")
     
+      opt[Unit]('n', "dry-run") action {
+        (_, c) => c.copy(dryRun = true) 
+      } text("Do not evaluate steps on engine (validate for correctness only)")
+      
       opt[String]('m', "meta") action {
         (ms, c) => 
           c.copy(metaFiles = ms.split(",").toList.map(new File(_)))
@@ -128,11 +134,11 @@ object GwenOptions {
         }).getOrElse(success)
       } valueName("<meta files>") text("Comma separated list of meta file paths")
     
-      arg[File]("<feature paths>") unbounded() optional() action { 
+      arg[File]("<features>") unbounded() optional() action { 
         (f, c) => 
-          c.copy(paths = c.paths :+ f)
+          c.copy(features = c.features :+ f)
       } validate {
-        f => if (f.exists) success else failure(s"Specified path not found: $f")
+        f => if (f.exists) success else failure(s"Specified features path not found: $f")
       } text("Space separated list of feature file and/or directory paths")
     
     }
@@ -144,12 +150,13 @@ object GwenOptions {
         options.reportDir,
         UserOverrides.addUserProperties(options.properties),
         options.tags,
+        options.dryRun,
         UserOverrides.addUserMeta(options.metaFiles),
-        options.paths,
+        options.features,
         Some(args)) 
       } tap { options =>
         options foreach { opt =>
-          if (opt.batch && opt.paths.isEmpty) {
+          if ((opt.batch || opt.dryRun) && opt.features.isEmpty) {
             sys.error("No feature files and/or directories specified")
           }
           Settings.loadAll(opt.properties)
