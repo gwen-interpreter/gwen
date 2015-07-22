@@ -25,14 +25,15 @@ import java.io.FileInputStream
 import java.io.StringWriter
 import java.io.PrintWriter
 import scala.util.matching.Regex
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
   * Predefined implicits.
   * 
   * @author Branko Juric
   */
-object Predefs {
-
+object Predefs extends LazyLogging {
+  
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
     def tap[B](f: A => B) = { f(value); value } 
@@ -115,7 +116,10 @@ object Predefs {
     * incoming steps against regular expressions and capture their parameters.
     */
   implicit class RegexContext(val sc: StringContext) extends AnyVal {
-    def r = new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
+    def r = { 
+      logger.debug(s"Matched: ${sc.parts.mkString}") 
+      new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*) 
+    }
   }
   
 }
