@@ -30,20 +30,20 @@ import gwen.dsl.FeatureSpec
 import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
-  * Executes user provided options on the given interpreter.
+  * Launches the gwen interpreter.
   * 
-  * @param interpreter the gwen interpreter to execute on
+  * @param interpreter the interpreter to launch
   */
-class GwenExecutor[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging with ConsoleWriter {
+class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging with ConsoleWriter {
   
   /**
-    * Executes the given options.
+    * Runs the interpreter with the given options.
     * 
     * @param options the command line options
     * @param optEnv optional environment context (None to have Gwen create an env context for each feature unit, 
     *               Some(env) to reuse an environment context for all, default is None)
     */
-  def execute(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
+  def run(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
     if (options.args.isDefined) {
       logger.info(options.commandString(interpreter))
     }

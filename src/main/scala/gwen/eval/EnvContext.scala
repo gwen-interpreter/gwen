@@ -32,7 +32,6 @@ import gwen.dsl.SpecType
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.collection.mutable.Stack
 
-
 /**
   * Base environment context providing access to all resources and services to 
   * engines.  Specific [[EvalEngine evaluation engines]] can 
@@ -174,16 +173,16 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def attachments = _attachments.sortBy(_._2 .getName())
   
   /**
-    * Can be overridden by subclasses to parse the given step 
-    * before it is evaluated. This implementation simply returns the step 
-    * as is.
+    * Can be overridden by subclasses to interpolate the given step 
+    * before it is evaluated. This default implementation simply returns 
+    * the step as is.
     * 
-    * @param step the step to parse
-    * @return the resolved step
+    * @param step the step to interpolate
+    * @return the interpolated step
     */
-  def parse(step: Step): Step = step
+  def interpolate(step: Step): Step = step
   
-  private[eval] def isDryRun = options.dryRun
+  val isDryRun = options.dryRun
   
 }
 

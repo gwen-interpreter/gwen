@@ -45,10 +45,10 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     * @param options the command line options
     * @returns 0 if successful; 1 otherwise 
     */  
-  private[eval] def run(options: GwenOptions): Int = {
+  private[eval] def run(options: GwenOptions)(implicit launcher: GwenLauncher[T] = new GwenLauncher(interpreter)): Int = {
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
-      interpreter.execute(options, envOpt).code tap { exitCode =>
+      launcher.run(options, envOpt).code tap { exitCode =>
         envOpt foreach {
           if (!options.features.isEmpty || !options.metaFiles.isEmpty) {
             printBanner("")

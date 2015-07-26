@@ -155,10 +155,25 @@ class EnvContextTest extends FlatSpec with Matchers {
   }
   
   "env.filterAtts on empty context" should "should return empty value" in {
-    newEnv.filterAtts { case (name, _) => name == "page"}.visible.json.toString should be ("""{"scopes":[]}""")
+    val env = newEnv
+    env.filterAtts { case (name, _) => name == "page"}.visible.json.toString should be ("""{"scopes":[]}""")
   }
   
-  private def newEnv: EnvContext = new EnvContext(GwenOptions(), new ScopedDataStack()) { 
+  "dry run" should "not call instruction" in {
+    val env = newEnv(GwenOptions(dryRun = true))
+    env.execute(sys.error("Execution not expected"))
+  }
+  
+  "non dry run" should "call instruction" in {
+    val env = newEnv(GwenOptions(dryRun = false))
+    intercept[Exception] {
+      env.execute(sys.error("Execution expected"))
+    }
+  }
+  
+  private def newEnv: EnvContext = newEnv(GwenOptions())
+  
+  private def newEnv(options: GwenOptions): EnvContext = new EnvContext(options, new ScopedDataStack()) { 
     var closed = false
     override def close() {
       super.reset()

@@ -17,13 +17,16 @@
 package gwen.eval
 
 import java.io.File
-import scala.Option.option2Iterable
-import scala.annotation.migration
+
 import scala.io.Source
 import scala.language.postfixOps
-import scala.util.{Failure => TryFailure}
-import scala.util.{Success => TrySuccess}
+import scala.util.{ Failure => TryFailure }
+import scala.util.{ Success => TrySuccess }
 import scala.util.Try
+
+import com.typesafe.scalalogging.slf4j.LazyLogging
+
+import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.dsl.Background
@@ -37,12 +40,10 @@ import gwen.dsl.Skipped
 import gwen.dsl.SpecNormaliser
 import gwen.dsl.SpecParser
 import gwen.dsl.SpecType
+import gwen.dsl.StatusKeyword
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
-import gwen.GwenInfo
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import gwen.dsl.StatusKeyword
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -133,17 +134,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   }
   
   /**
-    * Executes the given options.
-    * 
-    * @param options the command line options
-    * @param optEnv optional environment context (None to have Gwen create an env context for each feature unit, 
-    *               Some(env) to reuse an environment context for all, default is None)
-    * @param executor implicit executor
-    */
-  def execute(options: GwenOptions, optEnv: Option[T] = None)(implicit executor: GwenExecutor[T] = new GwenExecutor(this)) = 
-    executor.execute(options, optEnv)
-  
-  /**
     * Evaluates a given Gwen feature.
     * 
     * @param featureSpec the Gwen feature to evaluate
@@ -166,7 +156,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         (acc: List[Scenario], scenario: Scenario) => 
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
-              val failfast = env.execute(GwenSettings.`gwen.feature.failfast`).getOrElse(false)
+              val failfast = (env.execute(GwenSettings.`gwen.feature.failfast`)).getOrElse(false)
               if (failfast) {
                 Scenario(
                   scenario, 
@@ -268,15 +258,14 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     logger.info(s"Evaluating Step: $step")
     val result = env.getStepDef(step.expression) match {
       case None =>
-        val parsedStep = doEvaluate(step, env) { env.parse(_) }
-        if (parsedStep.evalStatus.status != StatusKeyword.Failed) {
-          doEvaluate(parsedStep, env) { step => 
-            step tap { 
-              engine.evaluate(_, env) 
-             }  
+        val interpolatedStep = doEvaluate(step, env) { env.interpolate(_) }
+        if (interpolatedStep.evalStatus.status != StatusKeyword.Failed) {
+          doEvaluate(interpolatedStep, env) { step => 
+              engine.evaluate(step, env)
+              step
           }
         } else {
-          parsedStep
+          interpolatedStep
         }
       case (Some(stepDef)) =>
         logger.info(s"Evaluating StepDef: ${stepDef.name}")
@@ -298,7 +287,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param evalFunction the step evaluation function
     */
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
-    val start = System.nanoTime
+    val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
       case TrySuccess(step) => 
         Step(step, Passed(System.nanoTime - start), env.attachments)
