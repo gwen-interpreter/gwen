@@ -32,7 +32,6 @@ import gwen.dsl.SpecType
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.collection.mutable.Stack
 
-
 /**
   * Base environment context providing access to all resources and services to 
   * engines.  Specific [[EvalEngine evaluation engines]] can 
@@ -48,8 +47,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   private var stepDefs = Map[String, Scenario]()
   
   /** List of current attachments (name-file pairs). */
-  private var _attachments: List[(String, File)] = Nil
-  private var _attachmentNo = 0
+  private var currentAttachments: List[(String, File)] = Nil
+  private var attachementCount = 0
   
   /** The current type of specification being interpreted. */
   var specType = SpecType.feature
@@ -68,7 +67,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     scopes.reset()
     stepDefs = Map[String, Scenario]()
     resetAttachments
-    _attachmentNo = 0
+    attachementCount = 0
   }
     
   def json: JsObject = scopes.json
@@ -115,7 +114,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param failed the failed status
     */
   final def fail(failure: Failed): Unit = { 
-    _attachments = createErrorAttachments(failure)
+    currentAttachments = createErrorAttachments(failure)
     logger.error(Json.prettyPrint(this.scopes.visible.json))
     logger.error(failure.error.getMessage())
     logger.debug(s"Exception: ", failure.error)
@@ -148,8 +147,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
    * @param extenstion the filename extension
    */
   def createAttachmentFile(prefix: String, extension: String): File = {
-      _attachmentNo = _attachmentNo + 1
-      File.createTempFile(s"${"%04d".format(_attachmentNo)}-${prefix}-", s".${extension}") tap { f =>
+      attachementCount = attachementCount + 1
+      File.createTempFile(s"${"%04d".format(attachementCount)}-${prefix}-", s".${extension}") tap { f =>
         f.deleteOnExit()
         f.writeText(Json.prettyPrint(this.scopes.visible.json))
       }
@@ -159,31 +158,31 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * Adds an attachment to the current context.
     * 
     * @param attachment the attachment (name-file pair) to add
-    * @param file the attachment file
+    * @param file the attachment fileß
     */
   def addAttachment(attachment: (String, File)): Unit = {
-    _attachments = attachment :: _attachments
+    currentAttachments = attachment :: currentAttachments
   } 
   
   /** Resets/clears current attachments. */
   private[eval] def resetAttachments() {
-    _attachments = Nil
+    currentAttachments = Nil
   }
   
   /** Gets the list of attachments (sorted by file name).*/
-  def attachments = _attachments.sortBy(_._2 .getName())
+  def attachments = currentAttachments.sortBy(_._2 .getName())
   
   /**
-    * Can be overridden by subclasses to parse the given step 
-    * before it is evaluated. This implementation simply returns the step 
-    * as is.
+    * Can be overridden by subclasses to interpolate the given step 
+    * before it is evaluated. This default implementation simply returns 
+    * the step as is.
     * 
-    * @param step the step to parse
-    * @return the resolved step
+    * @param step the step to interpolate
+    * @return the interpolated step
     */
-  def parse(step: Step): Step = step
+  def interpolate(step: Step): Step = step
   
-  private[eval] def isDryRun = options.dryRun
+  val isDryRun = options.dryRun
   
 }
 

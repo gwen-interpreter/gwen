@@ -606,6 +606,7 @@ package gwen.sample.math
 
 import gwen.dsl.Failed
 import gwen.dsl.Passed
+import gwen.eval.GwenLauncher
 import gwen.eval.GwenOptions
 import java.io.File
 import org.scalatest.FlatSpec
@@ -622,8 +623,8 @@ class MathInterpreterTest extends FlatSpec {
       reportDir = Some(new File("target/report")), 
       features = List(relativeDir))
 
-    val intepreter = new MathInterpreter()
-    intepreter.execute(options, None) match {
+    val launcher = new GwenLauncher(new MathInterpreter())
+    launcher.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
       case _ => fail("evaluation expected but got noop")

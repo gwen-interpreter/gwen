@@ -36,9 +36,9 @@ import gwen.dsl.Tag
 import gwen.UserOverrides
 import org.scalatest.FlatSpec
 
-class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
+class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
-  val rootDir = new File("target" + File.separator + "GwenExecutorTest")
+  val rootDir = new File("target" + File.separator + "GwenLauncherTest")
   Path(rootDir).createDirectory()
   
   val feature = new FeatureSpec(
@@ -47,11 +47,11 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
       List(Scenario(Set[Tag](), "scenario1", None, List(Step(StepKeyword.Given, "I am a test", Passed(10)))))
   )
   
-  private def executor(mockInterpreter: GwenInterpreter[EnvContext]) = {
-    new GwenExecutor(mockInterpreter)
+  private def launcher(mockInterpreter: GwenInterpreter[EnvContext]) = {
+    new GwenLauncher(mockInterpreter)
   }
   
-  "test executor with no given env context" should "create one and close it but not reset it" in {
+  "test launcher with no given env context" should "create one and close it but not reset it" in {
     
     val dir1 = createDir("dir1");
     val feature1 = createFile("dir1/file1.feature");
@@ -64,7 +64,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
     
-    val evalStatus = executor(mockInterpreter).execute(options)
+    val evalStatus = launcher(mockInterpreter).run(options)
     
     verify(mockInterpreter, never()).reset(mockEnv)
     verify(mockInterpreter).close(mockEnv)
@@ -73,7 +73,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with given env context" should "reset it when done but not close it" in {
+  "test launcher with given env context" should "reset it when done but not close it" in {
     
     val dir2 = createDir("dir2");
     val feature2 = createFile("dir2/file2.feature");
@@ -86,7 +86,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
     
-    val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
+    val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
     verify(mockInterpreter).reset(mockEnv)
     verify(mockInterpreter, never()).close(mockEnv)
@@ -95,7 +95,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with given meta" should "load it" in {
+  "test launcher with given meta" should "load it" in {
     
     val dir3 = createDir("dir3");
     val feature3 = createFile("dir3/file3.feature");
@@ -116,7 +116,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(List(feature))
     
-    val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
+    val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
     verify(mockInterpreter).reset(mockEnv)
     verify(mockInterpreter, never()).close(mockEnv)
@@ -125,7 +125,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with duplicate meta" should "should not load duplicate" in {
+  "test launcher with duplicate meta" should "should not load duplicate" in {
     
     val dir31 = createDir("dir31")
     val dirmeta32 = createDir("dirmeta32");
@@ -147,7 +147,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(List(feature))
     
-    val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
+    val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
     verify(mockInterpreter).reset(mockEnv)
     verify(mockInterpreter, never()).close(mockEnv)
@@ -156,7 +156,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with given meta that throws exception in interactive mode" should "error" in {
+  "test launcher with given meta that throws exception in interactive mode" should "error" in {
     
     val dir4 = createDir("dir4");
     val feature4 = createFile("dir4/file4.feature");
@@ -177,7 +177,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.interpretFeature(feature4, UserOverrides.addUserMeta(List(meta4)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
     
     try {
-      executor(mockInterpreter).execute(options, Some(mockEnv))
+      launcher(mockInterpreter).run(options, Some(mockEnv))
       fail("Exception expected")
     } catch {
       case e: Throwable => e.getMessage() should not be (null)
@@ -188,7 +188,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with given meta that throws exception in batch mode" should "return fail status" in {
+  "test launcher with given meta that throws exception in batch mode" should "return fail status" in {
     
     val dir5 = createDir("dir5");
     val feature5 = createFile("dir5/file5.feature");
@@ -209,7 +209,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature5, UserOverrides.addUserMeta(List(meta5)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
     
-    val evalStatus = executor(mockInterpreter).execute(options, Some(mockEnv))
+    val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
 
     verify(mockInterpreter).reset(mockEnv)
     verify(mockInterpreter, never()).close(mockEnv)
@@ -218,7 +218,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test executor with reporting" should "generate reports" in {
+  "test launcher with reporting" should "generate reports" in {
     
     val dir6 = createDir("dir6");
     val feature6a = createFile("dir6/file6a.feature");
@@ -258,22 +258,22 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature6B))
     when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature7A))
     
-    val evalStatus = executor(mockInterpreter).execute(options)
+    val evalStatus = launcher(mockInterpreter).run(options)
     
     verify(mockInterpreter, never()).reset(mockEnv)
     verify(mockInterpreter, times(3)).close(mockEnv)
     
     evalStatus should be (Passed(6000))
     
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6" + File.separator + "file6a", "file6a.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir6" + File.separator + "file6b", "file6b.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenExecutorTest-dir7" + File.separator + "file7a", "file7a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6a", "file6a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6b", "file6b.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir7" + File.separator + "file7a", "file7a.feature.html").exists should be (true)
     new File(reportDir, "feature-summary.html").exists should be (true)
     new File(reportDir, "index.html").exists should be (true)
     
   }
   
-  "test executor with filter tags" should "apply the filters at interpreter level" in {
+  "test launcher with filter tags" should "apply the filters at interpreter level" in {
     
     val dir8 = createDir("dir8");
     val feature8 = createFile("dir8/file8.feature");
@@ -287,7 +287,7 @@ class GwenExecutorTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
     when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(List(feature))
     
-    val evalStatus = executor(mockInterpreter).execute(options)
+    val evalStatus = launcher(mockInterpreter).run(options)
     
     verify(mockInterpreter, never()).reset(mockEnv)
     verify(mockInterpreter).close(mockEnv)

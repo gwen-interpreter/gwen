@@ -40,13 +40,14 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions()
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
-    when(mockInterpreter.execute(options, Some(mockEnv))).thenReturn(Passed(1))
+    when(mockLauncher.run(options, Some(mockEnv))).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options);
     verify(mockInterpreter).close(mockEnv)
@@ -57,12 +58,13 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions(batch = true)
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
     
-    when(mockInterpreter.execute(options, None)).thenReturn(Passed(1))
+    when(mockLauncher.run(options, None)).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options);
     verify(mockInterpreter, never()).close(any[EnvContext])
@@ -73,13 +75,14 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
 
     val options = GwenOptions(metaFiles = List(new File("file.meta")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
-    when(mockInterpreter.execute(options, Some(mockEnv))).thenReturn(Passed(1))
+    when(mockLauncher.run(options, Some(mockEnv))).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options);
     verify(mockInterpreter).close(mockEnv)
@@ -90,13 +93,14 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
 
     val options = GwenOptions(features = List(new File("file.feature")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
-    when(mockInterpreter.execute(options, Some(mockEnv))).thenReturn(Passed(1))
+    when(mockLauncher.run(options, Some(mockEnv))).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options);
     verify(mockInterpreter).close(mockEnv)
@@ -107,11 +111,12 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions(batch = true, metaFiles = List(new File("file.meta")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
-    when(mockInterpreter.execute(options, None)).thenReturn(Passed(1))
+    when(mockLauncher.run(options, None)).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options);
     verify(mockInterpreter, never()).close(any[EnvContext])
@@ -123,12 +128,13 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions(batch = true, features = List(new File("file.feature")))
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockLauncher = mock[GwenLauncher[EnvContext]]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
     
-    when(mockInterpreter.execute(options, None)).thenReturn(Passed(1))
+    when(mockLauncher.run(options, None)).thenReturn(Passed(1))
     
-    app.run(options) should be (0)
+    app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options);
     verify(mockInterpreter, never()).close(any[EnvContext])
