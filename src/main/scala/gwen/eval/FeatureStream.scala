@@ -22,6 +22,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
 import gwen.Predefs.Kestrel
 import com.typesafe.scalalogging.slf4j.LazyLogging
+import gwen.errors._
 
 /**
   * Reads and streams individual features and feature suites from the file system.  
@@ -102,7 +103,7 @@ object FeatureStream extends LazyLogging {
       case metaFile :: Nil =>
         metaFiles ::: List(metaFile)
       case _ :: _ => 
-        sys.error(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
+        ambiguityError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
       case _ => metaFiles
     }
   }

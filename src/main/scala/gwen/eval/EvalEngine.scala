@@ -17,8 +17,8 @@
 package gwen.eval
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.dsl.Step
+import gwen.errors._
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -56,7 +56,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {
-      case _ => throw new UnsupportedStepException(step)
+      case _ => undefinedStepError(step)
     }
   }
   
@@ -88,12 +88,9 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
     try {
       engineA.evaluate(step, env.envA)
     } catch {
-      case _: UnsupportedStepException => 
+      case _: UndefinedStepException => 
         engineB.evaluate(step, env.envB)
     }
   }
   
 }
-
-/** Thrown when an engine encounters an undefined step. */
-class UnsupportedStepException(step: Step) extends Exception(s"Unsupported or undefined step: ${step}")

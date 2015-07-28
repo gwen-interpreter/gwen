@@ -19,6 +19,7 @@ package gwen.dsl
 import java.io.File
 
 import gwen.Predefs.Kestrel
+import gwen.errors._
 
 /**
   * Normalises a parsed feature spec in preparation for 
@@ -37,18 +38,29 @@ trait SpecNormaliser {
     * @param spec the feature spec
     * @param featureFile optional source feature file
     */
-  def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = 
+  def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = {
+    val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile)
     FeatureSpec(
       spec.feature, 
       None, 
       spec.background match {
-        case None => spec.scenarios
+        case None => scenarios
         case Some(_) => 
-          spec.scenarios map { scenario => 
+          scenarios map { scenario => 
             Scenario(scenario, if (scenario.isStepDef) { None } else { spec.background }, scenario.steps)
           }
       },
       featureFile
-   )
+    )
+  }
+   
+   private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
+     val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name) filter { case (_, stepDefs) => stepDefs.size > 1 }
+     val dupCount = duplicates.size
+     if (dupCount > 0) {
+       val msg = s"Ambiguity error${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
+       ambiguityError(s"$msg: ${(duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }).mkString}")
+     }
+   }
   
 }

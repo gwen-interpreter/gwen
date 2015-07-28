@@ -20,6 +20,7 @@ import scala.util.parsing.input.Positional
 import java.io.File
 import gwen.Predefs.Kestrel
 import scala.util.parsing.input.Position
+import gwen.errors._
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -182,7 +183,7 @@ object Tag {
   import scala.language.implicitConversions
   implicit def string2Tag(value: String) = value match {
     case Regex(name) => Tag(name)
-    case _ => sys.error(s"invalid tag: ${value}")
+    case _ => tagError(s"invalid tag: ${value}")
   }
   
 }

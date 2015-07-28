@@ -23,6 +23,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsObject
+import gwen.errors._
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
@@ -96,7 +97,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @return the attribute value if found (throws error otherwise)
     */
   def get(name: String): String = 
-    getOpt(name).getOrElse(throw new AttrNotFoundException(name, scope))
+    getOpt(name).getOrElse(unboundAttributeError(name, scope))
   
   /**
     * Finds and retrieves all attribute values from the scope by name.

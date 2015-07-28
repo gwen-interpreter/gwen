@@ -24,6 +24,7 @@ import scala.util.Properties
 import java.util.Properties
 import java.io.FileReader
 import scala.annotation.tailrec
+import gwen.errors._
 
 /**
   * Provides access to system properties loaded from properties files.
@@ -63,7 +64,7 @@ object Settings {
       val inline = if (props.containsKey(key)) {
         props.getProperty(key)
       } else {
-        sys.props.get(key).getOrElse(sys.error(s"Property not found: $key"))
+        sys.props.get(key).getOrElse(missingPropertyError(key))
       }
       val resolved = inline match {
         case InlineProperty(_) => resolve(inline, props)
@@ -85,7 +86,7 @@ object Settings {
     * 
     * @param name the name of the property to get
     */
-  def get(name: String): String = getOpt(name).getOrElse(sys.error(s"System property $name not set"))
+  def get(name: String): String = getOpt(name).getOrElse(missingPropertyError(name))
   
   /**
     * Adds a property.

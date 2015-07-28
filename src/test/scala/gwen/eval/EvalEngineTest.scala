@@ -18,9 +18,9 @@ package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
+import gwen.errors.UndefinedStepException
 
 class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
 class TestEvalEngine extends EvalEngine[TestEnvContext] {
@@ -33,7 +33,7 @@ class EvalEngineTest extends FlatSpec with Matchers {
   val env = engine.init(new GwenOptions(), new ScopedDataStack())
   
   "Unsupported step" should "fail with UnsupportedStepException" in {
-    intercept[UnsupportedStepException] {
+    intercept[UndefinedStepException] {
       engine.evaluate(Step(StepKeyword.Given, " I am unsupported"), env)
     }
   }

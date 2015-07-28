@@ -19,11 +19,9 @@ package gwen.eval.support
 import java.io.StringReader
 import java.io.StringWriter
 import java.util.Iterator
-
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
-
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import javax.xml.namespace.NamespaceContext
@@ -34,6 +32,7 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
+import gwen.errors._
 
 /** Can be mixed into evaluation engines to provide XPath support. */
 trait XPathSupport {
@@ -53,14 +52,14 @@ trait XPathSupport {
     */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = {
     if (source.trim().length() == 0) {
-      sys.error("Cannot evaluate XPath on empty source")
+      xPathError("Cannot evaluate XPath on empty source")
     }
     withXPath(xpath) { (xPath, expr) =>
       val qname = targetType match {
         case XMLNodeType.text => XPathConstants.STRING
         case XMLNodeType.node => XPathConstants.NODE
         case XMLNodeType.nodeset => XPathConstants.NODESET
-        case _ => sys.error(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
+        case _ => xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
       }
       val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
       targetType match {
@@ -77,7 +76,7 @@ trait XPathSupport {
         xPath.setNamespaceContext(new NamespaceContext() { 
           def getNamespaceURI(prefix: String): String = {
             val mappings = namespaces.split(",").map(_.split("=")).map(pair => (pair(0).trim, pair(1).trim)).toMap
-            return mappings.getOrElse(prefix, sys.error(s"Unknown namespace prefix: $prefix"));
+            return mappings.getOrElse(prefix, xPathError(s"Unknown namespace prefix: $prefix"));
           }
           def getPrefix(uri: String): String = null
           def getPrefixes(uri: String): Iterator[String] = null

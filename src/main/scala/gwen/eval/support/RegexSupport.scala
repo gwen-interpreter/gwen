@@ -16,6 +16,8 @@
 
 package gwen.eval.support
 
+import gwen.errors._
+
 /** Can be mixed into evaluation engines to provide Regex support. */
 trait RegexSupport {
 
@@ -28,6 +30,6 @@ trait RegexSupport {
     * @return the extracted value
     */
   def extractByRegex(regex: String, source: String): String =  
-    regex.r.findFirstMatchIn(source).getOrElse(sys.error(s"'Regex match '$regex' not found in '$source'")).group(1)
+    regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
     
 }

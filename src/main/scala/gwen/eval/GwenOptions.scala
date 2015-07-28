@@ -24,6 +24,7 @@ import gwen.dsl.Tag
 import gwen.Settings
 import gwen.UserOverrides
 import scopt.OptionParser
+import gwen.errors._
 
 /**
   * Captures gwen command line options.
@@ -157,11 +158,11 @@ object GwenOptions {
       } tap { options =>
         options foreach { opt =>
           if ((opt.batch || opt.dryRun) && opt.features.isEmpty) {
-            sys.error("No feature files and/or directories specified")
+            invocationError("No feature files and/or directories specified")
           }
           Settings.loadAll(opt.properties)
         }
-      }).getOrElse(sys.error("Failed to parse gwen arguments"))
+      }).getOrElse(invocationError("Failed to read in gwen arguments"))
   }
   
 }

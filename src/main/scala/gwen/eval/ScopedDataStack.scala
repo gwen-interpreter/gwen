@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.JsObject
 import gwen.Predefs.Kestrel
+import gwen.errors._
 
 /**
   * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -157,7 +158,7 @@ class ScopedDataStack() {
     * @return Some(value) if the attribute found or None otherwise
     */
   def get(name: String): String = 
-    getOpt(name).getOrElse(throw new AttrNotFoundException(name, current.scope))
+    getOpt(name).getOrElse(unboundAttributeError(name, current.scope))
   
   /**
     * Finds and retrieves an attribute in the currently active scope by scanning
@@ -191,7 +192,7 @@ class ScopedDataStack() {
     * @throws AttrNotFoundException if the attribute is not found
     */
   def getIn(scope: String, name: String): String = 
-    getInOpt(scope, name).getOrElse(throw new AttrNotFoundException(name, scope))
+    getInOpt(scope, name).getOrElse(unboundAttributeError(name, scope))
   
   /**
     * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -262,5 +263,3 @@ object ScopedDataStack {
   
 }
 
-class AttrNotFoundException(name: String, scope: String) 
-  extends Exception(s"$name not found in $scope scope")

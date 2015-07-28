@@ -18,6 +18,7 @@ package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import gwen.errors.UnboundAttributeException
 
 class ScopedDataStackTest extends FlatSpec with Matchers {
 
@@ -25,10 +26,10 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     val scopes = new ScopedDataStack()
     
-    intercept[AttrNotFoundException] { scopes.get("username") }
-    intercept[AttrNotFoundException] { scopes.get("password") }
-    intercept[AttrNotFoundException] { scopes.get("firstName") }
-    intercept[AttrNotFoundException] { scopes.get("lastName") }
+    intercept[UnboundAttributeException] { scopes.get("username") }
+    intercept[UnboundAttributeException] { scopes.get("password") }
+    intercept[UnboundAttributeException] { scopes.get("firstName") }
+    intercept[UnboundAttributeException] { scopes.get("lastName") }
   }
   
   "getOpt" should "return None when there are no scopes" in {
@@ -73,7 +74,7 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     scopes.get("username") should be ("gwen")
     scopes.get("password") should be ("pwd")
-    intercept[AttrNotFoundException] { scopes.get("token") }
+    intercept[UnboundAttributeException] { scopes.get("token") }
   }
   
   "getAll" should "get all current page scope attributes" in {
@@ -116,11 +117,11 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.set("firstName", "gwen")
     scopes.set("lastName", "tester")
     
-    intercept[AttrNotFoundException] { scopes.get("username") }
-    intercept[AttrNotFoundException] { scopes.get("password") }
+    intercept[UnboundAttributeException] { scopes.get("username") }
+    intercept[UnboundAttributeException] { scopes.get("password") }
     scopes.get("firstName")  should be ("gwen")
     scopes.get("lastName")   should be ("tester")
-    intercept[AttrNotFoundException] { scopes.get("middleName") }
+    intercept[UnboundAttributeException] { scopes.get("middleName") }
     
   }
   
@@ -177,13 +178,13 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.set("firstName", "gwen1")
     scopes.set("lastName", "tester")
     
-    intercept[AttrNotFoundException] { scopes.get("username") }
-    intercept[AttrNotFoundException] { scopes.get("password") }
+    intercept[UnboundAttributeException] { scopes.get("username") }
+    intercept[UnboundAttributeException] { scopes.get("password") }
     scopes.get("firstName")  should be ("gwen1")
     scopes.get("lastName")   should be ("tester")
     scopes.current.scope  should be ("register")
     scopes.get("middleName") should be ("chaos")
-    intercept[AttrNotFoundException] { scopes.get("maidenName") }
+    intercept[UnboundAttributeException] { scopes.get("maidenName") }
     
   }
   
@@ -241,7 +242,7 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     scopes.get("firstName")  should be ("gwen")
     scopes.get("lastName")   should be ("person")
-    intercept[AttrNotFoundException] { scopes.get("middleName") }
+    intercept[UnboundAttributeException] { scopes.get("middleName") }
     
   }
   
@@ -313,8 +314,8 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.getIn("register", "lastName")   should be ("register")
     scopes.getIn("person", "firstName")    should be ("gwen")
     scopes.getIn("person", "lastName")     should be ("person")
-    intercept[AttrNotFoundException] { scopes.getIn("register", "middleName") }
-    intercept[AttrNotFoundException] { scopes.getIn("person", "middleName") }
+    intercept[UnboundAttributeException] { scopes.getIn("register", "middleName") }
+    intercept[UnboundAttributeException] { scopes.getIn("person", "middleName") }
   }
   
   "getAllIn" should "get any attribute in any page scope for nominated page " in {

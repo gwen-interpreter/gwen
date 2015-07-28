@@ -43,6 +43,7 @@ import gwen.dsl.prettyPrint
 import gwen.GwenInfo
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.dsl.StatusKeyword
+import gwen.errors._
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -98,7 +99,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
       case success @ Success(step, _) => 
         evaluateStep(step, env)
       case failure: NoSuccess => 
-        sys.error(failure.toString)
+        parsingError(failure.toString)
     }
   }
   
@@ -128,7 +129,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
           }
         }
       case failure: NoSuccess =>
-        sys.error(failure.toString)
+        parsingError(failure.toString)
     }
   }
   
@@ -327,9 +328,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
             meta.evalStatus match {
               case Passed(_) | Loaded =>
               case Failed(_, error) =>
-                sys.error(s"Failed to load meta: $meta: ${error.getMessage()}")
+                evaluationError(s"Failed to load meta: $meta: ${error.getMessage()}")
               case _ =>
-                sys.error(s"Failed to load meta: $meta")
+                evaluationError(s"Failed to load meta: $meta")
             }
           case _ => Nil
         }
