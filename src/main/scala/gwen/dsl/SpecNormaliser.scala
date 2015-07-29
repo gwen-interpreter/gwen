@@ -54,13 +54,22 @@ trait SpecNormaliser {
     )
   }
    
-   private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
-     val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name) filter { case (_, stepDefs) => stepDefs.size > 1 }
-     val dupCount = duplicates.size
-     if (dupCount > 0) {
-       val msg = s"Ambiguity error${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
-       ambiguityError(s"$msg: ${(duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }).mkString}")
-     }
-   }
+  /**
+    * Returns the given scenarios if they contain no step definitions 
+    * having the same name.
+    * 
+    * @param scenarios the list of scenarios to conditionally return
+    * @param featureFile optional file from which scenarios were loaded
+    * @throws gwen.errors.AmiguousCaseException if more than one step def 
+    *         with the same name is found  
+    */
+  private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
+    val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name) filter { case (_, stepDefs) => stepDefs.size > 1 }
+    val dupCount = duplicates.size
+    if (dupCount > 0) {
+      val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
+      ambiguousCaseError(s"$msg: ${(duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }).mkString}")
+    }
+  }
   
 }

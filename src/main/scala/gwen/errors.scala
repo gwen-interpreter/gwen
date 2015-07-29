@@ -19,17 +19,17 @@
  */
 package gwen {
 
-  object errors {
+  package object errors {
 
     import gwen.dsl.Step
 
     def parsingError(msg: String) = throw new ParsingException(msg)
-    def ambiguityError(msg: String) = throw new AmbiguityException(msg)
+    def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
     def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
     def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
     def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
     def missingPropertyError(name: String) = throw new MissingPropertyException(name)
-    def tagError(msg: String) = throw new TagException(msg)
+    def invalidTagError(msg: String) = throw new InvalidTagException(msg)
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)
     def xPathError(msg: String) = throw new XPathException(msg)
@@ -40,19 +40,19 @@ package gwen {
     class ParsingException(msg: String) extends Exception(msg)
 
     /** Thrown when an ambiguous condition is detected. */
-    class AmbiguityException(msg: String) extends Exception(msg)
+    class AmbiguousCaseException(msg: String) extends Exception(msg)
 
     /** Thrown when an unsupported or undefined step is encountered. */
     class UndefinedStepException(step: Step) extends Exception(s"Unsupported or undefined step: ${step}")
 
     /** Thrown when an attribute cannot be found in a scope. */
-    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Reference not bound${scope.map(s => " in ${s} scope")getOrElse("")}: ${name}")
+    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(s => " in ${s} scope")getOrElse("")}: ${name}")
     
     /** Thrown when an attribute cannot be found in a scope. */
-    class MissingPropertyException(name: String) extends Exception(s"Property not set: ${name}")
+    class MissingPropertyException(name: String) extends Exception(s"Property not found: ${name}")
 
-    /** Thrown when an tag (annotation) error occurs. */
-    class TagException(msg: String) extends Exception(msg)
+    /** Thrown when an invalid tag (annotation) is detected. */
+    class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: ${tagString}")
 
     /** Thrown when a regex error occurs. */
     class RegexException(msg: String) extends Exception(msg)

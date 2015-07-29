@@ -96,6 +96,8 @@ object FeatureStream extends LazyLogging {
     * 
     * @param dir the directory to scan for meta
     * @param metaFiles the currently accumulated list of meta files
+    * @throws gwen.errors.AmbiguousCaseException if more than one meta file is found
+    *         in the given directory
     */
   private def accumulateMeta(dir: File, metaFiles: List[File]): List[File] = { 
     val metas = dir.listFiles.filter(isMetaFile).toList
@@ -103,7 +105,7 @@ object FeatureStream extends LazyLogging {
       case metaFile :: Nil =>
         metaFiles ::: List(metaFile)
       case _ :: _ => 
-        ambiguityError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
+        ambiguousCaseError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
       case _ => metaFiles
     }
   }

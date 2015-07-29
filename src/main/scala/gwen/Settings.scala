@@ -59,6 +59,14 @@ object Settings {
     }
   }
   
+  /**
+   * Resolves a given property by performing any property substitutions.
+   * 
+   * @param value the value to resolve
+   * @param the properties already read (candidates for substitution)
+   * @throws MissingPropertyException if a property cannot be substituted 
+   *         because it is missing from the given props
+   */
   private[gwen] def resolve(value: String, props: Properties): String = value match {
     case InlineProperty(key) =>
       val inline = if (props.containsKey(key)) {
@@ -85,6 +93,7 @@ object Settings {
     * Gets a mandatory property (throws exception if not found)
     * 
     * @param name the name of the property to get
+    * @throws gwen.errors.MissingPropertyException if no such property is set
     */
   def get(name: String): String = getOpt(name).getOrElse(missingPropertyError(name))
   

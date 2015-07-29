@@ -95,6 +95,8 @@ class ScopedData(val scope: String) extends LazyLogging {
     *
     * @param name the name of the attribute to find
     * @return the attribute value if found (throws error otherwise)
+    * @throws gwen.errors.UnboundAttributeException if the attribute is bound 
+    *         to the given name
     */
   def get(name: String): String = 
     getOpt(name).getOrElse(unboundAttributeError(name, scope))

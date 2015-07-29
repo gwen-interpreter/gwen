@@ -31,6 +31,10 @@ trait SystemProcessSupport[T <: EnvContext] {
     *
     * @param step the step to evaluate
     * @param env the environment context
+    * @throws gwen.errors.SystemProcessException if the system process fails
+    *         to execute
+    * @throws gwen.errors.UndefinedStepException if the given step is undefined
+    *         or unsupported
     */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {

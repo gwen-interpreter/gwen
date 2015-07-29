@@ -53,6 +53,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     *
     * @param step the step to evaluate
     * @param env the environment context
+    * @throws gwen.errors.UndefinedStepException unconditionally thrown by 
+    *         this default implementation
     */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {

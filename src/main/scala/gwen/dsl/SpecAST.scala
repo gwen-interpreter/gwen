@@ -181,9 +181,16 @@ object Tag {
   private val Regex = """~?@(\w+)""".r
   
   import scala.language.implicitConversions
+  
+  /**
+    * Implicitly converts a tag string to a tag object.
+    * 
+    *  @param value the string value to convert
+    *  @throws gwen.errors.InvalidTagException if the tag string is invalid 
+    */
   implicit def string2Tag(value: String) = value match {
     case Regex(name) => Tag(name)
-    case _ => tagError(s"invalid tag: ${value}")
+    case _ => invalidTagError(value)
   }
   
 }

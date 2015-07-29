@@ -18,7 +18,7 @@ package gwen.dsl
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.errors.AmbiguityException
+import gwen.errors.AmbiguousCaseException
 
 class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   
@@ -74,7 +74,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
 	      Step(StepKeyword.Then, "step 3", Passed(2)))
 	    )))
 	    
-	intercept[AmbiguityException] {
+	intercept[AmbiguousCaseException] {
 	  normalise(meta, None)
     }
   }

@@ -28,6 +28,7 @@ trait RegexSupport {
     * @param regex the regex extractor pattern
     * @param source the source string
     * @return the extracted value
+    * @throws gwen.errors.RegexException if the regex fails to evaluate
     */
   def extractByRegex(regex: String, source: String): String =  
     regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)

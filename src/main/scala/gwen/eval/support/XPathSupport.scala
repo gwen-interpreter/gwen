@@ -49,6 +49,7 @@ trait XPathSupport {
     * @param source the xml source string
     * @param targetType the target node type
     * @return the result of evaluating the xpath expression
+    * @throws gwen.errors.XPathException if the xpath expression fails to evaluate
     */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = {
     if (source.trim().length() == 0) {
@@ -70,6 +71,15 @@ trait XPathSupport {
     }
   }
 
+  /**
+    * Creates an xpath evaluator from the given expression and then applied
+    * the given function to it,
+    * 
+    *  @param expression the xpath expression
+    *  @param f the function to apply
+    *  @throws gwen.errors.XPathException if the expression contains a namespace 
+    *          that cannot be mapped 
+    */
   private def withXPath[T](expression: String)(f: (XPath, String) => T): T = expression match {
     case r"""(.+?)$expr where (.+?)$$$namespaces""" =>
       val xPath = XPathFactory.newInstance().newXPath() tap { xPath =>

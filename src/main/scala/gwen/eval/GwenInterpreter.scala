@@ -97,6 +97,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param input the input step
     * @param env the environment context
     * @return the evaluated step (or an exception if a runtime error occurs)
+    * @throws gwen.errors.ParsingException if the given step fails to parse
     */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
     parseAll(step, input) match {
@@ -116,6 +117,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param env the environment context
     * @return the evaluated feature or nothing if the feature does not 
     *         satisfy specified tag filters
+    * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
   private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = {
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
@@ -310,6 +312,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @param metaFiles the meta files to load
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
+    * @throws gwen.errors.ParsingException if the given meta fails to parse
     */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>

@@ -72,6 +72,7 @@ object GwenOptions {
     * 
     * @param interpreterClass the interpreter implementation class
     * @param args the command line arguments
+    * @throws gwen.errors.InvocationException if the given arguments fail to parse
     */
   def apply(interpreterClass: Class[_], args: Array[String]): GwenOptions = { 
     
