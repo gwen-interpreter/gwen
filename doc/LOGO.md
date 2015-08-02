@@ -19,7 +19,7 @@ butterfly.
 Dynamic systems can be observed to possess chaotic behavior and this is common 
 in software. The smallest of changes to programs and environments can give 
 rise to the most erratic effects. Gwen evaluates software systems by 
-mapping plain text specifications to executable instructions through predefined engines that:
+mapping plain text specifications to executable instructions in predefined engines that:
 
 - Create conditions (_Givens_)
 - Perform actions (_Whens_)
