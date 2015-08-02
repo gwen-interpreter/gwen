@@ -70,7 +70,7 @@ class ReportGenerator (
   private final def reportMetaDetail(info: GwenInfo, metaspec: FeatureSpec, featureReportFile: File, prefix: String): FeatureResult = {
     val file = createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec) 
     logger.info(s"Generating meta detail report [${metaspec.feature.name}]..")
-    new FeatureResult(metaspec, Nil, Some(file)) tap { metaResult =>
+    FeatureResult(metaspec, Some(file), Nil) tap { metaResult =>
       file.writeText(
         formatDetail(
           options,
@@ -83,7 +83,7 @@ class ReportGenerator (
   
   private final def reportFeatureDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]): FeatureResult = { 
     logger.info(s"Generating feature detail report [${spec.feature.name}]..")
-    new FeatureResult(spec, metaResults, Some(featureReportFile)) tap { featureResult =>
+    FeatureResult(spec, Some(featureReportFile), metaResults) tap { featureResult =>
       featureReportFile.writeText(
         formatDetail(
           options,
@@ -105,7 +105,7 @@ class ReportGenerator (
     * @param summary the feature summary to report
     */
   final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
-    if (!summary.featureResults.map(_.report).isEmpty) {
+    if (!summary.summaryLines.map(_.report).isEmpty) {
         logger.info(s"Generating feature summary report..")
         summaryReportFile.writeText(formatSummary(options, info, summary))
         logger.info(s"Feature summary report generated: ${summaryReportFile.getAbsolutePath()}")

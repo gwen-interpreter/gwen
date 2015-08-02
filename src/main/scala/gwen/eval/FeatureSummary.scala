@@ -18,23 +18,31 @@ package gwen.eval
 
 import java.util.Date
 import gwen.dsl.FeatureSpec
+import gwen.dsl.Scenario
 import gwen.dsl.StatusKeyword
+import gwen.dsl.Tag
 import java.io.File
+import gwen.dsl.EvalStatus
+import gwen.dsl.Passed
 
 /**
   * Captures the feature summary results of an evaluated feature.
   * 
-  * @param featureResults list of feature results
+  * @param summaryLines feature summary lines
+  * @param featureCounts number of features by status
   * @param scenarioCounts number of scenarios by status
   * @param stepCounts number of steps by status
   * 
   * @author Branko Juric
   */
-case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: Map[StatusKeyword.Value, Int], stepCounts: Map[StatusKeyword.Value, Int]) {
+case class FeatureSummary(
+  summaryLines: List[FeatureSummaryLine],
+  scenarioCounts: Map[StatusKeyword.Value, Int], 
+  stepCounts: Map[StatusKeyword.Value, Int]) {
   
   val timestamp = new Date()
-  
-  val featureCounts = StatusKeyword.countsByStatus(featureResults.map(_.evalStatus))
+  def evalStatus = EvalStatus(summaryLines.map(_.evalStatus))
+  def featureCounts = StatusKeyword.countsByStatus(summaryLines.map(_.evalStatus))
   
   /** 
     * Adds the given feature result to the current summary (accumulates). 
@@ -43,7 +51,7 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
     */
   def +(featureResult: FeatureResult) =
     new FeatureSummary(
-      this.featureResults ++ List(featureResult),
+      this.summaryLines ++ List(featureResult.summaryLine), 
       addCounts(this.scenarioCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.map(_.evalStatus))),
       addCounts(this.stepCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))))
   
@@ -75,23 +83,42 @@ case class FeatureSummary(featureResults: List[FeatureResult], scenarioCounts: M
 /** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(spec: FeatureSpec, metaResults: List[FeatureResult], report: Option[File]): FeatureSummary =
-    FeatureSummary() + new FeatureResult(spec, metaResults, report)
+  def apply(spec: FeatureSpec, report: Option[File]): FeatureSummary =
+    FeatureSummary() + FeatureResult(spec, report, Nil)
+  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
 }
+
+/** Feature summary line. */
+case class FeatureSummaryLine(
+  timestamp: Date, 
+  featureName: String, 
+  featureFile: Option[File], 
+  evalStatus: EvalStatus, 
+  report: Option[File])
 
 /**
   * Captures the results of an evaluated feature.
   * 
   * @param spec the evaluated feature
   * @param metaResults the evaluated meta results
-  * @param report the list of report
+  * @param report the report file
   */
-class FeatureResult(val spec: FeatureSpec, val metaResults: List[FeatureResult], val report: Option[File]) {
+class FeatureResult(
+  val spec: FeatureSpec, 
+  val report: Option[File], 
+  val metaResults: List[FeatureResult]) {
+  
   val timestamp = new Date()
-  val featureName = spec.feature.name
-  val featureFile = spec.featureFile 
-  val evalStatus = spec.evalStatus
-  val summary = FeatureSummary() + this
   val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+  val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
+  def summaryLine = new FeatureSummaryLine(timestamp, spec.feature.name, spec.featureFile, spec.evalStatus, report)
+  def summary = FeatureSummary(this)
+  
+}
+
+/** Feature result factory. */
+object FeatureResult {
+  def apply(spec: FeatureSpec, report: Option[File], metaResults: List[FeatureResult]): FeatureResult = 
+    new FeatureResult(spec, report, metaResults)
 }
 

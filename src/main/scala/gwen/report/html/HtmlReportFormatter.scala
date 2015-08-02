@@ -29,6 +29,7 @@ import gwen.eval.FeatureSummary
 import gwen.report.ReportFormatter
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
+import gwen.eval.FeatureSummaryLine
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -52,14 +53,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
     
-    val spec = result.spec
     val metaResults = result.metaResults 
-    val featureName = spec.featureFile.map(_.getPath()).getOrElse(spec.feature.name)
-    val scenarios = spec.scenarios
-    val steps = spec.steps
-    val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
-    val title = s"${if(isMeta) "Meta" else "Feature"} Detail"
-    val status = spec.evalStatus.status
+    val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
+    val title = s"${if(result.isMeta) "Meta" else "Feature"} Detail"
+    val status = result.spec.evalStatus.status
     val summary = result.summary
     val screenshots = result.screenshots
     val rootPath = relativePath(result.report.get, options.reportDir.get).filter(_ == File.separatorChar).flatMap(c => "../")
@@ -68,7 +65,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
   <head>
     ${formatHtmlHead(s"${title} - ${featureName}", rootPath)}
-        ${formatJsHeader(rootPath, screenshots.size > 1)}
+      ${formatJsHeader(rootPath, screenshots.size > 1)}
   </head>
   <body>
     ${formatReportHeader(info, title, featureName, rootPath)}
@@ -90,13 +87,13 @@ trait HtmlReportFormatter extends ReportFormatter {
          }
     </ol>
     <div class="panel panel-default">
-      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (spec.feature.tags.size > 0) s"""
-          <span><p>${escape(spec.feature.tags.mkString(" "))}</p></span>""" else ""}
+      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
+        <span><p>${escape(result.spec.feature.tags.mkString(" "))}</p></span>""" else ""}
         <span class="label label-black">Feature</span>
-        <span class="pull-right"><small>${durationOrStatus(spec.evalStatus)}</small></span>
-        ${escape(spec.feature.name)}${if (!spec.feature.narrative.isEmpty) s"""
+        <span class="pull-right"><small>${durationOrStatus(result.spec.evalStatus)}</small></span>
+        ${escape(result.spec.feature.name)}${if (!result.spec.feature.narrative.isEmpty) s"""
         <p>
-        <ul class="list-group bg-default">${(spec.feature.narrative  map { line => 
+        <ul class="list-group bg-default">${(result.spec.feature.narrative  map { line => 
           s"""<li class="list-group-item bg-default">${line}</li>"""}).mkString}
         </ul>
         </p>""" else ""}
@@ -109,7 +106,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       </div>
     </div>${if (!metaResults.isEmpty) { 
     val count = metaResults.size
-    val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
+    val metaStatus = EvalStatus(metaResults.map(_.spec.evalStatus))
     val status = metaStatus.status
     s"""
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -124,12 +121,12 @@ trait HtmlReportFormatter extends ReportFormatter {
         <ul class="list-group">
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, s"meta/${result.report.get.getName()}", None, rowIndex)}).mkString}
+              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.report.get.getName()}", None, rowIndex)}).mkString}
             </div>
           </li>
         </ul>
       </div>
-    </div>"""} else ""}${(scenarios map { scenario => 
+    </div>"""} else ""}${(result.spec.scenarios map { scenario => 
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
     s"""
@@ -181,7 +178,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): String = {
     
     val title = "Feature Summary";
-    val status = EvalStatus(summary.featureResults.map(_.evalStatus)).status
+    val status = summary.evalStatus.status
   
     s"""<!DOCTYPE html>
 <html lang="en">
@@ -206,7 +203,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
-        <span class="pull-right"><small>${formatDuration(summary.featureResults.map(_.evalStatus.duration).reduceLeft(_+_))}</small></span>
+        <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
@@ -216,7 +213,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         </div>
       </div>
     </div>${(StatusKeyword.reportables.reverse map { status => 
-    summary.featureResults.zipWithIndex.filter { _._1.evalStatus.status == status } match {
+    summary.summaryLines.zipWithIndex.filter { _._1.evalStatus.status == status } match {
       case Nil => ""
       case results => s"""
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -224,7 +221,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
           <span class="label label-${cssStatus(status)}">${status}</span>${
           val count = results.size
-          val total = summary.featureResults.size
+          val total = summary.summaryLines.size
           val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
           s"""${countOfTotal}${if (count > 1) s"""
           <span class="pull-right"><small>${formatDuration(results.map(_._1.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
@@ -296,17 +293,17 @@ trait HtmlReportFormatter extends ReportFormatter {
             </tr>"""} else ""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
-                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }">
+  private def formatSummaryLine(summaryLine: FeatureSummaryLine, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
+                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(summaryLine.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
-                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.timestamp.toString)}</small></span>
+                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(summaryLine.timestamp.toString)}</small></span>
                   </div>
                   <div class="col-md-4">
-                    <a class="text-${cssStatus(result.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
+                    <a class="text-${cssStatus(summaryLine.evalStatus.status)}" href="${reportPath}">${escape(summaryLine.featureName)}</a>
                   </div>
                   <div class="col-md-5">
-                    <span class="pull-right"><small>${durationOrStatus(result.evalStatus)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+                    <span class="pull-right"><small>${durationOrStatus(summaryLine.evalStatus)}</small></span> ${summaryLine.featureFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
 

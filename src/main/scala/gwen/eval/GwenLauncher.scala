@@ -52,9 +52,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       FeatureStream.readAll(options.features) match {
         case featureStream @ _ #:: _ =>
           val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
-          EvalStatus(summary.featureResults.map(_.evalStatus)) tap { status =>
-            printStatus(summary, status)
-          }
+          printSummaryStatus(summary)
+          summary.evalStatus
         case _ =>
           EvalStatus { 
             optEnv.toList flatMap { env =>
@@ -135,18 +134,18 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
     
   private def toFeatureResult(reportGenerator: Option[ReportGenerator], specs: List[FeatureSpec]): FeatureResult = 
-    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(new FeatureResult(specs.head, specs.map(new FeatureResult(_, Nil, None)), None)) tap { result =>
+    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(FeatureResult(specs.head, None, specs.map(FeatureResult(_, None, Nil)))) tap { result =>
       val status = result.spec.evalStatus
       logger.info("");
       logger.info(s"${status} ${result.timestamp} ${status.emoticon}", status)
       logger.info("");
     }
   
-  private def printStatus(summary: FeatureSummary, status: EvalStatus) {
+  private def printSummaryStatus(summary: FeatureSummary) {
     println
     println(summary.toString)
     println
-    println(s"${status} ${summary.timestamp} ${status.emoticon}")
+    println(s"${summary.evalStatus} ${summary.timestamp} ${summary.evalStatus.emoticon}")
     println
   }
 }
