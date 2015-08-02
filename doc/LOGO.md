@@ -19,18 +19,18 @@ butterfly.
 Dynamic systems can be observed to possess chaotic behavior and this is common 
 in software. The smallest of changes to programs and environments can give 
 rise to the most erratic effects. Gwen evaluates software systems by 
-mapping plain text specifications to executable instructions that:
+mapping plain text specifications to executable instructions through predefined engines that:
 
 - Create conditions (_Givens_)
 - Perform actions (_Whens_)
 - Assert expectations (_Thens_)
 
-The cumulative result is a chain of events that execute in sequence to model 
+The cumulative result is a chain of instructions that execute in sequence to model 
 cause and effect. 
 
 When a small change to the initial conditions of a system cannot guarantee a 
 predictable outcome, then the behavior of that system can be said to be chaotic. 
-The chaotic behavior takes place on an attractor when a large proportion of the initial conditions result in final conditions that converge to and orbit around a chaotic 
+The chaotic behavior takes place on an attractor if the plotted trajectories of a large proportion of the initial conditions converge to and orbit around a chaotic 
 region. The Lorenz attractor, discovered by 
 [Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) shows one such orbit 
 that looks like a butterfly. The logo captures this image with the proposition 
