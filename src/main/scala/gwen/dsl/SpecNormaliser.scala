@@ -39,7 +39,13 @@ trait SpecNormaliser {
     * @param featureFile optional source feature file
     */
   def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = {
-    val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile)
+    val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
+      if (scenario.isStepDef && featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)) {
+        Scenario(scenario, featureFile)
+      } else {
+        scenario
+      }
+    }
     FeatureSpec(
       spec.feature, 
       None, 
@@ -47,7 +53,10 @@ trait SpecNormaliser {
         case None => scenarios
         case Some(_) => 
           scenarios map { scenario => 
-            Scenario(scenario, if (scenario.isStepDef) { None } else { spec.background }, scenario.steps)
+            Scenario(
+              scenario, 
+              if (scenario.isStepDef) None else spec.background, 
+              scenario.steps)
           }
       },
       featureFile

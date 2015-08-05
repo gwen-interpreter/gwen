@@ -200,6 +200,14 @@ table tbody.summary td {
   color: gray;
 }
 
+.grayed {
+  color: gray;
+}
+
+.inline {
+  display: inline-table;
+}
+
 .caret-left {
   border: 4px solid transparent;
   display: inline-block;

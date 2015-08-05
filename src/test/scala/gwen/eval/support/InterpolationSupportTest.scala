@@ -21,27 +21,27 @@ import org.scalatest.Matchers
 
 class InterpolationSupportTest extends FlatSpec with Matchers with InterpolationSupport {
 
-  """interpolate substitution: prefix "${binding}"""" should "resolve" in {
+  """interpolate using property syntax: prefix "${binding}"""" should "resolve" in {
     interpolate("""hello "${binding}"""") { binding => "you" } should be ("""hello "you"""") 
   }
   
-  """interpolate substitution: prefix ${binding}""" should "resolve" in {
+  """interpolate using property syntax: prefix ${binding}""" should "resolve" in {
     interpolate("""hello ${binding}""") { binding => "you" } should be ("""hello you""") 
   }
   
-  """interpolate substitution: "${binding}" suffix""" should "resolve" in {
+  """interpolate using property syntax: "${binding}" suffix""" should "resolve" in {
     interpolate(""""${binding}" you""") { binding => "hello" } should be (""""hello" you""") 
   }
   
-  """interpolate substitution: ${binding} "suffix"""" should "resolve" in {
+  """interpolate using property syntax: ${binding} "suffix"""" should "resolve" in {
     interpolate("""${binding} "you"""") { binding => "hello" } should be ("""hello "you"""") 
   }
   
-  """interpolate substitution: prefix ${binding} suffix""" should "resolve" in {
+  """interpolate using property syntax: prefix ${binding} suffix""" should "resolve" in {
     interpolate("""hello ${binding} good thing""") { binding => "you" } should be ("""hello you good thing""") 
   }
   
-  """interpolate nested substitution: ${binding1${binding0}}"""" should "resolve" in {
+  """interpolate nested using property syntax: ${binding1${binding0}}"""" should "resolve" in {
     interpolate("""Hey you ${binding-${id}} thing!""") { binding => 
       binding match {
         case "id" => "0"
@@ -51,11 +51,11 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you good thing!""") 
   }
   
-  """interpolate concatenation: prefix "" + binding + " suffix""" should "resolve" in {
+  """interpolate using concatentation syntax: prefix "" + binding + " suffix""" should "resolve" in {
     interpolate("""hello "" + binding + " good thing"""") { binding => "you" } should be ("""hello "you good thing"""") 
   }
  
-  """interpolate concatenation: "prefix" + binding""" should "resolve" in {
+  """interpolate using concatentation syntax: "prefix" + binding""" should "resolve" in {
     interpolate("""hello "" + binding""") { binding => "you" } should be ("""hello "you"""") 
   }
   

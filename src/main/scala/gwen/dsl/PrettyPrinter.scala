@@ -56,10 +56,10 @@ object prettyPrint {
       }
     case background @ Background(description, steps) =>
       s"\n\nBackground: ${description}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, description, background, steps) =>
+    case scenario @ Scenario(tags, description, background, steps, _) =>
       background.map(apply).getOrElse("") +
       s"\n\n${formatTags("  ", tags)}  Scenario: ${description}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case Step(keyword, expression, evalStatus, attachments) =>
+    case Step(keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
   }
   

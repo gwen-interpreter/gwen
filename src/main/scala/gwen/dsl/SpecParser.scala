@@ -128,7 +128,7 @@ trait SpecParser extends JavaTokenParsers {
   def scenario: Parser[Scenario] = positioned {
     (tag*) ~ (token("Scenario") ~ ":" ~> name) ~ (step*) ^^ {
       case tags ~ name ~ steps =>
-        Scenario(tags.toSet, trim(name), None, steps)
+        Scenario(tags.toSet, trim(name), None, steps, None)
     }
   }
   

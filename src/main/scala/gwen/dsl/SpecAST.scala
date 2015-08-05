@@ -137,10 +137,11 @@ object Background {
   * @param name the scenario name
   * @param background optional background
   * @param steps list of scenario steps
+  * @param metaFile: optional meta file (required if the scenario is a stepdef)
   *
   * @author Branko Juric
   */
-case class Scenario(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) extends SpecNode with Positional {
+case class Scenario(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode with Positional {
   
   /**
     * Returns a list containing all the background steps (if any) followed by 
@@ -158,8 +159,12 @@ case class Scenario(tags: Set[Tag], name: String, background: Option[Background]
   
 }
 object Scenario {
+  def apply(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) = 
+    new Scenario(tags, name, background, steps, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, background, steps) tap { _.pos = scenario.pos }
+    apply(scenario.tags, scenario.name, background, steps, scenario.metaFile)
+  def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
+    new Scenario(scenario.tags, scenario.name, scenario.background, scenario.steps, metaFile) tap { _.pos = scenario.pos }
 }
 
 /**
@@ -202,6 +207,7 @@ object Tag {
   * @param expression free format step expression line (that is: the text following the step keyword)
   * @param evalStatus optional evaluation status (default = Pending)
   * @param attachments file attachments as name-file pairs (default = Nil)
+  * @param stepDef optional evaluated step def
   *    
   * @author Branko Juric
   */
@@ -209,7 +215,8 @@ case class Step(
     keyword: StepKeyword.Value, 
     expression: String, 
     status: EvalStatus = Pending, 
-    attachments: List[(String, File)] = Nil) extends SpecNode with Positional {
+    attachments: List[(String, File)] = Nil,
+    stepDef: Option[Scenario] = None) extends SpecNode with Positional {
   
   /** Returns the evaluation status of this step definition. */
   override lazy val evalStatus: EvalStatus = status
@@ -222,6 +229,8 @@ case class Step(
 object Step {
   def apply(step: Step, expression: String): Step =
     new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
+  def apply(step: Step, stepDef: Scenario): Step =
+    new Step(step.keyword, stepDef.name, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef)) tap { _.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.keyword, step.expression, status, attachments) tap { _.pos = step.pos }
 }

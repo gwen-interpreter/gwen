@@ -17,24 +17,25 @@ package gwen.eval.support
 
 import gwen.Predefs.RegexContext
 import scala.annotation.tailrec
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 /**
  * Provides support for string interpolation.
  */
-trait InterpolationSupport {
+trait InterpolationSupport extends LazyLogging {
 
-  private val substPattern = """^(.*)\$\{(.+?)\}(.*)$""".r
+  private val propertySyntax = """^(.*)\$\{(.+?)\}(.*)$""".r
   
   @tailrec
   final def interpolate(source: String)(resolve: String => String): String = source match {
-      // interpolate substitution: prefix${binding}suffix
-      case substPattern(prefix, binding, suffix) =>
+      case propertySyntax(prefix, binding, suffix) =>
+        logger.debug(s"Resolving property-syntax binding: $${$binding}")
         interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
-      // interpolate concatenation: "prefix" + binding + "suffix"
-      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" => 
+      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
+        logger.debug(s"Resolving concat-syntax binding: + $binding +")
         interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
-      // interpolate concatenation: "prefix" + binding
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" => 
+        logger.debug(s"""Resolving concat-syntax binding: "" + $binding""")
         interpolate(s"""$prefix${resolve(binding)}"""") { resolve }
       case _ => source
     }
