@@ -10,7 +10,7 @@ interpreter that accepts
 as input and produces automated processes as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in. 
 
-> Gwen ~ [G]iven [W]hen Th[en]
+> Gwen = [G]iven [W]hen Th[en]
 
 Evaluation Engines
 ------------------
@@ -35,7 +35,7 @@ shared the following engine:
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a custom engine](doc/START.md) for that.
+[develop a custom engine](doc/START.md) and mix it in.
 
 Automation by Interpretation
 ----------------------------
@@ -67,9 +67,10 @@ Key Features
 - Evaluation reports
 - Data scopes
 - Meta features
-- Composable steps
+- Composable step definitions (@StepDef's)
 - Serial and parallel execution
 - Tagged features and scenarios
+- Design time validation (--dry-run mode)
 
 Core Requirements
 -----------------
