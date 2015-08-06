@@ -138,13 +138,12 @@ trait HtmlReportFormatter extends ReportFormatter {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
     val tags = scenario.tags.filter(_ != Tag.StepDefTag )
-    val label = if (scenario.isStepDef) "@StepDef" else "Scenario"
     s"""
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
           <span><p class="text-${cssStatus(status)}">${escape(tags.mkString(" "))}</p></span>""" else ""}
-          <span class="label label-${cssStatus(status)}">${label}</span>${if (scenario.allSteps.size > 1) s"""
+          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if (scenario.allSteps.size > 1) s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
           ${escape(scenario.name)} ${if(!isMeta) s"""
           <br>${scenario.metaFile.map(f => s"""<span class="grayed"><small>${escape(f.getPath)}</small></span>""").getOrElse("")}""" else ""}
