@@ -82,18 +82,11 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     case r"history" =>
       Some(history.toString())
     case r"!(\d+)$$$historyValue" =>
-      //if (history.get(historyValue.toInt).toString.startsWith("!"))
       (history.get(historyValue.toInt).toString) match {
         case x if input.equals(x) 
         	=> Some(s"Unable to refer to self history - !$historyValue")
         case s => println("--> "+s); eval(s)
       }
-      /*Some {
-        interpreter.interpretStep((history.get(historyValue.toInt).toString()), env) match { 
-          case Success(step) => s"\n[${step.evalStatus.status}]"
-          case Failure(error) => s"\n${error}\n\n[failure]"
-        }
-      }*/
     case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None
