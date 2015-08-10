@@ -31,6 +31,8 @@ import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 import play.api.libs.json.Json
 
+import scala.collection.JavaConversions
+
 /**
   * Read-Eval-Print-Loop console.
   * 
@@ -45,7 +47,10 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
-    reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "exit")))
+    
+    env.getAllStepDefs.map(_._2.allSteps)
+    
+    reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "history", "exit") ++ (env.getAllStepDefs().map(_._1.toString).toList) ++ (env.getAllStepDefs.flatMap(_._2.allSteps).map(_.toString)) ))
   }
   
   /** Reads an input string or command from the command line. */
@@ -74,6 +79,15 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(expression)).json))
     case r"env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
+    case r"history" =>
+      Some(history.toString())
+    case r"!(\d+)$$$historyValue" =>
+      Some {
+        interpreter.interpretStep((history.get(historyValue.toInt).toString()), env) match { 
+          case Success(step) => s"\n[${step.evalStatus.status}]"
+          case Failure(error) => s"\n${error}\n\n[failure]"
+        }
+      }
     case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None

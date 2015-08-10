@@ -108,6 +108,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def getStepDef(expression: String): Option[Scenario] = stepDefs.get(expression)
   
+  def getAllStepDefs(): Map[String, Scenario] = stepDefs
+  
   /**
     * Fail handler.
     * 
