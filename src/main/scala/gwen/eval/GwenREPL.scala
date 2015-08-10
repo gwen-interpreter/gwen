@@ -82,7 +82,12 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     case r"history" =>
       Some(history.toString())
     case r"!(\d+)$$$historyValue" =>
-      eval(input)
+      Some {
+        interpreter.interpretStep((history.get(historyValue.toInt).toString()), env) match { 
+          case Success(step) => s"\n[${step.evalStatus.status}]"
+          case Failure(error) => s"\n${error}\n\n[failure]"
+        }
+      }
     case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None
