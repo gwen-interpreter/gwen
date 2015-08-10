@@ -46,7 +46,7 @@ package gwen {
     class UndefinedStepException(step: Step) extends Exception(s"Unsupported or undefined step: ${step}")
 
     /** Thrown when an attribute cannot be found in a scope. */
-    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(s => " in ${s} scope")getOrElse("")}: ${name}")
+    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(x => s" in ${x} scope")getOrElse("")}: ${name}")
     
     /** Thrown when an attribute cannot be found in a scope. */
     class MissingPropertyException(name: String) extends Exception(s"Property not found: ${name}")
