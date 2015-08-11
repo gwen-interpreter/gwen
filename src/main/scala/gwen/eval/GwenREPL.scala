@@ -47,7 +47,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setPrompt("gwen>")
   
      reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "history", "exit")))
-     reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList.flatMap(x => env.getAllStepDefs().map(_._1.toString).toList.map(y => s"$x $y"))), new StringsCompleter(env.getAllStepDefs.flatMap(_._2.allSteps).map(_.toString).toList)))
+     reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList.flatMap(x => env.getAllStepDefs().keys.map(y => s"$x $y")))))
   }
   
   /** Reads an input string or command from the command line. */
