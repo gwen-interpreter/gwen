@@ -17,11 +17,9 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.util.Failure
 import scala.util.Success
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
@@ -30,8 +28,8 @@ import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 import play.api.libs.json.Json
-
 import scala.collection.JavaConversions
+import jline.console.completer.AggregateCompleter
 
 /**
   * Read-Eval-Print-Loop console.
@@ -47,10 +45,9 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
-    
-    env.getAllStepDefs.map(_._2.allSteps)
-    
-    reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "history", "exit") ++ (env.getAllStepDefs().map(_._1.toString).toList) ++ (env.getAllStepDefs.flatMap(_._2.allSteps).map(_.toString)) ))
+  
+     reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "history", "exit")))
+     reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList.flatMap(x => env.getAllStepDefs().map(_._1.toString).toList.map(y => s"$x $y"))), new StringsCompleter(env.getAllStepDefs.flatMap(_._2.allSteps).map(_.toString).toList)))
   }
   
   /** Reads an input string or command from the command line. */
