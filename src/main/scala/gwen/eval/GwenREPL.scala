@@ -17,11 +17,9 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.util.Failure
 import scala.util.Success
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
@@ -30,6 +28,8 @@ import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 import play.api.libs.json.Json
+import scala.collection.JavaConversions
+import jline.console.completer.AggregateCompleter
 
 /**
   * Read-Eval-Print-Loop console.
@@ -45,7 +45,9 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
-    reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "exit")))
+  
+     reader.addCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList ++ List("env", "history", "exit")))
+     reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.values.map(_.toString).toList.flatMap(x => env.getAllStepDefs().keys.map(y => s"$x $y")))))
   }
   
   /** Reads an input string or command from the command line. */
@@ -74,6 +76,14 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(expression)).json))
     case r"env -a|env --all" =>
       Some(Json.prettyPrint(env.json))
+    case r"history" =>
+      Some(history.toString())
+    case r"!(\d+)$$$historyValue" =>
+      (history.get(historyValue.toInt).toString) match {
+        case x if input.equals(x) 
+        	=> Some(s"Unable to refer to self history - !$historyValue")
+        case s => println("--> "+s); eval(s)
+      }
     case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
       None
