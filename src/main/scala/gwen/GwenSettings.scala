@@ -32,4 +32,6 @@ object GwenSettings {
     */
   def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").getOrElse("true").toBoolean
   
+  def `gwen.report.slideshow.speed`: Double = Settings.getOpt("gwen.report.slideshow.speed").getOrElse("0.01").toString.toDouble
+  
 }

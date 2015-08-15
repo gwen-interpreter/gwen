@@ -377,6 +377,8 @@ trait HtmlReportFormatter extends ReportFormatter {
     <center>
       <div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading slides, please wait..</div>
       <div id="controls-div" style="display: none;">
+        <button id="increase-speed-btn" class="btn btn-default btn-lg" title="Increase Speed"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+        <button id="decrease-speed-btn" class="btn btn-default btn-lg" title="Decrease Speed"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
         <button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
         <button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
         <button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
@@ -395,7 +397,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       $$('#slides').reel({
         images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
         frames: ${screenshots.length},
-        speed: 0,
+        speed: 0.1,
         indicator: 5,
         responsive: true,
         loops: true,
@@ -418,6 +420,14 @@ trait HtmlReportFormatter extends ReportFormatter {
         if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
         $$('#slides').trigger("play", 2 / ${screenshots.length});
       }
+      function decreaseSpeed() {
+        if ($$('#slides').reel('speed') > 0) {
+          $$('#slides').reel('speed', parseFloat(($$('#slides').reel('speed') - 0.01).toFixed(2)));
+        }
+      }
+      function increaseSpeed() {
+        $$('#slides').reel('speed', parseFloat(($$('#slides').reel('speed') + 0.01).toFixed(2)));
+      }
       function stop() {
         $$('#slides').trigger("stop");
         $$('#play-pause').removeClass("glyphicon-pause");
@@ -425,6 +435,8 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#play-pause').attr("title", "Play");
       }
       $$(function() {
+        $$('#increase-speed-btn').click(function(e) { increaseSpeed() });
+        $$('#decrease-speed-btn').click(function(e) { decreaseSpeed() });
         $$('#fast-back-btn').click(function(e) { $$('#slides').reel('frame', 1); stop(); });
         $$('#step-back-btn').click(function(e) { $$('#slides').trigger('stepRight'); stop(); });
         $$('#play-pause-btn').click(function() { 
