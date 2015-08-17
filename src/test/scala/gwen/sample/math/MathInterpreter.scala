@@ -25,6 +25,7 @@ import gwen.eval.GwenApp
 import gwen.eval.EnvContext
 import gwen.eval.ScopedDataStack
 import gwen.Predefs.RegexContext
+import scala.io.Source
 
 class MathService {
   def plus(x: Int, y: Int) = x + y
@@ -33,6 +34,8 @@ class MathService {
 class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
   extends EnvContext(options, scopes) {
   def vars = addScope("vars")
+  override def dsl: List[String] = 
+    Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
@@ -50,9 +53,11 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
       case r"z = ([a-z])$x \+ ([a-z])$y" =>
         val xvalue = vars.get(x).toInt
         val yvalue = vars.get(y).toInt
-        logger.info(s"evaluating z = $xvalue + $yvalue")
-        val zresult = env.mathService.plus(xvalue, yvalue)
-        vars.set("z", zresult.toString)
+        env.execute {
+          logger.info(s"evaluating z = $xvalue + $yvalue")
+          val zresult = env.mathService.plus(xvalue, yvalue)
+          vars.set("z", zresult.toString)
+        }
       case r"([a-z])$x == (\d+)$value" =>
         assert (vars.get(x).toInt == value.toInt)
       case _ =>

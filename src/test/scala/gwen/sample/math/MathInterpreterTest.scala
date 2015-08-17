@@ -6,6 +6,9 @@ import gwen.eval.GwenOptions
 import java.io.File
 import org.scalatest.FlatSpec
 import gwen.eval.GwenLauncher
+import gwen.eval.ScopedDataStack
+import gwen.dsl.Step
+import gwen.dsl.StepKeyword
 
 class MathInterpreterTest extends FlatSpec {
   
@@ -22,6 +25,23 @@ class MathInterpreterTest extends FlatSpec {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
       case _ => fail("evaluation expected but got noop")
+    }
+  }
+  
+  "math.dsl" should "pass --dry-run test" in {
+    
+    val options = new GwenOptions(dryRun = true);
+    
+    val env = new MathEnvContext(new MathService(), options, new ScopedDataStack())
+    env.scopes.addScope("vars").set("y", "1")
+        
+    val interpreter = new MathInterpreter
+    env.dsl map { dsl =>
+      dsl.replace("<integer>", "1")
+    } foreach { dsl => 
+      StepKeyword.values foreach { keyword =>
+        interpreter.evaluate(Step(keyword, dsl), env)
+      }
     }
   }
 }
