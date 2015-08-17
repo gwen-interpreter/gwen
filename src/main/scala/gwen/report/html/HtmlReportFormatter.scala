@@ -471,7 +471,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#step-fwd-btn').click(function(e) { $$('#slides').trigger('stepLeft'); stop(); });
         $$('#fast-fwd-btn').click(function(e) { $$('#slides').reel('frame', ${screenshots.length}); stop(); });
         $$('#current-frame').change(function(e) { $$('#slides').reel('frame', parseInt($$(this).val())); stop(); });
-        $$('#frames-per-sec').change(function(e) { $$('#slides').trigger("play", parseInt($$(this).val()) * unitSpeed); toggleSpeedButtons(getFramesPerSec()); });
+        $$('#frames-per-sec').change(function(e) { $$('#slides').reel('speed', parseInt($$(this).val()) * unitSpeed); toggleSpeedButtons(getFramesPerSec()); });
         $$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
         $$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
         $$('#slideshow').on('shown.bs.modal', function (e) { $$('#slides').reel('frame', 1); if($$('#controls-div').is(':visible')) play(); });
