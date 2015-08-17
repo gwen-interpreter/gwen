@@ -32,6 +32,8 @@ import gwen.eval.GwenOptions
 import gwen.eval.FeatureSummaryLine
 import gwen.dsl.Scenario
 import gwen.dsl.Tag
+import gwen.Settings
+import gwen.GwenSettings
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -367,6 +369,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
   private def relativePath(reportFile: File, reportDir: File) = reportFile.getPath.substring(reportDir.getPath().length() + 1)
+  private def maxFramesPerSec(screenshots: List[File]) = if (screenshots.length < 10) screenshots.length else 10
   private def formatSlideShow(screenshots: List[File]) = s"""
   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
@@ -377,8 +380,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     <center>
       <div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading slides, please wait..</div>
       <div id="controls-div" style="display: none;">
-        <button id="increase-speed-btn" class="btn btn-default btn-lg" title="Increase Speed"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-        <button id="decrease-speed-btn" class="btn btn-default btn-lg" title="Decrease Speed"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
         <button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
         <button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
         <button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
@@ -387,6 +388,12 @@ trait HtmlReportFormatter extends ReportFormatter {
         <select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
           <option>${i}</option>""").mkString}        
         </select> of ${screenshots.length}
+        <span style="margin-left: 30px;"> </span>
+        <button id="decrease-speed-btn" class="btn btn-default btn-lg" title="Decrease Speed"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+        <button id="increase-speed-btn" class="btn btn-default btn-lg" title="Increase Speed"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+        <select id="frames-per-sec" title="Frames per second..">${(for(i <- 1 to maxFramesPerSec(screenshots) ) yield s"""
+          <option>${i}</option>""").mkString}        
+        </select> frames/sec
       </div>
     </center>
     <hr>
@@ -394,10 +401,11 @@ trait HtmlReportFormatter extends ReportFormatter {
     <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
     <script>
       var revolution = $$('#slides').width();
+      var unitSpeed = 1 / ${screenshots.length};
       $$('#slides').reel({
         images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
         frames: ${screenshots.length},
-        speed: 0.1,
+        speed: 0,
         indicator: 5,
         responsive: true,
         loops: true,
@@ -418,15 +426,26 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#play-pause').addClass("glyphicon-pause");
         $$('#play-pause').attr("title", "Pause");
         if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
-        $$('#slides').trigger("play", 2 / ${screenshots.length});
+        $$('#slides').trigger("play", parseInt($$('#frames-per-sec').val()) * unitSpeed);
+      }
+      function getFramesPerSec() {
+        return parseInt($$('#frames-per-sec').val());
       }
       function decreaseSpeed() {
-        if ($$('#slides').reel('speed') > 0) {
-          $$('#slides').reel('speed', parseFloat(($$('#slides').reel('speed') - 0.01).toFixed(2)));
+        var framesPerSec = getFramesPerSec();
+        if (framesPerSec > 1) {
+          framesPerSec = framesPerSec - 1;
+          $$('#frames-per-sec').val(framesPerSec).trigger('change');
+          toggleSpeedButtons(framesPerSec);
         }
       }
       function increaseSpeed() {
-        $$('#slides').reel('speed', parseFloat(($$('#slides').reel('speed') + 0.01).toFixed(2)));
+        var framesPerSec = getFramesPerSec();
+        if (framesPerSec < ${maxFramesPerSec(screenshots)}) {
+          framesPerSec = framesPerSec + 1;
+          $$('#frames-per-sec').val(framesPerSec).trigger('change');
+          toggleSpeedButtons(framesPerSec);
+        }
       }
       function stop() {
         $$('#slides').trigger("stop");
@@ -434,9 +453,15 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#play-pause').addClass("glyphicon-play");
         $$('#play-pause').attr("title", "Play");
       }
+      function toggleSpeedButtons(framesPerSec) {
+        $$('#increase-speed-btn').prop('disabled', framesPerSec == ${maxFramesPerSec(screenshots)});
+        $$('#decrease-speed-btn').prop('disabled', framesPerSec == 1);
+      }
       $$(function() {
+        $$('#frames-per-sec').val('${GwenSettings.`gwen.report.slideshow.framespersecond`}');
         $$('#increase-speed-btn').click(function(e) { increaseSpeed() });
         $$('#decrease-speed-btn').click(function(e) { decreaseSpeed() });
+        toggleSpeedButtons(getFramesPerSec());
         $$('#fast-back-btn').click(function(e) { $$('#slides').reel('frame', 1); stop(); });
         $$('#step-back-btn').click(function(e) { $$('#slides').trigger('stepRight'); stop(); });
         $$('#play-pause-btn').click(function() { 
@@ -446,6 +471,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#step-fwd-btn').click(function(e) { $$('#slides').trigger('stepLeft'); stop(); });
         $$('#fast-fwd-btn').click(function(e) { $$('#slides').reel('frame', ${screenshots.length}); stop(); });
         $$('#current-frame').change(function(e) { $$('#slides').reel('frame', parseInt($$(this).val())); stop(); });
+        $$('#frames-per-sec').change(function(e) { $$('#slides').trigger("play", parseInt($$(this).val()) * unitSpeed); toggleSpeedButtons(getFramesPerSec()); });
         $$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
         $$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
         $$('#slideshow').on('shown.bs.modal', function (e) { $$('#slides').reel('frame', 1); if($$('#controls-div').is(':visible')) play(); });
