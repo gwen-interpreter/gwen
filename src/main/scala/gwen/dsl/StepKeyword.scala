@@ -33,6 +33,9 @@ object StepKeyword extends Enumeration {
     * keywords by name.
     */
   val names = values map { k => (k.toString -> k) } toMap
+  
+  /** List of all keyword string literals. */
+  val literals = values.map(_.toString).toList
 
 }
 

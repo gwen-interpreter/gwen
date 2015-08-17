@@ -113,6 +113,8 @@ import gwen.eval.ScopedDataStack
 class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
   extends EnvContext(options, scopes) {
   def vars = addScope("vars")
+  override def dsl: List[String] = 
+    Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 ```
 
@@ -127,7 +129,7 @@ expressions:
 - x = value
 - x = y
 - z = x + y
-- x == y
+- x == value
 
 Where:
 
@@ -136,6 +138,17 @@ Where:
 - = performs assignment
 - == performs a comparison
 - and + performs addition
+
+Create the following _math.dsl_ file in the root of the _main_ resources 
+folder to support tab completion for the above in the REPL.
+
+_math.dsl_
+```
+x = <integer>
+x = y
+z = x + y
+x == <integer>
+```
 
 We now define our evaluation engine by extending the _EvalEngine_ trait over 
 the _MathEnvContext_ type we defined above. We implement the two abstract 
@@ -147,7 +160,9 @@ necessarily have to match them using the regex interpolator. In this instance
 we choose to use it for the expressive power it provides.  Also, you will 
 notice that this evaluation engine is stateless. It does not store any service 
 or state within itself. All of that is stored in the evaluation context (which 
-lives only on the stack). This is to support parallel execution.
+lives only on the stack). This is to support parallel execution. Also, we wrap 
+the call to `mathService` in an `env.execute` block to support `--dry-run` 
+execution.
 
 Create the following _MathEvalEngine_ trait in the _gwen.sample.math_ package 
 in the _main_ source folder:
@@ -177,9 +192,11 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
       case r"z = ([a-z])$x \+ ([a-z])$y" =>
         val xvalue = vars.get(x).toInt
         val yvalue = vars.get(y).toInt
-        logger.info(s"evaluating z = $xvalue + $yvalue")
-        val zresult = env.mathService.plus(xvalue, yvalue)
-        vars.set("z", zresult.toString)
+        env.execute {
+          logger.info(s"evaluating z = $xvalue + $yvalue")
+          val zresult = env.mathService.plus(xvalue, yvalue)
+          vars.set("z", zresult.toString)
+        }
       case r"([a-z])$x == (\d+)$value" =>
         assert (vars.get(x).toInt == value.toInt)
       case _ =>
@@ -630,6 +647,24 @@ class MathInterpreterTest extends FlatSpec {
       case _ => fail("evaluation expected but got noop")
     }
   }
+  
+  "math.dsl" should "pass --dry-run test" in {
+    
+    val options = new GwenOptions(dryRun = true);
+    
+    val env = new MathEnvContext(new MathService(), options, new ScopedDataStack())
+    env.scopes.addScope("vars").set("y", "1")
+        
+    val interpreter = new MathInterpreter
+    env.dsl map { dsl =>
+      dsl.replace("<integer>", "1")
+    } foreach { dsl => 
+      StepKeyword.values foreach { keyword =>
+        interpreter.evaluate(Step(keyword, dsl), env)
+      }
+    }
+  }
+  
 }
 
 ```

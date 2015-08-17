@@ -108,7 +108,13 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def getStepDef(expression: String): Option[Scenario] = stepDefs.get(expression)
   
-  def getAllStepDefs(): Map[String, Scenario] = stepDefs
+  /**
+   * Gets the list of DSL steps supported by this context.  This implementation 
+   * returns all user defined stepdefs. Subclasses can override to return  
+   * addtional entries. The entries returned by this method are used for tab 
+   * completion in the REPL.
+   */
+  def dsl: List[String] = stepDefs.keys.toList
   
   /**
     * Fail handler.
@@ -190,6 +196,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
 
 /** Merges two contexts into one. */
 class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes) {
+  override def dsl = envA.dsl ++ envB.dsl
   override def close() {
     try {
       envB.close()
