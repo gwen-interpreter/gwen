@@ -426,7 +426,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         $$('#play-pause').addClass("glyphicon-pause");
         $$('#play-pause').attr("title", "Pause");
         if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
-        $$('#slides').trigger("play", parseInt($$('#frames-per-sec').val()) * unitSpeed);
+        $$('#slides').trigger("play", getFramesPerSec() * unitSpeed);
       }
       function getFramesPerSec() {
         return parseInt($$('#frames-per-sec').val());
