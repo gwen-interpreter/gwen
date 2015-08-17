@@ -32,4 +32,10 @@ object GwenSettings {
     */
   def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").getOrElse("true").toBoolean
   
+  /**
+   * Provides access to the `gwen.report.slideshow.framespersecond` property setting
+   * used to set the default frame per second (speed) of the slideshow (default value is 1).
+   */
+  def `gwen.report.slideshow.framespersecond`: Int = Settings.getOpt("gwen.report.slideshow.framespersecond").map(_.toInt).getOrElse(1)
+  
 }
