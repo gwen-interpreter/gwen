@@ -79,8 +79,8 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       Some(history.toString())
     case r"!(\d+)$$$historyValue" =>
       (history.get(historyValue.toInt).toString) match {
-        case x if input.equals(x) 
-        	=> Some(s"Unable to refer to self history - !$historyValue")
+        case x if input.equals(x) => 
+          Some(s"Unable to refer to self history - !$historyValue")
         case s => println("--> "+s); eval(s)
       }
     case r"exit|bye|quit" => 

@@ -31,6 +31,9 @@ import gwen.dsl.Pending
 import gwen.dsl.SpecType
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.collection.mutable.Stack
+import gwen.eval.support.InterpolationSupport
+import gwen.errors._
+import gwen.Settings
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -41,7 +44,7 @@ import scala.collection.mutable.Stack
   * 
   * @author Branko Juric
   */
-class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging with ExecutionContext {
+class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging with ExecutionContext with InterpolationSupport {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -106,7 +109,38 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[Scenario] = stepDefs.get(expression)
+  def getStepDef(expression: String): Option[Scenario] = 
+    stepDefs.get(expression)
+  
+  /**
+    * Gets the executable step definition for the given expression (if there is
+    * one).
+    * 
+    * @param expression the expression to match
+    * @return the step definition if a match is found; false otherwise
+    */
+  def getStepDefWithParams(expression: String): Option[Scenario] = stepDefs.get(expression) match {
+    case None =>
+      stepDefs.keys.view.flatMap { name =>
+        val names = "<.*?>".r.findAllIn(name.diff(expression)).toList
+        if (!names.isEmpty && names.forall(_.matches("<.+?>"))) { 
+          val values = expression.split(" ").toList diff name.split(" ").toList
+          Some((name, names zip values))
+        } else None
+      }.find { case (name, params) =>
+        expression == params.foldLeft(name) { (result, param) => result.replaceAll(param._1, param._2) }
+      } match {
+        case Some((name, params)) =>
+          params foreach { case (name, value) =>
+            featureScope.set(name, value)
+          }
+          getStepDef(name) tap { stepDef =>
+            logger.info(s"Mapped $expression to StepDef: ${stepDef.get.name} where { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
+          }
+        case _ => None
+      }
+    case result => result
+  }
   
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 
@@ -181,14 +215,40 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def attachments = currentAttachments.sortBy(_._2 .getName())
   
   /**
-    * Can be overridden by subclasses to interpolate the given step 
-    * before it is evaluated. This default implementation simply returns 
-    * the step as is.
+    * Interpolate the given step before it is evaluated.
     * 
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolate(step: Step): Step = step
+  def interpolate(step: Step): Step = 
+    if (SpecType.feature.equals(specType)) {
+      interpolate(step.expression)(getBoundReferenceValue) match {
+        case step.expression => step
+        case expr =>
+          Step(step, expr) tap { iStep => logger.info(s"Interpolated ${step.expression} to: ${iStep.expression}") }
+      }
+    } else {
+      step
+    }
+  
+  /**
+    * Gets the scoped attribute or settings value bound to the given name.
+    * Subclasses can override this method to perform additional lookups.
+    * 
+    *  @param name the name of the attribute or value
+    *  @throws `gwen.errors.UnboundAttributeException` if no value is bound 
+    *          to the given name 
+    */
+  def getBoundReferenceValue(name: String): String = {
+    scopes.getOpt(name) match {
+      case Some(value) => value
+      case _ => Settings.getOpt(name) match { 
+        case Some(value) => value
+        case _ => 
+          unboundAttributeError(name)
+      }
+    }
+  }
   
   val isDryRun = options.dryRun
   
@@ -204,4 +264,10 @@ class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: 
       envA.close()
     }
   }
+  override def getBoundReferenceValue(name: String) = 
+    try {
+      envB.getBoundReferenceValue(name)
+    } catch {
+      case _: Throwable => envA.getBoundReferenceValue(name)
+    }
 }
