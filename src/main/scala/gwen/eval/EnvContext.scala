@@ -122,25 +122,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def getStepDefWithParams(expression: String): Option[Scenario] = stepDefs.get(expression) match {
     case None =>
       stepDefs.keys.view.flatMap { name =>
-        val names = "<.+?>".r.findAllIn(name).toList
-        if (!names.isEmpty) { 
-          try {
-            val tindexes = name.split(names.mkString("|")).foldLeft((expression, List[(Int, Int)]())) { case ((expr, acc), token) => (expr.substring(token.length), (expr.indexOf(token) + acc.headOption.map(_._2).getOrElse(0), token.length)::acc)  }._2.reverse
-            if (!tindexes.isEmpty) {
-              val ttindexes = tindexes.lastOption.map { case (_, y) => if (expression.length > y) (tindexes ::: List((expression.length, 0))) else tindexes }.get
-              val vindexes = ttindexes.foldLeft(List[Option[(Int, Int)]](None)) { case (acc, (x, y)) => val zz = ttindexes(0)._2; val xx = acc.headOption.map(_.map(_._2 + zz - 1).getOrElse(zz)).getOrElse(zz); (if (xx == y) None else Some((xx, x)))::acc }.reverse.flatten
-              if (!vindexes.isEmpty) {
-                val values = vindexes.map { case (x, y) => expression.substring(x, y) }
-                Some((name, names zip values))
-              } else {
-                None
-              }
-            } else {
-              None
-            }
-          } catch {
-            case e: Throwable => None
+        val pnames = "<.+?>".r.findAllIn(name).toList
+        if (!pnames.isEmpty) { 
+          val (v, vs) = name.split(pnames.mkString("|")).toList match { case tokens if (tokens.forall(expression.contains(_))) => 
+            tokens.foldLeft((expression,List[Option[String]]())) { case ((expr, acc), token ) => 
+              expr.indexOf(token) match { 
+                case -1 => ("", Nil) 
+                case idx => idx match { 
+                  case 0 => (expr.substring(token.length), acc) 
+                  case _ => (expr.substring(idx + token.length), Some(expr.substring(0, idx))::acc)
+                } 
+              } 
+            } case _ => ("", Nil)
           }
+          val pvalues = (if (v != "") (vs ++ List(Some(v))) else vs).flatten 
+          Some((name, pnames zip pvalues))
         } else None
       }.find { case (name, params) =>
         expression == params.foldLeft(name) { (result, param) => result.replaceAll(param._1, param._2) }

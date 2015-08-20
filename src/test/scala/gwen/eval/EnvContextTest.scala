@@ -67,12 +67,22 @@ class EnvContextTest extends FlatSpec with Matchers {
     
     val stepdef1 = Scenario(Set(Tag("StepDef")), """I enter "<searchTerm>" in the search field""", None, Nil)
     val stepdef2 = Scenario(Set(Tag("StepDef")), """I enter "<search term>" in the search field again""", None, Nil)
+    val stepdef3 = Scenario(Set(Tag("StepDef")), "z = <x> + 1", None, Nil)
+    val stepdef4 = Scenario(Set(Tag("StepDef")), "z = 1 + <x>", None, Nil)
+    val stepdef5 = Scenario(Set(Tag("StepDef")), "z = <x> - <y>", None, Nil)
+    
     val env = newEnv
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
+    env.addStepDef(stepdef3)
+    env.addStepDef(stepdef4)
+    env.addStepDef(stepdef5)
     
     env.getStepDefWithParams("""I enter "gwen" in the search field""") should be (Some(stepdef1))
     env.getStepDefWithParams("""I enter "gwen" in the search field again""") should be (Some(stepdef2))
+    env.getStepDefWithParams("z = 2 + 1") should be (Some(stepdef3))
+    env.getStepDefWithParams("z = 1 + 3") should be (Some(stepdef4))
+    env.getStepDefWithParams("z = 2 - 2") should be (Some(stepdef5))
     
   }
   
