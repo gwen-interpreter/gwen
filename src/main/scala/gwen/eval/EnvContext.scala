@@ -146,7 +146,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
             featureScope.set(name, value)
           }
           getStepDef(name) tap { stepDef =>
-            logger.info(s"Mapped $expression to StepDef: ${stepDef.get.name} where { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
+            logger.info(s"Mapped $expression to StepDef: ${stepDef.get.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
           }
         case _ => None
       }
