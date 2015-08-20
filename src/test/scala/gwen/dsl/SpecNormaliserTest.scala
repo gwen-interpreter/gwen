@@ -79,4 +79,23 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
     }
   }
   
+  "Meta with duplicate step def with params" should "error" in {
+    val meta = FeatureSpec(
+    Feature("meta1", Nil), None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef <number>", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      ),
+      Scenario(Set[Tag]("@StepDef"), "stepdef <index>", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      )))
+      
+  intercept[AmbiguousCaseException] {
+    normalise(meta, None)
+    }
+  }
+  
 }

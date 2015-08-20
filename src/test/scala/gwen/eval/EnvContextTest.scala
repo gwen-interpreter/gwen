@@ -63,6 +63,19 @@ class EnvContextTest extends FlatSpec with Matchers {
     
   }
   
+  "StepDef with params" should "resolve" in {
+    
+    val stepdef1 = Scenario(Set(Tag("StepDef")), """I enter "<searchTerm>" in the search field""", None, Nil)
+    val stepdef2 = Scenario(Set(Tag("StepDef")), """I enter "<search term>" in the search field again""", None, Nil)
+    val env = newEnv
+    env.addStepDef(stepdef1)
+    env.addStepDef(stepdef2)
+    
+    env.getStepDefWithParams("""I enter "gwen" in the search field""") should be (Some(stepdef1))
+    env.getStepDefWithParams("""I enter "gwen" in the search field again""") should be (Some(stepdef2))
+    
+  }
+  
   "New feature env context" should "have global feature scope" in {
     val env = newEnv
     env.featureScope.scope should be ("feature")

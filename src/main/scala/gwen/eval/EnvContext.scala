@@ -122,10 +122,25 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def getStepDefWithParams(expression: String): Option[Scenario] = stepDefs.get(expression) match {
     case None =>
       stepDefs.keys.view.flatMap { name =>
-        val names = "<.*?>".r.findAllIn(name.diff(expression)).toList
-        if (!names.isEmpty && names.forall(_.matches("<.+?>"))) { 
-          val values = expression.split(" ").toList diff name.split(" ").toList
-          Some((name, names zip values))
+        val names = "<.+?>".r.findAllIn(name).toList
+        if (!names.isEmpty) { 
+          try {
+            val tindexes = name.split(names.mkString("|")).foldLeft((expression, List[(Int, Int)]())) { case ((expr, acc), token) => (expr.substring(token.length), (expr.indexOf(token) + acc.headOption.map(_._2).getOrElse(0), token.length)::acc)  }._2.reverse
+            if (!tindexes.isEmpty) {
+              val ttindexes = tindexes.lastOption.map { case (_, y) => if (expression.length > y) (tindexes ::: List((expression.length, 0))) else tindexes }.get
+              val vindexes = ttindexes.foldLeft(List[Option[(Int, Int)]](None)) { case (acc, (x, y)) => val zz = ttindexes(0)._2; val xx = acc.headOption.map(_.map(_._2 + zz - 1).getOrElse(zz)).getOrElse(zz); (if (xx == y) None else Some((xx, x)))::acc }.reverse.flatten
+              if (!vindexes.isEmpty) {
+                val values = vindexes.map { case (x, y) => expression.substring(x, y) }
+                Some((name, names zip values))
+              } else {
+                None
+              }
+            } else {
+              None
+            }
+          } catch {
+            case e: Throwable => None
+          }
         } else None
       }.find { case (name, params) =>
         expression == params.foldLeft(name) { (result, param) => result.replaceAll(param._1, param._2) }
