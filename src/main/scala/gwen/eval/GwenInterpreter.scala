@@ -269,14 +269,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
           doEvaluate(iStep, env) { step =>
               try {
                 engine.evaluate(step, env)
+                step
               } catch {
                 case e: UndefinedStepException =>
                   env.getStepDefWithParams(step.expression) match {
-                    case Some(stepDef) => evalStepDef(stepDef, step, env)
+                    case Some(stepDef) => 
+                      evalStepDef(stepDef, step, env)
                     case _ => throw e
                   }
               }
-              step
           }
         } else {
           iStep
@@ -305,8 +306,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
-      case TrySuccess(step) => 
-        Step(step, Passed(System.nanoTime - start), env.attachments)
+      case TrySuccess(passedStep) => 
+        Step(passedStep, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)

@@ -25,12 +25,16 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 trait InterpolationSupport extends LazyLogging {
 
   private val propertySyntax = """^(.*)\$\{(.+?)\}(.*)$""".r
+  private val paramSyntax = """^(.*)\$<(.+?)>(.*)$""".r
   
   @tailrec
   final def interpolate(source: String)(resolve: String => String): String = source match {
-      case propertySyntax(prefix, binding, suffix) =>
-        logger.debug(s"Resolving property-syntax binding: $${$binding}")
-        interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
+      case propertySyntax(prefix, property, suffix) =>
+        logger.debug(s"Resolving property-syntax binding: $${$property}")
+        interpolate(s"$prefix${resolve(property)}$suffix") { resolve }
+      case paramSyntax(prefix, param, suffix) =>
+        logger.debug(s"Resolving param-syntax binding: $${$param}")
+        interpolate(s"$prefix${resolve(s"<${param}>")}$suffix") { resolve }
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
         logger.debug(s"Resolving concat-syntax binding: + $binding +")
         interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }

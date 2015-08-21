@@ -23,16 +23,16 @@ Scenario: ++x
      
 @StepDef
 Scenario: z = x + <y>
-    Given y = ${<y>}
+    Given y = $<y>
      Then z = x + y
      
 @StepDef
 Scenario: z = <x> + <y>
-    Given x = ${<x>}
-      And y = ${<y>}
+    Given x = $<x>
+      And y = $<y>
      Then z = x + y
      
 @StepDef
 Scenario: z = <x> + y
-    Given x = ${<x>}
+    Given x = $<x>
      Then z = x + y

@@ -93,8 +93,8 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
         Step(StepKeyword.Then, "step 3", Passed(2)))
       )))
       
-  intercept[AmbiguousCaseException] {
-    normalise(meta, None)
+    intercept[AmbiguousCaseException] {
+      normalise(meta, None)
     }
   }
   

@@ -322,7 +322,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${step.pos.line}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(stepDef, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
                   ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}", isMeta)}).getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && !step.stepDef.isDefined) s"""
@@ -335,8 +335,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 </ul>""" else ""}
               </li>"""
   
-  private def formatStepDefLink(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = 
-    s"""<a role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(stepDef.name)}</a>"""
+  private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
+    s"""<a role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(step.expression)}</a>"""
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String, isMeta: Boolean): String = s"""
                   <div id="${stepDefId}" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (!isMeta) """style="padding-left: 40px;"""" else ""}>
