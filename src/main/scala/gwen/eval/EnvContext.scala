@@ -34,6 +34,7 @@ import scala.collection.mutable.Stack
 import gwen.eval.support.InterpolationSupport
 import gwen.errors._
 import gwen.Settings
+import scala.util.Try
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -58,6 +59,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   
   /** Provides access to the global feature scope. */
   def featureScope = scopes.featureScope
+  
+  /** Provides access to the local scope. */
+  private[eval] def localScope = scopes.localScope
   
   /**
     * Closes any resources associated with the evaluation context. This implementation
@@ -231,7 +235,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def interpolate(step: Step): Step = 
     if (SpecType.feature.equals(specType)) {
-      interpolate(step.expression)(getBoundReferenceValue) match {
+      interpolate(step.expression) { name =>
+        Try(localScope.get(name)).getOrElse(getBoundReferenceValue(name)) 
+      } match {
         case step.expression => step
         case expr =>
           Step(step, expr) tap { iStep => logger.info(s"Interpolated ${step.expression} to: ${iStep.expression}") }
