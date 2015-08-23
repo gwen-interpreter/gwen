@@ -203,7 +203,7 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
         val xvalue = vars.get(x).toInt
         env.execute {
           assert (xvalue.toInt == value.toInt)
-        }ß
+        }
       case _ =>
         super.evaluate(step, env)
     }
