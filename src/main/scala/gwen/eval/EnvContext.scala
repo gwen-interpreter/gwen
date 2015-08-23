@@ -113,45 +113,43 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     stepDefs.get(expression)
   
   /**
-    * Gets the executable step definition for the given expression (if there is
+    * Gets the paraterised step definition for the given expression (if there is
     * one).
     * 
     * @param expression the expression to match
-    * @return the step definition if a match is found; false otherwise
+    * @return the step definition and its parameters (name value tuples) if a 
+    *         match is found; false otherwise
     */
-  def getStepDefWithParams(expression: String): Option[Scenario] = stepDefs.get(expression) match {
-    case None =>
-      stepDefs.keys.view.flatMap { name =>
-        val pnames = "<.+?>".r.findAllIn(name).toList
-        if (!pnames.isEmpty) { 
-          val (v, vs) = name.split(pnames.mkString("|")).toList match { case tokens if (tokens.forall(expression.contains(_))) => 
-            tokens.foldLeft((expression,List[Option[String]]())) { case ((expr, acc), token ) => 
-              expr.indexOf(token) match { 
-                case -1 => ("", Nil) 
-                case idx => idx match { 
+  def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
+    stepDefs.values.view.flatMap { stepDef =>
+      ("<.+?>".r.findAllIn(stepDef.name).toList match {
+        case Nil => None  
+        case names =>
+          names.groupBy(identity).collectFirst { case (n, vs) if (vs.size > 1) =>
+            ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
+          } 
+          (stepDef.name.split(names.mkString("|")).toList match { 
+            case tokens if (tokens.forall(expression.contains(_))) => 
+              tokens.foldLeft((expression, List[String]())) { case ((expr, acc), token ) => 
+                expr.indexOf(token) match { 
+                  case -1 => ("", Nil) 
                   case 0 => (expr.substring(token.length), acc) 
-                  case _ => (expr.substring(idx + token.length), Some(expr.substring(0, idx))::acc)
+                  case idx => (expr.substring(idx + token.length), expr.substring(0, idx)::acc)
                 } 
               } 
-            } case _ => ("", Nil)
+            case _ => ("", Nil)
+          }) match { 
+            case (value, values) =>
+              val params = names zip (if (value != "") value::values else values).reverse
+              if (expression == params.foldLeft(stepDef.name) { (result, param) => result.replaceAll(param._1, param._2) }) {
+                Some(stepDef, params)
+              } else None
           }
-          val pvalues = (if (v != "") (vs ++ List(Some(v))) else vs).flatten 
-          Some((name, pnames zip pvalues))
-        } else None
-      }.find { case (name, params) =>
-        expression == params.foldLeft(name) { (result, param) => result.replaceAll(param._1, param._2) }
-      } match {
-        case Some((name, params)) =>
-          params foreach { case (name, value) =>
-            featureScope.set(name, value)
-          }
-          getStepDef(name) tap { stepDef =>
-            logger.info(s"Mapped $expression to StepDef: ${stepDef.get.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
-          }
-        case _ => None
-      }
-    case result => result
-  }
+      })
+    }.collectFirst { case (stepDef, params) => 
+        logger.info(s"Mapped $expression to StepDef: ${stepDef.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
+      (stepDef, params)
+    }}
   
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 

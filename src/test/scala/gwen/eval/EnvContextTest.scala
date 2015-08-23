@@ -22,6 +22,7 @@ import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import org.scalatest.FlatSpec
+import gwen.errors.`package`.AmbiguousCaseException
 
 class EnvContextTest extends FlatSpec with Matchers {
   
@@ -78,11 +79,36 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
     
-    env.getStepDefWithParams("""I enter "gwen" in the search field""") should be (Some(stepdef1))
-    env.getStepDefWithParams("""I enter "gwen" in the search field again""") should be (Some(stepdef2))
-    env.getStepDefWithParams("z = 2 + 1") should be (Some(stepdef3))
-    env.getStepDefWithParams("z = 1 + 3") should be (Some(stepdef4))
-    env.getStepDefWithParams("z = 2 - 2") should be (Some(stepdef5))
+    env.getStepDefWithParams("""I enter "gwen" in the search field""") should be (Some((stepdef1, List(("<searchTerm>", "gwen")))))
+    env.getStepDefWithParams("""I enter "gwen" in the search field again""") should be (Some((stepdef2, List(("<search term>", "gwen")))))
+    env.getStepDefWithParams("z = 2 + 1") should be (Some((stepdef3, List(("<x>", "2")))))
+    env.getStepDefWithParams("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
+    env.getStepDefWithParams("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
+
+    val stepdef6 = Scenario(Set(Tag("StepDef")), "z = <x> * <x>", None, Nil)
+    env.addStepDef(stepdef6)
+    intercept[AmbiguousCaseException] {
+      env.getStepDefWithParams("z = 3 * 4")
+    }
+    
+  }
+  
+  "Sample math StepDefs with parameters" should "resolve" in {
+    
+    val stepdef1 = Scenario(Set(Tag("StepDef")), "++x", None, Nil)
+    val stepdef2 = Scenario(Set(Tag("StepDef")), "z = x + <y>", None, Nil)
+    val stepdef3 = Scenario(Set(Tag("StepDef")), "z = <x> + <y>", None, Nil)
+    
+    val env = newEnv
+    env.addStepDef(stepdef1)
+    env.addStepDef(stepdef2)
+    env.addStepDef(stepdef3)
+    
+    env.getStepDefWithParams("z = x + 3") should be (Some((stepdef2, List(("<y>", "3")))))
+    env.getStepDefWithParams("z = 2 + 2") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "2")))))
+    env.getStepDefWithParams("z = 3 + 2") should be (Some((stepdef3, List(("<x>", "3"), ("<y>", "2")))))
+    env.getStepDefWithParams("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
+    env.getStepDefWithParams("z = 5 + y") should be (Some((stepdef3, List(("<x>", "5"), ("<y>", "y")))))
     
   }
   

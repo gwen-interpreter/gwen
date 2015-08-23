@@ -273,8 +273,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
               } catch {
                 case e: UndefinedStepException =>
                   env.getStepDefWithParams(step.expression) match {
-                    case Some(stepDef) => 
+                    case Some((stepDef, params)) =>
+                      // TODO push params to local stack instead
+                      params foreach { case (name, value) =>
+                        env.featureScope.set(name, value)
+                      }
                       evalStepDef(stepDef, step, env)
+                      // TODO pop params off local stack
                     case _ => throw e
                   }
               }
