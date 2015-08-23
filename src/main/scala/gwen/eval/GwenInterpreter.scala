@@ -261,26 +261,43 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step
     */
   private def evaluateStep(step: Step, env: T): Step = {
-    logger.info(s"Evaluating Step: $step")
-    val result = env.getStepDef(step.expression) match {
+    val iStep = doEvaluate(step, env) { env.interpolate(_) }
+    logger.info(s"Evaluating Step: $iStep")
+    val result = env.getStepDef(iStep.expression) match {
       case None =>
-        val interpolatedStep = doEvaluate(step, env) { env.interpolate(_) }
-        if (interpolatedStep.evalStatus.status != StatusKeyword.Failed) {
-          doEvaluate(interpolatedStep, env) { step => 
-              engine.evaluate(step, env)
-              step
+        if (iStep.evalStatus.status != StatusKeyword.Failed) {
+          doEvaluate(iStep, env) { step =>
+              try {
+                engine.evaluate(step, env)
+                step
+              } catch {
+                case e: UndefinedStepException =>
+                  env.getStepDefWithParams(step.expression) match {
+                    case Some((stepDef, params)) =>
+                      env.localScope.push(stepDef.name, params)
+                      try {
+                        evalStepDef(stepDef, step, env)
+                      } finally {
+                        env.localScope.pop
+                      }
+                    case _ => throw e
+                  }
+              }
           }
         } else {
-          interpolatedStep
+          iStep
         }
-      case (Some(stepDef)) =>
-        logger.info(s"Evaluating StepDef: ${stepDef.name}")
-        Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { step =>
-          logger.info(s"StepDef evaluated: ${stepDef.name}")
-        }
+      case (Some(stepDef)) => evalStepDef(stepDef, step, env)
     }
     result tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
+    }
+  }
+  
+  private def evalStepDef(stepDef: Scenario, step: Step, env: T): Step = {
+    logger.info(s"Evaluating StepDef: ${stepDef.name}")
+    Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { step =>
+      logger.info(s"StepDef evaluated: ${stepDef.name}")
     }
   }
   
@@ -294,8 +311,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
-      case TrySuccess(step) => 
-        Step(step, Passed(System.nanoTime - start), env.attachments)
+      case TrySuccess(passedStep) => 
+        Step(passedStep, Passed(System.nanoTime - start), env.attachments)
       case TryFailure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)

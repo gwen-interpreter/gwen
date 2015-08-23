@@ -24,58 +24,77 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   
   "Feature with no step defs" should "normalise without error" in {
     val feature = FeatureSpec(
-	  Feature("feature1", Nil), None, List(
-	    Scenario(Set[Tag](), "scenario1", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.Given, "step 2", Passed(1)),
-	      Step(StepKeyword.Given, "step 3", Passed(2)))
-	    )))
-	normalise(feature, None)
+    Feature("feature1", Nil), None, List(
+      Scenario(Set[Tag](), "scenario1", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.Given, "step 2", Passed(1)),
+        Step(StepKeyword.Given, "step 3", Passed(2)))
+      )))
+  normalise(feature, None)
   }
   
   "Meta with one step def" should "normalise without error" in {
     val meta = FeatureSpec(
-	  Feature("meta1", Nil), None, List(
-	    Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.When, "step 2", Passed(1)),
-	      Step(StepKeyword.Then, "step 3", Passed(2)))
-	    )))
-	normalise(meta, None)
+    Feature("meta1", Nil), None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      )))
+  normalise(meta, None)
   }
   
   "Meta with multiple unique step defs" should "normalise without error" in {
     val meta = FeatureSpec(
-	  Feature("meta1", Nil), None, List(
-	    Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.When, "step 2", Passed(1)),
-	      Step(StepKeyword.Then, "step 3", Passed(2)))
-	    ),
-	    Scenario(Set[Tag]("@StepDef"), "stepdef2", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.When, "step 2", Passed(1)),
-	      Step(StepKeyword.Then, "step 3", Passed(2)))
-	    )))
-	normalise(meta, None)
+    Feature("meta1", Nil), None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      ),
+      Scenario(Set[Tag]("@StepDef"), "stepdef2", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      )))
+  normalise(meta, None)
   }
   
   "Meta with duplicate step def" should "error" in {
     val meta = FeatureSpec(
-	  Feature("meta1", Nil), None, List(
-	    Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.When, "step 2", Passed(1)),
-	      Step(StepKeyword.Then, "step 3", Passed(2)))
-	    ),
-	    Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
-	      Step(StepKeyword.Given, "step 1", Passed(2)),
-	      Step(StepKeyword.When, "step 2", Passed(1)),
-	      Step(StepKeyword.Then, "step 3", Passed(2)))
-	    )))
-	    
-	intercept[AmbiguousCaseException] {
-	  normalise(meta, None)
+    Feature("meta1", Nil), None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      ),
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      )))
+      
+  intercept[AmbiguousCaseException] {
+    normalise(meta, None)
+    }
+  }
+  
+  "Meta with duplicate step def with params" should "error" in {
+    val meta = FeatureSpec(
+    Feature("meta1", Nil), None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef <number>", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      ),
+      Scenario(Set[Tag]("@StepDef"), "stepdef <index>", None, List(
+        Step(StepKeyword.Given, "step 1", Passed(2)),
+        Step(StepKeyword.When, "step 2", Passed(1)),
+        Step(StepKeyword.Then, "step 3", Passed(2)))
+      )))
+      
+    intercept[AmbiguousCaseException] {
+      normalise(meta, None)
     }
   }
   

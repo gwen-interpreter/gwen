@@ -20,6 +20,20 @@ Scenario: Incrementing 0 should yield 1
     Given x = 0
      When ++x
      Then x == 1
+     
+Scenario: Addition with stepdef parameters
+    Given z = 1 + 2
+     Then z == 3
+     
+Scenario: Addition using stepdef with leading parameter
+    Given y = 1
+     When z = 2 + y
+     Then z == 3
+     
+Scenario: Addition using stepdef with trailing parameter
+    Given x = 1
+     When z = x + 2
+     Then z == 3
 
 
   

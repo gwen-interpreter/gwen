@@ -73,11 +73,19 @@ class ScopedDataStack() {
     */
   private var scopes: Stack[ScopedData] = _
   
+  /** 
+    *  Provides access to the local StepDef scope (StepDef parameters
+    *  are pushed and poped in and out of this scope as StepDef calls
+    *  are made). 
+    */
+  private[eval] val localScope = new LocalDataStack()
+  
   reset()
   
   /** Resets the data stack. */
   def reset() {
       scopes = Stack[ScopedData]() tap { _ push ScopedData("feature") }
+      localScope.reset()
   }
   
   /**
@@ -155,9 +163,9 @@ class ScopedDataStack() {
     * the attribute is the one that is returned.
     *
     * @param name the name of the attribute to find
-    * @return Some(value) if the attribute found or None otherwise
-    * @throws gwen.errors.UnboundAttributeException if the attribute is bound 
-    *         to the given name
+    * @return the attribute value
+    * @throws gwen.errors.UnboundAttributeException if the attribute is 
+    *         not bound to the given name
     */
   def get(name: String): String = 
     getOpt(name).getOrElse(unboundAttributeError(name, current.scope))
@@ -232,7 +240,7 @@ class ScopedDataStack() {
         getAllIn(featureScope.scope, name)
       case x => x
     }
-    
+  
   /**
     * Returns a string representation of the entire attribute stack 
     * as a JSON object.

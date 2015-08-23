@@ -230,7 +230,7 @@ object Step {
   def apply(step: Step, expression: String): Step =
     new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
   def apply(step: Step, stepDef: Scenario): Step =
-    new Step(step.keyword, stepDef.name, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef)) tap { _.pos = step.pos }
+    new Step(step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef)) tap { _.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
-    new Step(step.keyword, step.expression, status, attachments) tap { _.pos = step.pos }
+    new Step(step.keyword, step.expression, status, attachments, step.stepDef) tap { _.pos = step.pos }
 }

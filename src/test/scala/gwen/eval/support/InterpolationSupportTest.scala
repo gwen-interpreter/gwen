@@ -21,31 +21,61 @@ import org.scalatest.Matchers
 
 class InterpolationSupportTest extends FlatSpec with Matchers with InterpolationSupport {
 
-  """interpolate using property syntax: prefix "${binding}"""" should "resolve" in {
-    interpolate("""hello "${binding}"""") { binding => "you" } should be ("""hello "you"""") 
+  """interpolate using property syntax: prefix "${property}"""" should "resolve" in {
+    interpolate("""hello "${property}"""") { property => "you" } should be ("""hello "you"""") 
   }
   
-  """interpolate using property syntax: prefix ${binding}""" should "resolve" in {
-    interpolate("""hello ${binding}""") { binding => "you" } should be ("""hello you""") 
+  """interpolate using property syntax: prefix ${property}""" should "resolve" in {
+    interpolate("""hello ${property}""") { property => "you" } should be ("""hello you""") 
   }
   
-  """interpolate using property syntax: "${binding}" suffix""" should "resolve" in {
-    interpolate(""""${binding}" you""") { binding => "hello" } should be (""""hello" you""") 
+  """interpolate using property syntax: "${property}" suffix""" should "resolve" in {
+    interpolate(""""${property}" you""") { property => "hello" } should be (""""hello" you""") 
   }
   
-  """interpolate using property syntax: ${binding} "suffix"""" should "resolve" in {
-    interpolate("""${binding} "you"""") { binding => "hello" } should be ("""hello "you"""") 
+  """interpolate using property syntax: ${property} "suffix"""" should "resolve" in {
+    interpolate("""${property} "you"""") { property => "hello" } should be ("""hello "you"""") 
   }
   
-  """interpolate using property syntax: prefix ${binding} suffix""" should "resolve" in {
-    interpolate("""hello ${binding} good thing""") { binding => "you" } should be ("""hello you good thing""") 
+  """interpolate using property syntax: prefix ${property} suffix""" should "resolve" in {
+    interpolate("""hello ${property} good thing""") { property => "you" } should be ("""hello you good thing""") 
   }
   
-  """interpolate nested using property syntax: ${binding1${binding0}}"""" should "resolve" in {
-    interpolate("""Hey you ${binding-${id}} thing!""") { binding => 
-      binding match {
+  """interpolate nested using property syntax: ${property1-${property0}}"""" should "resolve" in {
+    interpolate("""Hey you ${property-${id}} thing!""") { property => 
+      property match {
         case "id" => "0"
-        case "binding-0" => "good"
+        case "property-0" => "good"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you good thing!""") 
+  }
+  
+  """interpolate using stepdef param syntax: prefix "$<param>"""" should "resolve" in {
+    interpolate("""hello "$<param>"""") { param => "you" } should be ("""hello "you"""") 
+  }
+  
+  """interpolate using stepdef param syntax: prefix $<param>""" should "resolve" in {
+    interpolate("""hello $<param>""") { param => "you" } should be ("""hello you""") 
+  }
+  
+  """interpolate using stepdef param syntax: "$<param>" suffix""" should "resolve" in {
+    interpolate(""""$<param>" you""") { param => "hello" } should be (""""hello" you""") 
+  }
+  
+  """interpolate using stepdef param syntax: $<param> "suffix"""" should "resolve" in {
+    interpolate("""$<param> "you"""") { param => "hello" } should be ("""hello "you"""") 
+  }
+  
+  """interpolate using stepdef param syntax: prefix $<param> suffix""" should "resolve" in {
+    interpolate("""hello $<param> good thing""") { param => "you" } should be ("""hello you good thing""") 
+  }
+  
+  """interpolate nested using stepdef param syntax: $<param1-$<param0>>"""" should "resolve" in {
+    interpolate("""Hey you $<param-$<id>> thing!""") { param => 
+      param match {
+        case "<id>" => "0"
+        case "<param-0>" => "good"
         case _ => "undefined"
       }
     } should be ("""Hey you good thing!""") 

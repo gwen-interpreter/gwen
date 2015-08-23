@@ -18,6 +18,21 @@
 
 @StepDef
 Scenario: ++x
-    Given y = 1
-     When z = x + y
+    Given z = x + 1
      Then x = z
+     
+@StepDef
+Scenario: z = x + <y>
+    Given y = $<y>
+     Then z = x + y
+     
+@StepDef
+Scenario: z = <x> + <y>
+    Given x = $<x>
+      And y = $<y>
+     Then z = x + y
+     
+@StepDef
+Scenario: z = <x> + y
+    Given x = $<x>
+     Then z = x + y

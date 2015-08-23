@@ -73,7 +73,7 @@ trait SpecNormaliser {
     *         with the same name is found  
     */
   private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
-    val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name) filter { case (_, stepDefs) => stepDefs.size > 1 }
+    val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name.replaceAll("<.+?>", "<?>")) filter { case (_, stepDefs) => stepDefs.size > 1 }
     val dupCount = duplicates.size
     if (dupCount > 0) {
       val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
