@@ -274,12 +274,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
                 case e: UndefinedStepException =>
                   env.getStepDefWithParams(step.expression) match {
                     case Some((stepDef, params)) =>
-                      env.localScope.push(stepDef.name, params)
-                      try {
-                        evalStepDef(stepDef, step, env)
-                      } finally {
-                        env.localScope.pop
-                      }
+                      evalStepDef(stepDef, step, params, env)
                     case _ => throw e
                   }
               }
@@ -287,17 +282,22 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         } else {
           iStep
         }
-      case (Some(stepDef)) => evalStepDef(stepDef, step, env)
+      case (Some(stepDef)) => evalStepDef(stepDef, step, Nil, env)
     }
     result tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
     }
   }
   
-  private def evalStepDef(stepDef: Scenario, step: Step, env: T): Step = {
+  private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     logger.info(s"Evaluating StepDef: ${stepDef.name}")
-    Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { step =>
-      logger.info(s"StepDef evaluated: ${stepDef.name}")
+    env.localScope.push(stepDef.name, params)
+    try {
+      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { s =>
+        logger.info(s"StepDef evaluated: ${stepDef.name}")
+      }
+    } finally {
+      env.localScope.pop
     }
   }
   
@@ -311,8 +311,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
-      case TrySuccess(passedStep) => 
-        Step(passedStep, Passed(System.nanoTime - start), env.attachments)
+      case TrySuccess(evaluatedStep) =>
+        Step(evaluatedStep, evaluatedStep.stepDef.map(_.evalStatus ).getOrElse(Passed(System.nanoTime - start)), env.attachments)
       case TryFailure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)

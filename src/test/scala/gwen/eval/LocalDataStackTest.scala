@@ -40,7 +40,10 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     localData.push("login", List(("username", "gwen"), ("password", "pwd")))
     localData.push("register", List(("password", "secret")))
     
-    localData.get("username")  should be ("gwen")
+    intercept[UnboundAttributeException] {
+      localData.get("username")  should be ("gwen")
+    }
+    
     localData.get("password")   should be ("secret")
     
     localData.pop
@@ -50,4 +53,39 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     
   }
   
+  "stack" should "behave correctly with combinations of empty and non-empty parameters" in {
+    
+    val localData = new LocalDataStack()
+    
+    localData.push("stepdef1", Nil);
+    intercept[UnboundAttributeException] {
+      localData.get("username")  should be ("gwen")
+    }
+    
+    localData.push("stepdef2", List(("username", "gwen")));
+    localData.get("username")  should be ("gwen")
+    
+    localData.push("stepdef3", Nil);
+    intercept[UnboundAttributeException] {
+      localData.get("username")  should be ("gwen")
+    }
+    
+    localData.pop
+    localData.get("username")  should be ("gwen")
+    
+    localData.pop
+    intercept[UnboundAttributeException] {
+      localData.get("username")  should be ("gwen")
+    }
+    
+    localData.pop
+    intercept[UnboundAttributeException] {
+      localData.get("username")  should be ("gwen")
+    }
+    
+    intercept[NoSuchElementException] {
+    	localData.pop
+    }
+    
+  }
 }

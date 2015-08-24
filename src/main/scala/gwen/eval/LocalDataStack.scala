@@ -65,13 +65,14 @@ class LocalDataStack() {
   def pop = localData.pop
   
   /**
-    * Finds and retrieves an attribute bound in the local data stack.
+    * Finds and retrieves an attribute bound in the local stack.
+    * Only the top of the stack is searched.
     *
     * @param name the name of the attribute to find
     * @return Some(value) if a value is found or None otherwise
     */
   def get(name: String): String = 
-    (localData.toIterator map (_.getOpt(name)) collectFirst { 
+    (localData.headOption map (_.getOpt(name)) collectFirst { 
       case Some(value) => value 
     }).getOrElse(unboundAttributeError(name, "local"))
   
