@@ -336,7 +336,7 @@ trait HtmlReportFormatter extends ReportFormatter {
               </li>"""
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
-    s"""<a role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(step.expression)}</a>"""
+    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(step.expression)}</a>"""
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String, isMeta: Boolean): String = s"""
                   <div id="${stepDefId}" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (!isMeta) """style="padding-left: 40px;"""" else ""}>

@@ -57,11 +57,11 @@
 }
 
 .badge-info {
-  background-color: #f0ad4e;
+  background-color: #5bc0de;
 }
 
 .badge-warning {
-  background-color: #5bc0de;
+  background-color: #f0ad4e;
 }
 
 .bg-success {
@@ -93,11 +93,11 @@
 }
 
 .bg-altrow-info {
-  background-color: #f0ad4e;
+  background-color: #d4f2f9;
 }
 
 .bg-altrow-warning {
-  background-color: #5bc0de;
+  background-color: #fdfaeb;
 }
 
 .bg-default {
@@ -138,13 +138,13 @@
 }
 
 .btn-info {
-  background-color: #fcf8e3;
-  color: #f0ad4e;
+  background-color: #d9edf7;
+  color: #5bc0de;
 }
 
 .btn-warning {
-  background-color: #d9edf7;
-  color: #5bc0de;
+  background-color: #fcf8e3;
+  color: #f0ad4e;
 }
 
 .dropdown {
@@ -170,8 +170,38 @@ a:visited {
   text-decoration: underline;
 }
 
-a:hover{
+a:hover {
   text-decoration: none;
+}
+
+a:link.inverted {
+  color:#333333;
+  text-decoration: none;
+}
+
+a:visited.inverted {
+  color:#333333;
+  text-decoration: underline;
+}
+
+a:hover.inverted-success {
+  text-decoration: underline;
+  color: #3c763d;
+}
+
+a:hover.inverted-danger {
+  text-decoration: underline;
+  color: #a94442;
+}
+
+a:hover.inverted-info {
+  text-decoration: underline;
+  color: #31708f;
+}
+
+a:hover.inverted-warning {
+  text-decoration: underline;
+  color: #8a6d3b;
 }
 
 td {
