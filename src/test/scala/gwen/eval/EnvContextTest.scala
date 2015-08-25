@@ -42,7 +42,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    env.getStepDef("""I search for "gwen"""") should be (Some(stepdef))
+    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
     env.getStepDef("I am not defined") should be (None)
     
   }
@@ -58,7 +58,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    env.getStepDef("""I search for "gwen"""") should be (Some(stepdef))
+    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
     env.reset
     env.getStepDef("""I search for "gwen"""") should be (None)
     
@@ -79,16 +79,16 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
     
-    env.getStepDefWithParams("""I enter "gwen" in the search field""") should be (Some((stepdef1, List(("<searchTerm>", "gwen")))))
-    env.getStepDefWithParams("""I enter "gwen" in the search field again""") should be (Some((stepdef2, List(("<search term>", "gwen")))))
-    env.getStepDefWithParams("z = 2 + 1") should be (Some((stepdef3, List(("<x>", "2")))))
-    env.getStepDefWithParams("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
-    env.getStepDefWithParams("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
+    env.getStepDef("""I enter "gwen" in the search field""") should be (Some((stepdef1, List(("<searchTerm>", "gwen")))))
+    env.getStepDef("""I enter "gwen" in the search field again""") should be (Some((stepdef2, List(("<search term>", "gwen")))))
+    env.getStepDef("z = 2 + 1") should be (Some((stepdef3, List(("<x>", "2")))))
+    env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
+    env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
 
     val stepdef6 = Scenario(Set(Tag("StepDef")), "z = <x> * <x>", None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
-      env.getStepDefWithParams("z = 3 * 4")
+      env.getStepDef("z = 3 * 4")
     }
     
   }
@@ -104,11 +104,11 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef2)
     env.addStepDef(stepdef3)
     
-    env.getStepDefWithParams("z = x + 3") should be (Some((stepdef2, List(("<y>", "3")))))
-    env.getStepDefWithParams("z = 2 + 2") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "2")))))
-    env.getStepDefWithParams("z = 3 + 2") should be (Some((stepdef3, List(("<x>", "3"), ("<y>", "2")))))
-    env.getStepDefWithParams("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
-    env.getStepDefWithParams("z = 5 + y") should be (Some((stepdef3, List(("<x>", "5"), ("<y>", "y")))))
+    env.getStepDef("z = x + 3") should be (Some((stepdef2, List(("<y>", "3")))))
+    env.getStepDef("z = 2 + 2") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "2")))))
+    env.getStepDef("z = 3 + 2") should be (Some((stepdef3, List(("<x>", "3"), ("<y>", "2")))))
+    env.getStepDef("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
+    env.getStepDef("z = 5 + y") should be (Some((stepdef3, List(("<x>", "5"), ("<y>", "y")))))
     
   }
   

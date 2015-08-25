@@ -263,26 +263,27 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def evaluateStep(step: Step, env: T): Step = {
     val iStep = doEvaluate(step, env) { env.interpolate(_) }
     logger.info(s"Evaluating Step: $iStep")
-    val result = env.getStepDef(iStep.expression) match {
+    val stepDefOpt = env.getStepDef(iStep.expression)
+    val result = (stepDefOpt match {  
+      case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
+      case sd => sd 
+    }) match {
       case None =>
         if (iStep.evalStatus.status != StatusKeyword.Failed) {
           doEvaluate(iStep, env) { step =>
-              try {
-                engine.evaluate(step, env)
-                step
-              } catch {
-                case e: UndefinedStepException =>
-                  env.getStepDefWithParams(step.expression) match {
-                    case Some((stepDef, params)) =>
-                      evalStepDef(stepDef, step, params, env)
-                    case _ => throw e
-                  }
-              }
+            try {
+              engine.evaluate(step, env)
+            } catch {
+              case e: UndefinedStepException =>
+                stepDefOpt map { case (stepDef, _) => recursiveStepDefError(stepDef, step) } getOrElse(throw e)
+            }
+            step
           }
         } else {
           iStep
         }
-      case (Some(stepDef)) => evalStepDef(stepDef, step, Nil, env)
+      case (Some((stepDef, params))) => 
+        evalStepDef(stepDef, step, params, env)
     }
     result tap { step =>
       logStatus("Step", step.toString, step.evalStatus)

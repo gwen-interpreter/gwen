@@ -99,7 +99,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
     val stepdef = Scenario(Set[Tag](Tag.StepDefTag), "I am a valid stepdef", None, List(step1))
-    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
+    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
@@ -190,7 +190,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     when(mockEnv.specType).thenReturn(SpecType.feature)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
-    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
+    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)

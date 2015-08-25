@@ -61,7 +61,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def featureScope = scopes.featureScope
   
   /** Provides access to the local scope. */
-  private[eval] def localScope = scopes.localScope
+  private[eval] val localScope = scopes.localScope
   
   /**
     * Closes any resources associated with the evaluation context. This implementation
@@ -113,8 +113,11 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[Scenario] = 
-    stepDefs.get(expression)
+  def getStepDef(expression: String): Option[(Scenario, List[(String, String)])] = 
+    stepDefs.get(expression) match {
+      case None => getStepDefWithParams(expression)
+      case Some(stepDef) => Some((stepDef, Nil))
+    }
   
   /**
     * Gets the paraterised step definition for the given expression (if there is
@@ -124,7 +127,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @return the step definition and its parameters (name value tuples) if a 
     *         match is found; false otherwise
     */
-  def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
+  private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
     stepDefs.values.view.flatMap { stepDef =>
       ("<.+?>".r.findAllIn(stepDef.name).toList match {
         case Nil => None  

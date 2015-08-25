@@ -48,14 +48,14 @@ class LocalDataStack() {
     * Adds the given parameters (name-value pairs) to a new scope 
     * and pushes it onto the stack
     * 
-    * @param name the name to give to the scope
+    * @param scope the name of the scope entry to add
     * @param params the parameters to add
     * @return the newly added scope
     */
-  def push(name: String, params: List[(String, String)]): ScopedData = { 
-    ScopedData(name) tap { data =>
-      params foreach { case (pname, pvalue) =>
-        data.set(pname, pvalue)
+  def push(scope: String, params: List[(String, String)]): ScopedData = { 
+    ScopedData(scope) tap { data =>
+      params foreach { case (name, value) =>
+        data.set(name, value)
       }
       localData.push(data)
     }
@@ -75,6 +75,15 @@ class LocalDataStack() {
     (localData.headOption map (_.getOpt(name)) collectFirst { 
       case Some(value) => value 
     }).getOrElse(unboundAttributeError(name, "local"))
+    
+  /**
+    * Checks whether or not this local stack contains the 
+    * given scope.
+    * 
+    * @param scope the scope name to check
+    * @return true if the scope is found; false otherwise 
+    */
+  def containsScope(scope: String) = localData.find(_.scope == scope).isDefined
   
   /**
     * Returns a string representation of the entire attribute stack 

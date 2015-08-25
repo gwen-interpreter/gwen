@@ -19,6 +19,7 @@
  */
 package gwen {
 
+  import gwen.dsl.Scenario
   package object errors {
 
     import gwen.dsl.Step
@@ -35,6 +36,8 @@ package gwen {
     def xPathError(msg: String) = throw new XPathException(msg)
     def evaluationError(msg: String) = throw new EvaluationException(msg)
     def invocationError(msg: String) = throw new InvocationException(msg)
+    def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
+    def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -68,6 +71,13 @@ package gwen {
     
     /** Throw when there is an error in invoking gwen. */
     class InvocationException(msg: String) extends Exception(msg)
+    
+    /** Signals a step that failed to evaluate. */
+    class StepEvaluationException(step: Step, val cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
+    
+    /** Signals an infinite recursive StepDef. */
+    class RecursiveStepDefException(stepDef: Scenario, step: Step) extends RuntimeException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: ${step}")
+
 
   }
 }
