@@ -275,7 +275,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
               engine.evaluate(step, env)
             } catch {
               case e: UndefinedStepException =>
-                stepDefOpt map { case (stepDef, _) => recursiveStepDefError(stepDef, step) } getOrElse(throw e)
+                stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
             }
             step
           }
