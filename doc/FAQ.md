@@ -24,8 +24,7 @@ diagnose why a feature is failing. Gwen runs in this mode by default (in the abs
 Can I run gwen with Java 8?
 ---------------------------
 
-No, not yet. Currently only Java 6 and 7 are supported by both the 2.10 and 
-2.11 builds. An upcoming 2.12 build will aim to support Java 8.
+Yes.
 
 How do I run a single feature file?
 -----------------------------------

@@ -75,7 +75,7 @@ Key Features
 Core Requirements
 -----------------
 
-- Java 6 or 7
+- Java 7+
 - Scala 2.11.x, 2.10.x 
 
 Supported Grammar
@@ -225,7 +225,7 @@ Building from Source
 
 If you would like to build a binary from the source:
 
-1. Download and install [Java SDK 6 or 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
+1. Download and install [Java 7+](http://www.oracle.com/technetwork/java/javase/downloads/index.html) 
 2. Download and install the latest [sbt](http://www.scala-sbt.org/) version
 3. Download a [Git client](http://git-scm.com/downloads) 
 4. Clone the gwen source repository at https://github.com/gwen-interpreter/gwen 

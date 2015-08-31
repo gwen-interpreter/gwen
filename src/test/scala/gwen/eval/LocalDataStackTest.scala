@@ -84,7 +84,7 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     }
     
     intercept[NoSuchElementException] {
-    	localData.pop
+      localData.pop
     }
     
   }
