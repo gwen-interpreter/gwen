@@ -120,8 +120,9 @@ ability to experiment and observe the execution of steps and features as you
 write them. The scoped data in memory can also be printed to the console at 
 any time for debugging and analysis. The REPL also saves every step and 
 command you type to a local history file. So you can use the up and down 
-arrows to recall previous inputs. All of this makes the REPL a very powerful 
-tool for authoring executable features and testing them.
+arrows to recall previous inputs. Help is also available by typing `help` 
+(which lists all available commands and what they do). All of this makes the 
+REPL a very powerful tool for authoring executable features and testing them.
 
 Note that you cannot launch the interpreter without mixing in an engine. The 
 following shows the REPL console for the sample _MathInterpreter_ that is 

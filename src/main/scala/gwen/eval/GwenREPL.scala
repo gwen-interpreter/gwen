@@ -45,7 +45,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
-    reader.addCompleter(new StringsCompleter(StepKeyword.literals ++ List("env", "history", "exit")))
+    reader.addCompleter(new StringsCompleter(StepKeyword.literals ++ List("help", "env", "history", "exit")))
     reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")))))
   }
   
@@ -63,25 +63,37 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     */
   private def eval(input: String): Option[String] = input.trim match {
     case "" => Some("[noop]")
-    case r"""(?:env|env -v|env --visible) "(.+?)"?$$$expression""" =>
-      Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrFilter(expression)).json))
-    case r"env|env -v|env --visible" =>
-      Some(Json.prettyPrint(env.visibleScopes.json))
-    case r"""(?:env -f|env --feature) "(.+?)"?$$$expression""" =>
-      Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(expression))).json))
-    case r"env -f|env --feature" =>
-      Some(Json.prettyPrint(env.featureScope.json))
-    case r"""(?:env -a|env --all) "(.+?)"?$$$expression""" =>
-      Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(expression)).json))
-    case r"env -a|env --all" =>
-      Some(Json.prettyPrint(env.json))
+    case "help" =>
+      Some(helpText())
+    case r"""env(.+?)?$$$options""" => Option(options) match {
+      case None => Some(Json.prettyPrint(env.visibleScopes.json))
+      case _ => options.trim match {
+        case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
+          case "-f" => Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(filter))).json))
+          case "-a" => Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(filter)).json))
+        }
+        case r"""(-f|-a)$$$switch""" => switch match {
+          case "-f" => Some(Json.prettyPrint(env.featureScope.json))
+          case "-a" => Some(Json.prettyPrint(env.json))
+        }
+        case r""""(.+?)"$$$filter""" => 
+          Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).json))
+        case _ =>
+          Some("""Try again using: env [-a|-f] ["filter"]""")
+      }
+    }
     case r"history" =>
       Some(history.toString())
     case r"!(\d+)$$$historyValue" =>
-      (history.get(historyValue.toInt).toString) match {
-        case x if input.equals(x) => 
-          Some(s"Unable to refer to self history - !$historyValue")
-        case s => println("--> "+s); eval(s)
+      val num = historyValue.toInt
+      if (num < (history.size() - 1)) {
+        (history.get(num).toString) match {
+          case x if input.equals(x) => 
+            Some(s"Unable to refer to self history - !$historyValue")
+          case s => println(s"--> $s\n"); eval(s)
+        }
+      } else {
+        Some(s"No such history: !$historyValue")
       }
     case r"exit|bye|quit" => 
       reader.getHistory().asInstanceOf[FileHistory].flush()
@@ -104,12 +116,43 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     while(eval(read()).map(println).isDefined) { }
   }
   
+  private def helpText() = """
+    | Gwen REPL commands:
+    | 
+    | help
+    |   Displays this help text
+    | 
+    | env [switch] ["filter"]
+    |   Lists attributes in the current environment
+    |     Only lists visible attributes if no options are specified
+    |     switch :
+    |       -a : to list all attributes in all scopes
+    |       -f : to list all attributes in the feature (global) scope
+    |     "filter" : literal string or regex filter expression
+    | 
+    | history
+    |   Lists all previously entered commands
+    | 
+    | !<history#>
+    |   Executes a previously entered command (history bang operator)
+    |     history# : the history command number
+    | 
+    | Given|When|Then|And|But <step>
+    |   Evaluates a step
+    |     step : the step expression
+    | 
+    | exit|quit|bye
+    |   Closes the REPL session and exits
+    | 
+    | <tab> 
+    |   Press tab key at any time for tab completion
+    | """.stripMargin
 }
 
 object GwenREPL {
   /** Filters attributes containing or matching given expression (both names and values are checked). */
-  def attrFilter(expression: String): PartialFunction[(String, String), Boolean] = { 
-    case (n, v) => n.contains(expression) || n.matches(expression) || v.contains(expression) || v.matches(expression)
+  def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = { 
+    case (n, v) => n.contains(filter) || n.matches(filter) || v.contains(filter) || v.matches(filter)
   }
 }
 
