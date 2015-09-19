@@ -20,7 +20,7 @@ import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class FeatureParserTest extends FlatSpec with Matchers with SpecParser{
+class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
 
   private val parse = parseAll(feature, _: String);
   

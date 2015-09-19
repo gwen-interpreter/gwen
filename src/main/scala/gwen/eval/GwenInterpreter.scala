@@ -20,8 +20,6 @@ import java.io.File
 
 import scala.io.Source
 import scala.language.postfixOps
-import scala.util.{ Failure => TryFailure }
-import scala.util.{ Success => TrySuccess }
 import scala.util.Try
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -40,14 +38,11 @@ import gwen.dsl.Skipped
 import gwen.dsl.SpecNormaliser
 import gwen.dsl.SpecParser
 import gwen.dsl.SpecType
-import gwen.dsl.StatusKeyword
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
-import gwen.GwenInfo
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import gwen.dsl.StatusKeyword
-import gwen.errors._
+import gwen.errors.evaluationError
+import gwen.errors.parsingError
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -102,7 +97,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
     parseAll(step, input) match {
       case success @ Success(step, _) => 
-        evaluateStep(step, env)
+        engine.evaluateStep(step, env)
       case failure: NoSuccess => 
         parsingError(failure.toString)
     }
@@ -207,13 +202,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
       logger.info(s"Evaluating Scenario: $scenario")
       (scenario.background map(evaluateBackground(_, env)) match {
         case None => 
-          Scenario(scenario, None, evaluateSteps(scenario.steps, env))
+          Scenario(scenario, None, engine.evaluateSteps(scenario.steps, env))
         case Some(background) => 
           Scenario(
             scenario,
             Some(background),
             background.evalStatus match {
-              case Passed(_) => evaluateSteps(scenario.steps, env)
+              case Passed(_) => engine.evaluateSteps(scenario.steps, env)
               case _ => scenario.steps map { step =>
                 Step(step, Skipped, step.attachments)
               }
@@ -233,93 +228,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     */
   private def evaluateBackground(background: Background, env: T): Background = {
     logger.info(s"Evaluating Background: $background")
-    Background(background, evaluateSteps(background.steps, env)) tap { bg =>
+    Background(background, engine.evaluateSteps(background.steps, env)) tap { bg =>
       logStatus("Background", bg.toString, bg.evalStatus)
-    }
-  }
-  
-  /**
-    * Evaluates a list of steps.
-    * 
-    * @param steps the steps to evaluate
-    * @param env the environment context
-    * @return the list of evaluated steps
-    */
-  private def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
-    (acc: List[Step], step: Step) => 
-      (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, _) => env.execute(Step(step, Skipped, step.attachments)).getOrElse(evaluateStep(step, env))
-        case _ => evaluateStep(step, env)
-      }) :: acc
-  } reverse
-  
-  /**
-    * Evaluates a given step.
-    * 
-    * @param step the step to evaluate
-    * @param env the environment context
-    * @return the evaluated step
-    */
-  private def evaluateStep(step: Step, env: T): Step = {
-    val iStep = doEvaluate(step, env) { env.interpolate(_) }
-    logger.info(s"Evaluating Step: $iStep")
-    val stepDefOpt = env.getStepDef(iStep.expression)
-    val result = (stepDefOpt match {  
-      case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
-      case sd => sd 
-    }) match {
-      case None =>
-        if (iStep.evalStatus.status != StatusKeyword.Failed) {
-          doEvaluate(iStep, env) { step =>
-            try {
-              engine.evaluate(step, env)
-            } catch {
-              case e: UndefinedStepException =>
-                stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
-            }
-            step
-          }
-        } else {
-          iStep
-        }
-      case (Some((stepDef, params))) => 
-        evalStepDef(stepDef, step, params, env)
-    }
-    result tap { step =>
-      logStatus("Step", step.toString, step.evalStatus)
-    }
-  }
-  
-  private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
-    logger.info(s"Evaluating StepDef: ${stepDef.name}")
-    env.localScope.push(stepDef.name, params)
-    try {
-      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { s =>
-        logger.info(s"StepDef evaluated: ${stepDef.name}")
-      }
-    } finally {
-      env.localScope.pop
-    }
-  }
-  
-  /**
-    * Evaluates a step and captures the result.
-    * 
-    * @param step the step to evaluate
-    * @param env the environment context
-    * @param evalFunction the step evaluation function
-    */
-  private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
-    val start = System.nanoTime - step.evalStatus.nanos
-    (Try(evalFunction(step)) match {
-      case TrySuccess(evaluatedStep) =>
-        Step(evaluatedStep, evaluatedStep.stepDef.map(_.evalStatus ).getOrElse(Passed(System.nanoTime - start)), env.attachments)
-      case TryFailure(error) =>
-        val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
-        env.fail(failure)
-        Step(step, failure, env.attachments)
-    }) tap { step =>
-      env.resetAttachments
     }
   }
   
@@ -373,7 +283,4 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   }
   
 }
-
-/** Signals a step that failed to execute. */
-class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
 

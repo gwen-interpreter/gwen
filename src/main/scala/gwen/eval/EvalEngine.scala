@@ -18,7 +18,17 @@ package gwen.eval
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.dsl.Step
+import gwen.Predefs._
 import gwen.errors._
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+import gwen.dsl.Passed
+import gwen.dsl.Failed
+import gwen.dsl.StatusKeyword
+import gwen.dsl.Scenario
+import gwen.dsl.EvalStatus
+import gwen.dsl.Skipped
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -45,6 +55,87 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param scopes initial data scopes
     */
   private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): T
+  
+  /**
+    * Evaluates a given step.
+    * 
+    * @param step the step to evaluate
+    * @param env the environment context
+    */
+  def evaluateStep(step: Step, env: T): Step = {
+    val iStep = doEvaluate(step, env) { env.interpolate(_) }
+    logger.info(s"Evaluating Step: $iStep")
+    val stepDefOpt = env.getStepDef(iStep.expression)
+    (stepDefOpt match {  
+      case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
+      case stepdef => stepdef 
+    }) match {
+      case None =>
+        if (iStep.evalStatus.status != StatusKeyword.Failed) {
+          doEvaluate(iStep, env) { step =>
+            try {
+              evaluate(step, env)
+            } catch {
+              case e: UndefinedStepException =>
+                stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
+            }
+            step
+          }
+        } else {
+          iStep
+        }
+      case (Some((stepDef, params))) => 
+        evalStepDef(stepDef, step, params, env)
+    }
+  }
+  
+  /**
+    * Evaluates a step and captures the result.
+    * 
+    * @param step the step to evaluate
+    * @param env the environment context
+    * @param evalFunction the step evaluation function
+    */
+  private def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
+    val start = System.nanoTime - step.evalStatus.nanos
+    (Try(evalFunction(step)) match {
+      case Success(evaluatedStep) =>
+        Step(evaluatedStep, evaluatedStep.stepDef.map(_.evalStatus ).getOrElse(Passed(System.nanoTime - start)), env.attachments)
+      case Failure(error) =>
+        val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
+        env.fail(failure)
+        Step(step, failure, env.attachments)
+    }) tap { step =>
+      env.resetAttachments
+    }
+  }
+  
+  private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
+    logger.info(s"Evaluating StepDef: ${stepDef.name}")
+    env.localScope.push(stepDef.name, params)
+    try {
+      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { s =>
+        logger.info(s"StepDef evaluated: ${stepDef.name}")
+      }
+    } finally {
+      env.localScope.pop
+    }
+  }
+  
+  /**
+    * Evaluates a list of steps.
+    * 
+    * @param steps the steps to evaluate
+    * @param env the environment context
+    * @return the list of evaluated steps
+    */
+  def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
+    (acc: List[Step], step: Step) => 
+      (EvalStatus(acc.map(_.evalStatus)) match {
+        case Failed(_, _) => env.execute(Step(step, Skipped, step.attachments)).getOrElse(evaluateStep(step, env))
+        case _ => evaluateStep(step, env)
+      }) :: acc
+  } reverse
 
   /**
     * Should be overridden to evaluate a given step (this implementation 
@@ -96,3 +187,7 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
   }
   
 }
+
+/** Signals a step that failed to execute. */
+class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
+
