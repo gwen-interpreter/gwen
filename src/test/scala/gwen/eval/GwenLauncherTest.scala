@@ -174,7 +174,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature4, UserOverrides.addUserMeta(List(meta4)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
+    when(mockInterpreter.interpretFeature(feature4, UserOverrides.addUserMeta(List(meta4)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     try {
       launcher(mockInterpreter).run(options, Some(mockEnv))
@@ -207,7 +207,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature5, UserOverrides.addUserMeta(List(meta5)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error"))
+    when(mockInterpreter.interpretFeature(feature5, UserOverrides.addUserMeta(List(meta5)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
 

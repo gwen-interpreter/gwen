@@ -145,10 +145,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureSpec], env: T): List[FeatureSpec] = {
     (if(SpecType.meta.equals(env.specType)) "Loading" else "Evaluating") tap {action =>
       logger.info("");
-      featureSpec.featureFile.foreach { file =>
-        logger.info(s"${action} ${env.specType} file: ${file}")
-      }
-      logger.info(s"${action} ${env.specType}: ${featureSpec.feature.name}")
+      logger.info(s"${action} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
     }
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
@@ -174,9 +171,11 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
       featureSpec.featureFile 
     )
     (resultSpec::metaResults) tap { results =>
-      logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
+      if(SpecType.meta != env.specType) {
+        logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
+      }
       resultSpec.featureFile foreach { file =>
-        logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType} file: ${file}")
+        logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
       }
       logger.debug(prettyPrint(resultSpec))
     }
@@ -270,11 +269,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the logged status message
     */
   private def logStatus(node: String, name: String, status: EvalStatus) = {
-      logStatusMsg(s"$status $node: $name", status)
+      logStatusMsg(s"${if (SpecType.meta.toString() == node) Loaded else status} $node: $name", status)
   }
   
   private def logStatusMsg(msg: String, status: EvalStatus) = status match {
-    case Passed(_) | Loaded => 
+    case Loaded => 
+      logger.debug(msg)
+    case Passed(_) => 
       logger.info(msg)
     case Failed(_, _) => 
       logger.error(msg)

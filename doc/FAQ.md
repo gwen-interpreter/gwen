@@ -77,3 +77,28 @@ or
 ```
 bin/gwen --report reports
 ```
+
+How do I configure logging?
+---------------------------
+
+Gwen uses log4j to perform all logging using the configuration shown below 
+(this default configuration is defined in the log4j.properties file bundled 
+in the gwen binary). To override this and specify your own configuration, 
+add a `log4j.configuration=file:/path-to-log4j-config-file` entry to your 
+`gwen.properties` file in your user home directory. For more information 
+about log4j, see [the log4j FAQ](http://logging.apache.org/log4j/1.2/faq.html).
+
+```
+# Set root logger level to INFO and append to STDOUT
+log4j.rootLogger=INFO, STDOUT
+
+# STDOUT is set to be a ConsoleAppender.
+log4j.appender.STDOUT=org.apache.log4j.ConsoleAppender
+
+# STDOUT uses PatternLayout.
+log4j.appender.STDOUT.layout=org.apache.log4j.PatternLayout
+log4j.appender.STDOUT.layout.ConversionPattern=%p - %m%n
+
+# Gwen logging level
+log4j.logger.gwen=INFO
+```

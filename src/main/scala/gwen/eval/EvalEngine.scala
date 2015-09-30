@@ -111,11 +111,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   }
   
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
-    logger.info(s"Evaluating StepDef: ${stepDef.name}")
+    logger.debug(s"Evaluating StepDef: ${stepDef.name}")
     env.localScope.push(stepDef.name, params)
     try {
       Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { s =>
-        logger.info(s"StepDef evaluated: ${stepDef.name}")
+        logger.debug(s"StepDef evaluated: ${stepDef.name}")
       }
     } finally {
       env.localScope.pop

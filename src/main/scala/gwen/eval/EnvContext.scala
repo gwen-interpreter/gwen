@@ -154,7 +154,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           }
       })
     }.collectFirst { case (stepDef, params) => 
-        logger.info(s"Mapped $expression to StepDef: ${stepDef.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
+        logger.debug(s"Mapped $expression to StepDef: ${stepDef.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
       (stepDef, params)
     }}
   
@@ -243,7 +243,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       } match {
         case step.expression => step
         case expr =>
-          Step(step, expr) tap { iStep => logger.info(s"Interpolated ${step.expression} to: ${iStep.expression}") }
+          Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
       }
     } else {
       step

@@ -141,7 +141,7 @@ object GwenOptions {
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified features path not found: $f")
-      } text("Space separated list of feature file and/or directory paths")
+      } text("Space separated list of feature files and/or directory paths")
     
     }
   
