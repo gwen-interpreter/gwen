@@ -69,7 +69,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
   <head>
     ${formatHtmlHead(s"${title} - ${featureName}", rootPath)}
-      ${formatJsHeader(rootPath, screenshots.size > 1)}
+    ${formatJsHeader(rootPath, screenshots.size > 1)}
   </head>
   <body>
     ${formatReportHeader(info, title, featureName, rootPath)}
@@ -194,7 +194,6 @@ trait HtmlReportFormatter extends ReportFormatter {
 <html lang="en">
   <head>
     ${formatHtmlHead(title, "")}
-      ${formatJsHeader("../", false)}
   </head>
   <body>
     ${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
