@@ -44,6 +44,8 @@ libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.7"
 
 libraryDependencies += "jline" % "jline" % "2.12.1"
 
+libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"

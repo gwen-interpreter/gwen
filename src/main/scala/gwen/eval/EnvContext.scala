@@ -172,7 +172,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param failed the failed status
     */
   final def fail(failure: Failed): Unit = { 
-    currentAttachments = createErrorAttachments(failure)
+    addErrorAttachments(failure)
     logger.error(Json.prettyPrint(this.scopes.visible.json))
     logger.error(failure.error.getMessage())
     logger.debug(s"Exception: ", failure.error)
@@ -183,33 +183,27 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * 
     * @param failed the failed status
     */
-  def createErrorAttachments(failure: Failed): List[(String, File)] = List( 
-    ("Error details", createAttachmentFile("error-details", "txt") tap { f =>
-        f.deleteOnExit()
-        f.writeText(failure.error.writeStackTrace())
-    }), 
-    ("Environment (all)", createAttachmentFile("env-all", "txt") tap { f =>
-        f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.scopes.json))
-    }),
-    ("Environment (visible)", createAttachmentFile("env-visible", "txt") tap { f =>
-        f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.scopes.visible.json))
-    })
-  )
+  def addErrorAttachments(failure: Failed): Unit = { 
+    addAttachment("Error details", "txt", failure.error.writeStackTrace())
+    addAttachment("Environment (all)", "json", Json.prettyPrint(this.scopes.json))
+    addAttachment("Environment (visible)", "json", Json.prettyPrint(this.scopes.visible.json))
+  }
   
   /**
    * Creates an attachment file.
    * 
-   * @param prefix the filename prefix
-   * @param extenstion the filename extension
+   * @param name the attachment name
+   * @param extension the filename extension
+   * @param content the content to write to the file
    */
-  def createAttachmentFile(prefix: String, extension: String): File = {
+  def addAttachment(name: String, extension: String, content: String): (String, File) = {
       attachementCount = attachementCount + 1
-      File.createTempFile(s"${"%04d".format(attachementCount)}-${prefix}-", s".${extension}") tap { f =>
+      val file = File.createTempFile(s"${"%04d".format(attachementCount)}-${name.replaceAll("[^A-Za-z0-9]", "-")}-", s".${extension}") tap { f =>
         f.deleteOnExit()
-        f.writeText(Json.prettyPrint(this.scopes.visible.json))
+        Option(content) foreach { f.writeText }
+        currentAttachments = ((name, f)) :: currentAttachments
       }
+      (name, file)
   }
   
   /**

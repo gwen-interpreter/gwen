@@ -38,6 +38,7 @@ package gwen {
     def invocationError(msg: String) = throw new InvocationException(msg)
     def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
     def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
+    def decodingError(msg: String) = throw new DecodingException(msg)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -78,6 +79,8 @@ package gwen {
     /** Signals an infinite recursive StepDef. */
     class RecursiveStepDefException(stepDef: Scenario, step: Step) extends RuntimeException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: ${step}")
 
+    /** Thrown when a decoding error occurs. */
+    class DecodingException(msg: String) extends Exception(msg)
 
   }
 }

@@ -80,6 +80,13 @@
       https://github.com/pisi/Reel/blob/master/LICENSE.txt
       http://reel360.org/reel
       
+   commons-codec
+      Version 1.10
+      Copyright (c) 2015 The Apache Software Foundation
+      Apache License, Version 2.0
+      http://www.apache.org/licenses/
+      http://commons.apache.org/proper/commons-codecf/
+      
    - Test Dependencies -
    
    scalatest

@@ -128,14 +128,14 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     |     switch :
     |       -a : to list all attributes in all scopes
     |       -f : to list all attributes in the feature (global) scope
-    |     "filter" : literal string or regex filter expression
+    |     filter : literal string or regex filter expression
     | 
     | history
     |   Lists all previously entered commands
     | 
-    | !<history#>
+    | !<#>
     |   Executes a previously entered command (history bang operator)
-    |     history# : the history command number
+    |     # : the history command number
     | 
     | Given|When|Then|And|But <step>
     |   Evaluates a step
