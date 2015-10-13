@@ -51,6 +51,28 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you good thing!""") 
   }
   
+  """interpolate adjecent values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
+    interpolate("""Hey you ${property-0} ${property-1} thing!""") { property => 
+      property match {
+        case "id" => "0"
+        case "property-0" => "really"
+        case "property-1" => "good"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you really good thing!""") 
+  }
+  
+  """interpolate adjecent values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
+    interpolate("""Hey you ${property-0}${property-1} thing!""") { property => 
+      property match {
+        case "id" => "0"
+        case "property-0" => "go"
+        case "property-1" => "od"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you good thing!""") 
+  }
+  
   """interpolate using stepdef param syntax: prefix "$<param>"""" should "resolve" in {
     interpolate("""hello "$<param>"""") { param => "you" } should be ("""hello "you"""") 
   }
@@ -76,6 +98,28 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
       param match {
         case "<id>" => "0"
         case "<param-0>" => "good"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you good thing!""") 
+  }
+  
+  """interpolate stepdef with adjacent params: $<param-0> $<param-1>"""" should "resolve" in {
+    interpolate("""Hey you $<param-0> $<param-1> thing!""") { param => 
+      param match {
+        case "<id>" => "0"
+        case "<param-0>" => "really"
+        case "<param-1>" => "good"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you really good thing!""") 
+  }
+  
+  """interpolate stepdef with adjacent params (no space): $<param-0>$<param-1>"""" should "resolve" in {
+    interpolate("""Hey you $<param-0>$<param-1> thing!""") { param => 
+      param match {
+        case "<id>" => "0"
+        case "<param-0>" => "go"
+        case "<param-1>" => "od"
         case _ => "undefined"
       }
     } should be ("""Hey you good thing!""") 
