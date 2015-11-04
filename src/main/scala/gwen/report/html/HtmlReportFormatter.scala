@@ -130,7 +130,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           </li>
         </ul>
       </div>
-    </div>"""} else ""}${(result.spec.scenarios map(s => formatScenario(s, s.pos.line.toString, result.isMeta))).mkString}
+    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}", result.isMeta)}).mkString}
   </body>
 </html>
 """
@@ -153,7 +153,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       </ul>
       <div class="panel-body">${(scenario.background map { background => 
           val status = background.evalStatus.status
-          val backgroungId = s"${scenarioId}-${background.pos.line}"
+          val backgroundId = s"${scenarioId}-${background.pos.line}"
           s"""
         <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
           <ul class="list-group">
@@ -165,7 +165,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           </ul>
           <div class="panel-body">
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${(background.steps map { step => 
-                formatStepLine(step, step.evalStatus.status, s"${backgroungId}-${step.pos.line}", isMeta)}).mkString}
+                formatStepLine(step, step.evalStatus.status, s"${backgroundId}-${step.pos.line}", isMeta)}).mkString}
             </ul>
           </div>
         </div>"""}).getOrElse("")}
