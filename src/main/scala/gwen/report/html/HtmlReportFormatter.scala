@@ -320,7 +320,7 @@ trait HtmlReportFormatter extends ReportFormatter {
               <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
-                  <div class="line-no"><small>${step.pos.line}</small></div>
+                  <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
                   <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
                   ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}", isMeta)}).getOrElse("")}
                 </div>

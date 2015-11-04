@@ -46,6 +46,8 @@ libraryDependencies += "jline" % "jline" % "2.12.1"
 
 libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
 
+libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.2.2"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"

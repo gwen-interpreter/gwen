@@ -90,7 +90,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     if (options.parallel) {
       val results = featureStream.par.flatMap { unit =>
-        evaluateUnit(options, envOpt, reportGenerator, unit) { specs => 
+        evaluateUnit(options, envOpt, unit) { specs => 
           specs match { 
             case Nil => None
             case _ => Some(toFeatureResult(reportGenerator, specs))
@@ -102,7 +102,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       }
     } else {
       featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
-        evaluateUnit(options, envOpt, reportGenerator, unit) { specs =>
+        evaluateUnit(options, envOpt, unit) { specs =>
           specs match { 
             case Nil => summary
             case specs => 
@@ -118,7 +118,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
   
-  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], reportGenerator: Option[ReportGenerator], unit: FeatureUnit)(f: (List[FeatureSpec] => U)): U = {
+  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], unit: FeatureUnit)(f: (List[FeatureSpec] => U)): U = {
     logger.info(("""|       
                     |  _    
                     | { \," Evaluating feature..
@@ -127,7 +127,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
-      f(interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.tags, env))
+      f(interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.csvFile, options.tags, env))
     } finally {
       if (!envOpt.isDefined) { interpreter.close(env) }
     }

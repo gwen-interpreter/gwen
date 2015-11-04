@@ -37,6 +37,7 @@ import gwen.errors._
   * @param properties list of properties files to load into system properties
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
+  * @param csvFile option CSV file for data driven testing (must include column headers in 1st line)
   * @param metaFiles optional list of meta file overrides
   * @param features optional list of feature file and/or directory paths
   *    
@@ -49,6 +50,7 @@ case class GwenOptions(
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
+    csvFile: Option[File] = None,
     metaFiles: List[File] = Nil, 
     features: List[File] = Nil,
     args: Option[Array[String]] = None) {
@@ -124,6 +126,10 @@ object GwenOptions {
         (_, c) => c.copy(dryRun = true) 
       } text("Do not evaluate steps on engine (validate for correctness only)")
       
+      opt[File]('c', "csv-file") action {
+        (f, c) => c.copy(csvFile = Some(f)) 
+      } valueName("<csv file>") text("CSV file (with column headers) for data driven processing")
+      
       opt[String]('m', "meta") action {
         (ms, c) => 
           c.copy(metaFiles = ms.split(",").toList.map(new File(_)))
@@ -153,6 +159,7 @@ object GwenOptions {
         UserOverrides.addUserProperties(options.properties),
         options.tags,
         options.dryRun,
+        options.csvFile,
         UserOverrides.addUserMeta(options.metaFiles),
         options.features,
         Some(args)) 

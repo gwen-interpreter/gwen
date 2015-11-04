@@ -25,16 +25,27 @@ import gwen.eval.GwenOptions
 import gwen.dsl.Step
 import java.io.IOException
 import gwen.dsl.StepKeyword
+import gwen.Settings
 
 class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
-class TestEvalEngine extends SystemProcessSupport[TestEnvContext] {
+class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
   def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
 }
 
-class SystemProcessSupportTest extends FlatSpec with Matchers {
+class DefaultEngineSupportTest extends FlatSpec with Matchers {
 
   val engine = new TestEvalEngine
   val env = engine.init(new GwenOptions(), new ScopedDataStack())
+  
+  "Set attribute binding step" should "be successful" in {
+    engine.evaluate(Step(StepKeyword.Given, """my name is "Gwen""""), env)
+    env.featureScope.get("my name") should be ("Gwen")
+  }
+  
+  "Set global setting step" should "be successful" in {
+    engine.evaluate(Step(StepKeyword.Given, """my gwen.username setting is "Gwen""""), env)
+    Settings.get("gwen.username") should be ("Gwen")
+  }
   
   "Execute system process 'hostname'" should "be successful" in {
     engine.evaluate(Step(StepKeyword.Given, """I execute system process "hostname""""), env)

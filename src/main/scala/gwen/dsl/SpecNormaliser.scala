@@ -17,9 +17,9 @@
 package gwen.dsl
 
 import java.io.File
-
 import gwen.Predefs.Kestrel
 import gwen.errors._
+import com.github.tototoshi.csv.CSVReader
 
 /**
   * Normalises a parsed feature spec in preparation for 
@@ -33,12 +33,15 @@ trait SpecNormaliser {
     * Normalises a given [[gwen.dsl.FeatureSpec]].  If the feature has a 
     * background, then the  background is copied to each contained scenario and 
     * removed from the top level.  Positional information is preserved. The 
-    * source feature file is also bound (if provided).
+    * source feature file is also bound (if provided). If a CSV file is provided, 
+    * initialisation scenarios are created to initialse each row and the 
+    * entire feature replicated under each (inline data-driven approach). 
     * 
     * @param spec the feature spec
     * @param featureFile optional source feature file
+    * @param optional CSV file (containing column headers)
     */
-  def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = {
+  def normalise(spec: FeatureSpec, featureFile: Option[File], csvFile: Option[File]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
       if (scenario.isStepDef && featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)) {
         Scenario(scenario, featureFile)
@@ -49,19 +52,30 @@ trait SpecNormaliser {
     FeatureSpec(
       spec.feature, 
       None, 
-      spec.background match {
-        case None => scenarios
-        case Some(_) => 
-          scenarios map { scenario => 
-            Scenario(
-              scenario, 
-              if (scenario.isStepDef) None else spec.background, 
-              scenario.steps)
-          }
-      },
+      csvFile.map(dataScenarios(spec, scenarios, _)).getOrElse(featureScenarios(spec, scenarios)),
       featureFile
     )
   }
+  
+  private def dataScenarios(spec: FeatureSpec, scenarios: List[Scenario], csvFile: File): List[Scenario] =
+    CSVReader.open(csvFile).allWithHeaders.zipWithIndex.flatMap { case (data, idx) =>
+      val steps = data.zipWithIndex map { case ((name, value), idx) =>
+        val keyword = if (idx == 0) StepKeyword.Given else StepKeyword.And 
+        Step(keyword, s"""$name is "$value"""")
+      }
+      Scenario(Set(Tag("Dataset")), s"Initialise dataset: ${csvFile.getName()}[${idx + 1}]", None, steps.toList, None) :: featureScenarios(spec, scenarios)
+    } 
+    
+  private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {
+    case None => scenarios
+    case Some(_) => 
+      scenarios map { scenario => 
+        Scenario(
+          scenario, 
+          if (scenario.isStepDef) None else spec.background, 
+          scenario.steps)
+      }
+  }  
    
   /**
     * Returns the given scenarios if they contain no step definitions 

@@ -87,6 +87,13 @@
       http://www.apache.org/licenses/
       http://commons.apache.org/proper/commons-codecf/
       
+   scala-csv
+      Version 1.2.2
+      Copyright 2013-2015 Toshiyuki Takahashi
+      Apache License, Version 2.0
+      http://www.apache.org/licenses/
+      https://github.com/tototoshi/scala-csv
+      
    - Test Dependencies -
    
    scalatest
@@ -140,6 +147,8 @@
    ----------------------------------------------------------------------------
                                                                    play-json
                                                          scala-logging-slf4j
+                                                               commons-codec
+                                                                   scala-csv
    Apache License, Version 2.0                                     scalatest
    ----------------------------------------------------------------------------
    
