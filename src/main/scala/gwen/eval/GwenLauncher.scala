@@ -49,7 +49,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val start = System.nanoTime
     try {
-      FeatureStream.readAll(options.features) match {
+      FeatureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
           val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
           printSummaryStatus(summary)
@@ -93,7 +93,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         evaluateUnit(options, envOpt, unit) { specs => 
           specs match { 
             case Nil => None
-            case _ => Some(toFeatureResult(reportGenerator, specs))
+            case _ => Some(toFeatureResult(reportGenerator, specs, unit.dataRecord))
           }
         }
       }
@@ -106,7 +106,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           specs match { 
             case Nil => summary
             case specs => 
-              val result = toFeatureResult(reportGenerator, specs)
+              val result = toFeatureResult(reportGenerator, specs, unit.dataRecord)
               summary + result tap { accSummary =>
                 if (!options.parallel) {
                   reportGenerator foreach { _.reportSummary(interpreter, accSummary) }
@@ -127,14 +127,15 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
-      f(interpreter.interpretFeature(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), options.csvFile, options.tags, env))
+      val targetUnit = new FeatureUnit(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), unit.dataRecord)
+      f(interpreter.interpretFeature(targetUnit, options.tags, env))
     } finally {
       if (!envOpt.isDefined) { interpreter.close(env) }
     }
   }
     
-  private def toFeatureResult(reportGenerator: Option[ReportGenerator], specs: List[FeatureSpec]): FeatureResult = 
-    reportGenerator.map(_.reportDetail(interpreter, specs)).getOrElse(FeatureResult(specs.head, None, specs.map(FeatureResult(_, None, Nil)))) tap { result =>
+  private def toFeatureResult(reportGenerator: Option[ReportGenerator], specs: List[FeatureSpec], dataRecord: Option[DataRecord]): FeatureResult = 
+    reportGenerator.map(_.reportDetail(interpreter, specs, dataRecord)).getOrElse(FeatureResult(specs.head, None, specs.map(FeatureResult(_, None, Nil)))) tap { result =>
       val status = result.spec.evalStatus
       logger.info("");
       logger.info(s"${status} ${result.timestamp} ${status.emoticon}", status)

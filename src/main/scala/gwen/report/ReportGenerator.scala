@@ -20,14 +20,15 @@ import java.io.BufferedInputStream
 import java.io.File
 import scala.io.Source
 import scala.reflect.io.Path
+import com.typesafe.scalalogging.slf4j.LazyLogging
+import gwen.GwenInfo
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import gwen.eval.DataRecord
 
 /**
   * Base class for report generators.
@@ -56,11 +57,12 @@ class ReportGenerator (
     * 
     * @param info the gwen implementation info
     * @param specs the list of evaluated specs (head = feature spec, tail = meta specs)
+    * @param dataRecord optional data record
     * @return the reported feature result
     */
-  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec]): FeatureResult = {
+  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec], dataRecord: Option[DataRecord]): FeatureResult = {
     val (featureSpec::metaSpecs) = specs
-    val featureReportFile = createReportFile(createReportDir(reportDir, featureSpec), "", featureSpec)
+    val featureReportFile = createReportFile(createReportDir(reportDir, featureSpec, dataRecord), "", featureSpec)
     val metaResults = metaSpecs.zipWithIndex map { case (res, idx) => 
       (reportMetaDetail(info, res, featureReportFile, s"${"%04d".format(idx + 1)}-")) 
     }
@@ -114,11 +116,14 @@ class ReportGenerator (
       None
     }
    
-  private def createReportDir(baseDir: File, spec: FeatureSpec): File = spec.featureFile match {
-    case Some(file) =>
-      new File(Path(baseDir.getPath() + File.separator + encodeDir(file.getParent()) + File.separator + encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))).createDirectory().path)
-    case None => 
-      new File(Path(baseDir.getPath() + File.separator + encodeDir(spec.feature.name)).createDirectory().path)
+  private def createReportDir(baseDir: File, spec: FeatureSpec, dataRecord: Option[DataRecord]): File = {
+    val dataRecordDir = dataRecord.map(record => s"${"%04d".format(record.recordNo)}-").getOrElse("")
+    spec.featureFile match {
+      case Some(file) =>
+        file.toDir(baseDir, Some(dataRecordDir + FileIO.encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))))
+      case None => 
+        new File(Path(baseDir.getPath() + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)).createDirectory().path)
+    }
   }
   
   private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec): File =
@@ -130,9 +135,6 @@ class ReportGenerator (
     case None => 
       s"${spec.feature.name}.${fileExtension}"
   }
-  
-  private def encodeDir(dirpath: String): String = 
-    if (dirpath != null) dirpath.replaceAll("[/\\:\\\\]", "-") else "";
   
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>

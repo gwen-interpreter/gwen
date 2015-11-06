@@ -20,6 +20,7 @@ import java.io.File
 import gwen.Predefs.Kestrel
 import gwen.errors._
 import com.github.tototoshi.csv.CSVReader
+import gwen.eval.DataRecord
 
 /**
   * Normalises a parsed feature spec in preparation for 
@@ -39,9 +40,9 @@ trait SpecNormaliser {
     * 
     * @param spec the feature spec
     * @param featureFile optional source feature file
-    * @param optional CSV file (containing column headers)
+    * @param dataRecord optional feature level data record
     */
-  def normalise(spec: FeatureSpec, featureFile: Option[File], csvFile: Option[File]): FeatureSpec = {
+  def normalise(spec: FeatureSpec, featureFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
       if (scenario.isStepDef && featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)) {
         Scenario(scenario, featureFile)
@@ -50,21 +51,21 @@ trait SpecNormaliser {
       }
     }
     FeatureSpec(
-      spec.feature, 
+      dataRecord.map(record => Feature(spec.feature.tags, s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}", spec.feature.narrative)).getOrElse(spec.feature), 
       None, 
-      csvFile.map(dataScenarios(spec, scenarios, _)).getOrElse(featureScenarios(spec, scenarios)),
+      dataRecord.map(dataScenarios(spec, scenarios, _)).getOrElse(featureScenarios(spec, scenarios)),
       featureFile
     )
   }
   
-  private def dataScenarios(spec: FeatureSpec, scenarios: List[Scenario], csvFile: File): List[Scenario] =
-    CSVReader.open(csvFile).allWithHeaders.zipWithIndex.flatMap { case (data, idx) =>
-      val steps = data.zipWithIndex map { case ((name, value), idx) =>
-        val keyword = if (idx == 0) StepKeyword.Given else StepKeyword.And 
-        Step(keyword, s"""$name is "$value"""")
-      }
-      Scenario(Set(Tag("Dataset")), s"Initialise dataset: ${csvFile.getName()}[${idx + 1}]", None, steps.toList, None) :: featureScenarios(spec, scenarios)
-    } 
+  private def dataScenarios(spec: FeatureSpec, scenarios: List[Scenario], dataRecord: DataRecord): List[Scenario] = {
+    val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
+      val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
+      Step(keyword, s"""$name is "$value"""")
+    }
+    val tags = Set(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
+    Scenario(tags, s"Bind data attributes", None, steps.toList, None) :: featureScenarios(spec, scenarios)
+  }
     
   private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {
     case None => scenarios

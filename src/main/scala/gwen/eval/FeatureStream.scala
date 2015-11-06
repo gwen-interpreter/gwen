@@ -42,11 +42,12 @@ object FeatureStream extends LazyLogging {
     * 
     * @param locations the list of file system locations to read; each location is either a  
     *        feature file or a directory
+    * @param dataFile optional data file (for data driven execution)
     * @return a stream of nested streams (one nested stream per given location)
     */
-  def readAll(locations: List[File]): Stream[Stream[FeatureUnit]] = locations.foldLeft(Stream[Stream[FeatureUnit]]()) { 
+  def readAll(locations: List[File], dataFile: Option[File]): Stream[Stream[FeatureUnit]] = locations.foldLeft(Stream[Stream[FeatureUnit]]()) { 
     (suites: Stream[Stream[FeatureUnit]], location: File) => {
-      suites #::: Stream(read(location)) 
+      suites #::: Stream(read(location, dataFile)) 
     }
   } 
   
@@ -54,16 +55,17 @@ object FeatureStream extends LazyLogging {
     * Reads and streams features from a single file system location.
     *
     * @param location a file system location to read
+    * @param dataFile optional data file (for data driven execution)
     * @return a stream of [FeatureUnit]s found at the location
     */
-  def read(location: File): Stream[FeatureUnit] = {
+  def read(location: File, dataFile: Option[File]): Stream[FeatureUnit] = {
       val metas = 
         if (location.getParentFile() == null) {
           accumulateMeta(location.getAbsoluteFile().getParentFile(), Nil)
         } else {
           accumulateParentMeta(location.getParentFile(), Nil).reverse
         }
-      deepRead(location, metas)
+      deepRead(location, metas, dataFile)
   }
   
   /**
@@ -71,16 +73,21 @@ object FeatureStream extends LazyLogging {
     *
     * @param location a file system location to read
     * @param metaFiles optionally accumulated meta files (default is Nil)
+    * @param dataFile optional data file (for data driven execution)
     * @return a stream of [FeatureUnit]s found at the location
     */
-  private def deepRead(location: File, metaFiles: List[File] = Nil): Stream[FeatureUnit] = {
+  private def deepRead(location: File, metaFiles: List[File] = Nil, dataFile: Option[File]): Stream[FeatureUnit] = {
     if (isDirectory(location)) {
       val metas = accumulateMeta(location, metaFiles)
-      location.listFiles().toStream.flatMap(deepRead(_, metas)) 
+      location.listFiles().toStream.flatMap(deepRead(_, metas, dataFile)) 
     } else if (isFeatureFile(location)) {
-      Stream(new FeatureUnit(location, metaFiles) tap { unit =>
-        logger.info(s"Found $unit")
-      }) 
+      val unit = new FeatureUnit(location, metaFiles, None)
+      dataFile match {
+        case Some(file) => new FeatureSet(unit, file).toStream
+        case None =>
+          logger.info(s"Found $unit")
+          Stream(unit)
+      }
     } else {
       if (!isMetaFile(location)) {
         logger.debug(s"Ignoring file: $location")

@@ -20,6 +20,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.AmbiguousCaseException
 import java.io.File
+import gwen.eval.DataRecord
 
 class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   
@@ -100,43 +101,27 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   }
   
   "Data driven feature with csv file" should "normalise without error" in {
-    val csvFile = new File(getClass().getResource("/data-driven.csv").getFile())
     val feature = FeatureSpec(
-    Feature("feature1", Nil), None, List(
-      Scenario(Set[Tag](), "scenario1", None, List(
-        Step(StepKeyword.Given, "I am a ${My Title}"),
-        Step(StepKeyword.And, "I am a ${My Gender}"),
-        Step(StepKeyword.And, "I am ${My Age} year(s) old"))
+    Feature("About me", Nil), None, List(
+      Scenario(Set[Tag](), "What am I?", None, List(
+        Step(StepKeyword.Given, "I am ${my age} year(s) old"),
+        Step(StepKeyword.When, "I am a ${my gender}"),
+        Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
       )))
-    val result = normalise(feature, None, Some(csvFile))
-    result.scenarios.length should be (6)
-    result.scenarios(0).tags.contains(Tag("Dataset"))
-    result.scenarios(0).name should be ("Initialise dataset: data-driven.csv[1]")
-    result.scenarios(0).steps(0).toString should be ("""Given My Title is "Mr"""")
-    result.scenarios(0).steps(1).toString should be ("""And My Gender is "Male"""")
-    result.scenarios(0).steps(2).toString should be ("""And My Age is "18"""")
-    result.scenarios(1).name should be ("scenario1")
-    result.scenarios(1).steps(0).toString should be ("Given I am a ${My Title}")
-    result.scenarios(1).steps(1).toString should be ("And I am a ${My Gender}")
-    result.scenarios(1).steps(2).toString should be ("And I am ${My Age} year(s) old")
-    result.scenarios(2).tags.contains(Tag("Dataset"))
-    result.scenarios(2).name should be ("Initialise dataset: data-driven.csv[2]")
-    result.scenarios(2).steps(0).toString should be ("""Given My Title is "Mrs"""")
-    result.scenarios(2).steps(1).toString should be ("""And My Gender is "Female"""")
-    result.scenarios(2).steps(2).toString should be ("""And My Age is "18"""")
-    result.scenarios(3).name should be ("scenario1")
-    result.scenarios(3).steps(0).toString should be ("Given I am a ${My Title}")
-    result.scenarios(3).steps(1).toString should be ("And I am a ${My Gender}")
-    result.scenarios(3).steps(2).toString should be ("And I am ${My Age} year(s) old")
-    result.scenarios(4).tags.contains(Tag("Dataset"))
-    result.scenarios(4).name should be ("Initialise dataset: data-driven.csv[3]")
-    result.scenarios(4).steps(0).toString should be ("""Given My Title is "Miss"""")
-    result.scenarios(4).steps(1).toString should be ("""And My Gender is "Female"""")
-    result.scenarios(4).steps(2).toString should be ("""And My Age is "22"""")
-    result.scenarios(5).name should be ("scenario1")
-    result.scenarios(5).steps(0).toString should be ("Given I am a ${My Title}")
-    result.scenarios(5).steps(1).toString should be ("And I am a ${My Gender}")
-    result.scenarios(5).steps(2).toString should be ("And I am ${My Age} year(s) old")
+    val data = Map("my age" -> "18", "my gender" -> "male", "my title" -> "Mr")
+    val dataRecord = new DataRecord("AboutMe.csv", 1, data)
+    val result = normalise(feature, None, Some(dataRecord))
+    result.feature.name should be ("About me, [1] my age=18..")
+    result.scenarios.length should be (2)
+    result.scenarios(0).tags should be (Set(Tag("""Data(file="AboutMe.csv", record=1)""")))
+    result.scenarios(0).name should be ("Bind data attributes")
+    result.scenarios(0).steps(0).toString should be ("""Given my age is "18"""")
+    result.scenarios(0).steps(1).toString should be ("""And my gender is "male"""")
+    result.scenarios(0).steps(2).toString should be ("""And my title is "Mr"""")
+    result.scenarios(1).name should be ("What am I?")
+    result.scenarios(1).steps(0).toString should be ("""Given I am ${my age} year(s) old""")
+    result.scenarios(1).steps(1).toString should be ("""When I am a ${my gender}""")
+    result.scenarios(1).steps(2).toString should be ("""Then I am a ${my age} year old ${my title}""")
   }
   
 }

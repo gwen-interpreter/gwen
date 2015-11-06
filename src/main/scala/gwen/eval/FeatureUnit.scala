@@ -23,5 +23,18 @@ import java.io.File
   * 
   * @param featureFile the feature file
   * @param metaFiles the associated meta files (if any)
+  * @param dataRecord optional data record
   */
-case class FeatureUnit(featureFile: File, metaFiles: List[File])
+case class FeatureUnit(featureFile: File, metaFiles: List[File], dataRecord: Option[DataRecord])
+
+/**
+  * Captures a data record used to initialise feature level data bindings
+  * 
+  *  @param dataFileName the name of the source data file
+  *  @param recordNo the current data record number
+  *  @param data the current data  
+  */
+class DataRecord(val dataFilePath: String, val recordNo: Int, val data: Map[String, String]) {
+  override def toString = s"DataRecord(${dataFilePath}[$recordNo])"
+}
+

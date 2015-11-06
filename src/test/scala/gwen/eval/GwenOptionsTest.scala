@@ -174,17 +174,17 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
   }
   
-  "Options with csv option and csv file" should "parse" in {
-    parseOptions(Array("-c", "file.csv")) match {
+  "Options with data file option and csv file" should "parse" in {
+    parseOptions(Array("-d", "file.csv")) match {
       case Success(options) => {
-        assertOptions(options, csvFile = Some(new File("file.csv")))
+        assertOptions(options, dataFile = Some(new File("file.csv")))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--csv-file", "file.csv")) match {
+    parseOptions(Array("--data-file", "file.csv")) match {
       case Success(options) => {
-        assertOptions(options, csvFile = Some(new File("file.csv")))
+        assertOptions(options, dataFile = Some(new File("file.csv")))
       }
       case _ =>
         fail("expected options but failed")
@@ -578,14 +578,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     val reportDir = new File("target/report")
     val propsFile = createFile("gwen-1.properties")
-    val csvFile = createFile("gwen-1.csv")
+    val dataFile = createFile("gwen-1.csv")
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val metaFile = createFile("gwen.meta")
     val dir5 = createDir("dir5");
     val feature5 = createFile("dir5/file5.feature");
     val dir6 = createDir("dir6");
     
-    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-c", csvFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-d", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -595,7 +595,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           false,
-          Some(csvFile),
+          Some(dataFile),
           List(metaFile),
           List(dir5, feature5, dir6))
       }
@@ -603,7 +603,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected options but failed")
     }
     
-    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--csv-file", csvFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--data-file", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -613,7 +613,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           false,
-          Some(csvFile),
+          Some(dataFile),
           List(metaFile),
           List(dir5, feature5, dir6))
       }
@@ -635,7 +635,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
-    csvFile: Option[File] = None,
+    dataFile: Option[File] = None,
     metaFiles: List[File] = Nil, 
     features: List[File] = Nil) {
     
@@ -645,7 +645,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.properties should be (UserOverrides.addUserProperties(properties))
     options.tags should be (tags)
     options.dryRun should be (dryRun)
-    options.csvFile should be (csvFile)
+    options.dataFile should be (dataFile)
     options.metaFiles should be (UserOverrides.addUserMeta(metaFiles))
     options.features should be (features)
     

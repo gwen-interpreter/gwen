@@ -92,7 +92,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     </ol>
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
-        <span><p>${escape(result.spec.feature.tags.mkString(" "))}</p></span>""" else ""}
+        <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
         <span class="label label-black">Feature</span>
         <span class="pull-right"><small>${durationOrStatus(result.spec.evalStatus)}</small></span>
         ${escape(result.spec.feature.name)}${if (!result.spec.feature.narrative.isEmpty) s"""
@@ -130,13 +130,13 @@ trait HtmlReportFormatter extends ReportFormatter {
           </li>
         </ul>
       </div>
-    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}", result.isMeta)}).mkString}
+    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}")}).mkString}
   </body>
 </html>
 """
   }
   
-  private def formatScenario(scenario: Scenario, scenarioId: String, isMeta: Boolean): String = {
+  private def formatScenario(scenario: Scenario, scenarioId: String): String = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
     val tags = scenario.tags.filter(_ != Tag.StepDefTag )
@@ -144,11 +144,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
-          <span><p class="text-${cssStatus(status)}">${escape(tags.mkString(" "))}</p></span>""" else ""}
+          <span class="grayed"><p><small>${escape(tags.mkString(" "))}</small></p></span>""" else ""}
           <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if (scenario.allSteps.size > 1) s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
-          ${escape(scenario.name)} ${if(!isMeta) s"""
-          <br>${scenario.metaFile.map(f => s"""<span class="grayed"><small>${escape(f.getPath)}</small></span>""").getOrElse("")}""" else ""}
+          ${escape(scenario.name)}
         </li>
       </ul>
       <div class="panel-body">${(scenario.background map { background => 
@@ -165,13 +164,13 @@ trait HtmlReportFormatter extends ReportFormatter {
           </ul>
           <div class="panel-body">
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${(background.steps map { step => 
-                formatStepLine(step, step.evalStatus.status, s"${backgroundId}-${step.pos.line}", isMeta)}).mkString}
+                formatStepLine(step, step.evalStatus.status, s"${backgroundId}-${step.pos.line}")}).mkString}
             </ul>
           </div>
         </div>"""}).getOrElse("")}
         <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
           <ul class="list-group">${(scenario.steps map { step => 
-            formatStepLine(step, step.evalStatus.status, s"${scenarioId}-${step.pos.line}", isMeta)}).mkString}
+            formatStepLine(step, step.evalStatus.status, s"${scenarioId}-${step.pos.line}")}).mkString}
           </ul>
         </div>
       </div>
@@ -316,13 +315,13 @@ trait HtmlReportFormatter extends ReportFormatter {
                   </div>
                 </div>"""
 
-  private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String, isMeta: Boolean): String = s"""
+  private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String): String = s"""
               <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
                   <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
-                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}", isMeta)}).getOrElse("")}
+                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && !step.stepDef.isDefined) s"""
                 <ul>
@@ -337,9 +336,9 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
     s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(step.expression)}</a>"""
                   
-  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String, isMeta: Boolean): String = s"""
-                  <div id="${stepDefId}" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (!isMeta) """style="padding-left: 40px;"""" else ""}>
-                  ${formatScenario(stepDef, stepDefId, isMeta)}
+  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = s"""
+                  <div id="${stepDefId}" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (stepDef.metaFile.isEmpty) """style="padding-left: 40px;"""" else ""}>
+                  ${formatScenario(stepDef, stepDefId)}
                   </div>"""
     
   private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value) = s"""

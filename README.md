@@ -71,6 +71,7 @@ Key Features
 - Serial and parallel execution
 - Tagged features and scenarios
 - Design time validation (--dry-run mode)
+- Data driven exeuction (csv files)
 
 Core Requirements
 -----------------
