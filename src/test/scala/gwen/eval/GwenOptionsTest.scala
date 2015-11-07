@@ -175,19 +175,29 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   "Options with CSV input data file" should "parse" in {
-    parseOptions(Array("-i", "data.csv")) match {
+    createFile("data.csv")
+    parseOptions(Array("-i", "target/props/data.csv")) match {
       case Success(options) => {
-        assertOptions(options, dataFile = Some(new File("data.csv")))
+        assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--input-data", "data.csv")) match {
+    parseOptions(Array("--input-data", "target/props/data.csv")) match {
       case Success(options) => {
-        assertOptions(options, dataFile = Some(new File("data.csv")))
+        assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
       case _ =>
         fail("expected options but failed")
+    }
+  }
+  
+  "Options with non existing CSV input data file" should "error" in {
+    parseOptions(Array("-i", "missing.csv")) match {
+      case Success(options) => {
+        fail("missing csv file should result in error")
+      }
+      case _ =>
     }
   }
   

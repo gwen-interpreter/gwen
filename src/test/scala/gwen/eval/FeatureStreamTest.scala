@@ -354,7 +354,7 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   }
   
   private def createDataFile(filepath: String): File = createFile(filepath) tap { file => 
-	file.writeText("col1,col1\ndata1,data2");
+    file.writeText("col1,col1\ndata1,data2");
   }
   
   private def createDir(dirname: String): File = {
