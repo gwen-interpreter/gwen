@@ -62,7 +62,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature1, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature1, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -84,7 +84,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature2, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature2, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -114,7 +114,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val metas = UserOverrides.addUserMeta(List(meta3))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, metas, Nil, mockEnv)).thenReturn(List(feature))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -145,7 +145,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature3, UserOverrides.addUserMeta(options.metaFiles), Nil, mockEnv)).thenReturn(List(feature))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, UserOverrides.addUserMeta(options.metaFiles), None), Nil, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -174,7 +174,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature4, UserOverrides.addUserMeta(List(meta4)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature4, UserOverrides.addUserMeta(List(meta4)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     try {
       launcher(mockInterpreter).run(options, Some(mockEnv))
@@ -207,7 +207,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature5, UserOverrides.addUserMeta(List(meta5)), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature5, UserOverrides.addUserMeta(List(meta5)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
 
@@ -254,9 +254,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     when(mockInterpreter.implName).thenReturn("gwen")
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature6a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature6A))
-    when(mockInterpreter.interpretFeature(feature6b, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature6B))
-    when(mockInterpreter.interpretFeature(feature7a, UserOverrides.addUserMeta(Nil), Nil, mockEnv)).thenReturn(List(feature7A))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(List(feature6A))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6b, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(List(feature6B))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature7a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(List(feature7A))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -285,7 +285,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(feature8, UserOverrides.addUserMeta(Nil), tagFilters, mockEnv)).thenReturn(List(feature))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature8, UserOverrides.addUserMeta(Nil), None), tagFilters, mockEnv)).thenReturn(List(feature))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     

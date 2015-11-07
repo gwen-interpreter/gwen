@@ -71,6 +71,7 @@ Key Features
 - Serial and parallel execution
 - Tagged features and scenarios
 - Design time validation (--dry-run mode)
+- Data driven execution (csv data feeds)
 
 Core Requirements
 -----------------
@@ -181,6 +182,19 @@ all existing meta files in the feature file's path are discovered and loaded
 first. Any number of files or directories can be passed to gwen in a 
 single call for sequential or parallel execution. Tags can also be passed to 
 include and exclude features and scenarios annotated with those tags.
+
+### Data Driven Execution
+
+Data files (CSV) can also be passed into the interpreter to perform feature 
+execution over multiple data sets. If a data files exists in a feature 
+file's directory (or somewhere in it's path) it will be automatically 
+discovered and used to execute the feature over each of its data records. 
+Only one such CSV file is allowed (a runtime error will be thrown if more 
+than one anywhere in the path is found). The first row in a CSV data file 
+must be a list of column names for the contained data that follows. The 
+values in each record will be bound to attributes in the feature scope 
+having these same names. Feature steps can reference the bound data using 
+these names.   
 
 ***
 

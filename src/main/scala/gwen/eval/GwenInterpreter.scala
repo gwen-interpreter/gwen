@@ -106,24 +106,25 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   /**
     * Interprets an incoming feature.
     *
-    * @param featureFile the feature file
-    * @param metaFiles the meta files to load
+    * @param featureUnit the feature unit to execute
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
     * @return the evaluated feature or nothing if the feature does not 
     *         satisfy specified tag filters
     * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
-  private[eval] def interpretFeature(featureFile: File, metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = {
+  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = {
+    val featureFile = unit.featureFile 
+    val dataRecord = unit.dataRecord 
     parseAll(spec, Source.fromFile(featureFile).mkString) match {
       case success @ Success(featureSpec, _) =>
         if (featureFile.getName().endsWith(".meta")) {
-          evaluateFeature(normalise(featureSpec, Some(featureFile)), Nil, env)
+          evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env)
         } else {
           TagsFilter.filter(featureSpec, tagFilters) match {
             case Some(fspec) =>
-              val metaResults = loadMeta(metaFiles, tagFilters, env)
-              evaluateFeature(normalise(fspec, Some(featureFile)), metaResults, env)
+              val metaResults = loadMeta(unit.metaFiles, tagFilters, env)
+              evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env)
             case None => 
               logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
               Nil
@@ -243,7 +244,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] =
     metaFiles flatMap { metaFile =>
       env.specType = SpecType.meta
-      interpretFeature(metaFile, Nil, tagFilters, env) tap { metas =>
+      interpretFeature(new FeatureUnit(metaFile, Nil, None), tagFilters, env) tap { metas =>
         metas match {
           case meta::Nil =>
             meta.evalStatus match {

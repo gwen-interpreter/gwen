@@ -35,6 +35,7 @@ import gwen.eval.support.InterpolationSupport
 import gwen.errors._
 import gwen.Settings
 import scala.util.Try
+import gwen.dsl.Tag
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -103,7 +104,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param stepDef the step definition to add
     */
   def addStepDef(stepDef: Scenario) {
-    stepDefs += ((stepDef.name, stepDef)) 
+    val tags = stepDef.metaFile.map(meta => stepDef.tags + Tag(s"""Meta("${meta.getPath()}")""")).getOrElse(stepDef.tags)
+    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.background, stepDef.steps, stepDef.metaFile))) 
   }
   
   /**

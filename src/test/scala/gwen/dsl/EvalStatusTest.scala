@@ -60,7 +60,7 @@ Background: The tester
     
     // setup
     
-    val featureSpec = normalise(parse(featureString).get)
+    val featureSpec = normalise(parse(featureString).get, None, None)
     
     // assert
     
@@ -81,7 +81,7 @@ Background: The tester
     
     // setup
     
-    var featureSpec = normalise(parse(featureString).get)
+    var featureSpec = normalise(parse(featureString).get, None, None)
     
     featureSpec = FeatureSpec(
       featureSpec.feature,
@@ -117,7 +117,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString())
-    var featureSpec = normalise(parse(featureString).get)
+    var featureSpec = normalise(parse(featureString).get, None, None)
     
     featureSpec = FeatureSpec(
       featureSpec.feature,
@@ -177,7 +177,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString())
-    var featureSpec = normalise(parse(featureString).get)
+    var featureSpec = normalise(parse(featureString).get, None, None)
     
     featureSpec = FeatureSpec(
       featureSpec.feature,
@@ -237,7 +237,7 @@ Background: The tester
     // setup 
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get)
+    var featureSpec = normalise(parse(featureString).get, None, None)
     
     featureSpec = FeatureSpec(
       featureSpec.feature,
@@ -304,7 +304,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get)
+    var featureSpec = normalise(parse(featureString).get, None, None)
     
     featureSpec = FeatureSpec(
       featureSpec.feature,

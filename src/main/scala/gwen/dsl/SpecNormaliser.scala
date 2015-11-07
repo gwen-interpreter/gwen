@@ -17,9 +17,10 @@
 package gwen.dsl
 
 import java.io.File
-
 import gwen.Predefs.Kestrel
 import gwen.errors._
+import com.github.tototoshi.csv.CSVReader
+import gwen.eval.DataRecord
 
 /**
   * Normalises a parsed feature spec in preparation for 
@@ -33,12 +34,15 @@ trait SpecNormaliser {
     * Normalises a given [[gwen.dsl.FeatureSpec]].  If the feature has a 
     * background, then the  background is copied to each contained scenario and 
     * removed from the top level.  Positional information is preserved. The 
-    * source feature file is also bound (if provided).
+    * source feature file is also bound (if provided). If a CSV file is provided, 
+    * initialisation scenarios are created to initialse each row and the 
+    * entire feature replicated under each (inline data-driven approach). 
     * 
     * @param spec the feature spec
     * @param featureFile optional source feature file
+    * @param dataRecord optional feature level data record
     */
-  def normalise(spec: FeatureSpec, featureFile: Option[File] = None): FeatureSpec = {
+  def normalise(spec: FeatureSpec, featureFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
       if (scenario.isStepDef && featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)) {
         Scenario(scenario, featureFile)
@@ -47,21 +51,32 @@ trait SpecNormaliser {
       }
     }
     FeatureSpec(
-      spec.feature, 
+      dataRecord.map(record => Feature(spec.feature.tags, s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}", spec.feature.narrative)).getOrElse(spec.feature), 
       None, 
-      spec.background match {
-        case None => scenarios
-        case Some(_) => 
-          scenarios map { scenario => 
-            Scenario(
-              scenario, 
-              if (scenario.isStepDef) None else spec.background, 
-              scenario.steps)
-          }
-      },
+      dataRecord.map(dataScenarios(spec, scenarios, _)).getOrElse(featureScenarios(spec, scenarios)),
       featureFile
     )
   }
+  
+  private def dataScenarios(spec: FeatureSpec, scenarios: List[Scenario], dataRecord: DataRecord): List[Scenario] = {
+    val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
+      val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
+      Step(keyword, s"""$name is "$value"""")
+    }
+    val tags = Set(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
+    Scenario(tags, s"Bind data attributes", None, steps.toList, None) :: featureScenarios(spec, scenarios)
+  }
+    
+  private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {
+    case None => scenarios
+    case Some(_) => 
+      scenarios map { scenario => 
+        Scenario(
+          scenario, 
+          if (scenario.isStepDef) None else spec.background, 
+          scenario.steps)
+      }
+  }  
    
   /**
     * Returns the given scenarios if they contain no step definitions 

@@ -837,6 +837,8 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<features>]
         Comma separated list of @include or ~@exclude tags
   -n | --dry-run
         Do not evaluate steps on engine (validate for correctness only)
+  -i <input data file> | --input-data <input data file>
+        Input data (CSV file with column headers)
   -m <meta files> | --meta <meta files>
         Comma separated list of meta file paths
   <features>

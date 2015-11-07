@@ -22,22 +22,32 @@ import gwen.Predefs.RegexContext
 import gwen.dsl.Step
 import gwen.eval.EnvContext
 import gwen.errors._
+import gwen.Settings
 
-/** Can be mixed into evaluation engines to provide system process support. */
-trait SystemProcessSupport[T <: EnvContext] {
+/** Provides the common default steps that all engines can support. */
+trait DefaultEngineSupport[T <: EnvContext] {
 
   /**
-    * Defines steps to perform system processes.
+    * Defines the default steps supported by all engines.
     *
     * @param step the step to evaluate
     * @param env the environment context
-    * @throws gwen.errors.SystemProcessException if the system process fails
-    *         to execute
     * @throws gwen.errors.UndefinedStepException if the given step is undefined
     *         or unsupported
     */
   def evaluate(step: Step, env: T): Unit = {
     step.expression match {
+
+      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
+        Settings.add(name, value)
+        
+      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" => 
+        env.featureScope.set(attribute, value)
+      
+      case r"""I wait ([0-9]+?)$duration second(?:s?)""" => env.execute {
+        Thread.sleep(duration.toLong * 1000)
+      }
+      
       case r"""I execute system process "(.+?)"$$$systemproc""" => env.execute {
         systemproc.! match {
           case 0 => 
@@ -50,7 +60,9 @@ trait SystemProcessSupport[T <: EnvContext] {
           case _ => systemProcessError(s"The call to $systemproc has failed.")
         }
       }
+      
       case _ => undefinedStepError(step)
+      
     }
   }
   
