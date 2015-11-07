@@ -126,9 +126,9 @@ object GwenOptions {
         (_, c) => c.copy(dryRun = true) 
       } text("Do not evaluate steps on engine (validate for correctness only)")
       
-      opt[File]('d', "data-file") action {
+      opt[File]('i', "input-data") action {
         (f, c) => c.copy(dataFile = Some(f)) 
-      } valueName("<data file>") text("CSV file (with column headers) for data driven execution")
+      } valueName("<input data file>") text("Input data (CSV file with column headers)")
       
       opt[String]('m', "meta") action {
         (ms, c) => 

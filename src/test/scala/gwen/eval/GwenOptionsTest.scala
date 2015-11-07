@@ -174,17 +174,17 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
   }
   
-  "Options with data file option and csv file" should "parse" in {
-    parseOptions(Array("-d", "file.csv")) match {
+  "Options with CSV input data file" should "parse" in {
+    parseOptions(Array("-i", "data.csv")) match {
       case Success(options) => {
-        assertOptions(options, dataFile = Some(new File("file.csv")))
+        assertOptions(options, dataFile = Some(new File("data.csv")))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--data-file", "file.csv")) match {
+    parseOptions(Array("--input-data", "data.csv")) match {
       case Success(options) => {
-        assertOptions(options, dataFile = Some(new File("file.csv")))
+        assertOptions(options, dataFile = Some(new File("data.csv")))
       }
       case _ =>
         fail("expected options but failed")
@@ -585,7 +585,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val feature5 = createFile("dir5/file5.feature");
     val dir6 = createDir("dir6");
     
-    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-d", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-i", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -603,7 +603,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected options but failed")
     }
     
-    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--data-file", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,

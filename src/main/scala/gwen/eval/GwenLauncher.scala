@@ -128,6 +128,11 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
       val targetUnit = new FeatureUnit(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), unit.dataRecord)
+      unit.dataRecord foreach { record =>
+        record.data foreach { case (name, value) =>
+          env.featureScope.set(name, value)
+        }
+      }
       f(interpreter.interpretFeature(targetUnit, options.tags, env))
     } finally {
       if (!envOpt.isDefined) { interpreter.close(env) }

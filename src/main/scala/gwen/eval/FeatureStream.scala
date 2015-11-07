@@ -59,13 +59,15 @@ object FeatureStream extends LazyLogging {
     * @return a stream of [FeatureUnit]s found at the location
     */
   def read(location: File, dataFile: Option[File]): Stream[FeatureUnit] = {
-      val metas = 
+      val inputs = 
         if (location.getParentFile() == null) {
-          accumulateMeta(location.getAbsoluteFile().getParentFile(), Nil)
+          discoverInputs(location.getAbsoluteFile().getParentFile(), (Nil, dataFile))
         } else {
-          accumulateParentMeta(location.getParentFile(), Nil).reverse
+          discoverInputsInPath(location.getParentFile(), (Nil, dataFile)) match { 
+            case (metas, data) => (metas.reverse, data) 
+          }
         }
-      deepRead(location, metas, dataFile)
+      deepRead(location, inputs._1, inputs._2)
   }
   
   /**
@@ -78,8 +80,8 @@ object FeatureStream extends LazyLogging {
     */
   private def deepRead(location: File, metaFiles: List[File] = Nil, dataFile: Option[File]): Stream[FeatureUnit] = {
     if (isDirectory(location)) {
-      val metas = accumulateMeta(location, metaFiles)
-      location.listFiles().toStream.flatMap(deepRead(_, metas, dataFile)) 
+      val inputs = discoverInputs(location, (metaFiles, dataFile))
+      location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
       val unit = new FeatureUnit(location, metaFiles, None)
       dataFile match {
@@ -97,40 +99,51 @@ object FeatureStream extends LazyLogging {
   }
   
   /**
-    * Scans for a meta file in the specified directory and appends it to the 
-    * currently accumulated list of meta files if found. An error is thrown if more 
-    * than one meta file is found in the specifid directory.
+    * Scans for a meta and data files in the specified directory.
     * 
     * @param dir the directory to scan for meta
-    * @param metaFiles the currently accumulated list of meta files
-    * @throws gwen.errors.AmbiguousCaseException if more than one meta file is found
-    *         in the given directory
+    * @param inputs tuple of accumulated meta files and one optional data file
+    * @throws gwen.errors.AmbiguousCaseException if more than one meta or data 
+    *         file is found in the given directory or more than one data file is 
+    *         found in the directory path.
     */
-  private def accumulateMeta(dir: File, metaFiles: List[File]): List[File] = { 
+  private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
+    val (metaFiles, dataFile) = inputs
     val metas = dir.listFiles.filter(isMetaFile).toList
-    metas match {
-      case metaFile :: Nil =>
-        metaFiles ::: List(metaFile)
+    val inputs1 = metas match {
+      case metaFile :: Nil => (metaFiles ::: List(metaFile), dataFile)
       case _ :: _ => 
-        ambiguousCaseError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} directory but found ${metas.size}")
-      case _ => metaFiles
+        ambiguousCaseError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} but found ${metas.size}")
+      case _ => (metaFiles, dataFile)
     }
+    val datas = dir.listFiles.filter(isDataFile).toList
+    datas match {
+      case Nil => inputs1
+      case data :: Nil if (dataFile.isEmpty || dataFile.get.getCanonicalPath().equals(data.getCanonicalPath())) => (inputs1._1, Some(data))
+      case _ => 
+        dataFile match { 
+          case Some(data) =>
+            ambiguousCaseError(s"Ambiguous: found data file(s) in ${dir.getName()} path but already got data file ${data.getPath}")
+           case _ => ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} path but found ${datas.size}")
+        }
+       }
   }
   
   /**
-    * Scans for a meta file up the parent hierarchy starting from the given directory.
+    * Scans for data and meta files in the parent hierarchy starting from the 
+    * given directory.
     * 
-    * @param dir the directory to scan for meta from
-    * @param metaFiles the currently accumulated list of meta files
+    * @param dir the directory to scan from
+    * @param inputs tuple of accumulated meta files and one optional data file
     */
   @tailrec
-  private def accumulateParentMeta(dir: File, metaFiles: List[File]): List[File] = { 
+  private def discoverInputsInPath(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = { 
     val hasParentDir = hasParentDirectory(dir) 
     if (!hasParentDir) {
-      accumulateMeta(dir, metaFiles)
+      discoverInputs(dir, inputs)
     } else {
       val parent = dir.getParentFile
-      accumulateParentMeta(parent, accumulateMeta(dir, metaFiles))
+      discoverInputsInPath(parent, discoverInputs(dir, inputs))
     }
   }
   
@@ -138,6 +151,7 @@ object FeatureStream extends LazyLogging {
   private def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile())
   private def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
   private def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
+  private def isDataFile(file: File): Boolean = hasFileExtension("csv", file)
   private def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName().endsWith(s".${extension}")
 }
 
