@@ -126,10 +126,10 @@ object GwenOptions {
         (_, c) => c.copy(dryRun = true) 
       } text("Do not evaluate steps on engine (validate for correctness only)")
       
-      opt[String]('i', "input-data") action {
-        (d, c) => c.copy(dataFile = Some(new File(d)))
+      opt[File]('i', "input-data") action {
+        (d, c) => c.copy(dataFile = Some(d))
       } validate { d => 
-        if (!(new File(d).exists)) failure(s"Specified data file not found: $d")
+        if (!(d.exists)) failure(s"Specified data file not found: $d")
         else success
       } valueName("<input data file>") text("Input data (CSV file with column headers)")
       
