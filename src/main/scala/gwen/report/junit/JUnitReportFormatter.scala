@@ -1,0 +1,100 @@
+/*
+ * Copyright 2015 Branko Juric, Brady Wood
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package gwen.report.html
+
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import scala.concurrent.duration.Duration
+import gwen.dsl.DurationFormatter
+import gwen.dsl.EvalStatus
+import gwen.dsl.Failed
+import gwen.dsl.StatusKeyword
+import gwen.dsl.Step
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureSummary
+import gwen.report.ReportFormatter
+import gwen.GwenInfo
+import gwen.eval.GwenOptions
+import gwen.eval.FeatureSummaryLine
+import gwen.dsl.Scenario
+import gwen.dsl.Tag
+import gwen.Settings
+import gwen.GwenSettings
+import java.net.InetAddress
+import org.joda.time.DateTimeZone
+import org.joda.time.DateTime
+import gwen.dsl.Failed
+import gwen.dsl.Skipped
+import gwen.dsl.Pending
+
+/** Formats the feature summary and detail reports in JUnit xml. */
+trait JUnitReportFormatter extends ReportFormatter {
+  
+  /**
+    * Formats the feature detail report as HTML.
+    * 
+    * @param options gwen command line options
+    * @param info the gwen implementation info
+    * @param result the feature result to report
+    * @param breadcrumbs names and references for linking back to parent reports
+    */
+  override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
+    
+    val scenarios = result.spec.scenarios.filter(!_.isStepDef)
+    val hostname = s""" hostname="${InetAddress.getLocalHost.getHostName}""""
+    val packageName = result.spec.featureFile.map(f => f.getPath()).getOrElse("")
+    val name = s""" name="${packageName}.${result.spec.feature.name}""""
+    val pkg = result.spec.featureFile.map(f => s""" package="${packageName}"""").getOrElse("")
+    val scenarioCount = scenarios.length
+    val tests = s""" tests="${scenarioCount}""""
+    val counts = result.summary.scenarioCounts
+    val errorCount = counts.get(StatusKeyword.Failed).getOrElse(0)
+    val errors = s""" errors="${errorCount}""""
+    val skipped = s""" skipped="${counts.get(StatusKeyword.Skipped).getOrElse(0) + counts.get(StatusKeyword.Pending).getOrElse(0)}""""
+    val time = s""" time="${result.spec.evalStatus.nanos.toDouble / 1000000000d}""""
+    val timestamp = s""" timestamp="${new DateTime(result.timestamp).withZone(DateTimeZone.UTC)}""""
+    
+    s"""<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite${hostname}${name}${pkg}${tests}${errors}${skipped}${time}${timestamp}>
+    <properties>${(sys.props.map { case (name, value) => s"""
+        <property name="$name" value="$value"/>"""}).mkString}
+    </properties>${(scenarios.map{scenario => s"""
+    <testcase name="${scenario.name}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${scenario.evalStatus.status}"${scenario.evalStatus match {
+    case Failed(_, error) => 
+      s""">
+        <error type="${error.getClass().getName()}" message="${error.getMessage()}"/>
+    </testcase>"""
+    case Skipped | Pending => 
+      s""">
+        <skipped/>
+    </testcase>"""
+    case _ => "/>"
+  }}"""}).mkString}
+</testsuite>
+"""
+  }
+  
+  /**
+    * Formats the feature summary report as HTML.
+    * 
+    * @param options gwen command line options
+    * @param info the gwen implementation info
+    * @param summary the accumulated feature results summary
+    */
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = None
+  
+}

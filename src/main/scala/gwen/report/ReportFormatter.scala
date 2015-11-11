@@ -41,6 +41,6 @@ trait ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): String
+  def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String]
   
 }
