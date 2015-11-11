@@ -43,4 +43,10 @@ trait ReportFormatter {
     */
   def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String]
   
+  /** Defines file extension for format. */
+  def formatExtension: String
+  
+  /** Defines format name. */
+  def formatName: String
+  
 }

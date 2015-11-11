@@ -16,33 +16,27 @@
 package gwen.report.html
 
 import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import scala.concurrent.duration.Duration
-import gwen.dsl.DurationFormatter
-import gwen.dsl.EvalStatus
+import java.net.InetAddress
+
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+
+import gwen.GwenInfo
+import gwen.Predefs.Exceptions
 import gwen.dsl.Failed
+import gwen.dsl.Pending
+import gwen.dsl.Skipped
 import gwen.dsl.StatusKeyword
-import gwen.dsl.Step
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.report.ReportFormatter
-import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.eval.FeatureSummaryLine
-import gwen.dsl.Scenario
-import gwen.dsl.Tag
-import gwen.Settings
-import gwen.GwenSettings
-import java.net.InetAddress
-import org.joda.time.DateTimeZone
-import org.joda.time.DateTime
-import gwen.dsl.Failed
-import gwen.dsl.Skipped
-import gwen.dsl.Pending
+import gwen.report.ReportFormatter
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter {
+  
+  override def formatExtension: String = "xml"
+  override def formatName: String = "JUnit-XML"
   
   /**
     * Formats the feature detail report as HTML.
@@ -57,7 +51,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     val scenarios = result.spec.scenarios.filter(!_.isStepDef)
     val hostname = s""" hostname="${InetAddress.getLocalHost.getHostName}""""
     val packageName = result.spec.featureFile.map(f => f.getPath()).getOrElse("")
-    val name = s""" name="${packageName}.${result.spec.feature.name}""""
+    val name = s""" name="${packageName}.Feature: ${result.spec.feature.name}""""
     val pkg = result.spec.featureFile.map(f => s""" package="${packageName}"""").getOrElse("")
     val scenarioCount = scenarios.length
     val tests = s""" tests="${scenarioCount}""""
@@ -73,10 +67,10 @@ trait JUnitReportFormatter extends ReportFormatter {
     <properties>${(sys.props.map { case (name, value) => s"""
         <property name="$name" value="$value"/>"""}).mkString}
     </properties>${(scenarios.map{scenario => s"""
-    <testcase name="${scenario.name}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${scenario.evalStatus.status}"${scenario.evalStatus match {
+    <testcase name="Scenario: ${scenario.name}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${scenario.evalStatus.status}"${scenario.evalStatus match {
     case Failed(_, error) => 
       s""">
-        <error type="${error.getClass().getName()}" message="${error.getMessage()}"/>
+        <error type="${error.getClass().getName()}" message="${error.writeStackTrace}"/>
     </testcase>"""
     case Skipped | Pending => 
       s""">

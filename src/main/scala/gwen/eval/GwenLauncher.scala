@@ -142,7 +142,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
     
   private def toFeatureResult(reportGenerators: List[ReportGenerator], specs: List[FeatureSpec], dataRecord: Option[DataRecord]): FeatureResult = {
-    val reportFiles = reportGenerators.flatMap(_.reportDetail(interpreter, specs, dataRecord)).map(f => (f.extension -> f)).toMap
+    val reportFiles = reportGenerators.flatMap(_.reportDetail(interpreter, specs, dataRecord)).toMap
     FeatureResult(specs.head, if (reportFiles.nonEmpty) Some(reportFiles) else None, specs.tail.map(FeatureResult(_, None, Nil))) tap { result => 
       val status = result.spec.evalStatus
       logger.info("")

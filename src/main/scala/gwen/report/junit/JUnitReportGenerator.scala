@@ -35,15 +35,22 @@ import gwen.eval.FeatureResult
   * @author Branko Juric
   */
 class JUnitReportGenerator(val options: GwenOptions) 
-  extends ReportGenerator(options, "feature-summary.xml", "xml", Some("junit-xml")) 
+  extends ReportGenerator(options, None, new File(options.reportDir.get.getPath + "-junit")) 
   with JUnitReportFormatter {
 
   override def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
     // noop
   }
   
-  override def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
+  override def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File, dataRecord: Option[DataRecord]): List[FeatureResult] = {
     metaSpecs.map(FeatureResult(_, None, Nil))
+  }
+  
+  override def createReportDir(spec: FeatureSpec, dataRecord: Option[DataRecord]): File = reportDir
+  
+  override def createReportFileName(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = { 
+    val parentDirPath = spec.featureFile.map(_.getParentFile).map(_.getPath).getOrElse("")
+    s"TEST-${FileIO.encodeDir(parentDirPath)}-${encodeDataRecordNo(dataRecord)}${super.createReportFileName(spec, dataRecord)}"
   }
   
 }

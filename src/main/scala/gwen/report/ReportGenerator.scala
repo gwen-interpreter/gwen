@@ -38,23 +38,17 @@ import gwen.Predefs.FileIO
   */
 class ReportGenerator (
     private val options: GwenOptions, 
-    private val summaryFilename: String, 
-    private val fileExtension: String,
-    private val reportSubDir: Option[String]) extends LazyLogging {
+    private val summaryFilename: Option[String],
+    val reportDir: File) extends LazyLogging {
   formatter: ReportFormatter => 
     
-  private val summaryReportFile = new File(reportDir, s"${summaryFilename}")
+  private val summaryReportFile = summaryFilename.map(name => new File(reportDir, s"$name.$formatExtension"))
   
-  /** Lazily creates and returns the target report directory. */
-  private[report] lazy val reportDir = {
-    val reportDir = options.reportDir.get 
-    val targetDir = reportSubDir.map(new File(reportDir, _)).getOrElse(reportDir)
-    if (targetDir.exists) {
-      targetDir.renameTo(new File(s"${targetDir.getAbsolutePath()}-${System.currentTimeMillis()}"))
-    }
-    new File(Path(targetDir).createDirectory().path)
+  if (reportDir.exists) {
+    reportDir.renameTo(new File(s"${reportDir.getAbsolutePath()}-${System.currentTimeMillis()}"))
   }
-  
+  Path(reportDir).createDirectory()
+    
   /**
     * Generate and return a detail feature report.
     * 
@@ -63,42 +57,40 @@ class ReportGenerator (
     * @param dataRecord optional data record
     * @return the report file
     */
-  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec], dataRecord: Option[DataRecord]): Option[File] = {
+  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec], dataRecord: Option[DataRecord]): Option[(String, File)] = {
     val (featureSpec::metaSpecs) = specs
-    val reportFile = createReportFile(createReportDir(reportDir, featureSpec, dataRecord), "", featureSpec) tap { file =>
-      reportFeatureDetail(info, featureSpec, file, reportMetaDetail(info, metaSpecs, file))
+    val reportFile = createReportFile(createReportDir(featureSpec, dataRecord), "", featureSpec, dataRecord) tap { file =>
+      reportFeatureDetail(info, featureSpec, file, reportMetaDetail(info, metaSpecs, file, dataRecord))
     }
-    Some(reportFile)
+    Some((formatName, reportFile))
   }
   
-  def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
+  private[report] def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File, dataRecord: Option[DataRecord]): List[FeatureResult] = {
     metaSpecs.zipWithIndex map { case (metaspec, idx) =>
-      val prefix = s"${"%04d".format(idx + 1)}-"
-      val file = createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec) 
-      logger.info(s"Generating meta detail report [${metaspec.feature.name}]..")
-      FeatureResult(metaspec, Some(Map(fileExtension -> file)), Nil) tap { metaResult =>
+      val prefix = s"${encodeNo(idx + 1)}-"
+      val file = createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, dataRecord) 
+      logger.info(s"Generating $formatName meta detail report [${metaspec.feature.name}]..")
+      FeatureResult(metaspec, Some(Map(formatName -> file)), Nil) tap { metaResult =>
+        val featureCrumb = ("Feature", featureReportFile)
+        val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
         file.writeText(
-          formatDetail(
-            options,
-            info, 
-            metaResult, 
-            List(("Summary", summaryReportFile), ("Feature", featureReportFile))))
-        logger.info(s"Meta detail report generated: ${file.getAbsolutePath()}")
+          formatDetail(options, info, metaResult, breadcrumbs))
+        logger.info(s"$formatName meta detail report generated: ${file.getAbsolutePath()}")
       }
     }
   }
   
   private final def reportFeatureDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]) { 
-    logger.info(s"Generating feature detail report [${spec.feature.name}]..")
-    FeatureResult(spec, Some(Map(fileExtension -> featureReportFile)), metaResults) tap { featureResult =>
+    logger.info(s"Generating $formatName feature detail report [${spec.feature.name}]..")
+    FeatureResult(spec, Some(Map(formatName -> featureReportFile)), metaResults) tap { featureResult =>
       featureReportFile.writeText(
         formatDetail(
           options,
           info, 
           featureResult, 
-          List(("Summary", summaryReportFile))))
+          summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil)))
       reportAttachments(spec, featureReportFile)
-      logger.info(s"Feature detail report generated: ${featureReportFile.getAbsolutePath()}")
+      logger.info(s"$formatName feature detail report generated: ${featureReportFile.getAbsolutePath()}")
     }
   }
   
@@ -117,35 +109,46 @@ class ReportGenerator (
     */
   final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
     if (summary.summaryLines.nonEmpty) {
-      formatSummary(options, info, summary) map { content =>
-        logger.info(s"Generating feature summary report..")
-        summaryReportFile.writeText(content)
-        logger.info(s"Feature summary report generated: ${summaryReportFile.getAbsolutePath()}")
-        summaryReportFile
+      summaryReportFile tap { reportFile =>
+        reportFile foreach { file =>
+          formatSummary(options, info, summary) foreach { content =>
+            logger.info(s"Generating $formatName feature summary report..")
+            file.writeText(content)
+            logger.info(s"$formatName feature summary report generated: ${file.getAbsolutePath()}")
+          }
+        }
       }
     } else {
       None
     }
    
-  private def createReportDir(baseDir: File, spec: FeatureSpec, dataRecord: Option[DataRecord]): File = {
-    val dataRecordDir = dataRecord.map(record => s"${"%04d".format(record.recordNo)}-").getOrElse("")
+  private[report] def createReportDir(spec: FeatureSpec, dataRecord: Option[DataRecord]): File = 
+    new File(Path(createReportPath(spec, dataRecord)).createDirectory().path)
+  
+  private[report] def createReportPath(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = {
+    val dataRecordDir = encodeDataRecordNo(dataRecord)
     spec.featureFile match {
       case Some(file) =>
-        file.toDir(baseDir, Some(dataRecordDir + FileIO.encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))))
+        file.toPath(reportDir, Some(dataRecordDir + FileIO.encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))))
       case None => 
-        new File(Path(baseDir.getPath() + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)).createDirectory().path)
+        reportDir.getPath() + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)
     }
   }
   
-  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec): File =
-    new File(toDir, s"${prefix}${createReportFileName(spec)}.${fileExtension}")
+  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec, dataRecord: Option[DataRecord]): File =
+    new File(toDir, s"${prefix}${createReportFileName(spec, dataRecord)}.${formatExtension}")
   
-  private def createReportFileName(spec: FeatureSpec): String = spec.featureFile match {
+  private[report] def createReportFileName(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = spec.featureFile match {
     case Some(file) =>
       s"${file.getName()}"
     case None => 
-      s"${spec.feature.name}.${fileExtension}"
+      s"${spec.feature.name}"
   }
+  
+  private[report] def encodeDataRecordNo(dataRecord: Option[DataRecord]) = 
+    dataRecord.map(record => s"${encodeNo(record.recordNo)}-").getOrElse("")
+  
+  private[report] def encodeNo(num: Int) = "%04d".format(num)
   
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>

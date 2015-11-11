@@ -46,6 +46,9 @@ trait HtmlReportFormatter extends ReportFormatter {
       StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")
+  
+  override def formatExtension: String = "html"
+  override def formatName: String = "HTML"
 
   /**
     * Formats the feature detail report as HTML.
@@ -63,7 +66,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val status = result.spec.evalStatus.status
     val summary = result.summary
     val screenshots = result.screenshots
-    val rootPath = relativePath(result.reports.get("html"), options.reportDir.get).filter(_ == File.separatorChar).flatMap(c => "../")
+    val rootPath = relativePath(result.reports.get(formatName), options.reportDir.get).filter(_ == File.separatorChar).flatMap(c => "../")
     
     s"""<!DOCTYPE html>
 <html lang="en">
@@ -125,7 +128,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <ul class="list-group">
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.reports.get("html").getName()}", None, rowIndex)}).mkString}
+              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.reports.get(formatName).getName()}", None, rowIndex)}).mkString}
             </div>
           </li>
         </ul>
@@ -240,7 +243,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">${
                 (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
-                  val report = result.reports.get("html")
+                  val report = result.reports.get(formatName)
                   formatSummaryLine(result, s"${relativePath(report, options.reportDir.get).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
                 }).mkString}
             </div>

@@ -31,7 +31,7 @@ import gwen.eval.GwenOptions
   * @author Branko Juric
   */
 class HtmlReportGenerator(val options: GwenOptions) 
-  extends ReportGenerator(options, "feature-summary.html", "html", None) 
+  extends ReportGenerator(options, Some("feature-summary"), options.reportDir.get) 
   with HtmlReportFormatter {
 
   // copy in CSS files (if they don't already exist)
