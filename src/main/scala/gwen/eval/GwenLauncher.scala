@@ -16,20 +16,17 @@
 
 package gwen.eval
 
-import java.io.File
 import scala.Option.option2Iterable
+
+import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
-import gwen.Predefs.FileIO
 import gwen.UserOverrides
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
-import gwen.report.ReportGenerator
-import gwen.report.html.HtmlReportGenerator
-import gwen.GwenInfo
 import gwen.dsl.FeatureSpec
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import gwen.report.junit.JUnitReportGenerator
+import gwen.report.ReportGenerator
 
 /**
   * Launches the gwen interpreter.
@@ -87,9 +84,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     *               otherwise a new context is created for each unit)
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
-    val reportGenerators = options.reportDir map { _ =>
-      List(new HtmlReportGenerator(options), new JUnitReportGenerator(options))
-    } getOrElse(Nil)
+    val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
       val results = featureStream.par.flatMap { unit =>
         evaluateUnit(options, envOpt, unit) { specs => 

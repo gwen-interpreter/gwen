@@ -833,6 +833,9 @@ Usage: scala gwen.sample.math.MathInterpreter [options] [<features>]
         Comma separated list of properties file paths
   -r <report directory> | --report <report directory>
         Evaluation report output directory
+  -f <formats> | --formats <formats>
+        Comma separated list of report formats to produce	
+         - Supported formats include: html,junit (default is html)
   -t <tags> | --tags <tags>
         Comma separated list of @include or ~@exclude tags
   -n | --dry-run

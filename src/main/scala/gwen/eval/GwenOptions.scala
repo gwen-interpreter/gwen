@@ -25,6 +25,7 @@ import gwen.Settings
 import gwen.UserOverrides
 import scopt.OptionParser
 import gwen.errors._
+import gwen.report.ReportFormat
 
 /**
   * Captures gwen command line options.
@@ -47,6 +48,7 @@ case class GwenOptions(
     batch: Boolean = false,
     parallel: Boolean = false,
     reportDir: Option[File] = None,
+    reportFormats: List[ReportFormat.Value] = Nil, 
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
@@ -109,7 +111,12 @@ object GwenOptions {
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f)) 
       } valueName("<report directory>") text("Evaluation report output directory")
-
+      
+      opt[String]('f', "formats") action {
+        (fs, c) => 
+          c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.withName(f)))
+      } valueName("<formats>") text(s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})")
+      
       opt[String]('t', "tags") action {
         (ts, c) => 
           c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.toString.startsWith("@"))))
@@ -121,7 +128,7 @@ object GwenOptions {
           case error => failure(error)
         }).getOrElse(success)
       } valueName("<tags>") text("Comma separated list of @include or ~@exclude tags")
-    
+      
       opt[Unit]('n', "dry-run") action {
         (_, c) => c.copy(dryRun = true) 
       } text("Do not evaluate steps on engine (validate for correctness only)")
@@ -159,6 +166,7 @@ object GwenOptions {
         options.batch,
         options.parallel,
         options.reportDir,
+        if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) List(ReportFormat.html) else Nil },
         UserOverrides.addUserProperties(options.properties),
         options.tags,
         options.dryRun,
@@ -170,6 +178,9 @@ object GwenOptions {
         options foreach { opt =>
           if ((opt.batch || opt.dryRun) && opt.features.isEmpty) {
             invocationError("No feature files and/or directories specified")
+          }
+          if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
+            invocationError("No report directory specified")
           }
           Settings.loadAll(opt.properties)
         }

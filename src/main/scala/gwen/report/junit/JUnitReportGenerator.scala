@@ -27,6 +27,7 @@ import gwen.report.html.JUnitReportFormatter
 import gwen.dsl.FeatureSpec
 import gwen.eval.DataRecord
 import gwen.eval.FeatureResult
+import gwen.report.ReportFormat
 
 /**
   * Generates JUnit xml report files (for integration will build servers 
@@ -34,9 +35,7 @@ import gwen.eval.FeatureResult
   * 
   * @author Branko Juric
   */
-class JUnitReportGenerator(val options: GwenOptions) 
-  extends ReportGenerator(options, None, new File(options.reportDir.get.getPath + "-junit")) 
-  with JUnitReportFormatter {
+class JUnitReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.junit, options) with JUnitReportFormatter {
 
   override def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
     // noop

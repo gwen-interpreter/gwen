@@ -27,6 +27,7 @@ import scala.util.Try
 import scala.util.Failure
 import gwen.UserOverrides
 import gwen.sample.math.MathInterpreter
+import gwen.report.ReportFormat
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -160,14 +161,61 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with report option and report directory" should "parse" in {
     parseOptions(Array("-r", "target/report")) match {
       case Success(options) => {
-        assertOptions(options, reportDir = Some(new File("target/report")))
+        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats = List(ReportFormat.html))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--report", "target/report")) match {
       case Success(options) => {
-        assertOptions(options, reportDir = Some(new File("target/report")))
+        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats = List(ReportFormat.html))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+  
+  "Options with format option but no report directory" should "not parse" in {
+    parseOptions(Array("-f", "html")) match {
+      case Success(options) => {
+        fail("expected None but got options")
+      }
+      case _ => 
+    }
+    parseOptions(Array("--format", "html")) match {
+      case Success(options) => {
+        fail("expected None but got options")
+      }
+      case _ => 
+    }
+  }
+  
+  "Options with format option but no format value(s)" should "not parse" in {
+    parseOptions(Array("-f")) match {
+      case Success(options) => {
+        fail("expected None but got options")
+      }
+      case _ => 
+    }
+    parseOptions(Array("--format")) match {
+      case Success(options) => {
+        fail("expected None but got options")
+      }
+      case _ => 
+    }
+  }
+  
+  "Options with format options and report directory" should "parse" in {
+    parseOptions(Array("-r", "target/report", "-f", "html,junit")) match {
+      case Success(options) => {
+        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--report", "target/report", "--formats", "html,junit")) match {
+      case Success(options) => {
+        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
       }
       case _ =>
         fail("expected options but failed")
@@ -587,6 +635,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with all valid options" should "parse" in {
     
     val reportDir = new File("target/report")
+    val reportFormats = List(ReportFormat.html, ReportFormat.junit)
     val propsFile = createFile("gwen-1.properties")
     val dataFile = createFile("gwen-1.csv")
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
@@ -595,13 +644,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val feature5 = createFile("dir5/file5.feature");
     val dir6 = createDir("dir6");
     
-    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-p", propsFile.getPath(), "-t", tags, "-i", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-f", "html,junit", "-p", propsFile.getPath(), "-t", tags, "-i", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           true,
           true,
           Some(reportDir),
+          List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           false,
@@ -613,13 +663,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected options but failed")
     }
     
-    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           true,
           true,
           Some(reportDir),
+          List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
           false,
@@ -642,6 +693,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     batch: Boolean = false,
     parallel: Boolean = false,
     reportDir: Option[File] = None,
+    reportFormats: List[ReportFormat.Value] = Nil,
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
@@ -652,6 +704,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.reportDir should be (reportDir)
+    options.reportFormats should be (reportFormats)
     options.properties should be (UserOverrides.addUserProperties(properties))
     options.tags should be (tags)
     options.dryRun should be (dryRun)

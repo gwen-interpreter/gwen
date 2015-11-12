@@ -24,6 +24,7 @@ import gwen.dsl.Tag
 import java.io.File
 import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
+import gwen.report.ReportFormat
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -83,7 +84,7 @@ case class FeatureSummary(
 /** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(spec: FeatureSpec, reports: Option[Map[String, File]]): FeatureSummary =
+  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, File]]): FeatureSummary =
     FeatureSummary() + FeatureResult(spec, reports, Nil)
   def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
 }
@@ -94,7 +95,7 @@ case class FeatureSummaryLine(
   featureName: String, 
   featureFile: Option[File], 
   evalStatus: EvalStatus, 
-  reports: Option[Map[String, File]])
+  reports: Option[Map[ReportFormat.Value, File]])
 
 /**
   * Captures the results of an evaluated feature.
@@ -105,7 +106,7 @@ case class FeatureSummaryLine(
   */
 class FeatureResult(
   val spec: FeatureSpec, 
-  val reports: Option[Map[String, File]], 
+  val reports: Option[Map[ReportFormat.Value, File]], 
   val metaResults: List[FeatureResult]) {
   
   val timestamp = new Date()
@@ -118,7 +119,7 @@ class FeatureResult(
 
 /** Feature result factory. */
 object FeatureResult {
-  def apply(spec: FeatureSpec, reports: Option[Map[String, File]], metaResults: List[FeatureResult]): FeatureResult = 
+  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, File]], metaResults: List[FeatureResult]): FeatureResult = 
     new FeatureResult(spec, reports, metaResults)
 }
 

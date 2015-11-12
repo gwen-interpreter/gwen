@@ -17,10 +17,8 @@ package gwen.report.html
 
 import java.io.File
 import java.net.InetAddress
-
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-
 import gwen.GwenInfo
 import gwen.Predefs.Exceptions
 import gwen.dsl.Failed
@@ -31,12 +29,10 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.report.ReportFormatter
+import gwen.report.ReportFormat
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter {
-  
-  override def formatExtension: String = "xml"
-  override def formatName: String = "JUnit-XML"
   
   /**
     * Formats the feature detail report as HTML.
