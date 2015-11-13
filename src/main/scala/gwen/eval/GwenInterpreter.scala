@@ -113,27 +113,27 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     *         satisfy specified tag filters
     * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
-  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = {
-    val featureFile = unit.featureFile 
-    val dataRecord = unit.dataRecord 
-    parseAll(spec, Source.fromFile(featureFile).mkString) match {
-      case success @ Success(featureSpec, _) =>
-        if (featureFile.getName().endsWith(".meta")) {
-          evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env)
-        } else {
-          TagsFilter.filter(featureSpec, tagFilters) match {
-            case Some(fspec) =>
-              val metaResults = loadMeta(unit.metaFiles, tagFilters, env)
-              evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env)
-            case None => 
-              logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
-              Nil
+  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = 
+    (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
+      val dataRecord = unit.dataRecord 
+      parseAll(spec, Source.fromFile(featureFile).mkString) match {
+        case success @ Success(featureSpec, _) =>
+          if (featureFile.getName().endsWith(".meta")) {
+            evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env)
+          } else {
+            TagsFilter.filter(featureSpec, tagFilters) match {
+              case Some(fspec) =>
+                val metaResults = loadMeta(unit.metaFiles, tagFilters, env)
+                evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env)
+              case None => 
+                logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
+                Nil
+            }
           }
-        }
-      case failure: NoSuccess =>
-        parsingError(failure.toString)
-    }
-  }
+        case failure: NoSuccess =>
+          parsingError(failure.toString)
+      }
+    }).getOrElse(Nil tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
   
   /**
     * Evaluates a given Gwen feature.

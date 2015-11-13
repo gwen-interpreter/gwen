@@ -109,14 +109,15 @@ object FeatureStream extends LazyLogging {
     */
   private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
     val (metaFiles, dataFile) = inputs
-    val metas = dir.listFiles.filter(isMetaFile).toList
+    val files = dir.listFiles
+    val metas = files.filter(isMetaFile).toList
     val inputs1 = metas match {
       case metaFile :: Nil => (metaFiles ::: List(metaFile), dataFile)
       case _ :: _ => 
         ambiguousCaseError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} but found ${metas.size}")
       case _ => (metaFiles, dataFile)
     }
-    val datas = dir.listFiles.filter(isDataFile).toList
+    val datas = files.filter(isDataFile).toList
     datas match {
       case Nil => inputs1
       case data :: Nil if (dataFile.isEmpty || dataFile.get.getCanonicalPath().equals(data.getCanonicalPath())) => (inputs1._1, Some(data))
