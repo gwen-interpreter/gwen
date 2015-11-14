@@ -24,6 +24,7 @@ import gwen.dsl.Tag
 import java.io.File
 import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
+import gwen.report.ReportFormat
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -83,8 +84,8 @@ case class FeatureSummary(
 /** Feature summary factory. */
 object FeatureSummary {
   def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(spec: FeatureSpec, report: Option[File]): FeatureSummary =
-    FeatureSummary() + FeatureResult(spec, report, Nil)
+  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, File]]): FeatureSummary =
+    FeatureSummary() + FeatureResult(spec, reports, Nil)
   def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
 }
 
@@ -94,31 +95,31 @@ case class FeatureSummaryLine(
   featureName: String, 
   featureFile: Option[File], 
   evalStatus: EvalStatus, 
-  report: Option[File])
+  reports: Option[Map[ReportFormat.Value, File]])
 
 /**
   * Captures the results of an evaluated feature.
   * 
   * @param spec the evaluated feature
   * @param metaResults the evaluated meta results
-  * @param report the report file
+  * @param reports optional map of report files (keyed by report type)
   */
 class FeatureResult(
   val spec: FeatureSpec, 
-  val report: Option[File], 
+  val reports: Option[Map[ReportFormat.Value, File]], 
   val metaResults: List[FeatureResult]) {
   
   val timestamp = new Date()
   val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
   val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
-  def summaryLine = new FeatureSummaryLine(timestamp, spec.feature.name, spec.featureFile, spec.evalStatus, report)
+  def summaryLine = new FeatureSummaryLine(timestamp, spec.feature.name, spec.featureFile, spec.evalStatus, reports)
   def summary = FeatureSummary(this)
   
 }
 
 /** Feature result factory. */
 object FeatureResult {
-  def apply(spec: FeatureSpec, report: Option[File], metaResults: List[FeatureResult]): FeatureResult = 
-    new FeatureResult(spec, report, metaResults)
+  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, File]], metaResults: List[FeatureResult]): FeatureResult = 
+    new FeatureResult(spec, reports, metaResults)
 }
 

@@ -35,6 +35,7 @@ import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import gwen.UserOverrides
 import org.scalatest.FlatSpec
+import gwen.report.ReportFormat
 
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
@@ -218,7 +219,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
-  "test launcher with reporting" should "generate reports" in {
+  "test launcher with html reporting" should "generate html reports" in {
     
     val dir6 = createDir("dir6");
     val feature6a = createFile("dir6/file6a.feature");
@@ -227,7 +228,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val feature7a = createFile("dir7/file7a.feature");
     val reportDir = createDir("report");
     
-    val options = GwenOptions(features = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir))
+    val options = GwenOptions(features = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir), reportFormats = List(ReportFormat.html))
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -265,10 +266,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     evalStatus should be (Passed(6000))
     
-    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6a", "file6a.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6b", "file6b.feature.html").exists should be (true)
-    new File(reportDir.getPath() + File.separator + "target-GwenLauncherTest-dir7" + File.separator + "file7a", "file7a.feature.html").exists should be (true)
-    new File(reportDir, "feature-summary.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "html" + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6a", "file6a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "html" + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6b", "file6b.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "html" + File.separator + "target-GwenLauncherTest-dir7" + File.separator + "file7a", "file7a.feature.html").exists should be (true)
+    new File(reportDir.getPath() + File.separator + "html", "feature-summary.html").exists should be (true)
     new File(reportDir, "index.html").exists should be (true)
     
   }

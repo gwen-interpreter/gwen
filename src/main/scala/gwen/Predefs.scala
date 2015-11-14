@@ -97,7 +97,10 @@ object Predefs extends LazyLogging {
     }
     
     def toDir(targetDir: File, targetSubDir: Option[String]): File =
-      new File(Path(targetDir.getPath() + File.separator + FileIO.encodeDir(file.getParent()) + targetSubDir.map(File.separator + _).getOrElse("")).createDirectory().path)
+      new File(Path(toPath(targetDir, targetSubDir)).createDirectory().path)
+    
+    def toPath(targetDir: File, targetSubDir: Option[String]): String =
+      targetDir.getPath() + File.separator + FileIO.encodeDir(file.getParent()) + targetSubDir.map(File.separator + _).getOrElse("")
     
     def toFile(targetDir: File, targetSubDir: Option[String]): File =
       new File(toDir(targetDir, targetSubDir), file.getName())

@@ -64,7 +64,7 @@ Key Features
 - Gherkin feature parser
 - Abstract evaluation engine
 - REPL console
-- Evaluation reports
+- Evaluation reports (Rich HTML and JUnit-XML)
 - Data scopes
 - Meta features
 - Composable step definitions (@StepDef's)
@@ -137,7 +137,8 @@ Evaluation Reports
 
 Gwen reports all evaluated results to the system output stream. Pretty HTML 
 reports containing detailed results, statistics, and summaries can also be 
-generated and written to the file system.
+generated and written to the file system. JUnit XML reports can also 
+be optionally generated for easy integration with most build servers.  
 
 ![Gwen Evaluation Report](doc/img/gwen-report.png)  
 

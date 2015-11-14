@@ -23,6 +23,7 @@ import gwen.Predefs.Kestrel
 import gwen.report.ReportGenerator
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
+import gwen.report.ReportFormat
 
 /**
   * Generates a HTML evaluation report. The report includes a feature
@@ -30,9 +31,7 @@ import gwen.eval.GwenOptions
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val options: GwenOptions) 
-  extends ReportGenerator(options, "feature-summary", "html") 
-  with HtmlReportFormatter {
+class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.html, options) with HtmlReportFormatter {
 
   // copy in CSS files (if they don't already exist)
   new File(Path(new File(reportDir, "resources/css")).createDirectory().path) tap { dir =>
@@ -62,6 +61,6 @@ class HtmlReportGenerator(val options: GwenOptions)
   }
   
   // copy in index file
-  copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", reportDir)
+  copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", options.reportDir.get)
   
 }

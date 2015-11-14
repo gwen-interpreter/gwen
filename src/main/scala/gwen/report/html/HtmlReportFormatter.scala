@@ -34,9 +34,12 @@ import gwen.dsl.Scenario
 import gwen.dsl.Tag
 import gwen.Settings
 import gwen.GwenSettings
+import gwen.report.ReportFormat
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
+  
+  private val reportFormat = ReportFormat.html
   
   private val cssStatus = Map(
       StatusKeyword.Passed -> "success", 
@@ -46,7 +49,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")
-
+  
   /**
     * Formats the feature detail report as HTML.
     * 
@@ -57,13 +60,14 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
     
+    val reportDir = reportFormat.reportDir(options)
     val metaResults = result.metaResults 
     val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
     val title = s"${if(result.isMeta) "Meta" else "Feature"} Detail"
     val status = result.spec.evalStatus.status
     val summary = result.summary
     val screenshots = result.screenshots
-    val rootPath = relativePath(result.report.get, options.reportDir.get).filter(_ == File.separatorChar).flatMap(c => "../")
+    val rootPath = relativePath(result.reports.get(reportFormat), reportDir).filter(_ == File.separatorChar).flatMap(c => "../")
     
     s"""<!DOCTYPE html>
 <html lang="en">
@@ -125,7 +129,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <ul class="list-group">
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.report.get.getName()}", None, rowIndex)}).mkString}
+              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.reports.get(reportFormat).getName()}", None, rowIndex)}).mkString}
             </div>
           </li>
         </ul>
@@ -184,12 +188,13 @@ trait HtmlReportFormatter extends ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): String = {
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = {
     
+    val reportDir = reportFormat.reportDir(options)
     val title = "Feature Summary";
     val status = summary.evalStatus.status
   
-    s"""<!DOCTYPE html>
+    Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>
     ${formatHtmlHead(title, "")}
@@ -240,8 +245,8 @@ trait HtmlReportFormatter extends ReportFormatter {
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">${
                 (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
-                  val report = result.report.get
-                  formatSummaryLine(result, s"${relativePath(report, options.reportDir.get).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
+                  val report = result.reports.get(reportFormat)
+                  formatSummaryLine(result, s"${relativePath(report, reportDir).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
                 }).mkString}
             </div>
           </li>
@@ -250,7 +255,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     </div>"""}}).mkString}
   </body>
 </html>
-    """
+    """)
   }
   
   private def formatHtmlHead(title: String, rootPath: String) = s"""
