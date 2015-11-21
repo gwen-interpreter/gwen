@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.report.html
+package gwen.report
 
 import java.io.File
 import java.net.InetAddress
@@ -28,8 +28,6 @@ import gwen.dsl.StatusKeyword
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
-import gwen.report.ReportFormatter
-import gwen.report.ReportFormat
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter {

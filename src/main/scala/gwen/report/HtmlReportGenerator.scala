@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package gwen.report.html
+package gwen.report
 
 import java.io.File
 import scala.reflect.io.Path
-import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
-import gwen.report.ReportGenerator
-import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.report.ReportFormat
 
 /**
   * Generates a HTML evaluation report. The report includes a feature

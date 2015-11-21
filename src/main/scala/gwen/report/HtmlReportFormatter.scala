@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.report.html
+package gwen.report
 
 import java.io.File
 import java.text.DecimalFormat
-import java.util.Date
 import scala.concurrent.duration.Duration
 import gwen.dsl.DurationFormatter
 import gwen.dsl.EvalStatus
@@ -26,15 +25,13 @@ import gwen.dsl.StatusKeyword
 import gwen.dsl.Step
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.report.ReportFormatter
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
 import gwen.eval.FeatureSummaryLine
 import gwen.dsl.Scenario
 import gwen.dsl.Tag
-import gwen.Settings
 import gwen.GwenSettings
-import gwen.report.ReportFormat
+import gwen.report.ReportFormat.value2ReportFormat
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {

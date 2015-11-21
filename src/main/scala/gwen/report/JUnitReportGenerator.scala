@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package gwen.report.junit
+package gwen.report
 
 import java.io.File
-import scala.reflect.io.Path
 import gwen.Predefs.FileIO
-import gwen.Predefs.Kestrel
-import gwen.report.ReportGenerator
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.report.html.JUnitReportFormatter
 import gwen.dsl.FeatureSpec
 import gwen.eval.DataRecord
 import gwen.eval.FeatureResult
-import gwen.report.ReportFormat
 
 /**
   * Generates JUnit xml report files (for integration will build servers 

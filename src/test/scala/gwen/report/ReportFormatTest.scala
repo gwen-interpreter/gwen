@@ -19,8 +19,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.eval.GwenOptions
 import java.io.File
-import gwen.report.html.HtmlReportGenerator
-import gwen.report.junit.JUnitReportGenerator
 
 class ReportFormatTest extends FlatSpec with Matchers  {
 

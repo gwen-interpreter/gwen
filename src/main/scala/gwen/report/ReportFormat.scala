@@ -18,9 +18,7 @@ package gwen.report
 
 import scala.language.implicitConversions
 import scala.language.postfixOps
-import gwen.report.html.HtmlReportGenerator
 import gwen.eval.GwenOptions
-import gwen.report.junit.JUnitReportGenerator
 import java.io.File
 
 /**
