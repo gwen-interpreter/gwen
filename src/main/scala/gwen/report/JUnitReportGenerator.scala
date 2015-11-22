@@ -17,12 +17,12 @@
 package gwen.report
 
 import java.io.File
-import gwen.Predefs.FileIO
+
 import gwen.GwenInfo
-import gwen.eval.GwenOptions
 import gwen.dsl.FeatureSpec
-import gwen.eval.DataRecord
 import gwen.eval.FeatureResult
+import gwen.eval.FeatureUnit
+import gwen.eval.GwenOptions
 
 /**
   * Generates JUnit xml report files (for integration will build servers 
@@ -36,15 +36,8 @@ class JUnitReportGenerator(val options: GwenOptions) extends ReportGenerator(Rep
     // noop
   }
   
-  override def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File, dataRecord: Option[DataRecord]): List[FeatureResult] = {
+  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
     metaSpecs.map(FeatureResult(_, None, Nil))
-  }
-  
-  override def createReportDir(spec: FeatureSpec, dataRecord: Option[DataRecord]): File = reportDir
-  
-  override def createReportFileName(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = { 
-    val parentDirPath = spec.featureFile.map(_.getParentFile).map(_.getPath).getOrElse("")
-    s"TEST-${FileIO.encodeDir(parentDirPath)}-${encodeDataRecordNo(dataRecord)}${super.createReportFileName(spec, dataRecord)}"
   }
   
 }

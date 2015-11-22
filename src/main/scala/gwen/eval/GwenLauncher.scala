@@ -90,7 +90,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         evaluateUnit(options, envOpt, unit) { specs => 
           specs match { 
             case Nil => None
-            case _ => Some(toFeatureResult(reportGenerators, specs, unit.dataRecord))
+            case _ => Some(toFeatureResult(reportGenerators, unit, specs))
           }
         }
       }
@@ -103,7 +103,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           specs match { 
             case Nil => summary
             case specs => 
-              val result = toFeatureResult(reportGenerators, specs, unit.dataRecord)
+              val result = toFeatureResult(reportGenerators, unit, specs)
               summary + result tap { accSummary =>
                 if (!options.parallel) {
                   reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
@@ -136,8 +136,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
     
-  private def toFeatureResult(reportGenerators: List[ReportGenerator], specs: List[FeatureSpec], dataRecord: Option[DataRecord]): FeatureResult = {
-    val reportFiles = reportGenerators.flatMap(_.reportDetail(interpreter, specs, dataRecord)).toMap
+  private def toFeatureResult(reportGenerators: List[ReportGenerator], unit: FeatureUnit, specs: List[FeatureSpec]): FeatureResult = {
+    val reportFiles = reportGenerators.flatMap(_.reportDetail(interpreter, unit, specs)).toMap
     FeatureResult(specs.head, if (reportFiles.nonEmpty) Some(reportFiles) else None, specs.tail.map(FeatureResult(_, None, Nil))) tap { result => 
       val status = result.spec.evalStatus
       logger.info("")

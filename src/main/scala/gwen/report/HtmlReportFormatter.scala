@@ -32,18 +32,14 @@ import gwen.dsl.Scenario
 import gwen.dsl.Tag
 import gwen.GwenSettings
 import gwen.report.ReportFormat.value2ReportFormat
+import gwen.eval.FeatureUnit
+import gwen.dsl.FeatureSpec
+import gwen.report.HtmlReportFormatter._
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
   
   private val reportFormat = ReportFormat.html
-  
-  private val cssStatus = Map(
-      StatusKeyword.Passed -> "success", 
-      StatusKeyword.Failed -> "danger", 
-      StatusKeyword.Skipped -> "warning", 
-      StatusKeyword.Pending -> "info",
-      StatusKeyword.Loaded -> "success")
   
   private val percentFormatter = new DecimalFormat("#.##")
   
@@ -52,10 +48,11 @@ trait HtmlReportFormatter extends ReportFormatter {
     * 
     * @param options gwen command line options
     * @param info the gwen implementation info
+    * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String] = {
     
     val reportDir = reportFormat.reportDir(options)
     val metaResults = result.metaResults 
@@ -66,31 +63,15 @@ trait HtmlReportFormatter extends ReportFormatter {
     val screenshots = result.screenshots
     val rootPath = relativePath(result.reports.get(reportFormat), reportDir).filter(_ == File.separatorChar).flatMap(c => "../")
     
-    s"""<!DOCTYPE html>
+    Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>
     ${formatHtmlHead(s"${title} - ${featureName}", rootPath)}
-    ${formatJsHeader(rootPath, screenshots.size > 1)}
+    ${formatJsHeader(rootPath)}
   </head>
   <body>
     ${formatReportHeader(info, title, featureName, rootPath)}
-    <ol class="breadcrumb">${(breadcrumbs map { case (text, reportFile) => s"""
-      <li>
-        <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else "../"}${reportFile.getName()}">${escape(text)}</a>
-      </li>"""}).mkString}
-      <li>
-        <span class="badge badge-${cssStatus(status)}">${status}</span>
-      </li>
-      <li>
-        <small>${escape(result.timestamp.toString)}</small>
-      </li>
-        ${ if (screenshots.size > 1) { s"""
-             <li>
-               ${formatSlideShow(screenshots)} 
-             </li>"""
-           } else ""
-         }
-    </ol>
+    ${formatStatusHeader(unit, result, rootPath, breadcrumbs, screenshots)}
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
         <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
@@ -134,7 +115,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}")}).mkString}
   </body>
 </html>
-"""
+""")
   }
   
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
@@ -263,26 +244,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     <link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
     <link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
-    <table width="100%" cellpadding="5">
-      <tr>
-        <td width="100px">
-          <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
-        </td>
-        <td>
-          <h3>${escape(heading)}</h3>
-          ${escape(path)}
-        </td>
-        <td align="right">
-          <h3>&nbsp;</h3>
-          <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
-          <p>
-          <small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small>
-          </p>
-        </td>
-      </tr>
-    </table>"""
-
   private def formatProgressBar(name: String, counts: Map[StatusKeyword.Value, Int]): String = { 
     val total = counts.map(_._2).sum
     if (total > 0) {s"""
@@ -355,10 +316,9 @@ trait HtmlReportFormatter extends ReportFormatter {
                     </ul>
                   </div>""" else ""}"""
 
-    private def formatJsHeader(rootPath: String, withReel: Boolean) = s""" 
+  private def formatJsHeader(rootPath: String) = s""" 
     <script src="${rootPath}resources/js/jquery.min.js"></script>
-    <script src="${rootPath}resources/js/bootstrap.min.js"></script>
-    ${ if (withReel) { s"""<script src="${rootPath}resources/js/jquery.reel-min.js"></script>""" } else ""}"""
+    <script src="${rootPath}resources/js/bootstrap.min.js"></script>"""
       
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
@@ -367,124 +327,84 @@ trait HtmlReportFormatter extends ReportFormatter {
     case _ => evalStatus.status
   }
   private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
-  private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
-  private def relativePath(reportFile: File, reportDir: File) = reportFile.getPath.substring(reportDir.getPath().length() + 1)
-  private def maxFramesPerSec(screenshots: List[File]) = if (screenshots.length < 10) screenshots.length else 10
-  private def formatSlideShow(screenshots: List[File]) = s"""
+  
+}
+
+object HtmlReportFormatter {
+  
+  private val cssStatus = Map(
+    StatusKeyword.Passed -> "success", 
+    StatusKeyword.Failed -> "danger", 
+    StatusKeyword.Skipped -> "warning", 
+    StatusKeyword.Pending -> "info",
+    StatusKeyword.Loaded -> "success")
+  
+  private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
+    <table width="100%" cellpadding="5">
+      <tr>
+        <td width="100px">
+          <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
+        </td>
+        <td>
+          <h3>${escape(heading)}</h3>
+          ${escape(path)}
+        </td>
+        <td align="right">
+          <h3>&nbsp;</h3>
+          <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
+          <p>
+          <small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small>
+          </p>
+        </td>
+      </tr>
+    </table>"""
+         
+  private [report] def formatStatusHeader(unit: FeatureUnit, result: FeatureResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
+    val status = result.spec.evalStatus.status
+    s"""
+    <ol class="breadcrumb">${(breadcrumbs map { case (text, reportFile) => s"""
+      <li>
+        <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escape(text)}</a>
+      </li>"""}).mkString}
+      <li>
+        <span class="badge badge-${cssStatus(status)}">${status}</span>
+      </li>
+      <li>
+        <small>${escape(result.timestamp.toString)}</small>
+      </li>
+        ${ if (screenshots.size > 1) { s"""
+             <li>
+               ${formatSlideshow(screenshots, result.spec, unit, rootPath)} 
+             </li>"""
+           } else ""
+         }
+    </ol>"""
+  }
+    
+  private def formatSlideshow(screenshots: List[File], spec: FeatureSpec, unit: FeatureUnit, rootPath: String) = s"""
   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
     <div class="modal-body">
+    <a href="${ReportFormat.slideshow.getReportDetailFilename(spec, unit.dataRecord)}.${ReportFormat.slideshow.fileExtension}" id="full-screen">Full Screen</a>
     <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
-    <p>
-    <center>
-      <div id="loading-div"><span class="glyphicon glyphicon-download" aria-hidden="true"></span> Loading slides, please wait..</div>
-      <div id="controls-div" style="display: none;">
-        <button id="fast-back-btn" class="btn btn-default btn-lg" title="Rewind to start"><span class="glyphicon glyphicon-fast-backward" aria-hidden="true"></span></button>
-        <button id="step-back-btn" class="btn btn-default btn-lg" title="Step backward"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span></button>
-        <button id="play-pause-btn" class="btn btn-default btn-lg" title="Play"><span id="play-pause" class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
-        <button id="step-fwd-btn" class="btn btn-default btn-lg" title="Step forward"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
-        <button id="fast-fwd-btn" class="btn btn-default btn-lg" title="Forward to end"><span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span></button>
-        <select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
-          <option>${i}</option>""").mkString}        
-        </select> of ${screenshots.length}
-        <span style="margin-left: 30px;"> </span>
-        <button id="decrease-speed-btn" class="btn btn-default btn-lg" title="Decrease Speed"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
-        <button id="increase-speed-btn" class="btn btn-default btn-lg" title="Increase Speed"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-        <select id="frames-per-sec" title="Frames per second..">${(for(i <- 1 to maxFramesPerSec(screenshots) ) yield s"""
-          <option>${i}</option>""").mkString}        
-        </select> frames/sec
-      </div>
-    </center>
-    <hr>
-    </p>
-    <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%" />
-    <script>
-      var revolution = $$('#slides').width();
-      var unitSpeed = 1 / ${screenshots.length};
-      $$('#slides').reel({
-        images: [ ${screenshots.map(_.getName()).mkString("'attachments/","','attachments/","'")} ],
-        frames: ${screenshots.length},
-        speed: 0,
-        indicator: 5,
-        responsive: true,
-        loops: true,
-        cursor: 'auto',
-        revolution: revolution,
-        steppable: false,
-        preload: 'linear'
-      }).bind("frameChange", function(e, d, frame){
-        if (frame == ${screenshots.length}) { stop(); } 
-        $$('#current-frame').val(frame);
-      }).bind("loaded", function(ev){
-        $$('#loading-div').hide();
-        $$('#controls-div').show();
-        if($$('#controls-div').is(':visible')) play();
-      });
-      function play() {
-        $$('#play-pause').removeClass("glyphicon-play");
-        $$('#play-pause').addClass("glyphicon-pause");
-        $$('#play-pause').attr("title", "Pause");
-        if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
-        $$('#slides').trigger("play", getFramesPerSec() * unitSpeed);
-      }
-      function getFramesPerSec() {
-        return parseInt($$('#frames-per-sec').val());
-      }
-      function decreaseSpeed() {
-        var framesPerSec = getFramesPerSec();
-        if (framesPerSec > 1) {
-          framesPerSec = framesPerSec - 1;
-          $$('#frames-per-sec').val(framesPerSec).trigger('change');
-          toggleSpeedButtons(framesPerSec);
-        }
-      }
-      function increaseSpeed() {
-        var framesPerSec = getFramesPerSec();
-        if (framesPerSec < ${maxFramesPerSec(screenshots)}) {
-          framesPerSec = framesPerSec + 1;
-          $$('#frames-per-sec').val(framesPerSec).trigger('change');
-          toggleSpeedButtons(framesPerSec);
-        }
-      }
-      function stop() {
-        $$('#slides').trigger("stop");
-        $$('#play-pause').removeClass("glyphicon-pause");
-        $$('#play-pause').addClass("glyphicon-play");
-        $$('#play-pause').attr("title", "Play");
-      }
-      function toggleSpeedButtons(framesPerSec) {
-        $$('#increase-speed-btn').prop('disabled', framesPerSec == ${maxFramesPerSec(screenshots)});
-        $$('#decrease-speed-btn').prop('disabled', framesPerSec == 1);
-      }
-      $$(function() {
-        $$('#frames-per-sec').val('${GwenSettings.`gwen.report.slideshow.framespersecond`}');
-        $$('#increase-speed-btn').click(function(e) { increaseSpeed() });
-        $$('#decrease-speed-btn').click(function(e) { decreaseSpeed() });
-        toggleSpeedButtons(getFramesPerSec());
-        $$('#fast-back-btn').click(function(e) { $$('#slides').reel('frame', 1); stop(); });
-        $$('#step-back-btn').click(function(e) { $$('#slides').trigger('stepRight'); stop(); });
-        $$('#play-pause-btn').click(function() { 
-          if ($$('#play-pause').hasClass("glyphicon-play")) { play(); } 
-          else if ($$('#play-pause').hasClass("glyphicon-pause")) { stop(); } 
-        });
-        $$('#step-fwd-btn').click(function(e) { $$('#slides').trigger('stepLeft'); stop(); });
-        $$('#fast-fwd-btn').click(function(e) { $$('#slides').reel('frame', ${screenshots.length}); stop(); });
-        $$('#current-frame').change(function(e) { $$('#slides').reel('frame', parseInt($$(this).val())); stop(); });
-        $$('#frames-per-sec').change(function(e) { $$('#slides').reel('speed', parseInt($$(this).val()) * unitSpeed); toggleSpeedButtons(getFramesPerSec()); });
-        $$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
-        $$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
-        $$('#slideshow').on('shown.bs.modal', function (e) { $$('#slides').reel('frame', 1); if($$('#controls-div').is(':visible')) play(); });
-        $$('#slideshow').on('hide.bs.modal', function (e) { $$('#slides').trigger('stop') });
-        $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
-      });
-    </script>
+    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath, Some(100))}
    </div>
   </div>
-</div>
-</div>
-<button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#slideshow">
-  Slideshow
-</button>
+  </div>
+  </div>
+  <button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#slideshow">
+    Slideshow
+  </button>
+  <script>
+    $$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
+    $$('#full-screen').click(function(e) { $$('#close-btn').click(); });
+    $$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
+    $$('#slideshow').on('hide.bs.modal', function (e) { $$('#slides').trigger('stop') });
+    $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
+  </script>
   """
+          
+  private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+          
 }

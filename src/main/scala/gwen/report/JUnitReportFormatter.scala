@@ -28,6 +28,7 @@ import gwen.dsl.StatusKeyword
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
+import gwen.eval.FeatureUnit
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter {
@@ -37,10 +38,11 @@ trait JUnitReportFormatter extends ReportFormatter {
     * 
     * @param options gwen command line options
     * @param info the gwen implementation info
+    * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String] = {
     
     val scenarios = result.spec.scenarios.filter(!_.isStepDef)
     val hostname = s""" hostname="${InetAddress.getLocalHost.getHostName}""""
@@ -56,7 +58,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     val time = s""" time="${result.spec.evalStatus.nanos.toDouble / 1000000000d}""""
     val timestamp = s""" timestamp="${new DateTime(result.timestamp).withZone(DateTimeZone.UTC)}""""
     
-    s"""<?xml version="1.0" encoding="UTF-8" ?>
+    Some(s"""<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite${hostname}${name}${pkg}${tests}${errors}${skipped}${time}${timestamp}>
     <properties>${(sys.props.map { case (name, value) => s"""
         <property name="$name" value="$value"/>"""}).mkString}
@@ -73,7 +75,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     case _ => "/>"
   }}"""}).mkString}
 </testsuite>
-"""
+""")
   }
   
   /**
