@@ -19,7 +19,7 @@ butterfly.
 Dynamic systems can be observed to possess chaotic behavior and this is common 
 in software. The smallest of changes to programs and environments can give 
 rise to the most erratic effects. Gwen evaluates software systems by 
-mapping plain text specifications to executable instructions in predefined engines that:
+mapping plain text specifications to executable instructions that:
 
 - Create conditions (_Givens_)
 - Perform actions (_Whens_)
@@ -34,7 +34,7 @@ The chaotic behavior takes place on an attractor if the trajectories of a large 
 region. The Lorenz attractor, discovered by 
 [Edward Lorenz](http:s//en.wikipedia.org/wiki/Edward_Lorenz) shows one such orbit 
 that looks like a butterfly. The logo captures this image with the proposition 
-that *Gwen can detect chaos*.
+that Gwen can detect chaos.
 
 ***
 
