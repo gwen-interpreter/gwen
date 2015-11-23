@@ -30,6 +30,7 @@ import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.DataRecord
 import gwen.Predefs.FileIO
+import gwen.eval.FeatureUnit
 
 /**
   * Base class for report generators.
@@ -57,40 +58,37 @@ class ReportGenerator (
     * @param dataRecord optional data record
     * @return the report file
     */
-  final def reportDetail(info: GwenInfo, specs: List[FeatureSpec], dataRecord: Option[DataRecord]): Option[(ReportFormat.Value, File)] = {
+  final def reportDetail(info: GwenInfo, unit: FeatureUnit, specs: List[FeatureSpec]): Option[(ReportFormat.Value, File)] = {
     val (featureSpec::metaSpecs) = specs
-    val reportFile = createReportFile(createReportDir(featureSpec, dataRecord), "", featureSpec, dataRecord) tap { file =>
-      reportFeatureDetail(info, featureSpec, file, reportMetaDetail(info, metaSpecs, file, dataRecord))
+    val dataRecord = unit.dataRecord
+    val reportFile = reportFormat.createReportFile(reportFormat.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord) tap { file =>
+      reportFeatureDetail(info, unit, featureSpec, file, reportMetaDetail(info, unit, metaSpecs, file))
     }
     Some((reportFormat, reportFile))
   }
   
-  private[report] def reportMetaDetail(info: GwenInfo, metaSpecs: List[FeatureSpec], featureReportFile: File, dataRecord: Option[DataRecord]): List[FeatureResult] = {
+  private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
     metaSpecs.zipWithIndex map { case (metaspec, idx) =>
-      val prefix = s"${encodeNo(idx + 1)}-"
-      val file = createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, dataRecord) 
-      logger.info(s"Generating ${reportFormat.name} meta detail report [${metaspec.feature.name}]..")
+      val prefix = s"${ReportGenerator.encodeNo(idx + 1)}-"
+      val file = reportFormat.createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, unit.dataRecord) 
       FeatureResult(metaspec, Some(Map(reportFormat -> file)), Nil) tap { metaResult =>
         val featureCrumb = ("Feature", featureReportFile)
         val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
-        file.writeText(
-          formatDetail(options, info, metaResult, breadcrumbs))
-        logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
+        formatDetail(options, info, unit, metaResult, breadcrumbs) foreach { content => 
+          file.writeText(content) 
+          logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
+        }
       }
     }
   }
   
-  private final def reportFeatureDetail(info: GwenInfo, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]) { 
-    logger.info(s"Generating ${reportFormat.name} feature detail report [${spec.feature.name}]..")
+  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]) { 
     FeatureResult(spec, Some(Map(reportFormat -> featureReportFile)), metaResults) tap { featureResult =>
-      featureReportFile.writeText(
-        formatDetail(
-          options,
-          info, 
-          featureResult, 
-          summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil)))
-      reportAttachments(spec, featureReportFile)
-      logger.info(s"${reportFormat.name} feature detail report generated: ${featureReportFile.getAbsolutePath()}")
+      formatDetail(options, info, unit, featureResult, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil)) foreach { content =>
+        featureReportFile.writeText(content)
+        reportAttachments(spec, featureReportFile)
+        logger.info(s"${reportFormat.name} feature detail report generated: ${featureReportFile.getAbsolutePath()}")
+      }
     }
   }
   
@@ -112,7 +110,6 @@ class ReportGenerator (
       summaryReportFile tap { reportFile =>
         reportFile foreach { file =>
           formatSummary(options, info, summary) foreach { content =>
-            logger.info(s"Generating ${reportFormat.name} feature summary report..")
             file.writeText(content)
             logger.info(s"${reportFormat.name} feature summary report generated: ${file.getAbsolutePath()}")
           }
@@ -122,34 +119,6 @@ class ReportGenerator (
       None
     }
    
-  private[report] def createReportDir(spec: FeatureSpec, dataRecord: Option[DataRecord]): File = 
-    new File(Path(createReportPath(spec, dataRecord)).createDirectory().path)
-  
-  private[report] def createReportPath(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = {
-    val dataRecordDir = encodeDataRecordNo(dataRecord)
-    spec.featureFile match {
-      case Some(file) =>
-        file.toPath(reportDir, Some(dataRecordDir + FileIO.encodeDir(file.getName().substring(0, file.getName().lastIndexOf(".")))))
-      case None => 
-        reportDir.getPath() + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)
-    }
-  }
-  
-  private def createReportFile(toDir: File, prefix: String, spec: FeatureSpec, dataRecord: Option[DataRecord]): File =
-    new File(toDir, s"${prefix}${createReportFileName(spec, dataRecord)}.${reportFormat.fileExtension}")
-  
-  private[report] def createReportFileName(spec: FeatureSpec, dataRecord: Option[DataRecord]): String = spec.featureFile match {
-    case Some(file) =>
-      s"${file.getName()}"
-    case None => 
-      s"${spec.feature.name}"
-  }
-  
-  private[report] def encodeDataRecordNo(dataRecord: Option[DataRecord]) = 
-    dataRecord.map(record => s"${encodeNo(record.recordNo)}-").getOrElse("")
-  
-  private[report] def encodeNo(num: Int) = "%04d".format(num)
-  
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
       file.writeText(Source.fromInputStream(getClass().getResourceAsStream(resource)).mkString)
@@ -163,6 +132,7 @@ class ReportGenerator (
 }
 
 object ReportGenerator {
+  
   def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
     options.reportDir foreach { dir =>
       if (dir.exists) {
@@ -170,6 +140,15 @@ object ReportGenerator {
       }
       Path(dir).createDirectory()
     }
-    options.reportDir.map(_ => options.reportFormats.map(_.reportGenerator(options))).getOrElse(Nil)
+    val formats = 
+      if (options.reportFormats.contains(ReportFormat.html)) 
+        ReportFormat.slideshow :: options.reportFormats 
+      else options.reportFormats
+    options.reportDir.map(_ => formats.map(_.reportGenerator(options))).getOrElse(Nil)
   }
+  
+  def encodeNo(num: Int) = "%04d".format(num)
+  
+  def encodeDataRecordNo(dataRecord: Option[DataRecord]) = dataRecord.map(record => s"${encodeNo(record.recordNo)}-").getOrElse("")
+  
 }

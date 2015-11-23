@@ -20,6 +20,7 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
+import gwen.eval.FeatureUnit
 
 /** Trait for formatting the feature summary and detail reports. */
 trait ReportFormatter {
@@ -29,10 +30,11 @@ trait ReportFormatter {
     * 
     * @param options gwen command line options
     * @param info the gwen implementation info
+    * @param unit the feature input
     * @param result the feature result
     * @param breadcrumbs names and references for linking back to parent reports
     */
-  def formatDetail(options: GwenOptions, info: GwenInfo, result: FeatureResult, breadcrumbs: List[(String, File)]): String
+  def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String]
   
   /**
     * Formats the feature summary report.
@@ -42,5 +44,7 @@ trait ReportFormatter {
     * @param summary the accumulated feature results summary
     */
   def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String]
+  
+  private[report] def relativePath(reportFile: File, reportDir: File) = reportFile.getPath.substring(reportDir.getPath().length() + 1)
   
 }

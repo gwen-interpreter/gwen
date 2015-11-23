@@ -14,35 +14,22 @@
  * limitations under the License.
  */
 
-package gwen.report.html
+package gwen.report
 
 import java.io.File
 import scala.reflect.io.Path
-import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
-import gwen.report.ReportGenerator
-import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.report.ReportFormat
 
 /**
-  * Generates a HTML evaluation report. The report includes a feature
-  * summary and all evaluation features details.
+  * Generates a slideshow HTML file
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.html, options) with HtmlReportFormatter {
+class HtmlSlideshowGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.slideshow, options) with HtmlSlideshowFormatter {
 
-  // copy in CSS files (if they don't already exist)
-  new File(Path(new File(reportDir, "resources/css")).createDirectory().path) tap { dir =>
-    copyClasspathTextResourceToFile("/gwen/report/html/css/gwen.css", dir)
-    copyClasspathTextResourceToFile("/gwen/report/html/css/bootstrap.min.css", dir)
-  }
-  
   // copy in JS files (if they don't already exist)
   new File(Path(new File(reportDir, "resources/js")).createDirectory().path) tap { dir =>
-    copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.min.js", dir)
-    copyClasspathTextResourceToFile("/gwen/report/html/js/bootstrap.min.js", dir)
     copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.reel-min.js", dir)
   }
   
@@ -54,13 +41,5 @@ class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(Repo
     copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff", dir)
     copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
   }
-  
-  // copy in image files (if they don't already exist)
-  new File(Path(new File(reportDir, "resources/img")).createDirectory().path) tap { dir =>
-    copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
-  }
-  
-  // copy in index file
-  copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", options.reportDir.get)
   
 }
