@@ -17,13 +17,10 @@
 package gwen.eval
 
 import java.io.File
-
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.Try
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
@@ -36,13 +33,15 @@ import gwen.dsl.Passed
 import gwen.dsl.Scenario
 import gwen.dsl.Skipped
 import gwen.dsl.SpecNormaliser
-import gwen.dsl.SpecParser
 import gwen.dsl.SpecType
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.errors.evaluationError
 import gwen.errors.parsingError
+import gwen.dsl.GherkinParser
+import scala.util.Success
+import scala.util.Failure
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -51,7 +50,7 @@ import gwen.errors.parsingError
   * 
   * @author Branko Juric
   */
-class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with SpecNormaliser with LazyLogging {
+class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
   /**
@@ -94,14 +93,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step (or an exception if a runtime error occurs)
     * @throws gwen.errors.ParsingException if the given step fails to parse
     */
-  private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
-    parseAll(step, input) match {
-      case success @ Success(step, _) => 
-        engine.evaluateStep(step, env)
-      case failure: NoSuccess => 
-        parsingError(failure.toString)
-    }
-  }
+  private[eval] def interpretStep(input: String, env: T): Try[Step] = 
+    parseStep(input).map(engine.evaluateStep(_, env))
   
   /**
     * Interprets an incoming feature.
@@ -116,8 +109,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = 
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val dataRecord = unit.dataRecord 
-      parseAll(spec, Source.fromFile(featureFile).mkString) match {
-        case success @ Success(featureSpec, _) =>
+      parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
+        case Success(featureSpec) =>
           if (featureFile.getName().endsWith(".meta")) {
             evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env)
           } else {
@@ -130,8 +123,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
                 Nil
             }
           }
-        case failure: NoSuccess =>
-          parsingError(failure.toString)
+        case Failure(e) =>
+          parsingError(e.toString)
       }
     }).getOrElse(Nil tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
   

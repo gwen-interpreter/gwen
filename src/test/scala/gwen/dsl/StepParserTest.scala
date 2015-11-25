@@ -19,10 +19,11 @@ package gwen.dsl
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
+import scala.util.Failure
 
-class StepParserTest extends FlatSpec with Matchers with SpecParser {
+class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(step, _: String);
+  private val parse = parseStep(_: String);
   
   "Valid steps" should "parse" in {
     
@@ -47,32 +48,32 @@ class StepParserTest extends FlatSpec with Matchers with SpecParser {
     
     StepKeyword.values foreach { keyword =>
       
-      assertFail(s"$keyword",   "incomplete expression")
-      assertFail(s"$keyword ",  "incomplete expression")
-      assertFail(s"$keyword\t", "incomplete expression")
-      assertFail(s"$keyword\n", "incomplete expression")
+      assertFail(s"$keyword",   "'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword ",  "'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\t", "'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\n", "'Given|When|Then|And|But <expression>' expected")
       
-      assertFail(s"I do not start with the $keyword clause", "'Given|When|Then|And|But' expected")
+      assertFail(s"I do not start with the $keyword clause", "'Given|When|Then|And|But <expression>' expected")
     }
     
   }
   
   "invalid keywords" should "not parse" in {
     
-    assertFail("?",        "'Given|When|Then|And|But' expected")
-    assertFail("^C",       "'Given|When|Then|And|But' expected")
-    assertFail("^Q",       "'Given|When|Then|And|But' expected")
-    assertFail("{)()ASD}", "'Given|When|Then|And|But' expected")
-    assertFail(";",        "'Given|When|Then|And|But' expected")
-    assertFail("\\s",      "'Given|When|Then|And|But' expected")
-    assertFail("/n",       "'Given|When|Then|And|But' expected")
-    assertFail("(?:.+)?",  "'Given|When|Then|And|But' expected")
-    assertFail("''",       "'Given|When|Then|And|But' expected")
+    assertFail("?",        "'Given|When|Then|And|But <expression>' expected")
+    assertFail("^C",       "'Given|When|Then|And|But <expression>' expected")
+    assertFail("^Q",       "'Given|When|Then|And|But <expression>' expected")
+    assertFail("{)()ASD}", "'Given|When|Then|And|But <expression>' expected")
+    assertFail(";",        "'Given|When|Then|And|But <expression>' expected")
+    assertFail("\\s",      "'Given|When|Then|And|But <expression>' expected")
+    assertFail("/n",       "'Given|When|Then|And|But <expression>' expected")
+    assertFail("(?:.+)?",  "'Given|When|Then|And|But <expression>' expected")
+    assertFail("''",       "'Given|When|Then|And|But <expression>' expected")
   }
   
   private def assertFail(input: String, expected: String) {
     parse(input) match {
-      case f: Failure => f.msg should be (expected)
+      case Failure(e) => e.getMessage should be (expected)
       case _ => fail("failure expected")
     }
   }

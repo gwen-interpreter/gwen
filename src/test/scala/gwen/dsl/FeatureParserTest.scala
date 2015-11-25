@@ -19,10 +19,11 @@ package gwen.dsl
 import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import scala.util.Failure
 
-class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
+class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(feature, _: String);
+  private def parse(input: String) = parseFeatureSpec(input).map(_.feature)
   
   "Valid features" should "parse" in {
 
@@ -117,7 +118,7 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
   
   private def assertFail(input: String, expected: String) {
     parse(input) match {
-      case f: Failure => f.msg should be (expected)
+      case Failure(e) => e.getMessage should be (expected)
       case _ => fail("failure expected")
     }
   }

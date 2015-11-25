@@ -21,6 +21,7 @@ import java.io.File
 import gwen.Predefs.Kestrel
 import scala.util.parsing.input.Position
 import gwen.errors._
+import scala.collection.JavaConversions._
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -84,7 +85,15 @@ case class FeatureSpec(
   override def toString = feature.name 
 }
 object FeatureSpec {
-  def apply(spec: FeatureSpec, featureFile: File, metaSpecs: List[FeatureSpec]) =
+  def apply(spec: gherkin.ast.Feature): FeatureSpec = {
+    FeatureSpec(
+      Feature(spec),
+      Option(spec.getBackground).map(b => Background(b)),
+      Option(spec.getScenarioDefinitions).map(_.toList).getOrElse(Nil).map(s => Scenario(s)),
+      None,
+      Nil)
+  }
+  def apply(spec: FeatureSpec, featureFile: File, metaSpecs: List[FeatureSpec]): FeatureSpec =
     new FeatureSpec(
       spec.feature,
       spec.background,
@@ -106,7 +115,12 @@ case class Feature(tags: Set[Tag], name: String, narrative: List[String]) extend
   override def toString = name
 }
 object Feature {
-  def apply(name: String, narrative: List[String]) = new Feature(Set(), name, narrative)
+  def apply(spec: gherkin.ast.Feature): Feature =
+    Feature(
+      Option(spec.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t.getName)).toSet, 
+      spec.getName, 
+      Option(spec.getDescription).map(_.split("\n").toList).getOrElse(Nil))
+  def apply(name: String, narrative: List[String]): Feature = new Feature(Set(), name, narrative)
 }
 
 /**
@@ -127,7 +141,10 @@ case class Background(name: String, steps: List[Step]) extends SpecNode with Pos
 }
 
 object Background {
-  def apply(background: Background, steps: List[Step]) = new Background(background.name, steps) tap { _.pos = background.pos }
+  def apply(background: gherkin.ast.Background): Background = 
+    Background(background.getName, Option(background.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)))
+  def apply(background: Background, steps: List[Step]): Background = 
+    Background(background.name, steps) tap { _.pos = background.pos }
 }
 
 /**
@@ -159,7 +176,14 @@ case class Scenario(tags: Set[Tag], name: String, background: Option[Background]
   
 }
 object Scenario {
-  def apply(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]) = 
+  def apply(scenario: gherkin.ast.ScenarioDefinition): Scenario = 
+    new Scenario(
+      Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t.getName)).toSet, 
+      scenario.getName, 
+      None, 
+      Option(scenario.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)), 
+      None)
+  def apply(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]): Scenario = 
     new Scenario(tags, name, background, steps, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
     apply(scenario.tags, scenario.name, background, steps, scenario.metaFile)
@@ -227,6 +251,8 @@ case class Step(
 }
 
 object Step {
+  def apply(step: gherkin.ast.Step): Step =
+    new Step(StepKeyword.names(step.getKeyword.trim), step.getText) 
   def apply(step: Step, expression: String): Step =
     new Step(step.keyword, expression, step.status, step.attachments) tap { _.pos = step.pos }
   def apply(step: Step, stepDef: Scenario): Step =
