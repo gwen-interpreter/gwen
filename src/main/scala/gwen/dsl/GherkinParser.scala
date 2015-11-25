@@ -28,10 +28,10 @@ import scala.collection.JavaConversions._
 import gwen.errors._
 
 /**
-  *  Feature spec DSL parser and associated combinators. The following 
-  *  subset of the 
-  *  [[https://github.com/cucumber/cucumber/wiki/Gherkin Gherkin]] grammar 
-  *  is supported:
+  *  Uses the [[https://github.com/cucumber/gherkin3 Gherkin 3]] parser to  
+  *  produce an abstract syntax tree. Althouth the entire Gherkin grammar can 
+  *  be parsed, only the following minimal subset is supported by Gwen (we can 
+  *  add support for the remaining subsets in the future if required).
   *  
   *  {{{
   *     
@@ -41,9 +41,7 @@ import gwen.errors._
   *     feature     = {tag}, 
   *                   "Feature:", name
   *                   [narrative]
-  *     narrative     "As ", expression
-  *                   "I want ", expression
-  *                   ["So that ", expression]
+  *     narrative     {expression}
   *     background  = "Background:", name
   *                   {step}
   *     scenario    = {tag}, 
@@ -60,14 +58,10 @@ import gwen.errors._
   * 
   *  The parsers defined in this class accept gherkin text as input to 
   *  produce an abstract syntax tree in the form of a [[FeatureSpec]] object.  
-  *  Any input that does not conform to the grammar results in a parser error.  
-  *  The error contains a the location of the error and a description of the 
-  *  violation.
+  *  Any input that does not conform to the standard Gherkin grammar results 
+  *  in a parser error.  The error contains a the location of the error and 
+  *  a description of the violation.
   *   
-  *  Whitespace and comments are permitted anywhere.  Comments can be single
-  *  line comments starting with either '#' or '//', or multi-line comments
-  *  enclosed with '/*' and '*/'.  Embedded comments are not supported.
-  *  
   *  The following example shows a valid feature that conforms to the
   *  grammar and will parse successfully (whether or not it evaluates 
   *  is the responsibility of the [[gwen.eval.EvalEngine evaluation]] 
@@ -93,22 +87,22 @@ import gwen.errors._
   */
 trait GherkinParser {
 
-  /** Produces a complete feature spec tree. */
+  /** Produces a complete feature spec tree (this method is used to parse entire feature files). */
   def parseFeatureSpec(feature: String): Try[FeatureSpec] = Try {
     val parser = new Parser[gherkin.ast.Feature](new AstBuilder())
     FeatureSpec(parser.parse(feature))
   }
 
-  /** Produces a step node. */
+  /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
     val parser = new Parser[gherkin.ast.Feature](new AstBuilder())
-    val feature = Try(parser.parse(s"Feature:\nScenario:\n${step.trim}"))
-    feature
+    Try(parser.parse(s"Feature:\nScenario:\n${step}"))
       .map(_.getScenarioDefinitions)
       .filter(!_.isEmpty)
       .map(_.get(0).getSteps)
       .filter(!_.isEmpty)
       .map(steps => Step(steps.get(0)))
+      .map(step => Step(step, Position(1, step.pos.column)))
       .orElse(parsingError("'Given|When|Then|And|But <expression>' expected"))
   }
 

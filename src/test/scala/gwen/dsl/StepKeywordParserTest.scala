@@ -18,19 +18,19 @@ package gwen.dsl
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import scala.util.Failure
+import scala.util.Success
 
-class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
+class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(keyword, _: String);
+  private val parse = parseStep(_: String).map(_.keyword);
   
   "Valid step keywords" should "parse" in {
     StepKeyword.values foreach { keyword =>
-      parse(keyword.toString).get should be (keyword)
-      parse(s"\t$keyword").get    should be (keyword)
-      parse(s" $keyword").get     should be (keyword)
-      parse(s"$keyword ").get     should be (keyword)
-      parse(s"$keyword\t").get    should be (keyword)
-      parse(s"$keyword\n").get    should be (keyword)
+      parse(s"$keyword I am step 1").get      should be (keyword)
+      parse(s"\t$keyword I am step 2").get    should be (keyword)
+      parse(s" $keyword I am step 3").get     should be (keyword)
+      parse(s"$keyword I am step 4").get     should be (keyword)
     }
   }
   
@@ -43,6 +43,8 @@ class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
       assertFail(keyword.toString.toUpperCase())
       assertFail(keyword + "x")
       assertFail("x" + keyword)
+      assertFail(s"$keyword\tI am step x1")
+      assertFail(s"$keyword\nI am step x2")
       
     }
     
@@ -50,8 +52,8 @@ class StepKeywordParserTest extends FlatSpec with Matchers with SpecParser {
   
   private def assertFail(input: String) {
     parse(input) match {
-      case f: Failure => f.msg should be (s"'Given|When|Then|And|But' expected")
-      case _ => fail("failure expected")
+      case Success(_) => fail("failure expected")
+      case _ => 
     }
   }
   

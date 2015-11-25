@@ -61,7 +61,7 @@ trait SpecNormaliser {
   private def dataScenarios(spec: FeatureSpec, scenarios: List[Scenario], dataRecord: DataRecord): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
-      Step(keyword, s"""$name is "$value"""")
+      Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
     val tags = Set(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
     Scenario(tags, s"Bind data attributes", None, steps.toList, None) :: featureScenarios(spec, scenarios)

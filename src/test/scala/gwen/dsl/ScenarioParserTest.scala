@@ -19,10 +19,14 @@ package gwen.dsl
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
+import scala.util.Failure
+import gherkin.ParserException
+import scala.util.Failure
+import scala.util.Success
 
-class ScenarioParserTest extends FlatSpec with Matchers with SpecParser {
+class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(scenario, _: String);
+  private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios(0))
   
   private val step1 = Step(StepKeyword.Given, "I am step 1")
   private val step2 = Step(StepKeyword.Then, "I am not step 1")
@@ -34,52 +38,49 @@ class ScenarioParserTest extends FlatSpec with Matchers with SpecParser {
       parse("Scenario:").get   should be (Scenario(Set[Tag](), "", None, Nil))
       parse("Scenario:\n").get should be (Scenario(Set[Tag](), "", None, Nil))
       
-      parse(s"Scenario :name\n$step1").get      should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario\t:name\n$step1").get     should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"\tScenario\t:name\n$step1").get   should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"\tScenario\t:\tname\n$step1").get should be (Scenario(Set[Tag](), "name", None, List(step1)))
-    
-      parse(s"Scenario: name\n$step1").get should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario:name\n$step1").get  should be (Scenario(Set[Tag](), "name", None, List(step1)))
+      parse(s"Scenario:name\n$step1").get   should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario: name\n$step1").get  should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
       
-      parse(s"\tScenario:name\n$step1").get     should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario:\tname\n$step1").get     should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario:\tname\t\n$step1").get   should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario:\tname \n$step1").get    should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario:\tname\t \n$step1").get  should be (Scenario(Set[Tag](), "name", None, List(step1)))
+      parse(s"\tScenario:name\n$step1").get     should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario:\tname\n$step1").get     should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario:\tname\t\n$step1").get   should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario:\tname \n$step1").get    should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario:\tname\t \n$step1").get  should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
       
-      parse(s"Scenario: name\n$step1\n$step2").get should be (Scenario(Set[Tag](), "name", None, List(step1, step2)))
+      parse(s"Scenario: name\n$step1\n$step2").get should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
       
-      parse(s"Scenario: name\n$step1\n$comment1").get            should be (Scenario(Set[Tag](), "name", None, List(step1)))
-      parse(s"Scenario: name\n$step1\n$step2\n$comment1").get    should be (Scenario(Set[Tag](), "name", None, List(step1, step2)))
-      parse(s"Scenario: name\n$step1\n$comment1\n$step2").get    should be (Scenario(Set[Tag](), "name", None, List(step1, step2)))
-      parse(s"Scenario: name\n$comment1\n$step1\n$step2").get    should be (Scenario(Set[Tag](), "name", None, List(step1, step2)))
+      parse(s"Scenario: name\n$step1\n$comment1").get            should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario: name\n$step1\n$step2\n$comment1").get    should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+      parse(s"Scenario: name\n$step1\n$comment1\n$step2").get    should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(3, 1)), Step(step2, Position(5, 1)))))
+      parse(s"Scenario: name\n$comment1\n$step1\n$step2").get    should be (Scenario(Set[Tag](), "name", None, List(Step(step1, Position(4, 1)), Step(step2, Position(5, 1)))))
       
-      parse(s"Scenario:\n$step1\n$step2").get    should be (Scenario(Set[Tag](), s"$step1", None, List(step2)))
-      parse(s"Scenario: \n$step1\n$step2").get   should be (Scenario(Set[Tag](), s"$step1", None, List(step2)))
-      parse(s"Scenario:\t\n$step1\n$step2").get  should be (Scenario(Set[Tag](), s"$step1", None, List(step2)))
-      parse(s"Scenario:\t \n$step1\n$step2").get should be (Scenario(Set[Tag](), s"$step1", None, List(step2)))
-      parse(s"Scenario: \t\n$step1\n$step2").get should be (Scenario(Set[Tag](), s"$step1", None, List(step2)))
+      parse(s"Scenario:\n$step1\n$step2").get    should be (Scenario(Set[Tag](), s"", None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+      parse(s"Scenario: \n$step1\n$step2").get   should be (Scenario(Set[Tag](), s"", None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
       
       parse("Scenario: I dont have any steps").get should be (Scenario(Set[Tag](), "I dont have any steps", None, Nil))
       
       StepKeyword.values foreach { keyword =>
-        parse(s"Scenario: I contain a $keyword keyword in name\n$step1").get should be (Scenario(Set[Tag](), s"I contain a $keyword keyword in name", None, List(step1)))
+        parse(s"Scenario: I contain a $keyword keyword in name\n$step1").get should be (Scenario(Set[Tag](), s"I contain a $keyword keyword in name", None, List(Step(step1, Position(3, 1)))))
       }
   }
   
   "Invalid scenarios" should "not parse" in {
 
-    assertFail("Scenario",                            "`:' expected but end of source found")
-    assertFail("I am not a valid scenario",           "'Scenario|Given|When|Then|And|But' expected")
-    assertFail("Scenario no colon after 'Scenario:'", "`:' expected but `n' found")
+    assertFail(s"Scenario :name\n$step1")
+    assertFail(s"Scenario\t:name\n$step1")
+    assertFail(s"\tScenario\t:name\n$step1")
+    assertFail(s"\tScenario\t:\tname\n$step1")
+    
+    assertFail("Scenario")
+    assertFail("I am not a valid scenario")
+    assertFail("Scenario no colon after 'Scenario:'")
      
   }
   
-  private def assertFail(input: String, expected: String) {
+  private def assertFail(input: String) {
     parse(input) match {
-      case f: Failure => f.msg should be (expected)
-      case _ => fail("failure expected")
+      case Success(_) => fail("failure expected") 
+      case _ => 
     }
   }
   

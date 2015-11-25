@@ -25,11 +25,13 @@ import gwen.dsl.Scenario
 import gwen.dsl.Tag
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
-import gwen.dsl.SpecParser
 import scala.io.Source
 import gwen.dsl.SpecNormaliser
+import gwen.dsl.GherkinParser
+import scala.util.Success
+import scala.util.Failure
 
-class FeatureSetTest extends FlatSpec with Matchers with SpecParser with SpecNormaliser {
+class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with SpecNormaliser {
   
   "Data driven feature with csv file" should "normalise without error" in {
     val featureFile = new File(getClass().getResource("/gwen/datadriven/AboutMe.feature").getFile())
@@ -38,9 +40,9 @@ class FeatureSetTest extends FlatSpec with Matchers with SpecParser with SpecNor
     
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next
-    val feature1 = parseAll(spec, Source.fromFile(unit1.featureFile).mkString) match {
-      case success @ Success(spec, _) => normalise(spec, Some(unit1.featureFile), unit1.dataRecord)
-      case failure: NoSuccess => sys.error(failure.toString)
+    val feature1 = parseFeatureSpec(Source.fromFile(unit1.featureFile).mkString) match {
+      case Success(spec) => normalise(spec, Some(unit1.featureFile), unit1.dataRecord)
+      case Failure(e) => sys.error(e.toString)
     }
     feature1.feature.name should be ("About me, [1] my age=18..")
     feature1.scenarios.length should be (2)
@@ -56,9 +58,9 @@ class FeatureSetTest extends FlatSpec with Matchers with SpecParser with SpecNor
     
     featureSet.hasNext should be (true)
     val unit2 = featureSet.next
-    val feature2 = parseAll(spec, Source.fromFile(unit2.featureFile).mkString) match {
-      case success @ Success(spec, _) => normalise(spec, Some(unit2.featureFile), unit2.dataRecord)
-      case failure: NoSuccess => sys.error(failure.toString)
+    val feature2 = parseFeatureSpec(Source.fromFile(unit2.featureFile).mkString) match {
+      case Success(spec) => normalise(spec, Some(unit2.featureFile), unit2.dataRecord)
+      case Failure(e) => sys.error(e.toString)
     }
     feature2.feature.name should be ("About me, [2] my age=18..")
     feature2.scenarios.length should be (2)
@@ -74,9 +76,9 @@ class FeatureSetTest extends FlatSpec with Matchers with SpecParser with SpecNor
     
     featureSet.hasNext should be (true)
     val unit3 = featureSet.next
-    val feature3 = parseAll(spec, Source.fromFile(unit3.featureFile).mkString) match {
-      case success @ Success(spec, _) => normalise(spec, Some(unit3.featureFile), unit3.dataRecord)
-      case failure: NoSuccess => sys.error(failure.toString)
+    val feature3 = parseFeatureSpec(Source.fromFile(unit3.featureFile).mkString) match {
+      case Success(spec) => normalise(spec, Some(unit3.featureFile), unit3.dataRecord)
+      case Failure(e) => sys.error(e.toString)
     }
     feature3.feature.name should be ("About me, [3] my age=22..")
     feature3.scenarios.length should be (2)

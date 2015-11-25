@@ -111,6 +111,9 @@ notation).
  
 ```
 
+Internally, Gwen uses the [[https://github.com/cucumber/gherkin3 Gherkin 3]] 
+parser to read in Gherkin features.
+
 REPL Console
 ------------
 

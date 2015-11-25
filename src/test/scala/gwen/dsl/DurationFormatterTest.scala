@@ -21,7 +21,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.concurrent.duration.Duration
 
-class DurationFormatterTest extends FlatSpec with Matchers with SpecParser {
+class DurationFormatterTest extends FlatSpec with Matchers {
 
   "Zero duration" should "format to ~0ms" in {
     DurationFormatter.format(Duration.fromNanos(0)) should be ("~0ms")

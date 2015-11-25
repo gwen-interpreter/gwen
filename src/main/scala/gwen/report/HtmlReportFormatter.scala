@@ -112,7 +112,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           </li>
         </ul>
       </div>
-    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}")}).mkString}
+    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx")}).mkString}
   </body>
 </html>
 """)
@@ -134,7 +134,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       </ul>
       <div class="panel-body">${(scenario.background map { background => 
           val status = background.evalStatus.status
-          val backgroundId = s"${scenarioId}-${background.pos.line}"
+          val backgroundId = s"${scenarioId}-background"
           s"""
         <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
           <ul class="list-group">
@@ -283,8 +283,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
-                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse("")}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-stepDef")}).getOrElse(escape(step.expression))}
+                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-stepDef")}).getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && !step.stepDef.isDefined) s"""
                 <ul>
