@@ -17,10 +17,15 @@
 package gwen.eval
 
 import java.io.File
+
 import scala.io.Source
 import scala.language.postfixOps
+import scala.util.Failure
+import scala.util.Success
 import scala.util.Try
+
 import com.typesafe.scalalogging.slf4j.LazyLogging
+
 import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
@@ -28,6 +33,7 @@ import gwen.dsl.Background
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.dsl.FeatureSpec
+import gwen.dsl.GherkinParser
 import gwen.dsl.Loaded
 import gwen.dsl.Passed
 import gwen.dsl.Scenario
@@ -39,9 +45,6 @@ import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.errors.evaluationError
 import gwen.errors.parsingError
-import gwen.dsl.GherkinParser
-import scala.util.Success
-import scala.util.Failure
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -253,29 +256,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         env.specType = SpecType.feature
       }
     }
-  
-  /**
-    * Logs the evaluation status of the given node.
-    * 
-    * @param node the node to log the evaluation status of
-    * @param name the name of the node that failed
-    * @param status the evaluation status
-    * @return the logged status message
-    */
-  private def logStatus(node: String, name: String, status: EvalStatus) = {
-      logStatusMsg(s"${if (SpecType.meta.toString() == node) Loaded else status} $node: $name", status)
-  }
-  
-  private def logStatusMsg(msg: String, status: EvalStatus) = status match {
-    case Loaded => 
-      logger.debug(msg)
-    case Passed(_) => 
-      logger.info(msg)
-    case Failed(_, _) => 
-      logger.error(msg)
-    case _ => 
-      logger.warn(msg)
-  }
   
 }
 
