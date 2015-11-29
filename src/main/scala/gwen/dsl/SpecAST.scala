@@ -42,7 +42,7 @@ object Position {
 
 /**
  * Abstract syntax tree of a successfully parsed feature.
- * The [[SpecParser]] parses all plain text features into a tree of
+ * The [[GherkinParser]] parses all plain text features into a tree of
  * this type.  The [[gwen.eval.GwenInterpreter interpreter]] normalises 
  * the tree before passing it down to the 
  * [[gwen.eval.EvalEngine evaluation engine]] and lower layers for 
@@ -112,11 +112,11 @@ object FeatureSpec {
   *
   * @param tags set of tags
   * @param name the feature name
-  * @param narrative optional narrative (As a.. I want.. So that..)
+  * @param description optional description
   *
   * @author Branko Juric
   */
-case class Feature(tags: Set[Tag], name: String, narrative: List[String]) extends SpecNode {
+case class Feature(tags: Set[Tag], name: String, description: List[String]) extends SpecNode {
   override def toString = name
 }
 object Feature {
@@ -125,18 +125,19 @@ object Feature {
       Option(spec.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)).toSet, 
       spec.getName, 
       Option(spec.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil))
-  def apply(name: String, narrative: List[String]): Feature = new Feature(Set(), name, narrative)
+  def apply(name: String, description: List[String]): Feature = new Feature(Set(), name, description)
 }
 
 /**
   * Captures a gherkin background node.
   *
   * @param name the background name
+  * @param description optional background description
   * @param steps list of background steps
   *
   * @author Branko Juric
  */
-case class Background(name: String, steps: List[Step]) extends SpecNode {
+case class Background(name: String, description: List[String], steps: List[Step]) extends SpecNode {
   
   /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
@@ -147,22 +148,26 @@ case class Background(name: String, steps: List[Step]) extends SpecNode {
 
 object Background {
   def apply(background: gherkin.ast.Background): Background = 
-    Background(background.getName, Option(background.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)))
+    Background(
+      background.getName,
+      Option(background.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      Option(background.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)))
   def apply(background: Background, steps: List[Step]): Background = 
-    Background(background.name, steps) 
+    Background(background.name, background.description, steps) 
 }
 
 /**
   * Captures a gherkin scenario.
   * @param tags set of tags
   * @param name the scenario name
+  * @parma description the optional background description
   * @param background optional background
   * @param steps list of scenario steps
   * @param metaFile: optional meta file (required if the scenario is a stepdef)
   *
   * @author Branko Juric
   */
-case class Scenario(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
+case class Scenario(tags: Set[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
   
   /**
     * Returns a list containing all the background steps (if any) followed by 
@@ -184,15 +189,16 @@ object Scenario {
     new Scenario(
       Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t)).toSet, 
       scenario.getName, 
+      Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None, 
       Option(scenario.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)), 
       None)
-  def apply(tags: Set[Tag], name: String, background: Option[Background], steps: List[Step]): Scenario = 
-    new Scenario(tags, name, background, steps, None)
+  def apply(tags: Set[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
+    new Scenario(tags, name, description, background, steps, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
-    apply(scenario.tags, scenario.name, background, steps, scenario.metaFile)
+    apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.metaFile)
   def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, scenario.background, scenario.steps, metaFile)
+    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, metaFile)
 }
 
 /**

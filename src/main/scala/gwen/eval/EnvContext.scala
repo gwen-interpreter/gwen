@@ -105,7 +105,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def addStepDef(stepDef: Scenario) {
     val tags = stepDef.metaFile.map(meta => stepDef.tags + Tag(s"""Meta("${meta.getPath()}")""")).getOrElse(stepDef.tags)
-    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.background, stepDef.steps, stepDef.metaFile))) 
+    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
   }
   
   /**

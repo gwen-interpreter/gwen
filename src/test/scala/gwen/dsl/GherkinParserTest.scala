@@ -31,7 +31,10 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
        I want to automate tests
        So that gwen can run them
 
-    Background: The butterfly effect
+  Background: The butterfly effect
+  
+        Sensitivity to initial conditions
+        
         Given a deterministic nonlinear system
          When a small change is initially applied
          Then a large change will eventually result
@@ -65,41 +68,41 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
       case Success(featureSpec) => 
         featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
-          Background("The butterfly effect", 
+          Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
-              Step(Position(9, 9), StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(Position(10, 10), StepKeyword.When,  "a small change is initially applied"),
-              Step(Position(11, 10), StepKeyword.Then,  "a large change will eventually result")
+              Step(Position(12, 9), StepKeyword.Given, "a deterministic nonlinear system"),
+              Step(Position(13, 10), StepKeyword.When,  "a small change is initially applied"),
+              Step(Position(14, 10), StepKeyword.Then,  "a large change will eventually result")
             )
           )
         }
         featureSpec.scenarios should be {
           List(
-            Scenario(Set[Tag](), "Evaluation", None,
+            Scenario(Set[Tag](), "Evaluation", Nil, None,
               List(
-                Step(Position(14, 9), StepKeyword.Given, "any software behavior"),
-                Step(Position(15, 10), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(16, 10), StepKeyword.Then,  "Gwen can evaluate it")
+                Step(Position(17, 9), StepKeyword.Given, "any software behavior"),
+                Step(Position(18, 10), StepKeyword.When,  "expressed in Gherkin"),
+                Step(Position(19, 10), StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario(Set[Tag](), "The useless test", None, 
+            Scenario(Set[Tag](), "The useless test", Nil, None, 
               List(
-                Step(Position(19, 9), StepKeyword.Given, "I am a test"),
-                Step(Position(20, 11), StepKeyword.And,   "I am generated from code"),
-                Step(Position(21, 10), StepKeyword.When,  "the code changes"),
-                Step(Position(22, 10), StepKeyword.Then,  "I change"),
-                Step(Position(23, 11), StepKeyword.And,   "so I won't fail"),
-                Step(Position(24, 11), StepKeyword.And,   "that's why I'm useless")
+                Step(Position(22, 9), StepKeyword.Given, "I am a test"),
+                Step(Position(23, 11), StepKeyword.And,   "I am generated from code"),
+                Step(Position(24, 10), StepKeyword.When,  "the code changes"),
+                Step(Position(25, 10), StepKeyword.Then,  "I change"),
+                Step(Position(26, 11), StepKeyword.And,   "so I won't fail"),
+                Step(Position(27, 11), StepKeyword.And,   "that's why I'm useless")
               )
             ),
-            Scenario(Set[Tag](), "The useful test", None, 
+            Scenario(Set[Tag](), "The useful test", Nil, None, 
               List(
-                Step(Position(27, 9), StepKeyword.Given, "I am a test"),
-                Step(Position(28, 11), StepKeyword.And,   "I am written by a human"),
-                Step(Position(29, 10), StepKeyword.When,  "the code changes"),
-                Step(Position(30, 10), StepKeyword.Then,  "I don't"),
-                Step(Position(31, 11), StepKeyword.And,   "so I may fail"),
-                Step(Position(32, 11), StepKeyword.But,   "that's why I'm useful")
+                Step(Position(30, 9), StepKeyword.Given, "I am a test"),
+                Step(Position(31, 11), StepKeyword.And,   "I am written by a human"),
+                Step(Position(32, 10), StepKeyword.When,  "the code changes"),
+                Step(Position(33, 10), StepKeyword.Then,  "I don't"),
+                Step(Position(34, 11), StepKeyword.And,   "so I may fail"),
+                Step(Position(35, 11), StepKeyword.But,   "that's why I'm useful")
               )
             )
           )

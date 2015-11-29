@@ -29,17 +29,20 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
    
      @wip
      Feature: Gwen
-         As a tester
-       I want to automate tests
-      So that gwen can run them
+              As a tester
+              I want to automate tests
+              So that gwen can run them
 
   Background: The butterfly effect
+              Sensitivity to initial conditions
         Given a deterministic nonlinear system
          When a small change is initially applied
          Then a large change will eventually result
 
     @wip @test
     Scenario: Evaluation
+              Gwen for executable specifications
+              Business specs mapped to meta
         Given any software behavior
          When expressed in Gherkin
          Then Gwen can evaluate it
@@ -59,28 +62,28 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
       case Success(featureSpec) => 
         featureSpec.feature should be (Feature(Set(Tag("wip")), "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
-          Background("The butterfly effect", 
+          Background("The butterfly effect", List("Sensitivity to initial conditions"),
             List(
-              Step(Position(8, 7), StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(Position(9, 8), StepKeyword.When,  "a small change is initially applied"),
-              Step(Position(10, 8), StepKeyword.Then,  "a large change will eventually result")
+              Step(Position(9, 7), StepKeyword.Given, "a deterministic nonlinear system"),
+              Step(Position(10, 8), StepKeyword.When,  "a small change is initially applied"),
+              Step(Position(11, 8), StepKeyword.Then,  "a large change will eventually result")
             )
           )
         }
         featureSpec.scenarios should be {
           List(
-            Scenario(Set(Tag("wip"), Tag("test")), "Evaluation", None,
+            Scenario(Set(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
               List(
-                Step(Position(14, 7), StepKeyword.Given, "any software behavior"),
-                Step(Position(15, 8), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(16, 8), StepKeyword.Then,  "Gwen can evaluate it")
+                Step(Position(17, 7), StepKeyword.Given, "any software behavior"),
+                Step(Position(18, 8), StepKeyword.When,  "expressed in Gherkin"),
+                Step(Position(19, 8), StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario(Set[Tag](), "Evaluation", None, 
+            Scenario(Set[Tag](), "Evaluation", Nil, None, 
               List(
-                Step(Position(19, 7), StepKeyword.Given, "any software behavior"),
-                Step(Position(20, 8), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(21, 8), StepKeyword.Then,  "Gwen can evaluate it")
+                Step(Position(22, 7), StepKeyword.Given, "any software behavior"),
+                Step(Position(23, 8), StepKeyword.When,  "expressed in Gherkin"),
+                Step(Position(24, 8), StepKeyword.Then,  "Gwen can evaluate it")
               )
             )
           )
@@ -95,22 +98,26 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
     val specFeature = normalise(parse(featureString).get, None, None)
     prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
    Feature: Gwen
-       As a tester
-     I want to automate tests
-    So that gwen can run them
+            As a tester
+            I want to automate tests
+            So that gwen can run them
 
 Background: The butterfly effect
+            Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
   @wip @test
   Scenario: Evaluation
+            Gwen for executable specifications
+            Business specs mapped to meta
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
 Background: The butterfly effect
+            Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result

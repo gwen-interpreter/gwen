@@ -42,26 +42,21 @@ object prettyPrint {
         formatStatus(spec.evalStatus) +
         background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
-    case Feature(tags, name, narrative) =>
-      if (narrative.isEmpty) {
-        s"${formatTags("   ", tags)}   Feature: ${name}"
-      } else {
-        val narrativeLines = narrative.map {line =>
-          val words = line.split(" ")
-          val keyword = s"${words(0)} ${words(1)}"
-          val expression = words.drop(2).mkString(" ")
-          s"\n${rightJustify(keyword)}  ${keyword} ${expression}"
-        }
-        s"${formatTags("   ", tags)}   Feature: ${name}${narrativeLines.mkString}"
-      }
-    case background @ Background(description, steps) =>
-      s"\n\nBackground: ${description}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, description, background, steps, _) =>
+    case Feature(tags, name, description) =>
+      s"${formatTags("   ", tags)}   Feature: ${name}${formatDescription(description)}"
+    case background @ Background(name, description, steps) =>
+      s"\n\nBackground: ${name}${formatDescription(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+    case scenario @ Scenario(tags, name, description, background, steps, _) =>
       background.map(apply).getOrElse("") +
-      s"\n\n${formatTags("  ", tags)}  Scenario: ${description}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+      s"\n\n${formatTags("  ", tags)}  Scenario: ${name}${formatDescription(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case Step(_, keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
   }
+  
+  private def formatDescription(description: List[String]): String = 
+    (description.map { line =>
+      s"\n            ${line}"
+    }).mkString
   
   /**
     * Formats the given tags to a string.

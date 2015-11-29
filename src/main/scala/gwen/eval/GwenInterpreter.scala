@@ -205,6 +205,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             Some(background),
             background.evalStatus match {
               case Passed(_) => engine.evaluateSteps(scenario.steps, env)
+              case Skipped if (background.steps.isEmpty) => engine.evaluateSteps(scenario.steps, env)
               case _ => scenario.steps map { step =>
                 Step(step, Skipped, step.attachments)
               }

@@ -100,7 +100,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
-    val stepdef = Scenario(Set[Tag](Tag.StepDefTag), "I am a valid stepdef", None, List(step1))
+    val stepdef = Scenario(Set[Tag](Tag.StepDefTag), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
@@ -181,6 +181,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val stepdef = Scenario(
       Set[Tag](),
       "the butterfly flaps its wings", 
+      Nil, 
       None, 
       List(
         Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system"),

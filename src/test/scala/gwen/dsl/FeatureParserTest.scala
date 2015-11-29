@@ -65,7 +65,7 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
     
   }
   
-  "Features with story-like narratives" should "parse" in {
+  "Features with story-like description" should "parse" in {
 
     var feature = parse(
       """Feature: let me tell you something
@@ -74,7 +74,10 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As a tester")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
@@ -82,7 +85,9 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            I want to test all behavior""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior")
+    feature.description.length should be (2)
+    feature.description(0) should be ("As a tester")
+    feature.description(1) should be ("I want to test all behavior")
     
     feature = parse(
       """Feature: let me tell you something
@@ -91,7 +96,10 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As an experienced tester I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As an experienced tester")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
@@ -100,11 +108,14 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As TESTCO I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As TESTCO")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
   }
   
-  "Features with non story-like narratives" should "parse" in {
+  "Features with non story-like description" should "parse" in {
     val feature = parse(
       """Feature: let me tell you something
             Some miscellaneous random
@@ -113,7 +124,11 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
             and some more text after a blank line""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString("-") should be ("Some miscellaneous random-text--and some more text after a blank line")
+    feature.description.length should be (4)
+    feature.description(0) should be ("Some miscellaneous random")
+    feature.description(1) should be ("text")
+    feature.description(2) should be ("")
+    feature.description(3) should be ("and some more text after a blank line")
   }
   
   private def assertFail(input: String) {

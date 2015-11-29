@@ -90,8 +90,9 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.steps map {step =>
+            Background(background.name, background.description, background.steps map {step =>
               Step(step.pos, step.keyword, step.expression, Passed(1))
             })
           }, 
@@ -127,8 +128,9 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step.pos, step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex == 0) => Passed(1)
@@ -187,8 +189,9 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step.pos, step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex < 2) => Passed(1)
@@ -247,8 +250,9 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps map { step =>
+            Background(background.name, background.description, background.steps map { step =>
               Step(step.pos, step.keyword, step.expression, scenarioIndex match {
                 case 0 => Passed(1)
                 case _ => step.evalStatus
@@ -314,8 +318,9 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps map { step =>
+            Background(background.name, background.description, background.steps map { step =>
               Step(step.pos, step.keyword, step.expression, Passed(1))
             }) 
           }, 

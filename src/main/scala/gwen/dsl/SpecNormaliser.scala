@@ -51,7 +51,7 @@ trait SpecNormaliser {
       }
     }
     FeatureSpec(
-      dataRecord.map(record => Feature(spec.feature.tags, s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}", spec.feature.narrative)).getOrElse(spec.feature), 
+      dataRecord.map(record => Feature(spec.feature.tags, s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}", spec.feature.description)).getOrElse(spec.feature), 
       None, 
       dataRecord.map(dataScenarios(spec, scenarios, _)).getOrElse(featureScenarios(spec, scenarios)),
       featureFile
@@ -64,7 +64,7 @@ trait SpecNormaliser {
       Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
     val tags = Set(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(tags, s"Bind data attributes", None, steps.toList, None) :: featureScenarios(spec, scenarios)
+    Scenario(tags, s"Bind data attributes", Nil, None, steps.toList, None) :: featureScenarios(spec, scenarios)
   }
     
   private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {

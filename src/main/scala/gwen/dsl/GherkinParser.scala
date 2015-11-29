@@ -40,17 +40,19 @@ import gwen.errors._
   *                   {scenario}
   *     feature     = {tag}, 
   *                   "Feature:", name
-  *                   [narrative]
-  *     narrative     {expression}
+  *                   [description]
   *     background  = "Background:", name
+  *                   [description]
   *                   {step}
   *     scenario    = {tag}, 
   *                   "Scenario:", name
+  *                   [description]
   *                   {step}
   *     tag         = "@", name
   *     step        = keyword, expression
   *     keyword     = "Given" | "When" | "Then" | "And" | "But"
   *     name        = expression
+  *     description   {expression}
   *     comment     = "#", expression
   *     expression  = character, {character}
   *  
