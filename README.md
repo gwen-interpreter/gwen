@@ -30,7 +30,7 @@ shared the following engine:
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - A web engine for automating web application testing 
-    in a way that requires no development on behalf of the user.
+    through specifications instead of code.
 
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
@@ -111,7 +111,7 @@ notation).
  
 ```
 
-Internally, Gwen uses the [[https://github.com/cucumber/gherkin3 Gherkin 3]] 
+Internally, Gwen uses the [Gherkin 3](https://github.com/cucumber/gherkin3) 
 parser to read in Gherkin features.
 
 REPL Console
