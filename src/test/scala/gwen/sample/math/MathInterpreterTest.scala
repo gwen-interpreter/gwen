@@ -9,6 +9,7 @@ import gwen.eval.GwenLauncher
 import gwen.eval.ScopedDataStack
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
+import gwen.report.ReportFormat
 
 class MathInterpreterTest extends FlatSpec {
   
@@ -17,6 +18,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report")), 
+      reportFormats = List(ReportFormat.html, ReportFormat.junit),
       features = List(new File("features/sample/math"))
     )
       

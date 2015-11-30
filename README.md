@@ -93,23 +93,26 @@ notation).
                 {scenario}
   feature     = {tag}, 
                 "Feature:", name
-                [narrative]
-  narrative     "As ", "a " | "an ", expression
-                "I want ", expression
-                ["So that ", expression]
+                [description]
   background  = "Background:", name
+                [description]
                 {step}
   scenario    = {tag}, 
                 "Scenario:", name
+                [description]
                 {step}
   tag         = "@", name
   step        = keyword, expression
   keyword     = "Given" | "When" | "Then" | "And" | "But"
   name        = expression
+  description   {expression}
   comment     = "#", expression
   expression  = character, {character}
  
 ```
+
+Internally, Gwen uses the [[https://github.com/cucumber/gherkin3 Gherkin 3]] 
+parser to read in Gherkin features.
 
 REPL Console
 ------------

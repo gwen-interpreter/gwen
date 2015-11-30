@@ -42,7 +42,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 passed scenario
     val feature1 = FeatureSpec(
       Feature("feature1", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
@@ -61,7 +61,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 failed scenario
     val feature2 = FeatureSpec(
       Feature("feature2", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Failed(3, new Exception())),
           Step(StepKeyword.Given, "step 3", Skipped))
@@ -80,12 +80,12 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 2 passed scenarios
     val feature3 = FeatureSpec(
       Feature("feature3", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
         ), 
-        Scenario(Set[Tag](), "scenario2", None, List(
+        Scenario(Set[Tag](), "scenario2", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
@@ -104,7 +104,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 skipped scenario
     val feature4 = FeatureSpec(
       Feature("feature4", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Skipped),
           Step(StepKeyword.Given, "step 2", Skipped),
           Step(StepKeyword.Given, "step 3", Skipped))
@@ -123,7 +123,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 pending scenario
     val feature5 = FeatureSpec(
       Feature("feature5", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Pending),
           Step(StepKeyword.Given, "step 2", Pending))
         )))
@@ -141,25 +141,25 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 4 passed and 1 failed scenario
     val feature6 = FeatureSpec(
       Feature("feature6", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", None, List(
+        Scenario(Set[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
         ), 
-        Scenario(Set[Tag](), "scenario2", None, List(
+        Scenario(Set[Tag](), "scenario2", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(4)),
           Step(StepKeyword.Given, "step 2", Passed(1)))
         ),
-        Scenario(Set[Tag](), "scenario3", None, List(
+        Scenario(Set[Tag](), "scenario3", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
         ),
-        Scenario(Set[Tag](), "scenario4", None, List(
+        Scenario(Set[Tag](), "scenario4", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(3)))
         ),
-        Scenario(Set[Tag](), "scenario5", None, List(
+        Scenario(Set[Tag](), "scenario5", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed(1)),
           Step(StepKeyword.Given, "step 2", Failed(4, new Exception())),
           Step(StepKeyword.Given, "step 3", Skipped),

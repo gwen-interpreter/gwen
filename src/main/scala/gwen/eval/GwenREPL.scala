@@ -152,7 +152,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
 object GwenREPL {
   /** Filters attributes containing or matching given expression (both names and values are checked). */
   def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = { 
-    case (n, v) => n.contains(filter) || n.matches(filter) || v.contains(filter) || v.matches(filter)
+    case (n, v) => n.contains(filter) || n.matches(filter) || (v != null && (v.contains(filter) || v.matches(filter)))
   }
 }
 

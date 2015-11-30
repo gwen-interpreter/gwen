@@ -15,7 +15,12 @@
 #
  
  Feature: Increment integer
+          Uses stepdefs in meta to perform increment operations
 
+Background: Reset
+            Resets x to zero
+      Given x = 0
+            
 Scenario: Incrementing 0 should yield 1
     Given x = 0
      When ++x

@@ -101,23 +101,25 @@ object EvalStatus {
     * @param statuses the list of evaluation statuses
     */
   def apply(statuses: List[EvalStatus]): EvalStatus = {
-    val duration = (statuses map (_.nanos)).sum
-    statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
-      case Some(failed) => Failed(duration, failed.error)  
-      case None =>
-        if (statuses.forall(_ == Loaded)) {
-          Loaded
-        } else {
-          statuses.filter(_ != Loaded).lastOption match {
-            case Some(lastStatus) => lastStatus match {
-              case Passed(_) => Passed(duration)
-              case Skipped => lastStatus
-              case _ => Pending
+    if (statuses.nonEmpty) {
+      val duration = (statuses map (_.nanos)).sum
+      statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
+        case Some(failed) => Failed(duration, failed.error)  
+        case None =>
+          if (statuses.forall(_ == Loaded)) {
+            Loaded
+          } else {
+            statuses.filter(_ != Loaded).lastOption match {
+              case Some(lastStatus) => lastStatus match {
+                case Passed(_) => Passed(duration)
+                case Skipped => lastStatus
+                case _ => Pending
+              }
+              case None => Pending
             }
-            case None => Pending
           }
-        }
-    }
+      }
+    } else Skipped
   }
   
 }

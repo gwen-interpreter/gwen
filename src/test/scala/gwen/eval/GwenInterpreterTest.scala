@@ -38,6 +38,7 @@ import org.scalatest.FlatSpec
 import org.mockito.ArgumentCaptor
 import gwen.dsl.Tag
 import gwen.dsl.SpecType
+import gwen.dsl.Position
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
@@ -89,6 +90,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         step.expression should be ("I am a valid step")
         step.evalStatus.status should be (StatusKeyword.Passed)
       case TryFailure(err) =>
+        err.printStackTrace
         fail(s"success expected but got ${err}")
     }
   }
@@ -98,7 +100,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
-    val stepdef = Scenario(Set[Tag](Tag.StepDefTag), "I am a valid stepdef", None, List(step1))
+    val stepdef = Scenario(Set[Tag](Tag.StepDefTag), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
@@ -123,10 +125,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
       case TrySuccess(step) =>
         fail("expected failure")
       case TryFailure(err) =>
-        err.getMessage() should be ("""[1.4] failure: 'Given|When|Then|And|But' expected
-          |
-          |Yes I am an invalid step
-          |   ^""".stripMargin.replace("\r", ""))
+        err.getMessage() should be ("'Given|When|Then|And|But <expression>' expected")
     }
   }
   
@@ -144,10 +143,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     when(mockEnv.specType).thenReturn(SpecType.feature) 
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
-    val step1 = Step(StepKeyword.Given, "I am an observer")
-    val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
-    val step3 = Step(StepKeyword.When, "a small change is initially applied")
-    val step4 = Step(StepKeyword.Then, "a large change will eventually result")
+    val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
+    val step2 = Step(Position(6, 9), StepKeyword.Given, "a deterministic nonlinear system")
+    val step3 = Step(Position(7, 10), StepKeyword.When, "a small change is initially applied")
+    val step4 = Step(Position(8, 10), StepKeyword.Then, "a large change will eventually result")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
@@ -182,11 +181,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val stepdef = Scenario(
       Set[Tag](),
       "the butterfly flaps its wings", 
+      Nil, 
       None, 
       List(
-        Step(StepKeyword.Given, "a deterministic nonlinear system"),
-        Step(StepKeyword.When, "a small change is initially applied"),
-        Step(StepKeyword.Then, "a large change will eventually result")))
+        Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system"),
+        Step(Position(6, 10), StepKeyword.When, "a small change is initially applied"),
+        Step(Position(7, 10), StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
     when(mockEnv.specType).thenReturn(SpecType.feature)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
@@ -197,11 +197,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.localScope).thenReturn(localScope)
-    val step1 = Step(StepKeyword.Given, "I am an observer")
-    val step2 = Step(StepKeyword.Given, "the butterfly flaps its wings")
-    val step3 = Step(StepKeyword.Given, "a deterministic nonlinear system")
-    val step4 = Step(StepKeyword.When, "a small change is initially applied")
-    val step5 = Step(StepKeyword.Then, "a large change will eventually result")
+    val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
+    val step2 = Step(Position(6, 9), StepKeyword.Given, "the butterfly flaps its wings")
+    val step3 = Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system")
+    val step4 = Step(Position(6, 10), StepKeyword.When, "a small change is initially applied")
+    val step5 = Step(Position(7, 10), StepKeyword.Then, "a large change will eventually result")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)

@@ -18,13 +18,12 @@ package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-
-import gwen.dsl.SpecParser
 import gwen.dsl.Tag.string2Tag
+import gwen.dsl.GherkinParser
 
-class TagsFilterTest extends FlatSpec with Matchers with SpecParser { 
+class TagsFilterTest extends FlatSpec with Matchers with GherkinParser { 
 
-  private val parse = parseAll(spec, _: String);
+  private val parse = parseFeatureSpec(_: String);
   
   private val featureString = """
       

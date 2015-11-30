@@ -77,12 +77,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
         <span class="label label-black">Feature</span>
         <span class="pull-right"><small>${durationOrStatus(result.spec.evalStatus)}</small></span>
-        ${escape(result.spec.feature.name)}${if (!result.spec.feature.narrative.isEmpty) s"""
-        <p>
-        <ul class="list-group bg-default">${(result.spec.feature.narrative  map { line => 
-          s"""<li class="list-group-item bg-default">${line}</li>"""}).mkString}
-        </ul>
-        </p>""" else ""}
+        ${escape(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
@@ -112,10 +107,20 @@ trait HtmlReportFormatter extends ReportFormatter {
           </li>
         </ul>
       </div>
-    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx-${s.pos.line}")}).mkString}
+    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx")}).mkString}
   </body>
 </html>
 """)
+  }
+  
+  private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]) = {
+    val bgClass = status.map(cssStatus).getOrElse("default")
+    if (!description.isEmpty) s"""
+        <p>
+        <ul class="list-group bg-${bgClass}">${(description  map { line => 
+          s"""<li class="list-group-item bg-${bgClass}">${line}</li>"""}).mkString}
+        </ul>
+        </p>""" else ""
   }
   
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
@@ -127,21 +132,21 @@ trait HtmlReportFormatter extends ReportFormatter {
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
           <span class="grayed"><p><small>${escape(tags.mkString(" "))}</small></p></span>""" else ""}
-          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if (scenario.allSteps.size > 1) s"""
-          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
-          ${escape(scenario.name)}
+          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>
+          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
+          ${escape(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
         </li>
       </ul>
       <div class="panel-body">${(scenario.background map { background => 
           val status = background.evalStatus.status
-          val backgroundId = s"${scenarioId}-${background.pos.line}"
+          val backgroundId = s"${scenarioId}-background"
           s"""
         <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
           <ul class="list-group">
             <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
-              <span class="label label-${cssStatus(status)}">Background</span>${if (background.steps.size > 1) s"""
-              <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>""" else ""}
-              ${escape(background.name)}
+              <span class="label label-${cssStatus(status)}">Background</span>
+              <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
+              ${escape(background.name)}${formatDescriptionLines(background.description, Some(status))}
             </li>
           </ul>
           <div class="panel-body">
@@ -283,8 +288,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse(escape(step.expression))}
-                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-${stepDef.pos.line}")}).getOrElse("")}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-stepDef")}).getOrElse(escape(step.expression))}
+                  ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-stepDef")}).getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && !step.stepDef.isDefined) s"""
                 <ul>

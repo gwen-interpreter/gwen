@@ -26,6 +26,7 @@ import gwen.dsl.Step
 import java.io.IOException
 import gwen.dsl.StepKeyword
 import gwen.Settings
+import gwen.dsl.Position
 
 class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
 class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
@@ -38,22 +39,22 @@ class DefaultEngineSupportTest extends FlatSpec with Matchers {
   val env = engine.init(new GwenOptions(), new ScopedDataStack())
   
   "Set attribute binding step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """my name is "Gwen""""), env)
+    engine.evaluate(Step(Position(0, 0), StepKeyword.Given, """my name is "Gwen""""), env)
     env.featureScope.get("my name") should be ("Gwen")
   }
   
   "Set global setting step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """my gwen.username setting is "Gwen""""), env)
+    engine.evaluate(Step(Position(0, 0), StepKeyword.Given, """my gwen.username setting is "Gwen""""), env)
     Settings.get("gwen.username") should be ("Gwen")
   }
   
   "Execute system process 'hostname'" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """I execute system process "hostname""""), env)
+    engine.evaluate(Step(Position(0, 0), StepKeyword.Given, """I execute system process "hostname""""), env)
   }
   
   "Execute system process 'undefined'" should "fail with IOException" in {
     intercept[IOException] {
-      engine.evaluate(Step(StepKeyword.Given, """I execute system process "undefined""""), env)
+      engine.evaluate(Step(Position(0, 0), StepKeyword.Given, """I execute system process "undefined""""), env)
     }
   }
   

@@ -18,10 +18,11 @@ package gwen.dsl
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import scala.util.Success
 
-class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
+class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(spec, _: String);
+  private val parse = parseFeatureSpec(_: String);
   
   private val featureString = """
    
@@ -30,7 +31,10 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
        I want to automate tests
        So that gwen can run them
 
-    Background: The butterfly effect
+  Background: The butterfly effect
+  
+        Sensitivity to initial conditions
+        
         Given a deterministic nonlinear system
          When a small change is initially applied
          Then a large change will eventually result
@@ -61,44 +65,44 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
   "Feature" should "parse" in {
     
     val featureSpec = parse(featureString) match {
-      case Success(featureSpec, _) => 
+      case Success(featureSpec) => 
         featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
-          Background("The butterfly effect", 
+          Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
-              Step(StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(StepKeyword.When,  "a small change is initially applied"),
-              Step(StepKeyword.Then,  "a large change will eventually result")
+              Step(Position(12, 9), StepKeyword.Given, "a deterministic nonlinear system"),
+              Step(Position(13, 10), StepKeyword.When,  "a small change is initially applied"),
+              Step(Position(14, 10), StepKeyword.Then,  "a large change will eventually result")
             )
           )
         }
         featureSpec.scenarios should be {
           List(
-            Scenario(Set[Tag](), "Evaluation", None,
+            Scenario(Set[Tag](), "Evaluation", Nil, None,
               List(
-                Step(StepKeyword.Given, "any software behavior"),
-                Step(StepKeyword.When,  "expressed in Gherkin"),
-                Step(StepKeyword.Then,  "Gwen can evaluate it")
+                Step(Position(17, 9), StepKeyword.Given, "any software behavior"),
+                Step(Position(18, 10), StepKeyword.When,  "expressed in Gherkin"),
+                Step(Position(19, 10), StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario(Set[Tag](), "The useless test", None, 
+            Scenario(Set[Tag](), "The useless test", Nil, None, 
               List(
-                Step(StepKeyword.Given, "I am a test"),
-                Step(StepKeyword.And,   "I am generated from code"),
-                Step(StepKeyword.When,  "the code changes"),
-                Step(StepKeyword.Then,  "I change"),
-                Step(StepKeyword.And,   "so I won't fail"),
-                Step(StepKeyword.And,   "that's why I'm useless")
+                Step(Position(22, 9), StepKeyword.Given, "I am a test"),
+                Step(Position(23, 11), StepKeyword.And,   "I am generated from code"),
+                Step(Position(24, 10), StepKeyword.When,  "the code changes"),
+                Step(Position(25, 10), StepKeyword.Then,  "I change"),
+                Step(Position(26, 11), StepKeyword.And,   "so I won't fail"),
+                Step(Position(27, 11), StepKeyword.And,   "that's why I'm useless")
               )
             ),
-            Scenario(Set[Tag](), "The useful test", None, 
+            Scenario(Set[Tag](), "The useful test", Nil, None, 
               List(
-                Step(StepKeyword.Given, "I am a test"),
-                Step(StepKeyword.And,   "I am written by a human"),
-                Step(StepKeyword.When,  "the code changes"),
-                Step(StepKeyword.Then,  "I don't"),
-                Step(StepKeyword.And,   "so I may fail"),
-                Step(StepKeyword.But,   "that's why I'm useful")
+                Step(Position(30, 9), StepKeyword.Given, "I am a test"),
+                Step(Position(31, 11), StepKeyword.And,   "I am written by a human"),
+                Step(Position(32, 10), StepKeyword.When,  "the code changes"),
+                Step(Position(33, 10), StepKeyword.Then,  "I don't"),
+                Step(Position(34, 11), StepKeyword.And,   "so I may fail"),
+                Step(Position(35, 11), StepKeyword.But,   "that's why I'm useful")
               )
             )
           )
@@ -189,7 +193,7 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
     
   }
   
-  "Scenarios with invalid tag" should "not parse" in {
+  "Scenarios with two tags on one line" should "parse" in {
     
     val featureString = """
       
@@ -210,7 +214,10 @@ class SpecParser1Test extends FlatSpec with Matchers with SpecParser {
       Scenario: Work unit 4
           Given I do work 4"""
     
-    val featureSpec = parse(featureString).successful should be (false)
+    val featureSpec = parse(featureString)
+    featureSpec.isSuccess should be (true)
+    featureSpec.get.scenarios(3).tags.contains(Tag("wip")) should be (true)
+    featureSpec.get.scenarios(3).tags.contains(Tag("play")) should be (true)
     
   }
     

@@ -18,6 +18,7 @@
 
 @StepDef
 Scenario: ++x
+    Increments the value of x
     Given z = x + 1
      Then x = z
      

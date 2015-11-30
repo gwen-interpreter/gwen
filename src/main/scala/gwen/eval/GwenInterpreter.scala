@@ -20,6 +20,8 @@ import java.io.File
 
 import scala.io.Source
 import scala.language.postfixOps
+import scala.util.Failure
+import scala.util.Success
 import scala.util.Try
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
@@ -31,12 +33,12 @@ import gwen.dsl.Background
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.dsl.FeatureSpec
+import gwen.dsl.GherkinParser
 import gwen.dsl.Loaded
 import gwen.dsl.Passed
 import gwen.dsl.Scenario
 import gwen.dsl.Skipped
 import gwen.dsl.SpecNormaliser
-import gwen.dsl.SpecParser
 import gwen.dsl.SpecType
 import gwen.dsl.Step
 import gwen.dsl.Tag
@@ -51,7 +53,7 @@ import gwen.errors.parsingError
   * 
   * @author Branko Juric
   */
-class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with SpecNormaliser with LazyLogging {
+class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
   /**
@@ -94,14 +96,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
     * @return the evaluated step (or an exception if a runtime error occurs)
     * @throws gwen.errors.ParsingException if the given step fails to parse
     */
-  private[eval] def interpretStep(input: String, env: T): Try[Step] = Try {
-    parseAll(step, input) match {
-      case success @ Success(step, _) => 
-        engine.evaluateStep(step, env)
-      case failure: NoSuccess => 
-        parsingError(failure.toString)
-    }
-  }
+  private[eval] def interpretStep(input: String, env: T): Try[Step] = 
+    parseStep(input).map(engine.evaluateStep(_, env))
   
   /**
     * Interprets an incoming feature.
@@ -116,8 +112,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureSpec] = 
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val dataRecord = unit.dataRecord 
-      parseAll(spec, Source.fromFile(featureFile).mkString) match {
-        case success @ Success(featureSpec, _) =>
+      parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
+        case Success(featureSpec) =>
           if (featureFile.getName().endsWith(".meta")) {
             evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env)
           } else {
@@ -130,8 +126,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
                 Nil
             }
           }
-        case failure: NoSuccess =>
-          parsingError(failure.toString)
+        case Failure(e) =>
+          parsingError(e.toString)
       }
     }).getOrElse(Nil tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
   
@@ -209,6 +205,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
             Some(background),
             background.evalStatus match {
               case Passed(_) => engine.evaluateSteps(scenario.steps, env)
+              case Skipped if (background.steps.isEmpty) => engine.evaluateSteps(scenario.steps, env)
               case _ => scenario.steps map { step =>
                 Step(step, Skipped, step.attachments)
               }
@@ -260,29 +257,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with SpecParser with Spe
         env.specType = SpecType.feature
       }
     }
-  
-  /**
-    * Logs the evaluation status of the given node.
-    * 
-    * @param node the node to log the evaluation status of
-    * @param name the name of the node that failed
-    * @param status the evaluation status
-    * @return the logged status message
-    */
-  private def logStatus(node: String, name: String, status: EvalStatus) = {
-      logStatusMsg(s"${if (SpecType.meta.toString() == node) Loaded else status} $node: $name", status)
-  }
-  
-  private def logStatusMsg(msg: String, status: EvalStatus) = status match {
-    case Loaded => 
-      logger.debug(msg)
-    case Passed(_) => 
-      logger.info(msg)
-    case Failed(_, _) => 
-      logger.error(msg)
-    case _ => 
-      logger.warn(msg)
-  }
   
 }
 

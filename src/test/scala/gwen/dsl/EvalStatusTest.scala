@@ -19,9 +19,9 @@ package gwen.dsl
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with SpecParser {
+class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
-  private val parse = parseAll(spec, _: String);
+  private val parse = parseFeatureSpec(_: String);
 
   private val featureString = """
    
@@ -90,13 +90,14 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.steps map {step =>
-              Step(step.keyword, step.expression, Passed(1))
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step.pos, step.keyword, step.expression, Passed(1))
             })
           }, 
           scenario.steps map {step =>
-            Step(step.keyword, step.expression, if (scenario.isStepDef) Loaded else Passed(1))
+            Step(step.pos, step.keyword, step.expression, if (scenario.isStepDef) Loaded else Passed(1))
           }) 
       })
     
@@ -127,10 +128,11 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.keyword, step.expression, stepIndex match {
+              Step(step.pos, step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex == 0) => Passed(1)
                 case 3 if (scenarioIndex == 0) => Failed(99, error)
                 case _ => step.evalStatus
@@ -187,10 +189,11 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.keyword, step.expression, stepIndex match {
+              Step(step.pos, step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if (scenarioIndex < 2) => Passed(1)
                 case 3 if (scenarioIndex == 1) => Failed(99, error)
                 case _ => if (scenarioIndex < 1) Passed(1) else step.evalStatus
@@ -247,9 +250,10 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps map { step =>
-              Step(step.keyword, step.expression, scenarioIndex match {
+            Background(background.name, background.description, background.steps map { step =>
+              Step(step.pos, step.keyword, step.expression, scenarioIndex match {
                 case 0 => Passed(1)
                 case _ => step.evalStatus
               })
@@ -257,7 +261,7 @@ Background: The tester
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.keyword, step.expression, stepIndex match {
+            Step(step.pos, step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if (scenarioIndex == 0) => Passed(1)
               case 3 if (scenarioIndex == 0) => Failed(99, error)
               case _ => step.evalStatus
@@ -314,14 +318,15 @@ Background: The tester
         Scenario(
           scenario.tags,
           scenario.name, 
+          scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.steps map { step =>
-              Step(step.keyword, step.expression, Passed(1))
+            Background(background.name, background.description, background.steps map { step =>
+              Step(step.pos, step.keyword, step.expression, Passed(1))
             }) 
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.keyword, step.expression, stepIndex match {
+            Step(step.pos, step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if (scenarioIndex < 2) => Passed(1)
               case 3 if (scenarioIndex == 1) => Failed(99, error)
               case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus

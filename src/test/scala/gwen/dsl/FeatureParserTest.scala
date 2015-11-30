@@ -19,10 +19,13 @@ package gwen.dsl
 import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import scala.util.Failure
+import gherkin.ParserException
+import scala.util.Success
 
-class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
+class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseAll(feature, _: String);
+  private def parse(input: String) = parseFeatureSpec(input).map(_.feature)
   
   "Valid features" should "parse" in {
 
@@ -31,11 +34,6 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
     
       parse(s"Feature: Let me show you a feature\n").get       should be (Feature("Let me show you a feature", Nil))
       parse(s"Feature:Let me show you a feature\n").get        should be (Feature("Let me show you a feature", Nil))
-      parse(s"Feature\t:Let me show you a feature\n").get      should be (Feature("Let me show you a feature", Nil))
-      parse(s"\tFeature\t:Let me show you a feature\n").get    should be (Feature("Let me show you a feature", Nil))
-      parse(s"\tFeature\t:\tLet me show you a feature\n").get  should be (Feature("Let me show you a feature", Nil))
-      
-      parse(s"Feature :Let me show you a feature\n").get should be (Feature("Let me show you a feature", Nil))
       
       parse(s"\tFeature:Let me show you a feature\n").get     should be (Feature("Let me show you a feature", Nil))
       parse(s"Feature:\tLet me show you a feature\n").get     should be (Feature("Let me show you a feature", Nil))
@@ -56,15 +54,18 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
   
   "Invalid features" should "not parse" in {
 
-    val expected = "Invalid feature declaration, expected >> Feature: name<eol>, [As ..<eol> I want ..<eol> [So that ..<eol>]]"
-    assertFail("Feature", expected)
-    assertFail("I am not a valid feature", expected)
-    assertFail("Feature hey I dont have a colon after 'Feature'", expected)
-    assertFail("Hey I dont start with 'Feature:'", expected)
+    assertFail("Feature\t:Let me show you a feature\n")
+    assertFail("\tFeature\t:Let me show you a feature\n")
+    assertFail("\tFeature\t:\tLet me show you a feature\n")
+    assertFail("Feature :Let me show you a feature\n")
+    assertFail("Feature")
+    assertFail("I am not a valid feature")
+    assertFail("Feature hey I dont have a colon after 'Feature'")
+    assertFail("Hey I dont start with 'Feature:'")
     
   }
   
-  "Features with valid narratives" should "parse" in {
+  "Features with story-like description" should "parse" in {
 
     var feature = parse(
       """Feature: let me tell you something
@@ -73,7 +74,10 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As a tester")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
@@ -81,7 +85,9 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
            I want to test all behavior""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As a tester I want to test all behavior")
+    feature.description.length should be (2)
+    feature.description(0) should be ("As a tester")
+    feature.description(1) should be ("I want to test all behavior")
     
     feature = parse(
       """Feature: let me tell you something
@@ -90,7 +96,10 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As an experienced tester I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As an experienced tester")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
@@ -99,26 +108,33 @@ class FeatureParserTest extends FlatSpec with Matchers with SpecParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.narrative.mkString(" ") should be ("As TESTCO I want to test all behavior So that there are no suprises")
+    feature.description.length should be (3)
+    feature.description(0) should be ("As TESTCO")
+    feature.description(1) should be ("I want to test all behavior")
+    feature.description(2) should be ("So that there are no suprises")
     
   }
   
-  "Features with invalid narratives" should "not parse" in {
-    assertFail("""Feature: let me tell you something
-                    As a tester
-                    I wish to test all behavior
-                    So that there are no suprises""", "I want ..<eol> expected")
+  "Features with non story-like description" should "parse" in {
+    val feature = parse(
+      """Feature: let me tell you something
+            Some miscellaneous random
+            text
+            
+            and some more text after a blank line""").get
      
-    assertFail("""Feature: let me tell you something
-                    As an experienced tester
-                    I want to test all behavior
-                    So there are no suprises""", """string matching regex `\z' expected but `S' found""")
+    feature.name should be ("let me tell you something")
+    feature.description.length should be (4)
+    feature.description(0) should be ("Some miscellaneous random")
+    feature.description(1) should be ("text")
+    feature.description(2) should be ("")
+    feature.description(3) should be ("and some more text after a blank line")
   }
   
-  private def assertFail(input: String, expected: String) {
+  private def assertFail(input: String) {
     parse(input) match {
-      case f: Failure => f.msg should be (expected)
-      case _ => fail("failure expected")
+      case Success(_) => fail("failure expected") 
+      case _ => 
     }
   }
   

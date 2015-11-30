@@ -29,6 +29,8 @@ import gwen.dsl.StatusKeyword
 import gwen.dsl.Scenario
 import gwen.dsl.EvalStatus
 import gwen.dsl.Skipped
+import gwen.dsl.SpecType
+import gwen.dsl.Loaded
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -66,7 +68,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     val iStep = doEvaluate(step, env) { env.interpolate(_) }
     logger.info(s"Evaluating Step: $iStep")
     val stepDefOpt = env.getStepDef(iStep.expression)
-    (stepDefOpt match {  
+    ((stepDefOpt match {  
       case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
       case stepdef => stepdef 
     }) match {
@@ -86,6 +88,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         }
       case (Some((stepDef, params))) => 
         evalStepDef(stepDef, step, params, env)
+    }) tap { step =>
+      logStatus("Step", step.toString, step.evalStatus)
     }
   }
   
@@ -162,6 +166,30 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     override val engineA = EvalEngine.this
     override val engineB = otherEngine
   }
+  
+  /**
+    * Logs the evaluation status of the given node.
+    * 
+    * @param node the node to log the evaluation status of
+    * @param name the name of the node that failed
+    * @param status the evaluation status
+    * @return the logged status message
+    */
+  private[eval] def logStatus(node: String, name: String, status: EvalStatus) = {
+      logStatusMsg(s"${if (SpecType.meta.toString() == node) Loaded else status} $node: $name", status)
+  }
+  
+  private def logStatusMsg(msg: String, status: EvalStatus) = status match {
+    case Loaded => 
+      logger.debug(msg)
+    case Passed(_) => 
+      logger.info(msg)
+    case Failed(_, _) => 
+      logger.error(msg)
+    case _ => 
+      logger.warn(msg)
+  }
+  
 }
 
 /** Hybrid engine trait. */

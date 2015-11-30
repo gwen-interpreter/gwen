@@ -22,6 +22,8 @@ scalacOptions += "-language:postfixOps"
 
 scalacOptions += "-deprecation"
 
+scalacOptions += "-target:jvm-1.7"
+
 licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
 
 homepage := Some(url("http://gwen-interpreter.github.io/gwen/"))
@@ -33,6 +35,8 @@ javaSource in Compile := baseDirectory.value / "src/main/scala"
 javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+
+libraryDependencies += "io.cucumber" % "gherkin3" % "3.1.2"
 
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.9"
 
@@ -51,15 +55,6 @@ libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.2.2"
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
-
-libraryDependencies := {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-      libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
-    case _ =>
-      libraryDependencies.value
-  }
-}
 
 mappings in (Compile, packageBin) ++= Seq(
   file("LICENSE") -> "LICENSE",

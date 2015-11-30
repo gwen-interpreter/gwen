@@ -27,7 +27,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Feature with no step defs" should "normalise without error" in {
     val feature = FeatureSpec(
     Feature("feature1", Nil), None, List(
-      Scenario(Set[Tag](), "scenario1", None, List(
+      Scenario(Set[Tag](), "scenario1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.Given, "step 2", Passed(1)),
         Step(StepKeyword.Given, "step 3", Passed(2)))
@@ -38,7 +38,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with one step def" should "normalise without error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -49,12 +49,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with multiple unique step defs" should "normalise without error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef2", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef2", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -65,12 +65,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with duplicate step def" should "error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -84,12 +84,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with duplicate step def with params" should "error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef <number>", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef <number>", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef <index>", None, List(
+      Scenario(Set[Tag]("@StepDef"), "stepdef <index>", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -103,7 +103,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Data driven feature with csv file" should "normalise without error" in {
     val feature = FeatureSpec(
     Feature("About me", Nil), None, List(
-      Scenario(Set[Tag](), "What am I?", None, List(
+      Scenario(Set[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given, "I am ${my age} year(s) old"),
         Step(StepKeyword.When, "I am a ${my gender}"),
         Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
