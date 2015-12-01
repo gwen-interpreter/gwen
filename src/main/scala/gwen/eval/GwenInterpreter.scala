@@ -48,7 +48,7 @@ import gwen.errors.parsingError
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
-  * them.  All parsing is performed in the inherited [[gwen.dsl.SpecParser]].
+  * them.  All parsing is performed in the inherited [[gwen.dsl.GherkinParser]].
   * All evaluation is dispatched to a mixed in [[gwen.eval.EvalEngine]].
   * 
   * @author Branko Juric

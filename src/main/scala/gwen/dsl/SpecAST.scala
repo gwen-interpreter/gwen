@@ -23,7 +23,7 @@ import scala.collection.JavaConversions._
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
-  * An spec node is the raw output produced by the [[SpecParser]].
+  * An spec node is the raw output produced by the [[GherkinParser]].
   *
   * @author Branko Juric
   */
@@ -160,7 +160,7 @@ object Background {
   * Captures a gherkin scenario.
   * @param tags set of tags
   * @param name the scenario name
-  * @parma description the optional background description
+  * @param description the optional background description
   * @param background optional background
   * @param steps list of scenario steps
   * @param metaFile: optional meta file (required if the scenario is a stepdef)

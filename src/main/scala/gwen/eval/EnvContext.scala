@@ -250,8 +250,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * Subclasses can override this method to perform additional lookups.
     * 
     *  @param name the name of the attribute or value
-    *  @throws `gwen.errors.UnboundAttributeException` if no value is bound 
-    *          to the given name 
     */
   def getBoundReferenceValue(name: String): String = {
     scopes.getOpt(name) match {
