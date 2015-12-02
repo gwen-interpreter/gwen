@@ -150,7 +150,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           }) match { 
             case (value, values) =>
               val params = names zip (if (value != "") value::values else values).reverse
-              if (expression == params.foldLeft(stepDef.name) { (result, param) => result.replaceAll(param._1, param._2) }) {
+              if (expression == params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }) {
                 Some(stepDef, params)
               } else None
           }
