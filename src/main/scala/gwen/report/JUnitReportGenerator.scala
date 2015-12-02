@@ -36,8 +36,6 @@ class JUnitReportGenerator(val options: GwenOptions) extends ReportGenerator(Rep
     // noop
   }
   
-  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
-    metaSpecs.map(FeatureResult(_, None, Nil))
-  }
+  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = Nil
   
 }

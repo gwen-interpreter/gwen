@@ -38,7 +38,7 @@ import gwen.eval.FeatureUnit
   * @author Branko Juric
   */
 class ReportGenerator (
-    private val reportFormat: ReportFormat.Value,
+    val reportFormat: ReportFormat.Value,
     private val options: GwenOptions) extends LazyLogging {
   formatter: ReportFormatter => 
 
@@ -54,27 +54,30 @@ class ReportGenerator (
     * Generate and return a detail feature report.
     * 
     * @param info the gwen implementation info
-    * @param specs the list of evaluated specs (head = feature spec, tail = meta specs)
+    * @param result the evaluated feature result
     * @param dataRecord optional data record
-    * @return the report file
+    * @return the list of report files (head = feature report, tail = meta reports)
     */
-  final def reportDetail(info: GwenInfo, unit: FeatureUnit, specs: List[FeatureSpec]): Option[(ReportFormat.Value, File)] = {
-    val (featureSpec::metaSpecs) = specs
+  final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult): List[File] = {
+    val featureSpec = result.spec
     val dataRecord = unit.dataRecord
-    val reportFile = reportFormat.createReportFile(reportFormat.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord) tap { file =>
-      reportFeatureDetail(info, unit, featureSpec, file, reportMetaDetail(info, unit, metaSpecs, file))
+    val featureReportFile = reportFormat.createReportFile(reportFormat.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord)
+    val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
+      val metaspec = metaResult.spec
+      val prefix = s"${ReportGenerator.encodeNo(idx + 1)}-"
+      reportFormat.createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, unit.dataRecord)
     }
-    Some((reportFormat, reportFile))
+    val reportFiles = featureReportFile :: metaReportFiles
+    reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
   }
   
-  private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaSpecs: List[FeatureSpec], featureReportFile: File): List[FeatureResult] = {
-    metaSpecs.zipWithIndex map { case (metaspec, idx) =>
-      val prefix = s"${ReportGenerator.encodeNo(idx + 1)}-"
-      val file = reportFormat.createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, unit.dataRecord) 
-      FeatureResult(metaspec, Some(Map(reportFormat -> file)), Nil) tap { metaResult =>
-        val featureCrumb = ("Feature", featureReportFile)
-        val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
-        formatDetail(options, info, unit, metaResult, breadcrumbs) foreach { content => 
+  private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = {
+    metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
+      val featureCrumb = ("Feature", reportFiles.head)
+      val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
+      val reportFile = reportFiles.tail(idx)
+      formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
+        reportFile tap { file =>
           file.writeText(content) 
           logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
         }
@@ -82,12 +85,15 @@ class ReportGenerator (
     }
   }
   
-  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, spec: FeatureSpec, featureReportFile: File, metaResults: List[FeatureResult]) { 
-    FeatureResult(spec, Some(Map(reportFormat -> featureReportFile)), metaResults) tap { featureResult =>
-      formatDetail(options, info, unit, featureResult, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil)) foreach { content =>
-        featureReportFile.writeText(content)
-        reportAttachments(spec, featureReportFile)
-        logger.info(s"${reportFormat.name} feature detail report generated: ${featureReportFile.getAbsolutePath()}")
+  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult, reportFiles: List[File]): Option[File] = {
+    val featureSpec = result.spec
+    val dataRecord = unit.dataRecord
+    val reportFile = reportFiles.head
+    formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
+      reportFile tap { file =>
+        file.writeText(content)
+        reportAttachments(result.spec, file)
+        logger.info(s"${reportFormat.name} feature detail report generated: ${file.getAbsolutePath()}")
       }
     }
   }
@@ -106,7 +112,7 @@ class ReportGenerator (
     * @param summary the feature summary to report
     */
   final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
-    if (summary.summaryLines.nonEmpty) {
+    if (summary.results.nonEmpty) {
       summaryReportFile tap { reportFile =>
         reportFile foreach { file =>
           formatSummary(options, info, summary) foreach { content =>

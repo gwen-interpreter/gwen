@@ -17,9 +17,7 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-
 import com.typesafe.scalalogging.slf4j.LazyLogging
-
 import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.UserOverrides
@@ -27,6 +25,7 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.dsl.FeatureSpec
 import gwen.report.ReportGenerator
+import scala.concurrent.duration.Duration
 
 /**
   * Launches the gwen interpreter.
@@ -56,7 +55,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         case _ =>
           EvalStatus { 
             optEnv.toList flatMap { env =>
-             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.evalStatus)
+             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
             }
           } tap { status =>
             if (!options.features.isEmpty) {
@@ -87,24 +86,20 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
       val results = featureStream.par.flatMap { unit =>
-        evaluateUnit(options, envOpt, unit) { specs => 
-          specs match { 
-            case Nil => None
-            case _ => Some(toFeatureResult(reportGenerators, unit, specs))
-          }
+        evaluateUnit(options, envOpt, unit) { result =>
+          result.map(bindReportFiles(reportGenerators, unit, _))
         }
       }
-      results.toList.sortBy(_.timestamp).foldLeft(FeatureSummary()) (_+_) tap { summary => 
+      results.toList.sortBy(_.finished).foldLeft(FeatureSummary()) (_+_) tap { summary => 
         reportGenerators foreach { _.reportSummary(interpreter, summary) }
       }
     } else {
       featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
-        evaluateUnit(options, envOpt, unit) { specs =>
-          specs match { 
-            case Nil => summary
-            case specs => 
-              val result = toFeatureResult(reportGenerators, unit, specs)
-              summary + result tap { accSummary =>
+        evaluateUnit(options, envOpt, unit) { result =>
+          result match { 
+            case None => summary
+            case _ => 
+              summary + result.map(bindReportFiles(reportGenerators, unit, _)).get tap { accSummary =>
                 if (!options.parallel) {
                   reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
                 }
@@ -115,7 +110,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
   
-  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], unit: FeatureUnit)(f: (List[FeatureSpec] => U)): U = {
+  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], unit: FeatureUnit)(f: (Option[FeatureResult] => U)): U = {
     logger.info(("""|       
                     |  _    
                     | { \," Evaluating feature..
@@ -136,12 +131,18 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
     
-  private def toFeatureResult(reportGenerators: List[ReportGenerator], unit: FeatureUnit, specs: List[FeatureSpec]): FeatureResult = {
-    val reportFiles = reportGenerators.flatMap(_.reportDetail(interpreter, unit, specs)).toMap
-    FeatureResult(specs.head, if (reportFiles.nonEmpty) Some(reportFiles) else None, specs.tail.map(FeatureResult(_, None, Nil))) tap { result => 
+  private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: FeatureResult): FeatureResult = {
+    val reportFiles = reportGenerators.map { generator => 
+      (generator.reportFormat, generator.reportDetail(interpreter, unit, result)) 
+    }.filter(_._2.nonEmpty).toMap
+    (if (reportFiles.nonEmpty) 
+      FeatureResult(result.spec, Some(reportFiles), result.metaResults, Duration.fromNanos(result.duration.toNanos))
+    else 
+      result
+    ) tap { result => 
       val status = result.spec.evalStatus
       logger.info("")
-      logger.info(s"${status} ${result.timestamp} ${status.emoticon}", status)
+      logger.info(s"${status} ${result.finished} ${status.emoticon}", status)
       logger.info("")
     }
   }
@@ -149,8 +150,6 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   private def printSummaryStatus(summary: FeatureSummary) {
     println
     println(summary.toString)
-    println
-    println(s"${summary.evalStatus} ${summary.timestamp} ${summary.evalStatus.emoticon}")
     println
   }
 }

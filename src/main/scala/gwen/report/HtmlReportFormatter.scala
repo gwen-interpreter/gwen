@@ -27,7 +27,6 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.eval.FeatureSummaryLine
 import gwen.dsl.Scenario
 import gwen.dsl.Tag
 import gwen.GwenSettings
@@ -51,8 +50,9 @@ trait HtmlReportFormatter extends ReportFormatter {
     * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
+    * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val reportDir = reportFormat.reportDir(options)
     val metaResults = result.metaResults 
@@ -61,7 +61,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val status = result.spec.evalStatus.status
     val summary = result.summary
     val screenshots = result.screenshots
-    val rootPath = relativePath(result.reports.get(reportFormat), reportDir).filter(_ == File.separatorChar).flatMap(c => "../")
+    val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
     
     Some(s"""<!DOCTYPE html>
 <html lang="en">
@@ -76,7 +76,6 @@ trait HtmlReportFormatter extends ReportFormatter {
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
         <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
         <span class="label label-black">Feature</span>
-        <span class="pull-right"><small>${durationOrStatus(result.spec.evalStatus)}</small></span>
         ${escape(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <table width="100%" cellpadding="5">
@@ -95,14 +94,14 @@ trait HtmlReportFormatter extends ReportFormatter {
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
           <span class="label label-${cssStatus(status)}">Meta</span>
           ${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
-          <span class="pull-right"><small>${durationOrStatus(metaStatus)}</small></span>""" else ""}
+          <span class="pull-right"><small>${formatDuration(metaResults.map(_.duration).reduce(_+_))}</small></span>""" else ""}
         </li>
       </ul>
       <div class="panel-body">
         <ul class="list-group">
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result.summaryLine, s"meta/${result.reports.get(reportFormat).getName()}", None, rowIndex)}).mkString}
+              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, s"meta/${reportFiles.tail(rowIndex).getName()}", None, rowIndex)}).mkString}
             </div>
           </li>
         </ul>
@@ -184,7 +183,8 @@ trait HtmlReportFormatter extends ReportFormatter {
   </head>
   <body>
     ${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
-    <ol class="breadcrumb">
+    
+    <ol class="breadcrumb" style="padding-right: 20px;">
       <li style="color: gray">
         <span class="caret-left" style="color: #f5f5f5;"></span> Summary
       </li>
@@ -192,14 +192,13 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escape(summary.timestamp.toString)}</small>
+        <small>${escape(summary.finished.toString)}</small>
       </li>
-      
+      <span class="pull-right"><small>${formatDuration(summary.duration)}</small></span>
     </ol>
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
-        <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
@@ -209,7 +208,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         </div>
       </div>
     </div>${(StatusKeyword.reportables.reverse map { status => 
-    summary.summaryLines.zipWithIndex.filter { _._1.evalStatus.status == status } match {
+    summary.results.zipWithIndex.filter { _._1.spec.evalStatus.status == status } match {
       case Nil => ""
       case results => s"""
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -217,10 +216,10 @@ trait HtmlReportFormatter extends ReportFormatter {
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
           <span class="label label-${cssStatus(status)}">${status}</span>${
           val count = results.size
-          val total = summary.summaryLines.size
+          val total = summary.results.size
           val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
           s"""${countOfTotal}${if (count > 1) s"""
-          <span class="pull-right"><small>${formatDuration(results.map(_._1.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
+          <span class="pull-right"><small>${formatDuration(results.map(_._1.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
         </li>
       </ul>
       <div class="panel-body">
@@ -228,8 +227,8 @@ trait HtmlReportFormatter extends ReportFormatter {
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">${
                 (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
-                  val report = result.reports.get(reportFormat)
-                  formatSummaryLine(result, s"${relativePath(report, reportDir).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
+                  val reportFile = result.reports.get(reportFormat).head
+                  formatSummaryLine(result, s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
                 }).mkString}
             </div>
           </li>
@@ -269,17 +268,17 @@ trait HtmlReportFormatter extends ReportFormatter {
             </tr>"""} else ""
   }
   
-  private def formatSummaryLine(summaryLine: FeatureSummaryLine, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
-                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(summaryLine.evalStatus.status)}" else "" }">
+  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
+                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.spec.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
-                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(summaryLine.timestamp.toString)}</small></span>
+                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.finished.toString)}</small></span>
                   </div>
                   <div class="col-md-4">
-                    <a class="text-${cssStatus(summaryLine.evalStatus.status)}" href="${reportPath}">${escape(summaryLine.featureName)}</a>
+                    <a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
                   </div>
                   <div class="col-md-5">
-                    <span class="pull-right"><small>${durationOrStatus(summaryLine.evalStatus)}</small></span> ${summaryLine.featureFile.map(_.getPath()).getOrElse("")}
+                    <span class="pull-right"><small>${formatDuration(result.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
 
@@ -331,7 +330,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     case StatusKeyword.Passed | StatusKeyword.Failed => formatDuration(evalStatus.duration)
     case _ => evalStatus.status
   }
-  private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   
 }
 
@@ -367,7 +365,7 @@ object HtmlReportFormatter {
   private [report] def formatStatusHeader(unit: FeatureUnit, result: FeatureResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
     val status = result.spec.evalStatus.status
     s"""
-    <ol class="breadcrumb">${(breadcrumbs map { case (text, reportFile) => s"""
+    <ol class="breadcrumb" style="padding-right: 20px;">${(breadcrumbs map { case (text, reportFile) => s"""
       <li>
         <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escape(text)}</a>
       </li>"""}).mkString}
@@ -375,7 +373,7 @@ object HtmlReportFormatter {
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escape(result.timestamp.toString)}</small>
+        <small>${escape(result.finished.toString)}</small>
       </li>
         ${ if (screenshots.size > 1) { s"""
              <li>
@@ -383,6 +381,7 @@ object HtmlReportFormatter {
              </li>"""
            } else ""
          }
+      <span class="pull-right"><small>${formatDuration(result.duration)}</small></span>
     </ol>"""
   }
     
@@ -410,6 +409,7 @@ object HtmlReportFormatter {
   </script>
   """
           
+  private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
   private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
           
 }

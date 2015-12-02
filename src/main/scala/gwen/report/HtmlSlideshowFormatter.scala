@@ -37,15 +37,16 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
+    * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     val screenshots = result.screenshots
     if (screenshots.isEmpty || result.isMeta) None
     else {
     
       val reportDir = reportFormat.reportDir(options)
       val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
-      val rootPath = relativePath(result.reports.get(reportFormat), reportDir).filter(_ == File.separatorChar).flatMap(c => "../")
+      val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
       val featureCrumb = ("Feature", ReportFormat.html.createReportFile(ReportFormat.html.createReportDir(options, result.spec, unit.dataRecord), "", result.spec, unit.dataRecord))
       Some(s"""<!DOCTYPE html>

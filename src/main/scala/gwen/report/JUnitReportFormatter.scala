@@ -41,8 +41,9 @@ trait JUnitReportFormatter extends ReportFormatter {
     * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
+    * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val scenarios = result.spec.scenarios.filter(!_.isStepDef)
     val hostname = s""" hostname="${InetAddress.getLocalHost.getHostName}""""
@@ -55,8 +56,8 @@ trait JUnitReportFormatter extends ReportFormatter {
     val errorCount = counts.get(StatusKeyword.Failed).getOrElse(0)
     val errors = s""" errors="${errorCount}""""
     val skipped = s""" skipped="${counts.get(StatusKeyword.Skipped).getOrElse(0) + counts.get(StatusKeyword.Pending).getOrElse(0)}""""
-    val time = s""" time="${result.spec.evalStatus.nanos.toDouble / 1000000000d}""""
-    val timestamp = s""" timestamp="${new DateTime(result.timestamp).withZone(DateTimeZone.UTC)}""""
+    val time = s""" time="${result.duration.toNanos.toDouble / 1000000000d}""""
+    val timestamp = s""" timestamp="${new DateTime(result.finished).withZone(DateTimeZone.UTC)}""""
     
     Some(s"""<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite${hostname}${name}${pkg}${tests}${errors}${skipped}${time}${timestamp}>

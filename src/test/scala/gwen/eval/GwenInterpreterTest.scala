@@ -153,10 +153,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step4)).thenReturn(step4)
     val result = interpreter(mockEnv).interpretFeature(new FeatureUnit(featureFile, Nil, None), Nil, mockEnv)
     result match {
-      case feature::_ =>
-        feature.evalStatus.status should be (StatusKeyword.Passed)
-      case Nil => 
-        fail("List(feature) expected")
+      case Some(featureResult) =>
+        featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
+      case None => 
+        fail("Some(FeatureResult) expected")
     }
   }
   
@@ -209,10 +209,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step5)).thenReturn(step5)
     val result = interpreter(mockEnv).interpretFeature(new FeatureUnit(featureFile, List(metaFile), None), Nil, mockEnv)
     result match {
-      case feature::_ =>
-        feature.evalStatus.status should be (StatusKeyword.Passed)
-      case Nil => 
-        fail("List(feature) expected")
+      case Some(featureResult) =>
+        featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
+      case None => 
+        fail("List(FeatureResult) expected")
     }
   }
   
