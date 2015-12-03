@@ -31,6 +31,7 @@ import gwen.eval.GwenOptions
 import gwen.eval.DataRecord
 import gwen.Predefs.FileIO
 import gwen.eval.FeatureUnit
+import gwen.Predefs.Formatting
 
 /**
   * Base class for report generators.
@@ -64,7 +65,7 @@ class ReportGenerator (
     val featureReportFile = reportFormat.createReportFile(reportFormat.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord)
     val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
       val metaspec = metaResult.spec
-      val prefix = s"${ReportGenerator.encodeNo(idx + 1)}-"
+      val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
       reportFormat.createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, unit.dataRecord)
     }
     val reportFiles = featureReportFile :: metaReportFiles
@@ -153,8 +154,6 @@ object ReportGenerator {
     options.reportDir.map(_ => formats.map(_.reportGenerator(options))).getOrElse(Nil)
   }
   
-  def encodeNo(num: Int) = "%04d".format(num)
-  
-  def encodeDataRecordNo(dataRecord: Option[DataRecord]) = dataRecord.map(record => s"${encodeNo(record.recordNo)}-").getOrElse("")
+  def encodeDataRecordNo(dataRecord: Option[DataRecord]) = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
   
 }

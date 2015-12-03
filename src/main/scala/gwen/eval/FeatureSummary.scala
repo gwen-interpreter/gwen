@@ -56,8 +56,8 @@ case class FeatureSummary(
   def +(featureResult: FeatureResult): FeatureSummary =
     new FeatureSummary(
       this.results ++ List(featureResult), 
-      addCounts(this.scenarioCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.filter(!_.isStepDef).map(_.evalStatus))),
-      addCounts(this.stepCounts, StatusKeyword.countsByStatus(featureResult.spec.scenarios.filter(!_.isStepDef).flatMap(_.allSteps.map(_.evalStatus)))))
+      addCounts(this.scenarioCounts, featureResult.scenarioCounts),
+      addCounts(this.stepCounts, featureResult.stepCounts))
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.reportables flatMap { status => 
@@ -112,6 +112,8 @@ class FeatureResult(
   lazy val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
   def summary = FeatureSummary(this)
+  private[eval] def scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
+  private[eval] def stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
   override def toString = s"[${DurationFormatter.format(duration)}] ${spec.evalStatus.status} (Overhead: ${DurationFormatter.format(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
   
 }

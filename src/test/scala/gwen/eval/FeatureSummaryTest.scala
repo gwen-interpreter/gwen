@@ -33,14 +33,44 @@ import gwen.dsl.Feature
 import gwen.dsl.Tag
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
+import gwen.dsl.Loaded
 
 class FeatureSummaryTest extends FlatSpec with Matchers {
 
+  "No results in summary" should "yield empty metrics" in {
+    val summary = FeatureSummary()
+    summary.results.size should be (0)
+    summary.featureCounts.size should be (0)
+    summary.scenarioCounts.size should be (0)
+    summary.stepCounts.size should be (0)
+    val summaryLines = summary.toString.split("\\r?\\n");
+    summaryLines.size should be (5)
+    summaryLines(0) should be ("0 features: Passed 0, Failed 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 scenarios: Passed 0, Failed 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("0 steps: Passed 0, Failed 0, Skipped 0, Pending 0")
+    summaryLines(3) should be ("")
+    summaryLines(4).startsWith("[~0ms] Passed") should be (true)
+  }
+  
   "Accumulated feature results in summary" should "sum correctly" in {
     
     var summary = FeatureSummary()
     var summaryLines = Array[String]()
     
+    // add 1 meta
+    val meta1 = FeatureSpec(
+      Feature("meta1", Nil), None, List(
+        Scenario(Set[Tag](), "metaScenario1", Nil, None, List(
+          Step(StepKeyword.Given, "meta step 1", Passed(2)),
+          Step(StepKeyword.Given, "meta step 2", Passed(1)),
+          Step(StepKeyword.Given, "meta step 3", Passed(2)))
+        ),
+        Scenario(Set(Tag("StepDef")), "metaStepDef1", Nil, None, List(
+          Step(StepKeyword.Given, "step 1", Loaded),
+          Step(StepKeyword.Given, "step 2", Loaded),
+          Step(StepKeyword.Given, "step 3", Loaded))
+        )))
+        
     // add 1 passed scenario
     val feature1 = FeatureSpec(
       Feature("feature1", Nil), None, List(
@@ -48,8 +78,17 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given, "step 1", Passed(2)),
           Step(StepKeyword.Given, "step 2", Passed(1)),
           Step(StepKeyword.Given, "step 3", Passed(2)))
-        )))
-    summary = summary + FeatureResult(feature1, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+        ),
+        Scenario(Set(Tag("StepDef")), "StepDef1", Nil, None, List(
+          Step(StepKeyword.Given, "step 1", Loaded),
+          Step(StepKeyword.Given, "step 2", Loaded),
+          Step(StepKeyword.Given, "step 3", Loaded))
+        )),
+      None,
+      List(meta1))
+        
+    val metaResult = FeatureResult(meta1, None, Nil, Duration.Zero)
+    summary = summary + FeatureResult(feature1, None, List(metaResult), Duration(10, TimeUnit.MILLISECONDS))
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Passed)
     summary.results.size should be (1)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1)))

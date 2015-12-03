@@ -137,4 +137,8 @@ object Predefs extends LazyLogging {
     }
   }
   
+  object Formatting {
+    def padWithZeroes(num: Int) = "%04d".format(num)
+  }
+  
 }

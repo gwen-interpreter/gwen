@@ -29,6 +29,7 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.FeatureUnit
+import gwen.Predefs.Formatting
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter {
@@ -45,7 +46,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
-    val scenarios = result.spec.scenarios.filter(!_.isStepDef)
+    val scenarios = result.spec.scenarios
     val hostname = s""" hostname="${InetAddress.getLocalHost.getHostName}""""
     val packageName = result.spec.featureFile.map(f => f.getPath()).getOrElse("")
     val name = s""" name="${packageName}.Feature: ${result.spec.feature.name}""""
@@ -63,8 +64,8 @@ trait JUnitReportFormatter extends ReportFormatter {
 <testsuite${hostname}${name}${pkg}${tests}${errors}${skipped}${time}${timestamp}>
     <properties>${(sys.props.map { case (name, value) => s"""
         <property name="$name" value="$value"/>"""}).mkString}
-    </properties>${(scenarios.map{scenario => s"""
-    <testcase name="Scenario: ${scenario.name}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${scenario.evalStatus.status}"${scenario.evalStatus match {
+    </properties>${(scenarios.zipWithIndex.map{case (scenario, idx) => s"""
+    <testcase name="Scenario ${Formatting.padWithZeroes(idx + 1)}: ${scenario.name}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${scenario.evalStatus.status}"${scenario.evalStatus match {
     case Failed(_, error) => 
       s""">
         <error type="${error.getClass().getName()}" message="${error.writeStackTrace}"/>
