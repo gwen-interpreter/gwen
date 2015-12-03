@@ -79,7 +79,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span>
         ${escape(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead ${formatDuration(result.duration - result.spec.evalStatus.duration)}</small></span>
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.duration - result.spec.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
             ${formatProgressBar("Step", summary.stepCounts)}
@@ -203,7 +203,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="label label-black">Results</span>
         <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead ${formatDuration(summary.duration - summary.evalStatus.duration)}</small></span>
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.duration - summary.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}

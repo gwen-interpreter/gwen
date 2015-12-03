@@ -77,7 +77,7 @@ case class FeatureSummary(
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${DurationFormatter.format(duration)}] ${evalStatus.status} (${DurationFormatter.format(duration - evalStatus.duration)} overhead) ${finished} ${evalStatus.emoticon}""".stripMargin
+        |[${DurationFormatter.format(duration)}] ${evalStatus.status} (Overhead: ${DurationFormatter.format(duration - evalStatus.duration)}) ${finished} ${evalStatus.emoticon}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
@@ -112,7 +112,7 @@ class FeatureResult(
   lazy val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
   def summary = FeatureSummary(this)
-  override def toString = s"[${DurationFormatter.format(duration)}] ${spec.evalStatus.status} (Overhead ${DurationFormatter.format(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
+  override def toString = s"[${DurationFormatter.format(duration)}] ${spec.evalStatus.status} (Overhead: ${DurationFormatter.format(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
   
 }
 
