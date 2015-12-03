@@ -75,9 +75,11 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
         <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
-        <span class="label label-black">Feature</span>
+        <span class="label label-black">${if(result.isMeta) "Meta" else "Feature"}</span>
+        <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span>
         ${escape(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead ${formatDuration(result.duration - result.spec.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
             ${formatProgressBar("Step", summary.stepCounts)}
@@ -131,8 +133,8 @@ trait HtmlReportFormatter extends ReportFormatter {
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
           <span class="grayed"><p><small>${escape(tags.mkString(" "))}</small></p></span>""" else ""}
-          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>
-          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
+          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1) s"""
+          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
           ${escape(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
         </li>
       </ul>
@@ -199,7 +201,9 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
+        <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead ${formatDuration(summary.duration - summary.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}

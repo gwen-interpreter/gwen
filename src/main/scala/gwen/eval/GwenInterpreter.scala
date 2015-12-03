@@ -166,14 +166,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       } reverse,
       featureSpec.featureFile 
     )
-    if(SpecType.meta != env.specType) {
-      logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
-    }
     resultSpec.featureFile foreach { file =>
       logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
     }
     logger.debug(prettyPrint(resultSpec))
-    FeatureResult(resultSpec, None, metaResults, Duration.fromNanos(System.nanoTime() - start))
+    FeatureResult(resultSpec, None, metaResults, Duration.fromNanos(System.nanoTime() - start)) tap { result =>
+      if(SpecType.meta != env.specType) {
+        logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
+      }
+    }
   }
   
   /**
