@@ -89,7 +89,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     if (options.parallel) {
       val results = featureStream.par.flatMap { unit =>
         evaluateUnit(options, envOpt, unit) { result =>
-          result.map(bindReportFiles(reportGenerators, unit, _))
+          result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
       results.toList.sortBy(_.finished).foldLeft(FeatureSummary()) (_+_) tap { summary => 
@@ -102,7 +102,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           summary
         } else {
           evaluateUnit(options, envOpt, unit) { result =>
-            result match { 
+            (result match { 
               case None => summary
               case _ => 
                 summary + result.map(bindReportFiles(reportGenerators, unit, _)).get tap { accSummary =>
@@ -110,7 +110,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
                     reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
                   }
                 }
-            }
+            }) tap { _ => result.foreach(logFeatureStatus) }
           }
         }
       }
@@ -142,18 +142,19 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val reportFiles = reportGenerators.map { generator => 
       (generator.reportFormat, generator.reportDetail(interpreter, unit, result)) 
     }.filter(_._2.nonEmpty).toMap
-    (if (reportFiles.nonEmpty) 
+    if (reportFiles.nonEmpty) 
       FeatureResult(result.spec, Some(reportFiles), result.metaResults, Duration.fromNanos(result.duration.toNanos))
     else 
       result
-    ) tap { result => 
-      val status = result.spec.evalStatus
-      logger.info("")
-      logger.info(s"${status} ${result.finished} ${status.emoticon}", status)
-      logger.info("")
-    }
   }
   
+  private def logFeatureStatus(result: FeatureResult) {
+    val status = result.spec.evalStatus
+    logger.info("")
+    logger.info(result.toString)
+    logger.info("")
+  }
+      
   private def printSummaryStatus(summary: FeatureSummary) {
     println
     println(summary.toString)
