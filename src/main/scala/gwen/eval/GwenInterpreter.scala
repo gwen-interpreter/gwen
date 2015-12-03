@@ -151,14 +151,17 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
               val failfast = env.execute(GwenSettings.`gwen.feature.failfast`).getOrElse(false)
-              if (failfast) {
+              val exitOnFail = env.execute(GwenSettings.`gwen.feature.failfast.exit`).getOrElse(false)
+              if (failfast && !exitOnFail) {
                 Scenario(
                   scenario, 
                   scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
                   scenario.steps.map(step => Step(step, Skipped, step.attachments))
                 )
+              } else if (exitOnFail) {
+                scenario
               } else {
-                  evaluateScenario(scenario, env)
+                evaluateScenario(scenario, env)
               }
             case _ => 
               evaluateScenario(scenario, env)

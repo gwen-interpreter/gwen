@@ -33,6 +33,13 @@ object GwenSettings {
   def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").getOrElse("true").toBoolean
   
   /**
+    * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution 
+    * on first failure (default value is `false`). 
+    * Enabling this feature will exit exceution when the first failure is detected. 
+    */
+  def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").getOrElse("false").toBoolean
+  
+  /**
    * Provides access to the `gwen.report.slideshow.framespersecond` property setting
    * used to set the default frame per second (speed) of the slideshow (default value is 1).
    */

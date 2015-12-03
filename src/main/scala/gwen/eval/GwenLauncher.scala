@@ -26,6 +26,8 @@ import gwen.dsl.Failed
 import gwen.dsl.FeatureSpec
 import gwen.report.ReportGenerator
 import scala.concurrent.duration.Duration
+import gwen.GwenSettings
+import gwen.dsl.StatusKeyword
 
 /**
   * Launches the gwen interpreter.
@@ -94,16 +96,21 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         reportGenerators foreach { _.reportSummary(interpreter, summary) }
       }
     } else {
+      val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
       featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
-        evaluateUnit(options, envOpt, unit) { result =>
-          result match { 
-            case None => summary
-            case _ => 
-              summary + result.map(bindReportFiles(reportGenerators, unit, _)).get tap { accSummary =>
-                if (!options.parallel) {
-                  reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
+        if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
+          summary
+        } else {
+          evaluateUnit(options, envOpt, unit) { result =>
+            result match { 
+              case None => summary
+              case _ => 
+                summary + result.map(bindReportFiles(reportGenerators, unit, _)).get tap { accSummary =>
+                  if (!options.parallel) {
+                    reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
+                  }
                 }
-              }
+            }
           }
         }
       }
