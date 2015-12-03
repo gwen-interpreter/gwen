@@ -27,8 +27,6 @@ import gwen.eval.FeatureUnit
 /** Formats the slideshow. */
 trait HtmlSlideshowFormatter extends ReportFormatter {
   
-  private val reportFormat = ReportFormat.slideshow
-  
   /**
     * Formats the feature detail report as HTML.
     * 
@@ -44,7 +42,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     if (screenshots.isEmpty || result.isMeta) None
     else {
     
-      val reportDir = reportFormat.reportDir(options)
+      val reportDir = ReportFormat.slideshow.reportDir(options)
       val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
