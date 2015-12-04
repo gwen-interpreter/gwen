@@ -46,7 +46,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
-    val scenarios = result.spec.scenarios
+    val scenarios = result.spec.scenarios.filter(!_.isStepDef)
     val hostname = s""" hostname="${escapeXml(InetAddress.getLocalHost.getHostName)}""""
     val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath())).getOrElse("")
     val name = s""" name="${packageName}.Feature: ${escapeXml(result.spec.feature.name)}""""
