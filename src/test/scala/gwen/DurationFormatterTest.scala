@@ -14,69 +14,70 @@
  * limitations under the License.
  */
 
-package gwen.dsl
+package gwen
 
 import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.concurrent.duration.Duration
+import gwen.Predefs.Formatting.formatDuration
 
 class DurationFormatterTest extends FlatSpec with Matchers {
 
   "Zero duration" should "format to ~0ms" in {
-    DurationFormatter.format(Duration.fromNanos(0)) should be ("~0ms")
+    formatDuration(Duration.fromNanos(0)) should be ("~0ms")
   }
   
   "1 millisecond duration" should "format to 1ms" in {
-    DurationFormatter.format(Duration.fromNanos(1000000)) should be ("1ms")
+    formatDuration(Duration.fromNanos(1000000)) should be ("1ms")
   }
   
   "1 second duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(1000000000)) should be ("1s 000ms")
+    formatDuration(Duration.fromNanos(1000000000)) should be ("1s 000ms")
   }
    
   "1 second 1 millisecond duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(1001000000)) should be ("1s 001ms")
+    formatDuration(Duration.fromNanos(1001000000)) should be ("1s 001ms")
   }
   
   "1 minute duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(60000000000L)) should be ("1m 00s 000ms")
+    formatDuration(Duration.fromNanos(60000000000L)) should be ("1m 00s 000ms")
   }
   
   "1 minute 1 second 1 millisecond duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(61001000000L)) should be ("1m 01s 001ms")
+    formatDuration(Duration.fromNanos(61001000000L)) should be ("1m 01s 001ms")
   }
 
   "1 hour duration" should "format to " in { 
-    DurationFormatter.format(Duration.fromNanos(3600000000000L)) should be ("1h 00m 00s 000ms")
+    formatDuration(Duration.fromNanos(3600000000000L)) should be ("1h 00m 00s 000ms")
   }
     
   "1 hour 1 minute duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(3660000000000L)) should be ("1h 01m 00s 000ms")
+    formatDuration(Duration.fromNanos(3660000000000L)) should be ("1h 01m 00s 000ms")
   }
   
   "1 hour 1 minute 1 second duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661000000000L)) should be ("1h 01m 01s 000ms")
+    formatDuration(Duration.fromNanos(3661000000000L)) should be ("1h 01m 01s 000ms")
   }
   
   "1 hour 1 minute 1 second 1 millisecond duration" should "format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661001000000L)) should be ("1h 01m 01s 001ms")
+    formatDuration(Duration.fromNanos(3661001000000L)) should be ("1h 01m 01s 001ms")
   }
   
   "1 hour 1 minute 1 second 1 millisecond 1 microsecond duration" should "round down to nearest millisecond and format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661001000001L)) should be ("1h 01m 01s 001ms")
+    formatDuration(Duration.fromNanos(3661001000001L)) should be ("1h 01m 01s 001ms")
   }
   
   "1 hour 1 minute 1 second 1 millisecond 499999 microseconds duration" should "round down to nearest millisecond and format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661001499999L)) should be ("1h 01m 01s 001ms")
+    formatDuration(Duration.fromNanos(3661001499999L)) should be ("1h 01m 01s 001ms")
   }
   
   "1 hour 1 minute 1 second 1 millisecond 500001 microseconds duration" should "round up to nearest millisecond and format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661001500000L)) should be ("1h 01m 01s 002ms")
+    formatDuration(Duration.fromNanos(3661001500000L)) should be ("1h 01m 01s 002ms")
   }
   
   "1 hour 1 minute 1 second 1 millisecond 999999 microseconds duration" should "round up to nearest millisecond and format to " in {
-    DurationFormatter.format(Duration.fromNanos(3661001999999L)) should be ("1h 01m 01s 002ms")
+    formatDuration(Duration.fromNanos(3661001999999L)) should be ("1h 01m 01s 002ms")
   }
 
 }

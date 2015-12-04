@@ -27,6 +27,8 @@ import java.io.PrintWriter
 import scala.util.matching.Regex
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import scala.reflect.io.Path
+import scala.concurrent.duration.Duration
+import java.text.DecimalFormat
 
 /**
   * Predefined implicits.
@@ -138,7 +140,51 @@ object Predefs extends LazyLogging {
   }
   
   object Formatting {
+    
+    /**
+      * Formats durations for presentation purposes.
+      */
+    private object DurationFormatter {
+      
+      import scala.concurrent.duration._
+  
+      private val Formatters = List(
+        HOURS -> ("h", new DecimalFormat("00")),
+        MINUTES -> ("m", new DecimalFormat("00")),
+        SECONDS -> ("s", new DecimalFormat("00")),
+        MILLISECONDS -> ("ms", new DecimalFormat("000"))
+      )
+
+      /**
+        * Formats a given duration to ##h ##m ##s ###ms format.
+        * 
+        * @param duration the duration to format
+        */
+      def format(duration: Duration): String = {
+        val nanos = duration.toNanos
+        val msecs = (nanos / 1000000) + (if ((nanos % 1000000) < 500000) 0 else 1)
+        if (msecs > 0) {
+          var duration = Duration(msecs, MILLISECONDS)
+          Formatters.foldLeft("") { (acc: String, f: (TimeUnit, (String, DecimalFormat))) =>
+            val (unit, (unitName, formatter)) = f
+            val unitValue = duration.toUnit(unit).toLong
+            if (acc.length() == 0 && unitValue == 0) "" 
+            else {
+              duration = duration - Duration(unitValue, unit)
+              s"$acc ${formatter.format(unitValue)}$unitName"
+            }
+          }.trim.replaceFirst("^0+(?!$)", "")
+        } else "~0ms"
+      }
+  
+    }
+
     def padWithZeroes(num: Int) = "%04d".format(num)
+    def formatDuration(duration: Duration) = DurationFormatter.format(duration)
+    def escapeHtml(text: String) = 
+      String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
+    def escapeXml(text: String) = 
+      String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
   }
   
 }

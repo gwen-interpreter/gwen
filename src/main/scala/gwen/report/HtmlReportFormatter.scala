@@ -18,7 +18,6 @@ package gwen.report
 import java.io.File
 import java.text.DecimalFormat
 import scala.concurrent.duration.Duration
-import gwen.dsl.DurationFormatter
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.dsl.StatusKeyword
@@ -34,6 +33,7 @@ import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
 import gwen.dsl.FeatureSpec
 import gwen.report.HtmlReportFormatter._
+import gwen.Predefs.Formatting._
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -72,10 +72,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatStatusHeader(unit, result, rootPath, breadcrumbs, screenshots)}
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
-        <span class="grayed"><p><small>${escape(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
+        <span class="grayed"><p><small>${escapeHtml(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
         <span class="label label-black">${if(result.isMeta) "Meta" else "Feature"}</span>
         <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span>
-        ${escape(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
+        ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.duration - result.spec.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
@@ -130,10 +130,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
-          <span class="grayed"><p><small>${escape(tags.mkString(" "))}</small></p></span>""" else ""}
+          <span class="grayed"><p><small>${escapeHtml(tags.mkString(" "))}</small></p></span>""" else ""}
           <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1) s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
-          ${escape(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
+          ${escapeHtml(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
         </li>
       </ul>
       <div class="panel-body">${(scenario.background map { background => 
@@ -145,7 +145,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
               <span class="label label-${cssStatus(status)}">Background</span>
               <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
-              ${escape(background.name)}${formatDescriptionLines(background.description, Some(status))}
+              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status))}
             </li>
           </ul>
           <div class="panel-body">
@@ -182,7 +182,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatHtmlHead(title, "")}
   </head>
   <body>
-    ${formatReportHeader(info, title, if (options.args.isDefined) escape(options.commandString(info)) else "", "")}
+    ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)) else "", "")}
     
     <ol class="breadcrumb" style="padding-right: 20px;">
       <li style="color: gray">
@@ -192,7 +192,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escape(summary.finished.toString)}</small>
+        <small>${escapeHtml(summary.finished.toString)}</small>
       </li>
       <span class="pull-right"><small>${formatDuration(summary.duration)}</small></span>
     </ol>
@@ -274,10 +274,10 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.spec.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
-                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escape(result.finished.toString)}</small></span>
+                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escapeHtml(result.finished.toString)}</small></span>
                   </div>
                   <div class="col-md-4">
-                    <a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${reportPath}">${escape(result.spec.feature.name)}</a>
+                    <a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${reportPath}">${escapeHtml(result.spec.feature.name)}</a>
                   </div>
                   <div class="col-md-5">
                     <span class="pull-right"><small>${formatDuration(result.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
@@ -289,21 +289,21 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escape(step.expression) else formatStepDefLink(step, status, s"${stepId}-stepDef")}).getOrElse(escape(step.expression))}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${(step.stepDef.map { stepDef => if (status == StatusKeyword.Failed) escapeHtml(step.expression) else formatStepDefLink(step, status, s"${stepId}-stepDef")}).getOrElse(escapeHtml(step.expression))}
                   ${formatAttachments(step.attachments, status)} ${(step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"${stepId}-stepDef")}).getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && !step.stepDef.isDefined) s"""
                 <ul>
                   <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                     <div class="bg-${cssStatus(status)}">
-                      <span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)}"><small>${escape(step.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escape(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</small></span>
+                      <span class="badge badge-${cssStatus(status)}">${status}</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escapeHtml(step.evalStatus.asInstanceOf[Failed].error.getCause().getMessage())}</small></span>
                     </div>
                   </li>
                 </ul>""" else ""}
               </li>"""
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
-    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escape(step.expression)}</a>"""
+    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#${stepDefId}" aria-expanded="true" aria-controls="${stepDefId}">${escapeHtml(step.expression)}</a>"""
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = s"""
                   <div id="${stepDefId}" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (stepDef.metaFile.isEmpty) """style="padding-left: 40px;"""" else ""}>
@@ -318,7 +318,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">${(attachments map { case (name, file) => s"""
-                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escape(name)}</a></li>"""}).mkString }
+                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName()}" target="_blank">${escapeHtml(name)}</a></li>"""}).mkString }
                     </ul>
                   </div>""" else ""}"""
 
@@ -351,12 +351,12 @@ object HtmlReportFormatter {
           <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
         </td>
         <td>
-          <h3>${escape(heading)}</h3>
-          ${escape(path)}
+          <h3>${escapeHtml(heading)}</h3>
+          ${escapeHtml(path)}
         </td>
         <td align="right">
           <h3>&nbsp;</h3>
-          <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escape(info.implName)}</span></a>
+          <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escapeHtml(info.implName)}</span></a>
           <p>
           <small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small>
           </p>
@@ -369,13 +369,13 @@ object HtmlReportFormatter {
     s"""
     <ol class="breadcrumb" style="padding-right: 20px;">${(breadcrumbs map { case (text, reportFile) => s"""
       <li>
-        <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escape(text)}</a>
+        <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escapeHtml(text)}</a>
       </li>"""}).mkString}
       <li>
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escape(result.finished.toString)}</small>
+        <small>${escapeHtml(result.finished.toString)}</small>
       </li>
         ${ if (screenshots.size > 1) { s"""
              <li>
@@ -410,8 +410,5 @@ object HtmlReportFormatter {
     $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
   </script>
   """
-          
-  private def formatDuration(duration: Duration) = DurationFormatter.format(duration)
-  private def escape(text: String) = String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
           
 }

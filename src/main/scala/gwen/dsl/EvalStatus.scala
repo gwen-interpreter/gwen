@@ -19,6 +19,7 @@ package gwen.dsl
 import scala.concurrent.duration._
 import java.text.DecimalFormat
 import java.util.Date
+import gwen.Predefs.Formatting._
 
 /** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {
@@ -37,7 +38,7 @@ sealed trait EvalStatus {
   
   override def toString = 
     if (nanos > 0) {
-      s"[${DurationFormatter.format(duration)}] ${status}"
+      s"[${formatDuration(duration)}] ${status}"
     } else status.toString
 }
 

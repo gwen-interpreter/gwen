@@ -26,7 +26,8 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
 import gwen.report.ReportFormat
 import scala.concurrent.duration.Duration
-import gwen.dsl.DurationFormatter
+import gwen.Predefs.Formatting._
+
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -77,7 +78,7 @@ case class FeatureSummary(
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${DurationFormatter.format(duration)}] ${evalStatus.status} (Overhead: ${DurationFormatter.format(duration - evalStatus.duration)}) ${finished} ${evalStatus.emoticon}""".stripMargin
+        |[${formatDuration(duration)}] ${evalStatus.status} (Overhead: ${formatDuration(duration - evalStatus.duration)}) ${finished} ${evalStatus.emoticon}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
@@ -114,7 +115,7 @@ class FeatureResult(
   def summary = FeatureSummary(this)
   private[eval] def scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
   private[eval] def stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString = s"[${DurationFormatter.format(duration)}] ${spec.evalStatus.status} (Overhead: ${DurationFormatter.format(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
+  override def toString = s"[${formatDuration(duration)}] ${spec.evalStatus.status} (Overhead: ${formatDuration(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
   
 }
 
