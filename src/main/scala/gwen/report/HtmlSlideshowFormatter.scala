@@ -112,7 +112,7 @@ object HtmlSlideshowFormatter {
     </div>
   </p>
   <hr>
-  <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" ${size.map(s => s"""width="$s%" height="$s%"""").getOrElse("")} />
+  <img id="slides" width="100%" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" ${size.map(s => s"""width="$s%" height="$s%"""").getOrElse("")} />
   <script src="${rootPath}resources/js/jquery.reel-min.js"></script>
   <script>
     var revolution = $$('#slides').width();
