@@ -31,7 +31,8 @@ import gwen.errors._
   * If a gwen.properties file exists in the user's home directory, then
   * its properties are loaded first. Once a property is loaded it is never
   * replaced. Therefore it is important to load properties in the right 
-  * order.
+  * order. Existing system properties are not overriden by values in 
+  * properties files (and therefore have precedence).
   *
   * @author Branko Juric
   */
@@ -47,6 +48,7 @@ object Settings {
     * @param propsFiles the properties files to load
     */
   def loadAll(propsFiles: List[File]): Unit = {
+    val sysProps = sys.props.keySet
     val props = propsFiles.foldLeft(new Properties()) { 
       (props, file) => 
         props.load(new FileReader(file))
@@ -54,8 +56,10 @@ object Settings {
     }
     props.entrySet() foreach { entry =>
       val key = entry.getKey().asInstanceOf[String]
-      val value = resolve(props.getProperty(key), props)
-      sys.props += ((key, value))
+      if (!sysProps.contains(key)) {
+        val value = resolve(props.getProperty(key), props)
+        Settings.add(key, value, true)
+      }
     }
   }
   
@@ -104,7 +108,19 @@ object Settings {
     * @param value the value to bind to the property
     */
   def add(name: String, value: String): Unit = {
-    sys.props += ((name, value))
+    add(name, value, false)
+  }
+  
+   /**
+    * Adds a property.
+    * 
+    * @param name the name of the property to add
+    * @param value the value to bind to the property
+    */
+  private[gwen] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
+    if (overrideIfExists || !sys.props.containsKey(name)) {
+      sys.props += ((name, value))
+    }
   }
   
 }

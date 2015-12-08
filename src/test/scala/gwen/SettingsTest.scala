@@ -43,4 +43,24 @@ class SettingsTest extends FlatSpec with Matchers {
     
     Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
   }
+  
+  "existing system property" should "not be overriden when override flag is false" in {
+    sys.props.put("gwen.web.browser", "firefox")
+    try {
+      Settings.add("gwen.web.browser", "chrome", false)
+      Settings.get("gwen.web.browser") should be ("firefox")
+    } finally {
+      sys.props -= "gwen.web.browser"
+    }
+  }
+  
+  "existing system property" should "be overriden when override flag is true" in {
+    sys.props.put("gwen.web.browser", "firefox")
+    try {
+      Settings.add("gwen.web.browser", "chrome", true)
+      Settings.get("gwen.web.browser") should be ("chrome")
+    } finally {
+      sys.props -= "gwen.web.browser"
+    }
+  }
 }
