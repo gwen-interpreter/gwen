@@ -87,7 +87,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           iStep
         }
       case (Some((stepDef, params))) => 
-        evalStepDef(stepDef, step, params, env)
+        evalStepDef(stepDef, iStep, params, env)
     }) tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
     }
