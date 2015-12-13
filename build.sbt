@@ -1,7 +1,5 @@
 import com.typesafe.sbt.SbtGit._
 
-import SonatypeKeys._
-
 name := "gwen"
 
 description := "A common platform for mapping Gherkin features to exectuable code."
@@ -12,9 +10,9 @@ organizationHomepage := Some(url("http://gweninterpreter.org"))
 
 startYear := Some(2014)
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.11.6", "2.10.4")
+crossScalaVersions := Seq("2.11.7", "2.10.6")
 
 scalacOptions += "-feature"
 
@@ -38,7 +36,7 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "io.cucumber" % "gherkin3" % "3.1.2"
 
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.9"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.5"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0"
 
@@ -46,7 +44,7 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.7"
 
-libraryDependencies += "jline" % "jline" % "2.12.1"
+libraryDependencies += "jline" % "jline" % "2.13"
 
 libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
 
