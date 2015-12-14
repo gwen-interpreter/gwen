@@ -36,7 +36,7 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "io.cucumber" % "gherkin3" % "3.1.2"
 
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.5"
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.9"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0"
 
