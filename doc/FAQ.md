@@ -21,10 +21,10 @@ you want to verify the execution of your features as you write them or when you 
 diagnose why a feature is failing. Gwen runs in this mode by default (in the absence of the 
 `-b` or `--batch` switch).
 
-Can I run gwen with Java 8?
----------------------------
+What version of Java do I need?
+-------------------------------
 
-Yes.
+Java 7 or higher.
 
 How do I run a single feature file?
 -----------------------------------

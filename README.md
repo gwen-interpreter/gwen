@@ -76,7 +76,7 @@ Key Features
 Core Requirements
 -----------------
 
-- Java 7+
+- Java SDK 8+
 - Scala 2.11.x, 2.10.x 
 
 Supported Grammar
