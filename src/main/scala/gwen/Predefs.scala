@@ -26,7 +26,6 @@ import java.io.StringWriter
 import java.io.PrintWriter
 import scala.util.matching.Regex
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import scala.reflect.io.Path
 import scala.concurrent.duration.Duration
 import java.text.DecimalFormat
 
@@ -47,6 +46,9 @@ object Predefs extends LazyLogging {
     
     def writeText(text: String): File = 
       file tap { f =>
+        if (f.getParentFile != null && !f.getParentFile.exists()) {
+          f.getParentFile.mkdirs()
+        }
         new FileWriter(f) tap { fw =>
           try {
             fw.write(text)
@@ -58,6 +60,9 @@ object Predefs extends LazyLogging {
     
     def writeBinary(bis: BufferedInputStream): File = 
       file tap { f =>
+        if (f.getParentFile != null && !f.getParentFile.exists()) {
+          f.getParentFile.mkdirs()
+        }
         new BufferedOutputStream(new FileOutputStream(f)) tap { bos =>
           try {
             var c = 0
@@ -84,8 +89,9 @@ object Predefs extends LazyLogging {
     }
     
     def deleteDir() {
-      file.listFiles() foreach { f =>
-        f.deleteFile
+      val files = file.listFiles() 
+      if (files != null) { 
+        files foreach { _.deleteFile }
       }
       file.delete()
     }
@@ -99,7 +105,7 @@ object Predefs extends LazyLogging {
     }
     
     def toDir(targetDir: File, targetSubDir: Option[String]): File =
-      new File(Path(toPath(targetDir, targetSubDir)).createDirectory().path)
+      new File(toPath(targetDir, targetSubDir))
     
     def toPath(targetDir: File, targetSubDir: Option[String]): String =
       targetDir.getPath() + File.separator + FileIO.encodeDir(file.getParent()) + targetSubDir.map(File.separator + _).getOrElse("")

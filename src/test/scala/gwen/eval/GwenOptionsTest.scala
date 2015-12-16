@@ -17,7 +17,6 @@
 package gwen.eval
 
 import java.io.File
-import scala.reflect.io.Path
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.dsl.Tag
@@ -28,11 +27,12 @@ import scala.util.Failure
 import gwen.UserOverrides
 import gwen.sample.math.MathInterpreter
 import gwen.report.ReportFormat
+import gwen.Predefs.Kestrel
+import gwen.Predefs.FileIO
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
-  val rootDir = new File("target" + File.separator + "props")
-  Path(rootDir).createDirectory()
+  val rootDir = new File("target" + File.separator + "props") tap { _.mkdirs() }
 
   "Options with no command line args" should "parse" in {
     parseOptions(Array[String]()) match {
@@ -716,19 +716,18 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
-    val path = Path(file)
-    if (path.exists) {
-      path.delete()
+    if (file.exists) {
+      file.delete()
     }
-    path.createFile(true)
+    file.getParentFile().mkdirs()
+    file.createNewFile()
     file
   }
   
   private def createDir(dirname: String): File = {
     val dir = new File(rootDir, dirname)
-    val path = Path(dir)
-    path.deleteRecursively()
-    path.createDirectory()
+    dir.deleteDir()
+    dir.mkdirs()
     dir
   }
   

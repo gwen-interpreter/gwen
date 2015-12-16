@@ -18,7 +18,6 @@ package gwen.eval
 
 import java.io.File
 import java.io.FileWriter
-import scala.reflect.io.Path
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import scala.util.Try
@@ -39,11 +38,11 @@ import org.mockito.ArgumentCaptor
 import gwen.dsl.Tag
 import gwen.dsl.SpecType
 import gwen.dsl.Position
+import gwen.Predefs.FileIO
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
-  val rootDir = new File("target" + File.separator + "GwenInterpreterTest")
-  Path(rootDir).createDirectory()
+  val rootDir = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
   
   val options = new GwenOptions();
   
@@ -218,19 +217,18 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   
   private def createDir(dirname: String): File = {
     val dir = new File(rootDir, dirname)
-    val path = Path(dir)
-    path.deleteRecursively()
-    path.createDirectory()
+    dir.deleteDir()
+    dir.mkdirs()
     dir
   }
   
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
-    val path = Path(file)
-    if (path.exists) {
-      path.delete()
+    if (file.exists) {
+      file.delete()
     }
-    path.createFile(true)
+    file.getParentFile().mkdirs()
+    file.createNewFile()
     file
   }
   

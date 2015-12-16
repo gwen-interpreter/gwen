@@ -23,7 +23,6 @@ import java.io.File
 import gwen.dsl.FeatureSpec
 import gwen.eval.DataRecord
 import gwen.Predefs.FileIO
-import scala.reflect.io.Path
 
 /**
   * Enumeration of supported report formats.
@@ -53,7 +52,7 @@ object ReportFormat extends Enumeration {
           case None => 
             reportDir.getPath() + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)
         }
-        new File(Path(reportPath).createDirectory().path)
+        new File(reportPath)
       }
       def createReportFile(toDir: File, prefix: String, spec: FeatureSpec, dataRecord: Option[DataRecord]): File =
         new File(toDir, s"${prefix}${getReportFilename(spec, dataRecord)}.${fileExtension}")

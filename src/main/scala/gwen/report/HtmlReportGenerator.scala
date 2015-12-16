@@ -17,7 +17,6 @@
 package gwen.report
 
 import java.io.File
-import scala.reflect.io.Path
 import gwen.Predefs.Kestrel
 import gwen.eval.GwenOptions
 
@@ -30,19 +29,19 @@ import gwen.eval.GwenOptions
 class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.html, options) with HtmlReportFormatter {
 
   // copy in CSS files (if they don't already exist)
-  new File(Path(new File(reportDir, "resources/css")).createDirectory().path) tap { dir =>
+  new File(reportDir, "resources/css") tap { dir =>
     copyClasspathTextResourceToFile("/gwen/report/html/css/gwen.css", dir)
     copyClasspathTextResourceToFile("/gwen/report/html/css/bootstrap.min.css", dir)
   }
   
   // copy in JS files (if they don't already exist)
-  new File(Path(new File(reportDir, "resources/js")).createDirectory().path) tap { dir =>
+  new File(reportDir, "resources/js") tap { dir =>
     copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.min.js", dir)
     copyClasspathTextResourceToFile("/gwen/report/html/js/bootstrap.min.js", dir)
   }
   
   // copy in image files (if they don't already exist)
-  new File(Path(new File(reportDir, "resources/img")).createDirectory().path) tap { dir =>
+  new File(reportDir, "resources/img") tap { dir =>
     copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
   }
   

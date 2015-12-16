@@ -19,19 +19,14 @@ package gwen.eval
 import gwen.errors._
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
-
 import java.io.File
 import java.util.NoSuchElementException
-
-import scala.reflect.io.Path
-
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class FeatureStreamTest extends FlatSpec with Matchers {
   
-  val rootDir = new File("target" + File.separator + "features")
-  Path(rootDir).createDirectory()
+  val rootDir = new File("target" + File.separator + "features") tap { _.mkdirs() }
   
   "Directory with no feature files" should "result in empty suite" in {
     FeatureStream.read(createDir("dir1"), None).size should be (0)
@@ -348,8 +343,8 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
-    val path = Path(file)
-    path.createFile(true)
+    file.getParentFile().mkdirs()
+    file.createNewFile()
     file
   }
   
@@ -359,9 +354,8 @@ class FeatureStreamTest extends FlatSpec with Matchers {
   
   private def createDir(dirname: String): File = {
     val dir = new File(rootDir, dirname)
-    val path = Path(dir)
-    path.deleteRecursively()
-    path.createDirectory()
+    dir.deleteDir()
+    dir.mkdirs()
     dir
   }
   

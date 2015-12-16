@@ -19,7 +19,6 @@ package gwen.report
 import java.io.BufferedInputStream
 import java.io.File
 import scala.io.Source
-import scala.reflect.io.Path
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.GwenInfo
 import gwen.Predefs.FileIO
@@ -43,9 +42,9 @@ class ReportGenerator (
     private val options: GwenOptions) extends LazyLogging {
   formatter: ReportFormatter => 
 
-  private[report] val reportDir = reportFormat.reportDir(options) tap { dir =>
+  private[report] def reportDir = reportFormat.reportDir(options) tap { dir =>
     if (!dir.exists) {
-      Path(dir).createDirectory()
+      dir.mkdirs()
     }
   }
   
@@ -66,7 +65,7 @@ class ReportGenerator (
     val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
       val metaspec = metaResult.spec
       val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
-      reportFormat.createReportFile(new File(Path(featureReportFile.getParentFile() + File.separator + "meta").createDirectory().path), prefix, metaspec, unit.dataRecord)
+      reportFormat.createReportFile(new File(featureReportFile.getParentFile() + File.separator + "meta"), prefix, metaspec, unit.dataRecord)
     }
     val reportFiles = featureReportFile :: metaReportFiles
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
@@ -100,7 +99,7 @@ class ReportGenerator (
   }
   
   def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
-    val attachmentsDir = new File(Path(new File(featureReportFile.getParentFile(), "attachments")).createDirectory().path)
+    val attachmentsDir = new File(featureReportFile.getParentFile(), "attachments")
     spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
       new File(attachmentsDir, file.getName()).writeFile(file)
     }
@@ -128,13 +127,11 @@ class ReportGenerator (
    
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
-      file.createNewFile()
       file.writeText(Source.fromInputStream(getClass().getResourceAsStream(resource)).mkString)
     }
   
   private[report] def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
-      file.createNewFile()
       file.writeBinary(new BufferedInputStream(getClass().getResourceAsStream(resource)))
     }
   
@@ -147,7 +144,7 @@ object ReportGenerator {
       if (dir.exists) {
         dir.renameTo(new File(s"${dir.getAbsolutePath()}-${System.currentTimeMillis()}"))
       }
-      Path(dir).createDirectory()
+      dir.mkdirs()
     }
     val formats = 
       if (options.reportFormats.contains(ReportFormat.html)) 

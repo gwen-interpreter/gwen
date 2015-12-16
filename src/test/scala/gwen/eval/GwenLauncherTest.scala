@@ -17,7 +17,6 @@
 package gwen.eval
 
 import java.io.File
-import scala.reflect.io.Path
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -37,11 +36,12 @@ import gwen.UserOverrides
 import org.scalatest.FlatSpec
 import gwen.report.ReportFormat
 import scala.concurrent.duration.Duration
+import gwen.Predefs.Kestrel
+import gwen.Predefs.FileIO
 
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
-  val rootDir = new File("target" + File.separator + "GwenLauncherTest")
-  Path(rootDir).createDirectory()
+  val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
   
   val feature = new FeatureSpec(
       Feature("test-feature", Nil), 
@@ -301,19 +301,18 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   private def createDir(dirname: String): File = {
     val dir = new File(rootDir, dirname)
-    val path = Path(dir)
-    path.deleteRecursively()
-    path.createDirectory()
+    dir.deleteDir()
+    dir.mkdirs()
     dir
   }
   
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
-    val path = Path(file)
-    if (path.exists) {
-      path.delete()
+    if (file.exists) {
+      file.delete()
     }
-    path.createFile(true)
+    file.getParentFile().mkdirs()
+    file.createNewFile()
     file
   }
   
