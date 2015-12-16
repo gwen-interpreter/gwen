@@ -65,27 +65,27 @@ object ReportFormat extends Enumeration {
         "html", 
         Some("feature-summary"), 
         options => new HtmlReportGenerator(options), 
-        options => options.reportDir.map(new File(_, "html")).get,
+        options => options.reportDir.map(dir => new File(dir, "html")).get,
         (spec: FeatureSpec, dataRecord: Option[DataRecord]) =>
-          spec.featureFile.map(_.getName()).getOrElse(spec.feature.name)),
+          spec.featureFile.map(_.getName).getOrElse(spec.feature.name)),
     slideshow -> new FormatValue(
         "Slideshow", 
         "html", 
         None, 
         options => new HtmlSlideshowGenerator(options), 
-        options => options.reportDir.map(new File(_, "html")).get,
+        options => options.reportDir.map(dir => new File(dir, "html")).get,
         (spec: FeatureSpec, dataRecord: Option[DataRecord]) =>
-          s"${spec.featureFile.map(_.getName()).getOrElse(spec.feature.name)}.slideshow"),
+          s"${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}.slideshow"),
     junit -> new FormatValue(
         "JUnit-XML", 
         "xml", 
         None, 
         options => new JUnitReportGenerator(options), 
-        options => options.reportDir.map(new File(_, "junit")).get,
+        options => options.reportDir.map(dir => new File(dir, "junit")).get,
         (spec: FeatureSpec, dataRecord: Option[DataRecord]) => {
           val parentDirPath = spec.featureFile.map(_.getParentFile).map(_.getPath).getOrElse("")
           val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
-          s"TEST-${FileIO.encodeDir(parentDirPath)}-${dataRecNo}${spec.featureFile.map(_.getName()).getOrElse(spec.feature.name)}"
+          s"TEST-${FileIO.encodeDir(parentDirPath)}-${dataRecNo}${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}"
         }) {
           override def createReportDir(options: GwenOptions, spec: FeatureSpec, dataRecord: Option[DataRecord]): File = getReportDir(options)
         }
