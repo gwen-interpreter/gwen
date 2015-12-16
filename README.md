@@ -1,6 +1,6 @@
 [![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
 
-gwen
+gwen [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 ====
 
 Gwen is a 
@@ -11,8 +11,6 @@ as input and produces automated processes as output. It has an abstracted
 evaluation engine allowing any type of automation to be mixed in. 
 
 > Gwen = [G]iven [W]hen Th[en]
-
-[![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
 Evaluation Engines
 ------------------
