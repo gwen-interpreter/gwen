@@ -65,8 +65,14 @@ trait XPathSupport {
       val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
       targetType match {
         case XMLNodeType.text => result.toString
-        case XMLNodeType.node => nodeToString(result.asInstanceOf[Node])
-        case XMLNodeType.nodeset => nodeListToString(result.asInstanceOf[NodeList])
+        case XMLNodeType.node => 
+          nodeToString(result.asInstanceOf[Node]) tap { nodeStr =>
+            if (nodeStr.trim().isEmpty()) xPathError(s"No such node: $xpath")
+          }
+        case XMLNodeType.nodeset => 
+          nodeListToString(result.asInstanceOf[NodeList]) tap { nodeStr =>
+            if (nodeStr.trim().isEmpty()) xPathError(s"No such nodeset: $xpath")
+          }
       }
     }
   }
