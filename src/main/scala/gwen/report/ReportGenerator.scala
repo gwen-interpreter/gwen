@@ -128,11 +128,13 @@ class ReportGenerator (
    
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
+      file.createNewFile()
       file.writeText(Source.fromInputStream(getClass().getResourceAsStream(resource)).mkString)
     }
   
   private[report] def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
+      file.createNewFile()
       file.writeBinary(new BufferedInputStream(getClass().getResourceAsStream(resource)))
     }
   
