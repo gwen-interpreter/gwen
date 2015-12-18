@@ -72,7 +72,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatStatusHeader(unit, result, rootPath, breadcrumbs, screenshots)}
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.size > 0) s"""
-        <span class="grayed"><p><small>${escapeHtml(result.spec.feature.tags.mkString(" "))}</small></p></span>""" else ""}
+        <span class="grayed"><p><small>${result.spec.feature.tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""}
         <span class="label label-black">${if(result.isMeta) "Meta" else "Feature"}</span>
         <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span>
         ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
@@ -130,7 +130,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
-          <span class="grayed"><p><small>${escapeHtml(tags.mkString(" "))}</small></p></span>""" else ""}
+          <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""}
           <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1) s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
           ${escapeHtml(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
@@ -394,7 +394,7 @@ object HtmlReportFormatter {
     <div class="modal-body">
     <a href="${ReportFormat.slideshow.getReportDetailFilename(spec, unit.dataRecord)}.${ReportFormat.slideshow.fileExtension}" id="full-screen">Full Screen</a>
     <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
-    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath, Some(100))}
+    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
    </div>
   </div>
   </div>

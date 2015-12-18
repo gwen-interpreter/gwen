@@ -56,7 +56,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
   <body>
     ${HtmlReportFormatter.formatReportHeader(info, "Feature Slideshow", featureName, rootPath)}
     ${HtmlReportFormatter.formatStatusHeader(unit, result, rootPath, List(summaryCrumb, featureCrumb), Nil)}
-    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath, None)}
+    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
   </body>
 </html>""")
     }
@@ -89,7 +89,7 @@ object HtmlSlideshowFormatter {
 
   private def maxFramesPerSec(screenshots: List[File]) = if (screenshots.length < 10) screenshots.length else 10
   
-  private[report] def formatSlideshow(screenshots: List[File], rootPath: String, size: Option[Int]) = s"""
+  private[report] def formatSlideshow(screenshots: List[File], rootPath: String) = s"""
 <center>
   <div class="slideshow-body">
   <p>
@@ -112,7 +112,7 @@ object HtmlSlideshowFormatter {
     </div>
   </p>
   <hr>
-  <img id="slides" width="100%" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" ${size.map(s => s"""width="$s%" height="$s%"""").getOrElse("")} />
+  <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}"} width="100%"/>
   <script src="${rootPath}resources/js/jquery.reel-min.js"></script>
   <script>
     var revolution = $$('#slides').width();
@@ -122,7 +122,7 @@ object HtmlSlideshowFormatter {
       frames: ${screenshots.length},
       speed: 0,
       indicator: 5,
-      responsive: ${size.nonEmpty},
+      responsive: true,
       loops: true,
       cursor: 'auto',
       revolution: revolution,

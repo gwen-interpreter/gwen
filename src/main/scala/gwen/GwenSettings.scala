@@ -45,4 +45,11 @@ object GwenSettings {
    */
   def `gwen.report.slideshow.framespersecond`: Int = Settings.getOpt("gwen.report.slideshow.framespersecond").map(_.toInt).getOrElse(1)
   
+  /**
+    * Provides access to the `gwen.report.overwrite` property setting used to overwrite 
+    * or create backups of previously generated reports (default value is `false`). 
+    * Enabling this feature will create timestamped backups of previous reports. 
+    */
+  def `gwen.report.overwrite`: Boolean = Settings.getOpt("gwen.report.overwrite").getOrElse("false").toBoolean
+  
 }

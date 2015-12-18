@@ -31,6 +31,9 @@ import gwen.eval.DataRecord
 import gwen.Predefs.FileIO
 import gwen.eval.FeatureUnit
 import gwen.Predefs.Formatting
+import gwen.GwenSettings
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
   * Base class for report generators.
@@ -142,7 +145,11 @@ object ReportGenerator {
   def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
     options.reportDir foreach { dir =>
       if (dir.exists) {
-        dir.renameTo(new File(s"${dir.getAbsolutePath()}-${System.currentTimeMillis()}"))
+        if (GwenSettings.`gwen.report.overwrite`) {
+          dir.deleteDir()
+        } else {
+          dir.renameTo(new File(s"${dir.getAbsolutePath()}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+        }
       }
       dir.mkdirs()
     }
