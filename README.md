@@ -292,8 +292,10 @@ This software is open sourced under the
 
 See also: [LICENSE](LICENSE).
 
-This project has dependencies on other open source projects, all of which are 
-listed in the [NOTICE](NOTICE) file.
+This project has dependencies on other open source projects. All direct 
+dependencies are listed in the the [NOTICE](NOTICE) file. All distributed 
+depdendencies are listed in the [Third Party LICENSE file](LICENSE-Third-Party.html).
+
 
 Open sourced 14 May 2014 09:30 pm AEST
 

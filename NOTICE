@@ -4,7 +4,12 @@
                                
                   Copyright 2014-2015 Branko Juric, Brady Wood
 
-   This product depends on the following open source projects:
+   This product depends on the following open source projects.
+   
+   All distributed dependencies and their licenses are listed in 
+   the LICENSE-Third-Party.html file accompanied with this NOTICE.
+   
+   Direct dependencies include:
    
    - Source Dependencies -
 
