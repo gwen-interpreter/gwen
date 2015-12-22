@@ -56,5 +56,6 @@ libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 
 mappings in (Compile, packageBin) ++= Seq(
   file("LICENSE") -> "LICENSE",
-  file("NOTICE") -> "NOTICE"
+  file("NOTICE") -> "NOTICE",
+  file("LICENSE-Third-Party.txt") -> "LICENSE-Third-Party.txt"
 )
