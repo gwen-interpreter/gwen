@@ -1,6 +1,7 @@
 [![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
+[![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
-gwen [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
+gwen
 ====
 
 Gwen is a 
