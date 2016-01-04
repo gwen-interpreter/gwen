@@ -10,6 +10,7 @@ interpreter that accepts
 [feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 as input and produces automated processes as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in. 
+- See also: [CHANGELOG](CHANGELOG).
 
 > Gwen = [G]iven [W]hen Th[en]
 

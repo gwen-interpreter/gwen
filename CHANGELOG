@@ -1,0 +1,80 @@
+v1.0.0
+======
+First gwen release.
+- Uses:
+  - io.cucumber gherkin3 v3.1.2
+  - com.typesafe.play play-json v2.3.9
+  - com.github.scopt scopt v3.3.0
+  - com.typesafe.scala-logging scala-logging-slf4j v2.1.2
+  - org.slf4j slf4j-log4j12 v1.7.7
+  - jline jline v2.13
+  - commons-codec commons-codec v1.10
+  - com.github.tototoshi scala-csv v1.2.2
+- Requires:
+  - Java 7+
+- Introduces:
+  - Abstract evaluation engine
+  - REPL console with commands:
+    - help
+    - env -a|-f "filter"
+    - history
+    - !# (history bang operator)
+    - Given|When|Then|And|But <step> (evaluates a step)
+    - exit|quit|bye
+    - <tab> (for tab completion)
+  - Batch execution
+  - Evaluation reports (Rich HTML and JUnit-XML)
+  - Slideshows in reports
+  - Data scopes (global, local, and user defined scopes)
+  - Meta features
+  - Composable step definitions (@StepDef) with parameters
+  - Serial and parallel execution
+  - Feature and scenario level tags (annoations)
+  - Static validation (--dry-run)
+  - Data driven execution (csv data feeds)
+  - System process calls
+  - Fail fast options
+  - Hybrid engine support   
+  - String interpolation
+  - User level properties and meta overrides
+  - @Ignore tag
+  - Base64 encoding and decoding
+  - XML matching using XPath expressions
+  - Configuration settings:
+    - gwen.feature.failfast
+    - gwen.feature.failfast.exit
+    - gwen.report.slideshow.framespersecond
+    - gwen.report.overwrite
+    - log4j.configuration
+-Usage and options:
+```
+Usage: install-dir/bin/gwen.sh|gwen.bat [options] [<features>]
+
+  [options]
+  --version
+        Prints the implementation version
+  --help
+        Prints this usage text
+  -b | --batch
+        Batch/server mode
+  -| | --parallel
+        Parallel batch execution mode)
+  -p <properties files> | --properties <properties files>
+        Comma separated list of properties file paths
+  -r <report directory> | --report <report directory>
+        Evaluation report output directory
+  -f <formats> | --formats <formats>
+        Comma separated list of report formats to produce
+         - Supported formats include: html,junit (default is html)
+  -t <tags> | --tags <tags>
+        Comma separated list of @include or ~@exclude tags
+  -n | --dry-run
+        Do not evaluate steps on engine (validate for correctness only)
+  -i <input data file> | --input-data <input data file>
+        Input data (CSV file with column headers)
+  -m <meta files> | --meta <meta files>
+        Comma separated list of meta file paths
+
+  [<features>]
+       Space separated list of feature files and/or directory paths
+```
