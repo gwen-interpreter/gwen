@@ -2,7 +2,7 @@ import com.typesafe.sbt.SbtGit._
 
 name := "gwen"
 
-description := "A common platform for mapping Gherkin features to exectuable code."
+description := "A Given-When-Then automation platform (executable Gherkin specifications)"
 
 organization := "org.gweninterpreter"
 
@@ -24,7 +24,7 @@ scalacOptions += "-target:jvm-1.7"
 
 licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
 
-homepage := Some(url("http://gwen-interpreter.github.io/gwen/"))
+homepage := Some(url("https://github.com/gwen-interpreter/gwen"))
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
