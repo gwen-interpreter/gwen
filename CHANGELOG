@@ -46,7 +46,7 @@ First gwen release.
     - gwen.report.slideshow.framespersecond
     - gwen.report.overwrite
     - log4j.configuration
--Usage and options:
+- Usage and options:
 ```
 Usage: install-dir/bin/gwen.sh|gwen.bat [options] [<features>]
 
