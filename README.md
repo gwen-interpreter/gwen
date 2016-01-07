@@ -9,8 +9,7 @@ Gwen is a
 interpreter that accepts 
 [feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 as input and produces automated processes as output. It has an abstracted 
-evaluation engine allowing any type of automation to be mixed in. 
-- See also: [CHANGELOG](CHANGELOG).
+evaluation engine allowing any type of automation to be mixed in.
 
 > Gwen = [G]iven [W]hen Th[en]
 
@@ -74,6 +73,7 @@ Key Features
 - Tagged features and scenarios
 - Design time validation (--dry-run mode)
 - Data driven execution (csv data feeds)
+- See also: [CHANGELOG](CHANGELOG)
 
 Core Requirements
 -----------------
