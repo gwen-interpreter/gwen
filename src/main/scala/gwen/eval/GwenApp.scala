@@ -16,7 +16,6 @@
 
 package gwen.eval
 
-import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import scala.util.Success
 import scala.util.Failure
@@ -27,7 +26,7 @@ import gwen.GwenInfo
   * 
   * @param interpreter the gwen interpreter
   */
-class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with ConsoleWriter {
+class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     
   printBanner("Welcome to ")
 

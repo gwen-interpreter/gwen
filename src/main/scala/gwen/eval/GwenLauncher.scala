@@ -18,7 +18,6 @@ package gwen.eval
 
 import scala.Option.option2Iterable
 import com.typesafe.scalalogging.slf4j.LazyLogging
-import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.UserOverrides
 import gwen.dsl.EvalStatus
@@ -34,7 +33,7 @@ import gwen.dsl.StatusKeyword
   * 
   * @param interpreter the interpreter to launch
   */
-class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging with ConsoleWriter {
+class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging {
   
   /**
     * Runs the interpreter with the given options.

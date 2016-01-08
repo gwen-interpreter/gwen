@@ -20,7 +20,6 @@ import java.io.File
 import scala.collection.JavaConversions.seqAsJavaList
 import scala.util.Failure
 import scala.util.Success
-import gwen.ConsoleWriter
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import gwen.dsl.StepKeyword
@@ -36,7 +35,7 @@ import jline.console.completer.AggregateCompleter
   * 
   * @author Branko Juric
   */
-class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) extends ConsoleWriter {
+class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile())
   
