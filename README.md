@@ -43,7 +43,7 @@ use gherkin features to drive a different type of automation then you can
 Automation by Interpretation
 ----------------------------
 
-```    
+```gherkin    
    Feature: Gwen Interpreter
     
   Scenario: Automate

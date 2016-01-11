@@ -7,7 +7,7 @@ The Gwen logo is a
 [Lorenz attractor](http://en.m.wikipedia.org/wiki/Lorenz_attractor) / 
 butterfly. 
     
-```
+```gherkin
    Feature: Deterministic Chaos
     
   Scenario: The butterfly effect

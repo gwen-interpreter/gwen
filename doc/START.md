@@ -358,7 +358,7 @@ Create the following _BasicMath.feature_ file in the _features/sample/math_
 folder:
 
 _BasicMath.feature_
-```
+```gherkin
  Feature: Integer addition
 
 Scenario: 1 plus 2 should yield 3
@@ -438,7 +438,7 @@ Create the following _Math.meta_ file in the _features/sample/math_ folder:
 
 _Math.meta_
 
-```
+```gherkin
  Feature: Math functions
 
 @StepDef
@@ -534,7 +534,7 @@ Create the following _MetaMath.feature_ file in the _features/sample/math_
 folder:
 
 _MetaMath.feature_
-```
+```gherkin
  Feature: Increment integer
 
 Scenario: Incrementing 0 should yield 1
