@@ -11,6 +11,8 @@ evaluation engine allowing any type of automation to be mixed in.
 
 > Gwen = [G]iven [W]hen Th[en]
 
+#### Current Status
+
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
 Evaluation Engines
