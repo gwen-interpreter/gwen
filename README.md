@@ -2,8 +2,6 @@
 gwen
 ====
 
-[![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
-
 Gwen is a 
 [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter that accepts 
@@ -12,6 +10,8 @@ as input and produces executing instructions as output. It has an abstracted
 evaluation engine allowing any type of automation to be mixed in.
 
 > Gwen = [G]iven [W]hen Th[en]
+
+[![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
 Evaluation Engines
 ------------------
