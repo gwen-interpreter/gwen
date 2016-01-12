@@ -1,5 +1,5 @@
 [![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
-gwen
+Gwen
 ====
 
 Gwen is a 
