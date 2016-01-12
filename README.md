@@ -6,10 +6,10 @@ Gwen is a
 [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter that accepts 
 [feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
-as input and produces executing instructions as output. It has an abstracted 
+as input and produces automation instructions as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in.
 
-> Gwen = [G]iven [W]hen Th[en]
+> Gwen is a [G]iven [W]hen Th[en] automation platform
 
 #### Current Status
 
