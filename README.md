@@ -1,5 +1,5 @@
-[![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](doc/LOGO.md)
-gwen
+[![gwen](https://github.com/gwen-interpreter/gwen/blob/master/doc/img/gwen-attractor.png)](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo)
+Gwen
 ====
 
 Gwen is a 
@@ -38,7 +38,8 @@ shared the following engine:
 If the above engine suits your automation needs, then you can download 
 and start using it straight away. If on the other hand you would like to 
 use gherkin features to drive a different type of automation then you can 
-[develop a custom engine](doc/START.md) and mix it in.
+[develop a custom engine](https://github.com/gwen-interpreter/gwen/wiki/Dev-Guide) 
+and mix it in.
 
 Automation by Interpretation
 ----------------------------
@@ -212,36 +213,9 @@ Development
 Getting Started
 ---------------
 
-See our [getting started](doc/START.md) guide for a quick introduction 
-to the development environment and a short tutorial on how to build an 
-evaluation engine and mix it into the interpreter.
-
-Adding Gwen as a Binary Dependency
-----------------------------------
-
-To build a new engine, you will need to create a new scala project and include 
-gwen as a dependency.
-
-### SBT
-
-To add gwen as a binary dependency in an sbt project, add the following line to 
-your build.sbt file. The `%%` instructs sbt to pull 
-down the packaged dependency that matches your `scalaVersion` setting. The 
-`latest.integration` selects the latest published revision of gwen (you may 
-wish to fix this to the resolved version after gwen has downloaded, or to a 
-release version that you wish to target).
-
-```
-libraryDependencies += "org.gweninterpreter" %% "gwen" % "latest.integration"
-```
-
-Also add the following repositories:
-
-```
-resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
-
-resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-```
+See our [DEV guide](https://github.com/gwen-interpreter/gwen/wiki/Dev-Guide) 
+for a quick introduction to the development environment and a short tutorial 
+on how to build an evaluation engine and mix it into the interpreter.
 
 Building from Source
 --------------------
@@ -261,7 +235,13 @@ If you would like to build a binary from the source:
 FAQ
 ---
 
-> See [gwen FAQ](doc/FAQ.md)
+> See [Gwen FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+
+More Information
+----------------
+
+For all other information, please see the 
+[Gwen wiki](https://github.com/gwen-interpreter/gwen/wiki)
 
 ***
 
@@ -312,4 +292,4 @@ Mentions
 - 2014, [Arun Datta](http://au.linkedin.com/in/arundatta) for reviewing our 
   pre-release documentation and providing valuable feedback.
 - 2014, [Nascent Creative](http://www.nascentcreative.com.au) for developing 
-  the [project logo](doc/LOGO.md).
+  the [project logo](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo).
