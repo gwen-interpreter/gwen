@@ -7,7 +7,7 @@ Gwen is a
 interpreter that accepts 
 [feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 as input and produces executing instructions as output. It has an abstracted 
-evaluation engine allowing any type of automation to be mixed in.
+evaluation engine allowing any type of execution to be mixed in.
 
 > Gwen = [G]iven [W]hen Th[en]
 
