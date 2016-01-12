@@ -9,7 +9,7 @@ interpreter that accepts
 as input and produces automation instructions as output. It has an abstracted 
 evaluation engine allowing any type of automation to be mixed in.
 
-> Gwen = [G]iven [W]hen Th[en]
+> Gwen is a [G]iven [W]hen Th[en] automation platform
 
 #### Current Status
 
