@@ -11,6 +11,8 @@ evaluation engine allowing any type of automation to be mixed in.
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
 
+- See also [Gwen wiki](https://github.com/gwen-interpreter/gwen/wiki)
+
 ### Current Status
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
@@ -50,7 +52,7 @@ Key Features
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
   - Composable step definitions (@StepDef's)
-- [Execution Modes]
+- [Execution Modes](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes)
   - Interactive REPL 
   - Batch
     - Serial 
