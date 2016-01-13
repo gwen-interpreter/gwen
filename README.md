@@ -21,8 +21,7 @@ evaluation engine allowing any type of automation to be mixed in.
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-    instructions to automate web pages and web application testing through 
-    specifications instead of code
+    instructions to automate online web activities and web application testing
 
 ### Automation by Interpretation
 
@@ -33,7 +32,7 @@ evaluation engine allowing any type of automation to be mixed in.
       Given a Gherkin feature
         And a target system
        When Gwen is launched
-       Then the feature is interpreted
+       Then the feature is translated
         And the steps are executed
         And the system is evaluated
 ```
@@ -55,11 +54,11 @@ Key Features
   - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
   - Batch
     - Serial 
-    - Parallel (`--parallel`)
-  - Dry Run (`--dry-run` validation mode)
-  - Data driven (csv data feeds)
+    - Parallel
+  - Dry run validation
+  - CSV data feeds
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-  - Composable step definitions (@StepDef's)
+  - Composable step definitions (`@StepDef` declarations)
 - Tagged features and scenarios
 - See also: [CHANGELOG](CHANGELOG)
 
@@ -101,7 +100,7 @@ is reviewed and verified by the project committers before being integrated
 and released to the community. We ask that all code submissions include unit 
 tests.
 
-By sending a pull request, we assume that you agree to release your work under 
+By submitting contributions, we assume that you agree to release your work under 
 the license that covers this software.
 
 License
