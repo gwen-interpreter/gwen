@@ -49,7 +49,7 @@ Key Features
 
 - [Gherkin 3](https://github.com/cucumber/gherkin3) feature parser
   - See [supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
-- [Abstracted evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
+- [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [Execution Modes](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes)
   - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
