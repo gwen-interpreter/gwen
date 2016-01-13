@@ -35,6 +35,12 @@ and dispatches the processing of each step to a mixed in evaluation engine.
 The engine performs the automation work on the target system. Gwen then 
 captures and reports the results.
 
+Internally, Gwen uses the [Gherkin 3](https://github.com/cucumber/gherkin3) 
+parser to read in features.
+
+- See [Supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
+
+
 Key Features
 ------------
 
@@ -59,14 +65,6 @@ Core Requirements
 
 - Java SDK 7+
 - Scala 2.11.x, 2.10.x (for dev environment only)
-
-Supported Grammar
------------------
-
-Internally, Gwen uses the [Gherkin 3](https://github.com/cucumber/gherkin3) 
-parser to read in Gherkin features.
-
-- See [Supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
 
 Evaluation Engines
 ------------------
