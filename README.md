@@ -11,7 +11,7 @@ evaluation engine allowing any type of automation to be mixed in.
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
 
-- See also [Gwen wiki](https://github.com/gwen-interpreter/gwen/wiki)
+- See also [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
  
 ### Current Status
 
@@ -37,7 +37,7 @@ evaluation engine allowing any type of automation to be mixed in.
         And the system is evaluated
 ```
 
-The gwen interpreter reads Gherkin features and parses them into an abstract 
+The Gwen interpreter reads Gherkin features and parses them into an abstract 
 syntax tree for validation and correctness. It then traverses all scenarios 
 and dispatches the processing of each step to a mixed in evaluation engine. 
 The engine performs the automation work on the target system. Gwen then 
