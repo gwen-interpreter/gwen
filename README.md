@@ -12,10 +12,17 @@ evaluation engine allowing any type of automation to be mixed in.
 > Gwen is a [G]iven [W]hen Th[en] automation platform
 
 - See also [Gwen wiki](https://github.com/gwen-interpreter/gwen/wiki)
-
+ 
 ### Current Status
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
+
+### Available Engines
+
+- [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
+  - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
+    instructions to automate web pages and web application testing through 
+    specifications instead of code
 
 ### Automation by Interpretation
 
@@ -37,16 +44,11 @@ and dispatches the processing of each step to a mixed in evaluation engine.
 The engine performs the automation work on the target system. Gwen then 
 captures and reports the results.
 
-Internally, Gwen uses the [Gherkin 3](https://github.com/cucumber/gherkin3) 
-parser to read in features.
-
-- See [Supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
-
-
 Key Features
 ------------
 
-- [Gherkin feature parser](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
+- [Gherkin 3](https://github.com/cucumber/gherkin3) feature parser
+  - See [supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
 - [Abstracted evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [Execution Modes](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes)
@@ -66,21 +68,6 @@ Core Requirements
 
 - Java SDK 7+
 - Scala 2.11.x, 2.10.x (for dev environment only)
-
-Evaluation Engines
-------------------
-
-### Web engine
-We have developed and shared the following web engine that you can download 
-and start using straight away:
-
-- [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - A Gwen engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-    instructions to automate web pages and web application testing through 
-    specifications instead of code
-
-### Many other engines can be built
-- Read more about [evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines).
 
 ***
 
