@@ -48,7 +48,7 @@ Key Features
 ------------
 
 - [Gherkin 3](https://github.com/cucumber/gherkin3) feature parser
-  - See [supported Grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
+  - See [supported grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [Execution Modes](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes)
@@ -97,7 +97,7 @@ Contributions
 
 New capabilities, improvements, and fixes are all valid candidates for 
 contribution. Submissions can be made using pull requests. Each submission 
-is reviewed and verified by the project's committer's before being integrated 
+is reviewed and verified by the project committers before being integrated 
 and released to the community. We ask that all code submissions include unit 
 tests.
 
