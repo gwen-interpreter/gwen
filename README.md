@@ -48,17 +48,16 @@ Key Features
 
 - [Gherkin feature parser](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
 - [Abstracted evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
-- [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
-- [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-  - Composable step definitions (@StepDef's)
 - [Execution Modes](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes)
-  - Interactive REPL 
+  - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
   - Batch
     - Serial 
     - Parallel (`--parallel`)
   - Dry Run (`--dry-run` validation mode)
   - Data driven (csv data feeds)
+- [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
+  - Composable step definitions (@StepDef's)
 - Tagged features and scenarios
 - See also: [CHANGELOG](CHANGELOG)
 
