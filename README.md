@@ -86,12 +86,12 @@ and start using straight away:
 ***
 
 Development
-===========
+-----------
 
 - See [Development Wiki](https://github.com/gwen-interpreter/gwen/wiki/Development) 
 
 FAQ
-===
+---
 
 - See [Gwen FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 
