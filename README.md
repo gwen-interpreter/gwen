@@ -31,7 +31,7 @@ Key Features
 - Dry run validation
 - CSV data feeds
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-- Composable step definitions (`@StepDef`s)
+- Composable `@StepDef`s
 - Tagged features and scenarios
 
 Resources
