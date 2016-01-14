@@ -42,7 +42,11 @@ Resources
   - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 - [Change log](CHANGELOG)
 
-### Available Engines
+Available Engines
+-----------------
+
+We have developed and shared the following engine. You can download and 
+install it, and start using it straight away!
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
