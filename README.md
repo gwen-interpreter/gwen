@@ -14,12 +14,6 @@ evaluation engine allowing any type of automation to be mixed in.
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
-### Available Engines
-
-- [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-    instructions to automate online web activities and web application testing
-
 Core Requirements
 -----------------
 
@@ -47,6 +41,12 @@ Resources
   - [Development](https://github.com/gwen-interpreter/gwen/wiki/Development) 
   - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 - [Change log](CHANGELOG)
+
+### Available Engines
+
+- [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
+  - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
+    instructions to automate online web activities and web application testing
 
 Mail Group
 ----------
