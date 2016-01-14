@@ -23,7 +23,7 @@ Core Requirements
 Key Features
 ------------
 
-- [Gherkin 3 feature parser](https://github.com/cucumber/gherkin3)
+- [Gherkin grammar](https://github.com/gwen-interpreter/gwen/wiki/Supported-Grammar)
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
@@ -98,4 +98,4 @@ Mentions
 - 2014, [Arun Datta](http://au.linkedin.com/in/arundatta) for reviewing our 
   pre-release documentation and providing valuable feedback.
 - 2014, [Nascent Creative](http://www.nascentcreative.com.au) for developing 
-  the [project logo](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo).
+  the [project logo](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo)
