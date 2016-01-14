@@ -17,7 +17,7 @@ evaluation engine allowing any type of automation to be mixed in.
 Core Requirements
 -----------------
 
-- Java SDK 7+
+- Java 7+
 - Scala 2.11.x, 2.10.x
  
 Gwen is written in [Scala](http://www.scala-lang.org) and runs on 
