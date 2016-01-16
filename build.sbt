@@ -2,7 +2,7 @@ import com.typesafe.sbt.SbtGit._
 
 name := "gwen"
 
-description := "Executable Given-When-Then specifications"
+description := "A Given-When-Then automation platform"
 
 organization := "org.gweninterpreter"
 
