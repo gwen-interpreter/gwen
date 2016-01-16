@@ -3,11 +3,10 @@ Gwen
 ====
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts 
-[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
-and [steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) 
-as input and produces automation instructions as output. It has an abstracted 
-engine allowing any type of automation to be mixed in.
+interpreter that accepts plain text 
+[feature](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
+specifications as input and produces automation instructions as output. It 
+has an abstracted engine allowing any type of automation to be mixed in.
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
  
