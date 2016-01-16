@@ -3,7 +3,7 @@ Gwen
 ====
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts plain text 
+interpreter that accepts 
 [features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 and [steps](https://github.com/cucumber/cucumber/wiki/Given-When-Then) 
 as input and produces automation instructions as output. It has an abstracted 
