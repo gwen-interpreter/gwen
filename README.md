@@ -47,11 +47,10 @@ Key Features
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
 - [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
 - [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution)
+- [Dry run validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
 - [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
-- Dry run validation
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-- Composable `@StepDef`s
-- Tagged features and scenarios
+- [Composable step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) (`@StepDef`s)
 
 Resources
 ---------
