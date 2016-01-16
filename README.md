@@ -3,10 +3,10 @@ Gwen
 ====
 
 Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts 
-[feature specifications](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
+interpreter that accepts plain text 
+[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) 
 as input and produces automation instructions as output. It has an abstracted 
-evaluation engine allowing any type of automation to be mixed in.
+engine allowing any type of automation to be mixed in.
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
  
@@ -45,15 +45,15 @@ Resources
   - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 - [Change log](CHANGELOG)
 
-Available Engines
------------------
+Engines
+-------
 
-We have developed and shared the following engine. You can download and 
-install it, and start using it straight away!
+We have developed and shared the following engine that you can download and 
+start using straight away!
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-    instructions to automate online web activities and web application testing
+    instructions to automate online activities and web application testing
 
 Mail Group
 ----------
