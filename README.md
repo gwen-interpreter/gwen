@@ -14,6 +14,20 @@ engine allowing any type of automation to be mixed in.
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
+### Automation by Interpretation
+
+```gherkin    
+   Feature: Gwen Interpreter
+    
+  Scenario: Automate
+      Given a Gherkin feature
+        And a target system
+       When Gwen is launched
+       Then the feature is interpreted
+        And the steps are executed
+        And the system is evaluated
+```
+
 Core Requirements
 -----------------
 
