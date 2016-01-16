@@ -24,7 +24,7 @@ engine allowing any type of automation to be mixed in.
         And a target system
        When Gwen is launched
        Then the feature is interpreted
-        And the steps are executed
+        And its steps are executed
         And the system is evaluated
 ```
 
@@ -66,7 +66,8 @@ We have developed and shared the following engine that you can download and
 start using straight away!
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - An evaluation engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
+  - An engine that maps Gherkin features to 
+    [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
     instructions to automate online activities and web application testing
 
 Mail Group
