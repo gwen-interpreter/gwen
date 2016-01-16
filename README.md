@@ -88,7 +88,7 @@ See also: [LICENSE](LICENSE).
 
 This project has dependencies on other open source projects. All distributed 
 third party depdendencies and their licenses are listed in the 
-[LICENSE-Third-Party.txt](LICENSE-Third-Party.txt) file.
+[LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
 
 Open sourced 14 May 2014 09:30 pm AEST
 
