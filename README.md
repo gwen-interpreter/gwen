@@ -45,9 +45,10 @@ Key Features
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
-- Serial and parallel execution 
+- [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
+- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution)
+- [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
 - Dry run validation
-- CSV data feeds
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
 - Composable `@StepDef`s
 - Tagged features and scenarios
@@ -55,7 +56,7 @@ Key Features
 Resources
 ---------
 
-- [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
+- [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
   - [Development](https://github.com/gwen-interpreter/gwen/wiki/Development) 
   - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 - [Change log](CHANGELOG)
