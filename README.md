@@ -49,7 +49,7 @@ Key Features
 - [Dry run validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
 - [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-- [Composable step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) (`@StepDef`s)
+- [Composable step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) ~ `@StepDef`s
 
 Resources
 ---------
