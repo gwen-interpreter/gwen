@@ -44,6 +44,7 @@ Key Features
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
+- [Command line interface](https://github.com/gwen-interpreter/gwen/wiki/Command-Line-Interface)
 - [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
 - [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution)
 - [Dry run validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
