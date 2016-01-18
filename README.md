@@ -67,9 +67,10 @@ Engines
 We have developed and shared the following engine that you can download and start using straight away!
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - A web engine that maps Gherkin features to 
-    [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-    instructions to automate online activities and web application testing
+  - A Gwen [engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) that 
+maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
+instructions to automate web pages and web 
+application testing
 
 Mail Group
 ----------
