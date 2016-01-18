@@ -53,6 +53,7 @@ Key Features
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
 - [Composable step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) ~ `@StepDef`s
 - [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
+- [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 
 Resources
 ---------
