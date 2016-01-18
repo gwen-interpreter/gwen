@@ -80,7 +80,7 @@ object GwenOptions {
     */
   def apply(interpreterClass: Class[_], args: Array[String]): GwenOptions = { 
     
-    val parser = new OptionParser[GwenOptions]("scala " + interpreterClass.getName) {
+    val parser = new OptionParser[GwenOptions]("gwen") {
     
       version("version") text("Prints the implementation version")
     
