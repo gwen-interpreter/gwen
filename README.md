@@ -18,6 +18,7 @@ See also:
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
+- Current Release: version [1.0.0](https://github.com/gwen-interpreter/gwen/releases/tag/v1.0.0)
 - [Change log](CHANGELOG)
 
 ### Automation by Interpretation
