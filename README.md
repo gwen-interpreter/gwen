@@ -7,10 +7,18 @@ interpreter that accepts plain text
 [features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in.
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
- 
+
+See also:
+
+- [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
+  - [Development](https://github.com/gwen-interpreter/gwen/wiki/Development) 
+  - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+
 ### Current Status
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
+
+- [Change log](CHANGELOG)
 
 ### Automation by Interpretation
 
@@ -52,14 +60,6 @@ Key Features
 - [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
-
-Resources
----------
-
-- [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
-  - [Development](https://github.com/gwen-interpreter/gwen/wiki/Development) 
-  - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
-- [Change log](CHANGELOG)
 
 Engines
 -------
