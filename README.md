@@ -87,6 +87,10 @@ is reviewed and verified by the project committers before being integrated and r
 
 By submitting contributions, you agree to release your work under the license that covers this software.
 
+### Contributors
+
+See [all contributors](https://libraries.io/github/gwen-interpreter/gwen/contributors)
+
 License
 -------
 
