@@ -200,7 +200,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
    */
   def addAttachment(name: String, extension: String, content: String): (String, File) = {
       attachementCount = attachementCount + 1
-      val file = File.createTempFile(s"${"%04d".format(attachementCount)}-${name.replaceAll("[^A-Za-z0-9]", "-")}-", s".${extension}") tap { f =>
+      val file = File.createTempFile(s"${"%04d".format(attachementCount)}-", s".${extension}") tap { f =>
         f.deleteOnExit()
         Option(content) foreach { f.writeText }
         currentAttachments = ((name, f)) :: currentAttachments
