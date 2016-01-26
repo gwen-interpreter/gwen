@@ -8,7 +8,7 @@ interpreter that accepts plain text
 
 > Gwen is a [G]iven [W]hen Th[en] automation platform
 
-- [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
+- See also: [Gwen Wiki](https://github.com/gwen-interpreter/gwen/wiki)
   - [Development](https://github.com/gwen-interpreter/gwen/wiki/Development) 
   - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 
@@ -16,7 +16,7 @@ interpreter that accepts plain text
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
-- Current release: v[1.0.0](https://github.com/gwen-interpreter/gwen/releases/tag/v1.0.0)
+- Current release: [1.0.1](https://github.com/gwen-interpreter/gwen/releases/tag/v1.0.1)
 - [Change log](CHANGELOG)
 
 ### Automation by Interpretation
