@@ -105,13 +105,3 @@ This project has dependencies on other open source projects. All distributed thi
 
 Open sourced 14 May 2014 09:30 pm AEST
 
-Mentions
---------
-
-- 2013-2014, [Mick Grigg](http://au.linkedin.com/in/mickgrigg) for 
-  involving us in your side project and supporting us in open sourcing this 
-  interpreter which we built as part of that
-- 2014, [Arun Datta](http://au.linkedin.com/in/arundatta) for reviewing our 
-  pre-release documentation and providing valuable feedback
-- 2014, [Nascent Creative](http://www.nascentcreative.com.au) for developing 
-  the [project logo](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo)
