@@ -18,6 +18,7 @@ package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import gwen.errors.UnboundAttributeException
  
 class ScopedDataTest extends FlatSpec with Matchers {
 
@@ -25,6 +26,20 @@ class ScopedDataTest extends FlatSpec with Matchers {
     val scope = ScopedData("login")
     scope.json.toString    should be ("""{"scope":"login","atts":[]}""")
     scope.getOpt("userId") should be (None)
+  }
+  
+  "scope with a null attribute" should "yield None for getOpt call" in {
+    val scope = ScopedData("login").set("userId", null)
+    scope.json.toString    should be ("""{"scope":"login","atts":[{"userId":null}]}""")
+    scope.getOpt("userId") should be (None)
+  }
+  
+  "scope with a null attribute" should "throw error for get call" in {
+    val scope = ScopedData("login").set("userId", null)
+    scope.json.toString    should be ("""{"scope":"login","atts":[{"userId":null}]}""")
+    intercept[UnboundAttributeException] {
+      scope.get("userId")
+    }
   }
   
   "scope with one attribute" should "contain only that attribute" in {

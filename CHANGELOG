@@ -1,3 +1,8 @@
+1.0.2
+=====
+Feb 4, 2016
+- Fixed #17 - Map null values in scoped attributes to None in getOpt calls
+ 
 1.0.1
 =====
 Jan 26, 2016, 11:00 PM GMT+11 (AEDT)

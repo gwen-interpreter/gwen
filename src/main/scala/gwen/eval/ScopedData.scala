@@ -88,7 +88,10 @@ class ScopedData(val scope: String) extends LazyLogging {
       valueOpt foreach { value =>
           logger.debug(s"Found ${Json.obj(name -> value)} in scope/$scope")
       }
-    } map (_.as[String])
+    } map (_.as[String]) match {
+      case (Some(null)) => None
+      case result => result
+    }
     
   /**
     * Finds and retrieves an attribute from the scope (throws error if not found)
