@@ -36,6 +36,7 @@ import gwen.errors._
 import gwen.Settings
 import scala.util.Try
 import gwen.dsl.Tag
+import gwen.dsl.StepKeyword
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -104,6 +105,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @param stepDef the step definition to add
     */
   def addStepDef(stepDef: Scenario) {
+    StepKeyword.literals foreach { keyword => 
+      if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
+    }
     val tags = stepDef.metaFile.map(meta => stepDef.tags + Tag(s"""Meta("${meta.getPath()}")""")).getOrElse(stepDef.tags)
     stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
   }

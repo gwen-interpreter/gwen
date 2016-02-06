@@ -23,6 +23,7 @@ import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import org.scalatest.FlatSpec
 import gwen.errors.`package`.AmbiguousCaseException
+import gwen.errors.InvalidStepDefException
 
 class EnvContextTest extends FlatSpec with Matchers {
   
@@ -217,6 +218,16 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv(GwenOptions(dryRun = false))
     intercept[Exception] {
       env.execute(sys.error("Execution expected"))
+    }
+  }
+  
+  "StepDef names" should "not start with a keyword" in {
+    val env = newEnv
+    StepKeyword.literals foreach { keyword =>
+      val stepdef = Scenario(Set(Tag("StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
+      intercept[InvalidStepDefException] {
+        env.addStepDef(stepdef)
+      }
     }
   }
   

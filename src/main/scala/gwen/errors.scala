@@ -39,6 +39,7 @@ package gwen {
     def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
     def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
     def decodingError(msg: String) = throw new DecodingException(msg)
+    def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -81,6 +82,9 @@ package gwen {
 
     /** Thrown when a decoding error occurs. */
     class DecodingException(msg: String) extends Exception(msg)
+    
+    /** Thrown when an invalid StepDef is detected. */
+    class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: ${stepDef}: $msg")
 
   }
 }
