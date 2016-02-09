@@ -1,3 +1,9 @@
+1.0.3
+=====
+Feb 9, 2016
+- Do not allow StepDef names to start with keywords Given, When, Then, And or But
+  - throw error and immediately abort execution when not satisified
+
 1.0.2
 =====
 Feb 4, 2016, 2:10 AM GMT+11 (AEDT)
