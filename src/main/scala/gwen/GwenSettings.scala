@@ -52,4 +52,11 @@ object GwenSettings {
     */
   def `gwen.report.overwrite`: Boolean = Settings.getOpt("gwen.report.overwrite").getOrElse("false").toBoolean
   
+  /**
+   * Provides access to the `gwen.rampup.interval.seconds` property setting used
+   * to set the ramp up interval (in seconds) for staggering parallel executions  
+   * (this setting is optional and only used in parallel execution mode).
+   */
+  def `gwen.rampup.interval.seconds`: Option[Int] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toInt)
+  
 }

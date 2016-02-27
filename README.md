@@ -16,7 +16,7 @@ interpreter that accepts plain text
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
-- Current release: [1.0.3](https://github.com/gwen-interpreter/gwen/releases/tag/v1.0.3)
+- Current release: [1.1.0](https://github.com/gwen-interpreter/gwen/releases/tag/v1.1.0)
 - [Change log](CHANGELOG)
 
 ### Automation by Interpretation
@@ -52,6 +52,7 @@ Key Features
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
 - [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
 - [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution)
+  - with optional ramp up interval
 - [Dry run execution and validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
 - [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
