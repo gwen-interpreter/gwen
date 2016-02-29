@@ -75,14 +75,18 @@ class ReportGenerator (
   }
   
   private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = {
-    metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
-      val featureCrumb = ("Feature", reportFiles.head)
-      val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
-      val reportFile = reportFiles.tail(idx)
-      formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
-        reportFile tap { file =>
-          file.writeText(content) 
-          logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
+    if (GwenSettings.`gwen.report.suppress.meta`) {
+      Nil
+    } else {
+      metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
+        val featureCrumb = ("Feature", reportFiles.head)
+        val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
+        val reportFile = reportFiles.tail(idx)
+        formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
+          reportFile tap { file =>
+            file.writeText(content) 
+            logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
+          }
         }
       }
     }

@@ -101,7 +101,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <ul class="list-group">
           <li class="list-group-item list-group-item-${cssStatus(status)}">
             <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, s"meta/${reportFiles.tail(rowIndex).getName()}", None, rowIndex)}).mkString}
+              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, if(GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName()}"), None, rowIndex)}).mkString}
             </div>
           </li>
         </ul>
@@ -230,7 +230,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             <div class="container-fluid" style="padding: 0px 0px">${
                 (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
                   val reportFile = result.reports.get(ReportFormat.html).head
-                  formatSummaryLine(result, s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}", Some(resultIndex + 1), rowIndex)
+                  formatSummaryLine(result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
                 }).mkString}
             </div>
           </li>
@@ -270,14 +270,14 @@ trait HtmlReportFormatter extends ReportFormatter {
             </tr>"""} else ""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: String, sequenceNo: Option[Int], rowIndex: Int): String = s"""
+  private def formatSummaryLine(result: FeatureResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = s"""
                 <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.spec.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>${seq}</small></div>""").getOrElse("")}
                     <span style="padding-left: 15px; white-space: nowrap;"><small>${escapeHtml(result.finished.toString)}</small></span>
                   </div>
-                  <div class="col-md-4">
-                    <a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${reportPath}">${escapeHtml(result.spec.feature.name)}</a>
+                  <div class="col-md-4">${reportPath.fold(s"${escapeHtml(result.spec.feature.name)}") { rpath =>
+                    s"""<a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${rpath}">${escapeHtml(result.spec.feature.name)}</a>"""}}
                   </div>
                   <div class="col-md-5">
                     <span class="pull-right"><small>${formatDuration(result.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
