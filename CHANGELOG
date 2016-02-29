@@ -8,7 +8,7 @@ Feb 29, 2016, 8:50 PM GMT+11 (AEDT)
   not set or is set to zero, then no staggering will occur (as per default 
   behavior). 
 - Added new `gwen.report.suppress.meta` setting for controlling whether or 
-  no meta reports should be generated with HTML reports (default value is 
+  not meta reports should be generated with HTML reports (default value is 
   false). If you have a lot of meta, suppressing the meta reports can 
   save a lot of disk space. Enabling this setting does not suppress the 
   hyperlinked stepdefs in feature reports (they will always be rendered).
