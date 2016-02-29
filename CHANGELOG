@@ -1,3 +1,13 @@
+1.1.0
+=====
+Feb 27, 2016, 5:52 PM GMT+11 (AEDT)
+- Add support for configuring a ramp up interval (in seconds) for 
+  staggered parallel exeucution ~ for user request issue #18. The 
+  interval can be set through the `gwen.rampup.interval.seconds` setting
+  (Gwen property). This setting is only applicable for parallel execution 
+  mode. If it is not set or is set to zero, then no staggering will occur 
+  (as per default behavior).  
+
 1.0.3
 =====
 Feb 11, 2016, 11:33 PM GMT+11 (AEDT)

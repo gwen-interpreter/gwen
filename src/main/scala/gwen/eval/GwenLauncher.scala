@@ -27,6 +27,7 @@ import gwen.report.ReportGenerator
 import scala.concurrent.duration.Duration
 import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
   * Launches the gwen interpreter.
@@ -86,7 +87,21 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
+      val counter = new AtomicInteger(0)
+      val started = new ThreadLocal[Boolean]()
+      started.set(false)
       val results = featureStream.par.flatMap { unit =>
+        if (!started.get) {
+          started.set(true)
+          GwenSettings.`gwen.rampup.interval.seconds` foreach { interval =>
+            if (interval > 0) {
+              val partition = counter.incrementAndGet()
+              val period = (partition - 1) * interval
+              logger.info(s"Ramp up period for parallel partition $partition is $period second${if(period == 1) "" else "s"}")
+              Thread.sleep(period * 1000)
+            }
+          }
+        }
         evaluateUnit(options, envOpt, unit) { result =>
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
