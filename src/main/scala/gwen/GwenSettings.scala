@@ -59,4 +59,10 @@ object GwenSettings {
    */
   def `gwen.rampup.interval.seconds`: Option[Int] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toInt)
   
+  /**
+    * Provides access to the `gwen.report.suppress.meta` setting used to control whether 
+    * or not meta report generation will be suppressed (default value is `false`).
+    */
+  def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").getOrElse("false").toBoolean
+  
 }
