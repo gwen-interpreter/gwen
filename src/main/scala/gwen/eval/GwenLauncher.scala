@@ -56,15 +56,11 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           printSummaryStatus(summary)
           summary.evalStatus
         case _ =>
-          (options.metaFiles match {
-            case Nil => Passed(System.nanoTime - start)
-            case _ =>
-              EvalStatus { 
-                optEnv.toList flatMap { env =>
-                  interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
-                }
-              }
-          }) tap { status =>
+          EvalStatus { 
+            optEnv.toList flatMap { env =>
+             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
+            }
+          } tap { status =>
             if (!options.features.isEmpty) {
               logger.info("No features found in specified files and/or directories!")
             }

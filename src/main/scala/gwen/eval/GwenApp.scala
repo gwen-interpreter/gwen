@@ -47,7 +47,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
   private[eval] def run(options: GwenOptions)(implicit launcher: GwenLauncher[T] = new GwenLauncher(interpreter)): Int = {
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
-      launcher.run(options, envOpt).code tap { _ =>
+      launcher.run(options, envOpt).exitCode tap { _ =>
         envOpt foreach {
           if (!options.features.isEmpty || !options.metaFiles.isEmpty) {
             printBanner("")

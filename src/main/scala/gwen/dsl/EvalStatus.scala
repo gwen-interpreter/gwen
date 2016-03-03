@@ -30,8 +30,8 @@ sealed trait EvalStatus {
   /** Returns the duration in nanoseconds. */
   def duration: Duration = Duration.fromNanos(nanos)
   
-  /** Must be overriden to return status code. */
-  def code: Int
+  /** Must be overriden to return exit code. */
+  def exitCode: Int
   
   /** Must be overriden to return an emoticon. */
   def emoticon: String
@@ -49,8 +49,8 @@ sealed trait EvalStatus {
   */
 case class Passed(val nanos: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
-  def code = 0
-  def emoticon = "[:)]"
+  override def exitCode = 0
+  override def emoticon = "[:)]"
 }
 
 /**
@@ -62,16 +62,16 @@ case class Passed(val nanos: Long) extends EvalStatus {
 case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
   val timestamp = new Date()
-  def code = 1
-  def emoticon = "[:(]"
+  override def exitCode = 1
+  override def emoticon = "[:(]"
 }
 
 /** Defines the skipped status. */
 case object Skipped extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Skipped
-  def code = 2
-  def emoticon = "[:|]"
+  override def exitCode = 0
+  override def emoticon = "[:|]"
 }
 
 /**
@@ -82,16 +82,16 @@ case object Skipped extends EvalStatus {
 case object Pending extends EvalStatus {
   val nanos = 0L 
   val status = StatusKeyword.Pending
-  def code = 3
-  def emoticon = "[:|]"
+  override def exitCode = 1
+  override def emoticon = "[:|]"
 }
 
 /** Defines the loaded status. */
 case object Loaded extends EvalStatus {
   val nanos = 0L
   val status = StatusKeyword.Loaded
-  def code = 0
-  def emoticon = "[:)]"
+  override def exitCode = 0
+  override def emoticon = "[:)]"
 }
 
 object EvalStatus {
