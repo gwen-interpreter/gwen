@@ -1,3 +1,9 @@
+1.1.1
+=====
+Mar 3, 2016, 11:04 PM GMT+11 (AEDT)
+- Return exit code zero when exiting REPL if no feature or meta files 
+  were passed in.
+
 1.1.0
 =====
 Feb 29, 2016, 8:50 PM GMT+11 (AEDT)

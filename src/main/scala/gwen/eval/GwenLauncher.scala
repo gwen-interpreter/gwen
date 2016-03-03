@@ -28,6 +28,7 @@ import scala.concurrent.duration.Duration
 import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
 import java.util.concurrent.atomic.AtomicInteger
+import gwen.dsl.Passed
 
 /**
   * Launches the gwen interpreter.
@@ -55,11 +56,15 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           printSummaryStatus(summary)
           summary.evalStatus
         case _ =>
-          EvalStatus { 
-            optEnv.toList flatMap { env =>
-             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
-            }
-          } tap { status =>
+          (options.metaFiles match {
+            case Nil => Passed(System.nanoTime - start)
+            case _ =>
+              EvalStatus { 
+                optEnv.toList flatMap { env =>
+                  interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
+                }
+              }
+          }) tap { status =>
             if (!options.features.isEmpty) {
               logger.info("No features found in specified files and/or directories!")
             }
