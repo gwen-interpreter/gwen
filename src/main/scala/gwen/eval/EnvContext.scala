@@ -20,6 +20,7 @@ import java.io.File
 import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
+import gwen.Predefs.Formatting._
 import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
@@ -54,7 +55,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   
   /** List of current attachments (name-file pairs). */
   private var currentAttachments: List[(String, File)] = Nil
-  private var attachementCount = 0
+  private var attachmentPrefix = padWithZeroes(1)
   
   /** The current type of specification being interpreted. */
   var specType = SpecType.feature
@@ -76,7 +77,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     scopes.reset()
     stepDefs = Map[String, Scenario]()
     resetAttachments
-    attachementCount = 0
+    attachmentPrefix = padWithZeroes(1)
   }
     
   def json: JsObject = scopes.json
@@ -202,23 +203,33 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
    * @param extension the filename extension
    * @param content the content to write to the file
    */
-  def addAttachment(name: String, extension: String, content: String): (String, File) = 
-      (name, File.createTempFile(s"${"%04d".format(attachementCount + 1)}-", s".${extension}") tap { f =>
-        f.deleteOnExit()
-        Option(content) foreach { f.writeText }
-        addAttachment((name, f))
-      })
+  def addAttachment(name: String, extension: String, content: String): (String, File) = { 
+    val file = File.createTempFile(s"$attachmentPrefix-", s".${extension}")
+    file.deleteOnExit()
+    Option(content) foreach { file.writeText }
+    addAttachment((name, file))
+  }
   
   /**
     * Adds an attachment to the current context.
     * 
     * @param attachment the attachment (name-file pair) to add
-    * @param file the attachment fileß
+    * @param file the attachment file
     */
-  def addAttachment(attachment: (String, File)): Unit = {
-    currentAttachments = attachment :: currentAttachments
-    attachementCount = attachementCount + 1
-  } 
+  def addAttachment(attachment: (String, File)): (String, File) = 
+    (attachment match {
+      case (name, file) => 
+        if (file.getName.startsWith(s"$attachmentPrefix-")) attachment
+        else {
+          val prefixedFilename = s"$attachmentPrefix-${file.getName}"
+          val prefixedFile = if (file.getParentFile != null) new File(file.getParentFile, prefixedFilename) else new File(prefixedFilename)
+          if (file.renameTo(prefixedFile)) (name, prefixedFile)
+          else attachment
+        }
+    }) tap { att =>
+      currentAttachments = att :: currentAttachments
+      attachmentPrefix = padWithZeroes(attachmentPrefix.toInt + 1)
+    }
   
   /** Resets/clears current attachments. */
   private[eval] def resetAttachments() {

@@ -1,8 +1,7 @@
 1.1.2
 =====
 Mar 30, 2016, 1:23 AM GMT+11 (AEDT)
-- Refactored overloaded addAttachment methods in EnvContext class to 
-  ensure that the attachment counter is incremented 
+- Prefix all attachment filenames with the sequence counter number
 
 1.1.1
 =====
