@@ -17,7 +17,7 @@ interpreter that accepts plain text
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
-- Current release: [1.1.2](https://github.com/gwen-interpreter/gwen/releases/tag/v1.1.2) 
+- Current release: [1.2.0](https://github.com/gwen-interpreter/gwen/releases/tag/v1.2.0) 
 - [Change log](CHANGELOG)
 
 ### Automation by Interpretation

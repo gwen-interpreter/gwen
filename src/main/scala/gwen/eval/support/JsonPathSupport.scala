@@ -1,0 +1,47 @@
+/*
+ * Copyright 2016 Branko Juric, Brady Wood
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package gwen.eval.support
+
+import gwen.errors._
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.PathNotFoundException
+
+/** Can be mixed into evaluation engines to provide Json path support. */
+trait JsonPathSupport {
+
+  /**
+    * Evaluates an json path expression against a JSON source string and returns 
+    * the result.
+    * 
+    * @param jsonpath the json path expression
+    * @param source the json source string
+    * @return the result of evaluating the json path expression
+    */
+  def evaluateJsonPath(jsonpath: String, source: String): String = {
+    if (source.trim().length() == 0) {
+      jsonPathError("Cannot evaluate Json path on empty source")
+    }
+    try {
+      println(JsonPath.parse(source).read(jsonpath))
+      JsonPath.parse(source).read(jsonpath).toString
+    } catch {
+      case e: PathNotFoundException => ""
+    }
+  }
+
+}

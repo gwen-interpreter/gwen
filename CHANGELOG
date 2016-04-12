@@ -1,3 +1,8 @@
+1.2.0
+=====
+Apr 12, 2016, 10.01 PM GMT+10 (AEST)
+- Added JSON path matching support using library: https://github.com/jayway/JsonPath
+
 1.1.2
 =====
 Mar 30, 2016, 1:23 AM GMT+11 (AEDT)

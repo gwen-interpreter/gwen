@@ -34,6 +34,7 @@ package gwen {
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)
     def xPathError(msg: String) = throw new XPathException(msg)
+    def jsonPathError(msg: String) = throw new JsonPathException(msg)
     def evaluationError(msg: String) = throw new EvaluationException(msg)
     def invocationError(msg: String) = throw new InvocationException(msg)
     def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
@@ -67,6 +68,9 @@ package gwen {
 
     /** Thrown when a xpath evaluation fails. */
     class XPathException(msg: String) extends Exception(msg)
+    
+    /** Thrown when a JSON path evaluation fails. */
+    class JsonPathException(msg: String) extends Exception(msg)
 
     /** Throw when any evaluation error occurs in the interpreter. */
     class EvaluationException(msg: String) extends Exception(msg)

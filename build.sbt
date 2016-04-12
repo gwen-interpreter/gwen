@@ -50,6 +50,8 @@ libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
 
 libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.2.2"
 
+libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.2.0"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
