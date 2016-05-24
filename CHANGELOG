@@ -1,3 +1,14 @@
+1.2.1
+=====
+May 24, 2016, 7.23 PM GMT+10 (AEST)
+- Issue gwen-interpreter/gwen-web#24 
+    Fixed tag filtering to accept tagged features and scenarios that have at 
+    least one specified include tag and exclude all specified exclude tags. The 
+    specified include and exclude tags are now partitioned and evaluated 
+    separately (as per above) instead of being logically ANDed together from 
+    left to right.
+- Only dump environment on failure when in batch mode
+
 1.2.0
 =====
 Apr 12, 2016, 10.01 PM GMT+10 (AEST)
