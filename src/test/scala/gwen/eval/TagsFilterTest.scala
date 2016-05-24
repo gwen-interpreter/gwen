@@ -37,7 +37,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       Scenario: Work unit 2
           Given I do work 2
       
-      @work @play
+      @work @play @rest
       Scenario: Work unit 3
           Given I do work 3
       
@@ -124,6 +124,31 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       TagsFilter.filter(source, List(("@play", true), ("@play", false))) match {
         case Some(target) => fail("None expected")
         case None => // success
+      }
+  }
+  
+  "Either of two scenario level include tags" should "return the feature" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@work", true), ("@play", true))) match {
+        case Some(target) => 
+          val scenarios = target.scenarios
+          scenarios.size should be (3)
+          scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 3")
+          scenarios(2).name should be ("Work unit 4")
+        case None => fail("feature expected")
+      }
+  }
+  
+  "Either of two scenario level include tags but not exclude tag" should "return the feature" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@work", true), ("@rest", false), ("@play", true))) match {
+        case Some(target) => 
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 4")
+        case None => fail("feature expected")
       }
   }
   

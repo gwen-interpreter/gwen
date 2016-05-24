@@ -44,13 +44,11 @@ object TagsFilter {
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
     val filters = tagFilters ++ DefaultTags
     spec.scenarios flatMap { scenario =>
-      val effectiveTags = spec.feature.tags ++ scenario.tags
-      val allSatisfied = filters.foldLeft(true) { 
-        case (satisfied, (tag, include)) =>
-          val hasTag = effectiveTags.contains(tag)
-          satisfied && ((include && hasTag) || (!include && !hasTag))
-      }
-      if (allSatisfied) Some(scenario)
+      val effectiveTags = (spec.feature.tags ++ scenario.tags)
+      val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}
+      val includeSatisfied = includes.isEmpty || effectiveTags.map(_.name).exists(name => includes.contains(name))
+      val excludeSatisfied = excludes.isEmpty || effectiveTags.map(_.name).forall(name => !excludes.contains(name))
+      if (includeSatisfied && excludeSatisfied) Some(scenario)
       else None
     } match {
       case Nil => None

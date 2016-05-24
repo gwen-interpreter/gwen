@@ -180,7 +180,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   final def fail(failure: Failed): Unit = { 
     addErrorAttachments(failure)
-    logger.error(Json.prettyPrint(this.scopes.visible.json))
+    if (options.batch) {
+      logger.error(Json.prettyPrint(this.scopes.visible.json))
+    }
     logger.error(failure.error.getMessage())
     logger.debug(s"Exception: ", failure.error)
   }
