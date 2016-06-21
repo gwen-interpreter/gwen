@@ -33,8 +33,10 @@ trait InterpolationSupport extends LazyLogging {
         logger.debug(s"Resolving property-syntax binding: $${$property}")
         interpolate(s"$prefix${resolve(property)}$suffix") { resolve }
       case paramSyntax(prefix, param, suffix) =>
-        logger.debug(s"Resolving param-syntax binding: $${$param}")
-        interpolate(s"$prefix${resolve(s"<${param}>")}$suffix") { resolve }
+        logger.debug(s"Resolving param-syntax binding: $$<$param>")
+        val resolved = resolve(s"<${param}>")
+        val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
+        interpolate(s"$prefix${substitution}$suffix") { resolve }
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
         logger.debug(s"Resolving concat-syntax binding: + $binding +")
         interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }

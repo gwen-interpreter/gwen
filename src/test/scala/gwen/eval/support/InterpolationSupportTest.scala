@@ -125,6 +125,16 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you good thing!""") 
   }
   
+  """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "decorate parameters" in {
+    interpolate("""Hey you $<param-0>$<param-1> thing!""") { param => 
+      param match {
+        case "<param-0>" => "$<param-0>"
+        case "<param-1>" => "$<param-1>"
+        case _ => "undefined"
+      }
+    } should be ("""Hey you $[param:param-0]$[param:param-1] thing!""") 
+  }
+  
   """interpolate using concatentation syntax: prefix "" + binding + " suffix""" should "resolve" in {
     interpolate("""hello "" + binding + " good thing"""") { binding => "you" } should be ("""hello "you good thing"""") 
   }
