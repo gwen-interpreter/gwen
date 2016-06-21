@@ -128,6 +128,37 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
   }
   
+  "test launcher with given meta dir" should "load it" in {
+    
+    val dir3 = createDir("dir3");
+    val feature3 = createFile("dir3/file3.feature");
+    val metadir = createDir("dir3/meta");
+    val meta3 = createFile("dir3/meta/file3.meta");
+    
+    val options = GwenOptions(features = List(dir3), parallel = true, metas = List(metadir))
+    
+    val meta = new FeatureSpec(
+      Feature("meta feature", Nil), 
+      None, 
+      List(Scenario(Set[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10)))))
+    )
+    
+    val mockInterpreter = mock[GwenInterpreter[EnvContext]]
+    val mockEnv = mock[EnvContext]
+    val metas = UserOverrides.addUserMeta(List(meta3))
+    
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    
+    val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
+    
+    verify(mockInterpreter).reset(mockEnv)
+    verify(mockInterpreter, never()).close(mockEnv)
+    
+    evalStatus should be (Passed(10))
+    
+  }
+  
   "test launcher with duplicate meta" should "should not load duplicate" in {
     
     val dir31 = createDir("dir31")
@@ -136,7 +167,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta31 = createFile("dir31/file31.meta");
     val meta32 = createFile("dirmeta32/file32.meta");
     
-    val options = GwenOptions(features = List(dir31), parallel = true, metaFiles=List(meta31, meta32))
+    val options = GwenOptions(features = List(dir31), parallel = true, metas=List(meta31, meta32))
     
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
@@ -148,7 +179,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, UserOverrides.addUserMeta(options.metaFiles), None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, UserOverrides.addUserMeta(options.metas), None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     

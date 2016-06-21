@@ -49,7 +49,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     try {
       launcher.run(options, envOpt).exitCode tap { _ =>
         envOpt foreach {
-          if (!options.features.isEmpty || !options.metaFiles.isEmpty) {
+          if (!options.features.isEmpty || !options.metas.isEmpty) {
             printBanner("")
           }
           createRepl(_).run() 

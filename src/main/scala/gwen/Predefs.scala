@@ -118,6 +118,20 @@ object Predefs extends LazyLogging {
   object FileIO {
     def encodeDir(dirpath: String): String = 
       if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else "";
+    def isDirectory(location: File): Boolean = location != null && location.isDirectory()
+    def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile())
+    def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
+    def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
+    def isDataFile(file: File): Boolean = hasFileExtension("csv", file)
+    def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName().endsWith(s".${extension}")
+    def recursiveScan(dir: File, extension: String): List[File] = {
+      val files = dir.listFiles
+      val metas = files.filter(file => hasFileExtension(extension, file)).toList
+      files.filter(isDirectory).toList match {
+        case Nil => metas
+        case dirs => metas ::: dirs.flatMap(dir => recursiveScan(dir, extension))
+      }
+    }
   }
   
   /** Exception functions. */

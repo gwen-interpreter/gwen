@@ -19,6 +19,7 @@ package gwen.eval
 import scala.Option.option2Iterable
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.Predefs.Kestrel
+import gwen.Predefs.FileIO
 import gwen.UserOverrides
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
@@ -50,7 +51,9 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val start = System.nanoTime
     try {
-      FeatureStream.readAll(options.features, options.dataFile) match {
+      val metaFiles = options.metas.flatMap(m => if (m.isFile()) List(m) else FileIO.recursiveScan(m, "meta"))
+      val featureStream = new FeatureStream(metaFiles)
+      featureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
           val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
           printSummaryStatus(summary)
@@ -58,7 +61,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         case _ =>
           EvalStatus { 
             optEnv.toList flatMap { env =>
-             interpreter.loadMeta(options.metaFiles, Nil, env).map(_.spec.evalStatus)
+             interpreter.loadMeta(metaFiles, Nil, env).map(_.spec.evalStatus)
             }
           } tap { status =>
             if (!options.features.isEmpty) {
@@ -81,6 +84,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     * Executes all feature units in the given stream.
     * 
     * @param options the command line options
+    * @param metaFiles the meta files
     * @param featureStream the feature stream to execute
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
@@ -104,6 +108,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           }
         }
         evaluateUnit(options, envOpt, unit) { result =>
+          println(result)
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
@@ -141,7 +146,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
-      val targetUnit = new FeatureUnit(unit.featureFile, UserOverrides.mergeMetaFiles(unit.metaFiles, options.metaFiles), unit.dataRecord)
+      val targetUnit = new FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord)
       unit.dataRecord foreach { record =>
         record.data foreach { case (name, value) =>
           env.featureScope.set(name, value)

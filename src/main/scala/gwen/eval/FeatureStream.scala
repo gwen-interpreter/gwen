@@ -21,21 +21,23 @@ import scala.Stream
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
 import gwen.Predefs.Kestrel
+import gwen.Predefs.FileIO._
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.errors._
+import gwen.UserOverrides
 
 /**
   * Reads and streams individual features and feature suites from the file system.  
-  * An individual feature is a single feature file and optional meta file pair, 
+  * An individual feature is a single feature file and meta file list pair, 
   * whereas a feature suite is a directory containing one or many feature files, 
-  * an optional meta file, and zero or many sub directories repeating the same 
+  * zero or many meta files, and zero or many sub directories repeating the same 
   * structure. Both individual features and feature suites are streamed as 
   * [FeatureUnit] units. The former yields only one element and the latter 
   * yields many.  
   *  
   * @author Branko Juric
   */
-object FeatureStream extends LazyLogging {
+class FeatureStream(inputMeta: List[File]) extends LazyLogging {
   
   /**
     * Reads and streams features from multiple file system locations.  
@@ -83,7 +85,7 @@ object FeatureStream extends LazyLogging {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
       location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
-      val unit = new FeatureUnit(location, metaFiles, None)
+      val unit = new FeatureUnit(location, UserOverrides.mergeMetaFiles(metaFiles, inputMeta), None)
       dataFile match {
         case Some(file) => new FeatureSet(unit, file).toStream
         case None =>
@@ -99,11 +101,11 @@ object FeatureStream extends LazyLogging {
   }
   
   /**
-    * Scans for a meta and data files in the specified directory.
+    * Scans for meta and data files in the specified directory.
     * 
-    * @param dir the directory to scan for meta
+    * @param dir the directory to scan in
     * @param inputs tuple of accumulated meta files and one optional data file
-    * @throws gwen.errors.AmbiguousCaseException if more than one meta or data 
+    * @throws gwen.errors.AmbiguousCaseException if more than one data 
     *         file is found in the given directory or more than one data file is 
     *         found in the directory path.
     */
@@ -111,12 +113,7 @@ object FeatureStream extends LazyLogging {
     val (metaFiles, dataFile) = inputs
     val files = dir.listFiles
     val metas = files.filter(isMetaFile).toList
-    val inputs1 = metas match {
-      case metaFile :: Nil => (metaFiles ::: List(metaFile), dataFile)
-      case _ :: _ => 
-        ambiguousCaseError(s"Ambiguous: expected 1 meta feature in ${dir.getName()} but found ${metas.size}")
-      case _ => (metaFiles, dataFile)
-    }
+    val inputs1 = (metaFiles ::: metas, dataFile)
     val datas = files.filter(isDataFile).toList
     datas match {
       case Nil => inputs1
@@ -125,7 +122,8 @@ object FeatureStream extends LazyLogging {
         dataFile match { 
           case Some(data) =>
             ambiguousCaseError(s"Ambiguous: found data file(s) in ${dir.getName()} path but already got data file ${data.getPath}")
-           case _ => ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} path but found ${datas.size}")
+          case _ => 
+            ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} path but found ${datas.size}")
         }
        }
   }
@@ -148,11 +146,5 @@ object FeatureStream extends LazyLogging {
     }
   }
   
-  private def isDirectory(location: File): Boolean = location != null && location.isDirectory()
-  private def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile())
-  private def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
-  private def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
-  private def isDataFile(file: File): Boolean = hasFileExtension("csv", file)
-  private def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName().endsWith(s".${extension}")
 }
 

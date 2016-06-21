@@ -709,7 +709,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.tags should be (tags)
     options.dryRun should be (dryRun)
     options.dataFile should be (dataFile)
-    options.metaFiles should be (UserOverrides.addUserMeta(metaFiles))
+    options.metas should be (UserOverrides.addUserMeta(metaFiles))
     options.features should be (features)
     
   }

@@ -39,8 +39,8 @@ import gwen.report.ReportFormat
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
-  * @param metaFiles optional list of meta file overrides
-  * @param features optional list of feature file and/or directory paths
+  * @param metas optional list of meta file and/or directories
+  * @param features optional list of feature file and/or directories
   *    
   * @author Branko Juric
   */
@@ -53,7 +53,7 @@ case class GwenOptions(
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
     dataFile: Option[File] = None,
-    metaFiles: List[File] = Nil, 
+    metas: List[File] = Nil, 
     features: List[File] = Nil,
     args: Option[Array[String]] = None) {
   
@@ -142,22 +142,22 @@ object GwenOptions {
       
       opt[String]('m', "meta") action {
         (ms, c) => 
-          c.copy(metaFiles = ms.split(",").toList.map(new File(_)))
+          c.copy(metas = ms.split(",").toList.map(new File(_)))
       } validate { ms => 
         ((ms.split(",") flatMap { m => 
           if (new File(m).exists()) None 
-          else Some(s"Specified meta file not found: $m")
+          else Some(s"Specified meta entry not found: $m")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<meta files>") text("Comma separated list of meta file paths")
+      } valueName("<meta files>") text("Comma separated list of meta files and directories")
     
       arg[File]("<features>") unbounded() optional() action { 
         (f, c) => 
           c.copy(features = c.features :+ f)
       } validate {
-        f => if (f.exists) success else failure(s"Specified features path not found: $f")
-      } text("Space separated list of feature files and/or directory paths")
+        f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
+      } text("Space separated list of feature files and/or directories")
     
     }
   
@@ -171,7 +171,7 @@ object GwenOptions {
         options.tags,
         options.dryRun,
         options.dataFile,
-        UserOverrides.addUserMeta(options.metaFiles),
+        UserOverrides.addUserMeta(options.metas),
         options.features,
         Some(args)) 
       } tap { options =>
