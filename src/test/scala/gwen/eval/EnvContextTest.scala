@@ -24,6 +24,7 @@ import gwen.dsl.Tag
 import org.scalatest.FlatSpec
 import gwen.errors.`package`.AmbiguousCaseException
 import gwen.errors.InvalidStepDefException
+import gwen.errors.AmbiguousCaseException
 
 class EnvContextTest extends FlatSpec with Matchers {
   
@@ -97,7 +98,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "Sample math StepDefs with parameters" should "resolve" in {
     
     val stepdef1 = Scenario(Set(Tag("StepDef")), "++x", Nil, None, Nil)
-    val stepdef2 = Scenario(Set(Tag("StepDef")), "z = x + <y>", Nil, None, Nil)
+    val stepdef2 = Scenario(Set(Tag("StepDef")), "c = a + <b>", Nil, None, Nil)
     val stepdef3 = Scenario(Set(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
     val env = newEnv
@@ -105,11 +106,27 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef2)
     env.addStepDef(stepdef3)
     
-    env.getStepDef("z = x + 3") should be (Some((stepdef2, List(("<y>", "3")))))
+    env.getStepDef("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
     env.getStepDef("z = 2 + 2") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "2")))))
     env.getStepDef("z = 3 + 2") should be (Some((stepdef3, List(("<x>", "3"), ("<y>", "2")))))
     env.getStepDef("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
     env.getStepDef("z = 5 + y") should be (Some((stepdef3, List(("<x>", "5"), ("<y>", "y")))))
+    env.getStepDef("c = a + y") should be (Some((stepdef2, List(("<b>", "y")))))
+    
+  }
+  
+  "Ambiguous math StepDefs with parameters" should "be detected" in {
+    
+    val stepdef1 = Scenario(Set(Tag("StepDef")), "z = a + <b>", Nil, None, Nil)
+    val stepdef2 = Scenario(Set(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
+    
+    val env = newEnv
+    env.addStepDef(stepdef1)
+    env.addStepDef(stepdef2)
+    
+    intercept[AmbiguousCaseException] {
+      env.getStepDef("z = a + 3")
+    }
     
   }
   

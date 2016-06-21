@@ -135,7 +135,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     *         match is found; false otherwise
     */
   private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
-    stepDefs.values.view.flatMap { stepDef =>
+    val matches = stepDefs.values.view.flatMap { stepDef =>
       ("<.+?>".r.findAllIn(stepDef.name).toList match {
         case Nil => None  
         case names =>
@@ -160,10 +160,17 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
               } else None
           }
       })
-    }.collectFirst { case (stepDef, params) => 
+    }.collect { case (stepDef, params) => 
         logger.debug(s"Mapped $expression to StepDef: ${stepDef.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
       (stepDef, params)
-    }}
+    }
+    if (matches.size > 1) {
+      val msg = s"Ambiguous condition in resolving '$expression': One StepDef match expected but ${matches.size} found" 
+      ambiguousCaseError(s"$msg: ${(matches.map { case (stepDef, _) => stepDef.name }).mkString(",")}")
+    } else {
+      matches.headOption
+    }
+  }
   
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 
