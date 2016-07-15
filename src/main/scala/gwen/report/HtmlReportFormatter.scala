@@ -93,18 +93,22 @@ trait HtmlReportFormatter extends ReportFormatter {
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
           <span class="label label-${cssStatus(status)}">Meta</span>
-          ${count} meta feature${if (count > 1) "s" else ""} ${if (count > 1) s"""
-          <span class="pull-right"><small>${formatDuration(metaResults.map(_.duration).reduce(_+_))}</small></span>""" else ""}
+          <a class="text-${cssStatus(status)}" role="button" data-toggle="collapse" href="#meta" aria-expanded="true" aria-controls="meta">
+            ${count} meta feature${if (count > 1) "s" else ""}
+          </a>
+          <span class="pull-right"><small>${formatDuration(metaResults.map(_.duration).reduce(_+_))}</small></span>
         </li>
-      </ul>
-      <div class="panel-body">
-        <ul class="list-group">
-          <li class="list-group-item list-group-item-${cssStatus(status)}">
-            <div class="container-fluid" style="padding: 0px 0px">
-              ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, if(GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName()}"), None, rowIndex)}).mkString}
-            </div>
-          </li>
-        </ul>
+      </ul>  
+      <div id="meta" class="panel-collapse collapse" role="tabpanel">
+        <div class="panel-body">
+          <ul class="list-group">
+            <li class="list-group-item list-group-item-${cssStatus(status)}">
+              <div class="container-fluid" style="padding: 0px 0px">
+                ${(metaResults.zipWithIndex map { case (result, rowIndex) => formatSummaryLine(result, if(GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName()}"), None, rowIndex)}).mkString}
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx")}).mkString}
   </body>
