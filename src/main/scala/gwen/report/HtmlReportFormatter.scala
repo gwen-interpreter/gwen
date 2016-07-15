@@ -99,7 +99,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <span class="pull-right"><small>${formatDuration(metaResults.map(_.duration).reduce(_+_))}</small></span>
         </li>
       </ul>  
-      <div id="meta" class="panel-collapse collapse" role="tabpanel">
+      <div id="meta" class="panel-collapse collapse">
         <div class="panel-body">
           <ul class="list-group">
             <li class="list-group-item list-group-item-${cssStatus(status)}">
@@ -362,7 +362,7 @@ object HtmlReportFormatter {
           <h3>&nbsp;</h3>
           <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escapeHtml(info.implName)}</span></a>
           <p>
-          <small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small>
+          <a href="${info.implHome}/releases/tag/v${info.implVersion}"><small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small></a>
           </p>
         </td>
       </tr>

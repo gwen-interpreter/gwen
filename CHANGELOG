@@ -1,9 +1,10 @@
 1.3.1
 =====
-Jul 15, 2016, 9:45 PM GMT+10 (AEST)
+Jul 15, 2016, 11:10 PM GMT+10 (AEST)
 - Wrap list of meta that is displayed in HTML detail reports with a 
   collapsable container that is hidden by default and can be expanded when 
   user clicks the 'no of meta files' hyperlink.
+- Link version number in report to release notes
 
 1.3.0
 =====

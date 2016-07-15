@@ -245,3 +245,7 @@ table tbody.summary td {
   height: 0;
   border-right: 4px solid;
 }
+
+.list-group {
+  padding-left: 2px;
+}
