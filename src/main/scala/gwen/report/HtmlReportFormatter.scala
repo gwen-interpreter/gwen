@@ -362,7 +362,7 @@ object HtmlReportFormatter {
           <h3>&nbsp;</h3>
           <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escapeHtml(info.implName)}</span></a>
           <p>
-          <a href="${info.implHome}/releases/tag/v${info.implVersion}"><small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small></a>
+          <a href="${info.implHome}/releases/tag/${info.implVersion}"><small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.implVersion}</small></a>
           </p>
         </td>
       </tr>
