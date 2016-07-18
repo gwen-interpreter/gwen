@@ -75,7 +75,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
                 |  \__, | \_/\_/ \___|_| |_|   `    
                 |  |___/                            
                 |                                   
-                |""" + intro + interpreter.implName + " " + interpreter.implVersion + """
+                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + """
                 |""").stripMargin)
   }
   
