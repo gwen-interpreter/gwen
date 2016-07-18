@@ -25,7 +25,7 @@ net.minidev                 accessors-smart          | 1.1     | [Apache License
 net.minidev                 json-smart               | 2.2.1   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.scala-stm               scala-stm_2.11           | 0.7     | [BSD](https://github.com/nbronson/scala-stm/blob/master/LICENSE.txt)
 org.ow2.asm                 asm                      | 5.0.3   | [BSD License](http://asm.objectweb.org/license.html) 
-org.scala-lang              scala-library            | 2.11.7  | [BSD 3-Clause](http://www.scala-lang.org/license.html)
+org.scala-lang              scala-library            | 2.11.8  | [BSD 3-Clause](http://www.scala-lang.org/license.html)
 org.scala-lang              scala-reflect            | 2.11.1  | [BSD 3-Clause](http://www.scala-lang.org/license.html)
 jline                       jline                    | 2.13    | [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
 com.github.scopt            scopt_2.11               | 3.3.0   | [MIT License](http://www.opensource.org/licenses/mit-license)
