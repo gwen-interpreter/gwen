@@ -164,7 +164,7 @@ object Predefs extends LazyLogging {
     /**
       * Formats durations for presentation purposes.
       */
-    private object DurationFormatter {
+    object DurationFormatter {
       
       import scala.concurrent.duration._
   
