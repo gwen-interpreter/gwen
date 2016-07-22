@@ -29,15 +29,17 @@ import gwen.Predefs.Kestrel
  */
 class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit] with LazyLogging  {
   
-  private val dataFeed = CSVReader.open(dataFile).iteratorWithHeaders.zipWithIndex
+  private val dataFeed = CSVReader.open(dataFile).iterator.zipWithIndex
+  private val headers = if (dataFeed.hasNext) dataFeed.next._1 else Nil
   
   /** Checks if there are more records in the data feed. */
   override def hasNext(): Boolean = dataFeed.hasNext
   
   /** Creates a new feature unit for the next record of data. */
   override def next(): FeatureUnit = {
-    val (data, index) = dataFeed.next
-    val dataRecord = new DataRecord(dataFile.getPath(), index + 1, data)
+    val (values, index) = dataFeed.next
+    val data = headers zip values
+    val dataRecord = new DataRecord(dataFile.getPath(), index, data.toList)
     logger.debug(s"${dataRecord}: $data")
     FeatureUnit(unit.featureFile, unit.metaFiles, Some(dataRecord)) tap { unit => 
       logger.info(s"Mapped $unit")

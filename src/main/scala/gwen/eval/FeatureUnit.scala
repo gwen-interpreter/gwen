@@ -34,7 +34,6 @@ case class FeatureUnit(featureFile: File, metaFiles: List[File], dataRecord: Opt
   *  @param recordNo the current data record number
   *  @param data the current data  
   */
-class DataRecord(val dataFilePath: String, val recordNo: Int, val data: Map[String, String]) {
   override def toString = s"DataRecord(${dataFilePath}[$recordNo])"
 }
 

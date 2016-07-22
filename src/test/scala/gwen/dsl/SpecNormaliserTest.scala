@@ -108,7 +108,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
         Step(StepKeyword.When, "I am a ${my gender}"),
         Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
       )))
-    val data = Map("my age" -> "18", "my gender" -> "male", "my title" -> "Mr")
+    val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord("AboutMe.csv", 1, data)
     val result = normalise(feature, None, Some(dataRecord))
     result.feature.name should be ("About me, [1] my age=18..")
