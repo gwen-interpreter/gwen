@@ -3,6 +3,7 @@
 Jul 22, 2016, 11:48 AM GMT+10 (AEST)
 - Expose duration formatter in Predefs object
 - Preserve order of fields when reading CSV data
+- Do not evaluate StepDef if calling step fails interpolation
 
 1.3.2
 =====

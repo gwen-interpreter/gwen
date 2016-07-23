@@ -66,14 +66,14 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     */
   def evaluateStep(step: Step, env: T): Step = {
     val iStep = doEvaluate(step, env) { env.interpolate(_) }
-    logger.info(s"Evaluating Step: $iStep")
-    val stepDefOpt = env.getStepDef(iStep.expression)
-    ((stepDefOpt match {  
-      case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
-      case stepdef => stepdef 
-    }) match {
-      case None =>
-        if (iStep.evalStatus.status != StatusKeyword.Failed) {
+    (if (iStep.evalStatus.status != StatusKeyword.Failed) {
+      logger.info(s"Evaluating Step: $iStep")
+      val stepDefOpt = env.getStepDef(iStep.expression)
+      (stepDefOpt match {  
+        case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
+        case stepdef => stepdef 
+      }) match {
+        case None =>
           doEvaluate(iStep, env) { step =>
             try {
               evaluate(step, env)
@@ -83,11 +83,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             }
             step
           }
-        } else {
-          iStep
-        }
-      case (Some((stepDef, params))) => 
-        evalStepDef(stepDef, iStep, params, env)
+        case (Some((stepDef, params))) => 
+          evalStepDef(stepDef, iStep, params, env)
+      }
+    } else {
+      iStep
     }) tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
     }
