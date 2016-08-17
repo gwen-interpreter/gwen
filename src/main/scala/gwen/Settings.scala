@@ -52,6 +52,10 @@ object Settings {
     val props = propsFiles.foldLeft(new Properties()) { 
       (props, file) => 
         props.load(new FileReader(file))
+        props.entrySet() foreach { entry =>
+          val key = entry.getKey().asInstanceOf[String]
+          if (key == null || key.trim.isEmpty()) invalidPropertyError(entry.toString, file)
+        }
         props
     }
     props.entrySet() foreach { entry =>

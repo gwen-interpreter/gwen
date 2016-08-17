@@ -20,6 +20,8 @@
 package gwen {
 
   import gwen.dsl.Scenario
+  import java.io.File
+  
   package object errors {
 
     import gwen.dsl.Step
@@ -30,6 +32,7 @@ package gwen {
     def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
     def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
     def missingPropertyError(name: String) = throw new MissingPropertyException(name)
+    def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
     def invalidTagError(msg: String) = throw new InvalidTagException(msg)
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)
@@ -54,8 +57,11 @@ package gwen {
     /** Thrown when an attribute cannot be found in a scope. */
     class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(x => s" in ${x} scope")getOrElse("")}: ${name}")
     
-    /** Thrown when an attribute cannot be found in a scope. */
+    /** Thrown when a property setting is not found. */
     class MissingPropertyException(name: String) extends Exception(s"Property not found: ${name}")
+    
+    /** Thrown when a property file setting is invalid. */
+    class InvalidPropertyException(entry: String, propertyFile: File) extends Exception(s"Invalid property entry '${entry}' found in file: ${propertyFile} (name=value expected)")
 
     /** Thrown when an invalid tag (annotation) is detected. */
     class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: ${tagString}")
