@@ -35,6 +35,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report-dry-run")), 
+      reportFormats = List(ReportFormat.html, ReportFormat.junit),
       features = List(new File("features/sample/math")),
       dryRun = true
     )

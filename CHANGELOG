@@ -1,3 +1,8 @@
+1.3.4
+=====
+Aug 17, 2016, 4:08 PM GMT+10 (AEST)
+- Report ambiguous stepdef lookup errors instead of exiting interpreter
+
 1.3.3
 =====
 Jul 22, 2016, 11:48 AM GMT+10 (AEST)

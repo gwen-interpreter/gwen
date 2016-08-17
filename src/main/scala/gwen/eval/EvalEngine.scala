@@ -68,23 +68,30 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     val iStep = doEvaluate(step, env) { env.interpolate(_) }
     (if (iStep.evalStatus.status != StatusKeyword.Failed) {
       logger.info(s"Evaluating Step: $iStep")
-      val stepDefOpt = env.getStepDef(iStep.expression)
-      (stepDefOpt match {  
-        case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
-        case stepdef => stepdef 
-      }) match {
-        case None =>
-          doEvaluate(iStep, env) { step =>
-            try {
-              evaluate(step, env)
-            } catch {
-              case e: UndefinedStepException =>
-                stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
-            }
-            step
+      val start = System.nanoTime - step.evalStatus.nanos
+      Try(env.getStepDef(iStep.expression)) match {
+        case Failure(error) =>
+          val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
+          env.fail(failure)
+          Step(iStep, failure, env.attachments)
+        case Success(stepDefOpt) =>
+          (stepDefOpt match {  
+            case Some((stepDef, _)) if (env.localScope.containsScope(stepDef.name)) => None
+            case stepdef => stepdef 
+          }) match {
+            case None =>
+              doEvaluate(iStep, env) { step =>
+                try {
+                  evaluate(step, env)
+                } catch {
+                  case e: UndefinedStepException =>
+                    stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
+                }
+                step
+              }
+            case (Some((stepDef, params))) => 
+              evalStepDef(stepDef, iStep, params, env)
           }
-        case (Some((stepDef, params))) => 
-          evalStepDef(stepDef, iStep, params, env)
       }
     } else {
       iStep
