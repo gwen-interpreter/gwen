@@ -131,7 +131,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
     val tags = scenario.tags.filter(_ != Tag.StepDefTag )
     s"""
-    <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
+    <a name="scenario-${scenarioId}"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.size > 0) s"""
           <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""}
@@ -378,7 +378,7 @@ object HtmlReportFormatter {
         <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escapeHtml(text)}</a>
       </li>"""}).mkString}
       <li>
-        <span class="badge badge-${cssStatus(status)}">${status}</span>
+        ${if (status != StatusKeyword.Passed) s"""<a href="#${result.spec.scenarios.zipWithIndex.collectFirst { case (s, i) if (s.evalStatus.status == status) => s"scenario-$i" } getOrElse("")}">""" else ""}<span class="badge badge-${cssStatus(status)}">${status}</span>${if (status != StatusKeyword.Passed) "</a>" else ""}
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>
