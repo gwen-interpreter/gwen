@@ -77,7 +77,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span>
         ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.duration - result.spec.evalStatus.duration)}</small></span>
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.elapsedTime - result.spec.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
             ${formatProgressBar("Step", summary.stepCounts)}
@@ -96,7 +96,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <a class="text-${cssStatus(status)}" role="button" data-toggle="collapse" href="#meta" aria-expanded="true" aria-controls="meta">
             ${count} meta feature${if (count > 1) "s" else ""}
           </a>
-          <span class="pull-right"><small>${formatDuration(metaResults.map(_.duration).reduce(_+_))}</small></span>
+          <span class="pull-right"><small>${formatDuration(metaResults.map(_.spec.evalStatus.duration).reduce(_+_))}</small></span>
         </li>
       </ul>  
       <div id="meta" class="panel-collapse collapse">
@@ -196,16 +196,19 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escapeHtml(summary.finished.toString)}</small>
+        <small><span class="grayed">Started: </span>${escapeHtml(summary.started.toString)}</small>
       </li>
-      <span class="pull-right"><small>${formatDuration(summary.duration)}</small></span>
+      <li>
+        <small><span class="grayed">Finished: </span>${escapeHtml(summary.finished.toString)}</small>
+      </li>
+      <span class="pull-right"><small>${formatDuration(summary.elapsedTime)}</small></span>
     </ol>
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
         <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.duration - summary.evalStatus.duration)}</small></span>
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.elapsedTime - summary.evalStatus.duration)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
@@ -225,7 +228,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           val total = summary.results.size
           val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
           s"""${countOfTotal}${if (count > 1) s"""
-          <span class="pull-right"><small>${formatDuration(results.map(_._1.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
+          <span class="pull-right"><small>${formatDuration(results.map(_._1.spec.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
         </li>
       </ul>
       <div class="panel-body">
@@ -284,7 +287,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                     s"""<a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${rpath}">${escapeHtml(result.spec.feature.name)}</a>"""}}
                   </div>
                   <div class="col-md-5">
-                    <span class="pull-right"><small>${formatDuration(result.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+                    <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
 
@@ -378,7 +381,10 @@ object HtmlReportFormatter {
         <span class="badge badge-${cssStatus(status)}">${status}</span>
       </li>
       <li>
-        <small>${escapeHtml(result.finished.toString)}</small>
+        <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>
+      </li>
+      <li>
+        <small><span class="grayed">Finished: </span>${escapeHtml(result.finished.toString)}</small>
       </li>
         ${ if (screenshots.size > 1) { s"""
              <li>
@@ -386,7 +392,7 @@ object HtmlReportFormatter {
              </li>"""
            } else ""
          }
-      <span class="pull-right"><small>${formatDuration(result.duration)}</small></span>
+      <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span>
     </ol>"""
   }
     

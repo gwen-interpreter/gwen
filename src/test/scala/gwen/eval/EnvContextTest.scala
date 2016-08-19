@@ -22,7 +22,7 @@ import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import org.scalatest.FlatSpec
-import gwen.errors.`package`.AmbiguousCaseException
+import gwen.errors.AmbiguousCaseException
 import gwen.errors.InvalidStepDefException
 import gwen.errors.AmbiguousCaseException
 

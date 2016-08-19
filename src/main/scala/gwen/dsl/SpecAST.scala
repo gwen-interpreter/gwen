@@ -75,7 +75,8 @@ case class FeatureSpec(
   
   /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {
-    val specStatus = EvalStatus(steps.map(_.evalStatus))
+    val ss = steps.map(_.evalStatus)
+    val specStatus = EvalStatus(ss)
     metaSpecs match {
       case Nil => specStatus
       case _ =>
@@ -98,13 +99,6 @@ object FeatureSpec {
       None,
       Nil)
   }
-  def apply(spec: FeatureSpec, featureFile: File, metaSpecs: List[FeatureSpec]): FeatureSpec =
-    new FeatureSpec(
-      spec.feature,
-      spec.background,
-      spec.scenarios,
-      Some(featureFile),
-      metaSpecs)
 }
 
 /**

@@ -16,18 +16,12 @@
 
 package gwen.eval
 
-import java.util.Date
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Scenario
 import gwen.dsl.StatusKeyword
-import gwen.dsl.Tag
-import java.io.File
+import scala.concurrent.duration.Duration
+import java.util.Date
 import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
-import gwen.report.ReportFormat
-import scala.concurrent.duration.Duration
 import gwen.Predefs.Formatting._
-
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -36,15 +30,18 @@ import gwen.Predefs.Formatting._
   * @param featureCounts number of features by status
   * @param scenarioCounts number of scenarios by status
   * @param stepCounts number of steps by status
+  * @param elapsedTime the time it took to process all features
   * 
   * @author Branko Juric
   */
 case class FeatureSummary(
   results: List[FeatureResult],
   scenarioCounts: Map[StatusKeyword.Value, Int], 
-  stepCounts: Map[StatusKeyword.Value, Int]) {
+  stepCounts: Map[StatusKeyword.Value, Int],
+  elapsedTime: Duration) {
   
   val finished = new Date()
+  val started = new Date(finished.getTime() - elapsedTime.toMillis)
   private val statuses = results.map(_.spec.evalStatus)
   def evalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
   def featureCounts = StatusKeyword.countsByStatus(statuses)
@@ -53,12 +50,14 @@ case class FeatureSummary(
     * Adds the given feature result to the current summary (accumulates). 
     * 
     * @param featureResult the feature result to add
+    * @param elapsedTime the time it took to process the feature
     */
-  def +(featureResult: FeatureResult): FeatureSummary =
+  def +(featureResult: FeatureResult, elapsedTime: Duration): FeatureSummary =
     new FeatureSummary(
       this.results ++ List(featureResult), 
       addCounts(this.scenarioCounts, featureResult.scenarioCounts),
-      addCounts(this.stepCounts, featureResult.stepCounts))
+      addCounts(this.stepCounts, featureResult.stepCounts),
+      elapsedTime)
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.reportables flatMap { status => 
@@ -68,8 +67,6 @@ case class FeatureSummary(
       if (sum > 0) Some((status, sum)) else None
     }).toMap
     
-  def duration: Duration = if (results.nonEmpty) results.map(_.duration).reduce(_+_) else Duration.Zero
-  
   override def toString = { 
     val featureCount = featureCounts.map(_._2).sum
     val scenarioCount = scenarioCounts.map(_._2).sum
@@ -78,7 +75,7 @@ case class FeatureSummary(
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${formatDuration(duration)}] ${evalStatus.status} (Overhead: ${formatDuration(duration - evalStatus.duration)}) ${finished} ${evalStatus.emoticon}""".stripMargin
+        |[${formatDuration(evalStatus.duration)}] ${evalStatus.status} ${finished} [${formatDuration(elapsedTime)}] Elapsed (Overhead: ${formatDuration(elapsedTime - evalStatus.duration)}) ${evalStatus.emoticon}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
@@ -91,37 +88,9 @@ case class FeatureSummary(
 
 /** Feature summary factory. */
 object FeatureSummary {
-  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
+  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Duration.Zero)
+  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), elapsedTime)
+  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + (result, result.elapsedTime)
 }
 
-/**
-  * Captures the results of an evaluated feature.
-  * 
-  * @param spec the evaluated feature
-  * @param metaResults the evaluated meta results
-  * @param reports optional map of report files (keyed by report type)
-  * @param duration the time it took to process the feature
-  */
-class FeatureResult(
-  val spec: FeatureSpec, 
-  val reports: Option[Map[ReportFormat.Value, List[File]]], 
-  val metaResults: List[FeatureResult],
-  val duration: Duration) {
-  
-  val finished = new Date()
-  lazy val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-  lazy val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
-  def summary = FeatureSummary(this)
-  private[eval] def scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
-  private[eval] def stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString = s"[${formatDuration(duration)}] ${spec.evalStatus.status} (Overhead: ${formatDuration(duration - spec.evalStatus.duration)}) ${finished} ${spec.evalStatus.emoticon}"
-  
-}
-
-/** Feature result factory. */
-object FeatureResult {
-  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, List[File]]], metaResults: List[FeatureResult], duration: Duration): FeatureResult = 
-    new FeatureResult(spec, reports, metaResults, duration)
-}
 

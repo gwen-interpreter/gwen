@@ -167,7 +167,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
               evaluateScenario(scenario, env)
           }) :: acc
       } reverse,
-      featureSpec.featureFile 
+      featureSpec.featureFile,
+      metaResults.map(_.spec)
     )
     resultSpec.featureFile foreach { file =>
       logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")

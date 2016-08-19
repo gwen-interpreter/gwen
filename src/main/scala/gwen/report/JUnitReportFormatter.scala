@@ -57,7 +57,7 @@ trait JUnitReportFormatter extends ReportFormatter {
     val errorCount = counts.get(StatusKeyword.Failed).getOrElse(0)
     val errors = s""" errors="${errorCount}""""
     val skipped = s""" skipped="${counts.get(StatusKeyword.Skipped).getOrElse(0) + counts.get(StatusKeyword.Pending).getOrElse(0)}""""
-    val time = s""" time="${result.duration.toNanos.toDouble / 1000000000d}""""
+    val time = s""" time="${result.elapsedTime.toNanos.toDouble / 1000000000d}""""
     val timestamp = s""" timestamp="${new DateTime(result.finished).withZone(DateTimeZone.UTC)}""""
     
     Some(s"""<?xml version="1.0" encoding="UTF-8" ?>

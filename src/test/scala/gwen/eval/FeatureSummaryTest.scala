@@ -36,9 +36,17 @@ import java.util.concurrent.TimeUnit
 import gwen.dsl.Loaded
 
 class FeatureSummaryTest extends FlatSpec with Matchers {
+  
+  val Passed1 = Passed(1000000)
+  val Passed2 = Passed(2000000)
+  val Passed3 = Passed(3000000)
+  val Passed4 = Passed(4000000)
+  
+  val Failed3 = Failed(3000000, new Exception())
+  val Failed4 = Failed(4000000, new Exception())
 
   "No results in summary" should "yield empty metrics" in {
-    val summary = FeatureSummary()
+    val summary = FeatureSummary(Duration.Zero)
     summary.results.size should be (0)
     summary.featureCounts.size should be (0)
     summary.scenarioCounts.size should be (0)
@@ -54,16 +62,16 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
   
   "Accumulated feature results in summary" should "sum correctly" in {
     
-    var summary = FeatureSummary()
+    var summary = FeatureSummary(Duration.Zero)
     var summaryLines = Array[String]()
     
     // add 1 meta
     val meta1 = FeatureSpec(
       Feature("meta1", Nil), None, List(
         Scenario(Set[Tag](), "metaScenario1", Nil, None, List(
-          Step(StepKeyword.Given, "meta step 1", Passed(2)),
-          Step(StepKeyword.Given, "meta step 2", Passed(1)),
-          Step(StepKeyword.Given, "meta step 3", Passed(2)))
+          Step(StepKeyword.Given, "meta step 1", Passed2),
+          Step(StepKeyword.Given, "meta step 2", Passed1),
+          Step(StepKeyword.Given, "meta step 3", Passed2))
         ),
         Scenario(Set(Tag("StepDef")), "metaStepDef1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Loaded),
@@ -75,9 +83,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     val feature1 = FeatureSpec(
       Feature("feature1", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(1)),
-          Step(StepKeyword.Given, "step 3", Passed(2)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed1),
+          Step(StepKeyword.Given, "step 3", Passed2))
         ),
         Scenario(Set(Tag("StepDef")), "StepDef1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Loaded),
@@ -88,7 +96,8 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
       List(meta1))
         
     val metaResult = FeatureResult(meta1, None, Nil, Duration.Zero)
-    summary = summary + FeatureResult(feature1, None, List(metaResult), Duration(10, TimeUnit.MILLISECONDS))
+    var featureResult = FeatureResult(feature1, None, List(metaResult), Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Passed)
     summary.results.size should be (1)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1)))
@@ -106,11 +115,12 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     val feature2 = FeatureSpec(
       Feature("feature2", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Failed(3, new Exception())),
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Failed3),
           Step(StepKeyword.Given, "step 3", Skipped))
         )))
-    summary = summary + FeatureResult(feature2, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    featureResult = FeatureResult(feature2, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (2)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1), (StatusKeyword.Failed -> 1)))
@@ -122,22 +132,23 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summaryLines(1) should be ("2 scenarios: Passed 1, Failed 1, Skipped 0, Pending 0")
     summaryLines(2) should be ("6 steps: Passed 4, Failed 1, Skipped 1, Pending 0")
     summaryLines(3) should be ("")
-    summaryLines(4).startsWith("[20ms] Failed") should be (true)
+    summaryLines(4).startsWith("[15ms] Failed") should be (true)
     
     // add 2 passed scenarios
     val feature3 = FeatureSpec(
       Feature("feature3", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(1)),
-          Step(StepKeyword.Given, "step 3", Passed(2)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed1),
+          Step(StepKeyword.Given, "step 3", Passed2))
         ), 
         Scenario(Set[Tag](), "scenario2", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(1)),
-          Step(StepKeyword.Given, "step 3", Passed(2)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed1),
+          Step(StepKeyword.Given, "step 3", Passed2))
         )))
-    summary = summary + FeatureResult(feature3, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    featureResult = FeatureResult(feature3, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (3)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1)))
@@ -149,7 +160,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summaryLines(1) should be ("4 scenarios: Passed 3, Failed 1, Skipped 0, Pending 0")
     summaryLines(2) should be ("12 steps: Passed 10, Failed 1, Skipped 1, Pending 0")
     summaryLines(3) should be ("")
-    summaryLines(4).startsWith("[30ms] Failed") should be (true)
+    summaryLines(4).startsWith("[25ms] Failed") should be (true)
     
     // add 1 skipped scenario
     val feature4 = FeatureSpec(
@@ -159,7 +170,8 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given, "step 2", Skipped),
           Step(StepKeyword.Given, "step 3", Skipped))
         )))
-    summary = summary + FeatureResult(feature4, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    featureResult = FeatureResult(feature4, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (4)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
@@ -171,7 +183,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summaryLines(1) should be ("5 scenarios: Passed 3, Failed 1, Skipped 1, Pending 0")
     summaryLines(2) should be ("15 steps: Passed 10, Failed 1, Skipped 4, Pending 0")
     summaryLines(3) should be ("")
-    summaryLines(4).startsWith("[40ms] Failed") should be (true)
+    summaryLines(4).startsWith("[25ms] Failed") should be (true)
     
     // add 1 pending scenario
     val feature5 = FeatureSpec(
@@ -180,7 +192,8 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given, "step 1", Pending),
           Step(StepKeyword.Given, "step 2", Pending))
         )))
-    summary = summary + FeatureResult(feature5, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    featureResult = FeatureResult(feature5, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (5)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
@@ -192,36 +205,37 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summaryLines(1) should be ("6 scenarios: Passed 3, Failed 1, Skipped 1, Pending 1")
     summaryLines(2) should be ("17 steps: Passed 10, Failed 1, Skipped 4, Pending 2")
     summaryLines(3) should be ("")
-    summaryLines(4).startsWith("[50ms] Failed") should be (true)
+    summaryLines(4).startsWith("[25ms] Failed") should be (true)
     
     // add 4 passed and 1 failed scenario
     val feature6 = FeatureSpec(
       Feature("feature6", Nil), None, List(
         Scenario(Set[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(1)),
-          Step(StepKeyword.Given, "step 3", Passed(2)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed1),
+          Step(StepKeyword.Given, "step 3", Passed2))
         ), 
         Scenario(Set[Tag](), "scenario2", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(4)),
-          Step(StepKeyword.Given, "step 2", Passed(1)))
+          Step(StepKeyword.Given, "step 1", Passed4),
+          Step(StepKeyword.Given, "step 2", Passed1))
         ),
         Scenario(Set[Tag](), "scenario3", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(1)),
-          Step(StepKeyword.Given, "step 3", Passed(2)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed1),
+          Step(StepKeyword.Given, "step 3", Passed2))
         ),
         Scenario(Set[Tag](), "scenario4", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.Given, "step 2", Passed(3)))
+          Step(StepKeyword.Given, "step 1", Passed2),
+          Step(StepKeyword.Given, "step 2", Passed3))
         ),
         Scenario(Set[Tag](), "scenario5", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(1)),
-          Step(StepKeyword.Given, "step 2", Failed(4, new Exception())),
+          Step(StepKeyword.Given, "step 1", Passed1),
+          Step(StepKeyword.Given, "step 2", Failed4),
           Step(StepKeyword.Given, "step 3", Skipped),
           Step(StepKeyword.Given, "step 3", Skipped))
         )))
-    summary = summary + FeatureResult(feature6, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    featureResult = FeatureResult(feature6, None, Nil, Duration(10, TimeUnit.MILLISECONDS))
+    summary = summary + (featureResult, featureResult.elapsedTime)
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (6)
     summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
@@ -233,7 +247,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summaryLines(1) should be ("11 scenarios: Passed 7, Failed 2, Skipped 1, Pending 1")
     summaryLines(2) should be ("31 steps: Passed 21, Failed 2, Skipped 6, Pending 2")
     summaryLines(3) should be ("")
-    summaryLines(4).startsWith("[60ms] Failed") should be (true)
+    summaryLines(4).startsWith("[50ms] Failed") should be (true)
     
   }
   
