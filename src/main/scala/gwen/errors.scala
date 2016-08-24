@@ -44,6 +44,8 @@ package gwen {
     def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
     def decodingError(msg: String) = throw new DecodingException(msg)
     def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
+    def missingImportError(file: File) = throw new MissingImportException(file)
+    def unsupportedImportError(file: File) = throw new UnsupportedImportException(file)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -95,6 +97,12 @@ package gwen {
     
     /** Thrown when an invalid StepDef is detected. */
     class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: ${stepDef}: $msg")
+    
+    /** Thrown when an import file is not found. */
+    class MissingImportException(file: File) extends Exception(s"Import file not found: ${file}")
+    
+    /** Thrown when an unsupported import file is detected. */
+    class UnsupportedImportException(file: File) extends Exception(s"Unsupported import file (only files with .meta extension allowed): ${file}")
 
   }
 }

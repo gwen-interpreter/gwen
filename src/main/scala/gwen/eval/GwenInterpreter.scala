@@ -26,6 +26,8 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
+import gwen.Predefs.RegexContext
+import gwen.Predefs.FileIO._
 import gwen.dsl.Background
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
@@ -42,6 +44,8 @@ import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.errors.evaluationError
 import gwen.errors.parsingError
+import gwen.errors.unsupportedImportError
+import gwen.errors.missingImportError
 import scala.concurrent.duration.Duration
 
 /**
@@ -103,6 +107,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param featureUnit the feature unit to execute
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
+    * @param accMetaResults accumulated meta results (including meta imports)
     * @return the evaluated feature or nothing if the feature does not 
     *         satisfy specified tag filters
     * @throws gwen.errors.ParsingException if the given feature fails to parse
@@ -113,11 +118,12 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
         case Success(featureSpec) =>
           if (featureFile.getName().endsWith(".meta")) {
-            Some(evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), Nil, env))
+            val metaResults = loadMeta(getMetaImports(featureSpec), Nil, env)
+            Some(evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), metaResults, env))
           } else {
             TagsFilter.filter(featureSpec, tagFilters) match {
               case Some(fspec) =>
-                val metaResults = loadMeta(unit.metaFiles, tagFilters, env)
+                val metaResults = loadMeta(getMetaImports(featureSpec), Nil, env) ++ loadMeta(unit.metaFiles, tagFilters, env)
                 Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env))
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
@@ -139,6 +145,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureResult], env: T): FeatureResult = {
     val start = System.nanoTime()
+    env.specType = featureSpec.featureFile.collect { case f if(isMetaFile(f)) => SpecType.meta } getOrElse SpecType.feature
     (if(SpecType.meta.equals(env.specType)) "Loading" else "Evaluating") tap {action =>
       logger.info("");
       logger.info(s"${action} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
@@ -178,6 +185,17 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       if(SpecType.meta != env.specType) {
         logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
       }
+    }
+  }
+  
+  private def getMetaImports(featureSpec: FeatureSpec): List[File] = featureSpec.feature.tags.toList.flatMap { tag =>
+    tag.name.trim match {
+      case r"""Import\("(.*?)"$filepath\)""" =>
+        val file = new File(filepath)
+        if (!file.getName().endsWith(".meta")) unsupportedImportError(file)
+        if (!file.exists()) missingImportError(file)
+        Some(file)
+      case _ => None
     }
   }
   
@@ -243,7 +261,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =
     metaFiles flatMap { metaFile =>
-      env.specType = SpecType.meta
       interpretFeature(new FeatureUnit(metaFile, Nil, None), tagFilters, env) tap { metas =>
         metas match {
           case Some(metaResult) =>
@@ -257,8 +274,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             }
           case _ => Nil
         }
-      } tap { result =>
-        env.specType = SpecType.feature
       }
     }
   

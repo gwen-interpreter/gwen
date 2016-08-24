@@ -45,7 +45,7 @@ class FeatureResult(
   def summary = FeatureSummary(this)
   private[eval] def scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
   private[eval] def stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString = s"[${formatDuration(spec.evalStatus.duration)}] ${spec.evalStatus.status} ${finished} [${formatDuration(elapsedTime)}] Elapsed (Overhead: ${formatDuration(elapsedTime - spec.evalStatus.duration)}) ${spec.evalStatus.emoticon}"
+  override def toString = s"[${formatDuration(spec.evalStatus.duration)}] ${spec.evalStatus.status} [${formatDuration(elapsedTime)}] Elapsed [${formatDuration(elapsedTime - spec.evalStatus.duration)}] Overhead ${finished} ${spec.evalStatus.emoticon}"
   
 }
 

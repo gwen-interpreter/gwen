@@ -75,7 +75,7 @@ case class FeatureSummary(
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${formatDuration(evalStatus.duration)}] ${evalStatus.status} ${finished} [${formatDuration(elapsedTime)}] Elapsed (Overhead: ${formatDuration(elapsedTime - evalStatus.duration)}) ${evalStatus.emoticon}""".stripMargin
+        |[${formatDuration(evalStatus.duration)}] ${evalStatus.status} [${formatDuration(elapsedTime)}] Elapsed [${formatDuration(elapsedTime - evalStatus.duration)}] Overhead ${finished} ${evalStatus.emoticon}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
