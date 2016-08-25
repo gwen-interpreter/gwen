@@ -25,6 +25,7 @@ package gwen {
   package object errors {
 
     import gwen.dsl.Step
+    import gwen.dsl.Tag
 
     def parsingError(msg: String) = throw new ParsingException(msg)
     def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
@@ -44,8 +45,9 @@ package gwen {
     def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
     def decodingError(msg: String) = throw new DecodingException(msg)
     def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
-    def missingImportError(file: File) = throw new MissingImportException(file)
-    def unsupportedImportError(file: File) = throw new UnsupportedImportException(file)
+    def missingImportError(importTag: Tag, specFile: File) = throw new MissingImportException(importTag, specFile)
+    def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
+    def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -99,10 +101,15 @@ package gwen {
     class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: ${stepDef}: $msg")
     
     /** Thrown when an import file is not found. */
-    class MissingImportException(file: File) extends Exception(s"Import file not found: ${file}")
+    class MissingImportException(importTag: Tag, specFile: File) extends Exception(s"Missing file detected in ${importTag} declared in ${specFile}")
     
     /** Thrown when an unsupported import file is detected. */
-    class UnsupportedImportException(file: File) extends Exception(s"Unsupported import file (only files with .meta extension allowed): ${file}")
+    class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in ${importTag} declared in ${specFile} (only .meta files can be imported)")
+    
+    /** Thrown when a recursive import is detected. */
+    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) ${importTag} declared in ${specFile}") {
+      override def fillInStackTrace() = this
+    }
 
   }
 }
