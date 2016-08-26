@@ -196,6 +196,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.localScope).thenReturn(localScope)
+    when(mockEnv.loadedMeta).thenReturn(Nil)
     val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
     val step2 = Step(Position(6, 9), StepKeyword.Given, "the butterfly flaps its wings")
     val step3 = Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system")

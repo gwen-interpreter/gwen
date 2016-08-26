@@ -42,11 +42,7 @@ import gwen.dsl.SpecType
 import gwen.dsl.Step
 import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
-import gwen.errors.evaluationError
-import gwen.errors.parsingError
-import gwen.errors.unsupportedImportError
-import gwen.errors.missingImportError
-import gwen.errors.recursiveImportError
+import gwen.errors._
 import scala.concurrent.duration.Duration
 
 /**
@@ -125,6 +121,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             TagsFilter.filter(featureSpec, tagFilters) match {
               case Some(fspec) =>
                 val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env) ++ loadMeta(unit.metaFiles, tagFilters, env)
+                env.loadedMeta = Nil
                 Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env))
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
@@ -191,20 +188,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     }
   }
   
-  private def getMetaImports(featureSpec: FeatureSpec, specFile: File): List[(File, Tag)] = featureSpec.feature.tags.toList.flatMap { tag =>
-    tag.name.trim match {
-      case r"""Import\("(.*?)"$filepath\)""" =>
-        val file = new File(filepath)
-        if (!file.getName().endsWith(".meta")) unsupportedImportError(tag, specFile)
-        if (!file.exists()) missingImportError(tag, specFile)
-        if (file.getCanonicalPath().equals(specFile.getCanonicalPath())) {
-          recursiveImportError(tag, specFile)
-        }
-        Some((file, tag))
-      case _ => None
-    }
-  }
-  
   /**
     * Evaluates a given scenario.
     * 
@@ -266,15 +249,31 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param env the environment context
     * @throws gwen.errors.ParsingException if the given meta fails to parse
     */
-  private[eval] def loadMetaImports(featureSpec: FeatureSpec, featureFile: File, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] = 
-    getMetaImports(featureSpec, featureFile) flatMap { case (metaFile, importTag) => 
+  private[eval] def loadMetaImports(featureSpec: FeatureSpec, featureFile: File, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =  
+    getMetaImports(featureSpec, featureFile) flatMap { metaFile => 
       try {
         loadMetaFile(metaFile, tagFilters, env)
       } catch {
         case e: StackOverflowError =>
-          recursiveImportError(importTag, featureFile)
+          recursiveImportError(Tag(s"""Import("$featureFile")"""), metaFile)
       }
     }
+  
+  private def getMetaImports(featureSpec: FeatureSpec, specFile: File): List[File] = featureSpec.feature.tags.toList.flatMap { tag =>
+    tag.name.trim match {
+      case r"""Import\("(.*?)"$filepath\)""" =>
+        val file = new File(filepath)
+        if (!file.getName().endsWith(".meta")) unsupportedImportError(tag, specFile)
+        if (!file.exists()) missingImportError(tag, specFile)
+        if (file.getCanonicalPath().equals(specFile.getCanonicalPath())) {
+          recursiveImportError(tag, specFile)
+        }
+        Some(file)
+      case r"""Import.*""" =>
+        syntaxError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
+      case _ => None
+    }
+  }
   
   /**
     * Loads the meta.
@@ -288,20 +287,23 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     metaFiles.flatMap(loadMetaFile(_, tagFilters, env))
   
   private def loadMetaFile(metaFile: File, tagFilters: List[(Tag, Boolean)], env: T): Option[FeatureResult] = 
-    interpretFeature(new FeatureUnit(metaFile, Nil, None), tagFilters, env) tap { metas =>
-      metas match {
-        case Some(metaResult) =>
-          val meta = metaResult.spec
-          meta.evalStatus match {
-            case Passed(_) | Loaded =>
-            case Failed(_, error) =>
-              evaluationError(s"Failed to load meta: $meta: ${error.getMessage()}")
-            case _ =>
-              evaluationError(s"Failed to load meta: $meta")
-          }
-        case _ => Nil
+    if (!env.loadedMeta.contains(metaFile)) {
+      interpretFeature(new FeatureUnit(metaFile, Nil, None), tagFilters, env) tap { metas =>
+        metas match {
+          case Some(metaResult) =>
+            val meta = metaResult.spec
+            meta.evalStatus match {
+              case Passed(_) | Loaded =>
+                env.loadedMeta = meta.featureFile.get :: env.loadedMeta
+              case Failed(_, error) =>
+                evaluationError(s"Failed to load meta: $meta: ${error.getMessage()}")
+              case _ =>
+                evaluationError(s"Failed to load meta: $meta")
+            }
+          case _ => Nil
+        }
       }
-    }
+    } else None
   
 }
 

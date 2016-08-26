@@ -60,6 +60,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   /** The current type of specification being interpreted. */
   var specType = SpecType.feature
   
+  /** Currently list of loaded meta (used to track and avoid duplicate meta loads). */
+  var loadedMeta: List[File] = Nil  
+  
   /** Provides access to the global feature scope. */
   def featureScope = scopes.featureScope
   
@@ -78,6 +81,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     stepDefs = Map[String, Scenario]()
     resetAttachments
     attachmentPrefix = padWithZeroes(1)
+    loadedMeta = Nil
   }
     
   def json: JsObject = scopes.json

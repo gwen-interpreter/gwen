@@ -48,6 +48,7 @@ package gwen {
     def missingImportError(importTag: Tag, specFile: File) = throw new MissingImportException(importTag, specFile)
     def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
     def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
+    def syntaxError(msg: String) = throw new SyntaxException(msg)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -107,9 +108,12 @@ package gwen {
     class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in ${importTag} declared in ${specFile} (only .meta files can be imported)")
     
     /** Thrown when a recursive import is detected. */
-    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) ${importTag} declared in ${specFile}") {
+    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) ${importTag} detected in ${specFile}") {
       override def fillInStackTrace() = this
     }
+    
+    /** Thrown when a syntax error is detected. */
+    class SyntaxException(msg: String) extends Exception(msg)
 
   }
 }
