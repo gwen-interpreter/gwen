@@ -155,10 +155,19 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           env.featureScope.set(name, value)
         }
       }
-      f(interpreter.interpretFeature(targetUnit, options.tags, env))
+      f(interpreter.interpretFeature(targetUnit, options.tags, env) map { res =>
+        FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.elapsedTime)
+      })
     } finally {
       if (!envOpt.isDefined) { interpreter.close(env) }
     }
+  }
+  
+  private def flattenResults(results: List[FeatureResult]): List[FeatureResult] = {
+    def flattenResults(results: List[FeatureResult]): List[FeatureResult] = results.flatMap { 
+      r => r::flattenResults(r.metaResults)
+    }
+    flattenResults(results).sortBy(_.finished)
   }
     
   private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: FeatureResult): FeatureResult = {

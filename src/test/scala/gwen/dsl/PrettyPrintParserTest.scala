@@ -60,7 +60,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
     
     ast2 match {
       case Success(featureSpec) => 
-        featureSpec.feature should be (Feature(Set(Tag("wip")), "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        featureSpec.feature should be (Feature(List(Tag("wip")), "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"),
             List(
@@ -72,14 +72,14 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
         }
         featureSpec.scenarios should be {
           List(
-            Scenario(Set(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
+            Scenario(List(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
               List(
                 Step(Position(17, 7), StepKeyword.Given, "any software behavior"),
                 Step(Position(18, 8), StepKeyword.When,  "expressed in Gherkin"),
                 Step(Position(19, 8), StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario(Set[Tag](), "Evaluation", Nil, None, 
+            Scenario(List[Tag](), "Evaluation", Nil, None, 
               List(
                 Step(Position(22, 7), StepKeyword.Given, "any software behavior"),
                 Step(Position(23, 8), StepKeyword.When,  "expressed in Gherkin"),

@@ -60,6 +60,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   /** The current type of specification being interpreted. */
   var specType = SpecType.feature
   
+  /** Currently list of loaded meta (used to track and avoid duplicate meta loads). */
+  var loadedMeta: List[File] = Nil  
+  
   /** Provides access to the global feature scope. */
   def featureScope = scopes.featureScope
   
@@ -78,6 +81,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     stepDefs = Map[String, Scenario]()
     resetAttachments
     attachmentPrefix = padWithZeroes(1)
+    loadedMeta = Nil
   }
     
   def json: JsObject = scopes.json
@@ -109,7 +113,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     StepKeyword.literals foreach { keyword => 
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
-    val tags = stepDef.metaFile.map(meta => stepDef.tags + Tag(s"""Meta("${meta.getPath()}")""")).getOrElse(stepDef.tags)
+    val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath()}")""")::stepDef.tags).getOrElse(stepDef.tags)
     stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
   }
   
