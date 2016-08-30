@@ -78,14 +78,14 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
         }
         featureSpec.scenarios should be {
           List(
-            Scenario(Set[Tag](), "Evaluation", Nil, None,
+            Scenario(List[Tag](), "Evaluation", Nil, None,
               List(
                 Step(Position(17, 9), StepKeyword.Given, "any software behavior"),
                 Step(Position(18, 10), StepKeyword.When,  "expressed in Gherkin"),
                 Step(Position(19, 10), StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
-            Scenario(Set[Tag](), "The useless test", Nil, None, 
+            Scenario(List[Tag](), "The useless test", Nil, None, 
               List(
                 Step(Position(22, 9), StepKeyword.Given, "I am a test"),
                 Step(Position(23, 11), StepKeyword.And,   "I am generated from code"),
@@ -95,7 +95,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
                 Step(Position(27, 11), StepKeyword.And,   "that's why I'm useless")
               )
             ),
-            Scenario(Set[Tag](), "The useful test", Nil, None, 
+            Scenario(List[Tag](), "The useful test", Nil, None, 
               List(
                 Step(Position(30, 9), StepKeyword.Given, "I am a test"),
                 Step(Position(31, 11), StepKeyword.And,   "I am written by a human"),

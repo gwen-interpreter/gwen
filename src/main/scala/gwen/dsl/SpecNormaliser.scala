@@ -63,7 +63,7 @@ trait SpecNormaliser {
       val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
       Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
-    val tags = Set(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
+    val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
     Scenario(tags, s"Bind data attributes", Nil, None, steps.toList, None) :: featureScenarios(spec, scenarios)
   }
     

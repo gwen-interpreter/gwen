@@ -40,7 +40,7 @@ class EnvContextTest extends FlatSpec with Matchers {
       Step(StepKeyword.And, """I submit the search field""")
     )
     
-    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -56,7 +56,7 @@ class EnvContextTest extends FlatSpec with Matchers {
       Step(StepKeyword.And, """I submit the search field""")
     )
     
-    val stepdef = Scenario(Set(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -68,11 +68,11 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "StepDef with params" should "resolve" in {
     
-    val stepdef1 = Scenario(Set(Tag("StepDef")), """I enter "<searchTerm>" in the search field""", Nil, None, Nil)
-    val stepdef2 = Scenario(Set(Tag("StepDef")), """I enter "<search term>" in the search field again""", Nil, None, Nil)
-    val stepdef3 = Scenario(Set(Tag("StepDef")), "z = <x> + 1", Nil, None, Nil)
-    val stepdef4 = Scenario(Set(Tag("StepDef")), "z = 1 + <x>", Nil, None, Nil)
-    val stepdef5 = Scenario(Set(Tag("StepDef")), "z = <x> - <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("StepDef")), """I enter "<searchTerm>" in the search field""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("StepDef")), """I enter "<search term>" in the search field again""", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("StepDef")), "z = <x> + 1", Nil, None, Nil)
+    val stepdef4 = Scenario(List(Tag("StepDef")), "z = 1 + <x>", Nil, None, Nil)
+    val stepdef5 = Scenario(List(Tag("StepDef")), "z = <x> - <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -87,7 +87,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
     env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
 
-    val stepdef6 = Scenario(Set(Tag("StepDef")), "z = <x> * <x>", Nil, None, Nil)
+    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <x> * <x>", Nil, None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
       env.getStepDef("z = 3 * 4")
@@ -97,9 +97,9 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "Sample math StepDefs with parameters" should "resolve" in {
     
-    val stepdef1 = Scenario(Set(Tag("StepDef")), "++x", Nil, None, Nil)
-    val stepdef2 = Scenario(Set(Tag("StepDef")), "c = a + <b>", Nil, None, Nil)
-    val stepdef3 = Scenario(Set(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("StepDef")), "++x", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("StepDef")), "c = a + <b>", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -117,8 +117,8 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "Ambiguous math StepDefs with parameters" should "be detected" in {
     
-    val stepdef1 = Scenario(Set(Tag("StepDef")), "z = a + <b>", Nil, None, Nil)
-    val stepdef2 = Scenario(Set(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("StepDef")), "z = a + <b>", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -241,7 +241,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "StepDef names" should "not start with a keyword" in {
     val env = newEnv
     StepKeyword.literals foreach { keyword =>
-      val stepdef = Scenario(Set(Tag("StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
+      val stepdef = Scenario(List(Tag("StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
       intercept[InvalidStepDefException] {
         env.addStepDef(stepdef)
       }

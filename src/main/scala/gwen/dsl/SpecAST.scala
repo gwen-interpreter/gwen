@@ -104,22 +104,22 @@ object FeatureSpec {
 /**
   * Captures a gherkin feature node.
   *
-  * @param tags set of tags
+  * @param tags list of tags
   * @param name the feature name
   * @param description optional description
   *
   * @author Branko Juric
   */
-case class Feature(tags: Set[Tag], name: String, description: List[String]) extends SpecNode {
+case class Feature(tags: List[Tag], name: String, description: List[String]) extends SpecNode {
   override def toString = name
 }
 object Feature {
   def apply(spec: gherkin.ast.Feature): Feature =
     Feature(
-      Option(spec.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)).toSet, 
+      Option(spec.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)), 
       spec.getName, 
-      Option(spec.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil))
-  def apply(name: String, description: List[String]): Feature = new Feature(Set(), name, description)
+      Option(spec.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct)
+  def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
 }
 
 /**
@@ -152,7 +152,7 @@ object Background {
 
 /**
   * Captures a gherkin scenario.
-  * @param tags set of tags
+  * @param tags list of tags
   * @param name the scenario name
   * @param description the optional background description
   * @param background optional background
@@ -161,7 +161,7 @@ object Background {
   *
   * @author Branko Juric
   */
-case class Scenario(tags: Set[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
+case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
   
   /**
     * Returns a list containing all the background steps (if any) followed by 
@@ -181,14 +181,14 @@ case class Scenario(tags: Set[Tag], name: String, description: List[String], bac
 object Scenario {
   def apply(scenario: gherkin.ast.ScenarioDefinition): Scenario = 
     new Scenario(
-      Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t)).toSet, 
+      Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t)).distinct, 
       scenario.getName, 
       Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None, 
       Option(scenario.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)), 
       None)
-  def apply(tags: Set[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
-    new Scenario(tags, name, description, background, steps, None)
+  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
+    new Scenario(tags.distinct, name, description, background, steps, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
     apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.metaFile)
   def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 

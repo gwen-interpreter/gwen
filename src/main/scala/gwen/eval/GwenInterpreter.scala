@@ -269,7 +269,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           recursiveImportError(tag, specFile)
         }
         Some(file)
-      case r"""Import.*""" =>
+      case r"""(?:I|i)mport\(.*""" =>
         syntaxError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
       case _ => None
     }

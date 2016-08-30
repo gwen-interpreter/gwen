@@ -63,7 +63,7 @@ object prettyPrint {
     * 
     * @param tags the tags to format
     */
-  private def formatTags(indent: String, tags: Set[Tag]):String = tags.toList match {
+  private def formatTags(indent: String, tags: List[Tag]):String = tags.toList match {
     case _ :: _ =>  s"${indent}${tags.mkString(" ")}\n"
     case _ => ""
   }

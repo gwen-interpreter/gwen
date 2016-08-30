@@ -68,12 +68,12 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 meta
     val meta1 = FeatureSpec(
       Feature("meta1", Nil), None, List(
-        Scenario(Set[Tag](), "metaScenario1", Nil, None, List(
+        Scenario(List[Tag](), "metaScenario1", Nil, None, List(
           Step(StepKeyword.Given, "meta step 1", Passed2),
           Step(StepKeyword.Given, "meta step 2", Passed1),
           Step(StepKeyword.Given, "meta step 3", Passed2))
         ),
-        Scenario(Set(Tag("StepDef")), "metaStepDef1", Nil, None, List(
+        Scenario(List(Tag("StepDef")), "metaStepDef1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Loaded),
           Step(StepKeyword.Given, "step 2", Loaded),
           Step(StepKeyword.Given, "step 3", Loaded))
@@ -82,12 +82,12 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 passed scenario
     val feature1 = FeatureSpec(
       Feature("feature1", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed1),
           Step(StepKeyword.Given, "step 3", Passed2))
         ),
-        Scenario(Set(Tag("StepDef")), "StepDef1", Nil, None, List(
+        Scenario(List(Tag("StepDef")), "StepDef1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Loaded),
           Step(StepKeyword.Given, "step 2", Loaded),
           Step(StepKeyword.Given, "step 3", Loaded))
@@ -114,7 +114,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 failed scenario
     val feature2 = FeatureSpec(
       Feature("feature2", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Failed3),
           Step(StepKeyword.Given, "step 3", Skipped))
@@ -137,12 +137,12 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 2 passed scenarios
     val feature3 = FeatureSpec(
       Feature("feature3", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed1),
           Step(StepKeyword.Given, "step 3", Passed2))
         ), 
-        Scenario(Set[Tag](), "scenario2", Nil, None, List(
+        Scenario(List[Tag](), "scenario2", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed1),
           Step(StepKeyword.Given, "step 3", Passed2))
@@ -165,7 +165,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 skipped scenario
     val feature4 = FeatureSpec(
       Feature("feature4", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Skipped),
           Step(StepKeyword.Given, "step 2", Skipped),
           Step(StepKeyword.Given, "step 3", Skipped))
@@ -188,7 +188,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 1 pending scenario
     val feature5 = FeatureSpec(
       Feature("feature5", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Pending),
           Step(StepKeyword.Given, "step 2", Pending))
         )))
@@ -210,25 +210,25 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     // add 4 passed and 1 failed scenario
     val feature6 = FeatureSpec(
       Feature("feature6", Nil), None, List(
-        Scenario(Set[Tag](), "scenario1", Nil, None, List(
+        Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed1),
           Step(StepKeyword.Given, "step 3", Passed2))
         ), 
-        Scenario(Set[Tag](), "scenario2", Nil, None, List(
+        Scenario(List[Tag](), "scenario2", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed4),
           Step(StepKeyword.Given, "step 2", Passed1))
         ),
-        Scenario(Set[Tag](), "scenario3", Nil, None, List(
+        Scenario(List[Tag](), "scenario3", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed1),
           Step(StepKeyword.Given, "step 3", Passed2))
         ),
-        Scenario(Set[Tag](), "scenario4", Nil, None, List(
+        Scenario(List[Tag](), "scenario4", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed2),
           Step(StepKeyword.Given, "step 2", Passed3))
         ),
-        Scenario(Set[Tag](), "scenario5", Nil, None, List(
+        Scenario(List[Tag](), "scenario5", Nil, None, List(
           Step(StepKeyword.Given, "step 1", Passed1),
           Step(StepKeyword.Given, "step 2", Failed4),
           Step(StepKeyword.Given, "step 3", Skipped),

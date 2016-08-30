@@ -27,7 +27,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Feature with no step defs" should "normalise without error" in {
     val feature = FeatureSpec(
     Feature("feature1", Nil), None, List(
-      Scenario(Set[Tag](), "scenario1", Nil, None, List(
+      Scenario(List[Tag](), "scenario1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.Given, "step 2", Passed(1)),
         Step(StepKeyword.Given, "step 3", Passed(2)))
@@ -38,7 +38,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with one step def" should "normalise without error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -49,12 +49,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with multiple unique step defs" should "normalise without error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef2", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef2", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -65,12 +65,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with duplicate step def" should "error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef1", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -84,12 +84,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Meta with duplicate step def with params" should "error" in {
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
-      Scenario(Set[Tag]("@StepDef"), "stepdef <number>", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef <number>", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
       ),
-      Scenario(Set[Tag]("@StepDef"), "stepdef <index>", Nil, None, List(
+      Scenario(List[Tag]("@StepDef"), "stepdef <index>", Nil, None, List(
         Step(StepKeyword.Given, "step 1", Passed(2)),
         Step(StepKeyword.When, "step 2", Passed(1)),
         Step(StepKeyword.Then, "step 3", Passed(2)))
@@ -103,7 +103,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
   "Data driven feature with csv file" should "normalise without error" in {
     val feature = FeatureSpec(
     Feature("About me", Nil), None, List(
-      Scenario(Set[Tag](), "What am I?", Nil, None, List(
+      Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given, "I am ${my age} year(s) old"),
         Step(StepKeyword.When, "I am a ${my gender}"),
         Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
@@ -113,7 +113,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
     val result = normalise(feature, None, Some(dataRecord))
     result.feature.name should be ("About me, [1] my age=18..")
     result.scenarios.length should be (2)
-    result.scenarios(0).tags should be (Set(Tag("""Data(file="AboutMe.csv", record=1)""")))
+    result.scenarios(0).tags should be (List(Tag("""Data(file="AboutMe.csv", record=1)""")))
     result.scenarios(0).name should be ("Bind data attributes")
     result.scenarios(0).steps(0).toString should be ("""Given my age is "18"""")
     result.scenarios(0).steps(1).toString should be ("""And my gender is "male"""")
