@@ -228,7 +228,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           val total = summary.results.size
           val countOfTotal = s"""${count} ${if (count != total) s" of ${total} features" else s"feature${if (total > 1) "s" else ""}"}"""
           s"""${countOfTotal}${if (count > 1) s"""
-          <span class="pull-right"><small>${formatDuration(results.map(_._1.spec.evalStatus.duration).reduceLeft(_+_))}</small></span>""" else ""}"""}
+          <span class="pull-right"><small>${formatDuration(results.map(_._1.elapsedTime).reduceLeft(_+_))}</small></span>""" else ""}"""}
         </li>
       </ul>
       <div class="panel-body">
@@ -287,7 +287,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                     s"""<a class="text-${cssStatus(result.spec.evalStatus.status)}" href="${rpath}">${escapeHtml(result.spec.feature.name)}</a>"""}}
                   </div>
                   <div class="col-md-5">
-                    <span class="pull-right"><small>${formatDuration(result.spec.evalStatus.duration)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+                    <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
 
