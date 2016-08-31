@@ -149,7 +149,7 @@ class ScopedData(val scope: String) extends LazyLogging {
       case _ => None
       }).filter(pred(_))
     val result = filteredAtts.foldLeft(ScopedData(scope)) { (data, attr) =>
-      data tap { _.set(attr._1, attr._2 ) }
+      data.set(attr._1, attr._2)
     }
     if (result.isEmpty) None else Some(result)
   }
