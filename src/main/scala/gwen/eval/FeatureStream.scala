@@ -117,15 +117,11 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     val datas = files.filter(isDataFile).toList
     datas match {
       case Nil => inputs1
-      case data :: Nil if (dataFile.isEmpty || dataFile.get.getCanonicalPath().equals(data.getCanonicalPath())) => (inputs1._1, Some(data))
+      case data :: Nil => (inputs1._1, Some(data))
       case _ => 
-        dataFile match { 
-          case Some(data) =>
-            ambiguousCaseError(s"Ambiguous: found data file(s) in ${dir.getName()} path but already got data file ${data.getPath}")
-          case _ => 
-            ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} path but found ${datas.size}")
-        }
-       }
+        if (dataFile.isEmpty) ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} directory but found ${datas.size}")
+        else inputs1
+    }
   }
   
   /**

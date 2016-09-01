@@ -54,7 +54,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(featureFile, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
         unit.dataRecord should be (None)
       case _ =>
@@ -69,7 +69,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         unit.dataRecord should be (None)
       case _ =>
@@ -84,8 +84,9 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
+        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
         unit.dataRecord should not be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -100,8 +101,9 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
+        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
         unit.dataRecord should not be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -116,22 +118,30 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir, Some(dataFile))
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
+        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
         unit.dataRecord should not be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
   
-  "1 input feature file with one meta and data file in same dir" should "error if different data file is passed in call" in {
+  "1 input feature file with one meta and 2 data files in same dir" should "should use data file passed in call" in {
     val dir          = createDir("dir5d")
     val featureFile  = createFile("dir5d/file.feature")
     val metaFile     = createFile("dir5d/file.meta")
     val dataFile1    = createDataFile("dir5d/file1.csv")
     val dataFile2    = createDataFile("dir5d/file2.csv")
-    intercept[AmbiguousCaseException] {
-      featureStream.read(dir, Some(dataFile1))
+    val suite = featureStream.read(dir, Some(dataFile1))
+    suite match {
+      case unit #:: Stream() => 
+        assertFile(featureFile, unit.featureFile)
+        assertMetaFiles(List(metaFile), unit.metaFiles)
+        assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
+        unit.dataRecord should not be (None)
+      case _ =>
+        fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
   
@@ -156,24 +166,52 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir6, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
         unit.dataRecord should not be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
   
-  "1 input feature file with 1 meta in same dir and 1 meta in parent and 2 data files in path" should "error" in {
-    val dir6        =  createDir("dir6a")
-    val dir7        =  createDir("dir6a/dir7")
-    val metaFile1   = createFile("dir6a/file1.meta")
-    val dataFile1   = createDataFile("dir6a/file.csv");
-    val metaFile2   = createFile("dir6a/dir7/file2.meta")
-    val featureFile = createFile("dir6a/dir7/file.feature")
-    val dataFile2   = createDataFile("dir6a/dir7/file.csv");
-    intercept[AmbiguousCaseException] {
-      featureStream.read(dir6, None)
+  "1 input feature file in bottom dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
+    val dir61       =  createDir("dir61")
+    val dir71       =  createDir("dir61/dir71")
+    val metaFile1   = createFile("dir61/file1.meta")
+    val dataFile1   = createDataFile("dir61/file.csv");
+    val metaFile2   = createFile("dir61/dir71/file2.meta")
+    val featureFile = createFile("dir61/dir71/file.feature")
+    val dataFile2   = createDataFile("dir61/dir71/file.csv");
+    val suite = featureStream.read(dir61, None)
+    suite match {
+      case unit #:: Stream() => 
+        assertFile(featureFile, unit.featureFile)
+        assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+        assertFile(dataFile2, new File(unit.dataRecord.get.dataFilePath))
+        unit.dataRecord should not be (None)
+      case _ =>
+        fail(s"1 feature unit expected but ${suite.size} found")
+    }
+  }
+  
+  "1 input feature file in top dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
+    val dir62       =  createDir("dir62")
+    val dir72       =  createDir("dir62/dir72")
+    val featureFile = createFile("dir62/file.feature")
+    val metaFile1   = createFile("dir62/file1.meta")
+    val dataFile1   = createDataFile("dir62/file.csv");
+    val metaFile2   = createFile("dir62/dir72/file2.meta")
+    val dataFile2   = createDataFile("dir62/dir72/file.csv");
+    val suite = featureStream.read(dir62, None)
+    suite match {
+      case unit #:: Stream() => 
+        assertFile(featureFile, unit.featureFile)
+        assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+        assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
+        unit.dataRecord should not be (None)
+      case _ =>
+        fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
   
@@ -185,7 +223,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(dir8, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         unit.dataRecord should be (None)
       case _ =>
@@ -204,7 +242,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     val suite = featureStream.read(featureFile, None)
     suite match {
       case unit #:: Stream() => 
-        assertFeatureFile(featureFile, unit.featureFile)
+        assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2, metaFile3), unit.metaFiles.sortBy(_.getName()))
         unit.dataRecord should be (None)
       case _ =>
@@ -241,19 +279,19 @@ class featureStreamTest extends FlatSpec with Matchers {
     var suite = suites.next
     var units = suite.toList.sortBy(_.featureFile).iterator
     var unit = units.next
-    assertFeatureFile(featureFileAB1, unit.featureFile)
+    assertFile(featureFileAB1, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFileAB2, unit.featureFile)
+    assertFile(featureFileAB2, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFileAB, unit.featureFile)
+    assertFile(featureFileAB, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFileA, unit.featureFile)
+    assertFile(featureFileA, unit.featureFile)
     assertMetaFiles(List(metaFileA), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -262,15 +300,15 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileAB1, unit.featureFile)
+    assertFile(featureFileAB1, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFileAB2, unit.featureFile)
+    assertFile(featureFileAB2, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFileAB, unit.featureFile)
+    assertFile(featureFileAB, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -279,7 +317,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileAB1, unit.featureFile)
+    assertFile(featureFileAB1, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -288,7 +326,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileAB2, unit.featureFile)
+    assertFile(featureFileAB2, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -297,7 +335,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileAB2, unit.featureFile)
+    assertFile(featureFileAB2, unit.featureFile)
     assertMetaFiles(List(metaFileA, metaFileAB, metaFileAB2), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -306,15 +344,15 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileDE, unit.featureFile)
+    assertFile(featureFileDE, unit.featureFile)
     assertMetaFiles(List(metaFileDE), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFile1D, unit.featureFile)
+    assertFile(featureFile1D, unit.featureFile)
     assertMetaFiles(Nil, unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next
-    assertFeatureFile(featureFile2D, unit.featureFile)
+    assertFile(featureFile2D, unit.featureFile)
     assertMetaFiles(Nil, unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -323,7 +361,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFile2D, unit.featureFile)
+    assertFile(featureFile2D, unit.featureFile)
     assertMetaFiles(Nil, unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -332,7 +370,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     suite = suites.next
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next
-    assertFeatureFile(featureFileDE, unit.featureFile)
+    assertFile(featureFileDE, unit.featureFile)
     assertMetaFiles(List(metaFileDE), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(units.next)
@@ -362,7 +400,7 @@ class featureStreamTest extends FlatSpec with Matchers {
     dir
   }
   
-  private def assertFeatureFile(expected: File, actual: File) {
+  private def assertFile(expected: File, actual: File) {
     actual.getPath.startsWith("target") should be (true)
     actual.getPath should be (expected.getPath)
   }

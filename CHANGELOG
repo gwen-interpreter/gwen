@@ -4,10 +4,11 @@ Aug 25, 2016, 12:55 AM GMT+10 (AEST)
 - Include total elapsed time at the top of all reports
 - Include start and finish times at the top of all reports
 - Make failed status in detail report a hyperlink to first failed scenario
-- Add support for importing meta through feature level @Import("pathTo/file.meta") annotation
-  - the path to the meta file is relative to the working directory where gwen is invoked 
+- Enhancement #26: meta imports 
+  - to allow fine grained and explicit control over how meta is loaded
 - Internally store tags in list instead of set
 - Display elapsed time on report summary lines
+- Do not auto discover CSV files below feature directory
 
 1.3.4
 =====
