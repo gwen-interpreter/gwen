@@ -40,9 +40,13 @@ trait InterpolationSupport extends LazyLogging {
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
         logger.debug(s"Resolving concat-syntax binding: + $binding +")
         interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
-      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" => 
-        logger.debug(s"""Resolving concat-syntax binding: "" + $binding""")
-        interpolate(s"""$prefix${resolve(binding)}"""") { resolve }
+      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" =>
+        if(binding.contains('"')) {
+          source
+        } else {
+          logger.debug(s"""Resolving concat-syntax binding: "" + $binding""")
+          interpolate(s"""$prefix${resolve(binding)}"""") { resolve }
+        }
       case _ => source
     }
 }

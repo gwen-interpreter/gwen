@@ -143,4 +143,8 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     interpolate("""hello "" + binding""") { binding => "you" } should be ("""hello "you"""") 
   }
   
+  """embedded + literal in string""" should "not be treated as a concatenation operator" in {
+    interpolate("""I enter "+6149265587" in the phone field""") { binding => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
+  }
+  
 }
