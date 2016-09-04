@@ -95,7 +95,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   }
   
   "interperting a valid step def" should "return success" in {
-    val localScope = new LocalDataStack()
+    val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
@@ -105,7 +105,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
-    when(mockEnv.localScope).thenReturn(localScope)
+    when(mockEnv.paramScope).thenReturn(paramScope)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid stepdef", mockEnv)
     result match {
       case TrySuccess(step) =>
@@ -174,7 +174,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     Scenario: The butterfly effect
         Given the butterfly flaps its wings"""
     
-    val localScope = new LocalDataStack()
+    val paramScope = new LocalDataStack()
     val metaFile = writeToFile(metaString, createFile("test2.meta"))
     val featureFile = writeToFile(featureString, createFile("test2.feature"))
     val stepdef = Scenario(
@@ -195,7 +195,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
-    when(mockEnv.localScope).thenReturn(localScope)
+    when(mockEnv.paramScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
     val step2 = Step(Position(6, 9), StepKeyword.Given, "the butterfly flaps its wings")

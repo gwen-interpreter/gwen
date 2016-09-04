@@ -154,12 +154,12 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "json.toString on new env context" should "contain empty scopes" in {
     val env = newEnv
-    env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on new env context" should "contain empty scopes" in {
     val env = newEnv
-    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[]}""")
   }
   
   "json.toString on new env context with bound var in global scope" should "print the var" in {
@@ -178,28 +178,28 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.reset
-    env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.reset
-    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[]}""")
   }
   
   "json.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.close
-    env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
     env.close
-    env.visibleScopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]}]}""")
+    env.visibleScopes.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on loaded env context" should "returned only visible data" in {

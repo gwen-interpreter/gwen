@@ -10,6 +10,7 @@ Aug 25, 2016, 12:55 AM GMT+10 (AEST)
 - Display elapsed time on report summary lines
 - Do not auto discover CSV files below feature directory
 - Do not treat embedded '+' literals in strings as concatenation operator
+- Use flash scope to track changes made to global attributes in local scopes
 
 1.3.4
 =====

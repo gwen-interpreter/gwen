@@ -17,6 +17,7 @@
 package gwen.eval
 
 import gwen.Predefs.Kestrel
+import gwen.Predefs.RegexContext
 import play.api.libs.json.Json
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
@@ -24,6 +25,7 @@ import com.typesafe.scalalogging.slf4j.LazyLogging
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsObject
 import gwen.errors._
+import scala.collection.mutable.Map
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
@@ -68,12 +70,19 @@ class ScopedData(val scope: String) extends LazyLogging {
     */
   private var atts = Json.arr()
   
+  /** 
+    *  Provides access to the local flash data (attributes are pushed into this 
+    *  scope when global attributes are changed so that they become accessible in 
+    *  the current non feature scope). 
+    */
+  private[eval] var flashScope: Option[Map[String, String]] = None
+  
   /**
     * Checks if the scoped data is empty.
     * 
     * @return true if empty; false otherwise
     */
-  def isEmpty = atts.value.isEmpty
+  def isEmpty = atts.value.isEmpty && flashScope.isEmpty
 
   /**
     * Finds and retrieves an attribute value from the scope by name.  If 
@@ -83,15 +92,11 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to find
     * @return Some(value) if the attribute value is found or None otherwise
     */
-  def getOpt(name: String): Option[String] = 
-    (atts \\ name).lastOption tap { valueOpt =>
-      valueOpt foreach { value =>
-          logger.debug(s"Found ${Json.obj(name -> value)} in scope/$scope")
-      }
-    } map (_.as[String]) match {
-      case (Some(null)) => None
-      case result => result
+  def getOpt(name: String): Option[String] = findEntry { case (n, v) => n == name } tap { value => 
+    value.foreach { nvp =>
+      logger.debug(s"Found $nvp in scope/$scope")
     }
+  } map (_._2)
     
   /**
     * Finds and retrieves an attribute from the scope (throws error if not found)
@@ -110,10 +115,9 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to find
     * @return a sequence of Strings of values are found or Nil otherwise
     */
-  def getAll(name: String): Seq[String] = 
-    (atts \\ name) tap { values =>
-      logger.debug(s"Found [${values.map(value => Json.obj(name -> value)).mkString(",")}]' in scope/$scope")
-    } map (_.as[String])
+  def getAll(name: String): Seq[String] = findEntries { case (n, v) => n == name } tap { nvps =>
+    logger.debug(s"Found [${nvps.mkString(",")}]' in scope/$scope")
+  } map(_._2)
 
   /**
     * Binds a new attribute value to the scope.  If an attribute of the same
@@ -126,10 +130,21 @@ class ScopedData(val scope: String) extends LazyLogging {
     *         newly added attribute
     */
   def set(name: String, value: String): ScopedData = {
-    if(!((atts \\ name).lastOption.map(_.as[String] == value).getOrElse(false))) {
+    if (getOpt(name).map(_ != value).getOrElse(true)) { 
       Json.obj(name -> value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
         atts = atts :+ nvp
+      } tap { _ =>
+        flashScope foreach { fs =>
+          if (scope == "feature") {
+            fs += (name -> value)
+          } else if (fs.nonEmpty) {
+            name match {
+              case r"(.+?)$n/.*" => fs -= n
+              case _ => fs -= name
+            }
+          }
+        }
       }
     }
     this
@@ -143,21 +158,44 @@ class ScopedData(val scope: String) extends LazyLogging {
    *         or None if no attributes are accepted
    */
   def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
-    val filteredAtts = (atts.value.flatMap { 
-      case JsObject(values) => 
-        values.map(nvp => (nvp._1, nvp._2.as[String]))
-      case _ => None
-      }).filter(pred(_))
-    val result = filteredAtts.foldLeft(ScopedData(scope)) { (data, attr) =>
-      data.set(attr._1, attr._2)
+    val result = findEntries(pred).foldLeft(ScopedData(scope)) { (data, entry) =>
+      data.set(entry._1, entry._2)
     }
     if (result.isEmpty) None else Some(result)
   }
+  
+  /**
+   * Finds the first entry that matches the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return Some((name, value)) or None if no match is found
+   */
+  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] = 
+    findEntries(pred).lastOption match {
+      case Some((_, null)) => None
+      case x => x
+    }
+  
+  /**
+   * Finds all entries that match the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return a sequence of name-value pairs or Nil if no entries math the predicate
+   */
+  def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
+    (atts.value.flatMap { 
+      case JsObject(entries) => 
+        entries.headOption.map(nvp => (nvp._1, nvp._2.as[String]))
+      case _ => None
+    } filter(pred)) ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)
 
   /**
     * Returns this entire scope as a JSON object.
     */
-  def json = Json.obj("scope" -> scope, "atts" -> atts)
+  def json = {
+    val flashAtts = if (scope != "feature") flashScope.map(_.toSeq.foldLeft(Json.arr()) { case (c, (n, v)) => c :+ Json.obj(n -> v) }).getOrElse(Json.arr()) else Json.arr()
+    Json.obj("scope" -> scope, "atts" -> (atts ++ flashAtts))
+  }
 
 }
 

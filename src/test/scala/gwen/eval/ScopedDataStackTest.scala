@@ -19,6 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.UnboundAttributeException
+import scala.collection.mutable.Stack
 
 class ScopedDataStackTest extends FlatSpec with Matchers {
 
@@ -376,8 +377,61 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.get("lastName")   should be ("web")
     
     scopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"person","atts":[{"firstName":"gwen"},{"lastName":"person"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
-                                       
-                                         
+                                                                        
+  }
+  
+  "new stack with no data" should "return empty current and feature scopes" in {
+    
+    val scopes = ScopedDataStack(new Stack[ScopedData]())
+    
+    scopes.current.scope should be ("feature")
+    scopes.featureScope.scope should be ("feature")
+    
+    intercept[UnboundAttributeException] { scopes.get("username") }
+    intercept[UnboundAttributeException] { scopes.get("password") }
+    intercept[UnboundAttributeException] { scopes.get("firstName") }
+    intercept[UnboundAttributeException] { scopes.get("lastName") }
+    
+    scopes.getOpt("username")  should be (None)
+    scopes.getOpt("password")  should be (None)
+    scopes.getOpt("firstName") should be (None)
+    scopes.getOpt("lastName")  should be (None)
+    
+  }
+  
+  "get entry Opt" should "return expected results" in {
+    
+    val scopes = new ScopedDataStack()
+    
+    scopes.set("middleName", "interpreter")
+    scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
+    scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "web")
+    
+    scopes.findEntry { case (n, v) => n == "firstName" } should be (Some(("firstName", "gwen")))
+    scopes.findEntry { case (n, v) => n == "lastName" }  should be (Some(("lastName", "web")))
+    scopes.findEntry { case (n, v) => n == "middleName" }  should be (Some(("middleName", "interpreter")))
+    scopes.findEntry { case (n, v) => n == "middleName" && v == "interpreter" }  should be (Some(("middleName", "interpreter")))
+    scopes.findEntry { case (n, v) => n == "middleName" && v == "gwen" }  should be (None)
+    scopes.findEntry { case (n, v) => v == "person" }  should be (None)
+    scopes.findEntry { case (n, v) => n == "surname" }  should be (None)
+    
+    scopes.addScope("person")
+    
+    scopes.findEntry { case (n, v) => n == "firstName" }  should be (Some(("firstName", "gwen")))
+    scopes.findEntry { case (n, v) => n == "lastName" }  should be (Some(("lastName", "person")))
+    scopes.findEntry { case (n, v) => n == "middleName" }  should be (Some(("middleName", "interpreter")))
+    scopes.findEntry { case (n, v) => n == "middleName" }  should be (Some(("middleName", "interpreter")))
+    scopes.findEntry { case (n, v) => n == "middleName" && v == "gwen" }  should be (None)
+    scopes.findEntry { case (n, v) => v == "person" }  should be (Some(("lastName", "person")))
+    scopes.findEntry { case (n, v) => n == "surname" }  should be (None)
+    
   }
   
 }

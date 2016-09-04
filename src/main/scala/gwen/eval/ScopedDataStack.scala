@@ -23,6 +23,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.JsObject
 import gwen.Predefs.Kestrel
 import gwen.errors._
+import scala.collection.mutable.Map
 
 /**
   * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -78,21 +79,28 @@ class ScopedDataStack() {
     *  are pushed and poped in and out of this scope as StepDef calls
     *  are made). 
     */
-  private[eval] val localScope = new LocalDataStack()
+  private[eval] val paramScope = new LocalDataStack()
   
   reset()
   
   /** Resets the data stack. */
   def reset() {
-      scopes = Stack[ScopedData]() tap { _ push ScopedData("feature") }
-      localScope.reset()
+      scopes = Stack[ScopedData]()
+      paramScope.reset()
   }
   
   /**
     * Provides access to the global features scope (which is always at the
     * bottom of the stack).
     */
-  private[eval] def featureScope =  scopes.last
+  private[eval] def featureScope =  scopes.lastOption.getOrElse(ScopedData("feature") tap { scopes push _ })
+  
+  /**
+    * Provides access to the currently active scope.
+    * 
+    * @return the currently active scope
+    */
+  def current: ScopedData = scopes.headOption.getOrElse(featureScope)
   
   /**
     * Creates and adds a new scope to the internal stack and makes it the 
@@ -103,24 +111,22 @@ class ScopedDataStack() {
     */
   def addScope(scope: String): ScopedData = 
     if (scope != current.scope) {
+      current.flashScope = None
       if (scope == featureScope.scope) {
         featureScope
       } else {
         if (current != featureScope && current.isEmpty) {
           scopes pop
         }
-        scopes push ScopedData(scope) head
+        scopes push ScopedData(scope)
+        current tap { _ =>
+          current.flashScope = Some(Map[String, String]()) 
+          featureScope.flashScope = current.flashScope 
+        }
       }
     } else {
       current
     }
-  
-  /**
-    * Provides access to the currently active scope.
-    * 
-    * @return the currently active scope
-    */
-  def current: ScopedData = scopes.head
   
   /**
    * Filters scoped data based on a predicate.
@@ -180,6 +186,21 @@ class ScopedDataStack() {
     * @return Some(value) if the attribute found or None otherwise
     */
   def getOpt(name: String): Option[String] = getInOpt(current.scope, name)
+  
+  /**
+   * Finds the first entry that matches the given predicate.
+   * 
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return Some((name, value)) or None if no match is found
+   */
+  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] =
+    scopes.toIterator filter(_.scope == current.scope) map (_.findEntry(pred)) collectFirst { 
+      case Some(value) => value 
+    } match {
+      case None if (current.scope != featureScope.scope) =>
+        featureScope.findEntry(pred)
+      case x => x
+    }
   
   /**
     * Finds and retrieves all attributes in the currently active scope by scanning
@@ -266,7 +287,6 @@ object ScopedDataStack {
    */
   def apply(scopes: Stack[ScopedData]): ScopedDataStack = {
     val stack = new ScopedDataStack()
-    stack.scopes.pop // pop empty feature scope off
     scopes.reverse.foldLeft(stack) { (stack, data) =>
       stack tap { _.scopes push data }
     }
