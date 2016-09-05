@@ -133,6 +133,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "New feature env context" should "have global feature scope" in {
     val env = newEnv
     env.featureScope.scope should be ("feature")
+    env.featureScope.isFeatureScope should be (true)
   }
   
   "Bound feature scope attribute" should "be removed after reset" in {
@@ -164,7 +165,8 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "json.toString on new env context with bound var in global scope" should "print the var" in {
     val env = newEnv
-    env.addScope("vars").set("howdy", "partner")
+    val scope = env.addScope("vars").set("howdy", "partner")
+    scope.isFeatureScope should be (false)
     env.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[]},{"scope":"vars","atts":[{"howdy":"partner"}]}]}""")
   }
   

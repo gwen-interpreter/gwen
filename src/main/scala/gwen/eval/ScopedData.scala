@@ -70,6 +70,8 @@ class ScopedData(val scope: String) extends LazyLogging {
     */
   private var atts = Json.arr()
   
+  val isFeatureScope = false
+  
   /** 
     *  Provides access to the local flash data (attributes are pushed into this 
     *  scope when global attributes are changed so that they become accessible in 
@@ -136,7 +138,7 @@ class ScopedData(val scope: String) extends LazyLogging {
         atts = atts :+ nvp
       } tap { _ =>
         flashScope foreach { fs =>
-          if (scope != "feature" && fs.nonEmpty) {
+          if (!isFeatureScope && fs.nonEmpty) {
             name match {
               case r"(.+?)$n/.*" => fs -= n
               case _ => fs -= name
@@ -191,7 +193,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * Returns this entire scope as a JSON object.
     */
   def json = {
-    val flashAtts = if (scope != "feature") flashScope.map(_.toSeq.foldLeft(Json.arr()) { case (c, (n, v)) => c :+ Json.obj(n -> v) }).getOrElse(Json.arr()) else Json.arr()
+    val flashAtts = flashScope.map(_.toSeq.foldLeft(Json.arr()) { case (c, (n, v)) => c :+ Json.obj(n -> v) }).getOrElse(Json.arr())
     Json.obj("scope" -> scope, "atts" -> (atts ++ flashAtts))
   }
 

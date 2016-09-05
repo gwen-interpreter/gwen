@@ -138,7 +138,7 @@ class ScopedDataStack() {
   
   /** Gets the currently visible scoped data. */
   def visible: ScopedDataStack = filterData { data => 
-      featureScope == data || current.scope == data.scope 
+      data.isFeatureScope || current.scope == data.scope 
   }
   
   /**
@@ -198,7 +198,7 @@ class ScopedDataStack() {
     scopes.toIterator filter(_.scope == current.scope) map (_.findEntry(pred)) collectFirst { 
       case Some(value) => value 
     } match {
-      case None if (current.scope != featureScope.scope) =>
+      case None if (!current.isFeatureScope) =>
         featureScope.findEntry(pred)
       case x => x
     }

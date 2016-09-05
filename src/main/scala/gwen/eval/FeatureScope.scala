@@ -26,6 +26,8 @@ import gwen.Predefs.Kestrel
   */
 class FeatureScope extends ScopedData("feature") {
   
+  override val isFeatureScope = true
+  
   /** 
     *  Provides access to the current (non feature) scope. 
     */
