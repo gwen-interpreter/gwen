@@ -30,7 +30,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
   * 
   * @author Branko Juric  
   */
-class LocalDataStack() {
+class LocalDataStack {
 
   /**
     * The locally scoped data stack.

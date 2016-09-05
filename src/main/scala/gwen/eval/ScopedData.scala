@@ -136,9 +136,7 @@ class ScopedData(val scope: String) extends LazyLogging {
         atts = atts :+ nvp
       } tap { _ =>
         flashScope foreach { fs =>
-          if (scope == "feature") {
-            fs += (name -> value)
-          } else if (fs.nonEmpty) {
+          if (scope != "feature" && fs.nonEmpty) {
             name match {
               case r"(.+?)$n/.*" => fs -= n
               case _ => fs -= name

@@ -93,7 +93,7 @@ class ScopedDataStack() {
     * Provides access to the global features scope (which is always at the
     * bottom of the stack).
     */
-  private[eval] def featureScope =  scopes.lastOption.getOrElse(ScopedData("feature") tap { scopes push _ })
+  private[eval] def featureScope: FeatureScope =  scopes.lastOption.map(_.asInstanceOf[FeatureScope]).getOrElse(new FeatureScope() tap { scopes push _ })
   
   /**
     * Provides access to the currently active scope.
@@ -112,6 +112,7 @@ class ScopedDataStack() {
   def addScope(scope: String): ScopedData = 
     if (scope != current.scope) {
       current.flashScope = None
+      featureScope.currentScope = None
       if (scope == featureScope.scope) {
         featureScope
       } else {
@@ -121,7 +122,7 @@ class ScopedDataStack() {
         scopes push ScopedData(scope)
         current tap { _ =>
           current.flashScope = Some(Map[String, String]()) 
-          featureScope.flashScope = current.flashScope 
+          featureScope.currentScope = Some(current)
         }
       }
     } else {
