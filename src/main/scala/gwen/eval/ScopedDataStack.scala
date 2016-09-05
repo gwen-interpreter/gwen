@@ -85,7 +85,7 @@ class ScopedDataStack() {
   
   /** Resets the data stack. */
   def reset() {
-      scopes = Stack[ScopedData]()
+      scopes = Stack[ScopedData]() tap { _ push new FeatureScope() }
       paramScope.reset()
   }
   
@@ -93,14 +93,14 @@ class ScopedDataStack() {
     * Provides access to the global features scope (which is always at the
     * bottom of the stack).
     */
-  private[eval] def featureScope: FeatureScope =  scopes.lastOption.map(_.asInstanceOf[FeatureScope]).getOrElse(new FeatureScope() tap { scopes push _ })
+  private[eval] def featureScope: FeatureScope =  scopes.last.asInstanceOf[FeatureScope]
   
   /**
     * Provides access to the currently active scope.
     * 
     * @return the currently active scope
     */
-  def current: ScopedData = scopes.headOption.getOrElse(featureScope)
+  def current: ScopedData = scopes.head
   
   /**
     * Creates and adds a new scope to the internal stack and makes it the 
@@ -267,7 +267,7 @@ class ScopedDataStack() {
     * Returns a string representation of the entire attribute stack 
     * as a JSON object.
     */
-  def json: JsObject = Json.obj("scopes" -> (scopes.reverse map (_.json)))
+  def json: JsObject = Json.obj("scopes" -> (scopes.filter(!_.isEmpty).reverse map (_.json)))
   
 }
 
@@ -286,12 +286,12 @@ object ScopedDataStack {
    * 
    * @param scopes the scopes to merge
    */
-  def apply(scopes: Stack[ScopedData]): ScopedDataStack = {
-    val stack = new ScopedDataStack()
-    scopes.reverse.foldLeft(stack) { (stack, data) =>
-      stack tap { _.scopes push data }
-    }
+  def apply(scopes: Stack[ScopedData]): ScopedDataStack = 
+    new ScopedDataStack() tap { stack =>
+      if (scopes.exists(_.isFeatureScope)) stack.scopes.pop
+      scopes.reverse.foreach { data =>
+        stack.scopes.push(data)
+      }
   }
   
 }
-

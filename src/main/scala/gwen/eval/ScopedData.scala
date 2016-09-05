@@ -158,7 +158,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    *         or None if no attributes are accepted
    */
   def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
-    val result = findEntries(pred).foldLeft(ScopedData(scope)) { (data, entry) =>
+    val result = findEntries(pred).foldLeft(if (isFeatureScope) new FeatureScope() else ScopedData(scope)) { (data, entry) =>
       data.set(entry._1, entry._2)
     }
     if (result.isEmpty) None else Some(result)
