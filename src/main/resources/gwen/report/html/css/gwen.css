@@ -21,6 +21,10 @@
   margin-right: 40px;
 }
 
+div {
+  word-wrap: break-word;
+}
+
 .breadcrumb {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -206,6 +210,7 @@ a:hover.inverted-warning {
 
 td {
   padding: 10px;
+  word-wrap: break-word;
 }
 
 table tbody.summary td {
