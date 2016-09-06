@@ -30,6 +30,7 @@ import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
 import java.util.concurrent.atomic.AtomicInteger
 import gwen.dsl.Passed
+import gwen.Settings
 
 /**
   * Launches the gwen interpreter.
@@ -51,6 +52,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val startNanos = System.nanoTime
     try {
+      Settings.loadAll(UserOverrides.addUserProperties(options.properties))
       val metaFiles = options.metas.flatMap(m => if (m.isFile()) List(m) else FileIO.recursiveScan(m, "meta"))
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {

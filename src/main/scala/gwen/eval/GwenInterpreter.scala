@@ -143,10 +143,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureResult], env: T): FeatureResult = {
     val start = System.nanoTime()
-    env.specType = featureSpec.featureFile.collect { case f if(isMetaFile(f)) => SpecType.meta } getOrElse SpecType.feature
-    (if(SpecType.meta.equals(env.specType)) "Loading" else "Evaluating") tap {action =>
+    val specType = featureSpec.featureFile.collect { case f if(isMetaFile(f)) => SpecType.meta } getOrElse SpecType.feature
+    (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
       logger.info("");
-      logger.info(s"${action} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
+      logger.info(s"${action} ${specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
     }
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
@@ -176,12 +176,12 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       metaResults.map(_.spec)
     )
     resultSpec.featureFile foreach { file =>
-      logger.info(s"${(if(SpecType.meta.equals(env.specType)) "Loaded" else "Evaluated")} ${env.specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
+      logger.info(s"${(if(SpecType.meta.equals(specType)) "Loaded" else "Evaluated")} ${specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
     }
     logger.debug(prettyPrint(resultSpec))
     FeatureResult(resultSpec, None, metaResults, Duration.fromNanos(System.nanoTime() - start)) tap { result =>
-      if(SpecType.meta != env.specType) {
-        logStatus(env.specType.toString, resultSpec.toString, resultSpec.evalStatus)
+      if(SpecType.meta != specType) {
+        logStatus(specType.toString, resultSpec.toString, resultSpec.evalStatus)
       } else {
         logger.info(result.toString)
       }

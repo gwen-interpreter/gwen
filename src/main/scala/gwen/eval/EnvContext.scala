@@ -57,9 +57,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   private var currentAttachments: List[(String, File)] = Nil
   private var attachmentPrefix = padWithZeroes(1)
   
-  /** The current type of specification being interpreted. */
-  var specType = SpecType.feature
-  
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
   var loadedMeta: List[File] = Nil  
   
@@ -259,16 +256,12 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * @return the interpolated step
     */
   def interpolate(step: Step): Step = 
-    if (SpecType.feature.equals(specType)) {
-      interpolate(step.expression) { name =>
-        Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name)) 
-      } match {
-        case step.expression => step
-        case expr =>
-          Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
-      }
-    } else {
-      step
+    interpolate(step.expression) { name =>
+      Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name)) 
+    } match {
+      case step.expression => step
+      case expr =>
+      Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
     }
   
   /**

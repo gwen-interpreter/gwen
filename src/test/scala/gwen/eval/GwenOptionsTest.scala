@@ -705,7 +705,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.parallel should be (parallel)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
-    options.properties should be (UserOverrides.addUserProperties(properties))
+    options.properties should be (properties)
     options.tags should be (tags)
     options.dryRun should be (dryRun)
     options.dataFile should be (dataFile)

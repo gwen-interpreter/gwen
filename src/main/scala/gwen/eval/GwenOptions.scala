@@ -167,7 +167,7 @@ object GwenOptions {
         options.parallel,
         options.reportDir,
         if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) List(ReportFormat.html) else Nil },
-        UserOverrides.addUserProperties(options.properties),
+        options.properties,
         options.tags,
         options.dryRun,
         options.dataFile,
@@ -182,7 +182,6 @@ object GwenOptions {
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             invocationError("No report directory specified")
           }
-          Settings.loadAll(opt.properties)
         }
       }).getOrElse(invocationError("Failed to read in gwen arguments"))
   }
