@@ -20,9 +20,8 @@ Scenario: Check bindings
     Given a1 should be "A"
       And a2 should be "A"
      When I bind more properties
-     Then a3 is "A"
-      And b1 is "B"
-      And b2 is "B"
-      And b3 is "B"
-      And b4 is "B"
+     Then a3 should be "A"
+      And b1 should be "B"
+      And b2 should be "B"
+      And b3 should be "B"
 	

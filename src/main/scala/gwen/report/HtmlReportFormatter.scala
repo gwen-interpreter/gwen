@@ -378,7 +378,7 @@ object HtmlReportFormatter {
         <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName()}">${escapeHtml(text)}</a>
       </li>"""}).mkString}
       <li>
-        ${if (status != StatusKeyword.Passed) s"""<a href="#${result.spec.scenarios.zipWithIndex.collectFirst { case (s, i) if (s.evalStatus.status == status) => s"scenario-$i" } getOrElse("")}">""" else ""}<span class="badge badge-${cssStatus(status)}">${status}</span>${if (status != StatusKeyword.Passed) "</a>" else ""}
+        <span class="badge badge-${cssStatus(status)}">${if (status != StatusKeyword.Passed) s"""<a href="#${result.spec.scenarios.zipWithIndex.collectFirst { case (s, i) if (s.evalStatus.status == status) => s"scenario-$i" } getOrElse("")}" style="color:white;">""" else ""}${status}${if (status != StatusKeyword.Passed) "</a>" else ""}</span>
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>
