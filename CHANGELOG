@@ -12,6 +12,7 @@ Aug 25, 2016, 12:55 AM GMT+10 (AEST)
 - Do not treat embedded '+' literals in strings as concatenation operator
 - Use flash scope to track changes made to global attributes in local scopes
 - wrap long text in reports
+- store atts as list of nvp tuples instaed of json
 
 1.3.4
 =====
