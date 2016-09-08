@@ -179,6 +179,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val reportDir = ReportFormat.html.reportDir(options)
     val title = "Feature Summary";
     val status = summary.evalStatus.status
+    val detailElapsedTime = summary.results.map(_.elapsedTime).reduceLeft(_+_)
   
     Some(s"""<!DOCTYPE html>
 <html lang="en">
@@ -206,9 +207,9 @@ trait HtmlReportFormatter extends ReportFormatter {
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
-        <span class="pull-right"><small>${formatDuration(summary.evalStatus.duration)}</small></span>
+        <span class="pull-right"><small>${formatDuration(detailElapsedTime)}</small></span>
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.elapsedTime - summary.evalStatus.duration)}</small></span>
+          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.elapsedTime - detailElapsedTime)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
