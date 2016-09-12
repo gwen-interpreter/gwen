@@ -1,6 +1,6 @@
 1.4.0
 =====
-Aug 25, 2016, 12:55 AM GMT+10 (AEST)
+Sep 12, 2016, 10:37 PM GMT+10 (AEST)
 - Include total elapsed time at the top of all reports
 - Include start and finish times at the top of all reports
 - Make failed status in detail report a hyperlink to first failed scenario
