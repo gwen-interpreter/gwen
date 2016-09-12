@@ -91,15 +91,15 @@ trait GherkinParser {
 
   /** Produces a complete feature spec tree (this method is used to parse entire feature files). */
   def parseFeatureSpec(feature: String): Try[FeatureSpec] = Try {
-    val parser = new Parser[gherkin.ast.Feature](new AstBuilder())
+    val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
     FeatureSpec(parser.parse(feature))
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
-    val parser = new Parser[gherkin.ast.Feature](new AstBuilder())
+    val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
     Try(parser.parse(s"Feature:\nScenario:\n${step}"))
-      .map(_.getScenarioDefinitions)
+      .map(_.getFeature.getChildren)
       .filter(!_.isEmpty)
       .map(_.get(0).getSteps)
       .filter(!_.isEmpty)

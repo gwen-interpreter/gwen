@@ -91,11 +91,11 @@ case class FeatureSpec(
   override def toString = feature.name 
 }
 object FeatureSpec {
-  def apply(spec: gherkin.ast.Feature): FeatureSpec = {
+  def apply(spec: gherkin.ast.GherkinDocument): FeatureSpec = {
     FeatureSpec(
-      Feature(spec),
-      Option(spec.getBackground).map(b => Background(b)),
-      Option(spec.getScenarioDefinitions).map(_.toList).getOrElse(Nil).map(s => Scenario(s)),
+      Feature(spec.getFeature),
+      spec.getFeature.getChildren.find(_.isInstanceOf[gherkin.ast.Background]).map(_.asInstanceOf[gherkin.ast.Background]).map(b => Background(b)),
+      spec.getFeature.getChildren.toList.filter(_.isInstanceOf[gherkin.ast.Scenario]).map(_.asInstanceOf[gherkin.ast.Scenario]).map(s => Scenario(s)),
       None,
       Nil)
   }
@@ -114,11 +114,11 @@ case class Feature(tags: List[Tag], name: String, description: List[String]) ext
   override def toString = name
 }
 object Feature {
-  def apply(spec: gherkin.ast.Feature): Feature =
+  def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
-      Option(spec.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)), 
-      spec.getName, 
-      Option(spec.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct)
+      Option(feature.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)), 
+      feature.getName, 
+      Option(feature.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct)
   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
 }
 
@@ -179,7 +179,7 @@ case class Scenario(tags: List[Tag], name: String, description: List[String], ba
   
 }
 object Scenario {
-  def apply(scenario: gherkin.ast.ScenarioDefinition): Scenario = 
+  def apply(scenario: gherkin.ast.Scenario): Scenario = 
     new Scenario(
       Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t)).distinct, 
       scenario.getName, 
