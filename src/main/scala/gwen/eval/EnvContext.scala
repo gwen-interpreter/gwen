@@ -161,16 +161,15 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
               } else None
           }
       })
-    }.collect { case (stepDef, params) => 
-        logger.debug(s"Mapped $expression to StepDef: ${stepDef.name} { ${(params.map { case (n, v) => s"$n=$v"}).mkString(", ")} }")
-      (stepDef, params)
     }
-    if (matches.size > 1) {
-      val msg = s"Ambiguous condition in resolving '$expression': One StepDef match expected but ${matches.size} found" 
-      ambiguousCaseError(s"$msg: ${(matches.map { case (stepDef, _) => stepDef.name }).mkString(",")}")
-    } else {
-      matches.headOption
-    }
+    val iter = matches.iterator
+    if (iter.hasNext) {
+      val first = Some(iter.next)
+      if (iter.hasNext) {
+        val msg = s"Ambiguous condition in resolving '$expression': One StepDef match expected but ${matches.size} found" 
+        ambiguousCaseError(s"$msg: ${(matches.map { case (stepDef, _) => stepDef.name }).mkString(",")}")
+      } else first
+    } else None
   }
   
   /**
