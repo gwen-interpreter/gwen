@@ -44,6 +44,7 @@ import gwen.dsl.Tag
 import gwen.dsl.prettyPrint
 import gwen.errors._
 import scala.concurrent.duration.Duration
+import java.util.Date
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -104,25 +105,25 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param featureUnit the feature unit to execute
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
-    * @param accMetaResults accumulated meta results (including meta imports)
+    * @param started the started time (default is current date)
     * @return the evaluated feature or nothing if the feature does not 
     *         satisfy specified tag filters
     * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
-  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T): Option[FeatureResult] = 
+  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] = 
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val dataRecord = unit.dataRecord 
       parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
         case Success(featureSpec) =>
           if (featureFile.getName().endsWith(".meta")) {
             val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env)
-            Some(evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), metaResults, env))
+            Some(evaluateFeature(normalise(featureSpec, Some(featureFile), dataRecord), metaResults, env, new Date()))
           } else {
             TagsFilter.filter(featureSpec, tagFilters) match {
               case Some(fspec) =>
                 val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env) ++ loadMeta(unit.metaFiles, tagFilters, env)
                 env.loadedMeta = Nil
-                Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env))
+                Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env, started))
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
                 None
@@ -139,10 +140,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param featureSpec the Gwen feature to evaluate
     * @param metaResults the evaluated meta results (Nil if featureSpec is a meta file)
     * @param env the environment context
+    * @param started the started time
     * @return the evaluated Gwen feature result
     */
-  private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureResult], env: T): FeatureResult = {
-    val start = System.nanoTime()
+  private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureResult], env: T, started: Date): FeatureResult = {
     val specType = featureSpec.featureFile.collect { case f if(isMetaFile(f)) => SpecType.meta } getOrElse SpecType.feature
     (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
       logger.info("");
@@ -179,7 +180,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       logger.info(s"${(if(SpecType.meta.equals(specType)) "Loaded" else "Evaluated")} ${specType}: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: ${file}]").getOrElse("")}")
     }
     logger.debug(prettyPrint(resultSpec))
-    FeatureResult(resultSpec, None, metaResults, Duration.fromNanos(System.nanoTime() - start)) tap { result =>
+    new FeatureResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
       if(SpecType.meta != specType) {
         logStatus(specType.toString, resultSpec.toString, resultSpec.evalStatus)
       } else {

@@ -57,7 +57,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
-          val summary = executeFeatureUnits(startNanos, options, featureStream.flatten, optEnv)
+          val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
           printSummaryStatus(summary)
           summary.evalStatus
         case _ =>
@@ -92,7 +92,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
     */
-  private def executeFeatureUnits(startNanos: Long, options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
+  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
       val counter = new AtomicInteger(0)
@@ -115,8 +115,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
-      val elapsedTime = Duration.fromNanos(System.nanoTime() - startNanos)
-      results.toList.sortBy(_.finished).foldLeft(FeatureSummary(elapsedTime)) (_+(_,elapsedTime)) tap { summary => 
+      results.toList.sortBy(_.finished).foldLeft(FeatureSummary()) (_+_) tap { summary => 
         reportGenerators foreach { _.reportSummary(interpreter, summary) }
       }
     } else {
@@ -129,8 +128,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             (result match { 
               case None => summary
               case _ => 
-                val elapsedTime = Duration.fromNanos(System.nanoTime() - startNanos)
-                summary + (result.map(bindReportFiles(reportGenerators, unit, _)).get, elapsedTime) tap { accSummary =>
+                (summary + result.map(bindReportFiles(reportGenerators, unit, _)).get) tap { accSummary =>
                   if (!options.parallel) {
                     reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
                   }
@@ -158,7 +156,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         }
       }
       f(interpreter.interpretFeature(targetUnit, options.tags, env) map { res =>
-        FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.elapsedTime)
+        new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
       if (!envOpt.isDefined) { interpreter.close(env) }
@@ -177,7 +175,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       (generator.reportFormat, generator.reportDetail(interpreter, unit, result)) 
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty) 
-      FeatureResult(result.spec, Some(reportFiles), result.metaResults, result.elapsedTime)
+      new FeatureResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)
     else 
       result
   }

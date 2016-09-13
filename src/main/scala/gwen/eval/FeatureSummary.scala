@@ -17,47 +17,47 @@
 package gwen.eval
 
 import gwen.dsl.StatusKeyword
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import java.util.Date
 import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
 import gwen.Predefs.Formatting._
+import gwen.Predefs.DurationOps
 
 /**
   * Captures the feature summary results of an evaluated feature.
   * 
-  * @param summaryLines feature summary lines
-  * @param featureCounts number of features by status
+  * @param results the feature results
   * @param scenarioCounts number of scenarios by status
   * @param stepCounts number of steps by status
-  * @param elapsedTime the time it took to process all features
   * 
   * @author Branko Juric
   */
 case class FeatureSummary(
   results: List[FeatureResult],
   scenarioCounts: Map[StatusKeyword.Value, Int], 
-  stepCounts: Map[StatusKeyword.Value, Int],
-  elapsedTime: Duration) {
+  stepCounts: Map[StatusKeyword.Value, Int]) {
   
-  val finished = new Date()
-  val started = new Date(finished.getTime() - elapsedTime.toMillis)
-  private val statuses = results.map(_.spec.evalStatus)
-  def evalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
-  def featureCounts = StatusKeyword.countsByStatus(statuses)
+  lazy val started = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
+  lazy val finished = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
+  lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
+  
+  private lazy val statuses = results.map(_.spec.evalStatus)
+  lazy val evalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
+  lazy val resultsElapsedTime = DurationOps.sum(results.map(_.elapsedTime))
+  lazy val overhead = elapsedTime - resultsElapsedTime
+  lazy val featureCounts = StatusKeyword.countsByStatus(statuses)
   
   /** 
     * Adds the given feature result to the current summary (accumulates). 
     * 
     * @param featureResult the feature result to add
-    * @param elapsedTime the time it took to process the feature
     */
-  def +(featureResult: FeatureResult, elapsedTime: Duration): FeatureSummary =
+  def +(featureResult: FeatureResult): FeatureSummary = 
     new FeatureSummary(
       this.results ++ List(featureResult), 
       addCounts(this.scenarioCounts, featureResult.scenarioCounts),
-      addCounts(this.stepCounts, featureResult.stepCounts),
-      elapsedTime)
+      addCounts(this.stepCounts, featureResult.stepCounts))
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.reportables flatMap { status => 
@@ -75,7 +75,9 @@ case class FeatureSummary(
         |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${formatDuration(evalStatus.duration)}] ${evalStatus.status} [${formatDuration(elapsedTime)}] Elapsed [${formatDuration(elapsedTime - evalStatus.duration)}] Overhead ${finished} ${evalStatus.emoticon}""".stripMargin
+        |[${formatDuration(resultsElapsedTime)}] ${evalStatus.status} ${evalStatus.emoticon}
+        |[${formatDuration(overhead)}] Overhead
+        |[${formatDuration(elapsedTime)}] Elapsed, Started: ${started}, Finished: ${finished}""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
@@ -88,9 +90,9 @@ case class FeatureSummary(
 
 /** Feature summary factory. */
 object FeatureSummary {
-  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Duration.Zero)
-  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), elapsedTime)
-  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + (result, result.elapsedTime)
+  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
+  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
+  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
 }
 
 

@@ -96,6 +96,8 @@ case object Loaded extends EvalStatus {
 
 object EvalStatus {
 
+  import gwen.Predefs.DurationOps
+  
   /**
     * Function for getting the effective evaluation status of a given list of statuses.
     * 
@@ -103,16 +105,16 @@ object EvalStatus {
     */
   def apply(statuses: List[EvalStatus]): EvalStatus = {
     if (statuses.nonEmpty) {
-      val duration = (statuses map (_.nanos)).sum
+      val duration = DurationOps.sum(statuses.map(_.duration))
       statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
-        case Some(failed) => Failed(duration, failed.error)  
+        case Some(failed) => Failed(duration.toNanos, failed.error)  
         case None =>
           if (statuses.forall(_ == Loaded)) {
             Loaded
           } else {
             statuses.filter(_ != Loaded).lastOption match {
               case Some(lastStatus) => lastStatus match {
-                case Passed(_) => Passed(duration)
+                case Passed(_) => Passed(duration.toNanos)
                 case Skipped => lastStatus
                 case _ => Pending
               }

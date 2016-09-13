@@ -19,10 +19,12 @@ package gwen.eval
 import gwen.dsl.FeatureSpec
 import gwen.report.ReportFormat
 import java.io.File
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import java.util.Date
 import gwen.dsl.StatusKeyword
 import gwen.Predefs.Formatting._
+import scala.util.Try
+import gwen.Predefs.DurationOps
 
 /**
   * Captures the results of an evaluated feature.
@@ -30,28 +32,26 @@ import gwen.Predefs.Formatting._
   * @param spec the evaluated feature
   * @param metaResults the evaluated meta results
   * @param reports optional map of report files (keyed by report type)
-  * @param elapsedTime the time it took to process the feature
+  * @param started the started time
+  * @param finished the finished time
   */
 class FeatureResult(
   val spec: FeatureSpec, 
   val reports: Option[Map[ReportFormat.Value, List[File]]], 
   val metaResults: List[FeatureResult],
-  val elapsedTime: Duration) {
+  val started: Date,
+  val finished: Date) {
   
-  val finished = new Date()
-  val started = new Date(finished.getTime() - elapsedTime.toMillis)
+  lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
-  def summary = FeatureSummary(this)
-  private[eval] def scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
-  private[eval] def stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString = s"[${formatDuration(spec.evalStatus.duration)}] ${spec.evalStatus.status} [${formatDuration(elapsedTime)}] Elapsed [${formatDuration(elapsedTime - spec.evalStatus.duration)}] Overhead ${finished} ${spec.evalStatus.emoticon}"
+  lazy val summary = FeatureSummary(this)
+  lazy val evalStatus = spec.evalStatus
+  lazy val duration = evalStatus.duration
+  lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   
-}
-
-/** Feature result factory. */
-object FeatureResult {
-  def apply(spec: FeatureSpec, reports: Option[Map[ReportFormat.Value, List[File]]], metaResults: List[FeatureResult], elapsedTime: Duration): FeatureResult = 
-    new FeatureResult(spec, reports, metaResults, elapsedTime)
+  private[eval] lazy val scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
+  private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
+  override def toString = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: ${started}, Finished: ${finished}""".stripMargin  
 }
 

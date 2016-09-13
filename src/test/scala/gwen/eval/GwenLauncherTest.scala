@@ -35,9 +35,9 @@ import gwen.dsl.Tag
 import gwen.UserOverrides
 import org.scalatest.FlatSpec
 import gwen.report.ReportFormat
-import scala.concurrent.duration.Duration
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
+import java.util.Date
 
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
@@ -48,7 +48,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
       None, 
       List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a test", Passed(10)))))
   )
-  val featureResult = FeatureResult(feature, None, Nil, Duration.Zero)
+  val featureResult = new FeatureResult(feature, None, Nil, new Date(), new Date())
   
   private def launcher(mockInterpreter: GwenInterpreter[EnvContext]) = {
     new GwenLauncher(mockInterpreter)
@@ -290,9 +290,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.implVersion).thenReturn("-SNAPSHOT")
     when(mockInterpreter.releaseNotesUrl).thenReturn(None)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(FeatureResult(feature6A, None, Nil, Duration.Zero)))
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6b, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(FeatureResult(feature6B, None, Nil, Duration.Zero)))
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature7a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(FeatureResult(feature7A, None, Nil, Duration.Zero)))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, None, Nil, new Date(), new Date())))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6b, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, None, Nil, new Date(), new Date())))
+    when(mockInterpreter.interpretFeature(new FeatureUnit(feature7a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature7A, None, Nil, new Date(), new Date())))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     

@@ -207,4 +207,12 @@ object Predefs extends LazyLogging {
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
   }
   
+  object DurationOps {
+    import scala.concurrent.duration._
+    def sum(durations: Seq[Duration]) = 
+      if (durations.isEmpty) Duration.Zero
+      else if (durations.size == 1) durations(0)
+      else durations.reduce(_+_)
+  }
+  
 }

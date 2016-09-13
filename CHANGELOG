@@ -1,3 +1,9 @@
+1.4.1
+=====
+Sep 14, 2016, 12:42 PM GMT+10 (AEST)
+- Fix analytics and timings in reports
+- Suppress hyperlink for 'Loaded' status in reports
+
 1.4.0
 =====
 Sep 12, 2016, 10:37 PM GMT+10 (AEST)
