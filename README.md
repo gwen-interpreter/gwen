@@ -2,16 +2,12 @@
 Gwen
 ====
 
-Gwen is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
+Gwen is a Given-When-Then automation platform. It is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter that accepts plain text 
-[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in.
+[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in. We have developed and shared a [web engine](https://github.com/gwen-interpreter/gwen-web/wiki) that you can download and use to automate web pages and web application testing by writing specifications instead of code.
 
-> Gwen is a [G]iven [W]hen Th[en] automation platform
-
-- See also: 
-  - [Wiki](https://github.com/gwen-interpreter/gwen/wiki) 
-  - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
-  - [Blog](https://gweninterpreter.wordpress.com)
+- [Gwen-web](https://github.com/gwen-interpreter/gwen-web/wiki)
+  - A Gwen engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) instructions.
 
 ### Current Status
 
@@ -19,29 +15,6 @@ interpreter that accepts plain text
 
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest) 
 - [Change log](CHANGELOG)
-
-### Automation by Interpretation
-
-```gherkin    
-   Feature: Gwen Interpreter
-    
-  Scenario: Automate
-      Given a Gherkin feature
-        And a target system
-       When Gwen is launched
-       Then the feature is interpreted
-        And its steps are executed
-        And the system is evaluated
-```
-
-Core Requirements
------------------
-
-- Java 7+
-- Scala 2.11.x, 2.10.x
- 
-Gwen is written in [Scala](http://www.scala-lang.org) and runs on 
-[Java](https://www.oracle.com/java).
 
 Key Features
 ------------
@@ -52,8 +25,7 @@ Key Features
 - [Command line interface](https://github.com/gwen-interpreter/gwen/wiki/Command-Line-Interface)
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
 - [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
-- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution)
-  - with optional ramp up interval
+- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution) (with configurable ramp up interval)
 - [Dry run execution and validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
 - [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
@@ -62,16 +34,20 @@ Key Features
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 
-Engines
--------
+Core Requirements
+-----------------
 
-We have developed and shared the following engine that you can download and start using straight away!
+- Java 7+
+- Scala 2.11.x, 2.10.x
+ 
+Gwen is written in [Scala](http://www.scala-lang.org) and runs on [Java](https://www.oracle.com/java).
 
-- [Gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - A Gwen [engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) that 
-maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) 
-instructions to automate web pages and web 
-application testing
+Resources
+---------
+
+  - [Wiki](https://github.com/gwen-interpreter/gwen/wiki) 
+  - [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+  - [Blog](https://gweninterpreter.wordpress.com)
 
 Mail Group
 ----------
