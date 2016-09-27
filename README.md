@@ -4,10 +4,10 @@ Gwen
 
 Gwen is a Given-When-Then automation platform. It is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
 interpreter that accepts plain text 
-[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in. We have developed and shared a [web engine](https://github.com/gwen-interpreter/gwen-web/wiki) that you can download and use to automate web pages and web application testing by writing specifications instead of code.
+[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in. We have developed and shared a [web engine](https://github.com/gwen-interpreter/gwen-web/wiki) that you can use to automate online activities and web application testing by writing specifications instead of code.
 
 - [Gwen-web](https://github.com/gwen-interpreter/gwen-web/wiki)
-  - A Gwen engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) instructions to automate online activities and web application testing.
+  - A Gwen engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) instructions to automate web browsers.
 
 ### Current Status
 
