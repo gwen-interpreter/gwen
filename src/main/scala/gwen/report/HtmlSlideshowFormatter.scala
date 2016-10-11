@@ -112,7 +112,7 @@ object HtmlSlideshowFormatter {
     </div>
   </p>
   <hr>
-  <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}"} width="100%"/>
+  <img id="slides" src="${screenshots.headOption.map(_.getName).mkString("attachments/","","")}" width="100%" height="100%"/>
   <script src="${rootPath}resources/js/jquery.reel-min.js"></script>
   <script>
     var revolution = $$('#slides').width();
@@ -139,6 +139,7 @@ object HtmlSlideshowFormatter {
       $$('#play-pause').removeClass("glyphicon-play");
       $$('#play-pause').addClass("glyphicon-pause");
       $$('#play-pause').attr("title", "Pause");
+      if ($$('#slides').reel('frame') == 1) { $$('#slides').reel('frame', ${screenshots.length}); }
       if ($$('#slides').reel('frame') == ${screenshots.length}) { $$('#slides').reel('frame', 1); }
       $$('#slides').trigger("play", getFramesPerSec() * unitSpeed);
     }

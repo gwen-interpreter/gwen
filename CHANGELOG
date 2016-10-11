@@ -1,3 +1,11 @@
+1.4.2
+=====
+Oct 11, 2016, 9:16 PM GMT+10 (AEDT)
+- Fixed play function in modal popup slideshow. Solution was to:
+  - add `height="100%"` to the slideshow image tag
+  - if the 1st frame is displayed then point the reel control to the last frame 
+    and immediately back to 1st frame before triggering play
+
 1.4.1
 =====
 Sep 14, 2016, 12:42 PM GMT+10 (AEST)
