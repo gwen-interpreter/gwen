@@ -38,6 +38,9 @@ import gwen.Settings
 import scala.util.Try
 import gwen.dsl.Tag
 import gwen.dsl.StepKeyword
+import gwen.eval.support.RegexSupport
+import gwen.eval.support.XPathSupport
+import gwen.eval.support.JsonPathSupport
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -48,7 +51,8 @@ import gwen.dsl.StepKeyword
   * 
   * @author Branko Juric
   */
-class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging with ExecutionContext with InterpolationSupport {
+class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging 
+  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -278,6 +282,19 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           unboundAttributeError(name)
       }
     }
+  }
+  
+  def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
+    val res = operator match {
+      case "be"      => expected.equals(actual)
+      case "contain" => actual.contains(expected)
+      case "start with" => actual.startsWith(expected)
+      case "end with" => actual.endsWith(expected)
+      case "match regex" => actual.matches(expected)
+      case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty()
+      case "match json path" => !evaluateJsonPath(expected, actual).isEmpty()
+    }
+    if (!negate) res else !res
   }
   
   val isDryRun = options.dryRun

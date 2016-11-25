@@ -1,3 +1,11 @@
+1.4.3
+=====
+Nov 24, 2016, 9:43 AM GMT+10 (AEDT)
+- Fixed issue with junit reports that caused an exception to be thrown when
+  the feature file being reported on is in the top level working directory.
+- Move generic compare logic into core environment context
+- Mix XPath, Regex, and JSON support into core environment context
+    
 1.4.2
 =====
 Oct 11, 2016, 9:16 PM GMT+10 (AEDT)

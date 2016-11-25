@@ -82,7 +82,7 @@ object ReportFormat extends Enumeration {
         options => new JUnitReportGenerator(options), 
         options => options.reportDir.map(dir => new File(dir, "junit")).get,
         (spec: FeatureSpec, dataRecord: Option[DataRecord]) => {
-          val parentDirPath = spec.featureFile.map(_.getParentFile).map(_.getPath).getOrElse("")
+          val parentDirPath = spec.featureFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
           val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
           s"TEST-${FileIO.encodeDir(parentDirPath)}-${dataRecNo}${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}"
         }) {
