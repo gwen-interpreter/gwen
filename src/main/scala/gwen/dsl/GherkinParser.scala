@@ -24,7 +24,7 @@ import gherkin.Token
 import gherkin.TokenMatcher
 import gherkin.GherkinLine
 import gherkin.Parser.RuleType
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import gwen.errors._
 
 /**

@@ -17,7 +17,6 @@
 package gwen.eval
 
 import java.io.File
-import scala.collection.JavaConversions.seqAsJavaList
 import scala.util.Failure
 import scala.util.Success
 import gwen.Predefs.Kestrel
@@ -27,7 +26,7 @@ import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 import play.api.libs.json.Json
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 import jline.console.completer.AggregateCompleter
 
 /**
@@ -44,8 +43,8 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
-    reader.addCompleter(new StringsCompleter(StepKeyword.literals ++ List("help", "env", "history", "exit")))
-    reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")))))
+    reader.addCompleter(new StringsCompleter((StepKeyword.literals ++ List("help", "env", "history", "exit")).asJava))
+    reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
   }
   
   /** Reads an input string or command from the command line. */

@@ -19,7 +19,7 @@ package gwen.eval
 import java.io.File
 
 import com.github.tototoshi.csv.CSVReader
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 import gwen.Predefs.Kestrel
 

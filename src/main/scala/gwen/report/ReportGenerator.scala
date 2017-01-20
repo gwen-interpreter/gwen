@@ -19,7 +19,7 @@ package gwen.report
 import java.io.BufferedInputStream
 import java.io.File
 import scala.io.Source
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenInfo
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel

@@ -30,7 +30,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import gwen.dsl.EvalStatus
 import gwen.dsl.Pending
 import gwen.dsl.SpecType
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import scala.collection.mutable.Stack
 import gwen.eval.support.InterpolationSupport
 import gwen.errors._

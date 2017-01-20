@@ -16,7 +16,7 @@
 
 package gwen.eval
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.dsl.Step
 import gwen.Predefs._
 import gwen.errors._

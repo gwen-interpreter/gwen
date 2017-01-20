@@ -17,7 +17,7 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-import scala.collection.mutable.Stack
+import scala.collection.mutable.ArrayStack
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.JsObject
@@ -72,7 +72,7 @@ class ScopedDataStack() {
     * on the top of the stack.  All other scopes that are not at the
     * top of the stack are 'historical' scopes.
     */
-  private var scopes: Stack[ScopedData] = _
+  private var scopes: ArrayStack[ScopedData] = _
   
   /** 
     *  Provides access to the local StepDef scope (StepDef parameters
@@ -85,7 +85,7 @@ class ScopedDataStack() {
   
   /** Resets the data stack. */
   def reset() {
-      scopes = Stack[ScopedData]() tap { _ push new FeatureScope() }
+      scopes = ArrayStack[ScopedData]() tap { _ push new FeatureScope() }
       paramScope.reset()
   }
   
@@ -279,14 +279,14 @@ object ScopedDataStack {
    * @param scopes the scopes to merge
    */
   def apply(scope: Option[ScopedData]): ScopedDataStack = 
-    scope.map(x => ScopedDataStack(Stack(x))).getOrElse(ScopedDataStack(Stack[ScopedData]()))
+    scope.map(x => ScopedDataStack(ArrayStack(x))).getOrElse(ScopedDataStack(ArrayStack[ScopedData]()))
   
   /**
    * Merges a stack of scopes into a single ScopedDataStack object.
    * 
    * @param scopes the scopes to merge
    */
-  def apply(scopes: Stack[ScopedData]): ScopedDataStack = 
+  def apply(scopes: ArrayStack[ScopedData]): ScopedDataStack = 
     new ScopedDataStack() tap { stack =>
       if (scopes.exists(_.isFeatureScope)) stack.scopes.pop
       scopes.reverse.foreach { data =>

@@ -27,7 +27,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import gwen.Predefs.Kestrel
 import gwen.dsl.Scenario
 import gwen.dsl.StatusKeyword

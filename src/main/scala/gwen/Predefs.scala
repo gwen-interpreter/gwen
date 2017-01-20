@@ -25,7 +25,7 @@ import java.io.FileInputStream
 import java.io.StringWriter
 import java.io.PrintWriter
 import scala.util.matching.Regex
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.duration.Duration
 import java.text.DecimalFormat
 

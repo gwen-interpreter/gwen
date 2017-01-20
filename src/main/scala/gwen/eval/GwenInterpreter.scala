@@ -22,7 +22,7 @@ import scala.language.postfixOps
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
