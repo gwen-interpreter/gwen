@@ -17,7 +17,7 @@ package gwen.eval.support
 
 import gwen.Predefs.RegexContext
 import scala.annotation.tailrec
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * Provides support for string interpolation.

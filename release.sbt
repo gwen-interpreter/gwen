@@ -1,7 +1,5 @@
 import sbtrelease._
 
-releaseCrossBuild := true
-
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 // we hide the existing definition for setReleaseVersion to replace it with our own
@@ -36,6 +34,6 @@ releaseProcess := Seq(
   runTest,
   tagRelease,
   publishArtifacts,
-  ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+  ReleaseStep(releaseStepCommand("sonatypeRelease")),
   pushChanges
 )

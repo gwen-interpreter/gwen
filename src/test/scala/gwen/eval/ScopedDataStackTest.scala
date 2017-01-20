@@ -19,7 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.UnboundAttributeException
-import scala.collection.mutable.Stack
+import scala.collection.mutable.ArrayStack
 
 class ScopedDataStackTest extends FlatSpec with Matchers {
 
@@ -418,7 +418,7 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
   
   "new stack with no data" should "return empty current and feature scopes" in {
     
-    val scopes = ScopedDataStack(new Stack[ScopedData]())
+    val scopes = ScopedDataStack(new ArrayStack[ScopedData]())
     
     scopes.current.scope should be ("feature")
     scopes.featureScope.scope should be ("feature")

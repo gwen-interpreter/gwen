@@ -17,7 +17,7 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
 import gwen.UserOverrides

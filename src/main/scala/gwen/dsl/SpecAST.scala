@@ -19,7 +19,7 @@ package gwen.dsl
 import java.io.File
 import gwen.Predefs.Kestrel
 import gwen.errors._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -94,8 +94,8 @@ object FeatureSpec {
   def apply(spec: gherkin.ast.GherkinDocument): FeatureSpec = {
     FeatureSpec(
       Feature(spec.getFeature),
-      spec.getFeature.getChildren.find(_.isInstanceOf[gherkin.ast.Background]).map(_.asInstanceOf[gherkin.ast.Background]).map(b => Background(b)),
-      spec.getFeature.getChildren.toList.filter(_.isInstanceOf[gherkin.ast.Scenario]).map(_.asInstanceOf[gherkin.ast.Scenario]).map(s => Scenario(s)),
+      spec.getFeature.getChildren.asScala.find(_.isInstanceOf[gherkin.ast.Background]).map(_.asInstanceOf[gherkin.ast.Background]).map(b => Background(b)),
+      spec.getFeature.getChildren.asScala.toList.filter(_.isInstanceOf[gherkin.ast.Scenario]).map(_.asInstanceOf[gherkin.ast.Scenario]).map(s => Scenario(s)),
       None,
       Nil)
   }
@@ -116,7 +116,7 @@ case class Feature(tags: List[Tag], name: String, description: List[String]) ext
 object Feature {
   def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
-      Option(feature.getTags).map(_.toList).getOrElse(Nil).map(t =>Tag(t)), 
+      Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
       feature.getName, 
       Option(feature.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct)
   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
@@ -145,7 +145,7 @@ object Background {
     Background(
       background.getName,
       Option(background.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      Option(background.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)))
+      Option(background.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)))
   def apply(background: Background, steps: List[Step]): Background = 
     Background(background.name, background.description, steps) 
 }
@@ -181,11 +181,11 @@ case class Scenario(tags: List[Tag], name: String, description: List[String], ba
 object Scenario {
   def apply(scenario: gherkin.ast.Scenario): Scenario = 
     new Scenario(
-      Option(scenario.getTags).map(_.toList).getOrElse(Nil).map(t => Tag(t)).distinct, 
+      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct, 
       scenario.getName, 
       Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None, 
-      Option(scenario.getSteps).map(_.toList).getOrElse(Nil).map(s => Step(s)), 
+      Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)), 
       None)
   def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
     new Scenario(tags.distinct, name, description, background, steps, None)

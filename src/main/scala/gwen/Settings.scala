@@ -16,10 +16,8 @@
 
 package gwen
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.io.File
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.Config
 import scala.util.Properties
 import java.util.Properties
 import java.io.FileReader
@@ -52,13 +50,13 @@ object Settings {
     val props = propsFiles.foldLeft(new Properties()) { 
       (props, file) => 
         props.load(new FileReader(file))
-        props.entrySet() foreach { entry =>
+        props.entrySet().asScala foreach { entry =>
           val key = entry.getKey().asInstanceOf[String]
           if (key == null || key.trim.isEmpty()) invalidPropertyError(entry.toString, file)
         }
         props
     }
-    props.entrySet() foreach { entry =>
+    props.entrySet().asScala.foreach { entry =>
       val key = entry.getKey().asInstanceOf[String]
       if (!sysProps.contains(key)) {
         val value = resolve(props.getProperty(key), props)
@@ -122,7 +120,7 @@ object Settings {
     * @param value the value to bind to the property
     */
   private[gwen] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
-    if (overrideIfExists || !sys.props.containsKey(name)) {
+    if (overrideIfExists || !sys.props.contains(name)) {
       sys.props += ((name, value))
     }
   }

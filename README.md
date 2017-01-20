@@ -31,13 +31,10 @@ Key Features
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 
-Core Requirements
------------------
+Runtime Requirements
+--------------------
 
-- Java 7+
-- Scala 2.11.x, 2.10.x
- 
-Gwen is written in [Scala](http://www.scala-lang.org) and runs on [Java](https://www.oracle.com/java).
+- Java SE 8 Runtime Environment
 
 Resources
 ---------

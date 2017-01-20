@@ -1,40 +1,34 @@
 LICENSE-THIRDPARTY
 ==================
 
-Dependency                                           | Version | License
----------------------------------------------------- | ------- | -----------------------------------------------------------------------------  
-joda-time                   joda-time                | 2.3     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.joda                    joda-convert             | 1.6     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-com.typesafe.scala-logging  scala-logging-api_2.11   | 2.1.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-com.typesafe.scala-logging  scala-logging-slf4j_2.11 | 2.1.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core  jackson-annotations      | 2.3.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core  jackson-core             | 2.3.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-com.fasterxml.jackson.core  jackson-databind         | 2.3.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.github.tototoshi        scala-csv_2.11           | 1.2.2   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe                config                   | 1.2.1   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-commons-codec               commons-codec            | 1.10    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-io.cucumber                 gherkin-jvm-deps         | 1.0.4   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.fusesource.jansi        jansi                    | 1.11    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play           play-datacommons_2.11    | 2.3.9   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play           play-functional_2.11     | 2.3.9   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play           play-iteratees_2.11      | 2.3.9   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play           play-json_2.11           | 2.3.9   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-log4j                       log4j                    | 1.2.17  | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-com.jayway.jsonpath         json-path                | 2.2.0   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-net.minidev                 accessors-smart          | 1.1     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-net.minidev                 json-smart               | 2.2.1   | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.scala-stm               scala-stm_2.11           | 0.7     | [BSD](https://github.com/nbronson/scala-stm/blob/master/LICENSE.txt)
-org.ow2.asm                 asm                      | 5.0.3   | [BSD License](http://asm.objectweb.org/license.html) 
-org.scala-lang              scala-library            | 2.11.8  | [BSD 3-Clause](http://www.scala-lang.org/license.html)
-org.scala-lang              scala-reflect            | 2.11.1  | [BSD 3-Clause](http://www.scala-lang.org/license.html)
-jline                       jline                    | 2.13    | [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
-com.github.scopt            scopt_2.11               | 3.3.0   | [MIT License](http://www.opensource.org/licenses/mit-license)
-io.cucumber                 gherkin                  | 4.0.0   | [MIT License](http://www.opensource.org/licenses/mit-license)
-org.slf4j                   slf4j-api                | 1.7.16  | [MIT License](http://www.slf4j.org/license.html)
-org.slf4j                   slf4j-log4j12            | 1.7.7   | [MIT License](http://www.slf4j.org/license.html)
-Twitter, Inc                Bootstrap                | 3.3.6   | [MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)
-The jQuery Foundation       JQuery                   | 2.1.4   | [MIT License](https://jquery.org/license)
-Petr Vostřel                Reel                     | 1.3     | [MIT License](https://github.com/pisi/Reel/blob/master/LICENSE.txt)
+Dependency                                               | Version   | License
+-------------------------------------------------------- | --------- | -----------------------------------------------------------------------------   
+com.typesafe.scala-logging      scala-logging_2.12       | 3.5.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.fasterxml.jackson.core      jackson-annotations      | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.fasterxml.jackson.core      jackson-core             | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
+com.fasterxml.jackson.core      jackson-databind         | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.fasterxml.jackson.datatype  jackson-datatype-jdk8    | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.fasterxml.jackson.datatype  jackson-datatype-jsr310  | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.github.scopt                scopt_2.12               | 3.5.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
+com.github.tototoshi            scala-csv_2.12           | 1.3.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.jayway.jsonpath             json-path                | 2.2.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.typesafe.play               play-functional_2.12     | 2.6.0-M1  | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.typesafe.play               play-json_2.12           | 2.6.0-M1  | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+commons-codec                   commons-codec            | 1.10      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+io.cucumber                     gherkin                  | 4.0.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
+io.cucumber                     gherkin-jvm-deps         | 1.0.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+jline                           jline                    | 2.14.2    | [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
+log4j                           log4j                    | 1.2.17    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+net.minidev                     accessors-smart          | 1.1       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+net.minidev                     json-smart               | 2.2.1     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+org.ow2.asm                     asm                      | 5.0.3     | [BSD License](http://asm.objectweb.org/license.html)
+org.scala-lang                  scala-library            | 2.12.1    | [BSD 3-Clause](https://www.scala-lang.org/license.html)
+org.scala-lang                  scala-reflect            | 2.12.1    | [BSD 3-Clause](https://www.scala-lang.org/license.html)
+org.slf4j                       slf4j-api                | 1.7.22    | [MIT License](http://www.slf4j.org/license.html)
+org.slf4j                       slf4j-log4j12            | 1.7.22    | [MIT License](http://www.slf4j.org/license.html) 
+Twitter, Inc                    Bootstrap                | 3.3.6     | [MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)
+The jQuery Foundation           JQuery                   | 2.1.4     | [MIT License](https://jquery.org/license)
+Petr Vostřel                    Reel                     | 1.3       | [MIT License](https://github.com/pisi/Reel/blob/master/LICENSE.txt)
 
 LICENSES
 --------
@@ -277,12 +271,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # [BSD 3-Clause](http://www.scala-lang.org/license.html)
 
 ```
-Copyright (c) 2002-2016 EPFL
-Copyright (c) 2011-2016 Typesafe, Inc.
+Copyright (c) 2002-2017 EPFL
+Copyright (c) 2011-2017 Lightbend, Inc.
 
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are  
+Redistribution and use in source and binary forms, with or without modification, are 
 permitted provided that the following conditions are met:
 
 - Redistributions of source code must retain the above copyright notice, this list of 

@@ -22,7 +22,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.Matchers
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import gwen.dsl.Failed
 import gwen.dsl.Feature
 import gwen.dsl.FeatureSpec
