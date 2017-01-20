@@ -12,6 +12,8 @@ startYear := Some(2014)
 
 scalaVersion := "2.12.1"
 
+crossPaths := false
+
 scalacOptions += "-feature"
 
 scalacOptions += "-language:postfixOps"
