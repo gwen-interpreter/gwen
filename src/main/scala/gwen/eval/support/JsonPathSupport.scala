@@ -37,7 +37,6 @@ trait JsonPathSupport {
       jsonPathError("Cannot evaluate Json path on empty source")
     }
     try {
-      println(JsonPath.parse(source).read(jsonpath))
       JsonPath.parse(source).read(jsonpath).toString
     } catch {
       case e: PathNotFoundException => ""

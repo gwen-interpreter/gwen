@@ -1,6 +1,11 @@
+2.1.0
+=====
+Jan 27, 2017
+- Added support for binding SQL query results to attributes
+- Introduced GWEN_CLASSPATH environment variable for adding external JARs to Gwen classpath
+
 2.0.0
 =====
-
 Jan 20, 2017
 - Update to Java 8 (Java 7 no longer supported)
 - Update from Scala 2.11.8 to 2.12.1

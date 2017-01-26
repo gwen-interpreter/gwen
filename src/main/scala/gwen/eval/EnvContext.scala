@@ -41,6 +41,7 @@ import gwen.dsl.StepKeyword
 import gwen.eval.support.RegexSupport
 import gwen.eval.support.XPathSupport
 import gwen.eval.support.JsonPathSupport
+import gwen.eval.support.SQLSupport
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -52,7 +53,7 @@ import gwen.eval.support.JsonPathSupport
   * @author Branko Juric
   */
 class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging 
-  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport {
+  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport with SQLSupport {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()

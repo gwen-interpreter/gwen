@@ -49,6 +49,7 @@ package gwen {
     def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
     def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
     def syntaxError(msg: String) = throw new SyntaxException(msg)
+    def sqlError(msg: String) = throw new SQLException(msg)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String) extends Exception(msg)
@@ -114,6 +115,9 @@ package gwen {
     
     /** Thrown when a syntax error is detected. */
     class SyntaxException(msg: String) extends Exception(msg)
+    
+    /** Thrown when an SQL error is detected. */
+    class SQLException(msg: String) extends Exception(msg)
 
   }
 }
