@@ -17,11 +17,9 @@
 package gwen.eval
 
 import java.io.File
-import scala.util.Try
 import gwen.GwenInfo
 import gwen.Predefs.Kestrel
 import gwen.dsl.Tag
-import gwen.Settings
 import gwen.UserOverrides
 import scopt.OptionParser
 import gwen.errors._
@@ -62,8 +60,8 @@ case class GwenOptions(
     * 
     *  @param info the gwen implementation info
     */
-  def commandString(info: GwenInfo) = args match {
-    case (Some(args)) => s"${info.implName}.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${args.mkString(" ")}"
+  def commandString(info: GwenInfo): String = args match {
+    case (Some(params)) => s"${info.implName}.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${params.mkString(" ")}"
     case _ => ""
   }
   
@@ -82,19 +80,19 @@ object GwenOptions {
     
     val parser = new OptionParser[GwenOptions]("gwen") {
     
-      version("version") text("Prints the implementation version")
+      version("version") text "Prints the implementation version"
     
-      help("help") text("Prints this usage text")
+      help("help") text "Prints this usage text"
 
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true) 
-      } text("Batch/server mode")
+      } text "Batch/server mode"
       
       opt[Unit]('|', "parallel") action {
         (_, c) => { 
           c.copy(parallel = true, batch = true)
         }
-      } text("Parallel batch execution mode)")
+      } text "Parallel batch execution mode)"
     
       opt[String]('p', "properties") action {
         (ps, c) => 
@@ -106,20 +104,20 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<properties files>") text("Comma separated list of properties file paths")
+      } valueName "<properties files>" text "Comma separated list of properties file paths"
     
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f)) 
-      } valueName("<report directory>") text("Evaluation report output directory")
+      } valueName "<report directory>" text "Evaluation report output directory"
       
       opt[String]('f', "formats") action {
         (fs, c) => 
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.withName(f)))
-      } valueName("<formats>") text(s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})")
+      } valueName "<formats>" text s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})"
       
       opt[String]('t', "tags") action {
         (ts, c) => 
-          c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.toString.startsWith("@"))))
+          c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.startsWith("@"))))
       } validate { ts =>
         ((ts.split(",") flatMap { t => 
           if (t.matches("""^(~?@\w+,?)+$""")) None 
@@ -127,18 +125,18 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<tags>") text("Comma separated list of @include or ~@exclude tags")
+      } valueName "<tags>" text "Comma separated list of @include or ~@exclude tags"
       
       opt[Unit]('n', "dry-run") action {
         (_, c) => c.copy(dryRun = true) 
-      } text("Do not evaluate steps on engine (validate for correctness only)")
+      } text "Do not evaluate steps on engine (validate for correctness only)"
       
       opt[File]('i', "input-data") action {
         (d, c) => c.copy(dataFile = Some(d))
       } validate { d => 
-        if (!(d.exists)) failure(s"Specified data file not found: $d")
+        if (!d.exists) failure(s"Specified data file not found: $d")
         else success
-      } valueName("<input data file>") text("Input data (CSV file with column headers)")
+      } valueName "<input data file>" text "Input data (CSV file with column headers)"
       
       opt[String]('m', "meta") action {
         (ms, c) => 
@@ -150,14 +148,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName("<meta files>") text("Comma separated list of meta files and directories")
+      } valueName "<meta files>" text "Comma separated list of meta files and directories"
     
       arg[File]("<features>") unbounded() optional() action { 
         (f, c) => 
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
-      } text("Space separated list of feature files and/or directories")
+      } text "Space separated list of feature files and/or directories"
     
     }
   

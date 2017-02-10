@@ -16,8 +16,6 @@
 
 package gwen.dsl
 
-import java.io.File
-
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
   * each node to a string and can be invoked as a function.  For example, 
@@ -43,35 +41,35 @@ object prettyPrint {
         background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
     case Feature(tags, name, description) =>
-      s"${formatTags("   ", tags)}   Feature: ${name}${formatDescription(description)}"
+      s"${formatTags("   ", tags)}   Feature: $name${formatDescription(description)}"
     case background @ Background(name, description, steps) =>
-      s"\n\nBackground: ${name}${formatDescription(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+      s"\n\nBackground: $name${formatDescription(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, name, description, background, steps, _) =>
       background.map(apply).getOrElse("") +
-      s"\n\n${formatTags("  ", tags)}  Scenario: ${name}${formatDescription(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+      s"\n\n${formatTags("  ", tags)}  Scenario: $name${formatDescription(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case Step(_, keyword, expression, evalStatus, _, _) =>
-      rightJustify(keyword.toString) + s"${keyword} ${expression}${formatStatus(evalStatus)}"
+      rightJustify(keyword.toString) + s"$keyword $expression${formatStatus(evalStatus)}"
   }
   
-  private def formatDescription(description: List[String]): String = 
-    (description.map { line =>
-      s"\n            ${line}"
-    }).mkString
+  private def formatDescription(description: List[String]): String =
+    description.map { line =>
+      s"\n            $line"
+    }.mkString
   
   /**
     * Formats the given tags to a string.
     * 
     * @param tags the tags to format
     */
-  private def formatTags(indent: String, tags: List[Tag]):String = tags.toList match {
-    case _ :: _ =>  s"${indent}${tags.mkString(" ")}\n"
+  private def formatTags(indent: String, tags: List[Tag]):String = tags match {
+    case _ :: _ =>  s"$indent${tags.mkString(" ")}\n"
     case _ => ""
   }
   
   private def formatStatus(status: EvalStatus): String = status match {
     case Pending => ""
-    case Failed(_, error) => s" # ${status}: ${error.getMessage()}" 
-    case _ => s" # ${status}"
+    case Failed(_, error) => s" # $status: ${error.getMessage}"
+    case _ => s" # $status"
   }
   
   /**
@@ -79,7 +77,7 @@ object prettyPrint {
     * ensures that when steps are listed one after the other, their
     * clauses line up.
     */
-  private def rightJustify(keyword: String) = (" " * (9  - keyword.length))
+  private def rightJustify(keyword: String) = " " * (9 - keyword.length)
   
   /**
     * Prints a list of nodes, giving each node a prefix and separator.
@@ -89,6 +87,6 @@ object prettyPrint {
     * @param separator the string separating each printed node
     */
   private def printAll[T](nodes: List[T], prefix: String, separator: String) =
-    nodes.map(prefix + _) mkString(separator)
+    nodes.map(prefix + _) mkString separator
 
 }

@@ -19,11 +19,10 @@ package gwen.dsl
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.util.Success
-import scala.util.Success
 
 class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
-  private val parse = parseFeatureSpec(_: String);
+  private val parse = parseFeatureSpec(_: String)
 
   private val featureString = """
    

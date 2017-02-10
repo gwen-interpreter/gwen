@@ -48,7 +48,7 @@ class FeatureScope extends ScopedData("feature") {
   override def set(name: String, value: String): ScopedData =
     super.set(name, value) tap { _=>
       currentScope foreach { cs =>
-        if (cs.findEntries { case (n, v) => n == name || n.startsWith(s"${name}/") } nonEmpty) {
+        if (cs.findEntries { case (n, _) => n == name || n.startsWith(s"$name/") } nonEmpty) {
           cs.flashScope.foreach { fs => 
             fs += ((name, value)) 
           }

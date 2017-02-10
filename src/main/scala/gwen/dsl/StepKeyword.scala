@@ -32,10 +32,10 @@ object StepKeyword extends Enumeration {
     * Map of step keywords keyed by name. This can be used to lookup
     * keywords by name.
     */
-  val names = values map { k => (k.toString -> k) } toMap
+  val names: Map[String, _root_.gwen.dsl.StepKeyword.Value] = values map { k => k.toString -> k } toMap
   
   /** List of all keyword string literals. */
-  val literals = List(Given, When, Then, And, But).map(_.toString)
+  val literals: List[String] = List(Given, When, Then, And, But).map(_.toString)
 
 }
 

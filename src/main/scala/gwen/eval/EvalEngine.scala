@@ -65,7 +65,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param env the environment context
     */
   def evaluateStep(step: Step, env: T): Step = {
-    val iStep = doEvaluate(step, env) { env.interpolate(_) }
+    val iStep = doEvaluate(step, env) { env.interpolate }
     (if (iStep.evalStatus.status != StatusKeyword.Failed) {
       logger.info(s"Evaluating Step: $iStep")
       val start = System.nanoTime - step.evalStatus.nanos
@@ -76,7 +76,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           Step(iStep, failure, env.attachments)
         case Success(stepDefOpt) =>
           (stepDefOpt match {  
-            case Some((stepDef, _)) if (env.paramScope.containsScope(stepDef.name)) => None
+            case Some((stepDef, _)) if env.paramScope.containsScope(stepDef.name) => None
             case stepdef => stepdef 
           }) match {
             case None =>
@@ -116,8 +116,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)
         Step(step, failure, env.attachments)
-    }) tap { step =>
-      env.resetAttachments
+    }) tap { _ =>
+      env.resetAttachments()
     }
   }
   
@@ -125,7 +125,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     logger.debug(s"Evaluating StepDef: ${stepDef.name}")
     env.paramScope.push(stepDef.name, params)
     try {
-      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { s =>
+      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { _ =>
         logger.debug(s"StepDef evaluated: ${stepDef.name}")
       }
     } finally {
@@ -170,8 +170,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param otherEngine the other engine
     */
   def +[U <: EnvContext](otherEngine: EvalEngine[U]) = new HybridEvalEngine[T, U] {
-    override val engineA = EvalEngine.this
-    override val engineB = otherEngine
+    override val engineA: EvalEngine[T] = EvalEngine.this
+    override val engineB: EvalEngine[U] = otherEngine
   }
   
   /**
@@ -183,7 +183,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @return the logged status message
     */
   private[eval] def logStatus(node: String, name: String, status: EvalStatus) = {
-      logStatusMsg(s"${if (SpecType.meta.toString() == node) Loaded else status} $node: $name", status)
+      logStatusMsg(s"${if (SpecType.meta.toString == node) Loaded else status} $node: $name", status)
   }
   
   private def logStatusMsg(msg: String, status: EvalStatus) = status match {
@@ -224,5 +224,5 @@ trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[Hybr
 }
 
 /** Signals a step that failed to execute. */
-class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
+class StepFailure(step: Step, cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: $step: ${cause.getMessage}", cause)
 

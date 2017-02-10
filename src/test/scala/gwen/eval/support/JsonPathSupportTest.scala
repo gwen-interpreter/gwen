@@ -19,9 +19,8 @@ package gwen.eval.support
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.JsonPathException
-import gwen.Predefs.Kestrel
 
-class JsonSupportTest extends FlatSpec with Matchers with JsonPathSupport {
+class JsonPathSupportTest extends FlatSpec with Matchers with JsonPathSupport {
 
   val JsonSource = """
   {

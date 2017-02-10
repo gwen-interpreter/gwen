@@ -38,7 +38,7 @@ object Predefs extends LazyLogging {
   
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
-    def tap[B](f: A => B) = { f(value); value } 
+    def tap[B](f: A => B): A = { f(value); value }
   }
   
   /** Implicit File IO functions. */
@@ -53,7 +53,7 @@ object Predefs extends LazyLogging {
           try {
             fw.write(text)
           } finally {
-            fw.close
+            fw.close()
           }
         }
       }
@@ -71,17 +71,17 @@ object Predefs extends LazyLogging {
             }
           } finally {
             try {
-              bis.close
+              bis.close()
             } finally {
-              bos.close
+              bos.close()
             }
           }
         }
       }
     
-    def extension: String = file.getName().lastIndexOf(".") match {
+    def extension: String = file.getName.lastIndexOf(".") match {
       case -1 => ""
-      case idx => file.getName().substring(idx + 1)
+      case idx => file.getName.substring(idx + 1)
     }
     
     def writeFile(source: File) {
@@ -91,13 +91,13 @@ object Predefs extends LazyLogging {
     def deleteDir() {
       val files = file.listFiles() 
       if (files != null) { 
-        files foreach { _.deleteFile }
+        files foreach { _.deleteFile() }
       }
       file.delete()
     }
     
     def deleteFile() {
-      if (file.isDirectory()) {
+      if (file.isDirectory) {
         file.deleteDir()
       } else {
         file.delete()
@@ -108,22 +108,22 @@ object Predefs extends LazyLogging {
       new File(toPath(targetDir, targetSubDir))
     
     def toPath(targetDir: File, targetSubDir: Option[String]): String =
-      targetDir.getPath() + File.separator + FileIO.encodeDir(file.getParent()) + targetSubDir.map(File.separator + _).getOrElse("")
+      targetDir.getPath + File.separator + FileIO.encodeDir(file.getParent) + targetSubDir.map(File.separator + _).getOrElse("")
     
     def toFile(targetDir: File, targetSubDir: Option[String]): File =
-      new File(toDir(targetDir, targetSubDir), file.getName())
+      new File(toDir(targetDir, targetSubDir), file.getName)
     
   }
   
   object FileIO {
     def encodeDir(dirpath: String): String = 
-      if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else "";
-    def isDirectory(location: File): Boolean = location != null && location.isDirectory()
-    def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile())
+      if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
+    def isDirectory(location: File): Boolean = location != null && location.isDirectory
+    def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
     def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
     def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
     def isDataFile(file: File): Boolean = hasFileExtension("csv", file)
-    def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName().endsWith(s".${extension}")
+    def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName.endsWith(s".$extension")
     def recursiveScan(dir: File, extension: String): List[File] = {
       val files = dir.listFiles
       val metas = files.filter(file => hasFileExtension(extension, file)).toList
@@ -143,7 +143,7 @@ object Predefs extends LazyLogging {
       error.printStackTrace(pw)
       pw.flush()
       pw.close()
-      sw.toString()
+      sw.toString
     }
     
   }
@@ -153,7 +153,7 @@ object Predefs extends LazyLogging {
     * incoming steps against regular expressions and capture their parameters.
     */
   implicit class RegexContext(val sc: StringContext) extends AnyVal {
-    def r = { 
+    def r: Regex = {
       logger.debug(s"Matched: ${sc.parts.mkString}") 
       new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*) 
     }
@@ -199,19 +199,19 @@ object Predefs extends LazyLogging {
   
     }
 
-    def padWithZeroes(num: Int) = "%04d".format(num)
-    def formatDuration(duration: Duration) = DurationFormatter.format(duration)
-    def escapeHtml(text: String) = 
+    def padWithZeroes(num: Int): String = "%04d".format(num)
+    def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
+    def escapeHtml(text: String): String =
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
-    def escapeXml(text: String) = 
+    def escapeXml(text: String): String =
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
   }
   
   object DurationOps {
     import scala.concurrent.duration._
-    def sum(durations: Seq[Duration]) = 
+    def sum(durations: Seq[Duration]): Duration =
       if (durations.isEmpty) Duration.Zero
-      else if (durations.size == 1) durations(0)
+      else if (durations.size == 1) durations.head
       else durations.reduce(_+_)
   }
   

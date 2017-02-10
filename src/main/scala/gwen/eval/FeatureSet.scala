@@ -39,8 +39,8 @@ class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit
   override def next(): FeatureUnit = {
     val (values, index) = dataFeed.next
     val data = headers zip values
-    val dataRecord = new DataRecord(dataFile.getPath(), index, data.toList)
-    logger.debug(s"${dataRecord}: $data")
+    val dataRecord = new DataRecord(dataFile.getPath, index, data.toList)
+    logger.debug(s"$dataRecord: $data")
     FeatureUnit(unit.featureFile, unit.metaFiles, Some(dataRecord)) tap { unit => 
       logger.info(s"Mapped $unit")
     }

@@ -23,7 +23,7 @@ import gwen.dsl.GherkinParser
 
 class TagsFilterTest extends FlatSpec with Matchers with GherkinParser { 
 
-  private val parse = parseFeatureSpec(_: String);
+  private val parse = parseFeatureSpec(_: String)
   
   private val featureString = """
       
@@ -122,7 +122,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   "Include and exclude of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
       TagsFilter.filter(source, List(("@play", true), ("@play", false))) match {
-        case Some(target) => fail("None expected")
+        case Some(_) => fail("None expected")
         case None => // success
       }
   }
@@ -155,7 +155,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   "Exclude and include of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
       TagsFilter.filter(source, List(("@play", false), ("@play", true))) match {
-        case Some(target) => fail("None expected")
+        case Some(_) => fail("None expected")
         case None => // success
       }
   }

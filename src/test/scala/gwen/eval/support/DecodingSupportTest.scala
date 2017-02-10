@@ -19,7 +19,6 @@ package gwen.eval.support
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.DecodingException
-import org.apache.commons.codec.binary.Base64
 
 class DecodingSupportTest extends FlatSpec with Matchers with DecodingSupport {
 

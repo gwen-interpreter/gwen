@@ -22,7 +22,6 @@ import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.dsl.Tag
 import org.scalatest.FlatSpec
-import gwen.errors.AmbiguousCaseException
 import gwen.errors.InvalidStepDefException
 import gwen.errors.AmbiguousCaseException
 
@@ -61,7 +60,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef)
     
     env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
-    env.reset
+    env.reset()
     env.getStepDef("""I search for "gwen"""") should be (None)
     
   }
@@ -140,7 +139,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv
     env.featureScope.set("engineName", "Gwen-Core")
     env.featureScope.get("engineName") should be ("Gwen-Core")
-    env.reset
+    env.reset()
     env.featureScope.getOpt("engineName") should be (None)
     env.featureScope.scope should be ("feature")
   }
@@ -179,28 +178,28 @@ class EnvContextTest extends FlatSpec with Matchers {
   "json.toString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.reset
+    env.reset()
     env.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.reset
+    env.reset()
     env.visibleScopes.json.toString should be ("""{"scopes":[]}""")
   }
   
   "json.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.close
+    env.close()
     env.json.toString should be ("""{"scopes":[]}""")
   }
   
   "visibleScopes.json.toString on closed env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.close
+    env.close()
     env.visibleScopes.json.toString should be ("""{"scopes":[]}""")
   }
   
@@ -234,7 +233,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   }
   
   "non dry run" should "call instruction" in {
-    val env = newEnv(GwenOptions(dryRun = false))
+    val env = newEnv(GwenOptions())
     intercept[Exception] {
       env.execute(sys.error("Execution expected"))
     }

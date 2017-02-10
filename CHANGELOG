@@ -1,6 +1,6 @@
 2.1.0
 =====
-Jan 27, 2017
+Feb 10, 2017
 - Added support for binding SQL query results to attributes
 - Introduced GWEN_CLASSPATH environment variable for adding external JARs to Gwen classpath
 

@@ -17,10 +17,8 @@
 package gwen.eval
 
 import java.io.File
-import scala.Stream
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
-import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO._
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
@@ -62,10 +60,10 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     */
   def read(location: File, dataFile: Option[File]): Stream[FeatureUnit] = {
       val inputs = 
-        if (location.getParentFile() == null) {
-          discoverInputs(location.getAbsoluteFile().getParentFile(), (Nil, dataFile))
+        if (location.getParentFile == null) {
+          discoverInputs(location.getAbsoluteFile.getParentFile, (Nil, dataFile))
         } else {
-          discoverInputsInPath(location.getParentFile(), (Nil, dataFile)) match { 
+          discoverInputsInPath(location.getParentFile, (Nil, dataFile)) match {
             case (metas, data) => (metas.reverse, data) 
           }
         }
@@ -85,7 +83,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
       location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
-      val unit = new FeatureUnit(location, UserOverrides.mergeMetaFiles(metaFiles, inputMeta), None)
+      val unit = FeatureUnit(location, UserOverrides.mergeMetaFiles(metaFiles, inputMeta), None)
       dataFile match {
         case Some(file) => new FeatureSet(unit, file).toStream
         case None =>
@@ -119,7 +117,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
       case Nil => inputs1
       case data :: Nil => (inputs1._1, Some(data))
       case _ => 
-        if (dataFile.isEmpty) ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName()} directory but found ${datas.size}")
+        if (dataFile.isEmpty) ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName} directory but found ${datas.size}")
         else inputs1
     }
   }

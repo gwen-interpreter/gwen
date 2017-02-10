@@ -18,7 +18,6 @@ package gwen.dsl
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import scala.util.Failure
 import scala.util.Success
 
 class BackgroundParserTest extends FlatSpec with Matchers with GherkinParser {

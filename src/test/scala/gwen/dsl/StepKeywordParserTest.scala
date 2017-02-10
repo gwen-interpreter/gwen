@@ -18,12 +18,11 @@ package gwen.dsl
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import scala.util.Failure
 import scala.util.Success
 
 class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseStep(_: String).map(_.keyword);
+  private val parse = parseStep(_: String).map(_.keyword)
   
   "Valid step keywords" should "parse" in {
     StepKeyword.values foreach { keyword =>

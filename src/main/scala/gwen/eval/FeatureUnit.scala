@@ -30,11 +30,11 @@ case class FeatureUnit(featureFile: File, metaFiles: List[File], dataRecord: Opt
 /**
   * Captures a data record used to initialise feature level data bindings
   * 
-  *  @param dataFileName the name of the source data file
+  *  @param dataFilePath the path to the source data file
   *  @param recordNo the current data record number
   *  @param data the current data  
   */
 class DataRecord(val dataFilePath: String, val recordNo: Int, val data: List[(String, String)]) {
-  override def toString = s"DataRecord(${dataFilePath}[$recordNo])"
+  override def toString = s"DataRecord($dataFilePath[$recordNo])"
 }
 

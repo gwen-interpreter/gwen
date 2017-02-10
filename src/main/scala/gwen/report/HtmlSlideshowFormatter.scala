@@ -50,7 +50,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
       Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>
-    ${formatHtmlHead(s"Slideshow - ${featureName}", rootPath)}
+    ${formatHtmlHead(s"Slideshow - $featureName", rootPath)}
     ${formatJsHeader(rootPath)}
   </head>
   <body>
@@ -79,7 +79,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${title}</title>
+    <title>$title</title>
     <link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
     <link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
   
@@ -101,13 +101,13 @@ object HtmlSlideshowFormatter {
       <button id="step-fwd-btn" class="btn btn-default btn-lg" title="Step forward"><span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></button>
       <button id="fast-fwd-btn" class="btn btn-default btn-lg" title="Forward to end"><span class="glyphicon glyphicon-fast-forward" aria-hidden="true"></span></button>
       <select id="current-frame" title="Jump to..">${(for(i <- 1 to screenshots.length) yield s"""
-        <option>${i}</option>""").mkString}        
+        <option>$i</option>""").mkString}
       </select> of ${screenshots.length}
       <span style="margin-left: 30px;"> </span>
       <button id="decrease-speed-btn" class="btn btn-default btn-lg" title="Decrease Speed"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
       <button id="increase-speed-btn" class="btn btn-default btn-lg" title="Increase Speed"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
       <select id="frames-per-sec" title="Frames per second..">${(for(i <- 1 to maxFramesPerSec(screenshots) ) yield s"""
-        <option>${i}</option>""").mkString}        
+        <option>$i</option>""").mkString}
       </select> frames/sec
     </div>
   </p>

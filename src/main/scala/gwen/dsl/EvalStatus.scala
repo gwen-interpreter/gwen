@@ -17,7 +17,6 @@
 package gwen.dsl
 
 import scala.concurrent.duration._
-import java.text.DecimalFormat
 import java.util.Date
 import gwen.Predefs.Formatting._
 
@@ -36,9 +35,9 @@ sealed trait EvalStatus {
   /** Must be overriden to return an emoticon. */
   def emoticon: String
   
-  override def toString = 
+  override def toString: String =
     if (nanos > 0) {
-      s"[${formatDuration(duration)}] ${status}"
+      s"[${formatDuration(duration)}] $status"
     } else status.toString
 }
 
@@ -47,7 +46,7 @@ sealed trait EvalStatus {
   * 
   * @param nanos the duration in nanoseconds
   */
-case class Passed(val nanos: Long) extends EvalStatus {
+case class Passed(nanos: Long) extends EvalStatus {
   val status = StatusKeyword.Passed
   override def exitCode = 0
   override def emoticon = "[:)]"
@@ -59,7 +58,7 @@ case class Passed(val nanos: Long) extends EvalStatus {
   * @param nanos the duration in nanoseconds
   * @param error the error message
   */
-case class Failed(val nanos: Long, val error: Throwable) extends EvalStatus {
+case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
   val timestamp = new Date()
   override def exitCode = 1
@@ -76,8 +75,6 @@ case object Skipped extends EvalStatus {
 
 /**
   * Defines the pending status.
-  * 
-  * @param duration the duration (default value is zero)
   */
 case object Pending extends EvalStatus {
   val nanos = 0L 

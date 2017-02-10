@@ -16,14 +16,14 @@
 
 package gwen.eval
 
-import gwen.dsl.FeatureSpec
+import gwen.dsl.{EvalStatus, FeatureSpec, StatusKeyword}
 import gwen.report.ReportFormat
 import java.io.File
+
 import scala.concurrent.duration._
 import java.util.Date
-import gwen.dsl.StatusKeyword
+
 import gwen.Predefs.Formatting._
-import scala.util.Try
 import gwen.Predefs.DurationOps
 
 /**
@@ -43,15 +43,15 @@ class FeatureResult(
   val finished: Date) {
   
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
-  lazy val screenshots = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-  lazy val isMeta = spec.featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)
+  lazy val screenshots: List[File] = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+  lazy val isMeta: Boolean = spec.featureFile.exists(_.getName.endsWith(".meta"))
   lazy val summary = FeatureSummary(this)
-  lazy val evalStatus = spec.evalStatus
-  lazy val duration = evalStatus.duration
+  lazy val evalStatus: EvalStatus = spec.evalStatus
+  lazy val duration: Duration = evalStatus.duration
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   
   private[eval] lazy val scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
   private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: ${started}, Finished: ${finished}""".stripMargin  
+  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }
 

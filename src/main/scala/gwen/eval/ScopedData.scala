@@ -18,15 +18,12 @@ package gwen.eval
 
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
-import play.api.libs.json.Json
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, Json}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import com.typesafe.scalalogging.LazyLogging
-import play.api.libs.json.JsArray
-import play.api.libs.json.JsObject
 import gwen.errors._
-import scala.collection.mutable.Map
-import scala.collection.mutable.MutableList
+
+import scala.collection.mutable
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
@@ -69,7 +66,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * new  attribute is added (by calling `set`), it is appended to the end of 
     * the list.
     */
-  private val atts = MutableList[(String, String)]()
+  private val atts = mutable.MutableList[(String, String)]()
   
   val isFeatureScope = false
   
@@ -78,14 +75,14 @@ class ScopedData(val scope: String) extends LazyLogging {
     *  scope when global attributes are changed so that they become accessible in 
     *  the current non feature scope). 
     */
-  private[eval] var flashScope: Option[Map[String, String]] = None
+  private[eval] var flashScope: Option[mutable.Map[String, String]] = None
   
   /**
     * Checks if the scoped data is empty.
     * 
     * @return true if empty; false otherwise
     */
-  def isEmpty = atts.isEmpty && flashScope.isEmpty
+  def isEmpty: Boolean = atts.isEmpty && flashScope.isEmpty
 
   /**
     * Finds and retrieves an attribute value from the scope by name.  If 
@@ -95,7 +92,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to find
     * @return Some(value) if the attribute value is found or None otherwise
     */
-  def getOpt(name: String): Option[String] = findEntry { case (n, v) => n == name } tap { value => 
+  def getOpt(name: String): Option[String] = findEntry { case (n, _) => n == name } tap { value =>
     value.foreach { nvp =>
       logger.debug(s"Found $nvp in scope/$scope")
     }
@@ -118,7 +115,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to find
     * @return a sequence of Strings of values are found or Nil otherwise
     */
-  def getAll(name: String): Seq[String] = findEntries { case (n, v) => n == name } tap { nvps =>
+  def getAll(name: String): Seq[String] = findEntries { case (n, _) => n == name } tap { nvps =>
     logger.debug(s"Found [${nvps.mkString(",")}]' in scope/$scope")
   } map(_._2)
 
@@ -133,7 +130,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *         newly added attribute
     */
   def set(name: String, value: String): ScopedData = {
-    if (getOpt(name).map(_ != value).getOrElse(true)) { 
+    if (!getOpt(name).contains(value)) {
       (name, value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
         atts += nvp
@@ -189,7 +186,7 @@ class ScopedData(val scope: String) extends LazyLogging {
   /**
     * Returns this entire scope as a JSON object.
     */
-  def json =
+  def json: JsObject =
     Json.obj("scope" -> scope, "atts" -> (atts ++ flashScope.map(_.toList).getOrElse(Nil)).map {case (n, v) => Json.obj(n -> v) })
 
 }
@@ -214,6 +211,6 @@ object ScopedData {
     * @param name the scope name 
     * @param atts the list of attributes to include in the scope
     */
-  def apply(name: String, atts: List[(String, String)]) = new ScopedData(name) tap { _.atts ++= atts }
+  def apply(name: String, atts: List[(String, String)]): ScopedData = new ScopedData(name) tap { _.atts ++= atts }
 
 }

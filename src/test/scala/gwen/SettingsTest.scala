@@ -23,7 +23,7 @@ import java.util.Properties
 class SettingsTest extends FlatSpec with Matchers {
 
   "user.home system property" should "be available" in {
-    Settings.getOpt("user.home") should not be (None)
+    Settings.getOpt("user.home") should not be None
   }
   
   "inline properties" should "resolve" in {
@@ -47,7 +47,7 @@ class SettingsTest extends FlatSpec with Matchers {
   "existing system property" should "not be overriden when override flag is false" in {
     sys.props.put("gwen.web.browser", "firefox")
     try {
-      Settings.add("gwen.web.browser", "chrome", false)
+      Settings.add("gwen.web.browser", "chrome", overrideIfExists = false)
       Settings.get("gwen.web.browser") should be ("firefox")
     } finally {
       sys.props -= "gwen.web.browser"
@@ -57,7 +57,7 @@ class SettingsTest extends FlatSpec with Matchers {
   "existing system property" should "be overriden when override flag is true" in {
     sys.props.put("gwen.web.browser", "firefox")
     try {
-      Settings.add("gwen.web.browser", "chrome", true)
+      Settings.add("gwen.web.browser", "chrome", overrideIfExists = true)
       Settings.get("gwen.web.browser") should be ("chrome")
     } finally {
       sys.props -= "gwen.web.browser"

@@ -48,34 +48,34 @@ trait JUnitReportFormatter extends ReportFormatter {
     
     val scenarios = result.spec.scenarios.filter(!_.isStepDef)
     val hostname = s""" hostname="${escapeXml(InetAddress.getLocalHost.getHostName)}""""
-    val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath())).getOrElse("")
-    val name = s""" name="${packageName}.Feature: ${escapeXml(result.spec.feature.name)}""""
-    val pkg = result.spec.featureFile.map(f => s""" package="${packageName}"""").getOrElse("")
+    val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath)).getOrElse("")
+    val name = s""" name="$packageName.Feature: ${escapeXml(result.spec.feature.name)}""""
+    val pkg = result.spec.featureFile.map(_ => s""" package="$packageName"""").getOrElse("")
     val scenarioCount = scenarios.length
-    val tests = s""" tests="${scenarioCount}""""
+    val tests = s""" tests="$scenarioCount""""
     val counts = result.summary.scenarioCounts
-    val errorCount = counts.get(StatusKeyword.Failed).getOrElse(0)
-    val errors = s""" errors="${errorCount}""""
-    val skipped = s""" skipped="${counts.get(StatusKeyword.Skipped).getOrElse(0) + counts.get(StatusKeyword.Pending).getOrElse(0)}""""
+    val errorCount = counts.getOrElse(StatusKeyword.Failed, 0)
+    val errors = s""" errors="$errorCount""""
+    val skipped = s""" skipped="${counts.getOrElse(StatusKeyword.Skipped, 0) + counts.getOrElse(StatusKeyword.Pending, 0)}""""
     val time = s""" time="${result.elapsedTime.toNanos.toDouble / 1000000000d}""""
     val timestamp = s""" timestamp="${new DateTime(result.finished).withZone(DateTimeZone.UTC)}""""
     
     Some(s"""<?xml version="1.0" encoding="UTF-8" ?>
-<testsuite${hostname}${name}${pkg}${tests}${errors}${skipped}${time}${timestamp}>
-    <properties>${(sys.props.map { case (name, value) => s"""
-        <property name="${escapeXml(name)}" value="${escapeXml(value)}"/>"""}).mkString}
-    </properties>${(scenarios.zipWithIndex.map{case (scenario, idx) => s"""
+<testsuite$hostname$name$pkg$tests$errors$skipped$time$timestamp>
+    <properties>${sys.props.map { case (n, v) => s"""
+        <property name="${escapeXml(n)}" value="${escapeXml(v)}"/>"""}.mkString}
+    </properties>${scenarios.zipWithIndex.map{case (scenario, idx) => s"""
     <testcase name="Scenario ${padWithZeroes(idx + 1)}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {
     case Failed(_, error) => 
       s""">
-        <error type="${escapeXml(error.getClass().getName())}" message="${escapeXml(error.writeStackTrace)}"/>
+        <error type="${escapeXml(error.getClass.getName)}" message="${escapeXml(error.writeStackTrace)}"/>
     </testcase>"""
     case Skipped | Pending => 
       s""">
         <skipped/>
     </testcase>"""
     case _ => "/>"
-  }}"""}).mkString}
+  }}"""}.mkString}
 </testsuite>
 """)
   }

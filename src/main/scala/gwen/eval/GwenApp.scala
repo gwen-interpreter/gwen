@@ -17,9 +17,6 @@
 package gwen.eval
 
 import gwen.Predefs.Kestrel
-import scala.util.Success
-import scala.util.Failure
-import gwen.GwenInfo
 
 /**
   * Gwen interpreter application.
@@ -42,21 +39,21 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     * Runs the interpreter with the given options
     * 
     * @param options the command line options
-    * @returns 0 if successful; 1 otherwise 
+    * @return 0 if successful; 1 otherwise
     */  
   private[eval] def run(options: GwenOptions)(implicit launcher: GwenLauncher[T] = new GwenLauncher(interpreter)): Int = {
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
       launcher.run(options, envOpt).exitCode tap { _ =>
         envOpt foreach {
-          if (!options.features.isEmpty || !options.metas.isEmpty) {
+          if (options.features.nonEmpty || options.metas.nonEmpty) {
             printBanner("")
           }
           createRepl(_).run() 
         }
       }
     } finally {
-      envOpt foreach { interpreter.close(_) }
+      envOpt foreach { interpreter.close }
     }
   }
   

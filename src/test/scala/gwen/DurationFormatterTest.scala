@@ -16,7 +16,6 @@
 
 package gwen
 
-import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.concurrent.duration.Duration

@@ -24,18 +24,18 @@ import java.util.NoSuchElementException
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class featureStreamTest extends FlatSpec with Matchers {
+class FeatureStreamTest extends FlatSpec with Matchers {
   
   val featureStream = new FeatureStream(Nil)
   
-  val rootDir = new File("target" + File.separator + "features") tap { _.mkdirs() }
+  val rootDir: File = new File("target" + File.separator + "features") tap { _.mkdirs() }
   
   "Directory with no feature files" should "result in empty suite" in {
     featureStream.read(createDir("dir1"), None).size should be (0)
   }
   
   "Directory with non feature files" should "return empty suite" in {
-    createDir("dir2");
+    createDir("dir2")
     featureStream.read(createFile("dir2/file.meta"), None).size should be (0)
     featureStream.read(createFile("dir2/file.text"), None).size should be (0)
     featureStream.read(createFile("dir2/feature"), None).size should be (0)
@@ -87,7 +87,7 @@ class featureStreamTest extends FlatSpec with Matchers {
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -104,7 +104,7 @@ class featureStreamTest extends FlatSpec with Matchers {
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -121,7 +121,7 @@ class featureStreamTest extends FlatSpec with Matchers {
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -139,7 +139,7 @@ class featureStreamTest extends FlatSpec with Matchers {
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -162,14 +162,14 @@ class featureStreamTest extends FlatSpec with Matchers {
     val metaFile1   = createFile("dir6/file1.meta")
     val metaFile2   = createFile("dir6/dir7/file2.meta")
     val featureFile = createFile("dir6/dir7/file.feature")
-    val dataFile    = createDataFile("dir6/dir7/file.csv");
+    val dataFile    = createDataFile("dir6/dir7/file.csv")
     val suite = featureStream.read(dir6, None)
     suite match {
       case unit #:: Stream() => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -179,17 +179,17 @@ class featureStreamTest extends FlatSpec with Matchers {
     val dir61       =  createDir("dir61")
     val dir71       =  createDir("dir61/dir71")
     val metaFile1   = createFile("dir61/file1.meta")
-    val dataFile1   = createDataFile("dir61/file.csv");
+    val dataFile1   = createDataFile("dir61/file.csv")
     val metaFile2   = createFile("dir61/dir71/file2.meta")
     val featureFile = createFile("dir61/dir71/file.feature")
-    val dataFile2   = createDataFile("dir61/dir71/file.csv");
+    val dataFile2   = createDataFile("dir61/dir71/file.csv")
     val suite = featureStream.read(dir61, None)
     suite match {
       case unit #:: Stream() => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile2, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -200,16 +200,16 @@ class featureStreamTest extends FlatSpec with Matchers {
     val dir72       =  createDir("dir62/dir72")
     val featureFile = createFile("dir62/file.feature")
     val metaFile1   = createFile("dir62/file1.meta")
-    val dataFile1   = createDataFile("dir62/file.csv");
+    val dataFile1   = createDataFile("dir62/file.csv")
     val metaFile2   = createFile("dir62/dir72/file2.meta")
-    val dataFile2   = createDataFile("dir62/dir72/file.csv");
+    val dataFile2   = createDataFile("dir62/dir72/file.csv")
     val suite = featureStream.read(dir62, None)
     suite match {
       case unit #:: Stream() => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
-        unit.dataRecord should not be (None)
+        unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
@@ -384,7 +384,7 @@ class featureStreamTest extends FlatSpec with Matchers {
   
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
-    file.getParentFile().mkdirs()
+    file.getParentFile.mkdirs()
     file.createNewFile()
     file
   }
@@ -407,7 +407,7 @@ class featureStreamTest extends FlatSpec with Matchers {
   
   private def assertMetaFiles(expecteds: List[File], actuals: List[File]) {
     expecteds zip actuals foreach { case (expected, actual) =>
-      val path = actual.getPath() 
+      val path = actual.getPath
       path.startsWith("target") should be (true)
       path should be (expected.getPath)
     }

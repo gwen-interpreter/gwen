@@ -64,7 +64,7 @@ class XPathSupportTest extends FlatSpec with Matchers with XPathSupport {
     intercept[XPathException] {
       compact(evaluateXPath("""root/parent/middleName""",XmlSource, XMLNodeType.node))
     } tap { error =>
-      error.getMessage() should be ("No such node: root/parent/middleName")
+      error.getMessage should be ("No such node: root/parent/middleName")
     }
   }
   
@@ -72,7 +72,7 @@ class XPathSupportTest extends FlatSpec with Matchers with XPathSupport {
     intercept[XPathException] {
       compact(evaluateXPath("root/parent/ancestors",XmlSource, XMLNodeType.nodeset))
     } tap { error =>
-      error.getMessage() should be ("No such nodeset: root/parent/ancestors")
+      error.getMessage should be ("No such nodeset: root/parent/ancestors")
     }
   }
   

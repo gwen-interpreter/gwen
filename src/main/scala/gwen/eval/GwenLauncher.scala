@@ -23,13 +23,10 @@ import gwen.Predefs.FileIO
 import gwen.UserOverrides
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
-import gwen.dsl.FeatureSpec
 import gwen.report.ReportGenerator
-import scala.concurrent.duration.Duration
 import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
 import java.util.concurrent.atomic.AtomicInteger
-import gwen.dsl.Passed
 import gwen.Settings
 
 /**
@@ -53,7 +50,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val startNanos = System.nanoTime
     try {
       Settings.loadAll(UserOverrides.addUserProperties(options.properties))
-      val metaFiles = options.metas.flatMap(m => if (m.isFile()) List(m) else FileIO.recursiveScan(m, "meta"))
+      val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
@@ -65,8 +62,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             optEnv.toList flatMap { env =>
              interpreter.loadMeta(metaFiles, Nil, env).map(_.spec.evalStatus)
             }
-          } tap { status =>
-            if (!options.features.isEmpty) {
+          } tap { _ =>
+            if (options.features.nonEmpty) {
               logger.info("No features found in specified files and/or directories!")
             }
           }
@@ -84,10 +81,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   
   /**
     * Executes all feature units in the given stream.
-    * 
-    * @param startNanos the start time in nano seconds
+    *
     * @param options the command line options
-    * @param metaFiles the meta files
     * @param featureStream the feature stream to execute
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
@@ -149,7 +144,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
-      val targetUnit = new FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord)
+      val targetUnit = FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord)
       unit.dataRecord foreach { record =>
         record.data foreach { case (name, value) =>
           env.featureScope.set(name, value)
@@ -159,7 +154,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
-      if (!envOpt.isDefined) { interpreter.close(env) }
+      if (envOpt.isEmpty) { interpreter.close(env) }
     }
   }
   
@@ -181,7 +176,6 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   }
   
   private def logFeatureStatus(result: FeatureResult) {
-    val status = result.spec.evalStatus
     logger.info("")
     logger.info(result.toString)
     logger.info("")

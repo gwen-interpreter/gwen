@@ -17,7 +17,6 @@
 package gwen.dsl
 
 import java.io.File
-import gwen.Predefs.Kestrel
 import gwen.errors._
 import scala.collection.JavaConverters._
 
@@ -88,7 +87,7 @@ case class FeatureSpec(
     }
   }
   
-  override def toString = feature.name 
+  override def toString: String = feature.name
 }
 object FeatureSpec {
   def apply(spec: gherkin.ast.GherkinDocument): FeatureSpec = {
@@ -111,7 +110,7 @@ object FeatureSpec {
   * @author Branko Juric
   */
 case class Feature(tags: List[Tag], name: String, description: List[String]) extends SpecNode {
-  override def toString = name
+  override def toString: String = name
 }
 object Feature {
   def apply(feature: gherkin.ast.Feature): Feature =
@@ -136,7 +135,7 @@ case class Background(name: String, description: List[String], steps: List[Step]
   /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
-  override def toString = name
+  override def toString: String = name
   
 }
 
@@ -167,15 +166,15 @@ case class Scenario(tags: List[Tag], name: String, description: List[String], ba
     * Returns a list containing all the background steps (if any) followed by 
     * all the scenario steps.
     */
-  def allSteps = background.map(_.steps).getOrElse(Nil) ++ steps
+  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ steps
   
-  def isStepDef = tags.contains(Tag.StepDefTag)
+  def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
   
   /** Returns the evaluation status of this scenario. */
   override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
 
   
-  override def toString = name
+  override def toString: String = name
   
 }
 object Scenario {
@@ -221,7 +220,7 @@ object Tag {
     *  @param value the string value to convert
     *  @throws gwen.errors.InvalidTagException if the tag string is invalid 
     */
-  implicit def string2Tag(value: String) = value match {
+  implicit def string2Tag(value: String): Tag = value match {
     case Regex(name) => Tag(name)
     case _ => invalidTagError(value)
   }
@@ -238,7 +237,7 @@ object Tag {
   * @param pos the location of the node in the source
   * @param keyword keyword identifier (Given, When, Then, etc..)
   * @param expression free format step expression line (that is: the text following the step keyword)
-  * @param evalStatus optional evaluation status (default = Pending)
+  * @param status optional evaluation status (default = Pending)
   * @param attachments file attachments as name-file pairs (default = Nil)
   * @param stepDef optional evaluated step def
   *    

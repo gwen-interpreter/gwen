@@ -38,15 +38,15 @@ case class FeatureSummary(
   scenarioCounts: Map[StatusKeyword.Value, Int], 
   stepCounts: Map[StatusKeyword.Value, Int]) {
   
-  lazy val started = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
-  lazy val finished = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
-  lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
+  lazy val started: Date = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
+  lazy val finished: Date = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
+  lazy val elapsedTime: Duration = Duration(finished.getTime - started.getTime, MILLISECONDS)
   
   private lazy val statuses = results.map(_.spec.evalStatus)
-  lazy val evalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
-  lazy val resultsElapsedTime = DurationOps.sum(results.map(_.elapsedTime))
-  lazy val overhead = elapsedTime - resultsElapsedTime
-  lazy val featureCounts = StatusKeyword.countsByStatus(statuses)
+  lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
+  lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
+  lazy val overhead: Duration = elapsedTime - resultsElapsedTime
+  lazy val featureCounts: Map[_root_.gwen.dsl.StatusKeyword.Value, Int] = StatusKeyword.countsByStatus(statuses)
   
   /** 
     * Adds the given feature result to the current summary (accumulates). 
@@ -61,30 +61,30 @@ case class FeatureSummary(
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.reportables flatMap { status => 
-      val a = countsA.get(status).getOrElse(0)
-      val b = countsB.get(status).getOrElse(0)
+      val a = countsA.getOrElse(status, 0)
+      val b = countsB.getOrElse(status, 0)
       val sum = a + b
       if (sum > 0) Some((status, sum)) else None
     }).toMap
     
-  override def toString = { 
-    val featureCount = featureCounts.map(_._2).sum
-    val scenarioCount = scenarioCounts.map(_._2).sum
-    val stepCount = stepCounts.map(_._2).sum
-    s"""|${featureCount} feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
-        |${scenarioCount} scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
-        |${stepCount} step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
+  override def toString: String = {
+    val featureCount = featureCounts.values.sum
+    val scenarioCount = scenarioCounts.values.sum
+    val stepCount = stepCounts.values.sum
+    s"""|$featureCount feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
+        |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
+        |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
         |[${formatDuration(resultsElapsedTime)}] ${evalStatus.status} ${evalStatus.emoticon}
         |[${formatDuration(overhead)}] Overhead
-        |[${formatDuration(elapsedTime)}] Elapsed, Started: ${started}, Finished: ${finished}""".stripMargin
+        |[${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
     StatusKeyword.reportables map { status =>
-      val count = counts.get(status).getOrElse(0)
-      s"${status} ${count}"
-    } mkString(", ")
+      val count = counts.getOrElse(status, 0)
+      s"$status $count"
+    } mkString ", "
   
 }
 

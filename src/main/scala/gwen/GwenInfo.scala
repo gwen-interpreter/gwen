@@ -20,7 +20,7 @@ package gwen
 trait GwenInfo {
   lazy val implName: String = Option(this.getClass.getPackage.getImplementationTitle).getOrElse("gwen")
   lazy val implVersion: String = Option(this.getClass.getPackage.getImplementationVersion).getOrElse("-SNAPSHOT")
-  lazy val implHome: String = s"https://github.com/gwen-interpreter/${implName}"
-  lazy val releaseNotesUrl = if (!implVersion.endsWith("-SNAPSHOT")) Some(s"${implHome}/releases/tag/v${implVersion}") else None
+  lazy val implHome: String = s"https://github.com/gwen-interpreter/$implName"
+  lazy val releaseNotesUrl: Option[String] = if (!implVersion.endsWith("-SNAPSHOT")) Some(s"$implHome/releases/tag/v$implVersion") else None
   lazy val gwenHome: String = "https://github.com/gwen-interpreter"
 }

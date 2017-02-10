@@ -36,7 +36,7 @@ import jline.console.completer.AggregateCompleter
   */
 class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) {
 
-  private val history = new FileHistory(new File(".history").getAbsoluteFile())
+  private val history = new FileHistory(new File(".history").getAbsoluteFile)
   
   private lazy val reader = new ConsoleReader() tap { reader =>
     reader.setHistory(history)
@@ -50,7 +50,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
   /** Reads an input string or command from the command line. */
   private def read(): String = {
     println()
-    reader.readLine() tap { input => println() }
+    reader.readLine() tap { _ => println() }
   }
   
   /**
@@ -81,11 +81,11 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       }
     }
     case r"history" =>
-      Some(history.toString())
+      Some(history.toString)
     case r"!(\d+)$$$historyValue" =>
       val num = historyValue.toInt
       if (num < (history.size() - 1)) {
-        (history.get(num).toString) match {
+        history.get(num).toString match {
           case x if input.equals(x) => 
             Some(s"Unable to refer to self history - !$historyValue")
           case s => println(s"--> $s\n"); eval(s)
@@ -94,13 +94,13 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
         Some(s"No such history: !$historyValue")
       }
     case r"exit|bye|quit" => 
-      reader.getHistory().asInstanceOf[FileHistory].flush()
+      reader.getHistory.asInstanceOf[FileHistory].flush()
       None
     case _ =>
       Some {
         interpreter.interpretStep(input, env) match { 
           case Success(step) => s"\n[${step.evalStatus.status}]"
-          case Failure(error) => s"\n${error}\n\n[failure]"
+          case Failure(error) => s"\n$error\n\n[failure]"
         }
       }
   }
@@ -111,7 +111,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     println("REPL Console")
     println()
     println("Enter steps to evaluate or type exit to quit..")
-    while(eval(read()).map(println).isDefined) { }
+    while(eval(read()).map(println).nonEmpty) { }
   }
   
   private def helpText() = """

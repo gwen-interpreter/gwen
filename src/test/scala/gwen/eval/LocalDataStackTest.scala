@@ -57,15 +57,15 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     
     val localData = new LocalDataStack()
     
-    localData.push("stepdef1", Nil);
+    localData.push("stepdef1", Nil)
     intercept[UnboundAttributeException] {
       localData.get("username")  should be ("gwen")
     }
     
-    localData.push("stepdef2", List(("username", "gwen")));
+    localData.push("stepdef2", List(("username", "gwen")))
     localData.get("username")  should be ("gwen")
     
-    localData.push("stepdef3", Nil);
+    localData.push("stepdef3", Nil)
     intercept[UnboundAttributeException] {
       localData.get("username")  should be ("gwen")
     }

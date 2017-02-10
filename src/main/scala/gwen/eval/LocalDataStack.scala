@@ -16,13 +16,13 @@
 
 package gwen.eval
 
-import scala.collection.mutable.Stack
-
 import gwen.Predefs.Kestrel
 import gwen.errors.unboundAttributeError
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+
+import scala.collection.mutable
 
 /**
   * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -35,7 +35,7 @@ class LocalDataStack {
   /**
     * The locally scoped data stack.
     */
-  private val localData = Stack[ScopedData]()
+  private val localData = mutable.Stack[ScopedData]()
   
   /**
     * Clears all items in the local stack.
@@ -62,7 +62,7 @@ class LocalDataStack {
   }
   
   /** Pops the current data object off the stack. */
-  def pop = localData.pop
+  def pop: ScopedData = localData.pop
   
   /**
     * Finds and retrieves an attribute bound in the local stack.
@@ -83,7 +83,7 @@ class LocalDataStack {
     * @param scope the scope name to check
     * @return true if the scope is found; false otherwise 
     */
-  def containsScope(scope: String) = localData.find(_.scope == scope).isDefined
+  def containsScope(scope: String): Boolean = localData.exists(_.scope == scope)
   
   /**
     * Returns a string representation of the entire attribute stack 

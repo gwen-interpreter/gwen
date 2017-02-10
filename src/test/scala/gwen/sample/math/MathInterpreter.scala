@@ -16,24 +16,19 @@
 
 package gwen.sample.math
 
-import gwen.eval.EnvContext
 import gwen.dsl.Step
-import gwen.eval.EvalEngine
-import gwen.eval.GwenOptions
-import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
-import gwen.eval.EnvContext
-import gwen.eval.ScopedDataStack
+import gwen.eval._
 import gwen.Predefs.RegexContext
+
 import scala.io.Source
 
 class MathService {
-  def plus(x: Int, y: Int) = x + y
+  def plus(x: Int, y: Int): Int = x + y
 }
 
 class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
   extends EnvContext(options, scopes) {
-  def vars = addScope("vars")
+  def vars: ScopedData = addScope("vars")
   override def dsl: List[String] = 
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }

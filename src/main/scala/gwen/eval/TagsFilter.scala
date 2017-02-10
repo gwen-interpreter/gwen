@@ -18,7 +18,6 @@ package gwen.eval
 
 import gwen.dsl.FeatureSpec
 import gwen.dsl.Tag
-import gwen.Predefs.Kestrel
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -44,7 +43,7 @@ object TagsFilter {
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
     val filters = tagFilters ++ DefaultTags
     spec.scenarios flatMap { scenario =>
-      val effectiveTags = (spec.feature.tags ++ scenario.tags)
+      val effectiveTags = spec.feature.tags ++ scenario.tags
       val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}
       val includeSatisfied = includes.isEmpty || effectiveTags.map(_.name).exists(name => includes.contains(name))
       val excludeSatisfied = excludes.isEmpty || effectiveTags.map(_.name).forall(name => !excludes.contains(name))

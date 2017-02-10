@@ -20,11 +20,6 @@ import scala.language.postfixOps
 import gherkin.Parser
 import gherkin.AstBuilder
 import scala.util.Try
-import gherkin.Token
-import gherkin.TokenMatcher
-import gherkin.GherkinLine
-import gherkin.Parser.RuleType
-import scala.collection.JavaConverters._
 import gwen.errors._
 
 /**
@@ -98,7 +93,7 @@ trait GherkinParser {
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
     val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
-    Try(parser.parse(s"Feature:\nScenario:\n${step}"))
+    Try(parser.parse(s"Feature:\nScenario:\n$step"))
       .map(_.getFeature.getChildren)
       .filter(!_.isEmpty)
       .map(_.get(0).getSteps)

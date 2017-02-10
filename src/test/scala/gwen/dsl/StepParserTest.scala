@@ -16,14 +16,13 @@
 
 package gwen.dsl
 
-import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import scala.util.Failure
 
 class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseStep(_: String);
+  private val parse = parseStep(_: String)
   
   "Valid steps" should "parse" in {
     

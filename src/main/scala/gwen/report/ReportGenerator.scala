@@ -21,7 +21,6 @@ import java.io.File
 import scala.io.Source
 import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenInfo
-import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.dsl.FeatureSpec
 import gwen.eval.FeatureResult
@@ -57,8 +56,8 @@ class ReportGenerator (
     * Generate and return a detail feature report.
     * 
     * @param info the gwen implementation info
+    * @param unit the feature unit
     * @param result the evaluated feature result
-    * @param dataRecord optional data record
     * @return the list of report files (head = feature report, tail = meta reports)
     */
   final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult): List[File] = {
@@ -68,7 +67,7 @@ class ReportGenerator (
     val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
       val metaspec = metaResult.spec
       val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
-      reportFormat.createReportFile(new File(featureReportFile.getParentFile() + File.separator + "meta"), prefix, metaspec, unit.dataRecord)
+      reportFormat.createReportFile(new File(featureReportFile.getParentFile + File.separator + "meta"), prefix, metaspec, unit.dataRecord)
     }
     val reportFiles = featureReportFile :: metaReportFiles
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
@@ -85,7 +84,7 @@ class ReportGenerator (
         formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
           reportFile tap { file =>
             file.writeText(content) 
-            logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath()}")
+            logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -93,22 +92,20 @@ class ReportGenerator (
   }
   
   private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult, reportFiles: List[File]): Option[File] = {
-    val featureSpec = result.spec
-    val dataRecord = unit.dataRecord
     val reportFile = reportFiles.head
     formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
       reportFile tap { file =>
         file.writeText(content)
         reportAttachments(result.spec, file)
-        logger.info(s"${reportFormat.name} feature detail report generated: ${file.getAbsolutePath()}")
+        logger.info(s"${reportFormat.name} feature detail report generated: ${file.getAbsolutePath}")
       }
     }
   }
   
   def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
-    val attachmentsDir = new File(featureReportFile.getParentFile(), "attachments")
+    val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
     spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
-      new File(attachmentsDir, file.getName()).writeFile(file)
+      new File(attachmentsDir, file.getName).writeFile(file)
     }
   }
   
@@ -124,7 +121,7 @@ class ReportGenerator (
         reportFile foreach { file =>
           formatSummary(options, info, summary) foreach { content =>
             file.writeText(content)
-            logger.info(s"${reportFormat.name} feature summary report generated: ${file.getAbsolutePath()}")
+            logger.info(s"${reportFormat.name} feature summary report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -134,12 +131,12 @@ class ReportGenerator (
    
   private[report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
-      file.writeText(Source.fromInputStream(getClass().getResourceAsStream(resource)).mkString)
+      file.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
     }
   
   private[report] def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = 
     new File(targetDir, new File(resource).getName) tap { file =>
-      file.writeBinary(new BufferedInputStream(getClass().getResourceAsStream(resource)))
+      file.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
     }
   
 }
@@ -152,7 +149,7 @@ object ReportGenerator {
         if (GwenSettings.`gwen.report.overwrite`) {
           dir.deleteDir()
         } else {
-          dir.renameTo(new File(s"${dir.getAbsolutePath()}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+          dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
         }
       }
       dir.mkdirs()
@@ -164,6 +161,6 @@ object ReportGenerator {
     options.reportDir.map(_ => formats.map(_.reportGenerator(options))).getOrElse(Nil)
   }
   
-  def encodeDataRecordNo(dataRecord: Option[DataRecord]) = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
+  def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
   
 }

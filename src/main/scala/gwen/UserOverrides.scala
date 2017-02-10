@@ -25,8 +25,8 @@ import java.io.File
   */
 object UserOverrides {
 
-  val UserProperties = getUserFile("gwen.properties")
-  val UserMeta = getUserFile("gwen.meta")
+  val UserProperties: Option[File] = getUserFile("gwen.properties")
+  val UserMeta: Option[File] = getUserFile("gwen.meta")
 
   /**
     * Adds the gwen.properties user override file (if it exists) to the end of the given 
@@ -36,7 +36,7 @@ object UserOverrides {
     *                   properties file to
     * @return the list of properties files (including the user override properties file)
     */
-  def addUserProperties(properties: List[File]) = addUserFile(properties, UserProperties)
+  def addUserProperties(properties: List[File]): List[File] = addUserFile(properties, UserProperties)
   
   /**
     * Adds the gwen.meta user override file (if it exists) to the end of the given list 
@@ -45,7 +45,7 @@ object UserOverrides {
     * @param metaFiles the list of meta files to add the override meta file to
     * @return the list of properties files (including the user override meta file)
     */
-  def addUserMeta(metaFiles: List[File]) = addUserFile(metaFiles, UserMeta)
+  def addUserMeta(metaFiles: List[File]): List[File] = addUserFile(metaFiles, UserMeta)
   
   /**
     * Merges two lists of meta files together, making sure that there are no 
@@ -54,14 +54,14 @@ object UserOverrides {
     * 
     * @return the merged meta file list
     */
-  def mergeMetaFiles(metaFiles: List[File], metaOverrides: List[File]) = 
+  def mergeMetaFiles(metaFiles: List[File], metaOverrides: List[File]): List[File] =
     addUserMeta(metaFiles ++ metaOverrides)
   
   private def addUserFile(files: List[File], userFile: Option[File]) =
     (files.filter(!isSameFile(_, userFile)) ++ userFile).distinct
     
   private def isSameFile(file1: File, file2: Option[File]): Boolean = 
-    file2.map(_.getCanonicalPath().equals(file1.getCanonicalPath())).getOrElse(false)
+    file2.exists(_.getCanonicalPath().equals(file1.getCanonicalPath()))
     
   private def getUserFile(filename: String): Option[File] = 
     sys.props.get("user.home").map(new File(_, filename)).filter(_.exists())

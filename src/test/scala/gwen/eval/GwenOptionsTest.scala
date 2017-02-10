@@ -32,7 +32,7 @@ import gwen.Predefs.FileIO
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
-  val rootDir = new File("target" + File.separator + "props") tap { _.mkdirs() }
+  val rootDir: File = new File("target" + File.separator + "props") tap { _.mkdirs() }
 
   "Options with no command line args" should "parse" in {
     parseOptions(Array[String]()) match {
@@ -49,21 +49,21 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage() should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files and/or directories specified")
     }
     parseOptions(Array("--batch")) match {
       case Success(options) => { 
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage() should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files and/or directories specified")
     }
   }
   
   "Options with batch option and files " should "parse" in {
     parseOptions(Array("-b", ".")) match {
       case Success(options) => { 
-        assertOptions(options, true, features = List(new File(".")))
+        assertOptions(options, batch = true, features = List(new File(".")))
 
       }
       case _ => 
@@ -71,7 +71,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
     parseOptions(Array("--batch", ".")) match {
       case Success(options) => { 
-        assertOptions(options, true, features = List(new File(".")))
+        assertOptions(options, batch = true, features = List(new File(".")))
       }
       case _ => 
         fail("expected options but failed")
@@ -84,21 +84,21 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage() should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files and/or directories specified")
     }
     parseOptions(Array("--dry-run")) match {
       case Success(options) => { 
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage() should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files and/or directories specified")
     }
   }
   
   "Options with dry run option and files " should "parse" in {
     parseOptions(Array("-n", ".")) match {
       case Success(options) => { 
-        assertOptions(options, false, dryRun = true, features = List(new File(".")))
+        assertOptions(options, dryRun = true, features = List(new File(".")))
 
       }
       case _ => 
@@ -106,7 +106,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
     parseOptions(Array("--dry-run", ".")) match {
       case Success(options) => { 
-        assertOptions(options, false, dryRun = true, features = List(new File(".")))
+        assertOptions(options, dryRun = true, features = List(new File(".")))
       }
       case _ => 
         fail("expected options but failed")
@@ -177,13 +177,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with format option but no report directory" should "not parse" in {
     parseOptions(Array("-f", "html")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--format", "html")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -192,13 +192,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with format option but no format value(s)" should "not parse" in {
     parseOptions(Array("-f")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--format")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -242,7 +242,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with non existing CSV input data file" should "error" in {
     parseOptions(Array("-i", "missing.csv")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("missing csv file should result in error")
       }
       case _ =>
@@ -251,13 +251,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with properties option with no properties file" should "not parse" in {
      parseOptions(Array("-p")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--properties")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -266,13 +266,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with properties option with non existing properties file" should "not parse" in {
      parseOptions(Array("-p", "nonexisting.properties")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--properties", "nonexisting.properties")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -281,14 +281,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with properties option and existing properties file" should "parse" in {
     val propsFile = createFile("gwen.properties")
-    parseOptions(Array("-p", propsFile.getPath())) match {
+    parseOptions(Array("-p", propsFile.getPath)) match {
       case Success(options) => {
         assertOptions(options, properties = List(propsFile))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--properties", propsFile.getPath())) match {
+    parseOptions(Array("--properties", propsFile.getPath)) match {
       case Success(options) => {
         assertOptions(options, properties = List(propsFile))
       }
@@ -300,14 +300,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with properties option and multiple existing properties file" should "parse" in {
     val propsFileA = createFile("gwen-a.properties")
     val propsFileB = createFile("gwen-b.properties")
-    parseOptions(Array("-p", propsFileA.getPath() + "," + propsFileB.getPath())) match {
+    parseOptions(Array("-p", propsFileA.getPath + "," + propsFileB.getPath)) match {
       case Success(options) => {
         assertOptions(options, properties = List(propsFileA, propsFileB))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--properties", propsFileA.getPath() + "," + propsFileB.getPath())) match {
+    parseOptions(Array("--properties", propsFileA.getPath + "," + propsFileB.getPath)) match {
       case Success(options) => {
         assertOptions(options, properties = List(propsFileA, propsFileB))
       }
@@ -318,13 +318,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with tags option with no tags" should "not parse" in {
      parseOptions(Array("-t")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--tags")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -367,13 +367,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with tags option and invalid single tag" should "not parse" in {
     parseOptions(Array("-t", "wip")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--tags", "!wip")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
@@ -440,13 +440,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with tags option and two tags separated by space" should "not parse" in {
     val tags = "@wip @regression"
     parseOptions(Array("-t", tags)) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
     }
     parseOptions(Array("--tags", tags)) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
@@ -456,13 +456,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with tags option and one valid tag and one invalid tag" should "not parse" in {
     val tags = "@valid,invalid"
     parseOptions(Array("-t", tags)) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
     }
     parseOptions(Array("--tags", tags)) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
@@ -471,13 +471,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with meta option with no meta file" should "not parse" in {
      parseOptions(Array("-m")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--meta")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -486,13 +486,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with with non existing meta file" should "not parse" in {
      parseOptions(Array("-m", "nonexisting.meta")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
     }
     parseOptions(Array("--meta", "nonexisting.meta")) match {
-      case Success(options) => {
+      case Success(_) => {
         fail("expected None but got options")
       }
       case _ => 
@@ -501,14 +501,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with one existing meta file" should "parse" in {
     val metaFile = createFile("gwen.meta")
-    parseOptions(Array("-m", metaFile.getPath())) match {
+    parseOptions(Array("-m", metaFile.getPath)) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--meta", metaFile.getPath())) match {
+    parseOptions(Array("--meta", metaFile.getPath)) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
@@ -581,10 +581,10 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with existing feature file path" should "parse" in {
     
-    val dir1 = createDir("dir1");
-    val feature1 = createFile("dir1/file1.feature");
+    val dir1 = createDir("dir1")
+    val feature1 = createFile("dir1/file1.feature")
     
-    parseOptions(Array(feature1.getPath())) match {
+    parseOptions(Array(feature1.getPath)) match {
       case Success(options) => {
         assertOptions(options, features = List(feature1))
       }
@@ -595,9 +595,9 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with existing directory path" should "parse" in {
     
-    val dir2 = createDir("dir2");
+    val dir2 = createDir("dir2")
     
-    parseOptions(Array(dir2.getPath())) match {
+    parseOptions(Array(dir2.getPath)) match {
       case Success(options) => {
         assertOptions(options, features = List(dir2))
       }
@@ -609,11 +609,11 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with existing paths" should "parse" in {
     
-    val dir3 = createDir("dir3");
-    val feature3 = createFile("dir3/file3.feature");
-    val dir4 = createDir("dir4");
+    val dir3 = createDir("dir3")
+    val feature3 = createFile("dir3/file3.feature")
+    val dir4 = createDir("dir4")
     
-    parseOptions(Array(dir3.getPath(), feature3.getPath(), dir4.getPath())) match {
+    parseOptions(Array(dir3.getPath, feature3.getPath, dir4.getPath)) match {
       case Success(options) => {
         assertOptions(options, features = List(dir3, feature3, dir4))
       }
@@ -640,21 +640,21 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val dataFile = createFile("gwen-1.csv")
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val metaFile = createFile("gwen.meta")
-    val dir5 = createDir("dir5");
-    val feature5 = createFile("dir5/file5.feature");
-    val dir6 = createDir("dir6");
+    val dir5 = createDir("dir5")
+    val feature5 = createFile("dir5/file5.feature")
+    val dir6 = createDir("dir6")
     
-    parseOptions(Array("-b|", "-r", reportDir.getPath(), "-f", "html,junit", "-p", propsFile.getPath(), "-t", tags, "-i", dataFile.getPath(), "-m", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("-b|", "-r", reportDir.getPath, "-f", "html,junit", "-p", propsFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
-          true,
-          true,
+          batch = true,
+          parallel = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
-          false,
+          dryRun = false,
           Some(dataFile),
           List(metaFile),
           List(dir5, feature5, dir6))
@@ -667,13 +667,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
       case Success(options) => {
         assertOptions(
           options,
-          true,
-          true,
+          batch = true,
+          parallel = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
           List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
-          false,
+          dryRun = false,
           Some(dataFile),
           List(metaFile),
           List(dir5, feature5, dir6))
@@ -689,17 +689,17 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
     
   private def assertOptions(
-    options: GwenOptions, 
-    batch: Boolean = false,
-    parallel: Boolean = false,
-    reportDir: Option[File] = None,
-    reportFormats: List[ReportFormat.Value] = Nil,
-    properties: List[File] = Nil,
-    tags: List[(Tag, Boolean)] = Nil,
-    dryRun: Boolean = false,
-    dataFile: Option[File] = None,
-    metaFiles: List[File] = Nil, 
-    features: List[File] = Nil) {
+                             options: GwenOptions,
+                             batch: Boolean = false,
+                             parallel: Boolean = false,
+                             reportDir: Option[File] = None,
+                             reportFormats: List[ReportFormat.Value] = Nil,
+                             properties: List[File] = Nil,
+                             tags: List[(Tag, Boolean)] = Nil,
+                             dryRun: Boolean = false,
+                             dataFile: Option[File] = None,
+                             metaFiles: List[File] = Nil,
+                             features: List[File] = Nil) {
     
     options.batch should be (batch)
     options.parallel should be (parallel)
@@ -719,7 +719,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     if (file.exists) {
       file.delete()
     }
-    file.getParentFile().mkdirs()
+    file.getParentFile.mkdirs()
     file.createNewFile()
     file
   }

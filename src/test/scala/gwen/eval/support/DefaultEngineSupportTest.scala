@@ -20,7 +20,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
-import gwen.eval.EvalEngine
 import gwen.eval.GwenOptions
 import gwen.dsl.Step
 import java.io.IOException
@@ -36,7 +35,7 @@ class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
 class DefaultEngineSupportTest extends FlatSpec with Matchers {
 
   val engine = new TestEvalEngine
-  val env = engine.init(new GwenOptions(), new ScopedDataStack())
+  val env: TestEnvContext = engine.init(new GwenOptions(), new ScopedDataStack())
   
   "Set attribute binding step" should "be successful" in {
     engine.evaluate(Step(Position(0, 0), StepKeyword.Given, """my name is "Gwen""""), env)

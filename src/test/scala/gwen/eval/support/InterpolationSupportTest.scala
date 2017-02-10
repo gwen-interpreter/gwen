@@ -22,129 +22,115 @@ import org.scalatest.Matchers
 class InterpolationSupportTest extends FlatSpec with Matchers with InterpolationSupport {
 
   """interpolate using property syntax: prefix "${property}"""" should "resolve" in {
-    interpolate("""hello "${property}"""") { property => "you" } should be ("""hello "you"""") 
+    interpolate("""hello "${property}"""") { _ => "you" } should be ("""hello "you"""")
   }
   
   """interpolate using property syntax: prefix ${property}""" should "resolve" in {
-    interpolate("""hello ${property}""") { property => "you" } should be ("""hello you""") 
+    interpolate("""hello ${property}""") { _ => "you" } should be ("""hello you""")
   }
   
   """interpolate using property syntax: "${property}" suffix""" should "resolve" in {
-    interpolate(""""${property}" you""") { property => "hello" } should be (""""hello" you""") 
+    interpolate(""""${property}" you""") { _ => "hello" } should be (""""hello" you""")
   }
   
   """interpolate using property syntax: ${property} "suffix"""" should "resolve" in {
-    interpolate("""${property} "you"""") { property => "hello" } should be ("""hello "you"""") 
+    interpolate("""${property} "you"""") { _ => "hello" } should be ("""hello "you"""")
   }
   
   """interpolate using property syntax: prefix ${property} suffix""" should "resolve" in {
-    interpolate("""hello ${property} good thing""") { property => "you" } should be ("""hello you good thing""") 
+    interpolate("""hello ${property} good thing""") { _ => "you" } should be ("""hello you good thing""")
   }
   
   """interpolate nested using property syntax: ${property1-${property0}}"""" should "resolve" in {
-    interpolate("""Hey you ${property-${id}} thing!""") { property => 
-      property match {
-        case "id" => "0"
-        case "property-0" => "good"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you good thing!""") 
+    interpolate("""Hey you ${property-${id}} thing!""") {
+      case "id" => "0"
+      case "property-0" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
   }
   
   """interpolate adjecent values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
-    interpolate("""Hey you ${property-0} ${property-1} thing!""") { property => 
-      property match {
-        case "id" => "0"
-        case "property-0" => "really"
-        case "property-1" => "good"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you really good thing!""") 
+    interpolate("""Hey you ${property-0} ${property-1} thing!""") {
+      case "id" => "0"
+      case "property-0" => "really"
+      case "property-1" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you really good thing!""")
   }
   
   """interpolate adjecent values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
-    interpolate("""Hey you ${property-0}${property-1} thing!""") { property => 
-      property match {
-        case "id" => "0"
-        case "property-0" => "go"
-        case "property-1" => "od"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you good thing!""") 
+    interpolate("""Hey you ${property-0}${property-1} thing!""") {
+      case "id" => "0"
+      case "property-0" => "go"
+      case "property-1" => "od"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
   }
   
   """interpolate using stepdef param syntax: prefix "$<param>"""" should "resolve" in {
-    interpolate("""hello "$<param>"""") { param => "you" } should be ("""hello "you"""") 
+    interpolate("""hello "$<param>"""") { _ => "you" } should be ("""hello "you"""")
   }
   
   """interpolate using stepdef param syntax: prefix $<param>""" should "resolve" in {
-    interpolate("""hello $<param>""") { param => "you" } should be ("""hello you""") 
+    interpolate("""hello $<param>""") { _ => "you" } should be ("""hello you""")
   }
   
   """interpolate using stepdef param syntax: "$<param>" suffix""" should "resolve" in {
-    interpolate(""""$<param>" you""") { param => "hello" } should be (""""hello" you""") 
+    interpolate(""""$<param>" you""") { _ => "hello" } should be (""""hello" you""")
   }
   
   """interpolate using stepdef param syntax: $<param> "suffix"""" should "resolve" in {
-    interpolate("""$<param> "you"""") { param => "hello" } should be ("""hello "you"""") 
+    interpolate("""$<param> "you"""") { _ => "hello" } should be ("""hello "you"""")
   }
   
   """interpolate using stepdef param syntax: prefix $<param> suffix""" should "resolve" in {
-    interpolate("""hello $<param> good thing""") { param => "you" } should be ("""hello you good thing""") 
+    interpolate("""hello $<param> good thing""") { _ => "you" } should be ("""hello you good thing""")
   }
   
   """interpolate nested using stepdef param syntax: $<param1-$<param0>>"""" should "resolve" in {
-    interpolate("""Hey you $<param-$<id>> thing!""") { param => 
-      param match {
-        case "<id>" => "0"
-        case "<param-0>" => "good"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you good thing!""") 
+    interpolate("""Hey you $<param-$<id>> thing!""") {
+      case "<id>" => "0"
+      case "<param-0>" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
   }
   
   """interpolate stepdef with adjacent params: $<param-0> $<param-1>"""" should "resolve" in {
-    interpolate("""Hey you $<param-0> $<param-1> thing!""") { param => 
-      param match {
-        case "<id>" => "0"
-        case "<param-0>" => "really"
-        case "<param-1>" => "good"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you really good thing!""") 
+    interpolate("""Hey you $<param-0> $<param-1> thing!""") {
+      case "<id>" => "0"
+      case "<param-0>" => "really"
+      case "<param-1>" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you really good thing!""")
   }
   
   """interpolate stepdef with adjacent params (no space): $<param-0>$<param-1>"""" should "resolve" in {
-    interpolate("""Hey you $<param-0>$<param-1> thing!""") { param => 
-      param match {
-        case "<id>" => "0"
-        case "<param-0>" => "go"
-        case "<param-1>" => "od"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you good thing!""") 
+    interpolate("""Hey you $<param-0>$<param-1> thing!""") {
+      case "<id>" => "0"
+      case "<param-0>" => "go"
+      case "<param-1>" => "od"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
   }
   
   """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "decorate parameters" in {
-    interpolate("""Hey you $<param-0>$<param-1> thing!""") { param => 
-      param match {
-        case "<param-0>" => "$<param-0>"
-        case "<param-1>" => "$<param-1>"
-        case _ => "undefined"
-      }
-    } should be ("""Hey you $[param:param-0]$[param:param-1] thing!""") 
+    interpolate("""Hey you $<param-0>$<param-1> thing!""") {
+      case "<param-0>" => "$<param-0>"
+      case "<param-1>" => "$<param-1>"
+      case _ => "undefined"
+    } should be ("""Hey you $[param:param-0]$[param:param-1] thing!""")
   }
   
   """interpolate using concatentation syntax: prefix "" + binding + " suffix""" should "resolve" in {
-    interpolate("""hello "" + binding + " good thing"""") { binding => "you" } should be ("""hello "you good thing"""") 
+    interpolate("""hello "" + binding + " good thing"""") { _ => "you" } should be ("""hello "you good thing"""")
   }
  
   """interpolate using concatentation syntax: "prefix" + binding""" should "resolve" in {
-    interpolate("""hello "" + binding""") { binding => "you" } should be ("""hello "you"""") 
+    interpolate("""hello "" + binding""") { _ => "you" } should be ("""hello "you"""")
   }
   
   """embedded + literal in string""" should "not be treated as a concatenation operator" in {
-    interpolate("""I enter "+6149265587" in the phone field""") { binding => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
+    interpolate("""I enter "+6149265587" in the phone field""") { _ => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
   }
   
 }

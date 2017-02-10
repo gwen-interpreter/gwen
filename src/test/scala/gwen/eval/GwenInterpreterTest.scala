@@ -20,12 +20,10 @@ import java.io.File
 import java.io.FileWriter
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
-import scala.util.Try
 import org.mockito.Matchers.anyString
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.mockito.MockitoSugar
 import gwen.Predefs.Kestrel
@@ -34,17 +32,14 @@ import gwen.dsl.StatusKeyword
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import org.scalatest.FlatSpec
-import org.mockito.ArgumentCaptor
 import gwen.dsl.Tag
-import gwen.dsl.SpecType
 import gwen.dsl.Position
-import gwen.Predefs.FileIO
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
-  val rootDir = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
+  val rootDir: File = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
   
-  val options = new GwenOptions();
+  val options = new GwenOptions()
   
   private def interpreter(mockEnv: EnvContext) = {
     trait MockEvalEngine extends EvalEngine[EnvContext] {
@@ -54,11 +49,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     }
     new GwenInterpreter[EnvContext] with MockEvalEngine
   }
-  
-  private def executor(mockInterpreter: GwenInterpreter[EnvContext], mockEnv: EnvContext) = {
-    new GwenLauncher(mockInterpreter)
-  }
-  
+
   "initialise interpreter" should "create new env" in {
     val mockEnv = mock[EnvContext]
     interpreter(mockEnv).initialise(options)
@@ -84,13 +75,13 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step)).thenReturn(step)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid step", mockEnv)
     result match {
-      case TrySuccess(step) =>
-        step.keyword should be (StepKeyword.Given)
-        step.expression should be ("I am a valid step")
-        step.evalStatus.status should be (StatusKeyword.Passed)
+      case TrySuccess(s) =>
+        s.keyword should be (StepKeyword.Given)
+        s.expression should be ("I am a valid step")
+        s.evalStatus.status should be (StatusKeyword.Passed)
       case TryFailure(err) =>
-        err.printStackTrace
-        fail(s"success expected but got ${err}")
+        err.printStackTrace()
+        fail(s"success expected but got $err")
     }
   }
   
@@ -113,7 +104,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         step.expression should be ("I am a valid stepdef")
         step.evalStatus.status should be (StatusKeyword.Passed)
       case TryFailure(err) => 
-        fail(s"success expected but got ${err}")
+        fail(s"success expected but got $err")
     }
   }
   
@@ -121,10 +112,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val result = interpreter(mockEnv).interpretStep("Yes I am an invalid step", mockEnv)
     result match {
-      case TrySuccess(step) =>
+      case TrySuccess(_) =>
         fail("expected failure")
       case TryFailure(err) =>
-        err.getMessage() should be ("'Given|When|Then|And|But <expression>' expected")
+        err.getMessage should be ("'Given|When|Then|And|But <expression>' expected")
     }
   }
   
@@ -149,7 +140,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
-    val result = interpreter(mockEnv).interpretFeature(new FeatureUnit(featureFile, Nil, None), Nil, mockEnv)
+    val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, Nil, None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
@@ -205,7 +196,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
     when(mockEnv.interpolate(step5)).thenReturn(step5)
-    val result = interpreter(mockEnv).interpretFeature(new FeatureUnit(featureFile, List(metaFile), None), Nil, mockEnv)
+    val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, List(metaFile), None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
@@ -213,20 +204,13 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         fail("List(FeatureResult) expected")
     }
   }
-  
-  private def createDir(dirname: String): File = {
-    val dir = new File(rootDir, dirname)
-    dir.deleteDir()
-    dir.mkdirs()
-    dir
-  }
-  
+
   private def createFile(filepath: String): File = {
     val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
     if (file.exists) {
       file.delete()
     }
-    file.getParentFile().mkdirs()
+    file.getParentFile.mkdirs()
     file.createNewFile()
     file
   }
@@ -237,7 +221,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         try {
           fw.write(content)
         } finally {
-          fw.close
+          fw.close()
         }
       }
     }

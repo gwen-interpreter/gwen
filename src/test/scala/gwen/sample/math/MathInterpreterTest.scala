@@ -41,7 +41,7 @@ class MathInterpreterTest extends FlatSpec {
     val launcher = new GwenLauncher(new MathInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
+      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
   }
@@ -59,14 +59,14 @@ class MathInterpreterTest extends FlatSpec {
     val launcher = new GwenLauncher(new MathInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
+      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
   }
   
   "math.dsl" should "pass --dry-run test" in {
     
-    val options = new GwenOptions(dryRun = true);
+    val options = new GwenOptions(dryRun = true)
     
     val env = new MathEnvContext(new MathService(), options, new ScopedDataStack())
     env.scopes.addScope("vars").set("y", "1")

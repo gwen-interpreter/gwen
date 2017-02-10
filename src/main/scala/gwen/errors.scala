@@ -58,19 +58,19 @@ package gwen {
     class AmbiguousCaseException(msg: String) extends Exception(msg)
 
     /** Thrown when an unsupported or undefined step is encountered. */
-    class UndefinedStepException(step: Step) extends Exception(s"Unsupported or undefined step: ${step}")
+    class UndefinedStepException(step: Step) extends Exception(s"Unsupported or undefined step: $step")
 
     /** Thrown when an attribute cannot be found in a scope. */
-    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(x => s" in ${x} scope")getOrElse("")}: ${name}")
+    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
     
     /** Thrown when a property setting is not found. */
-    class MissingPropertyException(name: String) extends Exception(s"Property not found: ${name}")
+    class MissingPropertyException(name: String) extends Exception(s"Property not found: $name")
     
     /** Thrown when a property file setting is invalid. */
-    class InvalidPropertyException(entry: String, propertyFile: File) extends Exception(s"Invalid property entry '${entry}' found in file: ${propertyFile} (name=value expected)")
+    class InvalidPropertyException(entry: String, propertyFile: File) extends Exception(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
 
     /** Thrown when an invalid tag (annotation) is detected. */
-    class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: ${tagString}")
+    class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: $tagString")
 
     /** Thrown when a regex error occurs. */
     class RegexException(msg: String) extends Exception(msg)
@@ -91,26 +91,26 @@ package gwen {
     class InvocationException(msg: String) extends Exception(msg)
     
     /** Signals a step that failed to evaluate. */
-    class StepEvaluationException(step: Step, val cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: ${step}: ${cause.getMessage()}", cause)
+    class StepEvaluationException(step: Step, val cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: $step: ${cause.getMessage}", cause)
     
     /** Signals an infinite recursive StepDef. */
-    class RecursiveStepDefException(stepDef: Scenario, step: Step) extends RuntimeException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: ${step}")
+    class RecursiveStepDefException(stepDef: Scenario, step: Step) extends RuntimeException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: $step")
 
     /** Thrown when a decoding error occurs. */
     class DecodingException(msg: String) extends Exception(msg)
     
     /** Thrown when an invalid StepDef is detected. */
-    class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: ${stepDef}: $msg")
+    class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: $stepDef: $msg")
     
     /** Thrown when an import file is not found. */
-    class MissingImportException(importTag: Tag, specFile: File) extends Exception(s"Missing file detected in ${importTag} declared in ${specFile}")
+    class MissingImportException(importTag: Tag, specFile: File) extends Exception(s"Missing file detected in $importTag declared in $specFile")
     
     /** Thrown when an unsupported import file is detected. */
-    class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in ${importTag} declared in ${specFile} (only .meta files can be imported)")
+    class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in $importTag declared in $specFile (only .meta files can be imported)")
     
     /** Thrown when a recursive import is detected. */
-    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) ${importTag} detected in ${specFile}") {
-      override def fillInStackTrace() = this
+    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) $importTag detected in $specFile") {
+      override def fillInStackTrace(): RecursiveImportException = this
     }
     
     /** Thrown when a syntax error is detected. */

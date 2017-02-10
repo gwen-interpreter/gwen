@@ -16,17 +16,13 @@
 
 package gwen.dsl
 
-import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-import scala.util.Failure
-import gherkin.ParserException
-import scala.util.Failure
 import scala.util.Success
 
 class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios(0))
+  private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
   
   private val step1 = Step(StepKeyword.Given, "I am step 1")
   private val step2 = Step(StepKeyword.Then, "I am not step 1")

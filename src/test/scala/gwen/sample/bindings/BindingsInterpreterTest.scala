@@ -72,7 +72,7 @@ class BindingsInterpreterTest extends FlatSpec {
     val launcher = new GwenLauncher(new BindingsInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
+      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
   }
@@ -91,7 +91,7 @@ class BindingsInterpreterTest extends FlatSpec {
     val launcher = new GwenLauncher(new BindingsInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage())
+      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
   }

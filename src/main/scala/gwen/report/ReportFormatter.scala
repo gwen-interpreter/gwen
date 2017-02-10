@@ -47,6 +47,6 @@ trait ReportFormatter {
   def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String]
   
   private[report] def relativePath(reportFile: File, reportDir: File) = 
-    reportFile.getPath.substring(reportDir.getPath().length() + 1)
+    reportFile.getPath.substring(reportDir.getPath.length + 1)
   
 }

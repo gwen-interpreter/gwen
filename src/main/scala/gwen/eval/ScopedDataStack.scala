@@ -17,13 +17,13 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-import scala.collection.mutable.ArrayStack
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.JsObject
 import gwen.Predefs.Kestrel
 import gwen.errors._
-import scala.collection.mutable.Map
+
+import scala.collection.mutable
 
 /**
   * Manages and maintains an in memory stack of [[ScopedData]] objects
@@ -72,7 +72,7 @@ class ScopedDataStack() {
     * on the top of the stack.  All other scopes that are not at the
     * top of the stack are 'historical' scopes.
     */
-  private var scopes: ArrayStack[ScopedData] = _
+  private var scopes: mutable.ArrayStack[ScopedData] = _
   
   /** 
     *  Provides access to the local StepDef scope (StepDef parameters
@@ -85,7 +85,7 @@ class ScopedDataStack() {
   
   /** Resets the data stack. */
   def reset() {
-      scopes = ArrayStack[ScopedData]() tap { _ push new FeatureScope() }
+      scopes = mutable.ArrayStack[ScopedData]() tap { _ push new FeatureScope() }
       paramScope.reset()
   }
   
@@ -121,7 +121,7 @@ class ScopedDataStack() {
         }
         scopes push ScopedData(scope)
         current tap { _ =>
-          current.flashScope = Some(Map[String, String]()) 
+          current.flashScope = Some(mutable.Map[String, String]())
           featureScope.currentScope = Some(current)
         }
       }
@@ -158,7 +158,7 @@ class ScopedDataStack() {
     * @return the value to bind to the attribute
     */
   def set(name: String, value: String) { 
-      if (!getOpt(name).map(_ == value).getOrElse(false)) {
+      if (!getOpt(name).contains(value)) {
         current.set(name, value)
       }
   }
@@ -198,7 +198,7 @@ class ScopedDataStack() {
     scopes.toIterator filter(_.scope == current.scope) map (_.findEntry(pred)) collectFirst { 
       case Some(value) => value 
     } match {
-      case None if (!current.isFeatureScope) =>
+      case None if !current.isFeatureScope =>
         featureScope.findEntry(pred)
       case x => x
     }
@@ -241,7 +241,7 @@ class ScopedDataStack() {
     scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst { 
       case Some(value) => value 
     } match {
-      case None if (scope != featureScope.scope) =>
+      case None if scope != featureScope.scope =>
         getInOpt(featureScope.scope, name)
       case x => x
     }
@@ -258,7 +258,7 @@ class ScopedDataStack() {
     */
   def getAllIn(scope: String, name: String): Seq[String] = 
     scopes.toList filter(_.scope == scope) flatMap (_.getAll(name)) match {
-      case Nil if (scope != featureScope.scope) =>
+      case Nil if scope != featureScope.scope =>
         getAllIn(featureScope.scope, name)
       case x => x
     }
@@ -274,19 +274,19 @@ class ScopedDataStack() {
 object ScopedDataStack {
   
   /**
-   * Merges a stack of scopes into a single ScopedDataStack object.
+   * Merges a scope into a single ScopedDataStack object.
    * 
-   * @param scopes the scopes to merge
+   * @param scope the scope to merge
    */
   def apply(scope: Option[ScopedData]): ScopedDataStack = 
-    scope.map(x => ScopedDataStack(ArrayStack(x))).getOrElse(ScopedDataStack(ArrayStack[ScopedData]()))
+    scope.map(x => ScopedDataStack(mutable.ArrayStack(x))).getOrElse(ScopedDataStack(mutable.ArrayStack[ScopedData]()))
   
   /**
    * Merges a stack of scopes into a single ScopedDataStack object.
    * 
    * @param scopes the scopes to merge
    */
-  def apply(scopes: ArrayStack[ScopedData]): ScopedDataStack = 
+  def apply(scopes: mutable.ArrayStack[ScopedData]): ScopedDataStack =
     new ScopedDataStack() tap { stack =>
       if (scopes.exists(_.isFeatureScope)) stack.scopes.pop
       scopes.reverse.foreach { data =>

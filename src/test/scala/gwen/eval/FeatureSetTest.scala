@@ -19,12 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import java.io.File
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Feature
-import gwen.dsl.Scenario
 import gwen.dsl.Tag
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
 import scala.io.Source
 import gwen.dsl.SpecNormaliser
 import gwen.dsl.GherkinParser
@@ -34,12 +29,12 @@ import scala.util.Failure
 class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with SpecNormaliser {
   
   "Data driven feature with csv file" should "normalise without error" in {
-    val featureFile = new File(getClass().getResource("/gwen/datadriven/AboutMe.feature").getFile())
-    val dataFile = new File(getClass().getResource("/gwen/datadriven/AboutMe.csv").getFile())
-    val featureSet = new FeatureSet(new FeatureUnit(featureFile, Nil, None), dataFile)
+    val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
+    val dataFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.csv").getFile)
+    val featureSet = new FeatureSet(FeatureUnit(featureFile, Nil, None), dataFile)
     
     featureSet.hasNext should be (true)
-    val unit1 = featureSet.next
+    val unit1 = featureSet.next()
     val feature1 = parseFeatureSpec(Source.fromFile(unit1.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit1.featureFile), unit1.dataRecord)
       case Failure(e) => sys.error(e.toString)
@@ -57,7 +52,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     feature1.scenarios(1).steps(2).toString should be ("Then I am a ${my age} year old ${my title}")
     
     featureSet.hasNext should be (true)
-    val unit2 = featureSet.next
+    val unit2 = featureSet.next()
     val feature2 = parseFeatureSpec(Source.fromFile(unit2.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit2.featureFile), unit2.dataRecord)
       case Failure(e) => sys.error(e.toString)
@@ -75,7 +70,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     feature2.scenarios(1).steps(2).toString should be ("Then I am a ${my age} year old ${my title}")
     
     featureSet.hasNext should be (true)
-    val unit3 = featureSet.next
+    val unit3 = featureSet.next()
     val feature3 = parseFeatureSpec(Source.fromFile(unit3.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit3.featureFile), unit3.dataRecord)
       case Failure(e) => sys.error(e.toString)

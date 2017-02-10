@@ -22,7 +22,7 @@ import scala.util.Success
 
 class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
 
-  private val parse = parseFeatureSpec(_: String);
+  private val parse = parseFeatureSpec(_: String)
   
   private val featureString = """
    
@@ -65,9 +65,9 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
   "Feature" should "parse" in {
     
     val featureSpec = parse(featureString) match {
-      case Success(featureSpec) => 
-        featureSpec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
-        featureSpec.background.get should be {
+      case Success(fspec) =>
+        fspec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        fspec.background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
               Step(Position(12, 9), StepKeyword.Given, "a deterministic nonlinear system"),
@@ -76,7 +76,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
             )
           )
         }
-        featureSpec.scenarios should be {
+        fspec.scenarios should be {
           List(
             Scenario(List[Tag](), "Evaluation", Nil, None,
               List(

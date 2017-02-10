@@ -19,7 +19,6 @@ package gwen.dsl
 import java.io.File
 import gwen.Predefs.Kestrel
 import gwen.errors._
-import com.github.tototoshi.csv.CSVReader
 import gwen.eval.DataRecord
 
 /**
@@ -44,7 +43,7 @@ trait SpecNormaliser {
     */
   def normalise(spec: FeatureSpec, featureFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
-      if (scenario.isStepDef && featureFile.map(_.getName().endsWith(".meta")).getOrElse(false)) {
+      if (scenario.isStepDef && featureFile.exists(_.getName.endsWith(".meta"))) {
         Scenario(scenario, featureFile)
       } else {
         scenario
@@ -64,7 +63,7 @@ trait SpecNormaliser {
       Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
     val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(tags, s"Bind data attributes", Nil, None, steps.toList, None) :: featureScenarios(spec, scenarios)
+    Scenario(tags, s"Bind data attributes", Nil, None, steps, None) :: featureScenarios(spec, scenarios)
   }
     
   private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {
@@ -84,15 +83,13 @@ trait SpecNormaliser {
     * 
     * @param scenarios the list of scenarios to conditionally return
     * @param featureFile optional file from which scenarios were loaded
-    * @throws gwen.errors.AmiguousCaseException if more than one step def 
-    *         with the same name is found  
     */
   private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
     val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name.replaceAll("<.+?>", "<?>")) filter { case (_, stepDefs) => stepDefs.size > 1 }
     val dupCount = duplicates.size
     if (dupCount > 0) {
       val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
-      ambiguousCaseError(s"$msg: ${(duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }).mkString}")
+      ambiguousCaseError(s"$msg: ${duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }.mkString}")
     }
   }
   

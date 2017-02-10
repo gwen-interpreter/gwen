@@ -26,12 +26,7 @@ import gwen.dsl.Scenario
 import gwen.dsl.Step
 import play.api.libs.json.JsObject
 import play.api.libs.json.Json
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import gwen.dsl.EvalStatus
-import gwen.dsl.Pending
-import gwen.dsl.SpecType
 import com.typesafe.scalalogging.LazyLogging
-import scala.collection.mutable.Stack
 import gwen.eval.support.InterpolationSupport
 import gwen.errors._
 import gwen.Settings
@@ -66,7 +61,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   var loadedMeta: List[File] = Nil  
   
   /** Provides access to the global feature scope. */
-  def featureScope = scopes.featureScope
+  def featureScope: FeatureScope = scopes.featureScope
   
   /** Provides access to the local parameter scope. */
   private[eval] val paramScope = scopes.paramScope
@@ -81,7 +76,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   def reset() {
     scopes.reset()
     stepDefs = Map[String, Scenario]()
-    resetAttachments
+    resetAttachments()
     attachmentPrefix = padWithZeroes(1)
     loadedMeta = Nil
   }
@@ -104,7 +99,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * 
     * @param name the name of the data scope to get (or create and get)
     */
-  def addScope(name: String) = scopes.addScope(name)
+  def addScope(name: String): ScopedData = scopes.addScope(name)
   
   /**
     * Adds a step definition to the context.
@@ -115,7 +110,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     StepKeyword.literals foreach { keyword => 
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
-    val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath()}")""")::stepDef.tags).getOrElse(stepDef.tags)
+    val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
     stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
   }
   
@@ -142,37 +137,37 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
     val matches = stepDefs.values.view.flatMap { stepDef =>
-      ("<.+?>".r.findAllIn(stepDef.name).toList match {
-        case Nil => None  
+      "<.+?>".r.findAllIn(stepDef.name).toList match {
+        case Nil => None
         case names =>
-          names.groupBy(identity).collectFirst { case (n, vs) if (vs.size > 1) =>
+          names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
             ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
-          } 
-          (stepDef.name.split(names.mkString("|")).toList match { 
-            case tokens if (tokens.forall(expression.contains(_))) => 
-              tokens.foldLeft((expression, List[String]())) { case ((expr, acc), token ) => 
-                expr.indexOf(token) match { 
-                  case -1 => ("", Nil) 
-                  case 0 => (expr.substring(token.length), acc) 
-                  case idx => (expr.substring(idx + token.length), expr.substring(0, idx)::acc)
-                } 
-              } 
+          }
+          (stepDef.name.split(names.mkString("|")).toList match {
+            case tokens if tokens.forall(expression.contains(_)) =>
+              tokens.foldLeft((expression, List[String]())) { case ((expr, acc), token) =>
+                expr.indexOf(token) match {
+                  case -1 => ("", Nil)
+                  case 0 => (expr.substring(token.length), acc)
+                  case idx => (expr.substring(idx + token.length), expr.substring(0, idx) :: acc)
+                }
+              }
             case _ => ("", Nil)
-          }) match { 
+          }) match {
             case (value, values) =>
-              val params = names zip (if (value != "") value::values else values).reverse
+              val params = names zip (if (value != "") value :: values else values).reverse
               if (expression == params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }) {
                 Some(stepDef, params)
               } else None
           }
-      })
+      }
     }
     val iter = matches.iterator
     if (iter.hasNext) {
       val first = Some(iter.next)
       if (iter.hasNext) {
         val msg = s"Ambiguous condition in resolving '$expression': One StepDef match expected but ${matches.size} found" 
-        ambiguousCaseError(s"$msg: ${(matches.map { case (stepDef, _) => stepDef.name }).mkString(",")}")
+        ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
       } else first
     } else None
   }
@@ -188,21 +183,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   /**
     * Fail handler.
     * 
-    * @param failed the failed status
+    * @param failure the failed status
     */
   final def fail(failure: Failed): Unit = { 
     addErrorAttachments(failure)
     if (options.batch) {
       logger.error(Json.prettyPrint(this.scopes.visible.json))
     }
-    logger.error(failure.error.getMessage())
+    logger.error(failure.error.getMessage)
     logger.debug(s"Exception: ", failure.error)
   }
   
   /**
     * Adds error attachments to the current context.
     * 
-    * @param failed the failed status
+    * @param failure the failed status
     */
   def addErrorAttachments(failure: Failed): Unit = { 
     addAttachment("Error details", "txt", failure.error.writeStackTrace())
@@ -218,7 +213,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
    * @param content the content to write to the file
    */
   def addAttachment(name: String, extension: String, content: String): (String, File) = { 
-    val file = File.createTempFile(s"$attachmentPrefix-", s".${extension}")
+    val file = File.createTempFile(s"$attachmentPrefix-", s".$extension")
     file.deleteOnExit()
     Option(content) foreach { file.writeText }
     addAttachment((name, file))
@@ -228,7 +223,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     * Adds an attachment to the current context.
     * 
     * @param attachment the attachment (name-file pair) to add
-    * @param file the attachment file
     */
   def addAttachment(attachment: (String, File)): (String, File) = 
     (attachment match {
@@ -251,7 +245,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   }
   
   /** Gets the list of attachments (sorted by file name).*/
-  def attachments = currentAttachments.sortBy(_._2 .getName())
+  def attachments: List[(String, File)] = currentAttachments.sortBy(_._2 .getName())
   
   /**
     * Interpolate the given step before it is evaluated.
@@ -292,19 +286,19 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       case "start with" => actual.startsWith(expected)
       case "end with" => actual.endsWith(expected)
       case "match regex" => actual.matches(expected)
-      case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty()
-      case "match json path" => !evaluateJsonPath(expected, actual).isEmpty()
+      case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
+      case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
     }
     if (!negate) res else !res
   }
   
-  val isDryRun = options.dryRun
+  val isDryRun: Boolean = options.dryRun
   
 }
 
 /** Merges two contexts into one. */
 class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes) {
-  override def dsl = envA.dsl ++ envB.dsl
+  override def dsl: List[String] = envA.dsl ++ envB.dsl
   override def close() {
     try {
       envB.close()
@@ -312,7 +306,7 @@ class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: 
       envA.close()
     }
   }
-  override def getBoundReferenceValue(name: String) = 
+  override def getBoundReferenceValue(name: String): String =
     try {
       envB.getBoundReferenceValue(name)
     } catch {

@@ -19,7 +19,6 @@ package gwen.dsl
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.errors.AmbiguousCaseException
-import java.io.File
 import gwen.eval.DataRecord
 
 class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {

@@ -18,10 +18,8 @@ package gwen
 
 import scala.collection.JavaConverters._
 import java.io.File
-import scala.util.Properties
 import java.util.Properties
 import java.io.FileReader
-import scala.annotation.tailrec
 import gwen.errors._
 
 /**
@@ -51,16 +49,16 @@ object Settings {
       (props, file) => 
         props.load(new FileReader(file))
         props.entrySet().asScala foreach { entry =>
-          val key = entry.getKey().asInstanceOf[String]
-          if (key == null || key.trim.isEmpty()) invalidPropertyError(entry.toString, file)
+          val key = entry.getKey.asInstanceOf[String]
+          if (key == null || key.trim.isEmpty) invalidPropertyError(entry.toString, file)
         }
         props
     }
     props.entrySet().asScala.foreach { entry =>
-      val key = entry.getKey().asInstanceOf[String]
+      val key = entry.getKey.asInstanceOf[String]
       if (!sysProps.contains(key)) {
         val value = resolve(props.getProperty(key), props)
-        Settings.add(key, value, true)
+        Settings.add(key, value, overrideIfExists = true)
       }
     }
   }
@@ -69,7 +67,7 @@ object Settings {
    * Resolves a given property by performing any property substitutions.
    * 
    * @param value the value to resolve
-   * @param the properties already read (candidates for substitution)
+   * @param props the properties already read (candidates for substitution)
    * @throws MissingPropertyException if a property cannot be substituted 
    *         because it is missing from the given props
    */
@@ -110,7 +108,7 @@ object Settings {
     * @param value the value to bind to the property
     */
   def add(name: String, value: String): Unit = {
-    add(name, value, false)
+    add(name, value, overrideIfExists = false)
   }
   
    /**
