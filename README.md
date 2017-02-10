@@ -30,6 +30,7 @@ Key Features
 - [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
+- [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 
 Runtime Requirements
 --------------------
