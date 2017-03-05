@@ -207,7 +207,7 @@ object Scenario {
   def apply(scenario: gherkin.ast.ScenarioOutline, params: List[(String, String)]): Scenario = {
     val tag = params match {
       case Nil => None
-      case _ => Some(Tag(s"""ScenarioOutline(example="{${params.map{ case (n, v) => s""""$n":"$v""""}.mkString(", ")}}")"""))
+      case _ => Some(Tag(s"""ScenarioOutline(example="| ${params.map(_._2).mkString(" | ")} |")"""))
     }
     new Scenario(
       Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct ++ tag.toList,

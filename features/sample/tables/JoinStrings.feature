@@ -22,6 +22,6 @@
       When I join the two strings
       Then the result should be "<result>"
      Examples:
-     | string 1   | string 2 | result          |
-     | howdy      | doo      | howdydoo        |
-     | Scenario   | Outline  | ScenarioOutline |
+     | string 1 | string 2 | result   |
+     | howdy    | doo      | howdydoo |
+     | any      | thing    | anything |
