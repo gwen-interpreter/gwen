@@ -75,6 +75,53 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     assertFail("Scenario no colon after 'Scenario:'")
      
   }
+
+  "Valid scenario outlines" should "parse" in {
+
+    val outline = """
+    Scenario Outline: Join strings
+    Given I have "<string 1>
+      And I have "<string 2>"
+     When I join the two strings
+     Then the result should be "<result>"
+    Examples:
+      | string 1 | string 2 | result     |
+      | howdy    | doo      | howdydoo   |
+      | wonder   | full     | wonderfull |
+    """
+
+    println(parse(outline).get)
+//    parse("Scenario Outline:").get   should be (Scenario(List[Tag](), "", Nil, None, Nil))
+//    parse("Scenario Outline:\n").get should be (Scenario(List[Tag](), "", Nil, None, Nil))
+//
+//    parse(s"Scenario Outline:name\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline: name\n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//
+//    parse(s"Scenario Outline:name\nI am a test scenario\n$step1").get   should be (Scenario(List[Tag](), "name", List("I am a test scenario"), None, List(Step(step1, Position(4, 1)))))
+//    parse(s"Scenario Outline: name\nI am another\nmultiline\n\nscenario\n$step1").get  should be (Scenario(List[Tag](), "name", List("I am another", "multiline", "", "scenario"), None, List(Step(step1, Position(7, 1)))))
+//
+//    parse(s"\tScenario Outline:name\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline:\tname\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline:\tname\t\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline:\tname \n$step1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline:\tname\t \n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//
+//    parse(s"Scenario Outline: name\n$step1\n$step2").get should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+//
+//    parse(s"Scenario Outline: name\n$step1\n$comment1").get            should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    parse(s"Scenario Outline: name\n$step1\n$step2\n$comment1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+//    parse(s"Scenario Outline: name\n$step1\n$comment1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(5, 1)))))
+//    parse(s"Scenario Outline: name\n$comment1\n$step1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(4, 1)), Step(step2, Position(5, 1)))))
+//
+//    parse(s"Scenario Outline:\n$step1\n$step2").get    should be (Scenario(List[Tag](), s"", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+//    parse(s"Scenario Outline: \n$step1\n$step2").get   should be (Scenario(List[Tag](), s"", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+//
+//    parse("Scenario Outline: I dont have any steps").get should be (Scenario(List[Tag](), "I dont have any steps", Nil, None, Nil))
+//
+//    StepKeyword.values foreach { keyword =>
+//      parse(s"Scenario Outline: I contain a $keyword keyword in name\n$step1").get should be (Scenario(List[Tag](), s"I contain a $keyword keyword in name", Nil, None, List(Step(step1, Position(3, 1)))))
+//    }
+  }
   
   private def assertFail(input: String) {
     parse(input) match {
