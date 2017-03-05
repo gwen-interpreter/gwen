@@ -129,7 +129,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             }
           }
         case Failure(e) =>
-          e.printStackTrace()
           parsingError(e.toString)
       }
     }).getOrElse(None tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
