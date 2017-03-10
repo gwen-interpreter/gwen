@@ -104,7 +104,7 @@ class ReportGenerator (
   
   def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
-    spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
+    spec.attachments foreach { case (_, file) =>
       new File(attachmentsDir, file.getName).writeFile(file)
     }
   }
