@@ -16,12 +16,23 @@
 
  Feature: Join Strings
 
-   Scenario Outline: Verify that we can join two strings together
+   Scenario Outline: Join two strings together
+
+     This scenario is evaluated at the point where the outline is declared
+
      Given string 1 is "<string 1>"
        And string 2 is "<string 2>"
       When I join the two strings
       Then the result should be "<result>"
-     Examples:
-     | string 1 | string 2 | result   |
-     | howdy    | doo      | howdydoo |
-     | any      | thing    | anything |
+
+     Examples: Basic string concatenation
+
+       The header row contains the placeholder names. The body rows that
+       follow contain the data that is bound to each scenario that is evaluated.
+
+       | string 1 | string 2 | result   |
+       | howdy    | doo      | howdydoo |
+       | any      | thing    | anything |
+
+   Scenario: Verify that we can join two strings together
+       Given I join two strings together

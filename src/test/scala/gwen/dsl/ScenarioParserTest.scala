@@ -24,7 +24,6 @@ import scala.util.{Success, Try}
 class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
   private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
-  private def parseScenarioOutline(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios)
   
   private val step1 = Step(StepKeyword.Given, "I am step 1")
   private val step2 = Step(StepKeyword.Then, "I am not step 1")
@@ -80,41 +79,134 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
   "Valid scenario outlines" should "parse" in {
 
-    val outline = """
+    val feature = """
     Scenario Outline: Join strings
+
     Given string 1 is "<string 1>"
       And string 2 is "<string 2>"
      When I join the two strings
      Then the result should be "<result>"
-    Examples:
+
+    Examples: Compound words
+
+      | string 1 | string 2 | result     |
+      | basket   | ball     | basketball |
+      | any      | thing    | anything   |
+
+    Examples: Nonsensical compound words
+
+      Words that don't make any sense at all
+      (for testing multiple examples)
+
       | string 1 | string 2 | result   |
       | howdy    | doo      | howdydoo |
-      | any      | thing    | anything |
+      | yep      | ok       | yepok    |
+
+    Examples:
+
+      | string 1 | string 2 | result   |
+      | ding     | dong     | dingdong |
     """
 
-    val scenarios = parseScenarioOutline(outline).get.toList
+    val outline = parse(feature).get
 
-    scenarios.size should be (2)
+    outline.tags should be (Nil)
+    outline.name should be ("Join strings")
+    outline.background should be (None)
+    outline.description should be (Nil)
+    outline.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "<string 1>""""), Position(5, 5)))
+    outline.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "<string 2>""""), Position(6, 7)))
+    outline.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    outline.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "<result>""""), Position(8, 6)))
 
-    val scenario1 = scenarios(0)
-    scenario1.tags should be (List(Tag("""ScenarioOutline(example="| howdy | doo | howdydoo |")""")))
-    scenario1.name should be ("Join strings")
+    val examples = outline.examples
+    examples.size should be (3)
+
+    val example1 = examples(0)
+    example1.name should be ("Compound words")
+    example1.description should be (Nil)
+    example1.table.size should be (3)
+    example1.table(0) should be ((12, List("string 1", "string 2", "result")))
+    example1.table(1) should be ((13, List("basket", "ball", "basketball")))
+    example1.table(2) should be ((14, List("any", "thing", "anything")))
+    example1.scenarios.size should be (2)
+
+    val scenario1 = example1.scenarios(0)
+    scenario1.tags should be (Nil)
+    scenario1.name should be ("Join strings -- 1.1 Compound words")
     scenario1.background should be (None)
     scenario1.description should be (Nil)
-    scenario1.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "howdy""""), Position(4, 5)))
-    scenario1.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "doo""""), Position(5, 7)))
-    scenario1.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(6, 6)))
-    scenario1.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "howdydoo""""), Position(7, 6)))
+    scenario1.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "basket""""), Position(5, 5)))
+    scenario1.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "ball""""), Position(6, 7)))
+    scenario1.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    scenario1.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "basketball""""), Position(8, 6)))
 
-    val scenario2 = scenarios(1)
-    scenario2.tags should be (List(Tag("""ScenarioOutline(example="| any | thing | anything |")""")))
-    scenario2.name should be ("Join strings")
+    val scenario2 = example1.scenarios(1)
+    scenario2.tags should be (Nil)
+    scenario2.name should be ("Join strings -- 1.2 Compound words")
     scenario2.background should be (None)
     scenario2.description should be (Nil)
-    scenario2.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "any""""), Position(4, 5)))
-    scenario2.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "thing""""), Position(5, 7)))
-    scenario2.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(6, 6)))
-    scenario2.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "anything""""), Position(7, 6)))
+    scenario2.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "any""""), Position(5, 5)))
+    scenario2.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "thing""""), Position(6, 7)))
+    scenario2.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    scenario2.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "anything""""), Position(8, 6)))
+
+    val example2 = examples(1)
+    example2.name should be ("Nonsensical compound words")
+    example2.description.size should be (2)
+    example2.description(0) should be ("Words that don't make any sense at all")
+    example2.description(1) should be ("(for testing multiple examples)")
+    example2.table.size should be (3)
+    example2.table(0) should be ((21, List("string 1", "string 2", "result")))
+    example2.table(1) should be ((22, List("howdy", "doo", "howdydoo")))
+    example2.table(2) should be ((23, List("yep", "ok", "yepok")))
+    example2.scenarios.size should be (2)
+
+    val scenario3 = example2.scenarios(0)
+    scenario3.tags should be (Nil)
+    scenario3.name should be ("Join strings -- 2.1 Nonsensical compound words")
+    scenario3.background should be (None)
+    scenario3.description should be (Nil)
+    scenario3.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "howdy""""), Position(5, 5)))
+    scenario3.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "doo""""), Position(6, 7)))
+    scenario3.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    scenario3.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "howdydoo""""), Position(8, 6)))
+
+    val scenario4 = example2.scenarios(1)
+    scenario4.tags should be (Nil)
+    scenario4.name should be ("Join strings -- 2.2 Nonsensical compound words")
+    scenario4.background should be (None)
+    scenario4.description should be (Nil)
+    scenario4.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "yep""""), Position(5, 5)))
+    scenario4.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "ok""""), Position(6, 7)))
+    scenario4.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    scenario4.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "yepok""""), Position(8, 6)))
+
+    val example3 = examples(2)
+    example3.name should be ("")
+    example3.description should be (Nil)
+    example3.table.size should be (2)
+    example3.table(0) should be ((27, List("string 1", "string 2", "result")))
+    example3.table(1) should be ((28, List("ding", "dong", "dingdong")))
+    example3.scenarios.size should be (1)
+
+    val scenario5 = example3.scenarios(0)
+    scenario5.tags should be (Nil)
+    scenario5.name should be ("Join strings -- 3.1 ")
+    scenario5.background should be (None)
+    scenario5.description should be (Nil)
+    scenario5.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "ding""""), Position(5, 5)))
+    scenario5.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "dong""""), Position(6, 7)))
+    scenario5.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(7, 6)))
+    scenario5.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "dingdong""""), Position(8, 6)))
+
+    val scenarios = outline.examples.flatMap(_.scenarios)
+    scenarios.size should be (5)
+    scenarios(0) should be (scenario1)
+    scenarios(1) should be (scenario2)
+    scenarios(2) should be (scenario3)
+    scenarios(3) should be (scenario4)
+    scenarios(4) should be (scenario5)
 
   }
   

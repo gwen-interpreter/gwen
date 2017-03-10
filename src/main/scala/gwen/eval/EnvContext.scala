@@ -111,7 +111,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
+    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.examples, stepDef.metaFile)))
   }
   
   /**

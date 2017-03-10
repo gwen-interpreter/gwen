@@ -19,6 +19,7 @@ package gwen.dsl
 import java.io.File
 import gwen.errors._
 import scala.collection.JavaConverters._
+import gwen.Predefs.Formatting
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -95,22 +96,10 @@ object FeatureSpec {
       Feature(spec.getFeature),
       spec.getFeature.getChildren.asScala.find(_.isInstanceOf[gherkin.ast.Background]).map(_.asInstanceOf[gherkin.ast.Background]).map(b => Background(b)),
       spec.getFeature.getChildren.asScala.toList.filter(x => x.isInstanceOf[gherkin.ast.Scenario] || x.isInstanceOf[gherkin.ast.ScenarioOutline]).flatMap { s =>
-        if (s.isInstanceOf[gherkin.ast.ScenarioOutline]) {
-          val outline = s.asInstanceOf[gherkin.ast.ScenarioOutline]
-          outline.getExamples.asScala.toList flatMap { example =>
-            val header = example.getTableHeader
-            if (header == null) parsingError(s"Failed to read table header. Possible syntax error or missing column delimiter in table defined at line ${example.getLocation.getLine}")
-            val names = example.getTableHeader.getCells.asScala.toList.map(_.getValue)
-            val body = example.getTableBody
-            if (body == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${example.getLocation.getLine}")
-            example.getTableBody.iterator.asScala.toList.map { row =>
-              val values = row.getCells.asScala.map(_.getValue)
-              val params = names zip values
-              Scenario(outline, params)
-            }
-          }
+        s match {
+          case scenario: gherkin.ast.Scenario => List(Scenario(scenario))
+          case outline: gherkin.ast.ScenarioOutline => List(Scenario(outline))
         }
-        else List(Scenario(s.asInstanceOf[gherkin.ast.Scenario]))
       },
       None,
       Nil)
@@ -130,6 +119,7 @@ case class Feature(tags: List[Tag], name: String, description: List[String]) ext
   override def toString: String = name
 }
 object Feature {
+  final val keyword = "Feature"
   def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
@@ -148,7 +138,7 @@ object Feature {
   * @author Branko Juric
  */
 case class Background(name: String, description: List[String], steps: List[Step]) extends SpecNode {
-  
+
   /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
@@ -157,6 +147,7 @@ case class Background(name: String, description: List[String], steps: List[Step]
 }
 
 object Background {
+  final val keyword = "Background"
   def apply(background: gherkin.ast.Background): Background = 
     Background(
       background.getName,
@@ -170,27 +161,33 @@ object Background {
   * Captures a gherkin scenario.
   * @param tags list of tags
   * @param name the scenario name
-  * @param description the optional background description
+  * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
-  * @param metaFile: optional meta file (required if the scenario is a stepdef)
+  * @param examples optional list of examples (scenario outline entries)
+  * @param metaFile optional meta file (required if the scenario is a stepdef)
   *
   * @author Branko Juric
   */
-case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
-  
+case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples], metaFile: Option[File]) extends SpecNode {
+
+  def keyword: String = if (isStepDef) Tag.StepDefTag.name else if (!isOutline) "Scenario" else "Scenario Outline"
+
   /**
     * Returns a list containing all the background steps (if any) followed by 
     * all the scenario steps.
     */
-  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ steps
+  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ (if (!isOutline) steps else examples.flatMap(_.allSteps))
   
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
+
+  def isOutline: Boolean = examples.nonEmpty
+
+  def attachments: List[(String, File)] = steps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this scenario. */
   override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
 
-  
   override def toString: String = name
   
 }
@@ -202,27 +199,83 @@ object Scenario {
       Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      Nil,
       None)
   }
-  def apply(scenario: gherkin.ast.ScenarioOutline, params: List[(String, String)]): Scenario = {
-    val tag = params match {
-      case Nil => None
-      case _ => Some(Tag(s"""ScenarioOutline(example="| ${params.map(_._2).mkString(" | ")} |")"""))
-    }
+  def apply(outline: gherkin.ast.ScenarioOutline): Scenario = {
     new Scenario(
-      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct ++ tag.toList,
-      scenario.getName,
-      Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      Option(outline.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct,
+      outline.getName,
+      Option(outline.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      None,
+      Option(outline.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(outline, examples, index) },
+      None)
+  }
+  def apply(name: String, scenario: gherkin.ast.ScenarioOutline, params: List[(String, String)]): Scenario = {
+    new Scenario(
+      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct.filter(_ != Tag.StepDefTag),
+      Formatting.resolveParams(name, params),
+      Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim).map(line => Formatting.resolveParams(line, params))).getOrElse(Nil),
       None,
       Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s, params)),
+      Nil,
       None)
   }
   def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
-    new Scenario(tags.distinct, name, description, background, steps, None)
-  def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
-    apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.metaFile)
+    new Scenario(tags.distinct, name, description, background, steps, Nil, None)
+  def apply(scenario: Scenario, background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
+    apply(scenario.tags, scenario.name, scenario.description, background, steps, examples, scenario.metaFile)
   def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, metaFile)
+    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.examples, metaFile)
+}
+
+/**
+  * Captures a gherkin scenario outline example group.
+  *
+  * @param name the example name
+  * @param description option description lines
+  * @param table header and body data (tuple of line position and rows of data)
+  * @param scenarios list of expanded scenarios
+  */
+case class Examples(name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
+
+  /**
+    * Returns a list containing all the background steps (if any) followed by
+    * all the scenario steps.
+    */
+  def allSteps: List[Step] = scenarios.flatMap(_.allSteps)
+
+  /** Returns the evaluation status of this examples group. */
+  override lazy val evalStatus: EvalStatus = EvalStatus(scenarios.map(_.evalStatus))
+
+  override def toString: String = name
+}
+
+object Examples {
+  final val keyword = "Examples"
+  def apply(outline: gherkin.ast.ScenarioOutline, examples: gherkin.ast.Examples, index: Int): Examples = {
+    val header = examples.getTableHeader
+    if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    val body = examples.getTableBody
+    if (body == null) parsingError(s"Failed to read table header. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    val names = header.getCells.asScala.toList.map(_.getValue)
+    var table: List[(Int, List[String])] = List((header.getLocation.getLine, names))
+    val scenarios = body.iterator.asScala.toList.zipWithIndex.map { case (row, subIndex) =>
+      val values = row.getCells.asScala.toList.map(_.getValue)
+      table = (row.getLocation.getLine, values) :: table
+      val params = names zip values
+      Scenario(s"${outline.getName} -- ${index + 1}.${subIndex + 1} ${examples.getName}", outline, params)
+    }
+    new Examples(
+      examples.getName,
+      Option(examples.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      table.reverse,
+      scenarios)
+  }
+  def apply(examples: Examples, scenarios: List[Scenario]): Examples = {
+    Examples(examples.name, examples.description, examples.table, scenarios)
+  }
 }
 
 /**
@@ -294,15 +347,7 @@ object Step {
   def apply(step: gherkin.ast.Step): Step =
     new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), step.getText)
   def apply(step: gherkin.ast.Step, params: List[(String, String)]): Step = {
-    def resolveParams(source: String, params: List[(String, String)]): String = {
-      params match {
-        case Nil => source
-        case head :: tail =>
-          val (name, value) = head
-          resolveParams(source.replaceAll(s"<$name>", value), tail)
-      }
-    }
-    new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), resolveParams(step.getText, params))
+    new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), Formatting.resolveParams(step.getText, params))
   }
   def apply(keyword: StepKeyword.Value, expression: String): Step =
     new Step(Position(1, 1), keyword, expression)
@@ -317,3 +362,4 @@ object Step {
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.pos, step.keyword, step.expression, status, attachments, step.stepDef)
 }
+

@@ -16,6 +16,8 @@
 
 package gwen.dsl
 
+import gwen.Predefs.Formatting
+
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
   * each node to a string and can be invoked as a function.  For example, 
@@ -41,18 +43,20 @@ object prettyPrint {
         background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
     case Feature(tags, name, description) =>
-      s"${formatTags("   ", tags)}   Feature: $name${formatDescription(description)}"
+      s"${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
     case background @ Background(name, description, steps) =>
-      s"\n\nBackground: $name${formatDescription(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, name, description, background, steps, _) =>
+      s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+    case scenario @ Scenario(tags, name, description, background, steps, examples, _) =>
       background.map(apply).getOrElse("") +
-      s"\n\n${formatTags("  ", tags)}  Scenario: $name${formatDescription(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+      s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n") + printAll(examples.map(apply), "", "\n")
     case Step(_, keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"$keyword $expression${formatStatus(evalStatus)}"
+    case Examples(name, description, table, _) =>
+      s"\n  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.map{ case (_, data) => Formatting.formatDataRecord(data) })}"
   }
   
-  private def formatDescription(description: List[String]): String =
-    description.map { line =>
+  private def formatTextLines(lines: List[String]): String =
+    lines.map { line =>
       s"\n            $line"
     }.mkString
   

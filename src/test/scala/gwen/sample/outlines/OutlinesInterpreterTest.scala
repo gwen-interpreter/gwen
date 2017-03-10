@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.sample.tables
+package gwen.sample.outlines
 
 import gwen.dsl.Failed
 import gwen.dsl.Passed
@@ -30,14 +30,14 @@ import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
 
-class TablesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
+class OutlinesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
   extends EnvContext(options, scopes) {
   override def dsl: List[String] = Nil
 }
 
-trait TablesEvalEngine extends EvalEngine[TablesEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TablesEnvContext = new TablesEnvContext(options, scopes)
-  override def evaluate(step: Step, env: TablesEnvContext) {
+trait OutlinesEvalEngine extends EvalEngine[OutlinesEnvContext] {
+  override def init(options: GwenOptions, scopes: ScopedDataStack): OutlinesEnvContext = new OutlinesEnvContext(options, scopes)
+  override def evaluate(step: Step, env: OutlinesEnvContext) {
     step.expression match {
       case r"""(.+?)$name is "(.+?)"$$$value""" =>
         env.scopes.set(name, value)
@@ -50,25 +50,25 @@ trait TablesEvalEngine extends EvalEngine[TablesEnvContext] {
   }
 }
 
-class TablesInterpreter
-  extends GwenInterpreter[TablesEnvContext]
-  with TablesEvalEngine
+class OutlinesInterpreter
+  extends GwenInterpreter[OutlinesEnvContext]
+  with OutlinesEvalEngine
 
-object TablesInterpreter
-  extends GwenApp(new TablesInterpreter)
+object OutlinesInterpreter
+  extends GwenApp(new OutlinesInterpreter)
 
-class TablesInterpreterTest extends FlatSpec {
+class OutlinesInterpreterTest extends FlatSpec {
   
-  "tables features" should "evaluate without error" in {
+  "Scenario outlines" should "evaluate without error" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables")),
+      reportDir = Some(new File("target/report/outlines")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit),
-      features = List(new File("features/sample/tables"))
+      features = List(new File("features/sample/outlines"))
     )
       
-    val launcher = new GwenLauncher(new TablesInterpreter())
+    val launcher = new GwenLauncher(new OutlinesInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -76,17 +76,17 @@ class TablesInterpreterTest extends FlatSpec {
     }
   }
   
-  "tables features" should "pass --dry-run test" in {
+  "Scenario outlines" should "pass --dry-run test" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables-dry-run")),
+      reportDir = Some(new File("target/report/outlines-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit),
-      features = List(new File("features/sample/tables")),
+      features = List(new File("features/sample/outlines")),
       dryRun = true
     )
       
-    val launcher = new GwenLauncher(new TablesInterpreter())
+    val launcher = new GwenLauncher(new OutlinesInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)

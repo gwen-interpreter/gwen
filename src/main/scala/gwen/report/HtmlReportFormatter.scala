@@ -17,50 +17,46 @@ package gwen.report
 
 import java.io.File
 import java.text.DecimalFormat
-import gwen.dsl.EvalStatus
-import gwen.dsl.Failed
-import gwen.dsl.StatusKeyword
-import gwen.dsl.Step
+
+import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.GwenInfo
 import gwen.eval.GwenOptions
-import gwen.dsl.Scenario
-import gwen.dsl.Tag
 import gwen.GwenSettings
 import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
-import gwen.dsl.FeatureSpec
 import gwen.report.HtmlReportFormatter._
 import gwen.Predefs.Formatting._
-import gwen.Predefs.DurationOps
+import gwen.Predefs.{DurationOps, Formatting}
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
-  
+
   private val percentFormatter = new DecimalFormat("#.##")
-  
+
   /**
     * Formats the feature detail report as HTML.
-    * 
-    * @param options gwen command line options
-    * @param info the gwen implementation info
-    * @param unit the feature input
-    * @param result the feature result to report
+    *
+    * @param options     gwen command line options
+    * @param info        the gwen implementation info
+    * @param unit        the feature input
+    * @param result      the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
-    
+
     val reportDir = ReportFormat.html.reportDir(options)
-    val metaResults = result.metaResults 
+    val metaResults = result.metaResults
     val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
-    val title = s"${if(result.isMeta) "Meta" else "Feature"} Detail"
+    val title = s"${if (result.isMeta) "Meta" else "Feature"} Detail"
     val summary = result.summary
     val screenshots = result.screenshots
     val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
-    
-    Some(s"""<!DOCTYPE html>
+
+    Some(
+      s"""<!DOCTYPE html>
 <html lang="en">
   <head>
     ${formatHtmlHead(s"$title - $featureName", rootPath)}
@@ -70,9 +66,12 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatReportHeader(info, title, featureName, rootPath)}
     ${formatStatusHeader(unit, result, rootPath, breadcrumbs, screenshots)}
     <div class="panel panel-default">
-      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${if (result.spec.feature.tags.nonEmpty) s"""
-        <span class="grayed"><p><small>${result.spec.feature.tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""}
-        <span class="label label-black">${if(result.isMeta) "Meta" else "Feature"}</span>
+      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${
+        if (result.spec.feature.tags.nonEmpty)
+          s"""
+        <span class="grayed"><p><small>${result.spec.feature.tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
+      }
+        <span class="label label-black">${if (result.isMeta) "Meta" else "Feature"}</span>
         ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.overhead)}</small></span>
@@ -82,11 +81,12 @@ trait HtmlReportFormatter extends ReportFormatter {
           </table>
         </div>
       </div>
-    </div>${if (metaResults.nonEmpty) {
-    val count = metaResults.size
-    val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
-    val status = metaStatus.status
-    s"""
+    </div>${
+        if (metaResults.nonEmpty) {
+          val count = metaResults.size
+          val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
+          val status = metaStatus.status
+          s"""
     <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
@@ -102,68 +102,161 @@ trait HtmlReportFormatter extends ReportFormatter {
           <ul class="list-group">
             <li class="list-group-item list-group-item-${cssStatus(status)}">
               <div class="container-fluid" style="padding: 0px 0px">
-                ${(metaResults.zipWithIndex map { case (res, rowIndex) => formatSummaryLine(res, if(GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}"), None, rowIndex)}).mkString}
+                ${(metaResults.zipWithIndex map { case (res, rowIndex) => formatSummaryLine(res, if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}"), None, rowIndex) }).mkString}
               </div>
             </li>
           </ul>
         </div>
       </div>
-    </div>"""} else ""}${(result.spec.scenarios.zipWithIndex map {case (s, idx) => formatScenario(s, s"$idx")}).mkString}
+    </div>"""
+        } else ""
+      }${(result.spec.scenarios.zipWithIndex map { case (s, idx) => formatScenario(s, s"$idx") }).mkString}
   </body>
 </html>
 """)
   }
-  
+
   private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]) = {
     val bgClass = status.map(cssStatus).getOrElse("default")
-    if (description.nonEmpty) s"""
-        <p>
-        <ul class="list-group bg-$bgClass">${(description  map { line =>
-          s"""<li class="list-group-item bg-$bgClass">$line</li>"""}).mkString}
-        </ul>
-        </p>""" else ""
+    if (description.nonEmpty)
+      s"""
+        <p></p>
+        <ul class="list-group bg-$bgClass">${
+          (description map { line =>
+            s"""<li class="list-group-item bg-$bgClass">$line</li>"""
+          }).mkString
+        }
+        </ul>"""
+    else ""
   }
-  
+
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-    val tags = scenario.tags.filter(_ != Tag.StepDefTag )
+    val tags = scenario.tags.filter(_ != Tag.StepDefTag)
     s"""
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${if (tags.nonEmpty) s"""
-          <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""}
-          <span class="label label-${cssStatus(status)}">${if (scenario.isStepDef) "StepDef" else "Scenario"}</span>${if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1) s"""
-          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""}
+        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${
+      if (tags.nonEmpty)
+        s"""
+          <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
+    }
+          <span class="label label-${cssStatus(status)}">${scenario.keyword}</span>${
+      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1)
+        s"""
+          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
+    }
           ${escapeHtml(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
         </li>
       </ul>
-      <div class="panel-body">${(scenario.background map { background => 
-          val status = background.evalStatus.status
-          val backgroundId = s"$scenarioId-background"
-          s"""
+      <div class="panel-body">${
+      (scenario.background map { background =>
+        val status = background.evalStatus.status
+        val backgroundId = s"$scenarioId-background"
+        s"""
         <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
           <ul class="list-group">
             <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
-              <span class="label label-${cssStatus(status)}">Background</span>
+              <span class="label label-${cssStatus(status)}">${Background.keyword}</span>
               <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
               ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status))}
             </li>
           </ul>
           <div class="panel-body">
-            <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${(background.steps map { step => 
-                formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}")}).mkString}
+            <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
+          (background.steps map { step =>
+            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}")
+          }).mkString
+        }
             </ul>
           </div>
-        </div>"""}).getOrElse("")}
+        </div>"""
+      }).getOrElse("")
+    }
         <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
-          <ul class="list-group">${(scenario.steps map { step => 
-            formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}")}).mkString}
+          <ul class="list-group">${
+          (scenario.steps map { step =>
+            if (!scenario.isOutline)
+              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}")
+            else
+              formatRawStepLine(step, scenario.evalStatus.status)
+            }).mkString
+          }
           </ul>
+        ${if (scenario.isOutline) formatExamples(scenario.examples, scenarioId) else ""}
         </div>
       </div>
     </div>"""
   }
+
+  private def formatExamples(examples: List[Examples], outlineId: String): String = (examples.zipWithIndex map { case (exs, index) =>
+    val exampleId = s"$outlineId-examples-${index}"
+    val status = exs.evalStatus.status
+    s"""
+       <p></p>
+       <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
+         <ul class="list-group">
+           <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
+             <span class="label label-${cssStatus(status)}">${Examples.keyword}</span>
+             <span class="pull-right"><small>${durationOrStatus(exs.evalStatus)}</small></span>
+             ${escapeHtml(exs.name)}${formatDescriptionLines(exs.description, Some(status))}
+           </li>
+         </ul>
+        <div class="panel-body">
+          <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
+            formatExampleHeader(exs.evalStatus, exs.table(0))}${
+            (exs.scenarios.zipWithIndex map { case (scenario, subindex) =>
+              formatExampleRow(scenario, exs.table(subindex + 1), s"$exampleId-${subindex}")
+            }).mkString
+          }
+          </ul>
+        </div>
+      </div>"""
+  }).mkString
+
+  private def formatExampleHeader(evalStatus: EvalStatus, header: (Int, List[String])): String = {
+              val (line, data) = header
+              val status = evalStatus.status
+              val expression = s"| ${data.mkString(" | ")} |"
+              s"""
+                <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+                <div class="bg-${cssStatus(status)}">
+                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
+                  &nbsp; ${escapeHtml(expression)}
+                </div>
+              </li>"""
+  }
+  private def formatExampleRow(scenario: Scenario, row: (Int, List[String]), exampleId: String): String = {
+              val (line, data) = row
+              val status = scenario.evalStatus.status
+              val expression = Formatting.formatDataRecord(data)
+              s"""
+                <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+                <div class="bg-${cssStatus(status)}">
+                  <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
+                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
+                  &nbsp; ${if (status == StatusKeyword.Passed) formatExampleLink(expression, status, s"$exampleId") else escapeHtml(expression) }
+                  ${formatAttachments(scenario.attachments, status)} ${if (status == StatusKeyword.Failed || status == StatusKeyword.Passed) formatExampleDiv(scenario, status, exampleId) else ""}
+                </div>
+                ${if (status == StatusKeyword.Failed) s"""
+                <ul>
+                  <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+                    <div class="bg-${cssStatus(status)}">
+                      <span class="badge badge-${cssStatus(status)}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(scenario.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escapeHtml(scenario.evalStatus.asInstanceOf[Failed].error.getCause.getMessage)}</small></span>
+                    </div>
+                  </li>
+                </ul>""" else ""}
+              </li>"""
+  }
+
+  private def formatExampleLink(expression: String, status: StatusKeyword.Value, exampleId: String): String =
+                  s"""<a class="inverted inverted-${cssStatus(status)}" role="button" data-toggle="collapse" href="#$exampleId" aria-expanded="true" aria-controls="$exampleId">${escapeHtml(expression)}</a>"""
+
+  private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value, exampleId: String): String = s"""
+                  <div id="$exampleId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel">
+                  ${formatScenario(scenario, exampleId)}
+                  </div>"""
   
   /**
     * Formats the feature summary report as HTML.
@@ -300,10 +393,18 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <ul>
                   <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                     <div class="bg-${cssStatus(status)}">
-                      <span class="badge badge-${cssStatus(status)}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escapeHtml(step.evalStatus.asInstanceOf[Failed].error.getCause.getMessage)}</small></span>
+                      <span class="badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) """ badge-issue""" else ""}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escapeHtml(step.evalStatus.asInstanceOf[Failed].error.getCause.getMessage)}</small></span>
                     </div>
                   </li>
                 </ul>""" else ""}
+              </li>"""
+
+  private def formatRawStepLine(step: Step, status: StatusKeyword.Value): String = s"""
+              <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+                <div class="bg-${cssStatus(status)}">
+                  <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${escapeHtml(step.expression)}
+                </div>
               </li>"""
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
@@ -376,7 +477,7 @@ object HtmlReportFormatter {
         <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}">${escapeHtml(text)}</a>
       </li>"""}).mkString}
       <li>
-        <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a href="#${result.spec.scenarios.zipWithIndex.collectFirst { case (s, i) if s.evalStatus.status == status => s"scenario-$i" } getOrElse("")}" style="color:white;">""" else ""}${status}${if (renderStatusLink) "</a>" else ""}</span>
+        <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a id="issue" href="#" style="color:white;">""" else ""}${status}${if (renderStatusLink) """</a><script>$(document).ready(function(){$('#issue').click(function(e){e.preventDefault();$('html, body').animate({scrollTop:$('.badge-issue').closest('.panel').offset().top},500);});});</script>""" else ""}</span>
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>

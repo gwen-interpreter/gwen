@@ -50,7 +50,19 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
         Given any software behavior
          When expressed in Gherkin
          Then Gwen can evaluate it
- """
+
+    Scenario Outline: Join two strings together
+              This scenario is evaluated at the point where the outline is declared
+        Given string 1 is "<string 1>"
+          And string 2 is "<string 2>"
+         When I join the two strings
+         Then the result should be "<result>"
+    Examples: Basic string concatenation
+              The header row contains the placeholder names. The body rows that
+              follow contain the data that is bound to each scenario that is evaluated.
+              | string 1 | string 2 | result   |
+              | howdy    | doo      | howdydoo |
+              | any      | thing    | anything |"""
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     
@@ -69,21 +81,21 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
             )
           )
         }
-        featureSpec.scenarios should be {
-          List(
-            Scenario(List(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
-              List(
-                Step(Position(17, 7), StepKeyword.Given, "any software behavior"),
-                Step(Position(18, 8), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(19, 8), StepKeyword.Then,  "Gwen can evaluate it")
-              )
-            ),
-            Scenario(List[Tag](), "Evaluation", Nil, None, 
-              List(
-                Step(Position(22, 7), StepKeyword.Given, "any software behavior"),
-                Step(Position(23, 8), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(24, 8), StepKeyword.Then,  "Gwen can evaluate it")
-              )
+        featureSpec.scenarios(0) should be {
+          Scenario(List(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
+            List(
+              Step(Position(17, 7), StepKeyword.Given, "any software behavior"),
+              Step(Position(18, 8), StepKeyword.When,  "expressed in Gherkin"),
+              Step(Position(19, 8), StepKeyword.Then,  "Gwen can evaluate it")
+            )
+          )
+        }
+        featureSpec.scenarios(1) should be {
+          Scenario(List[Tag](), "Evaluation", Nil, None,
+            List(
+              Step(Position(22, 7), StepKeyword.Given, "any software behavior"),
+              Step(Position(23, 8), StepKeyword.When,  "expressed in Gherkin"),
+              Step(Position(24, 8), StepKeyword.Then,  "Gwen can evaluate it")
             )
           )
         }
@@ -95,6 +107,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
   "pretty print of normalised Gwen feature" should "replicate background for each scenario" in {
     
     val specFeature = normalise(parse(featureString).get, None, None)
+    println(prettyPrint(specFeature))
     prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
    Feature: Gwen
             As a tester
@@ -124,7 +137,20 @@ Background: The butterfly effect
   Scenario: Evaluation
       Given any software behavior
        When expressed in Gherkin
-       Then Gwen can evaluate it""".replace("\r", ""))
+       Then Gwen can evaluate it
+
+  Scenario Outline: Join two strings together
+            This scenario is evaluated at the point where the outline is declared
+      Given string 1 is "<string 1>"
+        And string 2 is "<string 2>"
+       When I join the two strings
+       Then the result should be "<result>"
+  Examples: Basic string concatenation
+            The header row contains the placeholder names. The body rows that
+            follow contain the data that is bound to each scenario that is evaluated.
+            | string 1 | string 2 | result |
+            | howdy | doo | howdydoo |
+            | any | thing | anything |""".replace("\r", ""))
     
   }
     

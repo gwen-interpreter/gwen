@@ -1,7 +1,9 @@
 2.2.0
 =====
-Mar 5, 2017
+Mar 10, 2017
 - Added support for scenario outlines
+  - You can use them inline or as StepDefs
+  - Each example record is a hyperlink in the HTML report that expands the scenario when clicked
 
 2.1.0
 =====

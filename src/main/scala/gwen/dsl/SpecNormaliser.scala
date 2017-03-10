@@ -63,17 +63,29 @@ trait SpecNormaliser {
       Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
     val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(tags, s"Bind data attributes", Nil, None, steps, None) :: featureScenarios(spec, scenarios)
+    Scenario(tags, s"Bind data attributes", Nil, None, steps, Nil, None) :: featureScenarios(spec, scenarios)
   }
     
   private def featureScenarios(spec: FeatureSpec, scenarios: List[Scenario]): List[Scenario] = spec.background match {
     case None => scenarios
-    case Some(_) => 
-      scenarios map { scenario => 
-        Scenario(
-          scenario, 
-          if (scenario.isStepDef) None else spec.background, 
-          scenario.steps)
+    case Some(_) =>
+      scenarios map { scenario =>
+        if (!scenario.isOutline) {
+          Scenario(scenario, if (scenario.isStepDef) None else spec.background, scenario.steps, Nil)
+        } else {
+          Scenario(
+            scenario,
+            None,
+            scenario.steps,
+            scenario.examples map { exs =>
+              Examples(
+                exs,
+                exs.scenarios map { s =>
+                  Scenario(s, if (s.isStepDef) None else spec.background, s.steps, Nil)
+                }
+              )
+            })
+        }
       }
   }  
    
