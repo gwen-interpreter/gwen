@@ -74,8 +74,7 @@ case class FeatureSpec(
   def steps: List[Step] = scenarios.flatMap(_.allSteps)
 
   /** Gets all attachments. */
-  def attachments: List[(String, File)] = scenarios.flatMap(_.steps).flatMap(_.attachments) ++
-                                          scenarios.flatMap(_.examples).flatMap(_.scenarios).flatMap(_.attachments)
+  def attachments: List[(String, File)] = steps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {
