@@ -239,14 +239,6 @@ trait HtmlReportFormatter extends ReportFormatter {
                   &nbsp; ${if (status == StatusKeyword.Passed) formatExampleLink(expression, status, s"$exampleId") else escapeHtml(expression) }
                   ${formatAttachments(scenario.attachments, status)} ${if (status == StatusKeyword.Failed || status == StatusKeyword.Passed) formatExampleDiv(scenario, status, exampleId) else ""}
                 </div>
-                ${if (status == StatusKeyword.Failed) s"""
-                <ul>
-                  <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
-                    <div class="bg-${cssStatus(status)}">
-                      <span class="badge badge-${cssStatus(status)}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(scenario.evalStatus.asInstanceOf[Failed].timestamp.toString)} - ${escapeHtml(scenario.evalStatus.asInstanceOf[Failed].error.getCause.getMessage)}</small></span>
-                    </div>
-                  </li>
-                </ul>""" else ""}
               </li>"""
   }
 
