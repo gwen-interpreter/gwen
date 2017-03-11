@@ -123,7 +123,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <p></p>
         <ul class="list-group bg-$bgClass">${
           (description map { line =>
-            s"""<li class="list-group-item bg-$bgClass">$line</li>"""
+            s"""<li class="list-group-item bg-$bgClass">${escapeHtml(line)}</li>"""
           }).mkString
         }
         </ul>"""
@@ -237,7 +237,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
                   &nbsp; ${if (status == StatusKeyword.Passed) formatExampleLink(expression, status, s"$exampleId") else escapeHtml(expression) }
-                  ${formatAttachments(scenario.attachments, status)} ${if (status == StatusKeyword.Failed || status == StatusKeyword.Passed) formatExampleDiv(scenario, status, exampleId) else ""}
+                  ${formatAttachments(scenario.attachments, status)} ${if (EvalStatus.isEvaluated(status)) formatExampleDiv(scenario, status, exampleId) else ""}
                 </div>
               </li>"""
   }
@@ -374,12 +374,12 @@ trait HtmlReportFormatter extends ReportFormatter {
                 </div>"""
 
   private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String): String = s"""
-              <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
+        <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${step.stepDef.map { _ => if (status == StatusKeyword.Failed) escapeHtml(step.expression) else formatStepDefLink(step, status, s"$stepId-stepDef") }.getOrElse(escapeHtml(step.expression))}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map { stepDef => formatStepDefDiv(stepDef, status, s"$stepId-stepDef") }.getOrElse("")}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else escapeHtml(step.expression)}
+                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}
                 </div>
                 ${if (status == StatusKeyword.Failed && step.stepDef.isEmpty) s"""
                 <ul>

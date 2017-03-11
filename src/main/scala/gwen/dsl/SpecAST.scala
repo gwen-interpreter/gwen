@@ -268,7 +268,7 @@ object Examples {
       val values = row.getCells.asScala.toList.map(_.getValue)
       table = (row.getLocation.getLine, values) :: table
       val params = names zip values
-      Scenario(s"${outline.getName} -- ${index + 1}.${subIndex + 1} ${examples.getName}", outline, params)
+      Scenario(s"${outline.getName} -- Example ${index + 1}.${subIndex + 1} ${examples.getName}", outline, params)
     }
     new Examples(
       examples.getName,

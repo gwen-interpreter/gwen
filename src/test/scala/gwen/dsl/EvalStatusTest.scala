@@ -360,4 +360,13 @@ Background: The tester
   
   }
 
+
+  "isEvaluated on Passed and Failed" should "return true, false otherwise" in {
+    EvalStatus.isEvaluated(StatusKeyword.Passed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Failed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Skipped) should be (false)
+    EvalStatus.isEvaluated(StatusKeyword.Pending) should be (false)
+    EvalStatus.isEvaluated(StatusKeyword.Loaded) should be (false)
+  }
+
 }

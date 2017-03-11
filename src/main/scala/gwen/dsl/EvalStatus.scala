@@ -121,6 +121,15 @@ object EvalStatus {
       }
     } else Skipped
   }
+
+  /**
+    * Returns true if the given status is an evaluated status. A status is considered evalauted if it is
+    * Passed or Failed.
+    *
+    * @param status the status to check
+    * @return true if the status is Passed or Failed, false otherwise
+    */
+  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || status == StatusKeyword.Failed
   
 }
 

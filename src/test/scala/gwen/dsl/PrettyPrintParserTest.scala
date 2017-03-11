@@ -51,6 +51,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
          When expressed in Gherkin
          Then Gwen can evaluate it
 
+    @Outline
     Scenario Outline: Join two strings together
               This scenario is evaluated at the point where the outline is declared
         Given string 1 is "<string 1>"
@@ -139,6 +140,7 @@ Background: The butterfly effect
        When expressed in Gherkin
        Then Gwen can evaluate it
 
+  @Outline
   Scenario Outline: Join two strings together
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "<string 1>"

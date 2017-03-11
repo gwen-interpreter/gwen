@@ -16,9 +16,10 @@
 
  Feature: Join Strings
 
-   Scenario Outline: Join two strings together
+   Scenario Outline: Joining <string 1> and <string 2> should yield <result>
 
-     This scenario is evaluated at the point where the outline is declared
+     This scenario is evaluated at the point where the outline is declared.
+     Joining <string 1> and <string 2> should yield <result>
 
      Given string 1 is "<string 1>"
        And string 2 is "<string 2>"
