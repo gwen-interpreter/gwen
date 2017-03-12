@@ -37,7 +37,7 @@ object prettyPrint {
     * @param node the AST node to print
     */
   def apply(node: SpecNode): String = node match {
-    case spec @ FeatureSpec(feature, background, scenarios,  _, _) =>
+    case spec @ FeatureSpec(feature, background, scenarios, _, _) =>
       apply(feature) +
         formatStatus(spec.evalStatus) +
         background.map(apply).getOrElse("") +
@@ -47,12 +47,18 @@ object prettyPrint {
     case background @ Background(name, description, steps) =>
       s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, name, description, background, steps, examples, _) =>
+
       background.map(apply).getOrElse("") +
-      s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n") + printAll(examples.map(apply), "", "\n")
+        (if (scenario.isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
+        printAll(examples.map(apply), "", "\n")
     case Step(_, keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"$keyword $expression${formatStatus(evalStatus)}"
-    case Examples(name, description, table, _) =>
-      s"\n  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.map{ case (_, data) => Formatting.formatDataRecord(data) })}"
+    case Examples(name, description, table, scenarios) => scenarios match {
+      case Nil =>
+        s"\n  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.map { case (_, data) => Formatting.formatDataRecord(data) })}"
+      case _ =>
+        scenarios.map(apply).mkString("")
+    }
   }
   
   private def formatTextLines(lines: List[String]): String =

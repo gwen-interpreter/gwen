@@ -19,7 +19,6 @@ package gwen.dsl
 import java.io.File
 import gwen.errors._
 import scala.collection.JavaConverters._
-import gwen.Predefs.Formatting
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -186,10 +185,11 @@ case class Scenario(tags: List[Tag], name: String, description: List[String], ba
 
   def isOutline: Boolean = examples.nonEmpty
 
-  def attachments: List[(String, File)] = steps.flatMap(_.attachments)
+  def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this scenario. */
-  override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
+  override lazy val evalStatus: EvalStatus =
+    if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus))
 
   override def toString: String = name
   
@@ -215,17 +215,7 @@ object Scenario {
       outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(outline, examples, index) },
       None)
   }
-  def apply(name: String, scenario: gherkin.ast.ScenarioOutline, params: List[(String, String)]): Scenario = {
-    new Scenario(
-      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct.filter(_ != Tag.StepDefTag),
-      Formatting.resolveParams(name, params),
-      Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim).map(line => Formatting.resolveParams(line, params))).getOrElse(Nil),
-      None,
-      Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s, params)),
-      Nil,
-      None)
-  }
-  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
+  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
     new Scenario(tags.distinct, name, description, background, steps, Nil, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
     apply(scenario.tags, scenario.name, scenario.description, background, steps, examples, scenario.metaFile)
@@ -262,19 +252,14 @@ object Examples {
     if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
     val body = examples.getTableBody
     if (body == null) parsingError(s"Failed to read table header. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
-    val names = header.getCells.asScala.toList.map(_.getValue)
-    var table: List[(Int, List[String])] = List((header.getLocation.getLine, names))
-    val scenarios = body.iterator.asScala.toList.zipWithIndex.map { case (row, subIndex) =>
-      val values = row.getCells.asScala.toList.map(_.getValue)
-      table = (row.getLocation.getLine, values) :: table
-      val params = names zip values
-      Scenario(s"${outline.getName} -- Example ${index + 1}.${subIndex + 1} ${examples.getName}", outline, params)
-    }
     new Examples(
       examples.getName,
       Option(examples.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      table.reverse,
-      scenarios)
+      (header.getLocation.getLine, header.getCells.asScala.toList.map(_.getValue)) ::
+        body.iterator.asScala.toList.map { row =>
+          (row.getLocation.getLine, row.getCells.asScala.toList.map(_.getValue))
+        },
+      Nil)
   }
   def apply(examples: Examples, scenarios: List[Scenario]): Examples = {
     Examples(examples.name, examples.description, examples.table, scenarios)
@@ -349,9 +334,6 @@ case class Step(
 object Step {
   def apply(step: gherkin.ast.Step): Step =
     new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), step.getText)
-  def apply(step: gherkin.ast.Step, params: List[(String, String)]): Step = {
-    new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), Formatting.resolveParams(step.getText, params))
-  }
   def apply(keyword: StepKeyword.Value, expression: String): Step =
     new Step(Position(1, 1), keyword, expression)
   def apply(keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
