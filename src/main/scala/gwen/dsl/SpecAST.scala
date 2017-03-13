@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,9 @@ case class FeatureSpec(
     * @return a list containing all the steps (or an empty list if none exist)
     */
   def steps: List[Step] = scenarios.flatMap(_.allSteps)
+
+  /** Gets all attachments. */
+  def attachments: List[(String, File)] = steps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {
@@ -94,7 +97,12 @@ object FeatureSpec {
     FeatureSpec(
       Feature(spec.getFeature),
       spec.getFeature.getChildren.asScala.find(_.isInstanceOf[gherkin.ast.Background]).map(_.asInstanceOf[gherkin.ast.Background]).map(b => Background(b)),
-      spec.getFeature.getChildren.asScala.toList.filter(_.isInstanceOf[gherkin.ast.Scenario]).map(_.asInstanceOf[gherkin.ast.Scenario]).map(s => Scenario(s)),
+      spec.getFeature.getChildren.asScala.toList.filter(x => x.isInstanceOf[gherkin.ast.Scenario] || x.isInstanceOf[gherkin.ast.ScenarioOutline]).flatMap { s =>
+        s match {
+          case scenario: gherkin.ast.Scenario => List(Scenario(scenario))
+          case outline: gherkin.ast.ScenarioOutline => List(Scenario(outline))
+        }
+      },
       None,
       Nil)
   }
@@ -113,6 +121,7 @@ case class Feature(tags: List[Tag], name: String, description: List[String]) ext
   override def toString: String = name
 }
 object Feature {
+  final val keyword = "Feature"
   def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
@@ -131,7 +140,7 @@ object Feature {
   * @author Branko Juric
  */
 case class Background(name: String, description: List[String], steps: List[Step]) extends SpecNode {
-  
+
   /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
@@ -140,6 +149,7 @@ case class Background(name: String, description: List[String], steps: List[Step]
 }
 
 object Background {
+  final val keyword = "Background"
   def apply(background: gherkin.ast.Background): Background = 
     Background(
       background.getName,
@@ -153,45 +163,107 @@ object Background {
   * Captures a gherkin scenario.
   * @param tags list of tags
   * @param name the scenario name
-  * @param description the optional background description
+  * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
-  * @param metaFile: optional meta file (required if the scenario is a stepdef)
+  * @param examples optional list of examples (scenario outline entries)
+  * @param metaFile optional meta file (required if the scenario is a stepdef)
   *
   * @author Branko Juric
   */
-case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], metaFile: Option[File]) extends SpecNode {
-  
+case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples], metaFile: Option[File]) extends SpecNode {
+
+  def keyword: String = if (isStepDef) Tag.StepDefTag.name else if (!isOutline) "Scenario" else "Scenario Outline"
+
   /**
     * Returns a list containing all the background steps (if any) followed by 
     * all the scenario steps.
     */
-  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ steps
+  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ (if (!isOutline) steps else examples.flatMap(_.allSteps))
   
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
+
+  def isOutline: Boolean = examples.nonEmpty
+
+  def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this scenario. */
-  override lazy val evalStatus: EvalStatus = EvalStatus(allSteps.map(_.evalStatus))
+  override lazy val evalStatus: EvalStatus =
+    if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus))
 
-  
   override def toString: String = name
   
 }
 object Scenario {
-  def apply(scenario: gherkin.ast.Scenario): Scenario = 
+  def apply(scenario: gherkin.ast.Scenario): Scenario = {
     new Scenario(
-      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct, 
-      scenario.getName, 
+      Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct,
+      scenario.getName,
       Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      None, 
-      Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)), 
+      None,
+      Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      Nil,
       None)
-  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario = 
-    new Scenario(tags.distinct, name, description, background, steps, None)
-  def apply(scenario: Scenario, background: Option[Background], steps: List[Step]): Scenario = 
-    apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.metaFile)
+  }
+  def apply(outline: gherkin.ast.ScenarioOutline): Scenario = {
+    new Scenario(
+      Option(outline.getTags).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(t)).distinct,
+      outline.getName,
+      Option(outline.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      None,
+      Option(outline.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(outline, examples, index) },
+      None)
+  }
+  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+    new Scenario(tags.distinct, name, description, background, steps, Nil, None)
+  def apply(scenario: Scenario, background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
+    apply(scenario.tags, scenario.name, scenario.description, background, steps, examples, scenario.metaFile)
   def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, metaFile)
+    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.examples, metaFile)
+}
+
+/**
+  * Captures a gherkin scenario outline example group.
+  *
+  * @param name the example name
+  * @param description option description lines
+  * @param table header and body data (tuple of line position and rows of data)
+  * @param scenarios list of expanded scenarios
+  */
+case class Examples(name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
+
+  /**
+    * Returns a list containing all the background steps (if any) followed by
+    * all the scenario steps.
+    */
+  def allSteps: List[Step] = scenarios.flatMap(_.allSteps)
+
+  /** Returns the evaluation status of this examples group. */
+  override lazy val evalStatus: EvalStatus = EvalStatus(scenarios.map(_.evalStatus))
+
+  override def toString: String = name
+}
+
+object Examples {
+  final val keyword = "Examples"
+  def apply(outline: gherkin.ast.ScenarioOutline, examples: gherkin.ast.Examples, index: Int): Examples = {
+    val header = examples.getTableHeader
+    if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    val body = examples.getTableBody
+    if (body == null) parsingError(s"Failed to read table header. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    new Examples(
+      examples.getName,
+      Option(examples.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
+      (header.getLocation.getLine, header.getCells.asScala.toList.map(_.getValue)) ::
+        body.iterator.asScala.toList.map { row =>
+          (row.getLocation.getLine, row.getCells.asScala.toList.map(_.getValue))
+        },
+      Nil)
+  }
+  def apply(examples: Examples, scenarios: List[Scenario]): Examples = {
+    Examples(examples.name, examples.description, examples.table, scenarios)
+  }
 }
 
 /**
@@ -275,3 +347,4 @@ object Step {
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.pos, step.keyword, step.expression, status, attachments, step.stepDef)
 }
+

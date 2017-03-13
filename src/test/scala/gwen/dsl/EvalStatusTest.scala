@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -358,6 +358,15 @@ Background: The tester
       }
     }
   
+  }
+
+
+  "isEvaluated on Passed and Failed" should "return true, false otherwise" in {
+    EvalStatus.isEvaluated(StatusKeyword.Passed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Failed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Skipped) should be (false)
+    EvalStatus.isEvaluated(StatusKeyword.Pending) should be (false)
+    EvalStatus.isEvaluated(StatusKeyword.Loaded) should be (false)
   }
 
 }

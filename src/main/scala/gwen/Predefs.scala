@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,6 +205,15 @@ object Predefs extends LazyLogging {
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
     def escapeXml(text: String): String =
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
+    def resolveParams(source: String, params: List[(String, String)]): String = {
+      params match {
+        case Nil => source
+        case head :: tail =>
+          val (name, value) = head
+          resolveParams(source.replaceAll(s"<$name>", value), tail)
+      }
+    }
+    def formatDataRecord(record: List[String]): String = s"| ${record.mkString(" | ")} |"
   }
   
   object DurationOps {

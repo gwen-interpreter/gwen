@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,13 @@
 package gwen.eval
 
 import com.typesafe.scalalogging.LazyLogging
-import gwen.dsl.Step
+import gwen.dsl._
 import gwen.Predefs._
 import gwen.errors._
+
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
-import gwen.dsl.Passed
-import gwen.dsl.Failed
-import gwen.dsl.StatusKeyword
-import gwen.dsl.Scenario
-import gwen.dsl.EvalStatus
-import gwen.dsl.Skipped
-import gwen.dsl.SpecType
-import gwen.dsl.Loaded
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -57,6 +50,76 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param scopes initial data scopes
     */
   private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): T
+
+  /**
+    * Evaluates a given scenario.
+    *
+    * @param scenario the scenario to evaluate
+    * @param env the environment context
+    * @return the evaluated scenario
+    */
+  private[eval] def evaluateScenario(scenario: Scenario, env: T): Scenario = {
+    if (scenario.isStepDef) {
+      logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
+      env.addStepDef(scenario)
+      val steps =
+        if (!scenario.isOutline)
+          scenario.steps map { step => Step(step, Loaded, step.attachments) }
+        else scenario.steps
+      val examples =
+        if (scenario.isOutline)
+          scenario.examples map { exs =>
+            Examples(exs, exs.scenarios map { s =>
+              Scenario(
+                s,
+                s.background map { b =>
+                  Background(b, b.steps map { step => Step(step, Loaded, step.attachments) })
+                },
+                s.steps map { step => Step(step, Loaded, step.attachments) },
+                s.examples
+              )
+            })
+          }
+        else scenario.examples
+      Scenario(scenario, None, steps, examples)
+    } else {
+      logger.info(s"Evaluating ${scenario.keyword}: $scenario")
+      if (!scenario.isOutline) {
+        scenario.background map (evaluateBackground(_, env)) match {
+          case None =>
+            Scenario(scenario, None, evaluateSteps(scenario.steps, env), scenario.examples)
+          case Some(background) =>
+            val steps: List[Step] = background.evalStatus match {
+              case Passed(_) => evaluateSteps(scenario.steps, env)
+              case Skipped if background.steps.isEmpty => evaluateSteps(scenario.steps, env)
+              case _ => scenario.steps map { step =>
+                Step(step, Skipped, step.attachments)
+              }
+            }
+            Scenario(scenario, Some(background), steps, scenario.examples)
+        }
+      }
+      else {
+        Scenario(scenario, scenario.background, scenario.steps, evaluateExamples(scenario.examples, env))
+      }
+    } tap { scenario =>
+      logStatus(scenario.keyword, scenario.toString, scenario.evalStatus)
+    }
+  }
+
+  /**
+    * Evaluates a given background.
+    *
+    * @param background the background to evaluate
+    * @param env the environment context
+    * @return the evaluated background
+    */
+  private[eval] def evaluateBackground(background: Background, env: T): Background = {
+    logger.info(s"Evaluating ${Background.keyword}: $background")
+    Background(background, evaluateSteps(background.steps, env)) tap { bg =>
+      logStatus(Background.keyword, bg.toString, bg.evalStatus)
+    }
+  }
   
   /**
     * Evaluates a given step.
@@ -122,15 +185,26 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   }
   
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
-    logger.debug(s"Evaluating StepDef: ${stepDef.name}")
+    logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     env.paramScope.push(stepDef.name, params)
     try {
-      Step(step, Scenario(stepDef, None, evaluateSteps(stepDef.steps, env))) tap { _ =>
-        logger.debug(s"StepDef evaluated: ${stepDef.name}")
+      val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
+      val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
+      Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
+        logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
       }
     } finally {
       env.paramScope.pop
     }
+  }
+
+  private def evaluateExamples(examples: List[Examples], env: T): List[Examples] = examples map { exs =>
+    Examples(
+      exs,
+      exs.scenarios map { scenario =>
+        evaluateScenario(scenario, env)
+      }
+    )
   }
   
   /**

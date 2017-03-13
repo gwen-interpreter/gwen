@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package gwen.eval
 
 import java.io.File
+
 import scala.io.Source
 import scala.language.postfixOps
 import scala.util.Failure
@@ -28,20 +29,7 @@ import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import gwen.Predefs.FileIO._
-import gwen.dsl.Background
-import gwen.dsl.EvalStatus
-import gwen.dsl.Failed
-import gwen.dsl.FeatureSpec
-import gwen.dsl.GherkinParser
-import gwen.dsl.Loaded
-import gwen.dsl.Passed
-import gwen.dsl.Scenario
-import gwen.dsl.Skipped
-import gwen.dsl.SpecNormaliser
-import gwen.dsl.SpecType
-import gwen.dsl.Step
-import gwen.dsl.Tag
-import gwen.dsl.prettyPrint
+import gwen.dsl._
 import gwen.errors._
 import java.util.Date
 
@@ -129,7 +117,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             }
           }
         case Failure(e) =>
-          parsingError(e.toString)
+          parsingError(s"Gherkin parsing error: ${e.toString}", e)
       }
     }).getOrElse(None tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
   
@@ -161,15 +149,24 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
                 Scenario(
                   scenario, 
                   scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
-                  scenario.steps.map(step => Step(step, Skipped, step.attachments))
+                  scenario.steps.map(step => Step(step, Skipped, step.attachments)),
+                  scenario.examples.map { exs =>
+                    Examples(exs, exs.scenarios.map { s =>
+                      Scenario(
+                        s,
+                        s.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
+                        s.steps.map(step => Step(step, Skipped, step.attachments)),
+                        s.examples)
+                    })
+                  }
                 )
               } else if (exitOnFail) {
                 scenario
               } else {
-                evaluateScenario(scenario, env)
+                engine.evaluateScenario(scenario, env)
               }
-            case _ => 
-              evaluateScenario(scenario, env)
+            case _ =>
+              engine.evaluateScenario(scenario, env)
           }) :: acc
       } reverse,
       featureSpec.featureFile,
@@ -187,59 +184,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       }
     }
   }
-  
-  /**
-    * Evaluates a given scenario.
-    * 
-    * @param scenario the scenario to evaluate
-    * @param env the environment context
-    * @return the evaluated scenario
-    */
-  private def evaluateScenario(scenario: Scenario, env: T): Scenario = {
-    if (scenario.isStepDef) {
-      logger.info(s"Loading StepDef: ${scenario.name}")
-      env.addStepDef(scenario) 
-      Scenario(scenario, None, scenario.steps map { step =>
-        Step(step, Loaded, step.attachments)
-      }) tap { scenario =>
-        logStatus("StepDef", scenario.toString, scenario.evalStatus)
-      }
-    } else {
-      logger.info(s"Evaluating Scenario: $scenario")
-      (scenario.background map(evaluateBackground(_, env)) match {
-        case None => 
-          Scenario(scenario, None, engine.evaluateSteps(scenario.steps, env))
-        case Some(background) => 
-          Scenario(
-            scenario,
-            Some(background),
-            background.evalStatus match {
-              case Passed(_) => engine.evaluateSteps(scenario.steps, env)
-              case Skipped if background.steps.isEmpty => engine.evaluateSteps(scenario.steps, env)
-              case _ => scenario.steps map { step =>
-                Step(step, Skipped, step.attachments)
-              }
-            })
-      }) tap { scenario =>
-        logStatus("Scenario", scenario.toString, scenario.evalStatus)
-      } 
-    }
-  }
-  
-  /**
-    * Evaluates a given background.
-    * 
-    * @param background the background to evaluate
-    * @param env the environment context
-    * @return the evaluated background
-    */
-  private def evaluateBackground(background: Background, env: T): Background = {
-    logger.info(s"Evaluating Background: $background")
-    Background(background, engine.evaluateSteps(background.steps, env)) tap { bg =>
-      logStatus("Background", bg.toString, bg.evalStatus)
-    }
-  }
-  
+
   /**
     * Loads meta imports.
     * 
