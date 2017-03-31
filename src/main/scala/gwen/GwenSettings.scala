@@ -64,5 +64,12 @@ object GwenSettings {
     * or not meta report generation will be suppressed (default value is `false`).
     */
   def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").getOrElse("false").toBoolean
-  
+
+  /**
+    * Controls whether or not slideshows should be generated in HTML reports. This property is implicitly set to true
+    * in the web engine only if screenshot capturing is enabled (gwen.web.capture.screenshots=true in web engine settings).
+    * Users should not explicitly set this value.
+    */
+  def `gwen.report.slideshow.create` = Settings.getOpt("gwen.report.slideshow.create").getOrElse("false").toBoolean
+
 }

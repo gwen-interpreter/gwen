@@ -21,9 +21,8 @@ import java.text.DecimalFormat
 import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.GwenInfo
+import gwen.{GwenInfo, GwenSettings, Settings}
 import gwen.eval.GwenOptions
-import gwen.GwenSettings
 import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
 import gwen.report.HtmlReportFormatter._
@@ -477,7 +476,7 @@ object HtmlReportFormatter {
       <li>
         <small><span class="grayed">Finished: </span>${escapeHtml(result.finished.toString)}</small>
       </li>
-        ${ if (screenshots.size > 1) { s"""
+        ${ if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) { s"""
              <li>
                ${formatSlideshow(screenshots, result.spec, unit, rootPath)} 
              </li>"""
@@ -486,7 +485,7 @@ object HtmlReportFormatter {
       <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span>
     </ol>"""
   }
-    
+
   private def formatSlideshow(screenshots: List[File], spec: FeatureSpec, unit: FeatureUnit, rootPath: String) = s"""
   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
