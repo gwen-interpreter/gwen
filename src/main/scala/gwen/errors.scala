@@ -46,8 +46,9 @@ package gwen {
     def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
     def decodingError(msg: String) = throw new DecodingException(msg)
     def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
-    def missingImportError(importTag: Tag, specFile: File) = throw new MissingImportException(importTag, specFile)
+    def missingImportFileError(importTag: Tag, specFile: Option[File]) = throw new MissingImportFileException(importTag, specFile)
     def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
+    def unsupportedDataFileError(dataTag: Tag, specFile: Option[File]) = throw new UnsupportedDataFileException(dataTag, specFile)
     def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
     def syntaxError(msg: String) = throw new SyntaxException(msg)
     def sqlError(msg: String) = throw new SQLException(msg)
@@ -104,10 +105,13 @@ package gwen {
     class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: $stepDef: $msg")
     
     /** Thrown when an import file is not found. */
-    class MissingImportException(importTag: Tag, specFile: File) extends Exception(s"Missing file detected in $importTag declared in $specFile")
-    
+    class MissingImportFileException(importTag: Tag, specFile: Option[File]) extends Exception(s"Missing file detected in $importTag${specFile.map(f => s"declared in $f").getOrElse("")}")
+
     /** Thrown when an unsupported import file is detected. */
     class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in $importTag declared in $specFile (only .meta files can be imported)")
+
+    /** Thrown when an unsupported data table file is detected. */
+    class UnsupportedDataFileException(dataTag: Tag, specFile: Option[File]) extends Exception(s"Unsupported file type detected in $dataTag${specFile.map(f => s"declared in $f").getOrElse("")} (only .csv data files supported)}")
     
     /** Thrown when a recursive import is detected. */
     class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) $importTag detected in $specFile") {

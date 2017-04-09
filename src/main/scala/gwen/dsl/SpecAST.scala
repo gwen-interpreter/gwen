@@ -166,12 +166,21 @@ object Background {
   * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
+  * @param isOutline true if this is a scenario outline; false otherwise
   * @param examples optional list of examples (scenario outline entries)
   * @param metaFile optional meta file (required if the scenario is a stepdef)
   *
   * @author Branko Juric
   */
-case class Scenario(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples], metaFile: Option[File]) extends SpecNode {
+case class Scenario(
+    tags: List[Tag],
+    name: String,
+    description: List[String],
+    background: Option[Background],
+    steps: List[Step],
+    isOutline: Boolean,
+    examples: List[Examples],
+    metaFile: Option[File]) extends SpecNode {
 
   def keyword: String = if (isStepDef) Tag.StepDefTag.name else if (!isOutline) "Scenario" else "Scenario Outline"
 
@@ -182,8 +191,6 @@ case class Scenario(tags: List[Tag], name: String, description: List[String], ba
   def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ (if (!isOutline) steps else examples.flatMap(_.allSteps))
   
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
-
-  def isOutline: Boolean = examples.nonEmpty
 
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
@@ -202,6 +209,7 @@ object Scenario {
       Option(scenario.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      isOutline = false,
       Nil,
       None)
   }
@@ -212,15 +220,18 @@ object Scenario {
       Option(outline.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(outline.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
+      isOutline = true,
       outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(outline, examples, index) },
       None)
   }
   def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-    new Scenario(tags.distinct, name, description, background, steps, Nil, None)
+    new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-    apply(scenario.tags, scenario.name, scenario.description, background, steps, examples, scenario.metaFile)
+    apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.isOutline, examples, scenario.metaFile)
   def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.examples, metaFile)
+    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.isOutline, scenario.examples, metaFile)
+  def apply(outline: Scenario, examples: List[Examples]): Scenario =
+    Scenario(outline, outline.background, outline.steps, examples)
 }
 
 /**

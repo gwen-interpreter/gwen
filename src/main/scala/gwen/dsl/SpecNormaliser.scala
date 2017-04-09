@@ -62,7 +62,7 @@ trait SpecNormaliser {
       Step(Position(0, 0), keyword, s"""$name is "$value"""")
     }
     val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(tags, s"Bind data attributes", Nil, None, steps, Nil, None) :: expandScenarios(scenarios, background)
+    Scenario(tags, s"Bind data attributes", Nil, None, steps, isOutline = false, Nil, None) :: expandScenarios(scenarios, background)
   }
 
   private def expandScenarios(scenarios: List[Scenario], background: Option[Background]): List[Scenario] =
@@ -75,7 +75,7 @@ trait SpecNormaliser {
     background.map(_ => Scenario(scenario, if (scenario.isStepDef) None else background, scenario.steps, Nil)).getOrElse(scenario)
 
 
-  private def expandScenarioOutline(outline: Scenario, background: Option[Background]): Scenario =
+  def expandScenarioOutline(outline: Scenario, background: Option[Background]): Scenario =
     Scenario(
       outline,
       None,
@@ -87,13 +87,14 @@ trait SpecNormaliser {
           exs.table.tail.zipWithIndex.map { case ((_, values), subIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
-              outline.tags.filter(_ != Tag.StepDefTag),
+              outline.tags.filter(t => t != Tag.StepDefTag && !t.name.startsWith("Examples")),
               s"${Formatting.resolveParams(outline.name, params)} -- Example ${index + 1}.${subIndex + 1} ${exs.name}",
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None else background,
               outline.steps.map { s =>
                 new Step(s.pos, s.keyword, Formatting.resolveParams(s.expression, params), s.status, s.attachments, s.stepDef)
               },
+              isOutline = false,
               Nil,
               None)
           })

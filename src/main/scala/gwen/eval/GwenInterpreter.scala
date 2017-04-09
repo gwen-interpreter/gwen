@@ -33,6 +33,8 @@ import gwen.dsl._
 import gwen.errors._
 import java.util.Date
 
+import com.github.tototoshi.csv.CSVReader
+
 /**
   * Interprets incoming feature specs by parsing and evaluating
   * them.  All parsing is performed in the inherited [[gwen.dsl.GherkinParser]].
@@ -139,7 +141,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
       None, 
-      featureSpec.scenarios.foldLeft(List[Scenario]()) {
+      featureSpec.scenarios.map(s => if (s.isOutline) expandCSVExamples(s) else s).foldLeft(List[Scenario]()) {
         (acc: List[Scenario], scenario: Scenario) => 
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
@@ -194,7 +196,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param env the environment context
     * @throws gwen.errors.ParsingException if the given meta fails to parse
     */
-  private[eval] def loadMetaImports(featureSpec: FeatureSpec, featureFile: File, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =  
+  private[eval] def loadMetaImports(featureSpec: FeatureSpec, featureFile: File, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =
     getMetaImports(featureSpec, featureFile) flatMap { metaFile => 
       try {
         loadMetaFile(metaFile, tagFilters, env)
@@ -209,7 +211,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       case r"""Import\("(.*?)"$filepath\)""" =>
         val file = new File(filepath)
         if (!file.getName.endsWith(".meta")) unsupportedImportError(tag, specFile)
-        if (!file.exists()) missingImportError(tag, specFile)
+        if (!file.exists()) missingImportFileError(tag, Some(specFile))
         if (file.getCanonicalPath.equals(specFile.getCanonicalPath)) {
           recursiveImportError(tag, specFile)
         }
@@ -247,6 +249,33 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         case _ => Nil
       }
     } else None
+
+  /**
+    * Loads the CSV examples for every Examples(file.csv) tag on the given outline and expands them.
+    *
+    * @param outline the scenario outline
+    * @return a new scenario outline containing the loaded examples data
+    *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
+    */
+  private def expandCSVExamples(outline: Scenario): Scenario =
+    outline.tags.flatMap { tag =>
+      tag.name.trim match {
+        case r"""Examples\("(.*?)"$filepath\)""" =>
+          val file = new File(filepath)
+          if (!file.getName.endsWith(".csv")) unsupportedDataFileError(tag, None)
+          if (!file.exists()) missingImportFileError(tag, None)
+          val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1, row.toList) }
+          Some(Examples(s"Data file: $filepath", Nil, table, Nil))
+        case r"""(?:E|x)amples\(.*""" =>
+          syntaxError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("csv-filepath")""")
+        case _ => None
+      }
+    } match {
+      case Nil => outline
+      case csvExamples =>
+        val examples = expandScenarioOutline(Scenario(outline, csvExamples), outline.background).examples
+        Scenario(outline, outline.examples ++ examples)
+    }
   
 }
 

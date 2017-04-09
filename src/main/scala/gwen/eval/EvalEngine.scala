@@ -20,6 +20,9 @@ import com.typesafe.scalalogging.LazyLogging
 import gwen.dsl._
 import gwen.Predefs._
 import gwen.errors._
+import java.io.File
+
+import com.github.tototoshi.csv.CSVReader
 
 import scala.util.Try
 import scala.util.Success
@@ -98,8 +101,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             }
             Scenario(scenario, Some(background), steps, scenario.examples)
         }
-      }
-      else {
+      } else {
         Scenario(scenario, scenario.background, scenario.steps, evaluateExamples(scenario.examples, env))
       }
     } tap { scenario =>

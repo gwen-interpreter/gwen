@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,9 @@ object prettyPrint {
       s"${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
     case background @ Background(name, description, steps) =>
       s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, name, description, background, steps, examples, _) =>
-
+    case scenario @ Scenario(tags, name, description, background, steps, isOutline, examples, _) =>
       background.map(apply).getOrElse("") +
-        (if (scenario.isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
+        (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
     case Step(_, keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"$keyword $expression${formatStatus(evalStatus)}"

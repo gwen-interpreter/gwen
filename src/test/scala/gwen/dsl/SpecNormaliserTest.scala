@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,6 +226,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
             Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)),
             Step(Step(StepKeyword.Then, """the result should be "<result>""""), Position(14, 6))
           ),
+          isOutline = true,
           List(
             Examples(
               "Compound words",
