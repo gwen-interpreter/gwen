@@ -122,7 +122,7 @@ object Predefs extends LazyLogging {
     def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
     def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
     def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
-    def isDataFile(file: File): Boolean = hasFileExtension("csv", file)
+    def isCsvFile(file: File): Boolean = hasFileExtension("csv", file)
     def hasFileExtension(extension: String, file: File): Boolean = file.isFile && file.getName.endsWith(s".$extension")
     def recursiveScan(dir: File, extension: String): List[File] = {
       val files = dir.listFiles

@@ -1,8 +1,11 @@
 2.3.0
 =====
-Apr 9, 2017
+Apr 10, 2017
 - Add cache in feature scope for storing temporary objects (non string values)
 - Add support for sourcing examples tables from CSV files in scenario outlines
+- Add settings for enabling or disabling auto meta and CSV data file discovery
+  - gwen.auto.discover.meta (true to enable auto meta discovery, false to disable, default is true for enabled)
+  - gwen.auto.discover.data.csv (true to enable auto CSV data discovery, false to disable, default is true for enabled)
 
 2.2.1
 =====
