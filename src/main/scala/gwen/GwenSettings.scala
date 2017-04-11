@@ -87,6 +87,6 @@ object GwenSettings {
     * Disabling this will prevent Gwen from automatically discovering and loading CSV files in the path of an executing
     * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
     */
-  def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("false").toBoolean
+  def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
 
 }
