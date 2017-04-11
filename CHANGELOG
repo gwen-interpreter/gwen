@@ -1,6 +1,6 @@
 2.3.0
 =====
-Apr 10, 2017
+Apr 11, 2017
 - Add cache in feature scope for storing temporary objects (non string values)
 - Add support for sourcing examples tables from CSV files in scenario outlines
 - Add settings for enabling or disabling auto meta and CSV data file discovery

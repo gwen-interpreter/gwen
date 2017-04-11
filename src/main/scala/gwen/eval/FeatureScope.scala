@@ -65,7 +65,7 @@ class FeatureScope extends ScopedData("feature") {
 class ObjectCache {
 
   /** Map of cached objects. */
-  private var cache = Map[String, Any]()
+  private var cache = Map[String, List[Any]]()
 
   /**
     * Binds a named object to the internal cache.
@@ -73,7 +73,12 @@ class ObjectCache {
     * @param name the name to bind the object to
     * @param obj the object to bind
     */
-  def bind(name: String, obj: Any) { cache += (name -> obj) }
+  def bind(name: String, obj: Any) {
+    cache.get(name) match {
+      case Some(objs) => cache += (name -> (obj :: objs))
+      case None => cache += (name -> List(obj))
+    }
+  }
 
   /**
     * Gets a bound object from the internal cache.
@@ -81,16 +86,21 @@ class ObjectCache {
     * @param name the name of the bound object to get
     * @return Some(bound object) or None
     */
-  def get(name: String): Option[Any] = cache.get(name)
+  def get(name: String): Option[Any] = cache.get(name).flatMap(_.headOption)
 
   /**
     * Clears a bound object from the internal cache. Performs no operation if no object is not bound to the name.
     *
     * @param name the name of the bound object to remove
     */
-  def clear[T](name: String) { cache -= name }
+  def clear[T](name: String) {
+    cache.get(name) match {
+      case Some(_::tail) if (tail.nonEmpty) => cache += (name -> tail)
+      case _ => cache -= name
+    }
+  }
 
   /** Resets the internal cache by creating a new one. */
-  private[eval] def reset() { cache = Map[String, Any]() }
+  private[eval] def reset() { cache = Map[String, List[Any]]() }
 
 }

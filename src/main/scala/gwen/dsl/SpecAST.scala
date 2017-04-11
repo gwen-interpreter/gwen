@@ -17,7 +17,9 @@
 package gwen.dsl
 
 import java.io.File
+
 import gwen.errors._
+
 import scala.collection.JavaConverters._
 
 /**
@@ -182,7 +184,11 @@ case class Scenario(
     examples: List[Examples],
     metaFile: Option[File]) extends SpecNode {
 
-  def keyword: String = if (isStepDef) Tag.StepDefTag.name else if (!isOutline) "Scenario" else "Scenario Outline"
+  def keyword: String =
+    if(isForEach) Tag.ForEachTag.name
+    else if (isStepDef) Tag.StepDefTag.name
+    else if (!isOutline) "Scenario"
+    else "Scenario Outline"
 
   /**
     * Returns a list containing all the background steps (if any) followed by 
@@ -191,6 +197,7 @@ case class Scenario(
   def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ (if (!isOutline) steps else examples.flatMap(_.allSteps))
   
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
+  def isForEach: Boolean = tags.contains(Tag.ForEachTag)
 
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
@@ -293,6 +300,7 @@ case class Tag(name: String) extends SpecNode {
 object Tag {
   
   val StepDefTag = Tag("StepDef")
+  val ForEachTag = Tag("ForEach")
   private val Regex = """~?@(\w+)""".r
   
   import scala.language.implicitConversions
@@ -339,6 +347,9 @@ case class Step(
   
   /** Returns a string representation of this step. */
   override def toString = s"$keyword $expression"
+
+  /** Returns a unique string ID value for this object .*/
+  lazy val uniqueId = java.util.UUID.randomUUID.toString
   
 }
 
@@ -357,5 +368,7 @@ object Step {
     new Step(step.pos, step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef))
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.pos, step.keyword, step.expression, status, attachments, step.stepDef)
+  def apply(step: Step, status: EvalStatus, attachments: List[(String, File)], foreachStepDef: Scenario): Step =
+    new Step(step.pos, step.keyword, step.expression, status, attachments, Some(foreachStepDef))
 }
 

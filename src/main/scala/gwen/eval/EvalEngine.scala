@@ -20,9 +20,6 @@ import com.typesafe.scalalogging.LazyLogging
 import gwen.dsl._
 import gwen.Predefs._
 import gwen.errors._
-import java.io.File
-
-import com.github.tototoshi.csv.CSVReader
 
 import scala.util.Try
 import scala.util.Success
@@ -176,7 +173,14 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
-        Step(evaluatedStep, evaluatedStep.stepDef.map(_.evalStatus ).getOrElse(Passed(System.nanoTime - start)), env.attachments)
+        env.foreachStepDefs.get(step.uniqueId) match {
+          case Some(foreachStepDef) =>
+            env.foreachStepDefs -= step.uniqueId
+            val attachments = (env.attachments ::: foreachStepDef.attachments).sortBy(_._2.getName())
+            Step(evaluatedStep, foreachStepDef.evalStatus, attachments, foreachStepDef)
+          case _ =>
+            Step(evaluatedStep, evaluatedStep.stepDef.map(_.evalStatus ).getOrElse(Passed(System.nanoTime - start)), env.attachments)
+        }
       case Failure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
         env.fail(failure)

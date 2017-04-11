@@ -58,7 +58,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   private var attachmentPrefix = padWithZeroes(1)
   
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
-  var loadedMeta: List[File] = Nil  
+  var loadedMeta: List[File] = Nil
+
+  /** Map of for-each StepDefs. */
+  var foreachStepDefs: Map[String, Scenario] = Map[String, Scenario]()
   
   /** Provides access to the global feature scope. */
   def featureScope: FeatureScope = scopes.featureScope
@@ -79,6 +82,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     resetAttachments()
     attachmentPrefix = padWithZeroes(1)
     loadedMeta = Nil
+    foreachStepDefs = Map[String, Scenario]()
   }
     
   def json: JsObject = scopes.json

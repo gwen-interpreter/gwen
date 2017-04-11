@@ -75,5 +75,17 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
       case _ => fail("failure expected")
     }
   }
+
+  "toString on step clone" should "return same value" in {
+    val step1 = Step(StepKeyword.Given, "I am a step")
+    val step2 = Step(StepKeyword.Given, "I am a step")
+    step1.toString should be (step2.toString)
+  }
+
+  "uniqueId on step clone" should "return different values" in {
+    val step1 = Step(StepKeyword.Given, "I am a step")
+    val step2 = Step(StepKeyword.Given, "I am a step")
+    step1.uniqueId should not be (step2.uniqueId)
+  }
   
 }

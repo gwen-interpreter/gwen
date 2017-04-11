@@ -21,7 +21,7 @@ import java.text.DecimalFormat
 import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.{GwenInfo, GwenSettings, Settings}
+import gwen.{GwenInfo, GwenSettings}
 import gwen.eval.GwenOptions
 import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
@@ -132,7 +132,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-    val tags = scenario.tags.filter(_ != Tag.StepDefTag)
+    val tags = scenario.tags.filter(t => t != Tag.StepDefTag && t != Tag.ForEachTag)
     s"""
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
@@ -146,7 +146,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
     }
-          ${escapeHtml(scenario.name)}${formatDescriptionLines(scenario.description, Some(status))}
+          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else ""}
         </li>
       </ul>
       <div class="panel-body">${
@@ -164,8 +164,8 @@ trait HtmlReportFormatter extends ReportFormatter {
           </ul>
           <div class="panel-body">
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-          (background.steps map { step =>
-            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}")
+          (background.steps.zipWithIndex map { case (step, index) =>
+            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}-${index + 1}")
           }).mkString
         }
             </ul>
@@ -175,9 +175,9 @@ trait HtmlReportFormatter extends ReportFormatter {
     }
         <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
           <ul class="list-group">${
-          (scenario.steps map { step =>
+          (scenario.steps.zipWithIndex map { case (step, index) =>
             if (!scenario.isOutline)
-              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}")
+              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}-${index + 1}")
             else
               formatRawStepLine(step, scenario.evalStatus.status)
             }).mkString

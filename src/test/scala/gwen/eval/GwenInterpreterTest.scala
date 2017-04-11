@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   
   "interpreting a valid step" should "return success" in {
     val mockEnv = mock[EnvContext]
+    val mockForeachScenarios = mock[Map[String,Scenario]]
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
+    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
+    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val step = Step(StepKeyword.Given, "I am a valid step")
     when(mockEnv.interpolate(step)).thenReturn(step)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid step", mockEnv)
@@ -88,11 +91,14 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   "interperting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
+    val mockForeachScenarios = mock[Map[String,Scenario]]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
     val stepdef = Scenario(List[Tag](Tag.StepDefTag), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
+    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
+    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
@@ -110,6 +116,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   
   "interpreting an invalid step" should "return error" in {
     val mockEnv = mock[EnvContext]
+    val mockForeachScenarios = mock[Map[String,Scenario]]
+    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
+    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val result = interpreter(mockEnv).interpretStep("Yes I am an invalid step", mockEnv)
     result match {
       case TrySuccess(_) =>
@@ -131,7 +140,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
     val mockEnv = mock[EnvContext]
+    val mockForeachScenarios = mock[Map[String,Scenario]]
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
+    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
+    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
     val step2 = Step(Position(6, 9), StepKeyword.Given, "a deterministic nonlinear system")
     val step3 = Step(Position(7, 10), StepKeyword.When, "a small change is initially applied")
@@ -177,6 +189,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         Step(Position(6, 10), StepKeyword.When, "a small change is initially applied"),
         Step(Position(7, 10), StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
+    val mockForeachScenarios = mock[Map[String,Scenario]]
+    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
+    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
     when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)

@@ -274,6 +274,29 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.featureScope.objects.get("greeting") should be (None)
     env.featureScope.objects.get("gwen") should be (None)
   }
+
+  "Managing bound and shadowed objects from cache" should "work as expected" in {
+    val env = newEnv
+    env.featureScope.objects.bind("greeting", "howdy")
+    env.featureScope.objects.bind("gwen", "interpreter 1")
+    env.featureScope.objects.bind("gwen", "interpreter 2")
+
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (Some("interpreter 2"))
+
+    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (Some("interpreter 1"))
+
+    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (None)
+
+    env.reset()
+    env.featureScope.objects.get("greeting") should be (None)
+    env.featureScope.objects.get("gwen") should be (None)
+
+  }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())
   
