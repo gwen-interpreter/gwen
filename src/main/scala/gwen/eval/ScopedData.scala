@@ -67,6 +67,9 @@ class ScopedData(val scope: String) extends LazyLogging {
     * the list.
     */
   private val atts = mutable.MutableList[(String, String)]()
+
+  def allAttributeNames = atts.filter{case (n:String, _) => n.contains("/type") }
+        //atts.map{ case (n, _) => n.split("(.+?)/?")(0) } distinct
   
   val isFeatureScope = false
   
@@ -168,7 +171,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return Some((name, value)) or None if no match is found
    */
-  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] = 
+  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] =
     findEntries(pred).lastOption match {
       case Some((_, null)) => None
       case x => x

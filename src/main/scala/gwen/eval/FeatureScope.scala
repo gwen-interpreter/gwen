@@ -50,7 +50,7 @@ class FeatureScope extends ScopedData("feature") {
       currentScope foreach { cs =>
         if (cs.findEntries { case (n, _) => n == name || n.startsWith(s"$name/") } nonEmpty) {
           cs.flashScope.foreach { fs => 
-            fs += ((name, value)) 
+            fs += ((name, value))
           }
         }
       }

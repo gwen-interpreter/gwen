@@ -80,7 +80,10 @@ class ScopedDataStack() {
     *  are made). 
     */
   private[eval] val paramScope = new LocalDataStack()
-  
+
+
+  def allAttributeNames = scopes.flatMap(_.allAttributeNames) distinct
+
   reset()
   
   /** Resets the data stack. */
@@ -147,7 +150,7 @@ class ScopedDataStack() {
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return a new Scoped data stack containing only the attributes accepted by the predicate; 
    */
-  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = 
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack =
     ScopedDataStack(scopes.flatMap(_.filterAtts(pred)))
   
   /**
@@ -157,7 +160,7 @@ class ScopedDataStack() {
     * @param name the name of the attribute to bind
     * @return the value to bind to the attribute
     */
-  def set(name: String, value: String) { 
+  def set(name: String, value: String) {
       if (!getOpt(name).contains(value)) {
         current.set(name, value)
       }

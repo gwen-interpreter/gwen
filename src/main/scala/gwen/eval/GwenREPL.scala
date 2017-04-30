@@ -17,17 +17,19 @@
 package gwen.eval
 
 import java.io.File
+import java.util
+
 import scala.util.Failure
 import scala.util.Success
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import gwen.dsl.StepKeyword
-import jline.console.ConsoleReader
-import jline.console.completer.StringsCompleter
+import jline.console.{ConsoleReader, completer}
+import jline.console.completer.{AggregateCompleter, StringsCompleter}
 import jline.console.history.FileHistory
 import play.api.libs.json.Json
+
 import scala.collection.JavaConverters._
-import jline.console.completer.AggregateCompleter
 
 /**
   * Read-Eval-Print-Loop console.
@@ -37,19 +39,65 @@ import jline.console.completer.AggregateCompleter
 class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile)
+  private var aggregateCompleter = new AggregateCompleter()
   
   private lazy val reader = new ConsoleReader() tap { reader =>
     reader.setHistory(history)
     reader.setBellEnabled(false)
     reader.setExpandEvents(false)
     reader.setPrompt("gwen>")
+    reader.setHandleLitteralNext(true)
     reader.addCompleter(new StringsCompleter((StepKeyword.literals ++ List("help", "env", "history", "exit")).asJava))
-    reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
+    aggregateCompleter = new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava))
+    reader.addCompleter(aggregateCompleter)
+    //new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava))
   }
   
   /** Reads an input string or command from the command line. */
   private def read(): String = {
     println()
+
+    reader.removeCompleter(aggregateCompleter)
+
+    //println(env.visibleScopes.current.findEntries{case (n:String, _) => !n.contains("/name") }.map{case (n:String, _) => n})
+    //println(env.visibleScopes.visible.filterAtts()..map{case (n:String, _) => n})
+    //StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).filter{ f => !f}
+    //AggregateCompleter aggregateCompleter = StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava
+
+    //reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
+
+
+    //reader.setCompletionHandler().removeCompleter()
+
+    def allElementTypeAttributes = env.visibleScopes.allAttributeNames
+      .filter{ x => x._2.equals("element")}
+
+    var allDsl = StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava
+    var allItems = new util.LinkedList[String]()
+    allDsl.forEach( e =>
+      if (e.contains("<element>")) {
+        //allItems.add(e)  //add original
+        allElementTypeAttributes foreach {
+          x => allItems.add(e.replaceAll("<element>",x._1.replaceAll("/type","")))
+        }
+      })
+
+
+
+    println(allItems)
+    //.foreach { x => x._1.replaceAll("/type","") }
+    aggregateCompleter = new AggregateCompleter(new StringsCompleter(allItems))
+    reader.addCompleter(aggregateCompleter)
+
+
+    //def.toString.split("$(.+)/?")
+    //
+      //.filterAtts{case (n, _) => println(n); true})
+    //println(new StringsCompleter(env.visibleScopes.current.scope.toString
+    //env.visibleScopes.allAttributeNames
+    //env.visibleScopes.allAttributeNames.foreach(f => println(f))
+    //println(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")))
+
     reader.readLine() tap { _ => println() }
   }
   
