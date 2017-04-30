@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,6 +121,15 @@ object EvalStatus {
       }
     } else Skipped
   }
+
+  /**
+    * Returns true if the given status is an evaluated status. A status is considered evalauted if it is
+    * Passed or Failed.
+    *
+    * @param status the status to check
+    * @return true if the status is Passed or Failed, false otherwise
+    */
+  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || status == StatusKeyword.Failed
   
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,6 +247,55 @@ class EnvContextTest extends FlatSpec with Matchers {
         env.addStepDef(stepdef)
       }
     }
+  }
+
+  "Getting bound objects from cache" should "get those objects" in {
+    val env = newEnv
+    env.featureScope.objects.bind("greeting", "howdy")
+    env.featureScope.objects.bind("gwen", "interpreter")
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (Some("interpreter"))
+  }
+
+  "Clearing bound object from cache" should "clear that object" in {
+    val env = newEnv
+    env.featureScope.objects.bind("greeting", "howdy")
+    env.featureScope.objects.bind("gwen", "interpreter")
+    env.featureScope.objects.clear("greeting")
+    env.featureScope.objects.get("greeting") should be (None)
+    env.featureScope.objects.get("gwen") should be (Some("interpreter"))
+  }
+
+  "Resetting context" should "should clear all objects from cache" in {
+    val env = newEnv
+    env.featureScope.objects.bind("greeting", "howdy")
+    env.featureScope.objects.bind("gwen", "interpreter")
+    env.reset()
+    env.featureScope.objects.get("greeting") should be (None)
+    env.featureScope.objects.get("gwen") should be (None)
+  }
+
+  "Managing bound and shadowed objects from cache" should "work as expected" in {
+    val env = newEnv
+    env.featureScope.objects.bind("greeting", "howdy")
+    env.featureScope.objects.bind("gwen", "interpreter 1")
+    env.featureScope.objects.bind("gwen", "interpreter 2")
+
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (Some("interpreter 2"))
+
+    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (Some("interpreter 1"))
+
+    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.get("greeting") should be (Some("howdy"))
+    env.featureScope.objects.get("gwen") should be (None)
+
+    env.reset()
+    env.featureScope.objects.get("greeting") should be (None)
+    env.featureScope.objects.get("gwen") should be (None)
+
   }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())

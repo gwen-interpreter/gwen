@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ class ReportGenerator (
   
   def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
-    spec.scenarios.flatMap(_.steps).flatMap(_.attachments ) foreach { case (_, file) =>
+    spec.attachments foreach { case (_, file) =>
       new File(attachmentsDir, file.getName).writeFile(file)
     }
   }

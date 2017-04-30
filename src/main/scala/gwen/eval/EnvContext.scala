@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   private var attachmentPrefix = padWithZeroes(1)
   
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
-  var loadedMeta: List[File] = Nil  
+  var loadedMeta: List[File] = Nil
+
+  /** Map of for-each StepDefs. */
+  var foreachStepDefs: Map[String, Scenario] = Map[String, Scenario]()
   
   /** Provides access to the global feature scope. */
   def featureScope: FeatureScope = scopes.featureScope
@@ -79,6 +82,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     resetAttachments()
     attachmentPrefix = padWithZeroes(1)
     loadedMeta = Nil
+    foreachStepDefs = Map[String, Scenario]()
   }
     
   def json: JsObject = scopes.json
@@ -111,7 +115,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.metaFile))) 
+    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile)))
   }
   
   /**

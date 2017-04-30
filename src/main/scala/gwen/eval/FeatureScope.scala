@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Branko Juric, Brady Wood
+ * Copyright 2016-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package gwen.eval
 import gwen.Predefs.Kestrel
 
 /**
-  * Binds all global feature level attributes and adds flash 
-  * attributes in the current scope when necessary.
+  * Binds all global feature level attributes and adds flash attributes in the current scope when necessary. Also
+  * included is a cache for storing non string objects.
   * 
   * @author Branko Juric
   */
@@ -32,6 +32,9 @@ class FeatureScope extends ScopedData("feature") {
     *  Provides access to the current (non feature) scope. 
     */
   private[eval] var currentScope: Option[ScopedData] = None
+
+  /** Map of cached objects. */
+  val objects = new ObjectCache()
   
   /**
     * Binds a new attribute value to the scope.  If an attribute of the same
@@ -55,5 +58,49 @@ class FeatureScope extends ScopedData("feature") {
         }
       }
     }
-  
+
+}
+
+/** Class for caching non string objects in a feature. */
+class ObjectCache {
+
+  /** Map of cached objects. */
+  private var cache = Map[String, List[Any]]()
+
+  /**
+    * Binds a named object to the internal cache.
+    *
+    * @param name the name to bind the object to
+    * @param obj the object to bind
+    */
+  def bind(name: String, obj: Any) {
+    cache.get(name) match {
+      case Some(objs) => cache += (name -> (obj :: objs))
+      case None => cache += (name -> List(obj))
+    }
+  }
+
+  /**
+    * Gets a bound object from the internal cache.
+    *
+    * @param name the name of the bound object to get
+    * @return Some(bound object) or None
+    */
+  def get(name: String): Option[Any] = cache.get(name).flatMap(_.headOption)
+
+  /**
+    * Clears a bound object from the internal cache. Performs no operation if no object is not bound to the name.
+    *
+    * @param name the name of the bound object to remove
+    */
+  def clear[T](name: String) {
+    cache.get(name) match {
+      case Some(_::tail) if (tail.nonEmpty) => cache += (name -> tail)
+      case _ => cache -= name
+    }
+  }
+
+  /** Resets the internal cache by creating a new one. */
+  private[eval] def reset() { cache = Map[String, List[Any]]() }
+
 }

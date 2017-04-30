@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,5 +64,29 @@ object GwenSettings {
     * or not meta report generation will be suppressed (default value is `false`).
     */
   def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").getOrElse("false").toBoolean
-  
+
+  /**
+    * Controls whether or not slideshows should be generated in HTML reports. This property is implicitly set to true
+    * in the web engine only if screenshot capturing is enabled (gwen.web.capture.screenshots=true in web engine settings).
+    * Users should not explicitly set this value.
+    */
+  def `gwen.report.slideshow.create` = Settings.getOpt("gwen.report.slideshow.create").getOrElse("false").toBoolean
+
+  /**
+    * Provides access to the `gwen.auto.discover.meta` property setting used to enable
+    * or disable automatic discovery of meta files (default value is `true` for enabled).
+    * Disabling this will prevent Gwen from automatically discovering and loading meta files in the path of an
+    * executing feature, forcing the user to control explicitly through the -m/--meta command line option which meta
+    * files to load.
+    */
+  def `gwen.auto.discover.meta`: Boolean = Settings.getOpt("gwen.auto.discover.meta").getOrElse("true").toBoolean
+
+  /**
+    * Provides access to the `gwen.auto.discover.data.csv` property setting used to enable
+    * or disable automatic discovery of CSV data files (default value is `true` for enabled).
+    * Disabling this will prevent Gwen from automatically discovering and loading CSV files in the path of an executing
+    * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
+    */
+  def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
+
 }

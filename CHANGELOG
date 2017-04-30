@@ -1,3 +1,26 @@
+2.3.0
+=====
+Apr 11, 2017
+- Add cache in feature scope for storing temporary objects (non string values)
+- Add support for sourcing examples tables from CSV files in scenario outlines
+- Add settings for enabling or disabling auto meta and CSV data file discovery
+  - gwen.auto.discover.meta (true to enable auto meta discovery, false to disable, default is true for enabled)
+  - gwen.auto.discover.data.csv (true to enable auto CSV data discovery, false to disable, default is true for enabled)
+
+2.2.1
+=====
+Mar 31, 2017
+- Only generate slideshow in report if screen shot capture is enabled
+
+2.2.0
+=====
+Mar 12, 2017
+- Added support for scenario outlines (see PR #29)
+  - You can use them inline or as StepDefs
+  - Examples records in outlines are expanded into scenarios during the normalisation phase
+  - Each example record is a hyperlink in the HTML report that expands the scenario when clicked
+- Escape description lines in HTML report
+
 2.1.0
 =====
 Feb 10, 2017

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 package gwen.eval
 
 import java.io.File
+
 import scala.annotation.tailrec
 import scala.collection.immutable.Stream.consWrapper
 import gwen.Predefs.FileIO._
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
-import gwen.UserOverrides
+import gwen.{GwenSettings, UserOverrides}
 
 /**
   * Reads and streams individual features and feature suites from the file system.  
@@ -110,9 +111,9 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
   private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
     val (metaFiles, dataFile) = inputs
     val files = dir.listFiles
-    val metas = files.filter(isMetaFile).toList
+    val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(isMetaFile).toList else Nil
     val inputs1 = (metaFiles ::: metas, dataFile)
-    val datas = files.filter(isDataFile).toList
+    val datas = if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(isCsvFile).toList else Nil
     datas match {
       case Nil => inputs1
       case data :: Nil => (inputs1._1, Some(data))
