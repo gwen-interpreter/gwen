@@ -55,19 +55,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
   
   /** Reads an input string or command from the command line. */
   private def read(): String = {
-    println()
-
     reader.removeCompleter(aggregateCompleter)
-
-    //println(env.visibleScopes.current.findEntries{case (n:String, _) => !n.contains("/name") }.map{case (n:String, _) => n})
-    //println(env.visibleScopes.visible.filterAtts()..map{case (n:String, _) => n})
-    //StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).filter{ f => !f}
-    //AggregateCompleter aggregateCompleter = StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava
-
-    //reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
-
-
-    //reader.setCompletionHandler().removeCompleter()
 
     def allElementTypeAttributes = env.visibleScopes.allAttributeNames
       .filter{ x => x._2.equals("element")}
@@ -76,27 +64,14 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     var allItems = new util.LinkedList[String]()
     allDsl.forEach( e =>
       if (e.contains("<element>")) {
-        //allItems.add(e)  //add original
+        allItems.add(e)  //add original
         allElementTypeAttributes foreach {
           x => allItems.add(e.replaceAll("<element>",x._1.replaceAll("/type","")))
         }
       })
 
-
-
-    println(allItems)
-    //.foreach { x => x._1.replaceAll("/type","") }
     aggregateCompleter = new AggregateCompleter(new StringsCompleter(allItems))
     reader.addCompleter(aggregateCompleter)
-
-
-    //def.toString.split("$(.+)/?")
-    //
-      //.filterAtts{case (n, _) => println(n); true})
-    //println(new StringsCompleter(env.visibleScopes.current.scope.toString
-    //env.visibleScopes.allAttributeNames
-    //env.visibleScopes.allAttributeNames.foreach(f => println(f))
-    //println(StepKeyword.literals.flatMap(x => env.dsl.distinct.map(y => s"$x $y")))
 
     reader.readLine() tap { _ => println() }
   }
