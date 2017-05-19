@@ -451,6 +451,29 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     filtered2.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"}]}]}""")
 
   }
+
+  "filtering by allEntries" should "produce expected results" in {
+
+    val scopes = new ScopedDataStack()
+    scopes.set("middleName", "interpreter")
+    scopes.allEntries should be (List(("middleName", "interpreter")))
+
+    scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "register")
+    scopes.allEntries should be (List(("firstName", "gwen"), ("lastName", "register"), ("middleName", "interpreter")))
+
+    scopes.addScope("person")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "person")
+    scopes.allEntries should be (List(("firstName", "gwen"), ("lastName", "person"), ("middleName", "interpreter")))
+
+    scopes.addScope("register")
+    scopes.set("firstName", "gwen")
+    scopes.set("lastName", "web")
+    scopes.allEntries should be (List(("lastName", "web"), ("firstName", "gwen"), ("middleName", "interpreter")))
+
+  }
   
   "new stack with no data" should "return empty current and feature scopes" in {
     

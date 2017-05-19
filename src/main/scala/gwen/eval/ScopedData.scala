@@ -168,7 +168,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return Some((name, value)) or None if no match is found
    */
-  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] = 
+  def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] =
     findEntries(pred).lastOption match {
       case Some((_, null)) => None
       case x => x
@@ -178,7 +178,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * Finds all entries that match the given predicate.
    * 
    * @param pred the predicate filter to apply; a (name, value) => boolean function
-   * @return a sequence of name-value pairs or Nil if no entries math the predicate
+   * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
     atts.filter(pred) ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)

@@ -217,7 +217,7 @@ class ScopedDataStack() {
     * Finds all entries in the current scope that match the given predicate.
     *
     * @param pred the predicate filter to apply; a (name, value) => boolean function
-    * @return a sequence of name-value pairs or Nil if no entries math the predicate
+    * @return a sequence of name-value pairs or Nil if no entries match the predicate
     */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
     findEntriesIn(current.scope)(pred)
@@ -227,13 +227,30 @@ class ScopedDataStack() {
     *
     * @param scope the scope name to scan
     * @param pred the predicate filter to apply; a (name, value) => boolean function
-    * @return a sequence of name-value pairs or Nil if no entries math the predicate
+    * @return a sequence of name-value pairs or Nil if no entries match the predicate
     */
-  def findEntriesIn(scope: String)(pred: ((String, String)) => Boolean): Seq[(String, String)] =
-    scopes.toList filter(_.scope == scope) flatMap (_.findEntries(pred)) match {
-      case Nil if scope != featureScope.scope => findEntriesIn(featureScope.scope)(pred)
-      case xs => xs
+  def findEntriesIn(scope: String)(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
+    var entries = scopes.toList filter (_.scope == scope) flatMap (_.findEntries(pred))
+    if (scope != featureScope.scope) {
+      entries = entries ++ findEntriesIn(featureScope.scope)(pred)
     }
+    entries.map(_._1).distinct.flatMap(name => entries.find { case (n, _) => n == name })
+  }
+
+  /**
+    * Finds all entries in the current scope.
+    *
+    * @return a sequence of name-value pairs or Nil if no entries
+    */
+  def allEntries: Seq[(String, String)] = allEntriesIn(current.scope)
+
+  /**
+    * Finds all entries in the given scope.
+    *
+    * @param scope the scope name to scan
+    * @return a sequence of name-value pairs or Nil
+    */
+  def allEntriesIn(scope: String): Seq[(String, String)] = findEntriesIn(scope) { _ => true }
     
   /**
     * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -283,8 +300,12 @@ class ScopedDataStack() {
     * @param name the name of the attribute to find
     * @return a sequence of found attribute values or Nil otherwise
     */
-  def getAllIn(scope: String, name: String): Seq[String] =
-    findEntriesIn(scope) { case (n, _) => n == name } map { _._2 }
+  def getAllIn(scope: String, name: String): Seq[String] = {
+    val values = scopes.toList filter (_.scope == scope) flatMap (_.getAll(name))
+    if (scope != featureScope.scope) {
+      values ++ getAllIn(featureScope.scope, name)
+    } else values
+  }
   
   /**
     * Returns a string representation of the entire attribute stack 
