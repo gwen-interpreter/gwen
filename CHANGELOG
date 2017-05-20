@@ -1,11 +1,6 @@
-2.3.2
-=====
-May 20, 2017
-- fixed findEntries and findAll logic
-
 2.3.1
 =====
-May 05, 2017
+May 20, 2017
 - Add findEntries function to scoped data stack to enable finding entries by predicate
 
 2.3.0
