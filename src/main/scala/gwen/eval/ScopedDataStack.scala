@@ -192,29 +192,68 @@ class ScopedDataStack() {
   def getOpt(name: String): Option[String] = getInOpt(current.scope, name)
   
   /**
-   * Finds the first entry that matches the given predicate.
+   * Finds the first entry in the current scope that matches the given predicate.
    * 
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return Some((name, value)) or None if no match is found
    */
   def findEntry(pred: ((String, String)) => Boolean): Option[(String, String)] =
-    scopes.toIterator filter(_.scope == current.scope) map (_.findEntry(pred)) collectFirst { 
-      case Some(value) => value 
+    findEntryIn(current.scope)(pred)
+
+  /**
+    * Finds the first entry in the given scope that matches the given predicate.
+    *
+    * @param scope the scope name to scan
+    * @param pred the predicate filter to apply; a (name, value) => boolean function
+    * @return Some((name, value)) or None if no match is found
+    */
+  def findEntryIn(scope: String)(pred: ((String, String)) => Boolean): Option[(String, String)] =
+    scopes.toIterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
+      case Some(value) => value
     } match {
       case None if !current.isFeatureScope =>
         featureScope.findEntry(pred)
       case x => x
     }
-  
+
   /**
-    * Finds and retrieves all attributes in the currently active scope by scanning
-    * for them in all scopes in the stack (starting with the currently active 
-    * scope and working down).  All values found are returned.
+    * Finds all entries in the current scope that match the given predicate.
     *
-    * @param name the name of the attribute to find
-    * @return a sequence of found attribute values or Nil otherwise
+    * @param pred the predicate filter to apply; a (name, value) => boolean function
+    * @return a sequence of name-value pairs or Nil if no entries match the predicate
     */
-  def getAll(name: String): Seq[String] = getAllIn(current.scope, name)
+  def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
+    findEntriesIn(current.scope)(pred)
+
+  /**
+    * Finds all entries in the given scope that match the given predicate.
+    *
+    * @param scope the scope name to scan
+    * @param pred the predicate filter to apply; a (name, value) => boolean function
+    * @return a sequence of name-value pairs or Nil if no entries match the predicate
+    */
+  def findEntriesIn(scope: String)(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
+    var entries = scopes.toList filter (_.scope == scope) flatMap (_.findEntries(pred))
+    if (scope != featureScope.scope) {
+      entries = entries ++ findEntriesIn(featureScope.scope)(pred)
+    }
+    entries.map(_._1).distinct.flatMap(name => entries.find { case (n, _) => n == name })
+  }
+
+  /**
+    * Finds all entries in the current scope.
+    *
+    * @return a sequence of name-value pairs or Nil if no entries
+    */
+  def allEntries: Seq[(String, String)] = allEntriesIn(current.scope)
+
+  /**
+    * Finds all entries in the given scope.
+    *
+    * @param scope the scope name to scan
+    * @return a sequence of name-value pairs or Nil
+    */
+  def allEntriesIn(scope: String): Seq[(String, String)] = findEntriesIn(scope) { _ => true }
     
   /**
     * Finds and retrieves an attribute in the a named scope by scanning for it 
@@ -227,7 +266,7 @@ class ScopedDataStack() {
     * @throws gwen.errors.UnboundAttributeException if the attribute is bound 
     *         to the given name in the given scope
     */
-  def getIn(scope: String, name: String): String = 
+  def getIn(scope: String, name: String): String =
     getInOpt(scope, name).getOrElse(unboundAttributeError(name, scope))
   
   /**
@@ -248,23 +287,28 @@ class ScopedDataStack() {
         getInOpt(featureScope.scope, name)
       case x => x
     }
-  
+
   /**
-    * Finds and retrieves all attributes in the named scope by scanning for 
-    * them in all scopes in the stack (starting with the 
-    * top most scope with that name and working down).  All values found are 
-    * returned.
+    * Finds and retrieves all attribute values in the current scope bound to the given name.
+    *
+    * @param name the name of the attribute to find
+    * @return a sequence of found attribute values or Nil otherwise
+    */
+  def getAll(name: String): Seq[String] = getAllIn(current.scope, name)
+
+  /**
+    * Finds and retrieves all attribute values in the named scope bound to the given name.
     *
     * @param scope the scope name to scan
     * @param name the name of the attribute to find
     * @return a sequence of found attribute values or Nil otherwise
     */
-  def getAllIn(scope: String, name: String): Seq[String] = 
-    scopes.toList filter(_.scope == scope) flatMap (_.getAll(name)) match {
-      case Nil if scope != featureScope.scope =>
-        getAllIn(featureScope.scope, name)
-      case x => x
-    }
+  def getAllIn(scope: String, name: String): Seq[String] = {
+    val values = scopes.toList filter (_.scope == scope) flatMap (_.getAll(name))
+    if (scope != featureScope.scope) {
+      values ++ getAllIn(featureScope.scope, name)
+    } else values
+  }
   
   /**
     * Returns a string representation of the entire attribute stack 
