@@ -59,7 +59,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     * @param input an input step or command
     * @return optional result of the command as a string
     */
-  private def eval(input: String): Option[String] = input.trim match {
+  private def eval(input: String): Option[String] = Option(input).getOrElse("exit").trim match {
     case "" => Some("[noop]")
     case "help" =>
       Some(helpText())
@@ -139,7 +139,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     |   Evaluates a step
     |     step : the step expression
     | 
-    | exit|quit|bye
+    | exit|quit|bye|ctrl-d
     |   Closes the REPL session and exits
     | 
     | <tab> 

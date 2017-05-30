@@ -1,3 +1,8 @@
+2.4.0
+=====
+May 30, 2017
+- Enable cntl-d in REPL for exit (issue #31 raised by @asgillet)
+
 2.3.1
 =====
 May 20, 2017
