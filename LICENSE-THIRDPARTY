@@ -4,16 +4,9 @@ LICENSE-THIRDPARTY
 Dependency                                               | Version   | License
 -------------------------------------------------------- | --------- | -----------------------------------------------------------------------------   
 com.typesafe.scala-logging      scala-logging_2.12       | 3.5.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core      jackson-annotations      | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core      jackson-core             | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt) 
-com.fasterxml.jackson.core      jackson-databind         | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.datatype  jackson-datatype-jdk8    | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.datatype  jackson-datatype-jsr310  | 2.8.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.github.scopt                scopt_2.12               | 3.5.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
 com.github.tototoshi            scala-csv_2.12           | 1.3.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.jayway.jsonpath             json-path                | 2.2.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play               play-functional_2.12     | 2.6.0-M1  | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.play               play-json_2.12           | 2.6.0-M1  | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 commons-codec                   commons-codec            | 1.10      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 io.cucumber                     gherkin                  | 4.0.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
 io.cucumber                     gherkin-jvm-deps         | 1.0.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)

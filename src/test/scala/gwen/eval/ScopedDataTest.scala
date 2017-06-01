@@ -24,19 +24,25 @@ class ScopedDataTest extends FlatSpec with Matchers {
 
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("login")
-    scope.json.toString    should be ("""{"scope":"login","atts":[]}""")
+    scope.asString()    should be ("""scope : "login" { }""")
     scope.getOpt("userId") should be (None)
   }
   
   "scope with a null attribute" should "yield None for getOpt call" in {
     val scope = ScopedData("login").set("userId", null)
-    scope.json.toString    should be ("""{"scope":"login","atts":[{"userId":null}]}""")
+    scope.asString()    should be (
+      """scope : "login" {
+        |  userId : null
+        |}""".stripMargin)
     scope.getOpt("userId") should be (None)
   }
   
   "scope with a null attribute" should "throw error for get call" in {
     val scope = ScopedData("login").set("userId", null)
-    scope.json.toString    should be ("""{"scope":"login","atts":[{"userId":null}]}""")
+    scope.asString()    should be (
+      """scope : "login" {
+        |  userId : null
+        |}""".stripMargin)
     intercept[UnboundAttributeException] {
       scope.get("userId")
     }
@@ -44,14 +50,21 @@ class ScopedDataTest extends FlatSpec with Matchers {
   
   "scope with one attribute" should "contain only that attribute" in {
     val scope = ScopedData("login").set("userId", "gwen")
-    scope.json.toString    should be ("""{"scope":"login","atts":[{"userId":"gwen"}]}""")
+    scope.asString()    should be (
+      """scope : "login" {
+        |  userId : "gwen"
+        |}""".stripMargin)
     scope.getOpt("userId") should be (Some("gwen"))
     scope.getOpt("UserId") should be (None)
   }
   
   "scope with two attributes" should "contain those two attributes" in {
     val scope = ScopedData("login").set("userId", "gwen").set("password", "pwd")
-    scope.json.toString      should be ("""{"scope":"login","atts":[{"userId":"gwen"},{"password":"pwd"}]}""")
+    scope.asString()      should be (
+      """scope : "login" {
+        |  userId : "gwen"
+        |  password : "pwd"
+        |}""".stripMargin)
     scope.getOpt("userId")   should be (Some("gwen"))
     scope.getOpt("password") should be (Some("pwd"))
     scope.getOpt("UserId")   should be (None)
@@ -60,19 +73,30 @@ class ScopedDataTest extends FlatSpec with Matchers {
   
   "get lookup on scope with two same named attributes" should "return the most recently added one" in {
     val scope = ScopedData("register").set("name", "todd").set("name", "gwen")
-    scope.json.toString  should be ("""{"scope":"register","atts":[{"name":"todd"},{"name":"gwen"}]}""")
+    scope.asString()  should be (
+      """scope : "register" {
+        |  name : "todd"
+        |  name : "gwen"
+        |}""".stripMargin)
     scope.getOpt("name") should be (Some("gwen"))
   }
   
   "binding the same name and value" should "should not recreate the binding" in {
     val scope = ScopedData("register").set("name", "gwen").set("name", "gwen")
-    scope.json.toString  should be ("""{"scope":"register","atts":[{"name":"gwen"}]}""")
+    scope.asString()  should be (
+      """scope : "register" {
+        |  name : "gwen"
+        |}""".stripMargin)
     scope.getOpt("name") should be (Some("gwen"))
   }
   
   "getAll lookup on scope with two same named attributes" should "return both" in {
     val scope = ScopedData("register").set("name", "todd").set("name", "gwen")
-    scope.json.toString     should be ("""{"scope":"register","atts":[{"name":"todd"},{"name":"gwen"}]}""")
+    scope.asString()     should be (
+      """scope : "register" {
+        |  name : "todd"
+        |  name : "gwen"
+        |}""".stripMargin)
     scope.getAll("name") should be (Seq("todd", "gwen"))
   }
   

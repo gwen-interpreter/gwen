@@ -18,8 +18,6 @@ package gwen.eval
 
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
-import play.api.libs.json.{JsObject, Json}
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
 
@@ -184,10 +182,23 @@ class ScopedData(val scope: String) extends LazyLogging {
     atts.filter(pred) ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)
 
   /**
-    * Returns this entire scope as a JSON object.
+    * Returns this entire scope as a String.
+    *
+    * @parma padding the padding to insert at the start of each line (default is blank)
     */
-  def json: JsObject =
-    Json.obj("scope" -> scope, "atts" -> (atts ++ flashScope.map(_.toList).getOrElse(Nil)).map {case (n, v) => Json.obj(n -> v) })
+  def asString(padding: String = ""): String = {
+    val allAtts = atts ++ flashScope.map(_.toList).getOrElse(Nil)
+    s"""${padding}scope : "$scope" {${
+         allAtts.toList match {
+           case Nil => " }"
+           case _ => s"""${allAtts map {
+             case (n, v) =>
+               s"""|
+                   |${padding}  $n : ${if(v != null) s""""$v"""" else "null"}""".stripMargin
+           } mkString}
+           |${padding}}"""
+         }}""".stripMargin
+  }
 
 }
 

@@ -34,8 +34,6 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "io.cucumber" % "gherkin" % "4.0.0"
 
-libraryDependencies += "com.typesafe.play" %% "play-json" % "2.6.0-M1"
-
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.22"

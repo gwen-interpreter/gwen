@@ -1,3 +1,9 @@
+2.4.1
+=====
+Jun 1, 2017
+- Make env REPL output more compact and readable
+- Remove json-play dependency
+
 2.4.0
 =====
 May 30, 2017

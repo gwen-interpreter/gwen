@@ -24,8 +24,6 @@ import gwen.Predefs.Formatting._
 import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
 import com.typesafe.scalalogging.LazyLogging
 import gwen.eval.support.InterpolationSupport
 import gwen.errors._
@@ -85,7 +83,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     foreachStepDefs = Map[String, Scenario]()
   }
     
-  def json: JsObject = scopes.json
+  def asString: String = scopes.asString
   
   /** Returns the current visible scopes. */  
   def visibleScopes: ScopedDataStack = scopes.visible
@@ -192,7 +190,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   final def fail(failure: Failed): Unit = { 
     addErrorAttachments(failure)
     if (options.batch) {
-      logger.error(Json.prettyPrint(this.scopes.visible.json))
+      logger.error(this.scopes.visible.asString)
     }
     logger.error(failure.error.getMessage)
     logger.debug(s"Exception: ", failure.error)
@@ -205,8 +203,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def addErrorAttachments(failure: Failed): Unit = { 
     addAttachment("Error details", "txt", failure.error.writeStackTrace())
-    addAttachment("Environment (all)", "json", Json.prettyPrint(this.scopes.json))
-    addAttachment("Environment (visible)", "json", Json.prettyPrint(this.scopes.visible.json))
+    addAttachment("Environment (all)", "txt", this.scopes.asString)
+    addAttachment("Environment (visible)", "txt", this.scopes.visible.asString)
   }
   
   /**

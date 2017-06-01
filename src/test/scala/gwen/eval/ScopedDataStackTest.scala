@@ -377,7 +377,22 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.get("firstName")  should be ("gwen")
     scopes.get("lastName")   should be ("web")
     
-    scopes.json.toString should be ("""{"scopes":[{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"person","atts":[{"firstName":"gwen"},{"lastName":"person"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
+    scopes.asString should be (
+      """{
+        |  scopes {
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |      lastName : "register"
+        |    }
+        |    scope : "person" {
+        |      firstName : "gwen"
+        |      lastName : "person"
+        |    }
+        |    scope : "register" {
+        |      lastName : "web"
+        |    }
+        |  }
+        |}""".stripMargin)
                                                                         
   }
   
@@ -397,7 +412,25 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     
     scopes.getOpt("middleName") should be (Some("interpreter"))
     
-    scopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"person","atts":[{"firstName":"gwen"},{"lastName":"person"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
+    scopes.asString should be (
+      """{
+        |  scopes {
+        |    scope : "feature" {
+        |      middleName : "interpreter"
+        |    }
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |      lastName : "register"
+        |    }
+        |    scope : "person" {
+        |      firstName : "gwen"
+        |      lastName : "person"
+        |    }
+        |    scope : "register" {
+        |      lastName : "web"
+        |    }
+        |  }
+        |}""".stripMargin)
     
     val filtered1 = scopes.visible.filterAtts { case (n, _) => n == "firstName" }
     filtered1.getOpt("firstName") should be (Some("gwen"))
@@ -405,7 +438,14 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     filtered1.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
     filtered1.findEntry { case (n, _) => n == "lastName" } should be (None)
     filtered1.findEntry { case (n, _) => n == "middleName" } should be (None)
-    filtered1.json.toString should be ("""{"scopes":[{"scope":"register","atts":[{"firstName":"gwen"}]}]}""")
+    filtered1.asString should be (
+      """{
+        |  scopes {
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |    }
+        |  }
+        |}""".stripMargin)
     
     val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
     filtered2.getOpt("firstName") should be (Some("gwen"))
@@ -413,7 +453,17 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     filtered2.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
     filtered2.findEntry { case (n, _) => n == "lastName" } should be (None)
     filtered2.findEntry { case (n, _) => n == "middleName" } should be (Some(("middleName", "interpreter")))
-    filtered2.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"}]}]}""")
+    filtered2.asString should be (
+      """{
+        |  scopes {
+        |    scope : "feature" {
+        |      middleName : "interpreter"
+        |    }
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |    }
+        |  }
+        |}""".stripMargin)
                                                                         
   }
 
@@ -433,7 +483,25 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
 
     scopes.getOpt("middleName") should be (Some("interpreter"))
 
-    scopes.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"person","atts":[{"firstName":"gwen"},{"lastName":"person"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
+    scopes.asString should be (
+      """{
+        |  scopes {
+        |    scope : "feature" {
+        |      middleName : "interpreter"
+        |    }
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |      lastName : "register"
+        |    }
+        |    scope : "person" {
+        |      firstName : "gwen"
+        |      lastName : "person"
+        |    }
+        |    scope : "register" {
+        |      lastName : "web"
+        |    }
+        |  }
+        |}""".stripMargin)
 
     val filtered1 = scopes.visible.filterAtts { case (n, _) => n.endsWith("Name")}
     filtered1.getOpt("firstName") should be (Some("gwen"))
@@ -441,14 +509,38 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     filtered1.getOpt("lastName") should be (Some("web"))
     filtered1.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
     filtered1.findEntries { case (n, _) => n == "missing" } should be (Nil)
-    filtered1.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"},{"lastName":"register"}]},{"scope":"register","atts":[{"lastName":"web"}]}]}""")
+    filtered1.asString should be (
+      """{
+        |  scopes {
+        |    scope : "feature" {
+        |      middleName : "interpreter"
+        |    }
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |      lastName : "register"
+        |    }
+        |    scope : "register" {
+        |      lastName : "web"
+        |    }
+        |  }
+        |}""".stripMargin)
 
     val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
     filtered2.getOpt("firstName") should be (Some("gwen"))
     filtered2.getOpt("middleName") should be (Some("interpreter"))
     filtered2.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
     filtered2.findEntries { case (n, _) => n == "lastName" } should be (Nil)
-    filtered2.json.toString should be ("""{"scopes":[{"scope":"feature","atts":[{"middleName":"interpreter"}]},{"scope":"register","atts":[{"firstName":"gwen"}]}]}""")
+    filtered2.asString should be (
+      """{
+        |  scopes {
+        |    scope : "feature" {
+        |      middleName : "interpreter"
+        |    }
+        |    scope : "register" {
+        |      firstName : "gwen"
+        |    }
+        |  }
+        |}""".stripMargin)
 
   }
 

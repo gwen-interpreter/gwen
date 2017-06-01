@@ -18,9 +18,6 @@ package gwen.eval
 
 import gwen.Predefs.Kestrel
 import gwen.errors.unboundAttributeError
-import play.api.libs.json.JsObject
-import play.api.libs.json.Json
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
 
 import scala.collection.mutable
 
@@ -86,10 +83,21 @@ class LocalDataStack {
   def containsScope(scope: String): Boolean = localData.exists(_.scope == scope)
   
   /**
-    * Returns a string representation of the entire attribute stack 
-    * as a JSON object.
+    * Returns a string representation of the entire attribute stack
     */
-  def json: JsObject = Json.obj("localScope" -> (localData.reverse map (_.json)))
+  def asString: String = {
+    val scopes = localData.reverse
+    s"""localScope : {${
+      scopes.toList match {
+        case Nil => "| "
+        case _ => scopes map {
+          scope =>
+            s"""|  ${scope.asString()}
+                |"""".stripMargin
+        }
+      }}
+    |}""".stripMargin
+  }
   
 }
 

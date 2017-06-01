@@ -25,7 +25,6 @@ import gwen.dsl.StepKeyword
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
-import play.api.libs.json.Json
 import scala.collection.JavaConverters._
 import jline.console.completer.AggregateCompleter
 
@@ -64,18 +63,18 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     case "help" =>
       Some(helpText())
     case r"""env(.+?)?$$$options""" => Option(options) match {
-      case None => Some(Json.prettyPrint(env.visibleScopes.json))
+      case None => Some(env.visibleScopes.asString)
       case _ => options.trim match {
         case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
-          case "-f" => Some(Json.prettyPrint(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(filter))).json))
-          case "-a" => Some(Json.prettyPrint(env.filterAtts(GwenREPL.attrFilter(filter)).json))
+          case "-f" => Some(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
+          case "-a" => Some(env.filterAtts(GwenREPL.attrFilter(filter)).asString)
         }
         case r"""(-f|-a)$$$switch""" => switch match {
-          case "-f" => Some(Json.prettyPrint(env.featureScope.json))
-          case "-a" => Some(Json.prettyPrint(env.json))
+          case "-f" => Some(env.featureScope.asString())
+          case "-a" => Some(env.asString)
         }
         case r""""(.+?)"$$$filter""" => 
-          Some(Json.prettyPrint(env.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).json))
+          Some(env.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString)
         case _ =>
           Some("""Try again using: env [-a|-f] ["filter"]""")
       }

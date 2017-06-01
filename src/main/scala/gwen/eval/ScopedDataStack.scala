@@ -17,9 +17,6 @@
 package gwen.eval
 
 import scala.Option.option2Iterable
-import play.api.libs.json.Json
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.libs.json.JsObject
 import gwen.Predefs.Kestrel
 import gwen.errors._
 
@@ -308,10 +305,23 @@ class ScopedDataStack() {
   }
   
   /**
-    * Returns a string representation of the entire attribute stack 
-    * as a JSON object.
+    * Returns a string representation of the entire attribute stack
     */
-  def json: JsObject = Json.obj("scopes" -> (scopes.filter(!_.isEmpty).reverse map (_.json)))
+  def asString: String = {
+    val allScopes = scopes.filter(!_.isEmpty).reverse
+    s"""{
+       |  scopes {${
+      allScopes.toList match {
+        case Nil => " }"
+        case _ => s"""${allScopes map {
+          scope =>
+            s"""|
+                |${scope.asString("    ")}""".stripMargin
+        } mkString}
+        |  }"""
+      }}
+      |}""".stripMargin
+  }
   
 }
 
