@@ -132,5 +132,14 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   """embedded + literal in string""" should "not be treated as a concatenation operator" in {
     interpolate("""I enter "+6149265587" in the phone field""") { _ => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
   }
-  
+
+  """multi line string with properties""" should "resolve" in {
+    val source =
+      """hello
+        |${property}""".stripMargin
+    val target =
+      """hello
+        |you""".stripMargin
+    interpolate(source) { _ => "you" } should be(target)
+  }
 }

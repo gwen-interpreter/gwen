@@ -24,8 +24,8 @@ import com.typesafe.scalalogging.LazyLogging
  */
 trait InterpolationSupport extends LazyLogging {
 
-  private val propertySyntax = """^(.*)\$\{(.+?)\}(.*)$""".r
-  private val paramSyntax = """^(.*)\$<(.+?)>(.*)$""".r
+  private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
+  private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
   
   @tailrec
   final def interpolate(source: String)(resolve: String => String): String = source match {

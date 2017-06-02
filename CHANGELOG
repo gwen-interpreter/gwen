@@ -1,3 +1,8 @@
+2.4.2
+=====
+Jun 1, 2017
+- Make string interpolation work with multi-line strings (use DOTALL mode in regex matcher)
+
 2.4.1
 =====
 Jun 1, 2017
