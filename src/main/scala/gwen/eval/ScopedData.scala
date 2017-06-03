@@ -184,7 +184,7 @@ class ScopedData(val scope: String) extends LazyLogging {
   /**
     * Returns this entire scope as a String.
     *
-    * @parma padding the padding to insert at the start of each line (default is blank)
+    * @param padding the padding to insert at the start of each line (default is blank)
     */
   def asString(padding: String = ""): String = {
     val allAtts = atts ++ flashScope.map(_.toList).getOrElse(Nil)
