@@ -31,6 +31,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
   private def createApp(options: GwenOptions, interpreter: GwenInterpreter[EnvContext], repl: GwenREPL[EnvContext]) = {
     when(interpreter.implName).thenReturn("gwen")
     when(interpreter.implVersion).thenReturn("-SNAPSHOT")
+    when(interpreter.noticeMsg).thenReturn(None)
     new GwenApp(interpreter) {
       override private[eval] def createRepl(env: EnvContext): GwenREPL[EnvContext] = repl
     }
