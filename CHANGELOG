@@ -1,7 +1,9 @@
-2.4.2
+2.5.0
 =====
-Jun 1, 2017
+Jun 9, 2017
 - Make string interpolation work with multi-line strings (use DOTALL mode in regex matcher)
+- Introduce Java Scripting API (JSR 223) to support JavaScript evaluation in non web engines
+- Merge common steps into default engine support class so other engines can easily inherit them
 
 2.4.1
 =====

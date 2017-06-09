@@ -19,6 +19,7 @@ import gwen.dsl.Failed
 import gwen.dsl.Passed
 import gwen.eval.GwenOptions
 import java.io.File
+
 import org.scalatest.FlatSpec
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
@@ -29,13 +30,14 @@ import gwen.dsl.Step
 import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
+import gwen.eval.support.DefaultEngineSupport
 
 class BindingsEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) 
   extends EnvContext(options, scopes) {
   override def dsl: List[String] = Nil
 }
 
-trait BindingsEvalEngine extends EvalEngine[BindingsEnvContext] {
+trait BindingsEvalEngine extends EvalEngine[BindingsEnvContext] with DefaultEngineSupport[BindingsEnvContext] {
   override def init(options: GwenOptions, scopes: ScopedDataStack): BindingsEnvContext = new BindingsEnvContext(options, scopes)
   override def evaluate(step: Step, env: BindingsEnvContext) {
     step.expression match {

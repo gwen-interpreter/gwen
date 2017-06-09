@@ -16,7 +16,8 @@
 
 package gwen.eval
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
+
 import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
@@ -25,16 +26,16 @@ import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
 import com.typesafe.scalalogging.LazyLogging
-import gwen.eval.support.InterpolationSupport
+import gwen.eval.support._
 import gwen.errors._
 import gwen.Settings
+
+import scala.sys.process._
 import scala.util.Try
 import gwen.dsl.Tag
 import gwen.dsl.StepKeyword
-import gwen.eval.support.RegexSupport
-import gwen.eval.support.XPathSupport
-import gwen.eval.support.JsonPathSupport
-import gwen.eval.support.SQLSupport
+
+import scala.io.Source
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -45,8 +46,9 @@ import gwen.eval.support.SQLSupport
   * 
   * @author Branko Juric
   */
-class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging 
-  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport with SQLSupport {
+class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging
+  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
+  with SQLSupport with ScriptSupport with DecodingSupport {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -60,6 +62,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
 
   /** Map of for-each StepDefs. */
   var foreachStepDefs: Map[String, Scenario] = Map[String, Scenario]()
+
+  /** Provides access to the active data scope. */
+  def activeScope = scopes
   
   /** Provides access to the global feature scope. */
   def featureScope: FeatureScope = scopes.featureScope
@@ -263,21 +268,94 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       case expr =>
       Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
     }
-  
+
   /**
     * Gets the scoped attribute or settings value bound to the given name.
     * Subclasses can override this method to perform additional lookups.
-    * 
+    *
     *  @param name the name of the attribute or value
     */
   def getBoundReferenceValue(name: String): String = {
     scopes.getOpt(name) match {
       case Some(value) => value
-      case _ => Settings.getOpt(name) match { 
+      case _ => Settings.getOpt(name) match {
         case Some(value) => value
-        case _ => 
+        case _ =>
           unboundAttributeError(name)
       }
+    }
+  }
+
+  /**
+    * Formats the given javascript expression in preparation for execute and return
+    * (this implementation returns the javascript expression 'as is' since it uses the Java script engine
+    * which does not require a 'return ' prefix, but subclasses can override it to include the prefix if necessary).
+    *
+    * @param javascript the javascript function
+    */
+  def jsReturn(javascript: String) = javascript
+
+  /**
+    * Executes a javascript expression using the Java script engine interface.
+    *
+    * @param javascript the script expression to execute
+    * @param params optional parameters to the script
+    * @param takeScreenShot true to take screenshot after performing the function
+    */
+  def executeJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
+
+  /**
+    * Executes a javascript predicate.
+    *
+    * @param javascript the script predicate expression to execute
+    * @param params optional parameters to the script
+    */
+  def executeJSPredicate(javascript: String, params: Any*): Boolean =
+    executeJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
+
+  /**
+    * Resolves a bound attribute value from the visible scope.
+    *
+    * @param name the name of the bound attribute to find
+    */
+  def resolveBoundValue(name: String): Option[String] = {
+    val attScopes = scopes.visible.filterAtts{case (n, _) => n.startsWith(name)}
+    attScopes.findEntry { case (n, v) => n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""") && v != "" } map {
+      case (n, v) =>
+        if (n == s"$name/text") v
+        else if (n == s"$name/javascript")
+          execute(Option(executeJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")).getOrElse(s"$$[javascript:$v]")
+        else if (n.startsWith(s"$name/xpath")) {
+          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
+          val targetType = interpolate(attScopes.get(s"$name/xpath/targetType"))(getBoundReferenceValue)
+          val expression = interpolate(attScopes.get(s"$name/xpath/expression"))(getBoundReferenceValue)
+          execute(evaluateXPath(expression, source, XMLNodeType.withName(targetType))).getOrElse(s"$$[xpath:$expression]")
+        }
+        else if (n.startsWith(s"$name/regex")) {
+          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/regex/source")))(getBoundReferenceValue)
+          val expression = interpolate(attScopes.get(s"$name/regex/expression"))(getBoundReferenceValue)
+          execute(extractByRegex(expression, source)).getOrElse(s"$$[regex:$expression]")
+        }
+        else if (n.startsWith(s"$name/json path")) {
+          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/json path/source")))(getBoundReferenceValue)
+          val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
+          execute(evaluateJsonPath(expression, source)).getOrElse(s"$$[json path:$expression]")
+        }
+        else if (n == s"$name/sysproc") execute(v.!!).map(_.trim).getOrElse(s"$$[sysproc:$v]")
+        else if (n == s"$name/file") {
+          val filepath = interpolate(v)(getBoundReferenceValue)
+          execute {
+            if (new File(filepath).exists()) {
+              Source.fromFile(filepath).mkString
+            } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
+          } getOrElse s"$$[file:$v]"
+        }
+        else if (n.startsWith(s"$name/sql")) {
+          val selectStmt = interpolate(attScopes.get(s"$name/sql/selectStmt"))(getBoundReferenceValue)
+          val dbName = interpolate(attScopes.get(s"$name/sql/dbName"))(getBoundReferenceValue)
+          execute(evaluateSql(selectStmt, dbName)).getOrElse(s"$$[sql:$selectStmt]")
+        }
+        else v
     }
   }
   
