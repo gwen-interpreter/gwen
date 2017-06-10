@@ -67,6 +67,11 @@ class ScopedData(val scope: String) extends LazyLogging {
   private val atts = mutable.MutableList[(String, String)]()
   
   val isFeatureScope = false
+
+  /**
+    * Map name-function pairs where the function returns a string value.
+    */
+  var valueFunctions = Map[String, () => String]()
   
   /** 
     *  Provides access to the local flash data (attributes are pushed into this 
@@ -90,12 +95,19 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to find
     * @return Some(value) if the attribute value is found or None otherwise
     */
-  def getOpt(name: String): Option[String] = findEntry { case (n, _) => n == name } tap { value =>
-    value.foreach { nvp =>
-      logger.debug(s"Found $nvp in scope/$scope")
-    }
-  } map (_._2)
-    
+  def getOpt(name: String): Option[String] =
+    findEntry { case (n, _) => n == name } tap { value =>
+      value.foreach { nvp =>
+        logger.debug(s"Found $nvp in scope/$scope")
+      }
+    } map (_._2)
+
+  private def resolveNVP(nvp: (String, String)) = nvp match { case (n, v) =>
+    if (v == "()=>String")
+      (n, if (valueFunctions.contains(n)) valueFunctions(n)() else null)
+    else nvp
+  }
+
   /**
     * Finds and retrieves an attribute from the scope (throws error if not found)
     *
@@ -145,6 +157,27 @@ class ScopedData(val scope: String) extends LazyLogging {
     }
     this
   }
+
+  /**
+    * Binds a name-function pair.
+    *
+    * @param name the name bound to the function
+    * @param valueFunc the function that will return the value (null to remove)
+    * @return the current scope containing the old attributes plus the
+    *         newly added attribute
+    */
+  def setFunction(name: String, valueFunc: ()=> String): ScopedData = {
+    if (valueFunc != null) {
+      if (!valueFunctions.contains(name)) set(name, "()=>String")
+      valueFunctions += (name -> valueFunc)
+      this
+    }
+    else {
+      valueFunctions -= name
+      set(name, null)
+    }
+
+  }
     
   /**
    * Filters all contained attributes based on the given predicate.
@@ -179,7 +212,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
-    atts.filter(pred) ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)
+    atts.map(resolveNVP).filter(pred) ++ flashScope.map(_.map(resolveNVP).filter(pred).toSeq).getOrElse(Nil)
 
   /**
     * Returns this entire scope as a String.
@@ -191,10 +224,10 @@ class ScopedData(val scope: String) extends LazyLogging {
     s"""${padding}scope : "$scope" {${
          allAtts.toList match {
            case Nil => " }"
-           case _ => s"""${allAtts map {
+           case _ => s"""${allAtts map resolveNVP map {
              case (n, v) =>
                s"""|
-                   |${padding}  $n : ${if(v != null) s""""$v"""" else "null"}""".stripMargin
+                   |${padding}  $n : ${if(v == null) String.valueOf(v) else s""""$v""""}""".stripMargin
            } mkString}
            |${padding}}"""
          }}""".stripMargin
