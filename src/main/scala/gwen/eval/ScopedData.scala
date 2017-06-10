@@ -65,13 +65,13 @@ class ScopedData(val scope: String) extends LazyLogging {
     * the list.
     */
   private val atts = mutable.MutableList[(String, String)]()
-  
-  val isFeatureScope = false
 
   /**
-    * Map name-function pairs where the function returns a string value.
+    * Map name-closure pairs where the closure is a function that returns a string value.
     */
-  var valueFunctions = Map[String, () => String]()
+  private var closures = Map[String, () => String]()
+
+  val isFeatureScope = false
   
   /** 
     *  Provides access to the local flash data (attributes are pushed into this 
@@ -103,8 +103,8 @@ class ScopedData(val scope: String) extends LazyLogging {
     } map (_._2)
 
   private def resolveNVP(nvp: (String, String)) = nvp match { case (n, v) =>
-    if (v == "()=>String")
-      (n, if (valueFunctions.contains(n)) valueFunctions(n)() else null)
+    if (v == "() => String")
+      (n, if (closures.contains(n)) closures(n)() else null)
     else nvp
   }
 
@@ -159,21 +159,21 @@ class ScopedData(val scope: String) extends LazyLogging {
   }
 
   /**
-    * Binds a name-function pair.
+    * Binds a name-closure pair.
     *
     * @param name the name bound to the function
-    * @param valueFunc the function that will return the value (null to remove)
+    * @param closure the closure function that will return the value (null to remove)
     * @return the current scope containing the old attributes plus the
     *         newly added attribute
     */
-  def setFunction(name: String, valueFunc: ()=> String): ScopedData = {
-    if (valueFunc != null) {
-      if (!valueFunctions.contains(name)) set(name, "()=>String")
-      valueFunctions += (name -> valueFunc)
+  def set(name: String)(closure: () => String): ScopedData = {
+    if (closure != null) {
+      if (!closures.contains(name)) set(name, "() => String")
+      closures += (name -> closure)
       this
     }
     else {
-      valueFunctions -= name
+      closures -= name
       set(name, null)
     }
 

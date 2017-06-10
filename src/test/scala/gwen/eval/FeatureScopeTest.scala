@@ -100,7 +100,7 @@ class FeatureScopeTest extends FlatSpec with Matchers {
   }
 
   "scope with one function attribute" should "contain only that attribute" in {
-    val scope = new FeatureScope().setFunction("userId", () => "gwen")
+    val scope = new FeatureScope().set("userId") { () => "gwen" }
     scope.asString()    should be (
       """scope : "feature" {
         |  userId : "gwen"
@@ -112,7 +112,7 @@ class FeatureScopeTest extends FlatSpec with Matchers {
   "scope with one attribute and one function value" should "contain those two attributes" in {
     val scope = new FeatureScope()
     scope.set("userId", "gwen")
-    scope.setFunction("password", () => "pwd")
+    scope.set("password") { () => "pwd" }
     scope.asString()      should be (
       """scope : "feature" {
         |  userId : "gwen"
