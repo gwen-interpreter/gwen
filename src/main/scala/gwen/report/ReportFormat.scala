@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import gwen.Predefs.FileIO
   */
 object ReportFormat extends Enumeration {
 
-  val html, slideshow, junit = Value
+  val html, slideshow, junit, json = Value
   
   class FormatValue(
     val name: String, 
@@ -85,7 +85,20 @@ object ReportFormat extends Enumeration {
           val parentDirPath = spec.featureFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
           val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
           s"TEST-${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}"
-        }) {
+        }){
+          override def createReportDir(options: GwenOptions, spec: FeatureSpec, dataRecord: Option[DataRecord]): File = getReportDir(options)
+        },
+    json -> new FormatValue(
+      "JSON",
+      "json",
+      None,
+      options => new JsonReportGenerator(options),
+      options => options.reportDir.map(dir => new File(dir, "json")).get,
+      (spec: FeatureSpec, dataRecord: Option[DataRecord]) => {
+        val parentDirPath = spec.featureFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
+        val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
+        s"${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}"
+      }){
           override def createReportDir(options: GwenOptions, spec: FeatureSpec, dataRecord: Option[DataRecord]): File = getReportDir(options)
         }
   )

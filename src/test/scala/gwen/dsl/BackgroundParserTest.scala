@@ -58,7 +58,6 @@ class BackgroundParserTest extends FlatSpec with Matchers with GherkinParser {
       parse(s"Background:$step1\n$step2").get    should be (Background(s"$step1", Nil, List(Step(step2, Position(3, 1)))))
       
       parse("Background: I dont have any steps").get should be (Background("I dont have any steps", Nil, Nil))
-      parse("Background: I dont have any steps").get.id should be ("i-dont-have-any-steps")
       
       StepKeyword.values foreach { clause =>
         parse(s"Background: I contain a $clause keyword in name\n$step1").get should be (Background(s"I contain a $clause keyword in name", Nil, List(Step(step1, Position(3, 1)))))

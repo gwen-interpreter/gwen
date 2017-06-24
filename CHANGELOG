@@ -1,7 +1,9 @@
 2.7.0
 =====
-Jun 24, 2017
-- Generate ID's for feature, background, scenario, and examples elements
+Jun 25, 2017
+- Add cucumber compliant JSON output reports (with expanded outlines)
+  - json -f/--format option
+- Expand scenario outlines in JUnit-XML reports
 
 2.6.0
 =====

@@ -74,7 +74,6 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.id should be ("let-me-tell-you-something")
     feature.description.length should be (3)
     feature.description(0) should be ("As a tester")
     feature.description(1) should be ("I want to test all behavior")
@@ -86,7 +85,6 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            I want to test all behavior""").get
      
     feature.name should be ("let me tell you something")
-    feature.id should be ("let-me-tell-you-something")
     feature.description.length should be (2)
     feature.description(0) should be ("As a tester")
     feature.description(1) should be ("I want to test all behavior")
@@ -98,7 +96,6 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.id should be ("let-me-tell-you-something")
     feature.description.length should be (3)
     feature.description(0) should be ("As an experienced tester")
     feature.description(1) should be ("I want to test all behavior")
@@ -111,7 +108,6 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
-    feature.id should be ("let-me-tell-you-something")
     feature.description.length should be (3)
     feature.description(0) should be ("As TESTCO")
     feature.description(1) should be ("I want to test all behavior")
@@ -128,7 +124,6 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
             and some more text after a blank line""").get
      
     feature.name should be ("let me tell you something")
-    feature.id should be ("let-me-tell-you-something")
     feature.description.length should be (4)
     feature.description(0) should be ("Some miscellaneous random")
     feature.description(1) should be ("text")

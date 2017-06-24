@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,21 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.withName("html") should be (ReportFormat.html)
     ReportFormat.withName("slideshow") should be (ReportFormat.slideshow)
     ReportFormat.withName("junit") should be (ReportFormat.junit)
+    ReportFormat.withName("json") should be (ReportFormat.json)
   }
   
   "File extensions for all report formats" should "map correctly" in {
     ReportFormat.html.fileExtension should be ("html")
     ReportFormat.slideshow.fileExtension should be ("html")
     ReportFormat.junit.fileExtension should be ("xml")
+    ReportFormat.json.fileExtension should be ("json")
   }
   
   "Names of all report formats" should "map correctly" in {
     ReportFormat.html.name should be ("HTML")
     ReportFormat.slideshow.name should be ("Slideshow")
     ReportFormat.junit.name should be ("JUnit-XML")
+    ReportFormat.json.name should be ("JSON")
   }
   
   "Output directory of all report formats" should "map correctly" in {
@@ -45,6 +48,7 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.html.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
     ReportFormat.slideshow.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
     ReportFormat.junit.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}junit")
+    ReportFormat.json.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}json")
   }
   
   "Report generator for all report formats" should "map correctly" in {
@@ -52,6 +56,7 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.html.reportGenerator(options).isInstanceOf[HtmlReportGenerator] should be (true)
     ReportFormat.slideshow.reportGenerator(options).isInstanceOf[HtmlSlideshowGenerator] should be (true)
     ReportFormat.junit.reportGenerator(options).isInstanceOf[JUnitReportGenerator] should be (true)
+    ReportFormat.json.reportGenerator(options).isInstanceOf[JsonReportGenerator] should be (true)
   }
   
 }

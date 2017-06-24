@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,10 @@ trait JUnitReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
-    val scenarios = result.spec.scenarios.filter(!_.isStepDef)
+    val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
+      if (scenario.isOutline) scenario.examples.flatMap(_.scenarios).map((_, true))
+      else List((scenario, false))
+    }
     val hostname = s""" hostname="${escapeXml(InetAddress.getLocalHost.getHostName)}""""
     val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath)).getOrElse("")
     val name = s""" name="$packageName.Feature: ${escapeXml(result.spec.feature.name)}""""
@@ -64,8 +67,8 @@ trait JUnitReportFormatter extends ReportFormatter {
 <testsuite$hostname$name$pkg$tests$errors$skipped$time$timestamp>
     <properties>${sys.props.map { case (n, v) => s"""
         <property name="${escapeXml(n)}" value="${escapeXml(v)}"/>"""}.mkString}
-    </properties>${scenarios.zipWithIndex.map{case (scenario, idx) => s"""
-    <testcase name="Scenario ${padWithZeroes(idx + 1)}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {
+    </properties>${scenarios.zipWithIndex.map{case ((scenario, isOutline), idx) => s"""
+    <testcase name="Scenario ${padWithZeroes(idx + 1)}${if (isOutline) " Outline" else ""}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {
     case Failed(_, error) => 
       s""">
         <error type="${escapeXml(error.getClass.getName)}" message="${escapeXml(error.writeStackTrace)}"/>

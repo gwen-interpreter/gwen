@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/math")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/math"))
     )
       
@@ -51,7 +51,7 @@ class MathInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/math-dry-run")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/math")),
       dryRun = true
     )

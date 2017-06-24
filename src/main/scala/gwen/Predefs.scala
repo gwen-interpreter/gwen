@@ -24,8 +24,11 @@ import java.io.FileOutputStream
 import java.io.FileInputStream
 import java.io.StringWriter
 import java.io.PrintWriter
+import java.nio.file.{Files, Paths}
+
 import scala.util.matching.Regex
 import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent.duration.Duration
 import java.text.DecimalFormat
 
@@ -87,6 +90,8 @@ object Predefs extends LazyLogging {
     def writeFile(source: File) {
       file.writeBinary(new BufferedInputStream(new FileInputStream(source)))
     }
+
+    def readBytes: Array[Byte] = Files.readAllBytes(Paths.get(file.getAbsolutePath))
     
     def deleteDir() {
       val files = file.listFiles() 
@@ -112,6 +117,12 @@ object Predefs extends LazyLogging {
     
     def toFile(targetDir: File, targetSubDir: Option[String]): File =
       new File(toDir(targetDir, targetSubDir), file.getName)
+
+    def mimeType: String = file.extension match {
+      case "png" => "image/png"
+      case "json" => "application/json"
+      case _ => "text/plain"
+    }
     
   }
   
@@ -205,6 +216,14 @@ object Predefs extends LazyLogging {
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
     def escapeXml(text: String): String =
       String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
+    def escapeJson(text: String): String =
+      text.map { c =>
+        c match {
+          case '"' => """\""""
+          case '\\' => """\\"""
+          case _ => c
+        }
+      }.mkString.replace("\r", "").replace("\n", "\\n")
     def resolveParams(source: String, params: List[(String, String)]): String = {
       params match {
         case Nil => source

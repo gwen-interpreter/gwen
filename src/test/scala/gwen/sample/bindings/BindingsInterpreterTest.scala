@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Branko Juric, Brady Wood
+ * Copyright 2016-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ class BindingsInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/bindings")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/bindings")),
       properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
     )
@@ -84,7 +84,7 @@ class BindingsInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/bindings-dry-run")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/bindings")),
       dryRun = true,
       properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))

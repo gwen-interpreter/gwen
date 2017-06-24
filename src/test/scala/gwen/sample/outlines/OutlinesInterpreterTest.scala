@@ -64,7 +64,7 @@ class OutlinesInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/outlines")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/outlines"))
     )
       
@@ -81,7 +81,7 @@ class OutlinesInterpreterTest extends FlatSpec {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File("target/report/outlines-dry-run")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File("features/sample/outlines")),
       dryRun = true
     )
