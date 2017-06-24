@@ -118,6 +118,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
     outline.tags should be (List(Tag("UnitTest")))
     outline.name should be ("Joining <string 1> and <string 2> should yield <result>")
+    outline.id should be ("joining-<string-1>-and-<string-2>-should-yield-<result>")
     outline.background should be (None)
     outline.description should be (List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
     outline.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "<string 1>""""), Position(11, 5)))
@@ -130,6 +131,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val example1 = examples(0)
     example1.name should be ("Compound words")
+    example1.id should be ("compound-words")
     example1.description should be (Nil)
     example1.table.size should be (3)
     example1.table(0) should be ((18, List("string 1", "string 2", "result")))
@@ -139,6 +141,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val example2 = examples(1)
     example2.name should be ("Nonsensical compound words")
+    example2.id should be ("nonsensical-compound-words")
     example2.description.size should be (2)
     example2.description(0) should be ("Words that don't make any sense at all")
     example2.description(1) should be ("(for testing multiple examples)")
@@ -150,6 +153,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val example3 = examples(2)
     example3.name should be ("")
+    example3.id should be ("")
     example3.description should be (Nil)
     example3.table.size should be (2)
     example3.table(0) should be ((33, List("string 1", "string 2", "result")))

@@ -121,6 +121,7 @@ object FeatureSpec {
   */
 case class Feature(tags: List[Tag], name: String, description: List[String]) extends SpecNode {
   override def toString: String = name
+  def id: String = name.toLowerCase.replace(' ', '-')
 }
 object Feature {
   final val keyword = "Feature"
@@ -147,6 +148,7 @@ case class Background(name: String, description: List[String], steps: List[Step]
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
   
   override def toString: String = name
+  def id: String = name.toLowerCase.replace(' ', '-')
   
 }
 
@@ -206,6 +208,7 @@ case class Scenario(
     if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus))
 
   override def toString: String = name
+  def id: String = name.toLowerCase.replace(' ', '-')
   
 }
 object Scenario {
@@ -261,6 +264,7 @@ case class Examples(name: String, description: List[String], table: List[(Int, L
   override lazy val evalStatus: EvalStatus = EvalStatus(scenarios.map(_.evalStatus))
 
   override def toString: String = name
+  def id: String = name.toLowerCase.replace(' ', '-')
 }
 
 object Examples {

@@ -1,3 +1,8 @@
+2.7.0
+=====
+Jun 24, 2017
+- Generate ID's for feature, background, scenario, and examples elements
+
 2.6.0
 =====
 Jun 10, 2017
