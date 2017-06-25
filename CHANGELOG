@@ -3,6 +3,8 @@
 Jun 25, 2017
 - Add cucumber compliant JSON output reports
   - json -f/--format option
+  - evaluated scenario outlines are expanded in the report (and not expanded if not evaluated)
+- Expand evaluated scenario outlines in JUnit-XML reports (and do not expanded if not evaluated)
 - Capture location of all gherkin nodes instead of just steps only
 
 2.6.0

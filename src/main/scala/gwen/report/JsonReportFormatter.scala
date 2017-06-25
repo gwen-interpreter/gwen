@@ -42,7 +42,10 @@ trait JsonReportFormatter extends ReportFormatter {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
-      if (scenario.isOutline) scenario.examples.flatMap(_.scenarios).map((_, true))
+      if (scenario.isOutline) {
+        if (EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
+        else List((scenario, true))
+      }
       else List((scenario, false))
     }
     val spec = result.spec
@@ -55,13 +58,13 @@ trait JsonReportFormatter extends ReportFormatter {
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
     "keyword": "${Feature.keyword}",
     "id": "${escapeJson(featureId)}",
-    "line": ${if (feature.tags.nonEmpty) feature.tags.size + 1 else 1},
+    "line": ${feature.pos.line},
     "name": "${escapeJson(featureName)}",
     "description": "${feature.description.map(escapeJson).mkString("\\n")}"${if(feature.tags.nonEmpty) s""",
-    "tags": [${feature.tags.filter(!_.name.startsWith("Import(")).zipWithIndex.map { case (tag, idx) => s"""
+    "tags": [${feature.tags.filter(!_.name.startsWith("Import(")).map { tag => s"""
       {
         "name": "${escapeJson(tag.toString)}",
-        "line": ${idx + 1}
+        "line": ${tag.pos.line}
       }"""}.mkString(",")}
     ]""" else ""}${if(spec.scenarios.nonEmpty) s""",
     "elements": [${scenarios.zipWithIndex.map { case ((scenario, isOutline), idx) =>
@@ -76,8 +79,8 @@ trait JsonReportFormatter extends ReportFormatter {
   private def renderBackground(background: Background, idx: Int) = s"""
       {
         "keyword": "${Background.keyword}",
-        "id": "${padWithZeroes(idx + 1)}-background-${background.name.toLowerCase.replace(' ', '-')}",
-        "line": ${background.steps.headOption.map(_.pos.line - background.description.size - 1).getOrElse(0)},
+        "id": "scenario-${idx + 1}-background-${background.name.toLowerCase.replace(' ', '-')}",
+        "line": ${background.pos.line},
         "name": "${escapeJson(background.name)}",
         "description": "${background.description.map(escapeJson).mkString("\\n")}",
         "type": "${Background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
@@ -88,18 +91,37 @@ trait JsonReportFormatter extends ReportFormatter {
   private def renderScenario(scenario: Scenario, isOutline: Boolean, idx: Int) = s"""
       {
         "keyword": "${scenario.keyword}${if (isOutline) " Outline" else ""}",
-        "id": "${padWithZeroes(idx + 1)}-${scenario.name.toLowerCase.replace(' ', '-')}",
-        "line": ${scenario.steps.headOption.map(_.pos.line - scenario.description.size - 1).getOrElse(0)},
+        "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}",
+        "line": ${scenario.pos.line},
         "name": "${escapeJson(scenario.name)}",
         "description": "${scenario.description.map(escapeJson).mkString("\\n")}"${if(scenario.tags.nonEmpty) s""",
-        "tags": [${scenario.tags.zipWithIndex.map { case (tag, idx) => s"""
+        "tags": [${scenario.tags.map { case tag => s"""
           {
             "name": "${escapeJson(tag.toString)}",
-            "line": ${scenario.steps.headOption.map(_.pos.line - scenario.description.size - scenario.tags.size + idx - 1).getOrElse(0)}
+            "line": ${tag.pos.line}
           }"""}.mkString(",")}
         ]""" else ""},
-        "type": "scenario"${if (scenario.steps.nonEmpty) s""",
+        "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
         "steps": [${renderSteps(scenario.steps)}
+        ]""" else ""}${if (isOutline && scenario.keyword == "Scenario Outline" && scenario.examples.nonEmpty) s""",
+        "examples": [${scenario.examples.map { examples => s"""
+           {
+             "keyword": "${Examples.keyword}",
+             "name": "${escapeJson(examples.name)}",
+             "line": ${examples.pos.line},
+             "description": "${examples.description.map(escapeJson).mkString("\\n")}",
+             "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}--${examples.name.toLowerCase.replace(' ', '-')}",
+             "rows": [${examples.table.zipWithIndex.map { case ((line, table), eIndex) => s"""
+               {
+                 "cells": [${table.map(value => s"""
+                   "$value"""").mkString(",")}
+                 ],
+                 "line": ${line},
+                 "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}--${examples.name.toLowerCase.replace(' ', '-')}-${eIndex + 1}"
+               }"""}.mkString(",")}
+             ]
+           }"""}.mkString(",")}
+
         ]""" else ""}
       }"""
 

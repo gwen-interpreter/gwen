@@ -17,14 +17,12 @@ package gwen.report
 
 import java.io.File
 import java.net.InetAddress
+
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import gwen.GwenInfo
 import gwen.Predefs.Exceptions
-import gwen.dsl.Failed
-import gwen.dsl.Pending
-import gwen.dsl.Skipped
-import gwen.dsl.StatusKeyword
+import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
@@ -47,9 +45,13 @@ trait JUnitReportFormatter extends ReportFormatter {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
-      if (scenario.isOutline) scenario.examples.flatMap(_.scenarios).map((_, true))
+      if (scenario.isOutline) {
+        if (EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
+        else List((scenario, true))
+      }
       else List((scenario, false))
     }
+
     val hostname = s""" hostname="${escapeXml(InetAddress.getLocalHost.getHostName)}""""
     val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath)).getOrElse("")
     val name = s""" name="$packageName.Feature: ${escapeXml(result.spec.feature.name)}""""
