@@ -17,15 +17,17 @@
 package gwen.eval
 
 import org.scalatest.Matchers
-import gwen.dsl.Scenario
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
-import gwen.dsl.Tag
+import gwen.dsl._
 import org.scalatest.FlatSpec
 import gwen.errors.InvalidStepDefException
 import gwen.errors.AmbiguousCaseException
 
 class EnvContextTest extends FlatSpec with Matchers {
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
   
   "New env context" should "contain no StepDefs" in {
     val env = newEnv

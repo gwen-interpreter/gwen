@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,23 @@
 
 package gwen.eval
 
-import java.io.File
 import org.scalatest.Matchers
-import gwen.dsl.EvalStatus
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.dsl.Pending
-import gwen.dsl.Skipped
-import gwen.dsl.StatusKeyword
+import gwen.dsl._
 import org.scalatest.FlatSpec
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Scenario
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
-import gwen.dsl.Feature
-import gwen.dsl.Tag
+
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import gwen.dsl.Loaded
 import java.util.Date
 
 class FeatureSummaryTest extends FlatSpec with Matchers {
+
+  object Feature {
+   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+  }
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
   
   val Passed1 = Passed(1000000)
   val Passed2 = Passed(2000000)

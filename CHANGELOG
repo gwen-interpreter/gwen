@@ -1,9 +1,9 @@
 2.7.0
 =====
 Jun 25, 2017
-- Add cucumber compliant JSON output reports (with expanded outlines)
+- Add cucumber compliant JSON output reports
   - json -f/--format option
-- Expand scenario outlines in JUnit-XML reports
+- Capture location of all gherkin nodes instead of just steps only
 
 2.6.0
 =====

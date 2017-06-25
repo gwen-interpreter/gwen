@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package gwen.dsl
 
-import org.scalatest.FunSuite
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import scala.util.Failure
-import gherkin.ParserException
 import scala.util.Success
 
 class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
+
+  object Feature {
+   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+  }
 
   private def parse(input: String) = parseFeatureSpec(input).map(_.feature)
   

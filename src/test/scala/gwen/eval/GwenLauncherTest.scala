@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,14 @@
 package gwen.eval
 
 import java.io.File
+
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.Matchers
 import org.scalatest.mockito.MockitoSugar
-import gwen.dsl.Failed
-import gwen.dsl.Feature
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Passed
-import gwen.dsl.Scenario
-import gwen.dsl.StatusKeyword
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
-import gwen.dsl.Tag
+import gwen.dsl._
 import gwen.UserOverrides
 import org.scalatest.FlatSpec
 import gwen.report.ReportFormat
@@ -40,7 +33,16 @@ import gwen.Predefs.FileIO
 import java.util.Date
 
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
-  
+
+  object Feature {
+   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+  }
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
+
   val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
   
   val feature = new FeatureSpec(

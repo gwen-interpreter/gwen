@@ -21,6 +21,11 @@ import org.scalatest.Matchers
 
 class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
+
   private val parse = parseFeatureSpec(_: String)
 
   private val featureString = """
@@ -93,11 +98,11 @@ Background: The tester
           scenario.description,
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map {step =>
-              Step(step.pos, step.keyword, step.expression, Passed(1))
+              Step(step.keyword, step.expression, Passed(1))
             })
           }, 
           scenario.steps map {step =>
-            Step(step.pos, step.keyword, step.expression, if (scenario.isStepDef) Loaded else Passed(1))
+            Step(step.keyword, step.expression, if (scenario.isStepDef) Loaded else Passed(1))
           }) 
       })
     
@@ -132,7 +137,7 @@ Background: The tester
           scenario.background map { background =>
             Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.pos, step.keyword, step.expression, stepIndex match {
+              Step(step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
                 case 3 if scenarioIndex == 0 => Failed(99, error)
                 case _ => step.evalStatus
@@ -193,7 +198,7 @@ Background: The tester
           scenario.background map { background =>
             Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.pos, step.keyword, step.expression, stepIndex match {
+              Step(step.keyword, step.expression, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
                 case 3 if scenarioIndex == 1 => Failed(99, error)
                 case _ => if (scenarioIndex < 1) Passed(1) else step.evalStatus
@@ -253,7 +258,7 @@ Background: The tester
           scenario.description, 
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map { step =>
-              Step(step.pos, step.keyword, step.expression, scenarioIndex match {
+              Step(step.keyword, step.expression, scenarioIndex match {
                 case 0 => Passed(1)
                 case _ => step.evalStatus
               })
@@ -261,7 +266,7 @@ Background: The tester
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.pos, step.keyword, step.expression, stepIndex match {
+            Step(step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
               case 3 if scenarioIndex == 0 => Failed(99, error)
               case _ => step.evalStatus
@@ -321,12 +326,12 @@ Background: The tester
           scenario.description, 
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map { step =>
-              Step(step.pos, step.keyword, step.expression, Passed(1))
+              Step(step.keyword, step.expression, Passed(1))
             }) 
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.pos, step.keyword, step.expression, stepIndex match {
+            Step(step.keyword, step.expression, stepIndex match {
               case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
               case 3 if scenarioIndex == 1 => Failed(99, error)
               case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus

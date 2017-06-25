@@ -21,7 +21,18 @@ import org.scalatest.Matchers
 import gwen.errors.AmbiguousCaseException
 import gwen.eval.DataRecord
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
+class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+
+  object Feature {
+   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+  }
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
+
+  private val parse = parseFeatureSpec(_: String)
 
   val background = Background(
     "background",
@@ -206,71 +217,58 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
 
   "Valid scenario outline" should "normalise" in {
 
-    val feature = FeatureSpec(
-      Feature("Outline", Nil),
-      Some(background),
-      List(
-        Scenario(
-          List(Tag("UnitTest")),
-          "Joining <string 1> and <string 2> should yield <result>",
-          List(
-            "Substituting..",
-            "string 1 = <string 1>",
-            "string 2 = <string 2>",
-            "result = <result>"
-          ),
-          None,
-          List(
-            Step(Step(StepKeyword.Given, """string 1 is "<string 1>""""), Position(11, 5)),
-            Step(Step(StepKeyword.And, """string 2 is "<string 2>""""), Position(12, 7)),
-            Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)),
-            Step(Step(StepKeyword.Then, """the result should be "<result>""""), Position(14, 6))
-          ),
-          isOutline = true,
-          List(
-            Examples(
-              "Compound words",
-              Nil,
-              List(
-                (18, List("string 1", "string 2", "result")),
-                (19, List("basket", "ball", "basketball")),
-                (20, List("any", "thing", "anything"))
-              ),
-              Nil
-            ),
-            Examples(
-              "Nonsensical compound words",
-              List(
-                "Words that don't make any sense at all",
-                "(for testing multiple examples)"
-              ),
-              List(
-                (27, List("string 1", "string 2", "result")),
-                (28, List("howdy", "doo", "howdydoo")),
-                (29, List("yep", "ok", "yepok"))
-              ),
-              Nil
-            ),
-            Examples(
-              "",
-              Nil,
-              List(
-                (33, List("string 1", "string 2", "result")),
-                (34, List("ding", "dong", "dingdong"))
-              ),
-              Nil
-            )
-          ),
-          None
-        )
-      )
-    )
+    val featureString = """
+    Feature: Outline
+
+    Background: background
+       Given background step 1
+
+    @UnitTest
+    Scenario Outline: Joining <string 1> and <string 2> should yield <result>
+
+    Substituting..
+    string 1 = <string 1>
+    string 2 = <string 2>
+    result = <result>
+
+    Given string 1 is "<string 1>"
+      And string 2 is "<string 2>"
+     When I join the two strings
+     Then the result should be "<result>"
+
+    Examples: Compound words
+
+      | string 1 | string 2 | result     |
+      | basket   | ball     | basketball |
+      | any      | thing    | anything   |
+
+    Examples: Nonsensical compound words
+
+      Words that don't make any sense at all
+      (for testing multiple examples)
+
+      | string 1 | string 2 | result   |
+      | howdy    | doo      | howdydoo |
+      | yep      | ok       | yepok    |
+
+    Examples:
+
+      | string 1 | string 2 | result   |
+      | ding     | dong     | dingdong |
+    """
+
+    val feature = parse(featureString).get
 
     val result = normalise(feature, None, None)
+    result.feature.pos should be (Position(2, 5))
+
+    result.background should be (None)
 
     val outline = result.scenarios(0)
 
+    outline.pos should be (Position(8, 5))
     outline.tags should be(List(Tag("UnitTest")))
+    outline.tags(0).pos should be (Position(7, 5))
     outline.name should be("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be(None)
     outline.description should be(List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
@@ -283,82 +281,105 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser {
     examples.size should be(3)
 
     val example1 = examples(0)
+    example1.pos should be (Position(20, 5))
     example1.name should be("Compound words")
     example1.description should be(Nil)
     example1.table.size should be(3)
-    example1.table(0) should be((18, List("string 1", "string 2", "result")))
-    example1.table(1) should be((19, List("basket", "ball", "basketball")))
-    example1.table(2) should be((20, List("any", "thing", "anything")))
+    example1.table(0) should be((22, List("string 1", "string 2", "result")))
+    example1.table(1) should be((23, List("basket", "ball", "basketball")))
+    example1.table(2) should be((24, List("any", "thing", "anything")))
     example1.scenarios.size should be(2)
 
     val scenario1 = example1.scenarios(0)
+    scenario1.pos should be (Position(8, 5))
     scenario1.tags should be(List(Tag("UnitTest")))
+    scenario1.tags(0).pos should be (Position(7, 5))
     scenario1.name should be("Joining basket and ball should yield basketball -- Example 1.1 Compound words")
-    scenario1.background should be(Some(background))
+    scenario1.background.get.pos should be (Position(4, 5))
+    scenario1.background.get.name should be ("background")
+    scenario1.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
     scenario1.description should be(List("Substituting..", "string 1 = basket", "string 2 = ball", "result = basketball"))
-    scenario1.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "basket""""), Position(11, 5)))
-    scenario1.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ball""""), Position(12, 7)))
-    scenario1.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    scenario1.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "basketball""""), Position(14, 6)))
+    scenario1.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "basket""""), Position(15, 5)))
+    scenario1.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ball""""), Position(16, 7)))
+    scenario1.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
+    scenario1.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "basketball""""), Position(18, 6)))
 
     val scenario2 = example1.scenarios(1)
+    scenario2.pos should be (Position(8, 5))
     scenario2.tags should be(List(Tag("UnitTest")))
+    scenario2.tags(0).pos should be (Position(7, 5))
     scenario2.name should be("Joining any and thing should yield anything -- Example 1.2 Compound words")
-    scenario2.background should be(Some(background))
+    scenario2.background.get.pos should be (Position(4, 5))
+    scenario2.background.get.name should be ("background")
+    scenario2.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
     scenario2.description should be(List("Substituting..", "string 1 = any", "string 2 = thing", "result = anything"))
-    scenario2.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "any""""), Position(11, 5)))
-    scenario2.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "thing""""), Position(12, 7)))
-    scenario2.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    scenario2.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "anything""""), Position(14, 6)))
+    scenario2.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "any""""), Position(15, 5)))
+    scenario2.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "thing""""), Position(16, 7)))
+    scenario2.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
+    scenario2.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "anything""""), Position(18, 6)))
 
     val example2 = examples(1)
+    example2.pos should be (Position(26, 5))
     example2.name should be("Nonsensical compound words")
     example2.description.size should be(2)
     example2.description(0) should be("Words that don't make any sense at all")
     example2.description(1) should be("(for testing multiple examples)")
     example2.table.size should be(3)
-    example2.table(0) should be((27, List("string 1", "string 2", "result")))
-    example2.table(1) should be((28, List("howdy", "doo", "howdydoo")))
-    example2.table(2) should be((29, List("yep", "ok", "yepok")))
+    example2.table(0) should be((31, List("string 1", "string 2", "result")))
+    example2.table(1) should be((32, List("howdy", "doo", "howdydoo")))
+    example2.table(2) should be((33, List("yep", "ok", "yepok")))
     example2.scenarios.size should be(2)
 
     val scenario3 = example2.scenarios(0)
+    scenario3.pos should be (Position(8, 5))
     scenario3.tags should be(List(Tag("UnitTest")))
+    scenario3.tags(0).pos should be (Position(7, 5))
     scenario3.name should be("Joining howdy and doo should yield howdydoo -- Example 2.1 Nonsensical compound words")
-    scenario3.background should be(Some(background))
+    scenario3.background.get.pos should be (Position(4, 5))
+    scenario3.background.get.name should be ("background")
+    scenario3.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
     scenario3.description should be(List("Substituting..", "string 1 = howdy", "string 2 = doo", "result = howdydoo"))
-    scenario3.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "howdy""""), Position(11, 5)))
-    scenario3.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "doo""""), Position(12, 7)))
-    scenario3.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    scenario3.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "howdydoo""""), Position(14, 6)))
+    scenario3.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "howdy""""), Position(15, 5)))
+    scenario3.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "doo""""), Position(16, 7)))
+    scenario3.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
+    scenario3.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "howdydoo""""), Position(18, 6)))
 
     val scenario4 = example2.scenarios(1)
+    scenario4.pos should be (Position(8, 5))
     scenario4.tags should be(List(Tag("UnitTest")))
+    scenario4.tags(0).pos should be (Position(7, 5))
     scenario4.name should be("Joining yep and ok should yield yepok -- Example 2.2 Nonsensical compound words")
-    scenario4.background should be(Some(background))
+    scenario4.background.get.pos should be (Position(4, 5))
+    scenario4.background.get.name should be ("background")
+    scenario4.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
     scenario4.description should be(List("Substituting..", "string 1 = yep", "string 2 = ok", "result = yepok"))
-    scenario4.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "yep""""), Position(11, 5)))
-    scenario4.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ok""""), Position(12, 7)))
-    scenario4.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    scenario4.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "yepok""""), Position(14, 6)))
+    scenario4.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "yep""""), Position(15, 5)))
+    scenario4.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ok""""), Position(16, 7)))
+    scenario4.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
+    scenario4.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "yepok""""), Position(18, 6)))
 
     val example3 = examples(2)
+    example3.pos should be (Position(35, 5))
     example3.name should be("")
     example3.description should be(Nil)
     example3.table.size should be(2)
-    example3.table(0) should be((33, List("string 1", "string 2", "result")))
-    example3.table(1) should be((34, List("ding", "dong", "dingdong")))
+    example3.table(0) should be((37, List("string 1", "string 2", "result")))
+    example3.table(1) should be((38, List("ding", "dong", "dingdong")))
     example3.scenarios.size should be(1)
 
     val scenario5 = example3.scenarios(0)
+    scenario5.pos should be (Position(8, 5))
     scenario5.tags should be(List(Tag("UnitTest")))
+    scenario5.tags(0).pos should be (Position(7, 5))
     scenario5.name should be("Joining ding and dong should yield dingdong -- Example 3.1 ")
-    scenario5.background should be(Some(background))
+    scenario5.background.get.pos should be (Position(4, 5))
+    scenario5.background.get.name should be ("background")
+    scenario5.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
     scenario5.description should be(List("Substituting..", "string 1 = ding", "string 2 = dong", "result = dingdong"))
-    scenario5.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "ding""""), Position(11, 5)))
-    scenario5.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "dong""""), Position(12, 7)))
-    scenario5.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    scenario5.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "dingdong""""), Position(14, 6)))
+    scenario5.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "ding""""), Position(15, 5)))
+    scenario5.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "dong""""), Position(16, 7)))
+    scenario5.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
+    scenario5.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "dingdong""""), Position(18, 6)))
 
     val scenarios = outline.examples.flatMap(_.scenarios)
     scenarios.size should be(5)

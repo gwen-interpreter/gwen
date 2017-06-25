@@ -59,7 +59,7 @@ trait SpecNormaliser {
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
-      Step(Position(0, 0), keyword, s"""$name is "$value"""")
+      Step(keyword, s"""$name is "$value"""")
     }
     val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
     Scenario(tags, s"Bind data attributes", Nil, None, steps, isOutline = false, Nil, None) :: expandScenarios(scenarios, background)
@@ -92,11 +92,12 @@ trait SpecNormaliser {
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None else background,
               outline.steps.map { s =>
-                new Step(s.pos, s.keyword, Formatting.resolveParams(s.expression, params), s.status, s.attachments, s.stepDef)
+                new Step(s.keyword, Formatting.resolveParams(s.expression, params), s.status, s.attachments, s.stepDef) tap { step => step.pos = s.pos }
               },
               isOutline = false,
               Nil,
-              None)
+              None
+            ) tap { s => s.pos = outline.pos }
           })
       })
    

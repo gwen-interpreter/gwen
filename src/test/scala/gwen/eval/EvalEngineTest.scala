@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,9 @@ package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
+import gwen.dsl._
 import gwen.errors.UndefinedStepException
 import gwen.eval.support.DefaultEngineSupport
-import gwen.dsl.StatusKeyword
-import gwen.dsl.Scenario
-import gwen.dsl.Tag
 
 class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
 class TestEvalEngine extends EvalEngine[TestEnvContext] with DefaultEngineSupport[TestEnvContext] {
@@ -35,6 +31,11 @@ class TestEvalEngine extends EvalEngine[TestEnvContext] with DefaultEngineSuppor
 }
   
 class EvalEngineTest extends FlatSpec with Matchers {
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
 
   val engine = new TestEvalEngine
   

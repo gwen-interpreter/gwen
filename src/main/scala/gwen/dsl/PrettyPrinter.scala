@@ -50,7 +50,7 @@ object prettyPrint {
       background.map(apply).getOrElse("") +
         (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
-    case Step(_, keyword, expression, evalStatus, _, _) =>
+    case Step(keyword, expression, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"$keyword $expression${formatStatus(evalStatus)}"
     case Examples(name, description, table, scenarios) => scenarios match {
       case Nil =>

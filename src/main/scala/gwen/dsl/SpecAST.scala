@@ -19,8 +19,17 @@ package gwen.dsl
 import java.io.File
 
 import gwen.errors._
+import gwen.Predefs.Kestrel
 
 import scala.collection.JavaConverters._
+
+/** Reperesents a position in the source.*/
+case class Position(line: Int, column: Int)
+
+object Position {
+  def apply(location: gherkin.ast.Location): Position =
+    Option(location).map(loc => Position(loc.getLine, loc.getColumn)).getOrElse(Position(0, 0))
+}
 
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
@@ -31,14 +40,10 @@ import scala.collection.JavaConverters._
 trait SpecNode {
   /** Returns the evaluation status of this node. */
   lazy val evalStatus: EvalStatus = Pending
+
+  /** The position of the node in the source. */
+  var pos: Position = Position(0, 0)
   
-}
-
-/** Reperesents a position in the source.*/
-case class Position(line: Int, column: Int)
-
-object Position {
-  def apply(location: gherkin.ast.Location): Position = Position(location.getLine, location.getColumn)
 }
 
 /**
@@ -106,7 +111,7 @@ object FeatureSpec {
         }
       },
       None,
-      Nil)
+      Nil) tap { f => f.pos = Position(spec.getLocation) }
   }
 }
 
@@ -128,8 +133,8 @@ object Feature {
     Feature(
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
       feature.getName, 
-      Option(feature.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct)
-  def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+      Option(feature.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct
+    ) tap { f => f.pos = Position(feature.getLocation) }
 }
 
 /**
@@ -156,9 +161,10 @@ object Background {
     Background(
       background.getName,
       Option(background.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      Option(background.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)))
-  def apply(background: Background, steps: List[Step]): Background = 
-    Background(background.name, background.description, steps) 
+      Option(background.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s))
+    ) tap { b => b.pos = Position(background.getLocation) }
+  def apply(background: Background, steps: List[Step]): Background =
+    Background(background.name, background.description, steps) tap { b => b.pos = background.pos }
 }
 
 /**
@@ -218,7 +224,8 @@ object Scenario {
       Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
       isOutline = false,
       Nil,
-      None)
+      None
+    ) tap { s => s.pos = Position(scenario.getLocation) }
   }
   def apply(outline: gherkin.ast.ScenarioOutline): Scenario = {
     new Scenario(
@@ -228,17 +235,16 @@ object Scenario {
       None,
       Option(outline.getSteps).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s)),
       isOutline = true,
-      outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(outline, examples, index) },
-      None)
+      outline.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(examples, index) },
+      None
+    ) { s => s.pos = Position(outline.getLocation) }
   }
-  def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-    new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
   def apply(scenario: Scenario, background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-    apply(scenario.tags, scenario.name, scenario.description, background, steps, scenario.isOutline, examples, scenario.metaFile)
-  def apply(scenario: Scenario, metaFile: Option[File]): Scenario = 
-    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.isOutline, scenario.examples, metaFile)
+    new Scenario(scenario.tags, scenario.name, scenario.description, background, steps, scenario.isOutline, examples, scenario.metaFile) tap { s => s.pos = scenario.pos }
+  def apply(scenario: Scenario, metaFile: Option[File]): Scenario =
+    new Scenario(scenario.tags, scenario.name, scenario.description, scenario.background, scenario.steps, scenario.isOutline, scenario.examples, metaFile) tap { s => s.pos = scenario.pos }
   def apply(outline: Scenario, examples: List[Examples]): Scenario =
-    Scenario(outline, outline.background, outline.steps, examples)
+    new Scenario(outline.tags, outline.name, outline.description, outline.background, outline.steps, outline.isOutline, examples, outline.metaFile) tap { s => s.pos = outline.pos }
 }
 
 /**
@@ -265,7 +271,7 @@ case class Examples(name: String, description: List[String], table: List[(Int, L
 
 object Examples {
   final val keyword = "Examples"
-  def apply(outline: gherkin.ast.ScenarioOutline, examples: gherkin.ast.Examples, index: Int): Examples = {
+  def apply(examples: gherkin.ast.Examples, index: Int): Examples = {
     val header = examples.getTableHeader
     if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
     val body = examples.getTableBody
@@ -277,11 +283,11 @@ object Examples {
         body.iterator.asScala.toList.map { row =>
           (row.getLocation.getLine, row.getCells.asScala.toList.map(_.getValue))
         },
-      Nil)
+      Nil
+    ) tap { e => e.pos = Position(examples.getLocation) }
   }
-  def apply(examples: Examples, scenarios: List[Scenario]): Examples = {
-    Examples(examples.name, examples.description, examples.table, scenarios)
-  }
+  def apply(examples: Examples, scenarios: List[Scenario]): Examples =
+    Examples(examples.name, examples.description, examples.table, scenarios) tap { e => e.pos = examples.pos }
 }
 
 /**
@@ -317,15 +323,14 @@ object Tag {
   }
   
   def apply(tag: gherkin.ast.Tag): Tag =
-    if (tag.getName.startsWith("@")) Tag(tag.getName.substring(1))
-    else Tag(tag.getName)
+    (if (tag.getName.startsWith("@")) Tag(tag.getName.substring(1))
+    else Tag(tag.getName)) tap { t => t.pos = Position(tag.getLocation) }
   
 }
 
 /**
   * Captures a gherkin step.
   *
-  * @param pos the location of the node in the source
   * @param keyword keyword identifier (Given, When, Then, etc..)
   * @param expression free format step expression line (that is: the text following the step keyword)
   * @param status optional evaluation status (default = Pending)
@@ -335,7 +340,6 @@ object Tag {
   * @author Branko Juric
   */
 case class Step(
-    pos: Position,
     keyword: StepKeyword.Value, 
     expression: String, 
     status: EvalStatus = Pending, 
@@ -355,20 +359,20 @@ case class Step(
 
 object Step {
   def apply(step: gherkin.ast.Step): Step =
-    new Step(Position(step.getLocation), StepKeyword.names(step.getKeyword.trim), step.getText)
-  def apply(keyword: StepKeyword.Value, expression: String): Step =
-    new Step(Position(1, 1), keyword, expression)
-  def apply(keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
-    new Step(Position(1, 1), keyword, expression, status)
+    new Step(StepKeyword.names(step.getKeyword.trim), step.getText) tap { s => s.pos = Position(step.getLocation) }
+  def apply(pos: Position, keyword: StepKeyword.Value, expression: String): Step =
+    new Step(keyword, expression) tap { s => s.pos = pos }
+  def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
+    new Step(keyword, expression, status) tap { s => s.pos = pos }
   def apply(step: Step, pos: Position): Step =
-    new Step(pos, step.keyword, step.expression, step.status, step.attachments, step.stepDef)
+    new Step(step.keyword, step.expression, step.status, step.attachments, step.stepDef) tap { s => s.pos = pos}
   def apply(step: Step, expression: String): Step =
-    new Step(step.pos, step.keyword, expression, step.status, step.attachments)
+    new Step(step.keyword, expression, step.status, step.attachments) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =
-    new Step(step.pos, step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef))
+    new Step(step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef)) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
-    new Step(step.pos, step.keyword, step.expression, status, attachments, step.stepDef)
+    new Step(step.keyword, step.expression, status, attachments, step.stepDef) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)], foreachStepDef: Scenario): Step =
-    new Step(step.pos, step.keyword, step.expression, status, attachments, Some(foreachStepDef))
+    new Step(step.keyword, step.expression, status, attachments, Some(foreachStepDef)) tap { s => s.pos = step.pos }
 }
 

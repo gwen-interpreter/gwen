@@ -18,6 +18,7 @@ package gwen.eval
 
 import java.io.File
 import java.io.FileWriter
+
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import org.mockito.Matchers.anyString
@@ -27,15 +28,15 @@ import org.mockito.Mockito.when
 import org.scalatest.Matchers
 import org.scalatest.mockito.MockitoSugar
 import gwen.Predefs.Kestrel
-import gwen.dsl.Scenario
-import gwen.dsl.StatusKeyword
-import gwen.dsl.Step
-import gwen.dsl.StepKeyword
+import gwen.dsl._
 import org.scalatest.FlatSpec
-import gwen.dsl.Tag
-import gwen.dsl.Position
 
 class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
 
   val rootDir: File = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
   
@@ -144,10 +145,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
     when(mockForeachScenarios.get(anyString())).thenReturn(None)
-    val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
-    val step2 = Step(Position(6, 9), StepKeyword.Given, "a deterministic nonlinear system")
-    val step3 = Step(Position(7, 10), StepKeyword.When, "a small change is initially applied")
-    val step4 = Step(Position(8, 10), StepKeyword.Then, "a large change will eventually result")
+    val step1 = Step(StepKeyword.Given, "I am an observer")
+    val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
+    val step3 = Step(StepKeyword.When, "a small change is initially applied")
+    val step4 = Step(StepKeyword.Then, "a large change will eventually result")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
@@ -185,9 +186,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
       Nil, 
       None, 
       List(
-        Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system"),
-        Step(Position(6, 10), StepKeyword.When, "a small change is initially applied"),
-        Step(Position(7, 10), StepKeyword.Then, "a large change will eventually result")))
+        Step(StepKeyword.Given, "a deterministic nonlinear system"),
+        Step(StepKeyword.When, "a small change is initially applied"),
+        Step(StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
     val mockForeachScenarios = mock[Map[String,Scenario]]
     when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
@@ -201,11 +202,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.paramScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
-    val step1 = Step(Position(4, 9), StepKeyword.Given, "I am an observer")
-    val step2 = Step(Position(6, 9), StepKeyword.Given, "the butterfly flaps its wings")
-    val step3 = Step(Position(5, 9), StepKeyword.Given, "a deterministic nonlinear system")
-    val step4 = Step(Position(6, 10), StepKeyword.When, "a small change is initially applied")
-    val step5 = Step(Position(7, 10), StepKeyword.Then, "a large change will eventually result")
+    val step1 = Step(StepKeyword.Given, "I am an observer")
+    val step2 = Step(StepKeyword.Given, "the butterfly flaps its wings")
+    val step3 = Step(StepKeyword.Given, "a deterministic nonlinear system")
+    val step4 = Step(StepKeyword.When, "a small change is initially applied")
+    val step5 = Step(StepKeyword.Then, "a large change will eventually result")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)

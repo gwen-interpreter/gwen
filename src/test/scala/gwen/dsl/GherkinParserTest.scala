@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,15 @@ import org.scalatest.Matchers
 import scala.util.Success
 
 class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
+
+  object Feature {
+   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+  }
+
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
 
   private val parse = parseFeatureSpec(_: String)
   
@@ -70,9 +79,9 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
         fspec.background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
-              Step(Position(12, 9), StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(Position(13, 10), StepKeyword.When,  "a small change is initially applied"),
-              Step(Position(14, 10), StepKeyword.Then,  "a large change will eventually result")
+              Step(StepKeyword.Given, "a deterministic nonlinear system"),
+              Step(StepKeyword.When,  "a small change is initially applied"),
+              Step(StepKeyword.Then,  "a large change will eventually result")
             )
           )
         }
@@ -80,36 +89,55 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
           List(
             Scenario(List[Tag](), "Evaluation", Nil, None,
               List(
-                Step(Position(17, 9), StepKeyword.Given, "any software behavior"),
-                Step(Position(18, 10), StepKeyword.When,  "expressed in Gherkin"),
-                Step(Position(19, 10), StepKeyword.Then,  "Gwen can evaluate it")
+                Step(StepKeyword.Given, "any software behavior"),
+                Step(StepKeyword.When,  "expressed in Gherkin"),
+                Step(StepKeyword.Then,  "Gwen can evaluate it")
               )
             ),
             Scenario(List[Tag](), "The useless test", Nil, None, 
               List(
-                Step(Position(22, 9), StepKeyword.Given, "I am a test"),
-                Step(Position(23, 11), StepKeyword.And,   "I am generated from code"),
-                Step(Position(24, 10), StepKeyword.When,  "the code changes"),
-                Step(Position(25, 10), StepKeyword.Then,  "I change"),
-                Step(Position(26, 11), StepKeyword.And,   "so I won't fail"),
-                Step(Position(27, 11), StepKeyword.And,   "that's why I'm useless")
+                Step(StepKeyword.Given, "I am a test"),
+                Step(StepKeyword.And,   "I am generated from code"),
+                Step(StepKeyword.When,  "the code changes"),
+                Step(StepKeyword.Then,  "I change"),
+                Step(StepKeyword.And,   "so I won't fail"),
+                Step(StepKeyword.And,   "that's why I'm useless")
               )
             ),
             Scenario(List[Tag](), "The useful test", Nil, None, 
               List(
-                Step(Position(30, 9), StepKeyword.Given, "I am a test"),
-                Step(Position(31, 11), StepKeyword.And,   "I am written by a human"),
-                Step(Position(32, 10), StepKeyword.When,  "the code changes"),
-                Step(Position(33, 10), StepKeyword.Then,  "I don't"),
-                Step(Position(34, 11), StepKeyword.And,   "so I may fail"),
-                Step(Position(35, 11), StepKeyword.But,   "that's why I'm useful")
+                Step(StepKeyword.Given, "I am a test"),
+                Step(StepKeyword.And,   "I am written by a human"),
+                Step(StepKeyword.When,  "the code changes"),
+                Step(StepKeyword.Then,  "I don't"),
+                Step(StepKeyword.And,   "so I may fail"),
+                Step(StepKeyword.But,   "that's why I'm useful")
               )
             )
           )
         }
+        fspec.feature.pos should be (Position(3, 6))
+        fspec.background.get.pos should be (Position(8, 3))
+        fspec.scenarios(0).pos should be (Position(16, 5))
+        fspec.scenarios(0).steps(0).pos should be (Position(17, 9))
+        fspec.scenarios(0).steps(1).pos should be (Position(18, 10))
+        fspec.scenarios(0).steps(2).pos should be (Position(19, 10))
+        fspec.scenarios(1).pos should be (Position(21, 5))
+        fspec.scenarios(1).steps(0).pos should be (Position(22, 9))
+        fspec.scenarios(1).steps(1).pos should be (Position(23, 11))
+        fspec.scenarios(1).steps(2).pos should be (Position(24, 10))
+        fspec.scenarios(1).steps(3).pos should be (Position(25, 10))
+        fspec.scenarios(1).steps(4).pos should be (Position(26, 11))
+        fspec.scenarios(1).steps(5).pos should be (Position(27, 11))
+        fspec.scenarios(2).pos should be (Position(29, 5))
+        fspec.scenarios(2).steps(0).pos should be (Position(30, 9))
+        fspec.scenarios(2).steps(1).pos should be (Position(31, 11))
+        fspec.scenarios(2).steps(2).pos should be (Position(32, 10))
+        fspec.scenarios(2).steps(3).pos should be (Position(33, 10))
+        fspec.scenarios(2).steps(4).pos should be (Position(34, 11))
+        fspec.scenarios(2).steps(5).pos should be (Position(35, 11))
       case e => fail(e.toString)
-     }
-    
+    }
   }
   
   "Feature and scenario level tags" should "parse" in {
@@ -136,22 +164,28 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
           Given I do work 4"""
     
     val featureSpec = parse(featureString).get
-    
+
     featureSpec.feature.tags.size should be (1)
     featureSpec.feature.tags.contains(Tag("wip")) should be (true)
-    
+    featureSpec.feature.tags(0).pos should be (Position(3, 8))
+
     featureSpec.scenarios(0).tags.size should be (0)
-    
+
     featureSpec.scenarios(1).tags.size should be (1)
     featureSpec.scenarios(1).tags.contains(Tag("work")) should be (true)
-    
+    featureSpec.scenarios(1).tags(0).pos should be (Position(9, 7))
+
     featureSpec.scenarios(2).tags.size should be (2)
     featureSpec.scenarios(2).tags.contains(Tag("work")) should be (true)
     featureSpec.scenarios(2).tags.contains(Tag("play")) should be (true)
+    featureSpec.scenarios(2).tags(0).pos should be (Position(13, 7))
+    featureSpec.scenarios(2).tags(1).pos should be (Position(14, 7))
     
     featureSpec.scenarios(3).tags.size should be (2)
     featureSpec.scenarios(3).tags.contains(Tag("wip")) should be (true)
     featureSpec.scenarios(3).tags.contains(Tag("play")) should be (true)
+    featureSpec.scenarios(3).tags(0).pos should be (Position(18, 7))
+    featureSpec.scenarios(3).tags(1).pos should be (Position(18, 12))
   }
   
   "Scenario level tags" should "parse" in {

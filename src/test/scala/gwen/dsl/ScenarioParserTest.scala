@@ -23,6 +23,11 @@ import scala.util.{Success, Try}
 
 class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
+
   private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
   
   private val step1 = Step(StepKeyword.Given, "I am step 1")
@@ -116,7 +121,10 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val outline = parse(feature).get
 
+    outline.pos should be (Position(4, 5))
+
     outline.tags should be (List(Tag("UnitTest")))
+    outline.tags(0).pos should be (Position(3, 5))
     outline.name should be ("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be (None)
     outline.description should be (List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
@@ -129,6 +137,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     examples.size should be (3)
 
     val example1 = examples(0)
+    example1.pos should be (Position(16, 5))
     example1.name should be ("Compound words")
     example1.description should be (Nil)
     example1.table.size should be (3)
@@ -138,6 +147,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     example1.scenarios.size should be (0)
 
     val example2 = examples(1)
+    example2.pos should be (Position(22, 5))
     example2.name should be ("Nonsensical compound words")
     example2.description.size should be (2)
     example2.description(0) should be ("Words that don't make any sense at all")
@@ -149,6 +159,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     example2.scenarios.size should be (0)
 
     val example3 = examples(2)
+    example3.pos should be (Position(31, 5))
     example3.name should be ("")
     example3.description should be (Nil)
     example3.table.size should be (2)

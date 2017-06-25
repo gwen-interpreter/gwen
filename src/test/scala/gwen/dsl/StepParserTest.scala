@@ -27,18 +27,18 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
   "Valid steps" should "parse" in {
     
     StepKeyword.values foreach { keyword =>
-      parse(s"$keyword ").get                                                       should be (Step(Position(1, 1), keyword, ""))
-      parse(s"$keyword I am a regular test step").get                               should be (Step(Position(1, 1), keyword, "I am a regular test step"))
-      parse(s"""$keyword I contain a double qutoed "literal"""").get                should be (Step(Position(1, 1), keyword, """I contain a double qutoed "literal""""))
-      parse(s"$keyword I contain a single quoted 'literal'").get                    should be (Step(Position(1, 1), keyword, "I contain a single quoted 'literal'"))
-      parse(s" $keyword I contain a leading space").get                             should be (Step(Position(1, 2), keyword, "I contain a leading space"))
-      parse(s"$keyword $keyword").get                                               should be (Step(Position(1, 1), keyword, s"$keyword"))
-      parse(s"$keyword I contain the $keyword clause literal").get                  should be (Step(Position(1, 1), keyword, s"I contain the $keyword clause literal"))
-      parse(s"$keyword I contain an embedded\ttab").get                             should be (Step(Position(1, 1), keyword, "I contain an embedded\ttab"))
-      parse(s"$keyword I contain a trailing tab\t").get                             should be (Step(Position(1, 1), keyword, "I contain a trailing tab"))
-      parse(s"$keyword I contain a trailing space ").get                            should be (Step(Position(1, 1), keyword, "I contain a trailing space"))
-      parse(s"$keyword I contain an embedded double  space").get                    should be (Step(Position(1, 1), keyword, "I contain an embedded double  space"))
-      parse(s"$keyword I contain an embedded double  space and triple   space").get should be (Step(Position(1, 1), keyword, "I contain an embedded double  space and triple   space"))
+      parse(s"$keyword ").get                                                       should be (Step(keyword, ""))
+      parse(s"$keyword I am a regular test step").get                               should be (Step(keyword, "I am a regular test step"))
+      parse(s"""$keyword I contain a double qutoed "literal"""").get                should be (Step(keyword, """I contain a double qutoed "literal""""))
+      parse(s"$keyword I contain a single quoted 'literal'").get                    should be (Step(keyword, "I contain a single quoted 'literal'"))
+      parse(s" $keyword I contain a leading space").get                             should be (Step(keyword, "I contain a leading space"))
+      parse(s"$keyword $keyword").get                                               should be (Step(keyword, s"$keyword"))
+      parse(s"$keyword I contain the $keyword clause literal").get                  should be (Step(keyword, s"I contain the $keyword clause literal"))
+      parse(s"$keyword I contain an embedded\ttab").get                             should be (Step(keyword, "I contain an embedded\ttab"))
+      parse(s"$keyword I contain a trailing tab\t").get                             should be (Step(keyword, "I contain a trailing tab"))
+      parse(s"$keyword I contain a trailing space ").get                            should be (Step(keyword, "I contain a trailing space"))
+      parse(s"$keyword I contain an embedded double  space").get                    should be (Step(keyword, "I contain an embedded double  space"))
+      parse(s"$keyword I contain an embedded double  space and triple   space").get should be (Step(keyword, "I contain an embedded double  space and triple   space"))
     }
     
   }

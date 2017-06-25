@@ -22,6 +22,11 @@ import scala.util.Success
 
 class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
+  object Scenario {
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
+      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+  }
+
   private val parse = parseFeatureSpec(_: String)
 
   private val featureString = """
@@ -76,27 +81,28 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
         featureSpec.background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"),
             List(
-              Step(Position(9, 7), StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(Position(10, 8), StepKeyword.When,  "a small change is initially applied"),
-              Step(Position(11, 8), StepKeyword.Then,  "a large change will eventually result")
+              Step(StepKeyword.Given, "a deterministic nonlinear system"),
+              Step(StepKeyword.When,  "a small change is initially applied"),
+              Step(StepKeyword.Then,  "a large change will eventually result")
             )
           )
         }
         featureSpec.scenarios(0) should be {
+
           Scenario(List(Tag("wip"), Tag("test")), "Evaluation", List("Gwen for executable specifications", "Business specs mapped to meta"), None,
             List(
-              Step(Position(17, 7), StepKeyword.Given, "any software behavior"),
-              Step(Position(18, 8), StepKeyword.When,  "expressed in Gherkin"),
-              Step(Position(19, 8), StepKeyword.Then,  "Gwen can evaluate it")
+              Step(StepKeyword.Given, "any software behavior"),
+              Step(StepKeyword.When,  "expressed in Gherkin"),
+              Step(StepKeyword.Then,  "Gwen can evaluate it")
             )
           )
         }
         featureSpec.scenarios(1) should be {
           Scenario(List[Tag](), "Evaluation", Nil, None,
             List(
-              Step(Position(22, 7), StepKeyword.Given, "any software behavior"),
-              Step(Position(23, 8), StepKeyword.When,  "expressed in Gherkin"),
-              Step(Position(24, 8), StepKeyword.Then,  "Gwen can evaluate it")
+              Step(StepKeyword.Given, "any software behavior"),
+              Step(StepKeyword.When,  "expressed in Gherkin"),
+              Step(StepKeyword.Then,  "Gwen can evaluate it")
             )
           )
         }
