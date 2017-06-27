@@ -1,3 +1,9 @@
+2.6.1
+=====
+Jun 27, 2017
+- Correct id in example rows for scenario outlines in JSON reports
+- Use StringEscapeUtils from Apache Commons to escape HTML, XML, and JSON in reports where necessary
+
 2.6.0
 =====
 Jun 25, 2017

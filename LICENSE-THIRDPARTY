@@ -2,7 +2,7 @@ LICENSE-THIRDPARTY
 ==================
 
 Dependency                                               | Version   | License
--------------------------------------------------------- | --------- | -----------------------------------------------------------------------------   
+-------------------------------------------------------- | --------- | -----------------------------------------------------------------------------
 com.typesafe.scala-logging      scala-logging_2.12       | 3.5.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.github.scopt                scopt_2.12               | 3.5.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
 com.github.tototoshi            scala-csv_2.12           | 1.3.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -10,6 +10,8 @@ com.jayway.jsonpath             json-path                | 2.2.0     | [Apache L
 commons-codec                   commons-codec            | 1.10      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 io.cucumber                     gherkin                  | 4.0.0     | [MIT License](http://www.opensource.org/licenses/mit-license)
 io.cucumber                     gherkin-jvm-deps         | 1.0.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+org.apache.commons              commons-lang             | 3.3.5     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+org.apache.commons              commons-text             | 1.1       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 jline                           jline                    | 2.14.2    | [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
 log4j                           log4j                    | 1.2.17    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 net.minidev                     accessors-smart          | 1.1       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)

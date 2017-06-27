@@ -44,6 +44,8 @@ libraryDependencies += "jline" % "jline" % "2.14.2"
 
 libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
 
+libraryDependencies += "org.apache.commons" % "commons-text" % "1.1"
+
 libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.4"
 
 libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.2.0"

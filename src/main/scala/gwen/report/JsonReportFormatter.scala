@@ -26,7 +26,7 @@ import org.apache.commons.codec.binary.Base64
 
 import scala.util.Properties
 
-/** Formats the feature summary and detail reports in JSON format. */
+/** Formats the feature summary and detail reports in cucumber compliant JSON format. */
 trait JsonReportFormatter extends ReportFormatter {
   
   /**
@@ -44,31 +44,33 @@ trait JsonReportFormatter extends ReportFormatter {
     val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
         if (EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
-        else List((scenario, true))
+        else List((scenario, false))
       }
       else List((scenario, false))
     }
     val spec = result.spec
     val feature = spec.feature
-    val featureId = s"${result.spec.featureFile.map(f => FileIO.encodeDir(s"${f.getPath}.")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
-    val featureName = s"${result.spec.featureFile.map(f => s"${f.getPath}: ").getOrElse("")}${feature.name}"
+
+    val id = s"${result.spec.featureFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
+    val name = s"${result.spec.featureFile.map(f => s"${f.getPath}: ").getOrElse("")}${feature.name}"
+    val description = s"${feature.description.mkString(Properties.lineSeparator)}"
     
     Some(s"""[
   {${spec.featureFile.map(file => s"""
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
     "keyword": "${Feature.keyword}",
-    "id": "${escapeJson(featureId)}",
+    "id": "${escapeJson(id)}",
     "line": ${feature.pos.line},
-    "name": "${escapeJson(featureName)}",
-    "description": "${feature.description.map(escapeJson).mkString("\\n")}"${if(feature.tags.nonEmpty) s""",
+    "name": "${escapeJson(name)}",
+    "description": "${escapeJson(description)}"${if(feature.tags.nonEmpty) s""",
     "tags": [${feature.tags.filter(!_.name.startsWith("Import(")).map { tag => s"""
       {
         "name": "${escapeJson(tag.toString)}",
         "line": ${tag.pos.line}
       }"""}.mkString(",")}
     ]""" else ""}${if(spec.scenarios.nonEmpty) s""",
-    "elements": [${scenarios.zipWithIndex.map { case ((scenario, isOutline), idx) =>
-        s"${scenario.background.map(bg => s"${renderBackground(bg, idx)},${Properties.lineSeparator}").getOrElse("")}${renderScenario(scenario, isOutline, idx)}"
+    "elements": [${scenarios.zipWithIndex.map { case ((scenario, isExpanded), idx) =>
+        s"${scenario.background.map(bg => s"${renderBackground(bg, idx)},${Properties.lineSeparator}").getOrElse("")}${renderScenario(scenario, isExpanded, idx)}"
       }.mkString(",")
     }
     ]""" else ""}
@@ -76,25 +78,33 @@ trait JsonReportFormatter extends ReportFormatter {
 ]""")
   }
 
-  private def renderBackground(background: Background, idx: Int) = s"""
+  private def renderBackground(background: Background, bIndex: Int) = {
+    val id = s"${Background.keyword.toLowerCase};${background.name.toLowerCase.replace(' ', '-')};${bIndex + 1}"
+    val description = s"${background.description.mkString(Properties.lineSeparator)}"
+    s"""
       {
         "keyword": "${Background.keyword}",
-        "id": "scenario-${idx + 1}-background-${background.name.toLowerCase.replace(' ', '-')}",
+        "id": "${escapeJson(id)}",
         "line": ${background.pos.line},
         "name": "${escapeJson(background.name)}",
-        "description": "${background.description.map(escapeJson).mkString("\\n")}",
+        "description": "${escapeJson(description)}",
         "type": "${Background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
         "steps": [${renderSteps(background.steps)}
         ]""" else ""}
       }"""
+  }
 
-  private def renderScenario(scenario: Scenario, isOutline: Boolean, idx: Int) = s"""
+  private def renderScenario(scenario: Scenario, isExpanded: Boolean, sIndex: Int) = {
+    val keyword = s"${scenario.keyword}${if (isExpanded) " Outline" else ""}"
+    val scenarioId = s"${keyword.toLowerCase.replace(' ', '-')};${scenario.name.toLowerCase.replace(' ', '-')};${sIndex + 1}"
+    val description = s"${scenario.description.mkString(Properties.lineSeparator)}"
+    s"""
       {
-        "keyword": "${scenario.keyword}${if (isOutline) " Outline" else ""}",
-        "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}",
+        "keyword": "$keyword",
+        "id": "${escapeJson(scenarioId)}",
         "line": ${scenario.pos.line},
         "name": "${escapeJson(scenario.name)}",
-        "description": "${scenario.description.map(escapeJson).mkString("\\n")}"${if(scenario.tags.nonEmpty) s""",
+        "description": "${escapeJson(description)}"${if(scenario.tags.nonEmpty) s""",
         "tags": [${scenario.tags.map { case tag => s"""
           {
             "name": "${escapeJson(tag.toString)}",
@@ -103,27 +113,32 @@ trait JsonReportFormatter extends ReportFormatter {
         ]""" else ""},
         "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
         "steps": [${renderSteps(scenario.steps)}
-        ]""" else ""}${if (isOutline && scenario.keyword == "Scenario Outline" && scenario.examples.nonEmpty) s""",
-        "examples": [${scenario.examples.map { examples => s"""
+        ]""" else ""}${if (!isExpanded && scenario.examples.nonEmpty) s""",
+        "examples": [${scenario.examples.zipWithIndex.map { case (examples, eIndex) =>
+          val examplesId = s"$scenarioId;${examples.name.toLowerCase.replace(' ', '-')};${eIndex + 1}"
+          val examplesDescription = s"${examples.description.mkString(Properties.lineSeparator)}"
+          s"""
            {
              "keyword": "${Examples.keyword}",
              "name": "${escapeJson(examples.name)}",
              "line": ${examples.pos.line},
-             "description": "${examples.description.map(escapeJson).mkString("\\n")}",
-             "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}--${examples.name.toLowerCase.replace(' ', '-')}",
-             "rows": [${examples.table.zipWithIndex.map { case ((line, table), eIndex) => s"""
+             "description": "${escapeJson(examplesDescription)}",
+             "id": "${escapeJson(examplesId)}",
+             "rows": [${examples.table.zipWithIndex.map { case ((line, table), rIndex) =>
+               val rowId = s"$examplesId;${rIndex + 1}"
+               s"""
                {
                  "cells": [${table.map(value => s"""
-                   "$value"""").mkString(",")}
+                   "${escapeJson(value)}"""").mkString(",")}
                  ],
-                 "line": ${line},
-                 "id": "${scenario.keyword.toLowerCase.replace(" ", "-")}-${idx + 1}-${scenario.name.toLowerCase.replace(' ', '-')}--${examples.name.toLowerCase.replace(' ', '-')}-${eIndex + 1}"
+                 "line": $line,
+                 "id": "${escapeJson(rowId)}"
                }"""}.mkString(",")}
              ]
            }"""}.mkString(",")}
-
         ]""" else ""}
       }"""
+  }
 
   private def renderSteps(steps: List[Step]) = steps.map { step =>
     val screenshots = step.attachments.filter(_._1 == "Screenshot").map(_._2)
@@ -134,13 +149,16 @@ trait JsonReportFormatter extends ReportFormatter {
             "line": ${step.pos.line},${if (screenshots.nonEmpty) s"""
             "embeddings": [${screenshots.map{ file => s"""
               {
-                "mime_type": "${file.mimeType}",
-                "data": "${Base64.encodeBase64String(file.readBytes)}"
+                "mime_type": "${escapeJson(file.mimeType)}",
+                "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map { stepDef => if (stepDef.metaFile.nonEmpty) s"""
+            ],""" else ""}${step.stepDef.map { stepDef =>
+              if (stepDef.metaFile.nonEmpty) {
+                val location = s"${stepDef.metaFile.get.getPath}:${stepDef.steps.headOption.map(_.pos.line - stepDef.description.size - 1).getOrElse(1)}"
+                s"""
             "match": {
-                "location": "${stepDef.metaFile.get.getPath}:${stepDef.steps.headOption.map(_.pos.line - stepDef.description.size - 1).getOrElse(1)}"
-            },""" else ""}.getOrElse("")}
+                "location": "${escapeJson(location)}"
+            },"""} else ""}.getOrElse("")}
             "result": {
               "status": "${step.status.status.toString.toLowerCase}",${if(step.status.isInstanceOf[Failed]) s"""
               "error_message": "${escapeJson(step.status.asInstanceOf[Failed].error.getMessage)}",""" else ""}
@@ -149,7 +167,7 @@ trait JsonReportFormatter extends ReportFormatter {
           }"""}.mkString(",")
 
   /**
-    * Formats the feature summary report as HTML.
+    * Formats the feature summary report as JSON (this implementation does nothing).
     * 
     * @param options gwen command line options
     * @param info the gwen implementation info

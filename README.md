@@ -2,9 +2,15 @@
 Gwen
 ====
 
-Gwen is a Given-When-Then automation platform. It is a [Gherkin DSL](https://github.com/cucumber/cucumber/wiki/Gherkin) 
-interpreter that accepts plain text 
-[features](https://github.com/cucumber/cucumber/wiki/Feature-Introduction) as input and produces automation instructions as output. It has an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation to be mixed in. We have developed and shared a [gwen-web](https://github.com/gwen-interpreter/gwen-web) engine that maps Gherkin features to [Selenium WebDriver](http://www.seleniumhq.org/projects/webdriver) instructions. You can use it to automate online activities and web application testing through plain text feature specifications instead of code.
+Gwen is [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns
+[Given-When-Then](https://github.com/cucumber/cucumber/wiki/Given-When-Then) steps into automation instructions and
+executes them for you so you don't have to do all the programming work. It has an abstracted
+[evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
+allowing any type of automation capability to be mixed in and reused. For example, we have built and
+shared a [web engine](https://github.com/gwen-interpreter/gwen-web) that you can download and use to automate web
+application testing and online web robotics.
+[Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) can be
+used to capture automation bindings and map high level feature steps to low level engine steps.
 
 ### Current Status
 
@@ -58,6 +64,13 @@ New capabilities, improvements, and fixes are all valid candidates for contribut
 is reviewed and verified by the project committers before being integrated and released to the community. We ask that all code submissions include unit tests.
 
 By submitting contributions, you agree to release your work under the license that covers this software.
+
+How to contribute:
+1. Fork this repository
+2. Create a branch on your forked repository
+3. Commit your changes to your branch
+4. Push your branch to your forked repository
+5. Create a pull request from your branch to here
 
 License
 -------

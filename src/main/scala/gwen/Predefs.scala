@@ -32,6 +32,8 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.duration.Duration
 import java.text.DecimalFormat
 
+import org.apache.commons.text.StringEscapeUtils
+
 /**
   * Predefined implicits.
   * 
@@ -212,18 +214,10 @@ object Predefs extends LazyLogging {
 
     def padWithZeroes(num: Int): String = "%04d".format(num)
     def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
-    def escapeHtml(text: String): String =
-      String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;")
-    def escapeXml(text: String): String =
-      String.valueOf(text).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;")
-    def escapeJson(text: String): String =
-      text.map { c =>
-        c match {
-          case '"' => """\""""
-          case '\\' => """\\"""
-          case _ => c
-        }
-      }.mkString.replace("\r", "").replace("\n", "\\n")
+    def escapeHtml(text: String): String = StringEscapeUtils.escapeHtml4(text)
+    def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
+    def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
+
     def resolveParams(source: String, params: List[(String, String)]): String = {
       params match {
         case Nil => source
