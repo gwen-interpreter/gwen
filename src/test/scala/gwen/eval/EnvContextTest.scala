@@ -19,8 +19,9 @@ package gwen.eval
 import org.scalatest.Matchers
 import gwen.dsl._
 import org.scalatest.FlatSpec
-import gwen.errors.InvalidStepDefException
-import gwen.errors.AmbiguousCaseException
+import gwen.errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
+
+import scala.util.Try
 
 class EnvContextTest extends FlatSpec with Matchers {
 
@@ -320,25 +321,25 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "Getting bound objects from cache" should "get those objects" in {
     val env = newEnv
-    env.featureScope.objects.bind("greeting", "howdy")
-    env.featureScope.objects.bind("gwen", "interpreter")
+    env.featureScope.objects.push("greeting", "howdy")
+    env.featureScope.objects.push("gwen", "interpreter")
     env.featureScope.objects.get("greeting") should be (Some("howdy"))
     env.featureScope.objects.get("gwen") should be (Some("interpreter"))
   }
 
-  "Clearing bound object from cache" should "clear that object" in {
+  "Popping bound object from cache" should "clear that object" in {
     val env = newEnv
-    env.featureScope.objects.bind("greeting", "howdy")
-    env.featureScope.objects.bind("gwen", "interpreter")
-    env.featureScope.objects.clear("greeting")
+    env.featureScope.objects.push("greeting", "howdy")
+    env.featureScope.objects.push("gwen", "interpreter")
+    env.featureScope.objects.pop("greeting")
     env.featureScope.objects.get("greeting") should be (None)
     env.featureScope.objects.get("gwen") should be (Some("interpreter"))
   }
 
   "Resetting context" should "should clear all objects from cache" in {
     val env = newEnv
-    env.featureScope.objects.bind("greeting", "howdy")
-    env.featureScope.objects.bind("gwen", "interpreter")
+    env.featureScope.objects.push("greeting", "howdy")
+    env.featureScope.objects.push("gwen", "interpreter")
     env.reset()
     env.featureScope.objects.get("greeting") should be (None)
     env.featureScope.objects.get("gwen") should be (None)
@@ -346,18 +347,18 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "Managing bound and shadowed objects from cache" should "work as expected" in {
     val env = newEnv
-    env.featureScope.objects.bind("greeting", "howdy")
-    env.featureScope.objects.bind("gwen", "interpreter 1")
-    env.featureScope.objects.bind("gwen", "interpreter 2")
+    env.featureScope.objects.push("greeting", "howdy")
+    env.featureScope.objects.push("gwen", "interpreter 1")
+    env.featureScope.objects.push("gwen", "interpreter 2")
 
     env.featureScope.objects.get("greeting") should be (Some("howdy"))
     env.featureScope.objects.get("gwen") should be (Some("interpreter 2"))
 
-    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.pop("gwen")
     env.featureScope.objects.get("greeting") should be (Some("howdy"))
     env.featureScope.objects.get("gwen") should be (Some("interpreter 1"))
 
-    env.featureScope.objects.clear("gwen")
+    env.featureScope.objects.pop("gwen")
     env.featureScope.objects.get("greeting") should be (Some("howdy"))
     env.featureScope.objects.get("gwen") should be (None)
 
@@ -365,6 +366,22 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.featureScope.objects.get("greeting") should be (None)
     env.featureScope.objects.get("gwen") should be (None)
 
+  }
+
+  "Data tables" should "be accessible until popped" in {
+    val tableScope1 = new ScopedData("dataTable").set("data.token", "1")
+    val tableScope2 = new ScopedData("dataTable").set("data.token", "2")
+    val env = newEnv
+    env.featureScope.objects.push("tableScope", tableScope1)
+    env.getBoundReferenceValue("data.token") should be ("1")
+    env.featureScope.objects.push("tableScope", tableScope2)
+    env.getBoundReferenceValue("data.token") should be ("2")
+    env.featureScope.objects.pop("tableScope")
+    env.getBoundReferenceValue("data.token") should be ("1")
+    env.featureScope.objects.pop("tableScope")
+    intercept[UnboundAttributeException] {
+      env.getBoundReferenceValue("data.token")
+    }
   }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())

@@ -68,12 +68,12 @@ class ObjectCache {
   private var cache = Map[String, List[Any]]()
 
   /**
-    * Binds a named object to the internal cache.
+    * Pushes a named object to the internal cache.
     *
     * @param name the name to bind the object to
     * @param obj the object to bind
     */
-  def bind(name: String, obj: Any) {
+  def push(name: String, obj: Any) {
     cache.get(name) match {
       case Some(objs) => cache += (name -> (obj :: objs))
       case None => cache += (name -> List(obj))
@@ -93,7 +93,7 @@ class ObjectCache {
     *
     * @param name the name of the bound object to remove
     */
-  def clear[T](name: String) {
+  def pop[T](name: String) {
     cache.get(name) match {
       case Some(_::tail) if (tail.nonEmpty) => cache += (name -> tail)
       case _ => cache -= name

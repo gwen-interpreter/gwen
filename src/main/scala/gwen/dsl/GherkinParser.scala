@@ -19,7 +19,8 @@ package gwen.dsl
 import scala.language.postfixOps
 import gherkin.Parser
 import gherkin.AstBuilder
-import scala.util.Try
+
+import scala.util.{Failure, Success, Try}
 import gwen.errors._
 
 /**
@@ -93,14 +94,21 @@ trait GherkinParser {
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
     val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
-    Try(parser.parse(s"Feature:\nScenario:\n$step"))
-      .map(_.getFeature.getChildren)
-      .filter(!_.isEmpty)
-      .map(_.get(0).getSteps)
-      .filter(!_.isEmpty)
-      .map(steps => Step(steps.get(0)))
-      .map(step => Step(step, Position(1, step.pos.column)))
-      .orElse(parsingError("'Given|When|Then|And|But <expression>' expected"))
+    Try {
+      Try(parser.parse(s"Feature:\nScenario:\n$step")) match {
+        case Success(ast) =>
+          Option(ast.getFeature)
+          .map(_.getChildren)
+          .filter(!_.isEmpty)
+          .map(_.get(0).getSteps)
+          .filter(!_.isEmpty)
+          .map(steps => Step(steps.get(0)))
+          .map(step => Step(step, Position(1, step.pos.column)))
+          .getOrElse(parsingError(s"'Given|When|Then|And|But <expression>' expected"))
+        case Failure(e) =>
+          parsingError(s"'Given|When|Then|And|But <expression>' expected: ${e.getMessage}")
+      }
+    }
   }
 
 }

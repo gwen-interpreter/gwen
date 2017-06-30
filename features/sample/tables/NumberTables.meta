@@ -1,0 +1,55 @@
+#
+# Copyright 2017 Branko Juric, Brady Wood
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+ Feature: Number tables meta
+
+  @StepDef
+  @DataTable(orientation="horizontal",data="word,number")
+  Scenario: the word should match the number in each row
+       Given data.word should be "one"
+        And data[0].word should be "one"
+        And data[1].word should be "two"
+        And data[2].word should be "three"
+        And data.number should be "1"
+        And data[0].number should be "1"
+        And data[1].number should be "2"
+        And data[2].number should be "3"
+
+  @StepDef
+  @DataTable(orientation="vertical",data="word,number")
+  Scenario: the word should match the number in each column
+      Given data.word should be "four"
+        And data[0].word should be "four"
+        And data[1].word should be "five"
+        And data[2].word should be "six"
+        And data.number should be "4"
+        And data[0].number should be "4"
+        And data[1].number should be "5"
+        And data[2].number should be "6"
+
+  @StepDef
+  Scenario: nested tables should match the right tables
+      Given the word should match the number in each row
+            | one   | 1 |
+            | two   | 2 |
+            | three | 3 |
+        And the nested table should match against its table
+
+  @StepDef
+  Scenario: the nested table should match against its table
+       Given the word should match the number in each column
+             | four | five | six |
+             | 4    | 5    | 6   |

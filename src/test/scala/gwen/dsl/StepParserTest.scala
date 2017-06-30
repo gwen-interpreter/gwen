@@ -29,7 +29,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     StepKeyword.values foreach { keyword =>
       parse(s"$keyword ").get                                                       should be (Step(keyword, ""))
       parse(s"$keyword I am a regular test step").get                               should be (Step(keyword, "I am a regular test step"))
-      parse(s"""$keyword I contain a double qutoed "literal"""").get                should be (Step(keyword, """I contain a double qutoed "literal""""))
+      parse(s"""$keyword I contain a double quoted "literal"""").get                should be (Step(keyword, """I contain a double quoted "literal""""))
       parse(s"$keyword I contain a single quoted 'literal'").get                    should be (Step(keyword, "I contain a single quoted 'literal'"))
       parse(s" $keyword I contain a leading space").get                             should be (Step(keyword, "I contain a leading space"))
       parse(s"$keyword $keyword").get                                               should be (Step(keyword, s"$keyword"))
@@ -67,6 +67,44 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     assertFail("/n",       "'Given|When|Then|And|But <expression>' expected")
     assertFail("(?:.+)?",  "'Given|When|Then|And|But <expression>' expected")
     assertFail("''",       "'Given|When|Then|And|But <expression>' expected")
+  }
+
+  "Step with valid data table " should "parse" in {
+
+    val stepString =
+      """
+        |Then the word should match the number
+        |       | one   | 1 |
+        |       | two   | 2 |
+        |       | three | 3 |
+      """.stripMargin
+
+    val step = parse(stepString).get
+
+    step.keyword should be (StepKeyword.Then)
+    step.expression should be ("the word should match the number")
+    step.table should be (
+      // offset line numbers by implicit feature+scenario add by step string parser
+      List(
+        (5, List("one", "1")),
+        (6, List("two", "2")),
+        (7, List("three", "3"))
+      )
+    )
+  }
+
+  "Step with invalid data table " should "should fail" in {
+
+    val stepString =
+      """
+        |Then the word should match the number
+        |       | one   | 1 |
+        |       | two   |
+        |       | three | 3 |
+      """.stripMargin
+
+    assertFail(stepString, "'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
+
   }
   
   private def assertFail(input: String, expected: String) {

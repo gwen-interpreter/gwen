@@ -72,18 +72,18 @@ class ScopedDataStack() {
   private var scopes: mutable.ArrayStack[ScopedData] = _
   
   /** 
-    *  Provides access to the local StepDef scope (StepDef parameters
-    *  are pushed and poped in and out of this scope as StepDef calls
+    *  Provides access to the local step scope (StepDef parameters
+    *  and data tables are pushed and poped in and out of this scope as StepDef calls
     *  are made). 
     */
-  private[eval] val paramScope = new LocalDataStack()
+  private[eval] val stepScope = new LocalDataStack()
   
   reset()
   
   /** Resets the data stack. */
   def reset() {
       scopes = mutable.ArrayStack[ScopedData]() tap { _ push new FeatureScope() }
-      paramScope.reset()
+      stepScope.reset()
   }
   
   /**
@@ -273,9 +273,9 @@ class ScopedDataStack() {
     * @param name the name of the attribute to find
     * @return Some(value) if the attribute found or None otherwise
     */
-  def getInOpt(scope: String, name: String): Option[String] = 
-    scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst { 
-      case Some(value) => value 
+  def getInOpt(scope: String, name: String): Option[String] =
+    scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst {
+      case Some(value) => value
     } match {
       case None if scope != featureScope.scope =>
         getInOpt(featureScope.scope, name)

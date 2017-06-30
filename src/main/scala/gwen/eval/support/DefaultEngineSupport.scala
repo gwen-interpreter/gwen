@@ -20,13 +20,13 @@ import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import gwen.Predefs.RegexContext
 import gwen.dsl.Step
-import gwen.eval.EnvContext
+import gwen.eval.{EnvContext, EvalEngine}
 import gwen.errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
 
 /** Provides the common default steps that all engines can support. */
-trait DefaultEngineSupport[T <: EnvContext] {
+trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
   /**
     * Defines the default steps supported by all engines.
@@ -36,7 +36,7 @@ trait DefaultEngineSupport[T <: EnvContext] {
     * @throws gwen.errors.UndefinedStepException if the given step is undefined
     *         or unsupported
     */
-  def evaluate(step: Step, env: T): Unit = {
+  override def evaluate(step: Step, env: T): Unit = {
     step.expression match {
 
       case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
@@ -152,6 +152,11 @@ trait DefaultEngineSupport[T <: EnvContext] {
       case r"""(.+?)$attribute should be absent""" => env.execute {
         assert(env.activeScope.getOpt(attribute).isEmpty, s"Expected $attribute to be absent")
       }
+
+      case r"""(.+?)$doStep for each data table record""" =>
+
+        //val binding = env.getLocatorBinding(iteration)
+        //foreach(() => env.locateAll(env, binding), element, step, doStep, env)
       
       case _ => undefinedStepError(step)
       

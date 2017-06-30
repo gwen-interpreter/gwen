@@ -103,14 +103,14 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
-    when(mockEnv.paramScope).thenReturn(paramScope)
+    when(mockEnv.stepScope).thenReturn(paramScope)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid stepdef", mockEnv)
     result match {
       case TrySuccess(step) =>
         step.keyword should be (StepKeyword.Given)
         step.expression should be ("I am a valid stepdef")
         step.evalStatus.status should be (StatusKeyword.Passed)
-      case TryFailure(err) => 
+      case TryFailure(err) =>
         fail(s"success expected but got $err")
     }
   }
@@ -200,7 +200,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.attachments).thenReturn(Nil)
-    when(mockEnv.paramScope).thenReturn(paramScope)
+    when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     val step1 = Step(StepKeyword.Given, "I am an observer")
     val step2 = Step(StepKeyword.Given, "the butterfly flaps its wings")

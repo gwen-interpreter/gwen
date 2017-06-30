@@ -63,7 +63,7 @@ trait JsonReportFormatter extends ReportFormatter {
     "line": ${feature.pos.line},
     "name": "${escapeJson(name)}",
     "description": "${escapeJson(description)}"${if(feature.tags.nonEmpty) s""",
-    "tags": [${feature.tags.filter(!_.name.startsWith("Import(")).map { tag => s"""
+    "tags": [${feature.tags.filter(!_.isInBuilt).map { tag => s"""
       {
         "name": "${escapeJson(tag.toString)}",
         "line": ${tag.pos.line}
@@ -89,7 +89,7 @@ trait JsonReportFormatter extends ReportFormatter {
         "name": "${escapeJson(background.name)}",
         "description": "${escapeJson(description)}",
         "type": "${Background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
-        "steps": [${renderSteps(background.steps)}
+        "steps": [${renderSteps(background.steps, id)}
         ]""" else ""}
       }"""
   }
@@ -112,7 +112,7 @@ trait JsonReportFormatter extends ReportFormatter {
           }"""}.mkString(",")}
         ]""" else ""},
         "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
-        "steps": [${renderSteps(scenario.steps)}
+        "steps": [${renderSteps(scenario.steps, scenarioId)}
         ]""" else ""}${if (!isExpanded && scenario.examples.nonEmpty) s""",
         "examples": [${scenario.examples.zipWithIndex.map { case (examples, eIndex) =>
           val examplesId = s"$scenarioId;${examples.name.toLowerCase.replace(' ', '-')};${eIndex + 1}"
@@ -140,7 +140,7 @@ trait JsonReportFormatter extends ReportFormatter {
       }"""
   }
 
-  private def renderSteps(steps: List[Step]) = steps.map { step =>
+  private def renderSteps(steps: List[Step], parentId: String) = steps.map { step =>
     val screenshots = step.attachments.filter(_._1 == "Screenshot").map(_._2)
     s"""
           {
@@ -158,7 +158,18 @@ trait JsonReportFormatter extends ReportFormatter {
                 s"""
             "match": {
                 "location": "${escapeJson(location)}"
-            },"""} else ""}.getOrElse("")}
+            },"""} else ""}.getOrElse("")}${if (step.table.nonEmpty) s"""
+            "rows": [${step.table.zipWithIndex.map { case ((line, row), rIndex) =>
+              val rowId = s"$parentId;${rIndex + 1};$line"
+              s"""
+              {
+                "cells": [${row.map(value => s"""
+                  "${escapeJson(value)}"""").mkString(",")}
+                ],
+                "line": $line,
+                "id": "${escapeJson(rowId)}"
+              }"""}.mkString(",")}
+            ],""" else ""}
             "result": {
               "status": "${step.status.status.toString.toLowerCase}",${if(step.status.isInstanceOf[Failed]) s"""
               "error_message": "${escapeJson(step.status.asInstanceOf[Failed].error.getMessage)}",""" else ""}

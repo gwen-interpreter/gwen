@@ -17,6 +17,7 @@
 package gwen.eval
 
 import com.typesafe.scalalogging.LazyLogging
+import gwen.GwenSettings
 import gwen.dsl._
 import gwen.Predefs._
 import gwen.errors._
@@ -138,7 +139,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           Step(iStep, failure, env.attachments)
         case Success(stepDefOpt) =>
           (stepDefOpt match {  
-            case Some((stepDef, _)) if env.paramScope.containsScope(stepDef.name) => None
+            case Some((stepDef, _)) if env.stepScope.containsScope(stepDef.name) => None
             case stepdef => stepdef 
           }) match {
             case None =>
@@ -192,7 +193,19 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
-    env.paramScope.push(stepDef.name, params)
+    env.stepScope.push(stepDef.name, params)
+    val dataTable = getDataTable(stepDef, step)
+    dataTable foreach { table =>
+      new ScopedData("dataTable") tap { tableScope =>
+        table.zipWithIndex foreach { case (nvps, idx) =>
+          nvps.foreach { case (name, value) =>
+            if (idx == 0) tableScope.set(s"data.$name", value)
+            tableScope.set(s"data[$idx].$name", value)
+          }
+        }
+        env.featureScope.objects.push("tableScope", tableScope)
+      }
+    }
     try {
       val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
       val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
@@ -200,7 +213,28 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
       }
     } finally {
-      env.paramScope.pop
+      dataTable foreach { _ =>
+        env.featureScope.objects.pop("tableScope")
+      }
+      env.stepScope.pop
+    }
+  }
+
+  private def getDataTable(stepDef: Scenario, step: Step): Option[List[List[(String, String)]]] = {
+    stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag =>
+      tag.name.trim match {
+        case r"""DataTable\(orientation="(horizontal|vertical)"$orientation,data="(.*?)"$namesCSV\)""" =>
+          step.table.map(_._2) match {
+            case Nil => dataTableError(s"Data table expected but not provided in step: '${step.toString}'")
+            case table =>
+              (if (orientation == "vertical") table.transpose else table) map { row =>
+                val names = namesCSV.split(",").toList
+                if (row.size != names.size) dataTableError(s"${row.size} names expected for $orientation data table but got ${names.size}: '${namesCSV}'")
+                names.zip(row)
+              }
+          }
+        case _ => syntaxError(s"""Invalid data table syntax: $tag - correct syntax is DataTable(orientation="horizontal|vertical",data="name1,name2..,nameN")""")
+      }
     }
   }
 
@@ -242,6 +276,46 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     step.expression match {
       case _ => undefinedStepError(step)
     }
+  }
+
+  /**
+    * Repeats a step for each element in list of elements of type U.
+    */
+  def foreach[U](elements: ()=>Seq[U], element: String, step: Step, doStep: String, env: T) {
+    val steps = env.execute {
+      elements() match {
+        case Nil =>
+          logger.info(s"For-each[$element]: none found")
+          Nil
+        case elems =>
+          val noOfElements = elems.size
+          logger.info(s"For-each[$element]: $noOfElements found")
+          elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
+            env.featureScope.objects.push(element, currentElement)
+            (try {
+              EvalStatus(acc.map(_.evalStatus)) match {
+                case Failed(_, _) if env.execute(GwenSettings.`gwen.feature.failfast`).getOrElse(false) =>
+                  logger.info(s"Skipping [$element] ${index + 1} of $noOfElements")
+                  Step(step.pos, if (index == 0) StepKeyword.Given else StepKeyword.And, doStep, Skipped)
+                case _ =>
+                  logger.info(s"Processing [$element] ${index + 1} of $noOfElements")
+                  evaluateStep(Step(step.pos, if (index == 0) StepKeyword.Given else StepKeyword.And, doStep), env)
+              }
+            } finally {
+              env.featureScope.objects.pop(element)
+            }) :: acc
+          } reverse
+      }
+    } getOrElse {
+      env.featureScope.objects.push(element, "currentElement[DryRun]")
+      try {
+        List(evaluateStep(Step(step.keyword, doStep), env))
+      } finally {
+        env.featureScope.objects.pop(element)
+      }
+    }
+    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), element, Nil, None, steps, false, Nil, None)
+    env.foreachStepDefs += (step.uniqueId -> foreachStepDef)
   }
   
   /**

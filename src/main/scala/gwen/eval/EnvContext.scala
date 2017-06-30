@@ -68,10 +68,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
   
   /** Provides access to the global feature scope. */
   def featureScope: FeatureScope = scopes.featureScope
-  
-  /** Provides access to the local parameter scope. */
-  private[eval] val paramScope = scopes.paramScope
-  
+
+  /** Provides access to the local step scope. */
+  private[eval] val stepScope = scopes.stepScope
+
   /**
     * Closes any resources associated with the evaluation context. This implementation
     * does nothing (but subclasses can override).
@@ -262,7 +262,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     */
   def interpolate(step: Step): Step = 
     interpolate(step.expression) { name =>
-      Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name)) 
+      Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
     } match {
       case step.expression => step
       case expr =>
@@ -281,7 +281,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       case _ => Settings.getOpt(name) match {
         case Some(value) => value
         case _ =>
-          unboundAttributeError(name)
+          featureScope.objects.get("tableScope").flatMap(_.asInstanceOf[ScopedData].getOpt(name)).getOrElse(unboundAttributeError(name))
       }
     }
   }
