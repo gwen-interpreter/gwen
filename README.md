@@ -8,7 +8,7 @@ executes them for you so you don't have to do all the programming work. It has a
 [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 allowing any type of automation capability to be mixed in and reused. For example, we have built and
 shared a [web engine](https://github.com/gwen-interpreter/gwen-web) that you can download and use to automate web
-application testing and online web robotics.
+application testing and robotic online activities.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) can be
 used to capture automation bindings and map high level feature steps to low level engine steps.
 
