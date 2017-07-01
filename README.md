@@ -2,7 +2,7 @@
 Gwen
 ====
 
-Gwen is [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns
+Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns
 [Given-When-Then](https://github.com/cucumber/cucumber/wiki/Given-When-Then) steps into automation instructions and
 executes them for you so you don't have to do all the programming work. It has an abstracted
 [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
