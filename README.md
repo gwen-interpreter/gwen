@@ -10,7 +10,7 @@ allowing any type of automation capability to be mixed in and reused. For exampl
 shared a [web engine](https://github.com/gwen-interpreter/gwen-web) that you can download and use to automate web
 application testing and robotic web activities.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) can be
-used to capture automation bindings and map 'declarative' feature steps to 'imperative' engine steps that perform operations.
+used to define automation bindings and compose [step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) that map 'declarative' feature steps to 'imperative' engine steps to perform operations.
 
 ### Current Status
 
