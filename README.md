@@ -10,8 +10,8 @@ allowing any type of automation capability to be mixed in and reused.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose
 [step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) by mapping
-'declarative' steps in features to 'imperative' steps in scenarios that perform operations through pre-programmed
-engines.
+'declarative' steps in features to 'imperative' steps in meta-scenarios that perform operations through pre-programmed
+automation engines.
 
 ### Current Status
 
