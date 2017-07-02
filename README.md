@@ -8,10 +8,9 @@ executes them for you so you don't have to do all the programming work. It has a
 [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 allowing any type of automation capability to be mixed in and reused.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
-to capture automation bindings and allow you to compose
-[step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions) by mapping
-'declarative' steps in features to 'imperative' steps in meta-scenarios that perform operations through pre-programmed
-automation engines.
+to capture automation bindings and allow you to compose step definitions by mapping 'declarative' steps in features to
+'imperative' steps in [@StepDef scenarios](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions)
+that perform operations through pre-programmed automation engines.
 
 ### Current Status
 
