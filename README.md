@@ -2,14 +2,14 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns
-[Given-When-Then](https://github.com/cucumber/cucumber/wiki/Given-When-Then) steps into automation instructions and
-executes them for you so you don't have to do all the programming work. It has an abstracted
-[evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
-allowing any type of automation capability to be mixed in and reused.
+Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns [G]iven-[W]hen-Th[en]
+steps into automation instructions and executes them for you so you don't have to do all the programming work. It has
+an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
+automation capability to be mixed in and reused.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions by mapping 'declarative' steps in features to
-'imperative' steps in [@StepDef scenarios](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions)
+'imperative' steps in
+[@StepDef scenarios](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions)
 that perform operations through pre-programmed automation engines.
 
 ### Current Status
@@ -24,7 +24,7 @@ Why did we create Gwen?
 
 Most Gherkin tools and frameworks target BDD (Behavior Driven Development) and therefore adopt a very developer-centric
 or programmatic approach to verifying the behavior of code and driving its development. We wanted to build a BDA
-(Behavior Driven Automation) tool that could use Gherkin to automate software testing and robotic processing instead
+(Behavior Driven Automation) tool that could use Gherkin to automate acceptance testing and robotic processing instead
 with only little or no coding required on behalf of the user. So we built the Gwen interpreter to read Gherkin as input
 and produce executing instructions as output through automation engines that can be prebuilt with specific capabilities
 and mixed in. Our first such engine is the [gwen-web](https://github.com/gwen-interpreter/gwen-web) engine that we built
@@ -59,7 +59,6 @@ Key Features
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
-
 
 Mail Group
 ----------
