@@ -19,11 +19,13 @@ package gwen.eval.support
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import gwen.Predefs.RegexContext
-import gwen.dsl.Step
-import gwen.eval.{EnvContext, EvalEngine}
+import gwen.dsl.{FlatTable, Step}
+import gwen.eval.{EnvContext, EvalEngine, ScopedData}
 import gwen.errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
+
+import scala.util.Try
 
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
@@ -141,6 +143,17 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           assert(result, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$operator '$expression' but got '$actual'")
         }
 
+      case r"""(.+?)$doStep for each data record""" =>
+        val dataTable = env.featureScope.getObject("table") match {
+          case Some(table: FlatTable) => table
+          case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
+          case _ => dataTableError("Calling step has no data table")
+        }
+        val records = () => {
+          dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+        }
+        foreach(records, "record", step, doStep, env)
+
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" =>
         val actualValue = env.getBoundReferenceValue(attribute)
         env.execute {
@@ -150,13 +163,8 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
 
       case r"""(.+?)$attribute should be absent""" => env.execute {
-        assert(env.activeScope.getOpt(attribute).isEmpty, s"Expected $attribute to be absent")
+        assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
       }
-
-      case r"""(.+?)$doStep for each data table record""" =>
-
-        //val binding = env.getLocatorBinding(iteration)
-        //foreach(() => env.locateAll(env, binding), element, step, doStep, env)
       
       case _ => undefinedStepError(step)
       

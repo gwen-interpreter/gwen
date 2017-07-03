@@ -21,8 +21,6 @@ import gwen.dsl._
 import org.scalatest.FlatSpec
 import gwen.errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
 
-import scala.util.Try
-
 class EnvContextTest extends FlatSpec with Matchers {
 
   object Scenario {
@@ -321,64 +319,70 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "Getting bound objects from cache" should "get those objects" in {
     val env = newEnv
-    env.featureScope.objects.push("greeting", "howdy")
-    env.featureScope.objects.push("gwen", "interpreter")
-    env.featureScope.objects.get("greeting") should be (Some("howdy"))
-    env.featureScope.objects.get("gwen") should be (Some("interpreter"))
+    env.featureScope.pushObject("greeting", "howdy")
+    env.featureScope.pushObject("gwen", "interpreter")
+    env.featureScope.getObject("greeting") should be (Some("howdy"))
+    env.featureScope.getObject("gwen") should be (Some("interpreter"))
   }
 
   "Popping bound object from cache" should "clear that object" in {
     val env = newEnv
-    env.featureScope.objects.push("greeting", "howdy")
-    env.featureScope.objects.push("gwen", "interpreter")
-    env.featureScope.objects.pop("greeting")
-    env.featureScope.objects.get("greeting") should be (None)
-    env.featureScope.objects.get("gwen") should be (Some("interpreter"))
+    env.featureScope.pushObject("greeting", "howdy")
+    env.featureScope.pushObject("gwen", "interpreter")
+    env.featureScope.popObject("greeting")
+    env.featureScope.getObject("greeting") should be (None)
+    env.featureScope.getObject("gwen") should be (Some("interpreter"))
   }
 
   "Resetting context" should "should clear all objects from cache" in {
     val env = newEnv
-    env.featureScope.objects.push("greeting", "howdy")
-    env.featureScope.objects.push("gwen", "interpreter")
+    env.featureScope.pushObject("greeting", "howdy")
+    env.featureScope.pushObject("gwen", "interpreter")
     env.reset()
-    env.featureScope.objects.get("greeting") should be (None)
-    env.featureScope.objects.get("gwen") should be (None)
+    env.featureScope.getObject("greeting") should be (None)
+    env.featureScope.getObject("gwen") should be (None)
   }
 
   "Managing bound and shadowed objects from cache" should "work as expected" in {
     val env = newEnv
-    env.featureScope.objects.push("greeting", "howdy")
-    env.featureScope.objects.push("gwen", "interpreter 1")
-    env.featureScope.objects.push("gwen", "interpreter 2")
+    env.featureScope.pushObject("greeting", "howdy")
+    env.featureScope.pushObject("gwen", "interpreter 1")
+    env.featureScope.pushObject("gwen", "interpreter 2")
 
-    env.featureScope.objects.get("greeting") should be (Some("howdy"))
-    env.featureScope.objects.get("gwen") should be (Some("interpreter 2"))
+    env.featureScope.getObject("greeting") should be (Some("howdy"))
+    env.featureScope.getObject("gwen") should be (Some("interpreter 2"))
 
-    env.featureScope.objects.pop("gwen")
-    env.featureScope.objects.get("greeting") should be (Some("howdy"))
-    env.featureScope.objects.get("gwen") should be (Some("interpreter 1"))
+    env.featureScope.popObject("gwen")
+    env.featureScope.getObject("greeting") should be (Some("howdy"))
+    env.featureScope.getObject("gwen") should be (Some("interpreter 1"))
 
-    env.featureScope.objects.pop("gwen")
-    env.featureScope.objects.get("greeting") should be (Some("howdy"))
-    env.featureScope.objects.get("gwen") should be (None)
+    env.featureScope.popObject("gwen")
+    env.featureScope.getObject("greeting") should be (Some("howdy"))
+    env.featureScope.getObject("gwen") should be (None)
 
     env.reset()
-    env.featureScope.objects.get("greeting") should be (None)
-    env.featureScope.objects.get("gwen") should be (None)
+    env.featureScope.getObject("greeting") should be (None)
+    env.featureScope.getObject("gwen") should be (None)
 
   }
 
-  "Data tables" should "be accessible until popped" in {
-    val tableScope1 = new ScopedData("dataTable").set("data.token", "1")
-    val tableScope2 = new ScopedData("dataTable").set("data.token", "2")
+  "Data tables and records" should "be accessible until popped" in {
+
+    val table1 = new FlatTable(List(List("1")), List("token"))
+    val table2 = new FlatTable(List(List("2")), List("token"))
+
     val env = newEnv
-    env.featureScope.objects.push("tableScope", tableScope1)
+    env.featureScope.pushObject("table", table1)
     env.getBoundReferenceValue("data.token") should be ("1")
-    env.featureScope.objects.push("tableScope", tableScope2)
+    env.featureScope.pushObject("table", table2)
     env.getBoundReferenceValue("data.token") should be ("2")
-    env.featureScope.objects.pop("tableScope")
+    env.featureScope.pushObject("record", new ScopedData("record").set("data.token", "0"))
+    env.getBoundReferenceValue("data.token") should be ("0")
+    env.featureScope.popObject("record")
+    env.getBoundReferenceValue("data.token") should be ("2")
+    env.featureScope.popObject("table")
     env.getBoundReferenceValue("data.token") should be ("1")
-    env.featureScope.objects.pop("tableScope")
+    env.featureScope.popObject("table")
     intercept[UnboundAttributeException] {
       env.getBoundReferenceValue("data.token")
     }

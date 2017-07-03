@@ -22,6 +22,7 @@ import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.Predefs.Formatting._
+import gwen.dsl.DataTable
 import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
@@ -276,49 +277,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
     *  @param name the name of the attribute or value
     */
   def getBoundReferenceValue(name: String): String = {
-    scopes.getOpt(name) match {
-      case Some(value) => value
-      case _ => Settings.getOpt(name) match {
-        case Some(value) => value
-        case _ =>
-          featureScope.objects.get("tableScope").flatMap(_.asInstanceOf[ScopedData].getOpt(name)).getOrElse(unboundAttributeError(name))
-      }
-    }
-  }
-
-  /**
-    * Formats the given javascript expression in preparation for execute and return
-    * (this implementation returns the javascript expression 'as is' since it uses the Java script engine
-    * which does not require a 'return ' prefix, but subclasses can override it to include the prefix if necessary).
-    *
-    * @param javascript the javascript function
-    */
-  def jsReturn(javascript: String) = javascript
-
-  /**
-    * Executes a javascript expression using the Java script engine interface.
-    *
-    * @param javascript the script expression to execute
-    * @param params optional parameters to the script
-    * @param takeScreenShot true to take screenshot after performing the function
-    */
-  def executeJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
-
-  /**
-    * Executes a javascript predicate.
-    *
-    * @param javascript the script predicate expression to execute
-    * @param params optional parameters to the script
-    */
-  def executeJSPredicate(javascript: String, params: Any*): Boolean =
-    executeJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
-
-  /**
-    * Resolves a bound attribute value from the visible scope.
-    *
-    * @param name the name of the bound attribute to find
-    */
-  def resolveBoundValue(name: String): Option[String] = {
     val attScopes = scopes.visible.filterAtts{case (n, _) => n.startsWith(name)}
     attScopes.findEntry { case (n, v) => n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""") && v != "" } map {
       case (n, v) =>
@@ -356,8 +314,52 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           execute(evaluateSql(selectStmt, dbName)).getOrElse(s"$$[sql:$selectStmt]")
         }
         else v
+    } getOrElse {
+      if (name.matches("""(data|top|left)(\.|\[).+""") || name == "top-left") {
+        (featureScope.getObject("record") match {
+          case Some(scope: ScopedData) => scope.getOpt(name)
+          case _ =>
+            featureScope.getObject("table") match {
+            case Some(table: DataTable) => table.tableScope.getOpt(name)
+            case _ => unboundAttributeError(name)
+          }
+        }).getOrElse(unboundAttributeError(name))
+      } else {
+        scopes.getOpt(name).getOrElse {
+          Settings.getOpt(name).getOrElse {
+            unboundAttributeError(name)
+          }
+        }
+      }
     }
   }
+
+  /**
+    * Formats the given javascript expression in preparation for execute and return
+    * (this implementation returns the javascript expression 'as is' since it uses the Java script engine
+    * which does not require a 'return ' prefix, but subclasses can override it to include the prefix if necessary).
+    *
+    * @param javascript the javascript function
+    */
+  def jsReturn(javascript: String) = javascript
+
+  /**
+    * Executes a javascript expression using the Java script engine interface.
+    *
+    * @param javascript the script expression to execute
+    * @param params optional parameters to the script
+    * @param takeScreenShot true to take screenshot after performing the function
+    */
+  def executeJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
+
+  /**
+    * Executes a javascript predicate.
+    *
+    * @param javascript the script predicate expression to execute
+    * @param params optional parameters to the script
+    */
+  def executeJSPredicate(javascript: String, params: Any*): Boolean =
+    executeJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
   
   def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
     val res = operator match {
