@@ -22,6 +22,8 @@ that perform operations through pre-programmed automation engines.
 Why did we create Gwen?
 -----------------------
 
+> To drive automation with behavior instead of code.
+
 Most Gherkin tools and frameworks target BDD (Behavior Driven Development) and therefore adopt a very developer-centric
 or programmatic approach to verifying the behavior of code and driving its development. We wanted to build a BDA
 (Behavior Driven Automation) tool that could use Gherkin to automate acceptance testing and robotic processing instead
