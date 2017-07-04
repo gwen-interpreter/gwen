@@ -310,7 +310,7 @@ object Tag {
   val InbuiltTags = List("StepDef", "Import", "ForEach", "DataTable")
   val StepDefTag = Tag("StepDef")
   val ForEachTag = Tag("ForEach")
-  private val Regex = """~?@(\w+)""".r
+  private val Regex = """~?@([^\s]+)""".r
 
   import scala.language.implicitConversions
 

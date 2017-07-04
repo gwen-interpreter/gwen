@@ -256,7 +256,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * Repeats a step for each element in list of elements of type U.
     */
   def foreach[U](elements: ()=>Seq[U], element: String, step: Step, doStep: String, env: T) {
-    val steps = env.execute {
+    val steps =
       elements() match {
         case Nil =>
           logger.info(s"For-each[$element]: none found")
@@ -280,14 +280,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             }) :: acc
           } reverse
       }
-    } getOrElse {
-      env.featureScope.pushObject(element, "currentElement[DryRun]")
-      try {
-        List(evaluateStep(Step(step.keyword, doStep), env))
-      } finally {
-        env.featureScope.popObject(element)
-      }
-    }
     val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), element, Nil, None, steps, false, Nil, None)
     env.foreachStepDefs += (step.uniqueId -> foreachStepDef)
   }

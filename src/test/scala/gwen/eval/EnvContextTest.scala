@@ -373,18 +373,18 @@ class EnvContextTest extends FlatSpec with Matchers {
 
     val env = newEnv
     env.featureScope.pushObject("table", table1)
-    env.getBoundReferenceValue("data.token") should be ("1")
+    env.getBoundReferenceValue("data[token]") should be ("1")
     env.featureScope.pushObject("table", table2)
-    env.getBoundReferenceValue("data.token") should be ("2")
-    env.featureScope.pushObject("record", new ScopedData("record").set("data.token", "0"))
-    env.getBoundReferenceValue("data.token") should be ("0")
+    env.getBoundReferenceValue("data[token]") should be ("2")
+    env.featureScope.pushObject("record", new ScopedData("record").set("data[token]", "0"))
+    env.getBoundReferenceValue("data[token]") should be ("0")
     env.featureScope.popObject("record")
-    env.getBoundReferenceValue("data.token") should be ("2")
+    env.getBoundReferenceValue("data[token]") should be ("2")
     env.featureScope.popObject("table")
-    env.getBoundReferenceValue("data.token") should be ("1")
+    env.getBoundReferenceValue("data[token]") should be ("1")
     env.featureScope.popObject("table")
     intercept[UnboundAttributeException] {
-      env.getBoundReferenceValue("data.token")
+      env.getBoundReferenceValue("data[token]")
     }
   }
   

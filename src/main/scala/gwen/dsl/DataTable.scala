@@ -25,7 +25,24 @@ import gwen.Predefs.Kestrel
   * @author Branko Juric
   */
 object TableType extends Enumeration {
+
   val horizontal, vertical, matrix = Value
+
+  def valueFor(headerType: HeaderType.Value): TableType.Value = headerType match {
+      case HeaderType.top  => horizontal
+      case HeaderType.left => vertical
+      case _ => matrix
+  }
+
+}
+
+/**
+  * Enumeration of supported table header types.
+  *
+  * @author Branko Juric
+  */
+object HeaderType extends Enumeration {
+  val top, left, top_left  = Value
 }
 
 /**
@@ -45,29 +62,34 @@ trait DataTable {
 class FlatTable(val records: List[List[String]], val names: List[String]) extends DataTable {
 
   /**
-    * Binds each data element to a new scope as 'data[recordNo].name' where
+    * Binds each data element to a new scope as 'data[recordNo][name]' where
     * - recordNo is the record number starting at 1
     * - name is the associated data name
     */
   def tableScope: ScopedData = new ScopedData("table") tap { data =>
+    names.zipWithIndex foreach { case (name, index) =>
+      data.set(s"name[${index + 1}]", name)
+    }
     records.zipWithIndex foreach { case (record, rIndex) =>
       names.zip(record) foreach { case (name, value) =>
-        if (rIndex == 0) data.set(s"data.$name", value)
-        data.set(s"data[${rIndex + 1}].$name", value)
+        if (rIndex == 0) data.set(s"data[$name]", value)
+        data.set(s"data[${rIndex + 1}][$name]", value)
       }
     }
   }
 
   /**
-    * Binds each data element in a record to a new scope as 'data[recordNo][name]' where
+    * Binds each data element in a record to a new scope as 'data[name]' where
     * - recordNo is the record number starting at 1
     * - name is the associated data name
     *
     * @param recordIndex the record index
     */
   def recordScope(recordIndex: Int): ScopedData = new ScopedData("record") tap { data =>
-    names.zip(records(recordIndex)) foreach { case (name, value) =>
-      data.set(s"data.$name", value)
+    data.set(s"record.number", s"${recordIndex + 1}")
+    names.zip(records(recordIndex).zipWithIndex) foreach { case (name, (value, nameIndex)) =>
+      data.set(s"name[${nameIndex + 1}]", name)
+      data.set(s"data[$name]", value)
     }
   }
 
@@ -77,10 +99,11 @@ class FlatTable(val records: List[List[String]], val names: List[String]) extend
   * Models a matrix data table with row and column data names.
   *
   * @param records list of records containing the data
-  * @param names list of top and left header pairs (excluding overlapping top-left)
-  * @param topLeft the top-left matrix value
+  * @param topNames list of top names
+  * @param leftNames list of left names
+  * @param vertexName the top-left vertex name
   */
-class MatrixTable(val records: List[List[String]], val names: List[(String, String)], val topLeft: String) extends DataTable {
+class MatrixTable(val records: List[List[String]], val topNames: List[String], val leftNames: List[String], val vertexName: String) extends DataTable {
 
   /**
     * Binds each data element to a new scope as 'data[topName][leftName]' where
@@ -88,14 +111,12 @@ class MatrixTable(val records: List[List[String]], val names: List[(String, Stri
     * - leftName is the associated left header name
     */
   def tableScope: ScopedData = new ScopedData("table") tap { data =>
-    data.set("top-left", topLeft)
-    val topNames = names.map(_._1)
-    val leftNames = names.map(_._2)
+    data.set("vertex.name", vertexName)
     topNames.zipWithIndex foreach { case (topName, topIndex) =>
-      data.set(s"top[${topIndex + 1}]", topName)
+      data.set(s"top.name[${topIndex + 1}]", topName)
     }
     leftNames.zipWithIndex foreach { case (leftName, leftIndex) =>
-      data.set(s"left[${leftIndex + 1}]", leftName)
+      data.set(s"left.name[${leftIndex + 1}]", leftName)
     }
     records.zipWithIndex foreach { case (record, leftIndex) =>
       record.zipWithIndex foreach { case (value, topIndex) =>
@@ -115,15 +136,15 @@ object DataTable {
   def apply(tag: Tag, step: Step): DataTable = {
     tag.name.trim match {
       case r"""DataTable\(horizontal="(.*?)"$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), TableType.horizontal, namesCSV.split(",").toList)
+        DataTable(step.table.map(_._2), HeaderType.top, namesCSV.split(",").toList)
       case r"""DataTable\(vertical="(.*?)"$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), TableType.vertical, namesCSV.split(",").toList)
+        DataTable(step.table.map(_._2), HeaderType.left, namesCSV.split(",").toList)
       case r"""DataTable\(header="(top|left)"$header\)""" =>
-        DataTable(step.table.map(_._2), if (header == "top") TableType.horizontal else TableType.vertical, Nil)
+        DataTable(step.table.map(_._2), HeaderType.withName(header), Nil)
       case r"""DataTable\(type="matrix"\)""" =>
-        DataTable(step.table.map(_._2), TableType.matrix, Nil)
+        DataTable(step.table.map(_._2), HeaderType.top_left, Nil)
       case _ => syntaxError(
-        s"""Invalid tag syntax: $tag - correct table tags include: DataTable(horizontal|vertical="name1,name2..,nameN"), DataTable(header="top|left"), DataTable(type="matrix")""")
+        s"""Invalid tag syntax: $tag - correct table tags include: @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")""")
     }
   }
 
@@ -131,10 +152,12 @@ object DataTable {
     * Creates a data table.
     *
     * @param rawTable the raw data table
-    * @param tableType the table type (horizontal, vertical, or matrix)
+    * @param headerType the table  header type
     * @param headers list of header names
     */
-  def apply(rawTable: List[List[(String)]], tableType: TableType.Value, headers: List[String]) = {
+  def apply(rawTable: List[List[(String)]], headerType: HeaderType.Value, headers: List[String]): DataTable = {
+
+    val tableType = TableType.valueFor(headerType)
 
     if (rawTable.isEmpty)
       dataTableError(s"Data table expected for StepDef with @DataTable annotation")
@@ -151,7 +174,7 @@ object DataTable {
         val topHeaders = table.head.tail
         val leftHeaders = table.transpose.head.tail
         val records = table.tail.map(_.tail)
-        new MatrixTable(records, topHeaders zip leftHeaders, table.head(0))
+        new MatrixTable(records, topHeaders, leftHeaders, table.head(0))
       case _ =>
         if (headers.nonEmpty) new FlatTable(table, headers)
         else new FlatTable(table.tail, table.head)

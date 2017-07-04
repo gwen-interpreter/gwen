@@ -315,7 +315,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
         }
         else v
     } getOrElse {
-      if (name.matches("""(data|top|left)(\.|\[).+""") || name == "top-left") {
+      if (name.matches("""(data|name|top\.name|left\.name)\[.+""") || name.matches("""(vertex\.name|record\.number)""")) {
         (featureScope.getObject("record") match {
           case Some(scope: ScopedData) => scope.getOpt(name)
           case _ =>
