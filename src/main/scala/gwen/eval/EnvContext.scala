@@ -315,24 +315,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
         }
         else v
     } getOrElse {
-      if (name.matches("""(data|name|top\.name|left\.name)\[.+""") || name.matches("""(vertex\.name|record\.number)""")) {
-        (featureScope.getObject("record") match {
-          case Some(scope: ScopedData) => scope.getOpt(name)
-          case _ =>
-            featureScope.getObject("table") match {
+      (featureScope.getObject("record") match {
+        case Some(scope: ScopedData) => scope.getOpt(name)
+        case _ => featureScope.getObject("table") match {
             case Some(table: DataTable) => table.tableScope.getOpt(name)
-            case _ => unboundAttributeError(name)
+            case _ => None
           }
-        }).getOrElse(unboundAttributeError(name))
-      } else {
-        scopes.getOpt(name).getOrElse {
-          Settings.getOpt(name).getOrElse {
-            unboundAttributeError(name)
+      }).getOrElse {
+          scopes.getOpt(name).getOrElse {
+            Settings.getOpt(name).getOrElse {
+              unboundAttributeError(name)
+            }
           }
         }
       }
     }
-  }
 
   /**
     * Formats the given javascript expression in preparation for execute and return
