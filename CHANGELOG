@@ -1,7 +1,7 @@
 2.7.0
 =====
-Jul 2, 2017
-- Add support for Gherkin data tables (horizontal and vertical orientations)
+Jul 5, 2017
+- PR gwen-interpreter/gwen#32 - Add support for Gherkin data tables (horizontal, vertical, and matrix forms)
 
 2.6.1
 =====
