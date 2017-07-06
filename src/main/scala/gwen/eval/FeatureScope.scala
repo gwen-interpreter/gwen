@@ -33,9 +33,9 @@ class FeatureScope extends ScopedData("feature") {
     */
   private[eval] var currentScope: Option[ScopedData] = None
 
-  /** Map of cached objects. */
-  val objects = new ObjectCache()
-  
+  /** Map of object stacks. */
+  private var objectStack = Map[String, List[Any]]()
+
   /**
     * Binds a new attribute value to the scope.  If an attribute of the same
     * name already exists, then this new attribute overrides the existing one
@@ -59,48 +59,37 @@ class FeatureScope extends ScopedData("feature") {
       }
     }
 
-}
-
-/** Class for caching non string objects in a feature. */
-class ObjectCache {
-
-  /** Map of cached objects. */
-  private var cache = Map[String, List[Any]]()
-
   /**
-    * Binds a named object to the internal cache.
+    * Pushes a named object to the object stack.
     *
     * @param name the name to bind the object to
-    * @param obj the object to bind
+    * @param obj the object to push
     */
-  def bind(name: String, obj: Any) {
-    cache.get(name) match {
-      case Some(objs) => cache += (name -> (obj :: objs))
-      case None => cache += (name -> List(obj))
+  def pushObject(name: String, obj: Any) {
+    objectStack.get(name) match {
+      case Some(objs) => objectStack += (name -> (obj :: objs))
+      case None => objectStack += (name -> List(obj))
     }
   }
 
   /**
-    * Gets a bound object from the internal cache.
+    * Gets a bound object from the object stack.
     *
     * @param name the name of the bound object to get
     * @return Some(bound object) or None
     */
-  def get(name: String): Option[Any] = cache.get(name).flatMap(_.headOption)
+  def getObject(name: String): Option[Any] = objectStack.get(name).flatMap(_.headOption)
 
   /**
-    * Clears a bound object from the internal cache. Performs no operation if no object is not bound to the name.
+    * Clears a bound object from the object stack. Performs no operation if no object is not bound to the name.
     *
-    * @param name the name of the bound object to remove
+    * @param name the name of the bound object to pop
     */
-  def clear[T](name: String) {
-    cache.get(name) match {
-      case Some(_::tail) if (tail.nonEmpty) => cache += (name -> tail)
-      case _ => cache -= name
+  def popObject(name: String) {
+    objectStack.get(name) match {
+      case Some(_::tail) if (tail.nonEmpty) => objectStack += (name -> tail)
+      case _ => objectStack -= name
     }
   }
-
-  /** Resets the internal cache by creating a new one. */
-  private[eval] def reset() { cache = Map[String, List[Any]]() }
 
 }

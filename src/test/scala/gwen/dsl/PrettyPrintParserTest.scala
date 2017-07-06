@@ -68,7 +68,14 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
               follow contain the data that is bound to each scenario that is evaluated.
               | string 1 | string 2 | result   |
               | howdy    | doo      | howdydoo |
-              | any      | thing    | anything |"""
+              | any      | thing    | anything |
+
+    Scenario: Numbers as words
+        Given a mapping of words to numbers
+         Then the word should match the number
+         | one   | 1 |
+         | two   | 2 |
+         | three | 3 |"""
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     
@@ -149,16 +156,22 @@ Background: The butterfly effect
   Examples: Basic string concatenation
             The header row contains the placeholder names. The body rows that
             follow contain the data that is bound to each scenario that is evaluated.
-            | string 1 | string 2 | result |
-            | howdy | doo | howdydoo |
-            | any | thing | anything |""".replace("\r", ""))
+            | string 1 | string 2 | result   |
+            | howdy    | doo      | howdydoo |
+            | any      | thing    | anything |
+
+  Scenario: Numbers as words
+      Given a mapping of words to numbers
+       Then the word should match the number
+            | one   | 1 |
+            | two   | 2 |
+            | three | 3 |""".replace("\r", ""))
     
   }
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
     val specFeature = normalise(parse(featureString).get, None, None)
-    println(prettyPrint(specFeature))
     prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
    Feature: Gwen
             As a tester
@@ -216,7 +229,20 @@ Background: The butterfly effect
       Given string 1 is "any"
         And string 2 is "thing"
        When I join the two strings
-       Then the result should be "anything"""".replace("\r", ""))
+       Then the result should be "anything"
+
+Background: The butterfly effect
+            Sensitivity to initial conditions
+      Given a deterministic nonlinear system
+       When a small change is initially applied
+       Then a large change will eventually result
+
+  Scenario: Numbers as words
+      Given a mapping of words to numbers
+       Then the word should match the number
+            | one   | 1 |
+            | two   | 2 |
+            | three | 3 |""".replace("\r", ""))
 
   }
     

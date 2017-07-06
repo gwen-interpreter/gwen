@@ -49,7 +49,7 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you good thing!""")
   }
   
-  """interpolate adjecent values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
+  """interpolate adjacent values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
     interpolate("""Hey you ${property-0} ${property-1} thing!""") {
       case "id" => "0"
       case "property-0" => "really"
@@ -58,7 +58,7 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you really good thing!""")
   }
   
-  """interpolate adjecent values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
+  """interpolate adjacent values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
     interpolate("""Hey you ${property-0}${property-1} thing!""") {
       case "id" => "0"
       case "property-0" => "go"
@@ -141,5 +141,21 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
       """hello
         |you""".stripMargin
     interpolate(source) { _ => "you" } should be(target)
+  }
+
+  """Nested parameter in property: ${property-$<param>}"""" should "resolve" in {
+    interpolate("""Hey you ${property-$<id>} thing!""") {
+      case "<id>" => "0"
+      case "property-0" => "good"
+      case x => s"undefined($x)"
+    } should be ("""Hey you good thing!""")
+  }
+
+  """Nested property in parameter: $<property-${param}>"""" should "resolve" in {
+    interpolate("""Hey you $<property-${id}> thing!""") {
+      case "id" => "0"
+      case "<property-0>" => "good"
+      case x => s"undefined($x)"
+    } should be ("""Hey you good thing!""")
   }
 }

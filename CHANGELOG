@@ -1,3 +1,8 @@
+2.7.0
+=====
+Jul 5, 2017
+- PR gwen-interpreter/gwen#32 - Add support for Gherkin data tables (horizontal, vertical, and matrix forms)
+
 2.6.1
 =====
 Jun 27, 2017

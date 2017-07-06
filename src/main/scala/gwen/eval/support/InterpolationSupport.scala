@@ -26,12 +26,12 @@ trait InterpolationSupport extends LazyLogging {
 
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
-  
-  @tailrec
+
   final def interpolate(source: String)(resolve: String => String): String = source match {
       case propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
-        interpolate(s"$prefix${resolve(property)}$suffix") { resolve }
+        val iProperty = interpolate(property) { resolve }
+        interpolate(s"$prefix${resolve(iProperty)}$suffix") { resolve }
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         val resolved = resolve(s"<${param}>")

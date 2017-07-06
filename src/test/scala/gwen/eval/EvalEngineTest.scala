@@ -23,11 +23,8 @@ import gwen.errors.UndefinedStepException
 import gwen.eval.support.DefaultEngineSupport
 
 class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
-class TestEvalEngine extends EvalEngine[TestEnvContext] with DefaultEngineSupport[TestEnvContext] {
+class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
   override def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
-  override def evaluate(step: Step, env: TestEnvContext) {
-    super.evaluate(step, env)
-  }
 }
   
 class EvalEngineTest extends FlatSpec with Matchers {

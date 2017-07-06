@@ -49,7 +49,7 @@ class LocalDataStack {
     * @param params the parameters to add
     * @return the newly added scope
     */
-  def push(scope: String, params: List[(String, String)]): ScopedData = { 
+  def push(scope: String, params: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { data =>
       params foreach { case (name, value) =>
         data.set(name, value)
@@ -66,12 +66,20 @@ class LocalDataStack {
     * Only the top of the stack is searched.
     *
     * @param name the name of the attribute to find
+    * @return the value if it is found (or throws error)
+    */
+  def get(name: String): String =
+    getOpt(name).getOrElse(unboundAttributeError(name, "local"))
+
+  /**
+    * Finds and retrieves an optional attribute bound in the local stack.
+    * Only the top of the stack is searched.
+    *
+    * @param name the name of the attribute to find
     * @return Some(value) if a value is found or None otherwise
     */
-  def get(name: String): String = 
-    (localData.headOption map (_.getOpt(name)) collectFirst { 
-      case Some(value) => value 
-    }).getOrElse(unboundAttributeError(name, "local"))
+  def getOpt(name: String): Option[String] =
+    localData.headOption.flatMap(_.getOpt(name)).headOption
     
   /**
     * Checks whether or not this local stack contains the 

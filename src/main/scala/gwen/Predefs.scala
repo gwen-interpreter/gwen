@@ -217,6 +217,7 @@ object Predefs extends LazyLogging {
     def escapeHtml(text: String): String = StringEscapeUtils.escapeHtml4(text)
     def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
     def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
+    def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
 
     def resolveParams(source: String, params: List[(String, String)]): String = {
       params match {
@@ -226,7 +227,10 @@ object Predefs extends LazyLogging {
           resolveParams(source.replaceAll(s"<$name>", value), tail)
       }
     }
-    def formatDataRecord(record: List[String]): String = s"| ${record.mkString(" | ")} |"
+    def formatTableRow(table: List[(Int, List[String])], rowIndex: Int): String = {
+      val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
+      s"| ${(table(rowIndex)._2.zipWithIndex map { case (data, dataIndex) => s"${rightPad(data, maxWidths(dataIndex))}" }).mkString(" | ") } |"
+    }
   }
   
   object DurationOps {

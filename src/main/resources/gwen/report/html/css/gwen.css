@@ -254,3 +254,7 @@ table tbody.summary td {
 .list-group {
   padding-left: 2px;
 }
+
+.data-table {
+  color: #333333;
+}

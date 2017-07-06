@@ -301,27 +301,30 @@ case class Tag(name: String) extends SpecNode {
   
   /** Returns a string representation of this tag. */
   override def toString = s"@$name"
+
+  def isInBuilt = Tag.InbuiltTags.exists(name.startsWith(_))
   
 }
 object Tag {
-  
+
+  val InbuiltTags = List("StepDef", "Import", "ForEach", "DataTable")
   val StepDefTag = Tag("StepDef")
   val ForEachTag = Tag("ForEach")
-  private val Regex = """~?@(\w+)""".r
-  
+  private val Regex = """~?@([^\s]+)""".r
+
   import scala.language.implicitConversions
-  
+
   /**
     * Implicitly converts a tag string to a tag object.
-    * 
+    *
     *  @param value the string value to convert
-    *  @throws gwen.errors.InvalidTagException if the tag string is invalid 
+    *  @throws gwen.errors.InvalidTagException if the tag string is invalid
     */
   implicit def string2Tag(value: String): Tag = value match {
     case Regex(name) => Tag(name)
     case _ => invalidTagError(value)
   }
-  
+
   def apply(tag: gherkin.ast.Tag): Tag =
     (if (tag.getName.startsWith("@")) Tag(tag.getName.substring(1))
     else Tag(tag.getName)) tap { t => t.pos = Position(tag.getLocation) }
@@ -336,6 +339,7 @@ object Tag {
   * @param status optional evaluation status (default = Pending)
   * @param attachments file attachments as name-file pairs (default = Nil)
   * @param stepDef optional evaluated step def
+  * @param table data table (List of tuples of line position and rows of data)
   *    
   * @author Branko Juric
   */
@@ -344,7 +348,8 @@ case class Step(
     expression: String, 
     status: EvalStatus = Pending, 
     attachments: List[(String, File)] = Nil,
-    stepDef: Option[Scenario] = None) extends SpecNode {
+    stepDef: Option[Scenario] = None,
+    table: List[(Int, List[String])] = Nil) extends SpecNode {
   
   /** Returns the evaluation status of this step definition. */
   override lazy val evalStatus: EvalStatus = status
@@ -358,21 +363,27 @@ case class Step(
 }
 
 object Step {
-  def apply(step: gherkin.ast.Step): Step =
-    new Step(StepKeyword.names(step.getKeyword.trim), step.getText) tap { s => s.pos = Position(step.getLocation) }
+  def apply(step: gherkin.ast.Step): Step = {
+    val dataTable = Option(step.getArgument).filter(_.isInstanceOf[gherkin.ast.DataTable]).map(_.asInstanceOf[gherkin.ast.DataTable]) map { dt =>
+      dt.getRows.asScala.toList map { row =>
+        (row.getLocation.getLine, row.getCells.asScala.toList.map(_.getValue))
+      }
+    } getOrElse(Nil)
+    new Step(StepKeyword.names(step.getKeyword.trim), step.getText, table = dataTable) tap { s => s.pos = Position(step.getLocation) }
+  }
   def apply(pos: Position, keyword: StepKeyword.Value, expression: String): Step =
     new Step(keyword, expression) tap { s => s.pos = pos }
   def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
     new Step(keyword, expression, status) tap { s => s.pos = pos }
   def apply(step: Step, pos: Position): Step =
-    new Step(step.keyword, step.expression, step.status, step.attachments, step.stepDef) tap { s => s.pos = pos}
+    new Step(step.keyword, step.expression, step.status, step.attachments, step.stepDef, step.table) tap { s => s.pos = pos}
   def apply(step: Step, expression: String): Step =
-    new Step(step.keyword, expression, step.status, step.attachments) tap { s => s.pos = step.pos}
+    new Step(step.keyword, expression, step.status, step.attachments, table = step.table) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =
-    new Step(step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef)) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef), step.table) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
-    new Step(step.keyword, step.expression, status, attachments, step.stepDef) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.expression, status, attachments, step.stepDef, step.table) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)], foreachStepDef: Scenario): Step =
-    new Step(step.keyword, step.expression, status, attachments, Some(foreachStepDef)) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.expression, status, attachments, Some(foreachStepDef), step.table) tap { s => s.pos = step.pos }
 }
 

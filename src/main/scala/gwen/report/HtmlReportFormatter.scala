@@ -204,9 +204,9 @@ trait HtmlReportFormatter extends ReportFormatter {
          </ul>
         <div class="panel-body">
           <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-            formatExampleHeader(exs.evalStatus, exs.table(0))}${
+            formatExampleHeader(exs.evalStatus, exs.table)}${
             (exs.scenarios.zipWithIndex map { case (scenario, subindex) =>
-              formatExampleRow(scenario, exs.table(subindex + 1), s"$exampleId-${subindex}")
+              formatExampleRow(scenario, exs.table, subindex + 1, s"$exampleId-${subindex}")
             }).mkString
           }
           </ul>
@@ -214,40 +214,56 @@ trait HtmlReportFormatter extends ReportFormatter {
       </div>"""
   }).mkString
 
-  private def formatExampleHeader(evalStatus: EvalStatus, header: (Int, List[String])): String = {
-              val (line, data) = header
+  private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Int, List[String])]): String = {
               val status = evalStatus.status
-              val expression = s"| ${data.mkString(" | ")} |"
+              val line = table.head._1
               s"""
                 <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  &nbsp; ${escapeHtml(expression)}
+                  <div class="keyword-right"> </div>${formatDataRow(table, 0, status)}
                 </div>
               </li>"""
   }
-  private def formatExampleRow(scenario: Scenario, row: (Int, List[String]), exampleId: String): String = {
-              val (line, data) = row
+  private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, exampleId: String): String = {
+              val line = table(rowIndex)._1
               val status = scenario.evalStatus.status
-              val expression = Formatting.formatDataRecord(data)
+              val rowHtml = formatDataRow(table, rowIndex, status)
               s"""
                 <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  &nbsp; ${if (status == StatusKeyword.Passed) formatExampleLink(expression, status, s"$exampleId") else escapeHtml(expression) }
+                  <div class="keyword-right"> </div>${if (status == StatusKeyword.Passed) formatExampleLink(rowHtml, status, s"$exampleId") else rowHtml }
                   ${formatAttachments(scenario.attachments, status)} ${if (EvalStatus.isEvaluated(status)) formatExampleDiv(scenario, status, exampleId) else ""}
                 </div>
               </li>"""
   }
 
-  private def formatExampleLink(expression: String, status: StatusKeyword.Value, exampleId: String): String =
-                  s"""<a class="inverted inverted-${cssStatus(status)}" role="button" data-toggle="collapse" href="#$exampleId" aria-expanded="true" aria-controls="$exampleId">${escapeHtml(expression)}</a>"""
+  private def formatExampleLink(rowHtml: String, status: StatusKeyword.Value, exampleId: String): String =
+                  s"""<a class="inverted inverted-${cssStatus(status)}" role="button" data-toggle="collapse" href="#$exampleId" aria-expanded="true" aria-controls="$exampleId">${rowHtml}</a>"""
 
   private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value, exampleId: String): String = s"""
                   <div id="$exampleId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel">
                   ${formatScenario(scenario, exampleId)}
                   </div>"""
+
+  private def formatStepDataTable(step: Step): String = {
+      val status = step.evalStatus.status
+              s"""
+              ${step.table.indices map { rowIndex =>
+                val line = step.table(rowIndex)._1
+                val row = Formatting.formatTableRow(step.table, rowIndex)
+              s"""
+                <div class="bg-${cssStatus(status)}">
+                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
+                  <div class="keyword-right"> </div>${formatDataRow(step.table, rowIndex, status)}
+                </div>"""} mkString}"""
+  }
+
+  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): String = {
+    s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex)).replaceAll("  ", " &nbsp;")}</code>"""
+  }
   
   /**
     * Formats the feature summary report as HTML.
@@ -377,8 +393,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else escapeHtml(step.expression)}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.expression)}"}
+                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}${if (step.table.nonEmpty) formatStepDataTable(step) else ""}
                 </div>
                 ${if (status == StatusKeyword.Failed && step.stepDef.isEmpty) s"""
                 <ul>
