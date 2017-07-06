@@ -329,6 +329,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           }
         }
       }
+    } tap { value =>
+      logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
 
   /**

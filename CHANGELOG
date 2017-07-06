@@ -2,6 +2,7 @@
 =====
 Jul 5, 2017
 - PR gwen-interpreter/gwen#32 - Add support for Gherkin data tables (horizontal, vertical, and matrix forms)
+- Log the results of bound value lookups at debug level
 
 2.6.1
 =====
