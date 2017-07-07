@@ -17,10 +17,12 @@
 package gwen.eval.support
 
 import gwen.errors._
+import gwen.eval.EnvContext
 import org.apache.commons.codec.binary.Base64
 
 /** Can be mixed into evaluation engines to provide decoding support. */
 trait DecodingSupport {
+  this: EnvContext =>
 
   /**
     * Decodes a base 64 encoded string.
@@ -28,11 +30,14 @@ trait DecodingSupport {
     * @param source the encoded source string
     * @return the decoded result string
     */
-  def decodeBase64(source: String): String = Option(source) match {
-    case None => 
-      decodingError("Cannot Base64 decode null string")
-    case Some(src) =>
-      new String(Base64.decodeBase64(source.getBytes()))
-  }
+  def decodeBase64(source: String): String =
+    evaluate(s"$$[base64 decoded]") {
+      Option(source) match {
+        case None =>
+          decodingError("Cannot Base64 decode null string")
+        case Some(_) =>
+          new String(Base64.decodeBase64(source.getBytes()))
+      }
+    }
   
 }

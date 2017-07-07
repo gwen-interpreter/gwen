@@ -1,8 +1,9 @@
 2.7.0
 =====
-Jul 5, 2017
+Jul 7, 2017
 - PR gwen-interpreter/gwen#32 - Add support for Gherkin data tables (horizontal, vertical, and matrix forms)
 - Log the results of bound value lookups at debug level
+- Refactor of code to make dry run more seamless
 
 2.6.1
 =====

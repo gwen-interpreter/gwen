@@ -16,13 +16,15 @@
 
 package gwen.eval.support
 
-import gwen.Predefs.Kestrel
 import gwen.errors._
 import java.sql.DriverManager
+
 import gwen.Settings
+import gwen.eval.EnvContext
 
 /** Can be mixed into evaluation engines to provide SQL support. */
 trait SQLSupport {
+  this: EnvContext =>
 
   /**
     * Evaluates an SQL query against a database and returns the result.
@@ -31,34 +33,35 @@ trait SQLSupport {
     * @param database the database name
     * @return the result of executing the SQL
     */
-  def evaluateSql(sql: String, database: String): String = {
-    if (sql.trim().length() == 0) {
-      sqlError("Cannot evaluate empty SQL statement")
-    }
-    if (database.trim().length() == 0) {
-      sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
-    }
-    
-    try {
-      Class.forName(Settings.get(s"gwen.db.${database}.driver"))
-      val connection = DriverManager.getConnection(Settings.get(s"gwen.db.${database}.url"))
-      try {
-        val stmt = connection.createStatement()
-        try {
-          val result = connection.createStatement().executeQuery(sql)
-          if (result.next) {
-            result.getString(1)
-          }
-          else sqlError(s"SQL did not return a result: $sql")
-        } finally {
-          stmt.close()
-        }
-      } finally {
-        connection.close()
+  def evaluateSql(sql: String, database: String): String =
+    evaluate(s"$$[sql:$sql]") {
+      if (sql.trim().length() == 0) {
+        sqlError("Cannot evaluate empty SQL statement")
       }
-    } catch {
-      case e: Exception => sqlError(s"Failed to evaluate SQL statement: ${sql}, reason is: ${e}")
+      if (database.trim().length() == 0) {
+        sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
+      }
+
+      try {
+        Class.forName(Settings.get(s"gwen.db.${database}.driver"))
+        val connection = DriverManager.getConnection(Settings.get(s"gwen.db.${database}.url"))
+        try {
+          val stmt = connection.createStatement()
+          try {
+            val result = connection.createStatement().executeQuery(sql)
+            if (result.next) {
+              result.getString(1)
+            }
+            else sqlError(s"SQL did not return a result: $sql")
+          } finally {
+            stmt.close()
+          }
+        } finally {
+          connection.close()
+        }
+      } catch {
+        case e: Exception => sqlError(s"Failed to evaluate SQL statement: ${sql}, reason is: ${e}")
+      }
     }
-  }
                         
 }

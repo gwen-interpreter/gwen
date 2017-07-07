@@ -1,12 +1,12 @@
 /*
  * Copyright 2015 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,19 +17,25 @@
 package gwen.eval
 
 /**
-  * The context in which all engine instructions execute. The purpose of this 
-  * context is to provide a place where common logic can be inserted before, 
-  * after, or around an instruction.   
+  * Provides all common evaluation capabilities and optional evaluation in case --dry-run is enabled.
   */
-trait ExecutionContext {
+trait Evaluatable {
   this: EnvContext =>
   
   /**
-   * Intercepts an engine instruction and conditionally executes it.
-   * 
-   * @param instruction the engine instruction
+   * Evaluates an function or returns the given dry value depending on whether or not --dry-run mode is on or off
+   * respectively.
+   *
+   * @param dryValue the dry value
+   * @param function the function to evaluate
    */
-  def execute[T](instruction: => T): Option[T] = 
-    if (!isDryRun) Some(instruction) else None
+  def evaluate[U](dryValue: => U)(function: => U): U = if (!isDryRun) function else dryValue
+
+  /**
+   * Performs an operation only if --dry-run mode is off.
+   *
+   * @param operation the operation to execute
+   */
+  def perform(operation: => Unit): Option[Unit] = if (!isDryRun) Some(operation) else None
   
 }

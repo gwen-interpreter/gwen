@@ -47,40 +47,46 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" =>
         env.featureScope.set(attribute, value)
 
-      case r"""I wait ([0-9]+?)$duration second(?:s?)""" => env.execute {
-        Thread.sleep(duration.toLong * 1000)
-      }
+      case r"""I wait ([0-9]+?)$duration second(?:s?)""" =>
+        env.perform {
+          Thread.sleep(duration.toLong * 1000)
+        }
       
-      case r"""I execute system process "(.+?)"$$$systemproc""" => env.execute {
-        systemproc.! match {
-          case 0 => 
-          case _ => systemProcessError(s"The call to $systemproc has failed.")
+      case r"""I execute system process "(.+?)"$$$systemproc""" =>
+        env.perform {
+          systemproc.! match {
+            case 0 =>
+            case _ => systemProcessError(s"The call to $systemproc has failed.")
+          }
         }
-      }
-      case r"""I execute a unix system process "(.+?)"$$$systemproc""" => env.execute {
-        Seq("/bin/sh", "-c", systemproc).! match {
-          case 0 => 
-          case _ => systemProcessError(s"The call to $systemproc has failed.")
+      case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
+        env.perform {
+          Seq("/bin/sh", "-c", systemproc).! match {
+            case 0 =>
+            case _ => systemProcessError(s"The call to $systemproc has failed.")
+          }
         }
-      }
 
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
-        env.featureScope.set(name, env.execute(env.evaluateXPath(expression, src, env.XMLNodeType.withName(targetType)) tap { content =>
+        val result = env.evaluateXPath(expression, src, env.XMLNodeType.withName(targetType)) tap { content =>
           env.addAttachment(name, "txt", content)
-        }).getOrElse(s"$$[xpath:$expression]"))
+        }
+        env.featureScope.set(name, result)
 
       case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
-        env.featureScope.set(name, env.execute(env.extractByRegex(expression, src) tap { content =>
+        val result = env.extractByRegex(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
-        }).getOrElse(s"$$[regex:$expression"))
+        }
+        env.featureScope.set(name, result)
 
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
-        env.featureScope.set(name, env.execute(env.evaluateJsonPath(expression, src) tap { content =>
+        val result = env.evaluateJsonPath(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
-        }).getOrElse(s"$$[json path:$expression"))
+        }
+        env.featureScope.set(name, result)
 
       case r"""I capture (.+?)$source as (.+?)$attribute""" =>
         val value = env.getBoundReferenceValue(source)
@@ -96,15 +102,17 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""I base64 decode (.+?)$attribute as (.+?)$$$name""" =>
         val source = env.getBoundReferenceValue(attribute)
-        env.featureScope.set(name, env.execute(env.decodeBase64(source) tap { content =>
+        val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(name, "txt", content)
-        }).getOrElse(s"$$[base64 decoded $attribute]"))
+        }
+        env.featureScope.set(name, result)
 
       case r"""I base64 decode (.+?)$attribute""" =>
         val source = env.getBoundReferenceValue(attribute)
-        env.featureScope.set(attribute, env.execute(env.decodeBase64(source) tap { content =>
+        val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(attribute, "txt", content)
-        }).getOrElse(s"$$[base64 decoded $attribute]"))
+        }
+        env.featureScope.set(attribute, result)
 
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" =>
         attrType match {
@@ -133,7 +141,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" =>
         val src = env.activeScope.get(source)
-        env.execute {
+        env.perform {
           val actual = matcher match {
             case "json path" => env.evaluateJsonPath(path, src)
             case "xpath" => env.evaluateXPath(path, src, env.XMLNodeType.text)
@@ -156,15 +164,16 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" =>
         val actualValue = env.getBoundReferenceValue(attribute)
-        env.execute {
+        env.perform {
           val negate = Option(negation).isDefined
           val result = env.compare(expression, actualValue, operator, negate)
           assert(result, s"Expected $attribute to ${if(negate) "not " else ""}$operator '$expression' but got '$actualValue'")
         }
 
-      case r"""(.+?)$attribute should be absent""" => env.execute {
-        assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
-      }
+      case r"""(.+?)$attribute should be absent""" =>
+        env.perform {
+          assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
+        }
       
       case _ => undefinedStepError(step)
       

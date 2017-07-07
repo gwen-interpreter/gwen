@@ -231,7 +231,10 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, _) => env.execute(Step(step, Skipped, step.attachments)).getOrElse(evaluateStep(step, env))
+        case Failed(_, _) =>
+          env.evaluate(evaluateStep(step, env)) {
+            Step(step, Skipped, step.attachments)
+          }
         case _ => evaluateStep(step, env)
       }) :: acc
   } reverse
@@ -268,7 +271,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             env.featureScope.pushObject(element, currentElement)
             (try {
               EvalStatus(acc.map(_.evalStatus)) match {
-                case Failed(_, _) if env.execute(GwenSettings.`gwen.feature.failfast`).getOrElse(false) =>
+                case Failed(_, _) if env.evaluate(false) { GwenSettings.`gwen.feature.failfast` } =>
                   logger.info(s"Skipping [$element] ${index + 1} of $noOfElements")
                   Step(step.pos, if (index == 0) StepKeyword.Given else StepKeyword.And, doStep, Skipped)
                 case _ =>

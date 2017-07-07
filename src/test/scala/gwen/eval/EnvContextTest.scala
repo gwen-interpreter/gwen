@@ -297,13 +297,13 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "dry run" should "not call instruction" in {
     val env = newEnv(GwenOptions(dryRun = true))
-    env.execute(sys.error("Execution not expected"))
+    env.perform(sys.error("Execution not expected"))
   }
   
   "non dry run" should "call instruction" in {
     val env = newEnv(GwenOptions())
     intercept[Exception] {
-      env.execute(sys.error("Execution expected"))
+      env.perform(sys.error("Execution expected"))
     }
   }
   

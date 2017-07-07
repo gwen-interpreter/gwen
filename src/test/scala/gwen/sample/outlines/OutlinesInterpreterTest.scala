@@ -43,7 +43,7 @@ trait OutlinesEvalEngine extends EvalEngine[OutlinesEnvContext] {
         env.scopes.set(name, value)
       case r"""(.+?)$name should be "(.+?)"$$$value""" =>
         val actual = env.scopes.get(name)
-        env.execute(assert(actual == value, s"Expected '$value' but got '$actual'"))
+        env.perform(assert(actual == value, s"Expected '$value' but got '$actual'"))
       case _ =>
         super.evaluate(step, env)
     }

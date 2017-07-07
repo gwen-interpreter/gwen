@@ -27,7 +27,6 @@ import gwen.dsl.Failed
 import gwen.dsl.Scenario
 import gwen.dsl.Step
 import com.typesafe.scalalogging.LazyLogging
-import gwen.eval.support._
 import gwen.errors._
 import gwen.Settings
 
@@ -35,6 +34,7 @@ import scala.sys.process._
 import scala.util.Try
 import gwen.dsl.Tag
 import gwen.dsl.StepKeyword
+import gwen.eval.support._
 
 import scala.io.Source
 
@@ -47,9 +47,9 @@ import scala.io.Source
   * 
   * @author Branko Juric
   */
-class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogging
-  with ExecutionContext with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-  with SQLSupport with ScriptSupport with DecodingSupport {
+class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluatable
+  with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
+  with SQLSupport with ScriptSupport with DecodingSupport with LazyLogging {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -282,36 +282,38 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
       case (n, v) =>
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")
-          execute(Option(executeJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")).getOrElse(s"$$[javascript:$v]")
+          evaluate(s"$$[javascript:$v]") {
+            Option(executeJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
+          }
         else if (n.startsWith(s"$name/xpath")) {
           val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
           val targetType = interpolate(attScopes.get(s"$name/xpath/targetType"))(getBoundReferenceValue)
           val expression = interpolate(attScopes.get(s"$name/xpath/expression"))(getBoundReferenceValue)
-          execute(evaluateXPath(expression, source, XMLNodeType.withName(targetType))).getOrElse(s"$$[xpath:$expression]")
+          evaluateXPath(expression, source, XMLNodeType.withName(targetType))
         }
         else if (n.startsWith(s"$name/regex")) {
           val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/regex/source")))(getBoundReferenceValue)
           val expression = interpolate(attScopes.get(s"$name/regex/expression"))(getBoundReferenceValue)
-          execute(extractByRegex(expression, source)).getOrElse(s"$$[regex:$expression]")
+          extractByRegex(expression, source)
         }
         else if (n.startsWith(s"$name/json path")) {
           val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/json path/source")))(getBoundReferenceValue)
           val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
-          execute(evaluateJsonPath(expression, source)).getOrElse(s"$$[json path:$expression]")
+          evaluateJsonPath(expression, source)
         }
-        else if (n == s"$name/sysproc") execute(v.!!).map(_.trim).getOrElse(s"$$[sysproc:$v]")
+        else if (n == s"$name/sysproc") evaluate(s"$$[sysproc:$v]") { v.!!.trim }
         else if (n == s"$name/file") {
           val filepath = interpolate(v)(getBoundReferenceValue)
-          execute {
+          evaluate(s"$$[file:$v]") {
             if (new File(filepath).exists()) {
               Source.fromFile(filepath).mkString
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
-          } getOrElse s"$$[file:$v]"
+          }
         }
         else if (n.startsWith(s"$name/sql")) {
           val selectStmt = interpolate(attScopes.get(s"$name/sql/selectStmt"))(getBoundReferenceValue)
           val dbName = interpolate(attScopes.get(s"$name/sql/dbName"))(getBoundReferenceValue)
-          execute(evaluateSql(selectStmt, dbName)).getOrElse(s"$$[sql:$selectStmt]")
+          evaluateSql(selectStmt, dbName)
         }
         else v
     } getOrElse {
@@ -329,8 +331,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends LazyLogg
           }
         }
       }
-    } tap { value =>
-      logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
 
   /**

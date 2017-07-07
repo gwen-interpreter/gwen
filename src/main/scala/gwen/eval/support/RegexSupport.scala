@@ -17,9 +17,11 @@
 package gwen.eval.support
 
 import gwen.errors._
+import gwen.eval.EnvContext
 
 /** Can be mixed into evaluation engines to provide Regex support. */
 trait RegexSupport {
+  this: EnvContext =>
 
   /**
     * Extracts a substring from a source string by regex. The value in the
@@ -30,7 +32,9 @@ trait RegexSupport {
     * @return the extracted value
     * @throws gwen.errors.RegexException if the regex fails to evaluate
     */
-  def extractByRegex(regex: String, source: String): String =  
-    regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
+  def extractByRegex(regex: String, source: String): String =
+    evaluate(s"$$[regex:$regex") {
+      regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
+    }
     
 }
