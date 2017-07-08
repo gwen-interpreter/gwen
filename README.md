@@ -23,11 +23,7 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-Most Gherkin tools and frameworks target BDD (Behavior Driven Development) and therefore adopt a very developer-centric
-or programmatic approach to verifying the behavior of code and driving its development. We wanted to build a BDA
-(Behavior Driven Automation) tool that could use Gherkin to automate acceptance testing and robotic processing instead
-with only little or no coding at all required on behalf of the user. So we built the Gwen interpreter to read Gherkin as input and produce executing instructions as output through automation engines that can be prebuilt with specific capabilities
-and mixed in.
+We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little or no coding required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be prebuilt and mixed in.
 
 What engines are available?
 ---------------------------
