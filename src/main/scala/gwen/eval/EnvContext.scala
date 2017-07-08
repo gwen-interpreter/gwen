@@ -57,6 +57,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   /** List of current attachments (name-file pairs). */
   private var currentAttachments: List[(String, File)] = Nil
   private var attachmentPrefix = padWithZeroes(1)
+
+  /** Dry run flag. */
+  val isDryRun: Boolean = options.dryRun
   
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
   var loadedMeta: List[File] = Nil
@@ -282,8 +285,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case (n, v) =>
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")
-          evaluate(s"$$[javascript:$v]") {
-            Option(executeJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
+          evaluate(s"dryRun[javascript:$v]") {
+            Option(evaluateJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
           }
         else if (n.startsWith(s"$name/xpath")) {
           val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
@@ -301,10 +304,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
           evaluateJsonPath(expression, source)
         }
-        else if (n == s"$name/sysproc") evaluate(s"$$[sysproc:$v]") { v.!!.trim }
+        else if (n == s"$name/sysproc") evaluate(s"dryRun[sysproc:$v]") { v.!!.trim }
         else if (n == s"$name/file") {
           val filepath = interpolate(v)(getBoundReferenceValue)
-          evaluate(s"$$[file:$v]") {
+          evaluate(s"dryRun[file:$v]") {
             if (new File(filepath).exists()) {
               Source.fromFile(filepath).mkString
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
@@ -332,6 +335,19 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         }
       }
     }
+  
+  def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
+    val res = operator match {
+      case "be"      => expected.equals(actual)
+      case "contain" => actual.contains(expected)
+      case "start with" => actual.startsWith(expected)
+      case "end with" => actual.endsWith(expected)
+      case "match regex" => actual.matches(expected)
+      case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
+      case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
+    }
+    if (!negate) res else !res
+  }
 
   /**
     * Formats the given javascript expression in preparation for execute and return
@@ -349,31 +365,16 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     * @param params optional parameters to the script
     * @param takeScreenShot true to take screenshot after performing the function
     */
-  def executeJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
+  def evaluateJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
 
   /**
-    * Executes a javascript predicate.
+    * Evaluates a javascript predicate.
     *
     * @param javascript the script predicate expression to execute
     * @param params optional parameters to the script
     */
-  def executeJSPredicate(javascript: String, params: Any*): Boolean =
-    executeJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
-  
-  def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
-    val res = operator match {
-      case "be"      => expected.equals(actual)
-      case "contain" => actual.contains(expected)
-      case "start with" => actual.startsWith(expected)
-      case "end with" => actual.endsWith(expected)
-      case "match regex" => actual.matches(expected)
-      case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
-      case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
-    }
-    if (!negate) res else !res
-  }
-  
-  val isDryRun: Boolean = options.dryRun
+  def evaluateJSPredicate(javascript: String, params: Any*): Boolean =
+    evaluateJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
   
 }
 

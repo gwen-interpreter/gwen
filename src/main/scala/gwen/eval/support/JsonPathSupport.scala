@@ -35,7 +35,7 @@ trait JsonPathSupport {
     * @return the result of evaluating the json path expression
     */
   def evaluateJsonPath(jsonpath: String, source: String): String = {
-    evaluate(s"$$[json path:$jsonpath") {
+    evaluate(s"dryRun[json-path:$jsonpath") {
       if (source.trim().length() == 0) {
         jsonPathError("Cannot evaluate Json path on empty source")
       }

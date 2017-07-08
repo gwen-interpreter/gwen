@@ -34,7 +34,7 @@ trait SQLSupport {
     * @return the result of executing the SQL
     */
   def evaluateSql(sql: String, database: String): String =
-    evaluate(s"$$[sql:$sql]") {
+    evaluate(s"dryRun[sql:$sql]") {
       if (sql.trim().length() == 0) {
         sqlError("Cannot evaluate empty SQL statement")
       }

@@ -56,7 +56,7 @@ trait XPathSupport {
     * @throws gwen.errors.XPathException if the xpath expression fails to evaluate
     */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String =
-    evaluate(s"$$[xpath:$xpath]") {
+    evaluate(s"dryRun[xpath:$xpath]") {
       if (source.trim().length() == 0) {
         xPathError("Cannot evaluate XPath on empty source")
       }

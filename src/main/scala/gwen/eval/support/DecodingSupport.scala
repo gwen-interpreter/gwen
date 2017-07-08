@@ -31,7 +31,7 @@ trait DecodingSupport {
     * @return the decoded result string
     */
   def decodeBase64(source: String): String =
-    evaluate(s"$$[base64 decoded]") {
+    evaluate(s"dryRun[base64Decoded]") {
       Option(source) match {
         case None =>
           decodingError("Cannot Base64 decode null string")
