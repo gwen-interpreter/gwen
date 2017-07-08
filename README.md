@@ -37,7 +37,10 @@ What engines are available?
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - Our first engine is the gwen-web engine that we built on top of Selenium. You can download and use it to do web automation without having to develop any code to interact with Selenium.
 
-See also, our:
+
+Links
+-----
+
 - [Blog](https://gweninterpreter.wordpress.com)
 - [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
 - and [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
