@@ -9,9 +9,7 @@ an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/
 automation capability to be mixed in and reused.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions by mapping 'declarative' steps in features to
-'imperative' steps in
-[@StepDef scenarios](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions)
-that perform operations through prescribed DSLs in engines.
+'imperative' steps in engines that perform prepdefined operations.
 
 ### Current Status
 
