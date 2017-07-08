@@ -23,7 +23,7 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little or no coding required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be developed, shared, and reused.
+We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little or no coding required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be developed and shared.
 
 What engines are available?
 ---------------------------
