@@ -43,7 +43,7 @@ Links
 
 - [Blog](https://gweninterpreter.wordpress.com)
 - [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
-- and [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+- [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
 
 Core Runtime Requirement
 ------------------------
