@@ -6,7 +6,7 @@ Gwen
 Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns Given-When-Then
 steps into automation instructions and executes them for you so you don't have to do all the programming work. It has
 an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
-automation capability to be mixed in and reused.
+automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions by mapping 'declarative' steps in features to
 'imperative' steps in engines that perform operations.
@@ -23,13 +23,13 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little or no coding required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be developed and shared.
+We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little to no coding effort required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be developed and shared.
 
 What engines are available?
 ---------------------------
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - Our first engine is the gwen-web engine that we built on top of Selenium. You can download and use it for web automation without having to develop code to interact with Selenium.
+  - Our first engine is the gwen-web engine that we built on top of Selenium. You can download and use it for web automation without having to develop code to interact with the WebDriver API.
 
 
 Links
