@@ -2,7 +2,7 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns [G]iven-[W]hen-Th[en]
+Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns Given-When-Then
 steps into automation instructions and executes them for you so you don't have to do all the programming work. It has
 an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
 automation capability to be mixed in and reused.
@@ -19,19 +19,22 @@ that perform operations through pre-programmed automation engines.
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
 
-Why did we create Gwen?
------------------------
+Why Gwen?
+---------
 
-> To drive automation with behavior instead of code.
+> Gwen = [G]iven [W]hen Th[en]
 
 Most Gherkin tools and frameworks target BDD (Behavior Driven Development) and therefore adopt a very developer-centric
 or programmatic approach to verifying the behavior of code and driving its development. We wanted to build a BDA
 (Behavior Driven Automation) tool that could use Gherkin to automate acceptance testing and robotic processing instead
-with only little or no coding required on behalf of the user. So we built the Gwen interpreter to read Gherkin as input
-and produce executing instructions as output through automation engines that can be prebuilt with specific capabilities
-and mixed in. Our first such engine is the [gwen-web](https://github.com/gwen-interpreter/gwen-web) engine that we built
-on top of Selenium. You can download and use it to drive a web browser and automate web based activities without having
-to develop code to interact with Selenium.
+with only little or no coding at all required on behalf of the user. So we built the Gwen interpreter to read Gherkin as input and produce executing instructions as output through automation engines that can be prebuilt with specific capabilities
+and mixed in.
+
+What engines are available?
+---------------------------
+
+- [gwen-web](https://github.com/gwen-interpreter/gwen-web)
+  - Our first engine is the gwen-web engine that we built on top of Selenium. You can download and use it to do web automation without having to develop any code to interact with Selenium.
 
 See also, our:
 - [Blog](https://gweninterpreter.wordpress.com)
