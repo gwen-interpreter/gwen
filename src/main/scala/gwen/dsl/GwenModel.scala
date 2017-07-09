@@ -204,6 +204,7 @@ case class Scenario(
   
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
   def isForEach: Boolean = tags.contains(Tag.ForEachTag)
+  def isDataTable: Boolean = tags.exists(_.name.startsWith(Tag.DataTableTag.name))
 
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
@@ -302,14 +303,18 @@ case class Tag(name: String) extends SpecNode {
   /** Returns a string representation of this tag. */
   override def toString = s"@$name"
 
-  def isInBuilt = Tag.InbuiltTags.exists(name.startsWith(_))
+  def isInBuilt = Tag.InbuiltTags.exists(_.name.startsWith(name))
   
 }
 object Tag {
 
-  val InbuiltTags = List("StepDef", "Import", "ForEach", "DataTable")
+  val ImportTag = Tag("Import")
   val StepDefTag = Tag("StepDef")
   val ForEachTag = Tag("ForEach")
+  val DataTableTag = Tag("DataTable")
+
+  val InbuiltTags = List(ImportTag, StepDefTag, ForEachTag, DataTableTag)
+
   private val Regex = """~?@([^\s]+)""".r
 
   import scala.language.implicitConversions
@@ -325,9 +330,14 @@ object Tag {
     case _ => invalidTagError(value)
   }
 
-  def apply(tag: gherkin.ast.Tag): Tag =
-    (if (tag.getName.startsWith("@")) Tag(tag.getName.substring(1))
-    else Tag(tag.getName)) tap { t => t.pos = Position(tag.getLocation) }
+  def apply(tag: gherkin.ast.Tag): Tag = {
+    (if (tag.getName.startsWith("@")) Tag(tag.getName.substring(1)) else Tag(tag.getName)) tap { t =>
+      if (t.name.startsWith(DataTableTag.name)) {
+        DataTable.checkTagSyntax(t)
+      }
+      t.pos = Position(tag.getLocation)
+    }
+  }
   
 }
 

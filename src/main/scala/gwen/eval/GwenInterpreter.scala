@@ -217,7 +217,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         }
         Some(file)
       case r"""(?:I|i)mport\(.*""" =>
-        syntaxError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
+        invalidTagError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
       case _ => None
     }
   }
@@ -267,7 +267,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1, row.toList) }
           Some(Examples(s"Data file: $filepath", Nil, table, Nil))
         case r"""(?:E|x)amples\(.*""" =>
-          syntaxError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("csv-filepath")""")
+          invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("csv-filepath")""")
         case _ => None
       }
     } match {

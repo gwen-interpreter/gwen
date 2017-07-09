@@ -60,7 +60,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @return the evaluated scenario
     */
   private[eval] def evaluateScenario(scenario: Scenario, env: T): Scenario = {
-    if (scenario.isStepDef) {
+    if (scenario.isStepDef || scenario.isDataTable) {
+      if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
       env.addStepDef(scenario)
       val steps =

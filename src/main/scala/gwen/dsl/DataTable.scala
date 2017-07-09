@@ -15,7 +15,7 @@
  */
 package gwen.dsl
 
-import gwen.errors.{dataTableError, syntaxError}
+import gwen.errors.{dataTableError, invalidTagError}
 import gwen.eval.ScopedData
 
 /**
@@ -128,18 +128,31 @@ object DataTable {
 
   def apply(tag: Tag, step: Step): DataTable = {
     tag.name.trim match {
-      case r"""DataTable\(horizontal="(.*?)"$namesCSV\)""" =>
+      case r"""DataTable\(horizontal="([^".]+?)"$namesCSV\)""" =>
         DataTable(step.table.map(_._2), HeaderType.top, namesCSV.split(",").toList)
-      case r"""DataTable\(vertical="(.*?)"$namesCSV\)""" =>
+      case r"""DataTable\(vertical="([^".]+?)"$namesCSV\)""" =>
         DataTable(step.table.map(_._2), HeaderType.left, namesCSV.split(",").toList)
       case r"""DataTable\(header="(top|left)"$header\)""" =>
         DataTable(step.table.map(_._2), HeaderType.withName(header), Nil)
       case r"""DataTable\(type="matrix"\)""" =>
         DataTable(step.table.map(_._2), HeaderType.top_left, Nil)
-      case _ => syntaxError(
-        s"""Invalid tag syntax: $tag - correct table tags include: @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")""")
+      case _ => tagSyntaxError(tag)
     }
   }
+
+  private val validTags = List(
+    """DataTable\(horizontal="([^".]+?)"\)""",
+    """DataTable\(vertical="([^".]+?)"\)""",
+    """DataTable\(header="(top|left)"\)""",
+    """DataTable\(type="matrix"\)""")
+
+  def checkTagSyntax(tag: Tag): Unit =
+    if (!validTags.exists(tag.name.matches(_))) tagSyntaxError(tag)
+
+  private def tagSyntaxError(tag: Tag) =
+    invalidTagError(
+      s"""Invalid tag syntax: $tag - correct table tags include: @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")"""
+    )
 
   /**
     * Creates a data table.
@@ -160,7 +173,8 @@ object DataTable {
     if (headers.isEmpty && table.size < 2)
       dataTableError(s"Table with header has no records")
     if (headers.nonEmpty && headers.size != table.head.size)
-      dataTableError(s"${table.head.size} data names expected for $tableType data table but got ${headers.size}: '${headers}'")
+      dataTableError(
+        s"""${table.head.size} names expected for data table but ${headers.size} specified: $tableType=\"${headers.mkString(",")}\"""")
 
     tableType match {
       case TableType.matrix =>

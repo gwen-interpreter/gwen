@@ -1,3 +1,9 @@
+2.7.2
+=====
+Jul 8, 2017
+- Add syntax checking for DataTable tags
+- Report error if Data Table tag is specified without StepDef tag
+
 2.7.1
 =====
 Jul 8, 2017

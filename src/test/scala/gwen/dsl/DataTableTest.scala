@@ -17,7 +17,7 @@ package gwen.dsl
 
 import org.scalatest.{FlatSpec, Matchers}
 import gwen.dsl.Tag.string2Tag
-import gwen.errors.DataTableException
+import gwen.errors.{DataTableException, InvalidTagException}
 
 /**
   * Data table tests.
@@ -457,6 +457,39 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
       DataTable("""@DataTable(horizontal="none")""", parse("Given no table")).asInstanceOf[MatrixTable]
     }
 
+  }
+
+  "Invalid data table tag syntax" should "error" in {
+    checkInvalidTag("@DataTable")
+    checkInvalidTag("@DataTable(horizontal")
+    checkInvalidTag("""@DataTable(horizontal="")""")
+    checkInvalidTag("""@DataTable(horizontal ="a")""")
+    checkInvalidTag("""@DataTable(horizontal= "a")""")
+    checkInvalidTag("""@DataTable (horizontal="a" )""")
+    checkInvalidTag("""@DataTable (horizontal ="a")""")
+    checkInvalidTag("""@DataTable(horizontal="a",unknown="b")""")
+    checkInvalidTag("""@DataTable(unknown="a")""")
+    checkInvalidTag("""@DataTable(horizontal="a",vertical="b")""")
+    checkInvalidTag("""@DataTable(type="matrix",horizontal="a")""")
+  }
+
+  def checkInvalidTag(tag: String): Unit = {
+    intercept[InvalidTagException] {
+      DataTable.checkTagSyntax(tag)
+    }
+    intercept[InvalidTagException] {
+      DataTable.checkTagSyntax(Tag(tag))
+    }
+  }
+
+  "Valid data table tags" should "not error" in {
+    DataTable.checkTagSyntax("""@DataTable(horizontal="decimal,binary")""")
+    DataTable.checkTagSyntax("""@DataTable(horizontal="a,b,c")""")
+    DataTable.checkTagSyntax("""@DataTable(header="top")""")
+    DataTable.checkTagSyntax("""@DataTable(vertical="a,b,c")""")
+    DataTable.checkTagSyntax("""@DataTable(header="left")""")
+    DataTable.checkTagSyntax("""@DataTable(horizontal="a")""")
+    DataTable.checkTagSyntax("""@DataTable(type="matrix")""")
   }
 
 }

@@ -50,7 +50,6 @@ package gwen {
     def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
     def unsupportedDataFileError(dataTag: Tag, specFile: Option[File]) = throw new UnsupportedDataFileException(dataTag, specFile)
     def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
-    def syntaxError(msg: String) = throw new SyntaxException(msg)
     def sqlError(msg: String) = throw new SQLException(msg)
     def dataTableError(msg: String) = throw new DataTableException(msg)
 
@@ -118,9 +117,6 @@ package gwen {
     class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) $importTag detected in $specFile") {
       override def fillInStackTrace(): RecursiveImportException = this
     }
-    
-    /** Thrown when a syntax error is detected. */
-    class SyntaxException(msg: String) extends Exception(msg)
     
     /** Thrown when an SQL error is detected. */
     class SQLException(msg: String) extends Exception(msg)
