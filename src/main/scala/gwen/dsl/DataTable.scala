@@ -69,8 +69,8 @@ class FlatTable(val records: List[List[String]], val names: List[String]) extend
       ((names.zipWithIndex map { case (name, index) =>
         (s"name[${index + 1}]", name)
       }) ++ (records.zipWithIndex flatMap { case (record, rIndex) =>
-        names.zip(record) flatMap { case (name, value) =>
-          (s"data[${rIndex + 1}][$name]", value) :: (if (rIndex == 0) List((s"data[$name]", value)) else Nil)
+        names.zip(record) map { case (name, value) =>
+          (s"data[${rIndex + 1}][$name]", value)
         }
       })).filter(pred)
   }

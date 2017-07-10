@@ -321,11 +321,12 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         else v
     } getOrElse {
       (featureScope.getObject("record") match {
-        case Some(scope: ScopedData) => scope.getOpt(name)
+        case Some(scope: ScopedData) =>
+          scope.getOpt(name)
         case _ => featureScope.getObject("table") match {
-            case Some(table: DataTable) => table.tableScope.getOpt(name)
-            case _ => None
-          }
+          case Some(table: DataTable) => table.tableScope.getOpt(name)
+          case _ => None
+        }
       }).getOrElse {
           scopes.getOpt(name).getOrElse {
             Settings.getOpt(name).getOrElse {

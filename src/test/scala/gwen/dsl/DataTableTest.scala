@@ -100,9 +100,6 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     table.get("name[1]") should be ("a")
     table.get("name[2]") should be ("b")
     table.get("name[3]") should be ("c")
-    table.get("data[a]") should be ("0")
-    table.get("data[b]") should be ("1")
-    table.get("data[c]") should be ("1")
     table.get("data[1][a]") should be ("0")
     table.get("data[1][b]") should be ("1")
     table.get("data[1][c]") should be ("1")
@@ -118,7 +115,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     table.get("data[5][a]") should be ("3")
     table.get("data[5][b]") should be ("5")
     table.get("data[5][c]") should be ("8")
-    table.findEntries(_ => true).size should be (21)
+    table.findEntries(_ => true).size should be (18)
 
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
@@ -201,13 +198,10 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     table.get("name[1]") should be ("a")
     table.get("name[2]") should be ("b")
     table.get("name[3]") should be ("c")
-    table.get("data[a]") should be ("1")
-    table.get("data[b]") should be ("2")
-    table.get("data[c]") should be ("3")
     table.get("data[1][a]") should be ("1")
     table.get("data[1][b]") should be ("2")
     table.get("data[1][c]") should be ("3")
-    table.findEntries(_ => true).size should be (9)
+    table.findEntries(_ => true).size should be (6)
 
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
@@ -285,9 +279,8 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
     val table = dataTable.tableScope
     table.get("name[1]") should be ("a")
-    table.get("data[a]") should be ("1")
     table.get("data[1][a]") should be ("1")
-    table.findEntries(_ => true).size should be (3)
+    table.findEntries(_ => true).size should be (2)
 
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
