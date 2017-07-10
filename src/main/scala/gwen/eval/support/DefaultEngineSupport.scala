@@ -30,6 +30,34 @@ import scala.util.Try
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
+   /**
+    * Defines the default priority steps supported by all engines. For example, a step that calls another step needs
+    * to execute with priority to ensure that there is no match conflict between the two (which can occur if the
+     * step being called by a step is a StepDef or another step that matches the entire calling step).
+    *
+    * @param step the step to evaluate
+    * @param env the environment context
+    */
+  override def evaluatePriority(step: Step, env: T): Option[Step] = {
+
+    step.expression match {
+
+      case r"""(.+?)$doStep for each data record""" =>
+        val dataTable = env.featureScope.getObject("table") match {
+          case Some(table: FlatTable) => table
+          case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
+          case _ => dataTableError("Calling step has no data table")
+        }
+        val records = () => {
+          dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+        }
+        foreach(records, "record", step, doStep, env)
+        Some(step)
+
+      case _ => None
+    }
+  }
+  
   /**
     * Defines the default steps supported by all engines.
     *
@@ -39,6 +67,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     *         or unsupported
     */
   override def evaluate(step: Step, env: T): Unit = {
+
     step.expression match {
 
       case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
@@ -150,17 +179,6 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           val result = env.compare(expression, actual, operator, negate)
           assert(result, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$operator '$expression' but got '$actual'")
         }
-
-      case r"""(.+?)$doStep for each data record""" =>
-        val dataTable = env.featureScope.getObject("table") match {
-          case Some(table: FlatTable) => table
-          case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
-          case _ => dataTableError("Calling step has no data table")
-        }
-        val records = () => {
-          dataTable.records.indices.map(idx => dataTable.recordScope(idx))
-        }
-        foreach(records, "record", step, doStep, env)
 
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" =>
         val actualValue = env.getBoundReferenceValue(attribute)
