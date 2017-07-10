@@ -1,3 +1,8 @@
+2.7.3
+=====
+Jul 11, 2017
+- Fix fail handling where cause was not being reported correctly
+
 2.7.2
 =====
 Jul 10, 2017

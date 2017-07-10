@@ -181,7 +181,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param env the environment context
     * @param evalFunction the step evaluation function
     */
-  private def doEvaluate(step: Step, env: T, failOnError: Boolean = false)(evalFunction: (Step) => Step): Step = {
+  private def doEvaluate(step: Step, env: T, failOnError: Boolean = true)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
