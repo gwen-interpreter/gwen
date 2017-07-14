@@ -76,3 +76,15 @@
 
    Scenario: tables in nested stepdefs should not conflict
        Given nested tables should match the right tables
+
+
+   Scenario: Vertical data table with no header (with table interpolation)
+       Given four in decimal is "4"
+         And five in decimal is "5"
+         And six in decimal is "6"
+         And four in binary is "100"
+         And five in binary is "101"
+         And six in binary is "110"
+       Given each column contains a number in decimal and binary form
+             | ${four in decimal} | ${five in decimal} | ${six in decimal} |
+             | ${four in binary}  | ${five in binary}  | ${six in binary}  |

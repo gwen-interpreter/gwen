@@ -345,30 +345,40 @@ object Tag {
   * Captures a gherkin step.
   *
   * @param keyword keyword identifier (Given, When, Then, etc..)
-  * @param expression free format step expression line (that is: the text following the step keyword)
+  * @param name the step name (that is: the text following the step keyword)
   * @param status optional evaluation status (default = Pending)
   * @param attachments file attachments as name-file pairs (default = Nil)
   * @param stepDef optional evaluated step def
   * @param table data table (List of tuples of line position and rows of data)
+  * @param docString optional tuple of line, content, and content type
   *    
   * @author Branko Juric
   */
 case class Step(
-    keyword: StepKeyword.Value, 
-    expression: String, 
+    keyword: StepKeyword.Value,
+    name: String,
     status: EvalStatus = Pending, 
     attachments: List[(String, File)] = Nil,
     stepDef: Option[Scenario] = None,
-    table: List[(Int, List[String])] = Nil) extends SpecNode {
+    table: List[(Int, List[String])] = Nil,
+    docString: Option[(Int, String, Option[String])] = None) extends SpecNode {
   
   /** Returns the evaluation status of this step definition. */
   override lazy val evalStatus: EvalStatus = status
+
+  def expression: String = docString map { case (_, content, _) =>
+    val lines = content.split("""\r?\n""")
+    s"""$name "${lines(0)}${if (lines.length > 1) "..." else ""}""""
+  } getOrElse(name)
   
   /** Returns a string representation of this step. */
-  override def toString = s"$keyword $expression"
+  override def toString = s"$keyword ${expression}"
 
   /** Returns a unique string ID value for this object .*/
   lazy val uniqueId = java.util.UUID.randomUUID.toString
+
+  /** Returns the given value if the step has no docString or the docString content otherwise. */
+  def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
   
 }
 
@@ -378,22 +388,30 @@ object Step {
       dt.getRows.asScala.toList map { row =>
         (row.getLocation.getLine, row.getCells.asScala.toList.map(_.getValue))
       }
-    } getOrElse(Nil)
-    new Step(StepKeyword.names(step.getKeyword.trim), step.getText, table = dataTable) tap { s => s.pos = Position(step.getLocation) }
+    } getOrElse Nil
+    val docString = Option(step.getArgument).filter(_.isInstanceOf[gherkin.ast.DocString]).map(_.asInstanceOf[gherkin.ast.DocString]) map { ds =>
+      (ds.getLocation.getLine, ds.getContent, Option(ds.getContentType))
+    }
+    new Step(
+      StepKeyword.names(step.getKeyword.trim),
+      step.getText,
+      table = dataTable,
+      docString = docString
+    ) tap { s => s.pos = Position(step.getLocation) }
   }
   def apply(pos: Position, keyword: StepKeyword.Value, expression: String): Step =
     new Step(keyword, expression) tap { s => s.pos = pos }
   def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
     new Step(keyword, expression, status) tap { s => s.pos = pos }
   def apply(step: Step, pos: Position): Step =
-    new Step(step.keyword, step.expression, step.status, step.attachments, step.stepDef, step.table) tap { s => s.pos = pos}
+    new Step(step.keyword, step.name, step.status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = pos}
   def apply(step: Step, expression: String): Step =
-    new Step(step.keyword, expression, step.status, step.attachments, table = step.table) tap { s => s.pos = step.pos}
+    new Step(step.keyword, expression, step.status, step.attachments, table = step.table, docString = step.docString) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =
-    new Step(step.keyword, step.expression, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef), step.table) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.name, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef), step.table, step.docString) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
-    new Step(step.keyword, step.expression, status, attachments, step.stepDef, step.table) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.name, status, attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)], foreachStepDef: Scenario): Step =
-    new Step(step.keyword, step.expression, status, attachments, Some(foreachStepDef), step.table) tap { s => s.pos = step.pos }
+    new Step(step.keyword, step.name, status, attachments, Some(foreachStepDef), step.table, step.docString) tap { s => s.pos = step.pos }
 }
 

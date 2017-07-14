@@ -231,6 +231,12 @@ object Predefs extends LazyLogging {
       val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
       s"| ${(table(rowIndex)._2.zipWithIndex map { case (data, dataIndex) => s"${rightPad(data, maxWidths(dataIndex))}" }).mkString(" | ") } |"
     }
+    def formatDocString(docString: (Int, String, Option[String]), includeType: Boolean = false) = docString match {
+      case (_, content, contentType) =>
+        s"""|${"\"\"\""}${if(includeType) contentType.getOrElse("") else ""}
+            |$content
+            |${"\"\"\""}""".stripMargin
+    }
   }
   
   object DurationOps {

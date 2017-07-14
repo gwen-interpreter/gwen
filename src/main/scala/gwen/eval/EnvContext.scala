@@ -264,14 +264,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolate(step: Step): Step = 
-    interpolate(step.expression) { name =>
-      Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
-    } match {
-      case step.expression => step
-      case expr =>
-      Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
+  def interpolate(step: Step): Step = {
+    val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
+    val iName = interpolate(step.name) { resolver }
+    val iTable = step.table map { case (line, record) =>
+      (line, record.map(cell => interpolate(cell) { resolver }))
     }
+    val iDocString = step.docString map { case (line, content, contentType) =>
+      (line, interpolate(content) { resolver }, contentType)
+    }
+    if (iName != step.name || iTable != step.table || iDocString != step.docString) {
+      Step(step.keyword, iName, step.status, step.attachments, step.stepDef, iTable, iDocString) tap {
+        iStep => logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
+      }
+    } else step
+  }
 
   /**
     * Gets the scoped attribute or settings value bound to the given name.

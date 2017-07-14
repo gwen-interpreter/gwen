@@ -258,3 +258,11 @@ table tbody.summary td {
 .data-table {
   color: #333333;
 }
+
+.doc-string {
+  color: #333333;
+}
+
+.doc-string-type {
+  color: gray;
+}

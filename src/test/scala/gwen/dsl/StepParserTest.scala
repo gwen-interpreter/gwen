@@ -82,7 +82,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     val step = parse(stepString).get
 
     step.keyword should be (StepKeyword.Then)
-    step.expression should be ("the word should match the number")
+    step.name should be ("the word should match the number")
     step.table should be (
       // offset line numbers by implicit feature+scenario add by step string parser
       List(
@@ -105,6 +105,64 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
     assertFail(stepString, "'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
 
+  }
+
+  "Step with docString and no content type" should "parse" in {
+
+    val stepString =
+      s"""
+        |Given the following lines
+        |  ${"\"\"\""}
+        |  Line 1
+        |  Line 2
+        |  Line 3
+        |  ${"\"\"\""}""".stripMargin
+
+    val step = parse(stepString).get
+
+    step.keyword should be (StepKeyword.Given)
+    step.name should be ("the following lines")
+    step.table should be (Nil)
+    step.docString.nonEmpty should be (true)
+    step.docString.foreach { case (line, content, contentType) =>
+      line > 0 should be (true)
+      content should be (
+        """Line 1
+          |Line 2
+          |Line 3""".stripMargin)
+      contentType should be (None)
+    }
+  }
+
+  "Step with docString and content type" should "parse" in {
+
+    val stepString =
+      s"""
+        |Given the following lines
+        |  ${"\"\"\""}xml
+        |  <lines>
+        |    <line>Line 1</line>
+        |    <line>Line 2</line>
+        |    <line>Line 3</line>
+        |  </lines>
+        |  ${"\"\"\""}""".stripMargin
+
+    val step = parse(stepString).get
+
+    step.keyword should be (StepKeyword.Given)
+    step.name should be ("the following lines")
+    step.table should be (Nil)
+    step.docString.nonEmpty should be (true)
+    step.docString.foreach { case (line, content, contentType) =>
+      line > 0 should be (true)
+      content should be (
+        """<lines>
+          |  <line>Line 1</line>
+          |  <line>Line 2</line>
+          |  <line>Line 3</line>
+          |</lines>""".stripMargin)
+      contentType should be (Some("xml"))
+    }
   }
   
   private def assertFail(input: String, expected: String) {

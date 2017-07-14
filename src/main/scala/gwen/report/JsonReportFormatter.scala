@@ -145,7 +145,7 @@ trait JsonReportFormatter extends ReportFormatter {
     s"""
           {
             "keyword": "${step.keyword} ",
-            "name": "${escapeJson(step.expression)}",
+            "name": "${escapeJson(step.name)}",
             "line": ${step.pos.line},${if (screenshots.nonEmpty) s"""
             "embeddings": [${screenshots.map{ file => s"""
               {
@@ -158,7 +158,12 @@ trait JsonReportFormatter extends ReportFormatter {
                 s"""
             "match": {
                 "location": "${escapeJson(location)}"
-            },"""} else ""}.getOrElse("")}${if (step.table.nonEmpty) s"""
+            },"""} else ""}.getOrElse("")}${step.docString.map{ case (line, content, contentType) => s"""
+            "doc_string": {
+              "content_type": "${contentType.map(c => escapeJson(c)).getOrElse("")}",
+              "value": "${escapeJson(content)}",
+              "line": $line
+            },"""}.getOrElse("")}${if (step.table.nonEmpty) s"""
             "rows": [${step.table.zipWithIndex.map { case ((line, row), rIndex) =>
               val rowId = s"$parentId;${rIndex + 1};$line"
               s"""

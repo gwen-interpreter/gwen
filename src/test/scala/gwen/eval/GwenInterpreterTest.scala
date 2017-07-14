@@ -81,7 +81,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     result match {
       case TrySuccess(s) =>
         s.keyword should be (StepKeyword.Given)
-        s.expression should be ("I am a valid step")
+        s.name should be ("I am a valid step")
         s.evalStatus.status should be (StatusKeyword.Passed)
       case TryFailure(err) =>
         err.printStackTrace()
@@ -108,7 +108,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     result match {
       case TrySuccess(step) =>
         step.keyword should be (StepKeyword.Given)
-        step.expression should be ("I am a valid stepdef")
+        step.name should be ("I am a valid stepdef")
         step.evalStatus.status should be (StatusKeyword.Passed)
       case TryFailure(err) =>
         fail(s"success expected but got $err")
