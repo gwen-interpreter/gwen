@@ -17,8 +17,9 @@
  Feature: DocStrings
 
    Scenario: Javascript DocString binding
-       Given my value is a function binding
-        Then my value should be "true"
+       Given the current date is formatted as yyyy-mm-dd
+        Then the current date should match regex "\d{4}-\d{2}-\d{2}"
+         And the current date should be "${the current date}"
 
    Scenario: Paragraph of text
        Given my paragraph is
@@ -52,7 +53,7 @@
    Scenario: Multi paragraph text with interpolation
        Given my attribute 1 is "Given-When-Then"
          And my attribute 2 is "automation"
-         And my line is
+         And my paragraph is
              """
              Gwen is a Gherkin interpreter that turns ${my attribute 1} steps into ${my attribute 2} instructions and
              executes them for you so you don't have to do all the programming work. It has an abstracted evaluation
@@ -62,7 +63,7 @@
              you to compose step definitions by mapping 'declarative' steps in features to 'imperative' steps in engines
              that perform operations.
              """
-        Then my line should be
+        Then my paragraph should be
              """
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions and
              executes them for you so you don't have to do all the programming work. It has an abstracted evaluation
@@ -74,16 +75,13 @@
              """
 
    Scenario: Single line of text with content type
-       Given my text line is
+       Given my line is
              """text
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """
-        Then my text line should be
+        Then my line should be
              """text
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """
-         And my text line should be "Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions."
+         And my line should be "Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions."
 
-   Scenario: Javascript Inline binding
-       Given my function value is defined by javascript "function myValue() { return true; } myValue();"
-        Then my function value should be "true"

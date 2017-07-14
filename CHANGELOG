@@ -2,6 +2,7 @@
 =====
 Jul 14, 2017
 - Add support for DocStrings
+- Evaluate all javascript expressions in anonymous function block
 
 2.7.3
 =====

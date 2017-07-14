@@ -28,7 +28,11 @@ class ScriptSupportTest extends FlatSpec with Matchers with ScriptSupport {
     val booleanResult: Boolean = evaluateJavaScript("1 == 2")
     booleanResult should be(false)
 
-    val date: String = evaluateJavaScript("var d = new Date(2017, 6, 8); d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();")
+    val date: String = evaluateJavaScript(
+      """(function() {
+        |  var d = new Date(2017, 6, 8);
+        |  return d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();
+        |})();""".stripMargin)
     date should be ("8/6/2017")
   }
 

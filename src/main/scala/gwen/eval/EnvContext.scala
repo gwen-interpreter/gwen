@@ -292,7 +292,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case (n, v) =>
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")
-          evaluate(s"dryRun[javascript:$v]") {
+          evaluate("$[dryRun:javascript]") {
             Option(evaluateJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
           }
         else if (n.startsWith(s"$name/xpath")) {
@@ -311,10 +311,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
           evaluateJsonPath(expression, source)
         }
-        else if (n == s"$name/sysproc") evaluate(s"dryRun[sysproc:$v]") { v.!!.trim }
+        else if (n == s"$name/sysproc") evaluate("$[dryRun:sysproc]") { v.!!.trim }
         else if (n == s"$name/file") {
           val filepath = interpolate(v)(getBoundReferenceValue)
-          evaluate(s"dryRun[file:$v]") {
+          evaluate("$[dryRun:file]") {
             if (new File(filepath).exists()) {
               Source.fromFile(filepath).mkString
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
@@ -342,6 +342,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           }
         }
       }
+    } tap { value =>
+      logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
   
   def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {

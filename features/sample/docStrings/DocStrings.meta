@@ -17,11 +17,14 @@
  Feature: DocStrings Meta
 
    @StepDef
-   Scenario: my value is a function binding
-       Given my value is defined by javascript
+   Scenario: the current date is formatted as yyyy-mm-dd
+       Given the current is defined by javascript
              """JavaScript
-             function myValue() {
-               return true;
-             }
-             myValue();
+             (function() {
+               var d = new Date();
+               var year = d.getFullYear();
+               var month = ('0' + (d.getMonth() + 1)).slice(-2);
+               var day = ('0' + d.getDate()).slice(-2);
+               return year + '-' + month + '-' + day;
+             })();
              """
