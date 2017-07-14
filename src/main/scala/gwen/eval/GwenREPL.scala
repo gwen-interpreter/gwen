@@ -36,6 +36,8 @@ import jline.console.completer.AggregateCompleter
 class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile)
+
+  private var pasteBuffer: Option[List[String]] = None
   
   private lazy val reader = new ConsoleReader() tap { reader =>
     reader.setHistory(history)
@@ -79,7 +81,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
           Some("""Try again using: env [-a|-f] ["filter"]""")
       }
     }
-    case r"history" =>
+    case "history" =>
       Some(history.toString)
     case r"!(\d+)$$$historyValue" =>
       val num = historyValue.toInt
@@ -92,7 +94,10 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       } else {
         Some(s"No such history: !$historyValue")
       }
-    case r"exit|bye|quit" => 
+    case "paste" =>
+      pasteBuffer = Some(List[String]())
+      Some("In paste mode (press ctrl-D when finished to evaluate)")
+    case "exit|bye|quit" =>
       reader.getHistory.asInstanceOf[FileHistory].flush()
       None
     case _ =>

@@ -17,14 +17,8 @@
  Feature: DocStrings
 
    Scenario: Javascript DocString binding
-       Given my function value is defined by javascript
-             """JavaScript
-             function myValue() {
-               return true;
-             }
-             myValue();
-             """
-        Then my function value should be "true"
+       Given my value is a function binding
+        Then my value should be "true"
 
    Scenario: Paragraph of text
        Given my paragraph is
