@@ -18,7 +18,7 @@
 
    @StepDef
    Scenario: the current date is formatted as yyyy-mm-dd
-       Given the current is defined by javascript
+       Given the current date is defined by javascript
              """JavaScript
              (function() {
                var d = new Date();
