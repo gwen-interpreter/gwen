@@ -92,7 +92,15 @@ trait SpecNormaliser {
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None else background,
               outline.steps.map { s =>
-                new Step(s.keyword, Formatting.resolveParams(s.expression, params), s.status, s.attachments, s.stepDef) tap { step => step.pos = s.pos }
+                new Step(
+                  s.keyword,
+                  Formatting.resolveParams(s.name, params),
+                  s.status,
+                  s.attachments,
+                  s.stepDef,
+                  s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
+                  s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) }
+                ) tap { step => step.pos = s.pos }
               },
               isOutline = false,
               Nil,

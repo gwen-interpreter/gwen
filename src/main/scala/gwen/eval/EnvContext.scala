@@ -264,14 +264,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolate(step: Step): Step = 
-    interpolate(step.expression) { name =>
-      Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
-    } match {
-      case step.expression => step
-      case expr =>
-      Step(step, expr) tap { iStep => logger.debug(s"Interpolated ${step.expression} to: ${iStep.expression}") }
+  def interpolate(step: Step): Step = {
+    val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
+    val iName = interpolate(step.name) { resolver }
+    val iTable = step.table map { case (line, record) =>
+      (line, record.map(cell => interpolate(cell) { resolver }))
     }
+    val iDocString = step.docString map { case (line, content, contentType) =>
+      (line, interpolate(content) { resolver }, contentType)
+    }
+    if (iName != step.name || iTable != step.table || iDocString != step.docString) {
+      Step(step.keyword, iName, step.status, step.attachments, step.stepDef, iTable, iDocString) tap {
+        iStep => logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
+      }
+    } else step
+  }
 
   /**
     * Gets the scoped attribute or settings value bound to the given name.
@@ -285,7 +292,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case (n, v) =>
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")
-          evaluate(s"dryRun[javascript:$v]") {
+          evaluate("$[dryRun:javascript]") {
             Option(evaluateJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
           }
         else if (n.startsWith(s"$name/xpath")) {
@@ -304,10 +311,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
           evaluateJsonPath(expression, source)
         }
-        else if (n == s"$name/sysproc") evaluate(s"dryRun[sysproc:$v]") { v.!!.trim }
+        else if (n == s"$name/sysproc") evaluate("$[dryRun:sysproc]") { v.!!.trim }
         else if (n == s"$name/file") {
           val filepath = interpolate(v)(getBoundReferenceValue)
-          evaluate(s"dryRun[file:$v]") {
+          evaluate("$[dryRun:file]") {
             if (new File(filepath).exists()) {
               Source.fromFile(filepath).mkString
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
@@ -335,6 +342,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           }
         }
       }
+    } tap { value =>
+      logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
   
   def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {

@@ -140,7 +140,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     }
     (if (isPriority) pStep else {
       if (iStep.evalStatus.status != StatusKeyword.Failed) {
-      Try(env.getStepDef(iStep.expression)) match {
+      Try(env.getStepDef(iStep.name)) match {
         case Failure(error) =>
           val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
           env.fail(failure)

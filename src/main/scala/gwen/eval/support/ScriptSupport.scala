@@ -38,7 +38,7 @@ trait ScriptSupport {
     * @param script the script expression to evaluate
     */
   private def evaluateScript[T](language: String, script: String): T =
-    new ScriptEngineManager(null).getEngineByName(language).eval(script).asInstanceOf[T]
+    new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $script })()").asInstanceOf[T]
 
 
 }

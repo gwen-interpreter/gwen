@@ -261,6 +261,20 @@ trait HtmlReportFormatter extends ReportFormatter {
                 </div>"""} mkString}"""
   }
 
+  private def formatStepDocString(step: Step): String = {
+      val status = step.evalStatus.status
+      val docString = step.docString.get
+      val contentType = docString._3
+      s"""
+              ${formatDocString(docString, false).split("""\r?\n""").zipWithIndex  map { case (contentLine, index) =>
+                val line = docString._1 + index
+              s"""
+                <div class="bg-${cssStatus(status)}">
+                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
+                  <div class="keyword-right"> </div><code class="bg-${cssStatus(status)} doc-string">${escapeHtml(contentLine).replaceAll("  ", " &nbsp;")}</code>${if (index == 0) contentType.map(cType => s"""<code class="bg-${cssStatus(status)} doc-string-type">${escapeHtml(cType)}</code>""").getOrElse("") else ""}
+                </div>"""} mkString}"""
+  }
+
   private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): String = {
     s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex)).replaceAll("  ", " &nbsp;")}</code>"""
   }
@@ -393,8 +407,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.expression)}"}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}${if (step.table.nonEmpty) formatStepDataTable(step) else ""}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
+                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step) else if (step.table.nonEmpty) formatStepDataTable(step) else ""}
                 </div>
                 ${if (status == StatusKeyword.Failed && step.stepDef.isEmpty) s"""
                 <ul>
@@ -410,12 +424,12 @@ trait HtmlReportFormatter extends ReportFormatter {
               <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${escapeHtml(step.expression)}
+                  <div class="keyword-right"><strong>${step.keyword}</strong></div> ${escapeHtml(step.name)}
                 </div>
               </li>"""
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
-    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#$stepDefId" aria-expanded="true" aria-controls="$stepDefId">${escapeHtml(step.expression)}</a>"""
+    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#$stepDefId" aria-expanded="true" aria-controls="$stepDefId">${escapeHtml(step.name)}</a>"""
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = s"""
                   <div id="$stepDefId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (stepDef.metaFile.isEmpty) """style="padding-left: 40px;"""" else ""}>

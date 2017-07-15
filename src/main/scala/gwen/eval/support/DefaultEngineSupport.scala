@@ -70,31 +70,36 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
     step.expression match {
 
-      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
+      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
         Settings.add(name, value)
+      }
         
-      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" =>
+      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
         env.featureScope.set(attribute, value)
+      }
 
       case r"""I wait ([0-9]+?)$duration second(?:s?)""" =>
         env.perform {
           Thread.sleep(duration.toLong * 1000)
         }
       
-      case r"""I execute system process "(.+?)"$$$systemproc""" =>
+      case r"""I execute system process "(.+?)"$$$systemproc""" => step.orDocString(systemproc) tap { systemproc =>
         env.perform {
           systemproc.! match {
             case 0 =>
-            case _ => systemProcessError(s"The call to $systemproc has failed.")
+            case _ => systemProcessError(s"The call to system process '$systemproc' has failed.")
           }
         }
-      case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
+      }
+
+      case r"""I execute a unix system process "(.+?)"$$$systemproc""" => step.orDocString(systemproc) tap { systemproc =>
         env.perform {
           Seq("/bin/sh", "-c", systemproc).! match {
             case 0 =>
-            case _ => systemProcessError(s"The call to $systemproc has failed.")
+            case _ => systemProcessError(s"The call to system process '$systemproc' has failed.")
           }
         }
+      }
 
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
@@ -117,7 +122,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
         env.featureScope.set(name, result)
 
-      case r"""I capture (.+?)$source as (.+?)$attribute""" =>
+      case r"""I capture (.+?)$source as (.+?)$$$attribute""" =>
         val value = env.getBoundReferenceValue(source)
         env.featureScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
@@ -143,32 +148,36 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
         env.featureScope.set(attribute, result)
 
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         attrType match {
           case "javascript" => env.activeScope.set(s"$attribute/javascript", expression)
           case "system process" => env.activeScope.set(s"$attribute/sysproc", expression)
           case "file" => env.activeScope.set(s"$attribute/file", expression)
           case _ => env.featureScope.set(attribute, Settings.get(expression))
         }
+      }
 
-      case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         env.activeScope.set(s"$attribute/xpath/source", source)
         env.activeScope.set(s"$attribute/xpath/targetType", targetType)
         env.activeScope.set(s"$attribute/xpath/expression", expression)
+      }
 
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         env.activeScope.set(s"$attribute/regex/source", source)
         env.activeScope.set(s"$attribute/regex/expression", expression)
+      }
 
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         env.activeScope.set(s"$attribute/json path/source", source)
         env.activeScope.set(s"$attribute/json path/expression", expression)
+      }
 
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
         env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
         env.activeScope.set(s"$attribute/sql/dbName", dbName)
 
-      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" =>
+      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val src = env.activeScope.get(source)
         env.perform {
           val actual = matcher match {
@@ -179,14 +188,16 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           val result = env.compare(expression, actual, operator, negate)
           assert(result, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$operator '$expression' but got '$actual'")
         }
+      }
 
-      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" =>
+      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val actualValue = env.getBoundReferenceValue(attribute)
         env.perform {
           val negate = Option(negation).isDefined
           val result = env.compare(expression, actualValue, operator, negate)
           assert(result, s"Expected $attribute to ${if(negate) "not " else ""}$operator '$expression' but got '$actualValue'")
         }
+      }
 
       case r"""(.+?)$attribute should be absent""" =>
         env.perform {

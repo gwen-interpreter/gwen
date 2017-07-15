@@ -33,7 +33,7 @@ trait RegexSupport {
     * @throws gwen.errors.RegexException if the regex fails to evaluate
     */
   def extractByRegex(regex: String, source: String): String =
-    evaluate(s"dryRun[regex:$regex") {
+    evaluate("$[dryRun:regex]") {
       regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
     }
     

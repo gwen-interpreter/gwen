@@ -1,3 +1,9 @@
+2.8.0
+=====
+Jul 14, 2017
+- Add support for DocStrings
+- Evaluate all javascript expressions in anonymous function block
+
 2.7.3
 =====
 Jul 11, 2017

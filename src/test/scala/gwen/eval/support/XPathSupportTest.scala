@@ -81,7 +81,7 @@ class XPathSupportTest extends FlatSpec with Matchers {
 
   "match in dry run" should "not evalaute" in {
     val support: XPathSupport = new EnvContext(GwenOptions(dryRun = true), new ScopedDataStack())
-    support.evaluateXPath("root", XmlSource, support.XMLNodeType.node) should be ("dryRun[xpath:root]")
+    support.evaluateXPath("root", XmlSource, support.XMLNodeType.node) should be ("$[dryRun:xpath]")
   }
   
   private def compact(source: String): String = source.replace("\r", "").split('\n').map(_.trim()).mkString

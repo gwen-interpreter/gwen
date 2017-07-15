@@ -29,7 +29,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
 
   private val parse = parseFeatureSpec(_: String)
 
-  private val featureString = """
+  private val featureString = s"""
    
      @wip
      Feature: Gwen
@@ -75,7 +75,14 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
          Then the word should match the number
          | one   | 1 |
          | two   | 2 |
-         | three | 3 |"""
+         | three | 3 |
+
+    Scenario: Multiline DocString
+        Given my line is
+              ${"\"\"\""}
+              Gwen is a Gherkin interpreter that turns
+              Given-When-Then steps into automation instructions.
+              ${"\"\"\""}"""
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     
@@ -121,7 +128,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
   "pretty print of parsed Gwen feature" should "not be normalised" in {
     
     val specFeature = parse(featureString).get
-    prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
+    prettyPrint(specFeature).replace("\r", "") should be (s"""   @wip
    Feature: Gwen
             As a tester
             I want to automate tests
@@ -165,14 +172,21 @@ Background: The butterfly effect
        Then the word should match the number
             | one   | 1 |
             | two   | 2 |
-            | three | 3 |""".replace("\r", ""))
+            | three | 3 |
+
+  Scenario: Multiline DocString
+      Given my line is
+            ${"\"\"\""}
+            Gwen is a Gherkin interpreter that turns
+            Given-When-Then steps into automation instructions.
+            ${"\"\"\""}""".replace("\r", ""))
     
   }
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
     val specFeature = normalise(parse(featureString).get, None, None)
-    prettyPrint(specFeature).replace("\r", "") should be ("""   @wip
+    prettyPrint(specFeature).replace("\r", "") should be (s"""   @wip
    Feature: Gwen
             As a tester
             I want to automate tests
@@ -242,7 +256,20 @@ Background: The butterfly effect
        Then the word should match the number
             | one   | 1 |
             | two   | 2 |
-            | three | 3 |""".replace("\r", ""))
+            | three | 3 |
+
+Background: The butterfly effect
+            Sensitivity to initial conditions
+      Given a deterministic nonlinear system
+       When a small change is initially applied
+       Then a large change will eventually result
+
+  Scenario: Multiline DocString
+      Given my line is
+            ${"\"\"\""}
+            Gwen is a Gherkin interpreter that turns
+            Given-When-Then steps into automation instructions.
+            ${"\"\"\""}""".replace("\r", ""))
 
   }
     
