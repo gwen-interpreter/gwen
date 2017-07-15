@@ -1,8 +1,9 @@
 2.8.0
 =====
-Jul 14, 2017
+Jul 15, 2017
 - Add support for DocStrings
 - Evaluate all javascript expressions in anonymous function block
+- Add paste mode to REPL to support multiline step evaluation (steps with tables or docStrings)
 
 2.7.3
 =====

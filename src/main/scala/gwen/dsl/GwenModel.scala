@@ -128,7 +128,7 @@ case class Feature(tags: List[Tag], name: String, description: List[String]) ext
   override def toString: String = name
 }
 object Feature {
-  final val keyword = "Feature"
+  final val keyword = FeatureKeyword.Feature.toString
   def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
@@ -156,7 +156,7 @@ case class Background(name: String, description: List[String], steps: List[Step]
 }
 
 object Background {
-  final val keyword = "Background"
+  final val keyword = FeatureKeyword.Background.toString
   def apply(background: gherkin.ast.Background): Background = 
     Background(
       background.getName,
@@ -193,8 +193,8 @@ case class Scenario(
   def keyword: String =
     if(isForEach) Tag.ForEachTag.name
     else if (isStepDef) Tag.StepDefTag.name
-    else if (!isOutline) "Scenario"
-    else "Scenario Outline"
+    else if (!isOutline) FeatureKeyword.Scenario.toString
+    else FeatureKeyword.`Scenario Outline`.toString
 
   /**
     * Returns a list containing all the background steps (if any) followed by 
@@ -271,7 +271,7 @@ case class Examples(name: String, description: List[String], table: List[(Int, L
 }
 
 object Examples {
-  final val keyword = "Examples"
+  final val keyword = FeatureKeyword.Examples.toString
   def apply(examples: gherkin.ast.Examples, index: Int): Examples = {
     val header = examples.getTableHeader
     if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
@@ -393,7 +393,7 @@ object Step {
       (ds.getLocation.getLine, ds.getContent, Option(ds.getContentType))
     }
     new Step(
-      StepKeyword.names(step.getKeyword.trim),
+      StepKeyword.withName(step.getKeyword.trim),
       step.getText,
       table = dataTable,
       docString = docString

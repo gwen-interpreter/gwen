@@ -218,6 +218,7 @@ object Predefs extends LazyLogging {
     def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
     def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
     def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
+    def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
 
     def resolveParams(source: String, params: List[(String, String)]): String = {
       params match {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2017 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package gwen.eval
 
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
+import gwen.Predefs.Formatting.padTailLines
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
 
@@ -26,7 +27,7 @@ import scala.collection.mutable
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
   * Attributes are stored as name value pairs in a as a list of tuples that
-  * look like this (in JSON form):
+  * look like this:
   *
   * {{{
   * {
@@ -50,8 +51,6 @@ import scala.collection.mutable
   * When an attribute is looked up, its most recent (latest) entry is
   * returned. For example, if the scope contains two attribute entries with
   * the same name, then the value of the second entry is returned.
-  * 
-   * Data attributes are internally stored in immutable JSON data structures.
   * 
   * @author Branko Juric
   * 
@@ -226,10 +225,9 @@ class ScopedData(val scope: String) extends LazyLogging {
            case Nil => " }"
            case _ => s"""${allAtts map resolveNVP map {
              case (n, v) =>
-               s"""|
-                   |${padding}  $n : ${if(v == null) String.valueOf(v) else s""""$v""""}""".stripMargin
+               s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
            } mkString}
-           |${padding}}"""
+           |$padding}"""
          }}""".stripMargin
   }
 

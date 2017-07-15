@@ -309,7 +309,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   "StepDef names" should "not start with a keyword" in {
     val env = newEnv
-    StepKeyword.literals foreach { keyword =>
+    StepKeyword.names foreach { keyword =>
       val stepdef = Scenario(List(Tag("StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
       intercept[InvalidStepDefException] {
         env.addStepDef(stepdef)

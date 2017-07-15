@@ -118,7 +118,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     * @param stepDef the step definition to add
     */
   def addStepDef(stepDef: Scenario) {
-    StepKeyword.literals foreach { keyword => 
+    StepKeyword.names foreach { keyword =>
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
