@@ -20,15 +20,12 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ScriptSupportTest extends FlatSpec with Matchers with ScriptSupport {
 
-  "JavaScript" should "coerce result" in {
+  "JavaScript" should "execute" in {
 
-    val intResult: Int = evaluateJavaScript("2*2")
+    val intResult = evaluateJS("2*2")
     intResult should be(4)
 
-    val booleanResult: Boolean = evaluateJavaScript("1 == 2")
-    booleanResult should be(false)
-
-    val date: String = evaluateJavaScript(
+    val date = evaluateJS(
       """(function() {
         |  var d = new Date(2017, 6, 8);
         |  return d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();
@@ -36,16 +33,23 @@ class ScriptSupportTest extends FlatSpec with Matchers with ScriptSupport {
     date should be ("8/6/2017")
   }
 
+  "JavaScript predicate" should "execute" in {
+
+    evaluateJSPredicate("1 == 2") should be(false)
+    evaluateJSPredicate("1 == 1") should be(true)
+
+  }
+
   "JavaScript explicit conversion" should "work" in {
 
-    evaluateJavaScript("'howdy'").asInstanceOf[String] should be ("howdy")
-    evaluateJavaScript("5").toString should be ("5")
+    evaluateJS("'howdy'").asInstanceOf[String] should be ("howdy")
+    evaluateJS("5").toString should be ("5")
 
   }
 
   "JavaScript date" should "work" in {
 
-    Option(evaluateJavaScript("new Date()").toString) should not be (None)
+    Option(evaluateJS("new Date()").toString) should not be (None)
 
   }
   

@@ -293,7 +293,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")
           evaluate("$[dryRun:javascript]") {
-            Option(evaluateJS(jsReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
+            Option(evaluateJS(formatJSReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
           }
         else if (n.startsWith(s"$name/xpath")) {
           val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
@@ -358,33 +358,6 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     }
     if (!negate) res else !res
   }
-
-  /**
-    * Formats the given javascript expression in preparation for execute and return
-    * (this implementation returns the javascript expression 'as is' since it uses the Java script engine
-    * which does not require a 'return ' prefix, but subclasses can override it to include the prefix if necessary).
-    *
-    * @param javascript the javascript function
-    */
-  def jsReturn(javascript: String) = javascript
-
-  /**
-    * Executes a javascript expression using the Java script engine interface.
-    *
-    * @param javascript the script expression to execute
-    * @param params optional parameters to the script
-    * @param takeScreenShot true to take screenshot after performing the function
-    */
-  def evaluateJS(javascript: String, params: Any*)(implicit takeScreenShot: Boolean = false): Any = evaluateJavaScript(javascript)
-
-  /**
-    * Evaluates a javascript predicate.
-    *
-    * @param javascript the script predicate expression to execute
-    * @param params optional parameters to the script
-    */
-  def evaluateJSPredicate(javascript: String, params: Any*): Boolean =
-    evaluateJS(jsReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
   
 }
 
