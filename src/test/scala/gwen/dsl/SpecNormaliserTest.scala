@@ -24,7 +24,7 @@ import gwen.eval.DataRecord
 class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
   }
 
   object Scenario {

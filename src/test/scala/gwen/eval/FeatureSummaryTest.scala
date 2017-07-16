@@ -26,7 +26,7 @@ import java.util.Date
 class FeatureSummaryTest extends FlatSpec with Matchers {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
   }
 
   object Scenario {

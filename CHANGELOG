@@ -4,6 +4,7 @@ Jul 17, 2017
 - Add support for DocStrings
 - Evaluate all javascript expressions in anonymous function block and move to ScriptSupport class
 - Add paste mode to REPL to support multiline step evaluation (steps with tables or docStrings)
+- Add Gherkin language header to Gwen model
 
 2.7.3
 =====

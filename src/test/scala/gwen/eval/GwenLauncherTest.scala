@@ -35,7 +35,7 @@ import java.util.Date
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature(Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
   }
 
   object Scenario {
@@ -58,16 +58,16 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with no given env context" should "create one and close it but not reset it" in {
     
-    val dir1 = createDir("dir1");
-    val feature1 = createFile("dir1/file1.feature");
+    val dir1 = createDir("dir1")
+    val feature1 = createFile("dir1/file1.feature")
     
     val options = GwenOptions(features = List(dir1), parallel = true)
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature1, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature1, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -80,16 +80,16 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with given env context" should "reset it when done but not close it" in {
     
-    val dir2 = createDir("dir2");
-    val feature2 = createFile("dir2/file2.feature");
+    val dir2 = createDir("dir2")
+    val feature2 = createFile("dir2/file2.feature")
     
     val options = GwenOptions(features = List(dir2))
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature2, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature2, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -102,9 +102,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with given meta" should "load it" in {
     
-    val dir3 = createDir("dir3");
-    val feature3 = createFile("dir3/file3.feature");
-    val meta3 = createFile("dir3/file3.meta");
+    val dir3 = createDir("dir3")
+    val feature3 = createFile("dir3/file3.feature")
+    val meta3 = createFile("dir3/file3.meta")
     
     val options = GwenOptions(features = List(dir3), parallel = true)
     
@@ -118,8 +118,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val metas = UserOverrides.addUserMeta(List(meta3))
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -132,10 +132,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with given meta dir" should "load it" in {
     
-    val dir3 = createDir("dir3");
-    val feature3 = createFile("dir3/file3.feature");
-    val metadir = createDir("dir3/meta");
-    val meta3 = createFile("dir3/meta/file3.meta");
+    val dir3 = createDir("dir3")
+    val feature3 = createFile("dir3/file3.feature")
+    val metadir = createDir("dir3/meta")
+    val meta3 = createFile("dir3/meta/file3.meta")
     
     val options = GwenOptions(features = List(dir3), parallel = true, metas = List(metadir))
     
@@ -149,8 +149,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val metas = UserOverrides.addUserMeta(List(meta3))
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature3, metas, None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -164,10 +164,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   "test launcher with duplicate meta" should "should not load duplicate" in {
     
     val dir31 = createDir("dir31")
-    val dirmeta32 = createDir("dirmeta32");
-    val feature3 = createFile("dir31/file3.feature");
-    val meta31 = createFile("dir31/file31.meta");
-    val meta32 = createFile("dirmeta32/file32.meta");
+    val dirmeta32 = createDir("dirmeta32")
+    val feature3 = createFile("dir31/file3.feature")
+    val meta31 = createFile("dir31/file31.meta")
+    val meta32 = createFile("dirmeta32/file32.meta")
     
     val options = GwenOptions(features = List(dir31), parallel = true, metas=List(meta31, meta32))
     
@@ -180,8 +180,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature3, UserOverrides.addUserMeta(options.metas), None), Nil, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature3, UserOverrides.addUserMeta(options.metas), None), Nil, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
@@ -194,9 +194,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with given meta that throws exception in interactive mode" should "error" in {
     
-    val dir4 = createDir("dir4");
-    val feature4 = createFile("dir4/file4.feature");
-    val meta4 = createFile("dir4/file4.meta");
+    val dir4 = createDir("dir4")
+    val feature4 = createFile("dir4/file4.feature")
+    val meta4 = createFile("dir4/file4.meta")
     
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
@@ -209,8 +209,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature4, UserOverrides.addUserMeta(List(meta4)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature4, UserOverrides.addUserMeta(List(meta4)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     try {
       launcher(mockInterpreter).run(options, Some(mockEnv))
@@ -226,9 +226,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with given meta that throws exception in batch mode" should "return fail status" in {
     
-    val dir5 = createDir("dir5");
-    val feature5 = createFile("dir5/file5.feature");
-    val meta5 = createFile("dir5/file5.meta");
+    val dir5 = createDir("dir5")
+    val feature5 = createFile("dir5/file5.feature")
+    val meta5 = createFile("dir5/file5.meta")
     
     val options = GwenOptions(batch = true, parallel = true, features = List(dir5))
     
@@ -242,8 +242,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature5, UserOverrides.addUserMeta(List(meta5)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature5, UserOverrides.addUserMeta(List(meta5)), None), Nil, mockEnv)).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
 
@@ -256,12 +256,12 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with html reporting" should "generate html reports" in {
     
-    val dir6 = createDir("dir6");
-    val feature6a = createFile("dir6/file6a.feature");
-    val feature6b = createFile("dir6/file6b.feature");
-    val dir7 = createDir("dir7");
-    val feature7a = createFile("dir7/file7a.feature");
-    val reportDir = createDir("report");
+    val dir6 = createDir("dir6")
+    val feature6a = createFile("dir6/file6a.feature")
+    val feature6b = createFile("dir6/file6b.feature")
+    val dir7 = createDir("dir7")
+    val feature7a = createFile("dir7/file7a.feature")
+    val reportDir = createDir("report")
     
     val options = GwenOptions(features = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir), reportFormats = List(ReportFormat.html))
     
@@ -291,10 +291,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockInterpreter.implName).thenReturn("gwen")
     when(mockInterpreter.implVersion).thenReturn("-SNAPSHOT")
     when(mockInterpreter.releaseNotesUrl).thenReturn(None)
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, None, Nil, new Date(), new Date())))
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature6b, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, None, Nil, new Date(), new Date())))
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature7a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature7A, None, Nil, new Date(), new Date())))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature6a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6A, None, Nil, new Date(), new Date())))
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature6b, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature6B, None, Nil, new Date(), new Date())))
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature7a, UserOverrides.addUserMeta(Nil), None), Nil, mockEnv)).thenReturn(Some(new FeatureResult(feature7A, None, Nil, new Date(), new Date())))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -313,8 +313,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   
   "test launcher with filter tags" should "apply the filters at interpreter level" in {
     
-    val dir8 = createDir("dir8");
-    val feature8 = createFile("dir8/file8.feature");
+    val dir8 = createDir("dir8")
+    val feature8 = createFile("dir8/file8.feature")
     val tagFilters = List((Tag("wip"), true))
     
     val options = GwenOptions(features = List(dir8), parallel = true, tags = tagFilters)
@@ -322,8 +322,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
-    when(mockInterpreter.initialise(options)).thenReturn(mockEnv);
-    when(mockInterpreter.interpretFeature(new FeatureUnit(feature8, UserOverrides.addUserMeta(Nil), None), tagFilters, mockEnv)).thenReturn(Some(featureResult))
+    when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
+    when(mockInterpreter.interpretFeature(FeatureUnit(feature8, UserOverrides.addUserMeta(Nil), None), tagFilters, mockEnv)).thenReturn(Some(featureResult))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     

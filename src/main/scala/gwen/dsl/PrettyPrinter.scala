@@ -42,8 +42,8 @@ object prettyPrint {
         formatStatus(spec.evalStatus) +
         background.map(apply).getOrElse("") +
         printAll(scenarios.map(apply), "", "")
-    case Feature(tags, name, description) =>
-      s"${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
+    case Feature(language, tags, name, description) =>
+      s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
     case background @ Background(name, description, steps) =>
       s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, name, description, background, steps, isOutline, examples, _) =>

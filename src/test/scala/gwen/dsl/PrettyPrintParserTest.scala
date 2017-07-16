@@ -29,8 +29,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
 
   private val parse = parseFeatureSpec(_: String)
 
-  private val featureString = s"""
-   
+  private val featureString = s"""# language: en
      @wip
      Feature: Gwen
               As a tester
@@ -91,7 +90,7 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
     
     ast2 match {
       case Success(featureSpec) => 
-        featureSpec.feature should be (Feature(List(Tag("wip")), "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        featureSpec.feature should be (Feature("en", List(Tag("wip")), "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         featureSpec.background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"),
             List(

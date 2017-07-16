@@ -49,7 +49,13 @@ trait SpecNormaliser {
       }
     }
     FeatureSpec(
-      dataRecord.map(record => Feature(spec.feature.tags, s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}", spec.feature.description)).getOrElse(spec.feature), 
+      dataRecord map { record =>
+        Feature(
+          spec.feature.language,
+          spec.feature.tags,
+          s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}",
+          spec.feature.description)
+      } getOrElse spec.feature,
       None, 
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
       featureFile

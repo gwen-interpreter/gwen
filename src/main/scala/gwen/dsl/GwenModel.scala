@@ -118,19 +118,21 @@ object FeatureSpec {
 /**
   * Captures a gherkin feature node.
   *
+  * @param language the language identifier (example: en for English)
   * @param tags list of tags
   * @param name the feature name
   * @param description optional description
   *
   * @author Branko Juric
   */
-case class Feature(tags: List[Tag], name: String, description: List[String]) extends SpecNode {
+case class Feature(language: String, tags: List[Tag], name: String, description: List[String]) extends SpecNode {
   override def toString: String = name
 }
 object Feature {
   final val keyword = FeatureKeyword.Feature.toString
   def apply(feature: gherkin.ast.Feature): Feature =
     Feature(
+      feature.getLanguage,
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
       feature.getName, 
       Option(feature.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct
