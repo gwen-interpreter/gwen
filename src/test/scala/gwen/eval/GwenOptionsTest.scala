@@ -49,14 +49,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files or directories specified")
     }
     parseOptions(Array("--batch")) match {
       case Success(options) => { 
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files or directories specified")
     }
   }
   
@@ -84,14 +84,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files or directories specified")
     }
     parseOptions(Array("--dry-run")) match {
       case Success(options) => { 
         fail("expected failure but was successful")
       }
       case Failure(error) => 
-        error.getMessage should be ("No feature files and/or directories specified")
+        error.getMessage should be ("No feature files or directories specified")
     }
   }
   
@@ -685,7 +685,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
-    GwenOptions(MathInterpreter.getClass, args)
+    GwenOptions(args)
   }
     
   private def assertOptions(

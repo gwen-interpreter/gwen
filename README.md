@@ -103,7 +103,7 @@ This software is open sourced under the
 
 See also: [LICENSE](LICENSE)
 
-This project has dependencies on other open source projects. All distributed third party depdendencies and their licenses are listed in the
+This project has dependencies on other open source projects. All distributed third party dependencies and their licenses are listed in the
 [LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
 
 Open sourced 14 May 2014 09:30 pm AEST

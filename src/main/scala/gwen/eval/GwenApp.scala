@@ -26,12 +26,17 @@ import gwen.Predefs.Kestrel
 class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     
   printBanner("Welcome to ")
+  println()
 
   try {
-    System.exit(run(GwenOptions(interpreter.getClass, args)))
+    System.exit(run(GwenOptions(args)))
   } catch {
+    case ie: gwen.errors.InvocationException =>
+      System.err.println(ie.getMessage)
+      System.exit(1)
     case e: Throwable =>
       e.printStackTrace()
+      System.err.println(e.getMessage)
       System.exit(1)
   }
   
@@ -45,11 +50,11 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     val envOpt = if (options.batch) None else Some(interpreter.initialise(options))
     try {
       launcher.run(options, envOpt).exitCode tap { _ =>
-        envOpt foreach {
-          if (options.features.nonEmpty || options.metas.nonEmpty) {
+        envOpt foreach { env =>
+          if (options.features.nonEmpty || env.loadedMeta.nonEmpty) {
             printBanner("")
           }
-          createRepl(_).run() 
+          createRepl(env).run()
         }
       }
     } finally {
@@ -65,15 +70,14 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
   private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
   private def printBanner(intro: String) {
-    println(("""|                                   
-                |   __ ___      _____ _ __     _    
-                |  / _` \ \ /\ / / _ \ '_ \   { \," 
-                | | (_| |\ V  V /  __/ | | | {_`/   
-                |  \__, | \_/\_/ \___|_| |_|   `    
-                |  |___/                            
-                |                                   
-                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """
-                |""").stripMargin)
+    println(("""|
+                |   __ ___      _____ _ __     _
+                |  / _` \ \ /\ / / _ \ '_ \   { \,"
+                | | (_| |\ V  V /  __/ | | | {_`/
+                |  \__, | \_/\_/ \___|_| |_|   `
+                |  |___/
+                |
+                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin)
   }
   
 }

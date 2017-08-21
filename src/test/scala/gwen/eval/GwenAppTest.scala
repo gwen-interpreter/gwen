@@ -45,6 +45,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
+    when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
     when(mockLauncher.run(options, Some(mockEnv))).thenReturn(Passed(1))
     
@@ -80,6 +81,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val mockRepl = mock[GwenREPL[EnvContext]]
     val app = createApp(options, mockInterpreter, mockRepl)
+    when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockInterpreter.initialise(options)).thenReturn(mockEnv)
     when(mockLauncher.run(options, Some(mockEnv))).thenReturn(Passed(1))
     

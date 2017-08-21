@@ -71,12 +71,11 @@ object GwenOptions {
   
   /**
     * Creates a new options object from the given command line arguments.
-    * 
-    * @param interpreterClass the interpreter implementation class
+    *
     * @param args the command line arguments
     * @throws gwen.errors.InvocationException if the given arguments fail to parse
     */
-  def apply(interpreterClass: Class[_], args: Array[String]): GwenOptions = { 
+  def apply(args: Array[String]): GwenOptions = {
     
     val parser = new OptionParser[GwenOptions]("gwen") {
     
@@ -159,7 +158,7 @@ object GwenOptions {
     
     }
   
-    (parser.parse(args, GwenOptions()).map { options => 
+    (parser.parse(args, GwenOptions()).map { options =>
       new GwenOptions(
         options.batch,
         options.parallel,
@@ -175,7 +174,7 @@ object GwenOptions {
       } tap { options =>
         options foreach { opt =>
           if ((opt.batch || opt.dryRun) && opt.features.isEmpty) {
-            invocationError("No feature files and/or directories specified")
+            invocationError("No feature files or directories specified")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             invocationError("No report directory specified")

@@ -10,7 +10,7 @@ organizationHomepage := Some(url("http://gweninterpreter.org"))
 
 startYear := Some(2014)
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.3"
 
 crossPaths := false
 
@@ -34,9 +34,9 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "io.cucumber" % "gherkin" % "4.0.0"
+libraryDependencies += "io.cucumber" % "gherkin" % "4.1.3"
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
+libraryDependencies += "com.github.scopt" %% "scopt" % "3.6.0"
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.22"
 

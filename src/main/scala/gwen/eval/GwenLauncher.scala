@@ -64,7 +64,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             }
           } tap { _ =>
             if (options.features.nonEmpty) {
-              logger.info("No features found in specified files and/or directories!")
+              logger.warn("No features found in specified files and/or directories!")
             }
           }
       }
