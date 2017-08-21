@@ -177,6 +177,11 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
         env.activeScope.set(s"$attribute/sql/dbName", dbName)
 
+      case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" => step.orDocString(selectStmt) tap { selectStmt =>
+        env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
+        env.activeScope.set(s"$attribute/sql/dbName", dbName)
+      }
+
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val src = env.activeScope.get(source)
         env.perform {
