@@ -8,7 +8,10 @@ Aug 21, 2017
 - print REPL banner after meta load
 - use warn log level for case where no features were provided
 - Added support for binding SQL query using DocString syntax
-  - <attribute> <is|will be> defined in the <dbName> database by sql "<selectStmt>"
+  - <attribute> <is|will be> defined in the <dbName> database by sql
+      """
+      <selectStmt>
+      """
 
 2.8.0
 =====
