@@ -78,20 +78,20 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     }
   }
   
- "Options with dry run option and no files" should "fail" in {
+ "Options with dry run option and no files" should "be ok" in {
     parseOptions(Array("-n")) match {
-      case Success(options) => { 
-        fail("expected failure but was successful")
+      case Success(options) => {
+        assertOptions(options, dryRun = true)
       }
-      case Failure(error) => 
-        error.getMessage should be ("No feature files or directories specified")
+      case _ =>
+        fail("expected options but failed")
     }
     parseOptions(Array("--dry-run")) match {
       case Success(options) => { 
-        fail("expected failure but was successful")
+        assertOptions(options, dryRun = true)
       }
-      case Failure(error) => 
-        error.getMessage should be ("No feature files or directories specified")
+      case _ =>
+        fail("expected options but failed")
     }
   }
   

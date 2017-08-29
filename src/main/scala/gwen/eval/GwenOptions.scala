@@ -173,7 +173,7 @@ object GwenOptions {
         Some(args)) 
       } tap { options =>
         options foreach { opt =>
-          if ((opt.batch || opt.dryRun) && opt.features.isEmpty) {
+          if (opt.batch && opt.features.isEmpty) {
             invocationError("No feature files or directories specified")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
