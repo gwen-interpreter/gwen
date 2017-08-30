@@ -33,7 +33,9 @@ trait SQLSupport {
     * @param database the database name
     * @return the result of executing the SQL
     */
-  def evaluateSql(sql: String, database: String): String =
+  def evaluateSql(sql: String, database: String): String = {
+    val driverName = Settings.get(s"gwen.db.${database}.driver")
+    val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate("$[dryRun:sql]") {
       if (sql.trim().length() == 0) {
         sqlError("Cannot evaluate empty SQL statement")
@@ -43,8 +45,8 @@ trait SQLSupport {
       }
 
       try {
-        Class.forName(Settings.get(s"gwen.db.${database}.driver"))
-        val connection = DriverManager.getConnection(Settings.get(s"gwen.db.${database}.url"))
+        Class.forName(driverName)
+        val connection = DriverManager.getConnection(dbUrl)
         try {
           val stmt = connection.createStatement()
           try {
@@ -63,5 +65,6 @@ trait SQLSupport {
         case e: Exception => sqlError(s"Failed to evaluate SQL statement: ${sql}, reason is: ${e}")
       }
     }
+  }
                         
 }
