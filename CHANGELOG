@@ -4,6 +4,7 @@ Aug 31, 2017
 - Allow dry run in REPL mode
 - Check sql db properties on dry run
 - ensure that repeat while/until steps fail correctly if the terminating condition is not satisfied before timeout
+- Use filename as hyperlink in HTML report summary line if feature has no name
 
 2.9.0
 ======

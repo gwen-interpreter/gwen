@@ -29,6 +29,8 @@ import gwen.report.HtmlReportFormatter._
 import gwen.Predefs.Formatting._
 import gwen.Predefs.{DurationOps, Formatting}
 
+import scala.util.Try
+
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
 
@@ -388,20 +390,22 @@ trait HtmlReportFormatter extends ReportFormatter {
             </tr>"""} else ""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = s"""
+  private def formatSummaryLine(result: FeatureResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
+    val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.featureFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
+    s"""
                 <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>$seq</small></div>""").getOrElse("")}
                     <span style="padding-left: 15px; white-space: nowrap;"><small>${escapeHtml(result.finished.toString)}</small></span>
                   </div>
-                  <div class="col-md-4">${reportPath.fold(s"${escapeHtml(result.spec.feature.name)}") { rpath =>
-                    s"""<a class="text-${cssStatus(result.evalStatus.status)}" href="$rpath">${escapeHtml(result.spec.feature.name)}</a>"""}}
+                  <div class="col-md-4">${reportPath.fold(s"${escapeHtml(featureName)}") { rpath =>
+                    s"""<a class="text-${cssStatus(result.evalStatus.status)}" href="$rpath">${escapeHtml(featureName)}</a>"""}}
                   </div>
                   <div class="col-md-5">
                     <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
-
+  }
   private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String): String = s"""
         <li class="list-group-item list-group-item-${cssStatus(status)} ${if (status == StatusKeyword.Failed) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
