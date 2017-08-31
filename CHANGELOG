@@ -1,8 +1,9 @@
 2.9.1
 =====
-Aug 30, 2017
+Aug 31, 2017
 - Allow dry run in REPL mode
 - Check sql db properties on dry run
+- ensure that repeat while/until steps fail correctly if the terminating condition is not satisfied before timeout
 
 2.9.0
 ======
