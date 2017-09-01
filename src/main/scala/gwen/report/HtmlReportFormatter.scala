@@ -148,7 +148,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
     }
-          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else ""}
+          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
         </li>
       </ul>
       <div class="panel-body">${
@@ -412,7 +412,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
                   <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case stepDef if EvalStatus.isEvaluated(status) => formatStepDefDiv(stepDef, status, s"$stepId-stepDef")}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step) else if (step.table.nonEmpty) formatStepDataTable(step) else ""}
+                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ stepDef => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step) else if (step.table.nonEmpty) formatStepDataTable(step) else ""}
                 </div>
                 ${if (status == StatusKeyword.Failed && step.stepDef.isEmpty) s"""
                 <ul>

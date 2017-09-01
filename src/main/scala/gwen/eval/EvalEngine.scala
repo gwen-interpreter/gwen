@@ -189,7 +189,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           case Some(foreachStepDef) =>
             env.foreachStepDefs -= step.uniqueId
             val attachments = (env.attachments ::: foreachStepDef.attachments).sortBy(_._2.getName())
-            Step(evaluatedStep, foreachStepDef.evalStatus, attachments, foreachStepDef)
+            Step(evaluatedStep, if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), attachments, foreachStepDef)
           case _ =>
             val status = evaluatedStep.stepDef.map(_.evalStatus ).getOrElse {
               evaluatedStep.evalStatus match {
