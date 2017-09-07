@@ -387,6 +387,14 @@ class EnvContextTest extends FlatSpec with Matchers {
       env.getBoundReferenceValue("data[1][token]")
     }
   }
+
+  "scope with a blank attribute" should """yield Some("") for getOpt call""" in {
+    val env = newEnv
+    env.featureScope.set("x", "")
+    env.featureScope.set("x", "1")
+    env.featureScope.set("x", "")
+    env.getBoundReferenceValue("x") should be ("")
+  }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())
   

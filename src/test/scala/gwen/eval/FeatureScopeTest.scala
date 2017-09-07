@@ -124,4 +124,24 @@ class FeatureScopeTest extends FlatSpec with Matchers {
     scope.getOpt("Password") should be (None)
   }
 
+  "scope with a blank attribute" should """yield Some("") for getOpt call""" in {
+    val scope = new FeatureScope().set("userId", "")
+    scope.asString()    should be (
+      """scope : "feature" {
+        |  userId : ""
+        |}""".stripMargin)
+    scope.getOpt("userId") should be (Some(""))
+  }
+
+  "scope with a non blank attribute overridden to blank" should """yield Some("") for getOpt call""" in {
+    val scope = new FeatureScope().set("userId", "").set("userId", "gwen").set("userId", "")
+    scope.asString()    should be (
+      """scope : "feature" {
+        |  userId : ""
+        |  userId : "gwen"
+        |  userId : ""
+        |}""".stripMargin)
+    scope.getOpt("userId") should be (Some(""))
+  }
+
 }

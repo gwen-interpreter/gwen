@@ -1,3 +1,8 @@
+2.9.3
+=====
+Sep 7, 2017
+- Allow attributes in scoped data bindings to be overridden with blanks.
+
 2.9.2
 =====
 Sep 1, 2017

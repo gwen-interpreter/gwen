@@ -99,5 +99,25 @@ class ScopedDataTest extends FlatSpec with Matchers {
         |}""".stripMargin)
     scope.getAll("name") should be (Seq("todd", "gwen"))
   }
+
+  "scope with a blank attribute" should """yield Some("") for getOpt call""" in {
+    val scope = ScopedData("login").set("userId", "")
+    scope.asString()    should be (
+      """scope : "login" {
+        |  userId : ""
+        |}""".stripMargin)
+    scope.getOpt("userId") should be (Some(""))
+  }
+
+  "scope with a non blank attribute overridden to blank" should """yield Some("") for getOpt call""" in {
+    val scope = ScopedData("login").set("userId", "").set("userId", "gwen").set("userId", "")
+    scope.asString()    should be (
+      """scope : "login" {
+        |  userId : ""
+        |  userId : "gwen"
+        |  userId : ""
+        |}""".stripMargin)
+    scope.getOpt("userId") should be (Some(""))
+  }
   
 }
