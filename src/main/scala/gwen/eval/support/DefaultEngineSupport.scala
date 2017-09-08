@@ -101,6 +101,14 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
       }
 
+      case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        env.activeScope.set(s"$attribute/javascript", expression)
+        val value = env.getBoundReferenceValue(attribute)
+        env.featureScope.set(attribute, value tap { content =>
+          env.addAttachment(attribute, "txt", content)
+        })
+      }
+
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
         val result = env.evaluateXPath(expression, src, env.XMLNodeType.withName(targetType)) tap { content =>

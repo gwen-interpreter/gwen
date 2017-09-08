@@ -288,7 +288,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     */
   def getBoundReferenceValue(name: String): String = {
     val attScopes = scopes.visible.filterAtts{case (n, _) => n.startsWith(name)}
-    attScopes.findEntry { case (n, v) => n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""") && v != null } map {
+    attScopes.findEntry { case (n, v) => n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")} map {
       case (n, v) =>
         if (n == s"$name/text") v
         else if (n == s"$name/javascript")

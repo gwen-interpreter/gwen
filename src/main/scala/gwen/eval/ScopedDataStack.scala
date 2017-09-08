@@ -202,12 +202,14 @@ class ScopedDataStack() {
     * @return Some((name, value)) or None if no match is found
     */
   def findEntryIn(scope: String)(pred: ((String, String)) => Boolean): Option[(String, String)] =
-    scopes.toIterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
+    (scopes.toIterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
       case Some(value) => value
     } match {
       case None if !current.isFeatureScope =>
         featureScope.findEntry(pred)
       case x => x
+    }) filter {
+      case (_, v) => v != null
     }
 
   /**
