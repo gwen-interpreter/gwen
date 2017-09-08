@@ -329,7 +329,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     val env = newEnv
     env.featureScope.pushObject("greeting", "howdy")
     env.featureScope.pushObject("gwen", "interpreter")
-    env.featureScope.popObject("greeting")
+    env.featureScope.popObject("greeting") should be (Some("howdy"))
     env.featureScope.getObject("greeting") should be (None)
     env.featureScope.getObject("gwen") should be (Some("interpreter"))
   }
@@ -352,11 +352,11 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.featureScope.getObject("greeting") should be (Some("howdy"))
     env.featureScope.getObject("gwen") should be (Some("interpreter 2"))
 
-    env.featureScope.popObject("gwen")
+    env.featureScope.popObject("gwen") should be (Some("interpreter 2"))
     env.featureScope.getObject("greeting") should be (Some("howdy"))
     env.featureScope.getObject("gwen") should be (Some("interpreter 1"))
 
-    env.featureScope.popObject("gwen")
+    env.featureScope.popObject("gwen") should be (Some("interpreter 1"))
     env.featureScope.getObject("greeting") should be (Some("howdy"))
     env.featureScope.getObject("gwen") should be (None)
 
@@ -378,22 +378,40 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.getBoundReferenceValue("data[1][token]") should be ("2")
     env.featureScope.pushObject("record", new ScopedData("record").set("data[token]", "0"))
     env.getBoundReferenceValue("data[token]") should be ("0")
-    env.featureScope.popObject("record")
+    env.featureScope.popObject("record").isDefined should be (true)
     env.getBoundReferenceValue("data[1][token]") should be ("2")
-    env.featureScope.popObject("table")
+    env.featureScope.popObject("table").isDefined should be (true)
     env.getBoundReferenceValue("data[1][token]") should be ("1")
-    env.featureScope.popObject("table")
+    env.featureScope.popObject("table").isDefined should be (true)
     intercept[UnboundAttributeException] {
       env.getBoundReferenceValue("data[1][token]")
     }
   }
 
-  "scope with a blank attribute" should """yield Some("") for getOpt call""" in {
+  "scope with a blank attribute" should """yield blank for getBoundReferenceValue call""" in {
     val env = newEnv
     env.featureScope.set("x", "")
     env.featureScope.set("x", "1")
     env.featureScope.set("x", "")
     env.getBoundReferenceValue("x") should be ("")
+  }
+
+  "scope with a null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
+    val env = newEnv
+    env.featureScope.set("x", null)
+    intercept[UnboundAttributeException] {
+      env.getBoundReferenceValue("x")
+    }
+  }
+
+  "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
+    val env = newEnv
+    env.featureScope.set("x", "1")
+    env.getBoundReferenceValue("x") should be ("1")
+    env.featureScope.set("x", null)
+    intercept[UnboundAttributeException] {
+      env.getBoundReferenceValue("x")
+    }
   }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())

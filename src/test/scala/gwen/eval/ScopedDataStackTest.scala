@@ -620,5 +620,19 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scopes.findEntry { case (n, _) => n == "surname" }  should be (None)
     
   }
+
+  "scope with a null attribute" should """yield None for getOpt call""" in {
+    val scopes = new ScopedDataStack()
+    scopes.set("x", null)
+    scopes.getOpt("x") should be (None)
+  }
+
+  "scope with a null attribute overriding non null attribute" should """yield None for getOpt call""" in {
+    val scopes = new ScopedDataStack()
+    scopes.set("x", "1")
+    scopes.getOpt("x") should be (Some("1"))
+    scopes.set("x", null)
+    scopes.getOpt("x") should be (None)
+  }
   
 }

@@ -85,10 +85,18 @@ class FeatureScope extends ScopedData("feature") {
     *
     * @param name the name of the bound object to pop
     */
-  def popObject(name: String) {
+  def popObject(name: String): Option[Any] = {
     objectStack.get(name) match {
-      case Some(_::tail) if (tail.nonEmpty) => objectStack += (name -> tail)
-      case _ => objectStack -= name
+      case Some(head::tail) =>
+        if (tail.nonEmpty) {
+          objectStack += (name -> tail)
+        } else {
+          objectStack -= name
+        }
+        Option(head)
+      case obj =>
+        objectStack -= name
+        obj
     }
   }
 

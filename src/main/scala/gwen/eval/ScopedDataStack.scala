@@ -208,9 +208,7 @@ class ScopedDataStack() {
       case None if !current.isFeatureScope =>
         featureScope.findEntry(pred)
       case x => x
-    }) filter {
-      case (_, v) => v != null
-    }
+    })
 
   /**
     * Finds all entries in the current scope that match the given predicate.
