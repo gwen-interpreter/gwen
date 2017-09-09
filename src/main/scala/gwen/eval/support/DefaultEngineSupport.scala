@@ -102,8 +102,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
-        env.activeScope.set(s"$attribute/javascript", expression)
-        val value = env.getBoundReferenceValue(attribute)
+        val value = Option(env.evaluateJS(env.formatJSReturn(env.interpolate(expression)(env.getBoundReferenceValue)))).map(_.toString).orNull
         env.featureScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
