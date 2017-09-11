@@ -323,7 +323,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         else if (n.startsWith(s"$name/sql")) {
           val selectStmt = interpolate(attScopes.get(s"$name/sql/selectStmt"))(getBoundReferenceValue)
           val dbName = interpolate(attScopes.get(s"$name/sql/dbName"))(getBoundReferenceValue)
-          evaluateSql(selectStmt, dbName)
+          executeSQLQuery(selectStmt, dbName)
         }
         else v
     } getOrElse {

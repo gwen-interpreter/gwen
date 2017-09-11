@@ -27,13 +27,13 @@ trait SQLSupport {
   this: EnvContext =>
 
   /**
-    * Evaluates an SQL query against a database and returns the result.
+    * Evaluates an SQL query against a database and returns the first column value of the first row in the result.
     * 
     * @param sql the SQL statement to execute
     * @param database the database name
-    * @return the result of executing the SQL
+    * @return the first column value of the first row in the result
     */
-  def evaluateSql(sql: String, database: String): String = {
+  def executeSQLQuery(sql: String, database: String): String = {
     val driverName = Settings.get(s"gwen.db.${database}.driver")
     val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate("$[dryRun:sql]") {
@@ -50,7 +50,7 @@ trait SQLSupport {
         try {
           val stmt = connection.createStatement()
           try {
-            val result = connection.createStatement().executeQuery(sql)
+            val result = stmt.executeQuery(sql)
             if (result.next) {
               result.getString(1)
             }
@@ -62,7 +62,44 @@ trait SQLSupport {
           connection.close()
         }
       } catch {
-        case e: Exception => sqlError(s"Failed to evaluate SQL statement: ${sql}, reason is: ${e}")
+        case e: Exception => sqlError(s"Failed to run SQL query: ${sql}, reason is: ${e}")
+      }
+    }
+  }
+
+  /**
+    * Executes an SQL update statement against a database and returns the number of rows affected.
+    *
+    * @param sql the SQL update statement to execute
+    * @param database the database name
+    * @return the number of rows affected (as a string)
+    */
+  def executeSQLUpdate(sql: String, database: String): Int = {
+    val driverName = Settings.get(s"gwen.db.${database}.driver")
+    val dbUrl = Settings.get(s"gwen.db.${database}.url")
+    evaluate(0) {
+      if (sql.trim().length() == 0) {
+        sqlError("Cannot execute empty SQL statement")
+      }
+      if (database.trim().length() == 0) {
+        sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
+      }
+
+      try {
+        Class.forName(driverName)
+        val connection = DriverManager.getConnection(dbUrl)
+        try {
+          val stmt = connection.createStatement()
+          try {
+            return stmt.executeUpdate(sql)
+          } finally {
+            stmt.close()
+          }
+        } finally {
+          connection.close()
+        }
+      } catch {
+        case e: Exception => sqlError(s"Failed to run SQL update statement: ${sql}, reason is: ${e}")
       }
     }
   }

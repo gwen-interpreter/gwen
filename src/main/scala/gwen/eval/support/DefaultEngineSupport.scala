@@ -212,12 +212,23 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
+        Settings.get(s"gwen.db.${dbName}.driver")
+        Settings.get(s"gwen.db.${dbName}.url")
         env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
         env.activeScope.set(s"$attribute/sql/dbName", dbName)
 
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" => step.orDocString(selectStmt) tap { selectStmt =>
+        Settings.get(s"gwen.db.${dbName}.driver")
+        Settings.get(s"gwen.db.${dbName}.url")
         env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
         env.activeScope.set(s"$attribute/sql/dbName", dbName)
+      }
+
+      case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" => step.orDocString(updateStmt) tap { updateStmt =>
+        Settings.get(s"gwen.db.${dbName}.driver")
+        Settings.get(s"gwen.db.${dbName}.url")
+        val rowsAffected = env.executeSQLUpdate(updateStmt, dbName)
+        env.activeScope.set(s"$dbName rows affected", rowsAffected.toString)
       }
 
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
