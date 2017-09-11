@@ -101,7 +101,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] = 
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
-      val dataRecord = unit.dataRecord 
+      val dataRecord = unit.dataRecord
+      dataRecord foreach { rec =>
+        env.featureScope.set("data record number", rec.recordNo.toString)
+      }
       parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
         case Success(featureSpec) =>
           if (featureFile.getName.endsWith(".meta")) {

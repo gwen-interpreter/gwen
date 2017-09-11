@@ -130,7 +130,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     */
   def evaluateStep(step: Step, env: T): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
-    val iStep = doEvaluate(step, env, failOnError = false) { env.interpolate }
+    val iStep = doEvaluate(step, env) { env.interpolate }
     logger.info(s"Evaluating Step: $iStep")
     var isPriority = false
     val pStep = doEvaluate(iStep, env) { s =>
@@ -170,6 +170,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         iStep
       }
     }) tap { step =>
+      step.evalStatus match {
+        case failure @ Failed(_, _) => env.fail(failure)
+        case _ => // noop
+
+      }
       logStatus("Step", step.toString, step.evalStatus)
     }
   }
@@ -181,7 +186,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param env the environment context
     * @param evalFunction the step evaluation function
     */
-  private def doEvaluate(step: Step, env: T, failOnError: Boolean = true)(evalFunction: (Step) => Step): Step = {
+  private[eval] def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     (Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
@@ -193,10 +198,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           case _ =>
             val status = evaluatedStep.stepDef.map(_.evalStatus ).getOrElse {
               evaluatedStep.evalStatus match {
-                case Failed(_, error) =>
-                  Failed(System.nanoTime - start, error) tap { failure =>
-                    if (failOnError) env.fail(failure)
-                  }
+                case Failed(_, error) => Failed(System.nanoTime - start, error)
                 case _ => Passed(System.nanoTime - start)
               }
             }
@@ -204,7 +206,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         }
       case Failure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
-        if (failOnError) env.fail(failure)
         Step(step, failure, env.attachments)
     }) tap { _ =>
       env.resetAttachments()
@@ -295,21 +296,32 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         case elems =>
           val noOfElements = elems.size
           logger.info(s"For-each[$element]: $noOfElements found")
-          elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
-            env.featureScope.pushObject(element, currentElement)
-            (try {
-              EvalStatus(acc.map(_.evalStatus)) match {
-                case Failed(_, _) if env.evaluate(false) { GwenSettings.`gwen.feature.failfast` } =>
-                  logger.info(s"Skipping [$element] ${index + 1} of $noOfElements")
-                  Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep, Skipped)
+          try {
+            elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
+              val elementNumber = index + 1
+              currentElement match {
+                case stringValue: String =>
+                  env.featureScope.set(element, stringValue)
                 case _ =>
-                  logger.info(s"Processing [$element] ${index + 1} of $noOfElements")
-                  evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
+                  env.featureScope.pushObject(element, currentElement)
               }
-            } finally {
-              env.featureScope.popObject(element)
-            }) :: acc
-          } reverse
+              env.featureScope.set(s"$element number", elementNumber.toString)
+              (try {
+                EvalStatus(acc.map(_.evalStatus)) match {
+                  case Failed(_, _) if env.evaluate(false) { GwenSettings.`gwen.feature.failfast` } =>
+                    logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
+                    Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep, Skipped)
+                  case _ =>
+                    logger.info(s"Processing [$element] $elementNumber of $noOfElements")
+                    evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
+                }
+              } finally {
+                env.featureScope.popObject(element)
+              }) :: acc
+            } reverse
+          } finally {
+            env.featureScope.set(s"$element number", null)
+          }
       }
     val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), element, Nil, None, steps, false, Nil, None)
     env.foreachStepDefs += (step.uniqueId -> foreachStepDef)

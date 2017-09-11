@@ -94,9 +94,10 @@ class FeatureScope extends ScopedData("feature") {
           objectStack -= name
         }
         Option(head)
-      case obj =>
+      case obj @ Some(_) =>
         objectStack -= name
         obj
+      case _ => None
     }
   }
 

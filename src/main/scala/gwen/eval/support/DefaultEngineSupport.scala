@@ -19,12 +19,13 @@ package gwen.eval.support
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import gwen.Predefs.RegexContext
-import gwen.dsl.{FlatTable, Step}
-import gwen.eval.{EnvContext, EvalEngine, ScopedData}
+import gwen.dsl.{FlatTable, Passed, Step}
+import gwen.eval.{EnvContext, EvalEngine}
 import gwen.errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
 
+import scala.io.Source
 import scala.util.Try
 
 /** Provides the common default steps that all engines can support. */
@@ -38,11 +39,11 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     * @param step the step to evaluate
     * @param env the environment context
     */
-  override def evaluatePriority(step: Step, env: T): Option[Step] = {
+  override def evaluatePriority(step: Step, env: T): Option[Step] = Option {
 
     step.expression match {
 
-      case r"""(.+?)$doStep for each data record""" =>
+      case r"""(.+?)$doStep for each data record""" => doEvaluate(step, env) { _ =>
         val dataTable = env.featureScope.getObject("table") match {
           case Some(table: FlatTable) => table
           case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
@@ -52,9 +53,39 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           dataTable.records.indices.map(idx => dataTable.recordScope(idx))
         }
         foreach(records, "record", step, doStep, env)
-        Some(step)
+      }
 
-      case _ => None
+      case r"""(.+?)$doStep for each line item in file "(.+?)"$$$filepath""" => doEvaluate(step, env) { _ =>
+        val lines = () => {
+          env.evaluate(Seq("$[dryRun:line item]")) {
+            Source.fromFile(filepath).getLines().toSeq
+          }
+        }
+        foreach(lines, "line item", step, doStep, env)
+      }
+
+      case r"""(.+?)$doStep for each value item in (.+?)$source delimited by "(.+?)"$$$delimiter""" => doEvaluate(step, env) { _ =>
+        val sourceValue = env.activeScope.get(source)
+        val values = () => {
+          sourceValue.split(delimiter).toSeq
+        }
+        foreach(values, "value item", step, doStep, env)
+      }
+
+      case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
+        val javascript = env.activeScope.get(s"$condition/javascript")
+        env.evaluate(evaluateStep(Step(step.pos, step.keyword, doStep), env)) {
+          if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
+            logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
+            evaluateStep(Step(step.pos, step.keyword, doStep), env)
+          } else {
+            logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
+            Step(step, Passed(0), Nil)
+          }
+        }
+      }
+
+      case _ => null
     }
   }
   
