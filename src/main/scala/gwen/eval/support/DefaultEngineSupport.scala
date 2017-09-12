@@ -55,23 +55,6 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         foreach(records, "record", step, doStep, env)
       }
 
-      case r"""(.+?)$doStep for each line item in file "(.+?)"$$$filepath""" => doEvaluate(step, env) { _ =>
-        val lines = () => {
-          env.evaluate(Seq("$[dryRun:line item]")) {
-            Source.fromFile(filepath).getLines().toSeq
-          }
-        }
-        foreach(lines, "line item", step, doStep, env)
-      }
-
-      case r"""(.+?)$doStep for each value item in (.+?)$source delimited by "(.+?)"$$$delimiter""" => doEvaluate(step, env) { _ =>
-        val sourceValue = env.activeScope.get(source)
-        val values = () => {
-          sourceValue.split(delimiter).toSeq
-        }
-        foreach(values, "value item", step, doStep, env)
-      }
-
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
         val javascript = env.activeScope.get(s"$condition/javascript")
         env.evaluate(evaluateStep(Step(step.pos, step.keyword, doStep), env)) {
