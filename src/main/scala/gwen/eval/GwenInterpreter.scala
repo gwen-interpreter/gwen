@@ -99,7 +99,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     *         satisfy specified tag filters
     * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
-  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] = 
+  private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] =
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val dataRecord = unit.dataRecord
       dataRecord foreach { rec =>
@@ -115,6 +115,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
               case Some(fspec) =>
                 val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env) ++ loadMeta(unit.metaFiles, tagFilters, env)
                 env.loadedMeta = Nil
+                env.featureScope.set("gwen.feature.file.name", featureFile.getName)
+                env.featureScope.set("gwen.feature.file.path", featureFile.getPath)
+                env.featureScope.set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
+                env.featureScope.set("gwen.feature.name", fspec.feature.name)
                 Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env, started))
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
@@ -145,7 +149,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       featureSpec.feature, 
       None, 
       featureSpec.scenarios.map(s => if (s.isOutline) expandCSVExamples(s) else s).foldLeft(List[Scenario]()) {
-        (acc: List[Scenario], scenario: Scenario) => 
+        (acc: List[Scenario], scenario: Scenario) =>
+          if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
+            env.featureScope.set("gwen.scenario.name", scenario.name)
+          }
           (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, _) =>
               val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }

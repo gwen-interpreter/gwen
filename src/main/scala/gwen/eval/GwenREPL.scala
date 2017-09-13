@@ -142,11 +142,21 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
         }
     }
 
-  private def evaluateInput(input: String): String =
-    interpreter.interpretStep(input, env) match {
-      case Success(step) => s"\n[${step.evalStatus.status}]"
-      case Failure(error) => s"$error\n\n[non-step]"
+  private def evaluateInput(input: String): String = {
+    input.trim match {
+      case r"^Feature:(.*)$$$name" =>
+        env.featureScope.set("gwen.feature.name", name.trim)
+        s"[gwen.feature.name = ${name.trim}]"
+      case r"^Scenario(?: Outline)?:(.*)$$$name" =>
+        env.featureScope.set("gwen.scenario.name", name.trim)
+        s"[gwen.scenario.name = ${name.trim}]"
+      case _ =>
+        interpreter.interpretStep(input, env) match {
+          case Success(step) => s"\n[${step.evalStatus.status}]"
+          case Failure(error) => s"$error\n\n[non-step]"
+        }
     }
+  }
 
   /** Runs the read-eval-print-loop. */
   def run() {
