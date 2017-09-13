@@ -17,6 +17,7 @@
 package gwen.eval.support
 
 import javax.script.ScriptEngineManager
+import gwen.errors.scriptError
 
 /**
   * Can be mixed into evaluation engines to provide Script support. Currently only
@@ -58,7 +59,12 @@ trait ScriptSupport {
     * @param script the script expression to evaluate
     * @param params optional parameters to the script
     */
-  private def evaluateScript[T](language: String, script: String, params: Any*): T =
-    new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $script })()").asInstanceOf[T]
+  private def evaluateScript[T](language: String, script: String, params: Any*): T = {
+    try {
+      new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $script })()").asInstanceOf[T]
+    } catch {
+      case e: Throwable => scriptError(language, script, e)
+    }
+  }
 
 }

@@ -57,8 +57,12 @@ object Settings {
     props.entrySet().asScala.foreach { entry =>
       val key = entry.getKey.asInstanceOf[String]
       if (!sysProps.contains(key)) {
-        val value = resolve(props.getProperty(key), props)
-        Settings.add(key, value, overrideIfExists = true)
+        try {
+          val value = resolve(props.getProperty(key), props)
+          Settings.add(key, value, overrideIfExists = true)
+        } catch {
+          case e: Throwable => propertyLoadError(key, e)
+        }
       }
     }
   }

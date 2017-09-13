@@ -19,6 +19,7 @@ package gwen
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import java.util.Properties
+import gwen.errors.{MissingPropertyException, PropertyLoadException}
 
 class SettingsTest extends FlatSpec with Matchers {
 
@@ -63,4 +64,15 @@ class SettingsTest extends FlatSpec with Matchers {
       sys.props -= "gwen.web.browser"
     }
   }
+
+  "missing nested property" should "should report missing property error" in {
+    val props = new Properties()
+    props.put("prop.host", "localhost")
+    sys.props.put("prop.host.port", "${prop.host.missing}:8090")
+    props.put("prop.url", "http://${prop.host.port}/howdy")
+    intercept[MissingPropertyException] {
+      Settings.resolve(props.getProperty("prop.url"), props)
+    }
+  }
+
 }

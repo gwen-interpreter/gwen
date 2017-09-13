@@ -35,6 +35,7 @@ package gwen {
     def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
     def missingPropertyError(name: String) = throw new MissingPropertyException(name)
     def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
+    def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
     def invalidTagError(msg: String) = throw new InvalidTagException(msg)
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)
@@ -52,6 +53,8 @@ package gwen {
     def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
     def sqlError(msg: String) = throw new SQLException(msg)
     def dataTableError(msg: String) = throw new DataTableException(msg)
+    def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
+    def javaScriptError(javascript: String, cause: Throwable) = throw new ScriptException("JavaScript", javascript, cause)
 
     /** Thrown when a parsing error occurs. */
     class ParsingException(msg: String, cause: Throwable) extends Exception(msg, cause)
@@ -70,6 +73,9 @@ package gwen {
     
     /** Thrown when a property file setting is invalid. */
     class InvalidPropertyException(entry: String, propertyFile: File) extends Exception(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
+
+    /** Thrown when a property setting fails to load. */
+    class PropertyLoadException(name: String, cause: Throwable) extends Exception(s"Failed to load property setting: $name", cause)
 
     /** Thrown when an invalid tag (annotation) is detected. */
     class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: $tagString")
@@ -123,6 +129,9 @@ package gwen {
 
     /** Thrown when a data table error is detected. */
     class DataTableException(msg: String) extends Exception(msg)
+
+    /** Thrown when a script evaluation error is detected. */
+    class ScriptException(language: String, script: String, cause: Throwable) extends Exception(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script}", cause)
 
   }
 }
