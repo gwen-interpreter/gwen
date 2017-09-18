@@ -1,5 +1,5 @@
-2.9.3
-=====
+2.10.0
+======
 Sep 19, 2017
 - Allow attributes in scoped data bindings to be overridden with blanks.
 - Add new DSLs
