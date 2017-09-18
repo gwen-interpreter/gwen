@@ -115,6 +115,11 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
       }
 
+      case r"""I execute javascript "(.+?)$javascript"""" => step.orDocString(javascript) tap { javascript =>
+        env.evaluateJS(javascript)
+      }
+
+
       case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val value = Option(env.evaluateJS(env.formatJSReturn(env.interpolate(expression)(env.getBoundReferenceValue)))).map(_.toString).orNull
         env.featureScope.set(attribute, value tap { content =>
