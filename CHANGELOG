@@ -1,6 +1,6 @@
 2.9.3
 =====
-Sep 18, 2017
+Sep 19, 2017
 - Allow attributes in scoped data bindings to be overridden with blanks.
 - Add new DSLs
   - I capture <attribute> by javascript "<expression>"
@@ -21,6 +21,7 @@ Sep 18, 2017
 - Implement #36 - access feature file name and scenario name
 - Allow override when using the following DSL to set a property value:
   - my <name> <property|setting> <is|will be> "<value>"
+- Add interpolation for filepath in @Examples tag
 
 2.9.2
 =====

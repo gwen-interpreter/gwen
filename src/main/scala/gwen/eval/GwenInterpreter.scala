@@ -148,7 +148,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
       None, 
-      featureSpec.scenarios.map(s => if (s.isOutline) expandCSVExamples(s) else s).foldLeft(List[Scenario]()) {
+      featureSpec.scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s).foldLeft(List[Scenario]()) {
         (acc: List[Scenario], scenario: Scenario) =>
           if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
             env.featureScope.set("gwen.scenario.name", scenario.name)
@@ -267,10 +267,11 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @return a new scenario outline containing the loaded examples data
     *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
     */
-  private def expandCSVExamples(outline: Scenario): Scenario =
+  private def expandCSVExamples(outline: Scenario, env: T): Scenario =
     outline.tags.flatMap { tag =>
       tag.name.trim match {
-        case r"""Examples\("(.*?)"$filepath\)""" =>
+        case r"""Examples\("(.*?)"$filestr\)""" =>
+          val filepath = env.interpolate(filestr)(env.getBoundReferenceValue)
           val file = new File(filepath)
           if (!file.getName.endsWith(".csv")) unsupportedDataFileError(tag, None)
           if (!file.exists()) missingImportFileError(tag, None)
