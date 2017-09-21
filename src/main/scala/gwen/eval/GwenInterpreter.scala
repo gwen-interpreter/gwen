@@ -220,8 +220,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     tag.name.trim match {
       case r"""Import\("(.*?)"$filepath\)""" =>
         val file = new File(filepath)
+        if (!file.exists()) missingOrInvalidImportFileError(tag, Some(specFile))
         if (!file.getName.endsWith(".meta")) unsupportedImportError(tag, specFile)
-        if (!file.exists()) missingImportFileError(tag, Some(specFile))
         if (file.getCanonicalPath.equals(specFile.getCanonicalPath)) {
           recursiveImportError(tag, specFile)
         }
@@ -272,13 +272,14 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       tag.name.trim match {
         case r"""Examples\("(.*?)"$filestr\)""" =>
           val filepath = env.interpolate(filestr)(env.getBoundReferenceValue)
+          val importTag = Tag(s"""Examples("$filepath")""")
           val file = new File(filepath)
-          if (!file.getName.endsWith(".csv")) unsupportedDataFileError(tag, None)
-          if (!file.exists()) missingImportFileError(tag, None)
+          if (!file.exists()) missingOrInvalidImportFileError(importTag, None)
+          if (!file.getName.toLowerCase.endsWith(".csv")) unsupportedDataFileError(importTag, None)
           val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1, row.toList) }
           Some(Examples(s"Data file: $filepath", Nil, table, Nil))
-        case r"""(?:E|x)amples\(.*""" =>
-          invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("csv-filepath")""")
+        case r"""(?:E|e)xamples\(.*""" =>
+          invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv")""")
         case _ => None
       }
     } match {

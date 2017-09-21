@@ -8,8 +8,7 @@ steps into automation instructions and executes them for you so you don't have t
 an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
 automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
-to capture automation bindings and allow you to compose step definitions by mapping 'declarative' steps in features to
-'imperative' steps in engines that perform operations.
+to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
 ### Current Status
 
@@ -23,13 +22,15 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-We wanted to build a behavior driven automation tool that could use Gherkin to automate acceptance testing and robotic processing with little to no coding effort required on behalf of the user. So we developed an interpreter to read Gherkin features as input and produce executing instructions as output through automation engines that can be developed and shared.
+We wanted to make automation easier for non developers with little to no coding experience. So we developed an
+interpreter to read plain text Gherkin features as input and produce executing automation instructions as output through automation engines that can be developed and shared.
 
 What engines are available?
 ---------------------------
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - Our first engine is the gwen-web engine that we built on top of Selenium. You can download and use it to rapidly drive web automation with Gherkin feature specs.
+  - A web automation engine for Gwen that you can download and use to quickly automate web application testing and
+    robotic online processing without having to develop any page objects or Selenium code.
 
 Links
 -----
@@ -61,13 +62,14 @@ Key Features
 - [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
+- [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 
 Mail Group
 ----------
 
-All announcements and discussions are posted and broadcast to all members in the following mail group. You are welcome to visit and subscribe to receive notifications or get involved.
+All announcements and discussions are posted and broadcast to all members in the following mail group. You are welcome to visit and join to receive notifications or get involved.
 
-- [Our mail group](https://groups.google.com/d/forum/gwen-interpreter)
+- [Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter)
 
 Credits
 -------
