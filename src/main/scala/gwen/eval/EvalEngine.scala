@@ -320,6 +320,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
               }) :: acc
             } reverse
           } finally {
+            env.activeScope.set(element, null)
             env.featureScope.set(s"$element number", null)
           }
       }
