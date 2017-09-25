@@ -274,8 +274,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       (line, interpolate(content) { resolver }, contentType)
     }
     if (iName != step.name || iTable != step.table || iDocString != step.docString) {
-      Step(step.keyword, iName, step.status, step.attachments, step.stepDef, iTable, iDocString) tap {
-        iStep => logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
+      Step(step.keyword, iName, step.status, step.attachments, step.stepDef, iTable, iDocString) tap { iStep =>
+        iStep.pos = step.pos
+        logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
       }
     } else step
   }
