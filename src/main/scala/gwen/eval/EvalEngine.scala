@@ -297,6 +297,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
           val noOfElements = elems.size
           logger.info(s"For-each[$element]: $noOfElements found")
           try {
+            if(Try(env.getBoundReferenceValue(element)).isSuccess) {
+              ambiguousCaseError(s"For-each element name '$element' already bound (use a free name instead)")
+            }
             elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
               val elementNumber = index + 1
               currentElement match {
@@ -320,7 +323,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
               }) :: acc
             } reverse
           } finally {
-            env.activeScope.set(element, null)
+            env.featureScope.set(element, null)
             env.featureScope.set(s"$element number", null)
           }
       }
