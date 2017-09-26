@@ -56,7 +56,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" => doEvaluate(step, env) { _ =>
-        val sourceValue = env.activeScope.get(source)
+        val sourceValue = env.getBoundReferenceValue(source)
         val values = () => {
           sourceValue.split(delimiter).toSeq
         }
