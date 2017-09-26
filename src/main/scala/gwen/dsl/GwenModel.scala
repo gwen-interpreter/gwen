@@ -411,6 +411,8 @@ object Step {
     new Step(step.keyword, expression, step.status, step.attachments, table = step.table, docString = step.docString) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =
     new Step(step.keyword, step.name, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef), step.table, step.docString) tap { s => s.pos = step.pos }
+  def apply(step: Step, status: EvalStatus): Step =
+    new Step(step.keyword, step.name, status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)]): Step =
     new Step(step.keyword, step.name, status, attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus, attachments: List[(String, File)], foreachStepDef: Scenario): Step =

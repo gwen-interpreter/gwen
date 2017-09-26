@@ -138,13 +138,13 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       isPriority = result.nonEmpty
       result.getOrElse(s)
     }
-    (if (isPriority) pStep else {
+    val eStep = if (isPriority) {
+      pStep
+    } else {
       if (iStep.evalStatus.status != StatusKeyword.Failed) {
         Try(env.getStepDef(iStep.name)) match {
           case Failure(error) =>
-            val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
-            env.fail(failure)
-            Step(iStep, failure, env.attachments)
+            Step(iStep, Failed(System.nanoTime - start, new StepFailure(iStep, error)))
           case Success(stepDefOpt) =>
             (stepDefOpt match {
               case Some((stepDef, _)) if env.stepScope.containsScope(stepDef.name) => None
@@ -166,15 +166,10 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             }
         }
       } else {
-        env.fail(iStep.evalStatus.asInstanceOf[Failed])
         iStep
       }
-    }) tap { step =>
-      step.evalStatus match {
-        case failure @ Failed(_, _) => env.fail(failure)
-        case _ => // noop
-
-      }
+    }
+    env.finaliseStep(eStep) tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
     }
   }
@@ -188,13 +183,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     */
   private[eval] def doEvaluate(step: Step, env: T)(evalFunction: (Step) => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
-    (Try(evalFunction(step)) match {
+    Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
         env.foreachStepDefs.get(step.uniqueId) match {
           case Some(foreachStepDef) =>
             env.foreachStepDefs -= step.uniqueId
-            val attachments = (env.attachments ::: foreachStepDef.attachments).sortBy(_._2.getName())
-            Step(evaluatedStep, if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), attachments, foreachStepDef)
+            Step(evaluatedStep, if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), foreachStepDef.attachments, foreachStepDef)
           case _ =>
             val status = evaluatedStep.stepDef.map(_.evalStatus ).getOrElse {
               evaluatedStep.evalStatus match {
@@ -202,13 +196,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                 case _ => Passed(System.nanoTime - start)
               }
             }
-            Step(evaluatedStep, status, env.attachments)
+            Step(evaluatedStep, status)
         }
       case Failure(error) =>
         val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
-        Step(step, failure, env.attachments)
-    }) tap { _ =>
-      env.resetAttachments()
+        Step(step, failure)
     }
   }
   

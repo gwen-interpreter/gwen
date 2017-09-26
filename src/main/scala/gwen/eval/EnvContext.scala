@@ -22,18 +22,13 @@ import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import gwen.Predefs.Formatting._
-import gwen.dsl.DataTable
-import gwen.dsl.Failed
-import gwen.dsl.Scenario
-import gwen.dsl.Step
+import gwen.dsl._
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
 import gwen.Settings
 
 import scala.sys.process._
 import scala.util.Try
-import gwen.dsl.Tag
-import gwen.dsl.StepKeyword
 import gwen.eval.support._
 
 import scala.io.Source
@@ -60,7 +55,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
 
   /** Dry run flag. */
   val isDryRun: Boolean = options.dryRun
-  
+
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
   var loadedMeta: List[File] = Nil
 
@@ -86,7 +81,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   def reset() {
     scopes.reset()
     stepDefs = Map[String, Scenario]()
-    resetAttachments()
+    currentAttachments = Nil
     attachmentPrefix = padWithZeroes(1)
     loadedMeta = Nil
     foreachStepDefs = Map[String, Scenario]()
@@ -190,19 +185,31 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
    * completion in the REPL.
    */
   def dsl: List[String] = stepDefs.keys.toList
-  
+
   /**
-    * Fail handler.
-    * 
-    * @param failure the failed status
+    * Binds all accumulated attachments to the given step.
+    *
+    * @param step the step to bind attachments to
+    * @return the step with accumulated attachments
     */
-  final def fail(failure: Failed): Unit = { 
-    addErrorAttachments(failure)
-    if (options.batch) {
-      logger.error(this.scopes.visible.asString)
+  private[eval] def finaliseStep(step: Step): Step = {
+    step.evalStatus match {
+      case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
+        if (options.batch) {
+          logger.error(scopes.visible.asString)
+        }
+        logger.error(failure.error.getMessage)
+        logger.debug(s"Exception: ", failure.error)
+        addErrorAttachments(failure)
+      case _ => // noop
     }
-    logger.error(failure.error.getMessage)
-    logger.debug(s"Exception: ", failure.error)
+    if (currentAttachments.nonEmpty) {
+      Step(step, step.evalStatus, (step.attachments ++ currentAttachments).sortBy(_._2 .getName())) tap { _ =>
+        currentAttachments = Nil
+      }
+    } else {
+      step
+    }
   }
   
   /**
@@ -249,15 +256,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       currentAttachments = att :: currentAttachments
       attachmentPrefix = padWithZeroes(attachmentPrefix.toInt + 1)
     }
-  
-  /** Resets/clears current attachments. */
-  private[eval] def resetAttachments() {
-    currentAttachments = Nil
-  }
-  
-  /** Gets the list of attachments (sorted by file name).*/
-  def attachments: List[(String, File)] = currentAttachments.sortBy(_._2 .getName())
-  
+
   /**
     * Interpolate the given step before it is evaluated.
     * 

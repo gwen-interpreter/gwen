@@ -22,6 +22,7 @@ import java.io.FileWriter
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 import org.mockito.Matchers.anyString
+import org.mockito.Matchers.any
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
@@ -77,6 +78,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val step = Step(StepKeyword.Given, "I am a valid step")
     when(mockEnv.interpolate(step)).thenReturn(step)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step, Passed(0)))
     val result = interpreter(mockEnv).interpretStep("Given I am a valid step", mockEnv)
     result match {
       case TrySuccess(s) =>
@@ -89,7 +91,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     }
   }
   
-  "interperting a valid step def" should "return success" in {
+  "interpreting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
     val mockForeachScenarios = mock[Map[String,Scenario]]
@@ -100,8 +102,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
     when(mockForeachScenarios.get(anyString())).thenReturn(None)
-    when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)))
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.stepScope).thenReturn(paramScope)
     val result = interpreter(mockEnv).interpretStep("Given I am a valid stepdef", mockEnv)
@@ -155,6 +157,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)))
     val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, Nil, None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
@@ -208,7 +211,6 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
-    when(mockEnv.attachments).thenReturn(Nil)
     when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockEnv.featureScope).thenReturn(mockFeatureScope)
@@ -222,6 +224,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
     when(mockEnv.interpolate(step5)).thenReturn(step5)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)))
     val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, List(metaFile), None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
