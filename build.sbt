@@ -10,7 +10,7 @@ organizationHomepage := Some(url("http://gweninterpreter.org"))
 
 startYear := Some(2014)
 
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 
 crossPaths := false
 
@@ -34,27 +34,27 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "io.cucumber" % "gherkin" % "4.1.3"
+libraryDependencies += "io.cucumber" % "gherkin" % "5.0.0"
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "3.6.0"
+libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0"
 
-libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.22"
+libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.25"
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2"
 
-libraryDependencies += "jline" % "jline" % "2.14.2"
+libraryDependencies += "jline" % "jline" % "2.14.5"
 
-libraryDependencies += "commons-codec" % "commons-codec" % "1.10"
+libraryDependencies += "commons-codec" % "commons-codec" % "1.11"
 
 libraryDependencies += "org.apache.commons" % "commons-text" % "1.1"
 
-libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.4"
+libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.5"
 
-libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.2.0"
+libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.4.0"
 
-libraryDependencies += "joda-time" % "joda-time" % "2.9.7"
+libraryDependencies += "joda-time" % "joda-time" % "2.9.9"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 
