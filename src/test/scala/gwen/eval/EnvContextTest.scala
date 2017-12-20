@@ -413,6 +413,17 @@ class EnvContextTest extends FlatSpec with Matchers {
       env.getBoundReferenceValue("x")
     }
   }
+
+  "Issue #40: Stepdef with empty parameters" should "resolve" in {
+
+    val stepdef = Scenario(List(Tag("StepDef")), """I enter form details "<name>", age "<age>"""", Nil, None, Nil)
+
+    val env = newEnv
+    env.addStepDef(stepdef)
+
+    env.getStepDef("""I enter form details "", age """"") should be (Some((stepdef, List(("<name>", ""), ("<age>", "")))))
+
+  }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())
   
