@@ -151,17 +151,21 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           }
           (stepDef.name.split(names.mkString("|")).toList match {
             case tokens if tokens.forall(expression.contains(_)) =>
-              tokens.zipWithIndex.foldLeft((expression, List[String]())) { case ((expr, acc), (token, idx)) =>
+              tokens.zipWithIndex.foldLeft((expression, List[String]())) { case ((expr, acc), (token, tIdx)) =>
                 expr.indexOf(token) match {
                   case -1 => ("", Nil)
-                  case 0 => (expr.substring(token.length), if (idx > 1) "" :: acc else acc)
+                  case 0 => (expr.substring(token.length), if (tIdx > 1) "" :: acc else acc)
                   case idx => (expr.substring(idx + token.length), expr.substring(0, idx) :: acc)
                 }
               }
             case _ => ("", Nil)
           }) match {
             case (value, values) =>
-              val params = names zip (value :: values).reverse
+              val params = names zip (
+                if (values.size == names.size) values.reverse
+                else if (value != "") (value :: values).reverse
+                else value :: values.reverse
+              )
               val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
               if (expression == resolved) {
                 Some(stepDef, params)
