@@ -1,3 +1,8 @@
+2.11.4
+======
+Jan 9, 2018
+- Fix issue gwen-interpreter/gwen-web#45 raised by @ketu4u2010: Gwen fails to handle DSL keywords in string literals
+
 2.11.3
 ======
 Dec 23, 2017

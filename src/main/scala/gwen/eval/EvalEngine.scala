@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,15 +132,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     val start = System.nanoTime - step.evalStatus.nanos
     val iStep = doEvaluate(step, env) { env.interpolate }
     logger.info(s"Evaluating Step: $iStep")
-    var isPriority = false
-    val pStep = doEvaluate(iStep, env) { s =>
-      val result = evaluatePriority(s, env)
-      isPriority = result.nonEmpty
-      result.getOrElse(s)
+    var pStep: Option[Step] = None
+    doEvaluate(iStep, env) { s =>
+      pStep = evaluatePriority(s, env)
+      pStep.getOrElse(s)
     }
-    val eStep = if (isPriority) {
-      pStep
-    } else {
+    val eStep = pStep.filter(_.evalStatus.status != StatusKeyword.Failed).getOrElse {
       if (iStep.evalStatus.status != StatusKeyword.Failed) {
         Try(env.getStepDef(iStep.name)) match {
           case Failure(error) =>
@@ -169,7 +166,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         iStep
       }
     }
-    env.finaliseStep(eStep) tap { step =>
+    val fStep = eStep evalStatus match {
+      case Failed(_, e: StepFailure) if e.getCause != null && e.getCause.isInstanceOf[UndefinedStepException] =>
+        pStep.getOrElse(eStep)
+      case _ => eStep;
+    }
+    env.finaliseStep(fStep) tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
     }
   }
