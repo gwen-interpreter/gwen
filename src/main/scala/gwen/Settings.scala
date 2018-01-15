@@ -104,6 +104,33 @@ object Settings {
     * @throws gwen.errors.MissingPropertyException if no such property is set
     */
   def get(name: String): String = getOpt(name).getOrElse(missingPropertyError(name))
+
+  /**
+    * Finds all properties that match the given predicate.
+    *
+    * @param predicate name => Boolean
+    * @return map of properties that match the predicate
+    */
+  def findAll(predicate: String => Boolean): Map[String, String] = sys.props.toMap.filter {
+    case (name, _) => predicate(name)
+  }
+
+  /**
+   * Provides access to multiple settings. This method merges a comma separated list of name-value pairs
+   * set in the given multiName property with all name-value properties that start with singleName.
+   * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+   */
+  def findAllMulti(multiName: String, singleName: String): Map[String, String] = {
+    val prefs: Seq[String] = Settings.getOpt(multiName).map(_.split(",")).map(_.toList).getOrElse(Nil)
+    val nvps: Seq[(String, String)] = prefs.map(_.split('=')).map { nvp =>
+      if (nvp.length == 2) (nvp(0), nvp(1))
+      else if (nvp.length == 1) (nvp(0), "")
+      else propertyLoadError(nvp(0), "name-value pair expected")
+    }
+    (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
+      (n.substring(n.lastIndexOf('.') + 1), v)
+    }).toMap
+  }
   
   /**
     * Adds a property.

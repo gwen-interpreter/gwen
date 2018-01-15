@@ -36,6 +36,7 @@ package gwen {
     def missingPropertyError(name: String) = throw new MissingPropertyException(name)
     def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
     def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
+    def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
     def invalidTagError(msg: String) = throw new InvalidTagException(msg)
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)

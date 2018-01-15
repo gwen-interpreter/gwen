@@ -1,3 +1,20 @@
+2.12.0
+======
+Jan 15, 2018
+- Add support for loading multi valued settings from single setting contain CSV or name-value pairs or multiple
+  individual settings with the same prefixed and different suffixed name. If both forms are provided, then all values
+  are merged.
+  - Example:
+    - CSV
+        ```
+        setting.values=value1=1,value2=2
+        ```
+    - Prefix + suffix
+        ```
+        setting.value3=3
+        setting.value4=4
+        ```
+
 2.11.4
 ======
 Jan 9, 2018
