@@ -276,9 +276,19 @@ object Examples {
   final val keyword = FeatureKeyword.Examples.toString
   def apply(examples: gherkin.ast.Examples, index: Int): Examples = {
     val header = examples.getTableHeader
-    if (header == null) parsingError(s"Failed to read table body. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    if (header == null) {
+      syntaxError(
+        s"Failed to read table body. Possible syntax error or missing column delimiter in table",
+        examples.getLocation.getLine,
+        examples.getLocation.getColumn)
+    }
     val body = examples.getTableBody
-    if (body == null) parsingError(s"Failed to read table header. Possible syntax error or missing column delimiter in table defined at line ${examples.getLocation.getLine}")
+    if (body == null) {
+      syntaxError(
+        s"Failed to read table header. Possible syntax error or missing column delimiter in table",
+        examples.getLocation.getLine,
+        examples.getLocation.getColumn)
+    }
     new Examples(
       examples.getName,
       Option(examples.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),

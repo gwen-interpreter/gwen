@@ -34,6 +34,7 @@ import gwen.errors._
 import java.util.Date
 
 import com.github.tototoshi.csv.CSVReader
+import gherkin.ParserException
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -126,7 +127,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             }
           }
         case Failure(e) =>
-          parsingError(s"Gherkin parsing error: ${e.toString}", e)
+          e match {
+            case pe: ParserException => syntaxError(pe)
+            case _ => syntaxError(e.getMessage)
+          }
       }
     }).getOrElse(None tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
   

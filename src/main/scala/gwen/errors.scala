@@ -19,16 +19,24 @@
  */
 package gwen {
 
-  import gwen.dsl.Scenario
+  import gwen.dsl.{Position, Scenario}
   import java.io.File
+
+  import gherkin.ParserException
   
   package object errors {
 
     import gwen.dsl.Step
     import gwen.dsl.Tag
 
-    def parsingError(msg: String) = throw new ParsingException(msg, null)
-    def parsingError(msg: String, cause: Throwable) = throw new ParsingException(msg, cause)
+    def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None)
+    def syntaxError(msg: String, line: Int) = throw new GherkinSyntaxError(msg, Some(line), None)
+    def syntaxError(msg: String, line: Int, col: Int) = throw new GherkinSyntaxError(msg, Some(line), Some(col))
+    def syntaxError(cause: ParserException) = Option(cause.location) match {
+      case Some(loc) =>
+        throw new GherkinSyntaxError(cause.getMessage, Some(loc.getLine), Some(loc.getColumn))
+      case _ => throw new GherkinSyntaxError(cause.getMessage, None, None)
+    }
     def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
     def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
     def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
@@ -57,82 +65,88 @@ package gwen {
     def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
     def javaScriptError(javascript: String, cause: Throwable) = throw new ScriptException("JavaScript", javascript, cause)
 
-    /** Thrown when a parsing error occurs. */
-    class ParsingException(msg: String, cause: Throwable) extends Exception(msg, cause)
+    /** Base exception\. */
+    class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
+
+    /** Signals a step that failed to execute. */
+    class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step [at line ${step.pos.line}]: $step: ${cause.getMessage}", cause)
+
+    /** Thrown when a Gherkin parsing error occurs. */
+    class GherkinSyntaxError(msg: String, line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${line.map(l => s" at line $l").getOrElse("")}${col.map(c => s" col $c").getOrElse("")}: $msg")
 
     /** Thrown when an ambiguous condition is detected. */
-    class AmbiguousCaseException(msg: String) extends Exception(msg)
+    class AmbiguousCaseException(msg: String) extends GwenException(msg)
 
     /** Thrown when an unsupported or undefined step is encountered. */
-    class UndefinedStepException(step: Step) extends Exception(s"Unsupported or undefined step: $step")
+    class UndefinedStepException(step: Step) extends GwenException(s"Unsupported or undefined step: $step")
 
     /** Thrown when an attribute cannot be found in a scope. */
-    class UnboundAttributeException(name: String, scope: Option[String]) extends Exception(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
+    class UnboundAttributeException(name: String, scope: Option[String]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
     
     /** Thrown when a property setting is not found. */
-    class MissingPropertyException(name: String) extends Exception(s"Property not found: $name")
+    class MissingPropertyException(name: String) extends GwenException(s"Property not found: $name")
     
     /** Thrown when a property file setting is invalid. */
-    class InvalidPropertyException(entry: String, propertyFile: File) extends Exception(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
+    class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
 
     /** Thrown when a property setting fails to load. */
-    class PropertyLoadException(name: String, cause: Throwable) extends Exception(s"Failed to load property setting: $name", cause)
+    class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)
 
     /** Thrown when an invalid tag (annotation) is detected. */
-    class InvalidTagException(tagString: String) extends Exception(s"Invalid tag: $tagString")
+    class InvalidTagException(tagString: String) extends GwenException(s"Invalid tag: $tagString")
 
     /** Thrown when a regex error occurs. */
-    class RegexException(msg: String) extends Exception(msg)
+    class RegexException(msg: String) extends GwenException(msg)
 
     /** Thrown when a system process fails. */
-    class SystemProcessException(msg: String) extends Exception(msg)
+    class SystemProcessException(msg: String) extends GwenException(msg)
 
     /** Thrown when a xpath evaluation fails. */
-    class XPathException(msg: String) extends Exception(msg)
+    class XPathException(msg: String) extends GwenException(msg)
     
     /** Thrown when a JSON path evaluation fails. */
-    class JsonPathException(msg: String) extends Exception(msg)
+    class JsonPathException(msg: String) extends GwenException(msg)
 
     /** Throw when any evaluation error occurs in the interpreter. */
-    class EvaluationException(msg: String) extends Exception(msg)
+    class EvaluationException(msg: String) extends GwenException(msg)
     
     /** Throw when there is an error in invoking gwen. */
-    class InvocationException(msg: String) extends Exception(msg)
+    class InvocationException(msg: String) extends GwenException(msg)
     
     /** Signals a step that failed to evaluate. */
-    class StepEvaluationException(step: Step, val cause: Throwable) extends RuntimeException(s"Failed step [at line ${step.pos.line}]: $step: ${cause.getMessage}", cause)
+    class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step [at line ${step.pos.line}]: $step: ${cause.getMessage}", cause)
     
     /** Signals an infinite recursive StepDef. */
-    class RecursiveStepDefException(stepDef: Scenario, step: Step) extends RuntimeException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: $step")
+    class RecursiveStepDefException(stepDef: Scenario, step: Step) extends GwenException(s"StepDef ${stepDef.name} is infinitely recursive at [line ${step.pos.line}]: $step")
 
     /** Thrown when a decoding error occurs. */
-    class DecodingException(msg: String) extends Exception(msg)
+    class DecodingException(msg: String) extends GwenException(msg)
     
     /** Thrown when an invalid StepDef is detected. */
-    class InvalidStepDefException(stepDef: Scenario, msg: String) extends Exception(s"Invalid StepDef: $stepDef: $msg")
+    class InvalidStepDefException(stepDef: Scenario, msg: String) extends GwenException(s"Invalid StepDef: $stepDef: $msg")
     
     /** Thrown when an import file is not found. */
-    class MissingOrInvalidImportFileException(importTag: Tag, specFile: Option[File]) extends Exception(s"Missing or invalid file detected in $importTag${specFile.map(f => s" declared in $f").getOrElse("")}")
+    class MissingOrInvalidImportFileException(importTag: Tag, specFile: Option[File]) extends GwenException(s"Missing or invalid file detected in $importTag${specFile.map(f => s" declared in $f").getOrElse("")}")
 
     /** Thrown when an unsupported import file is detected. */
-    class UnsupportedImportException(importTag: Tag, specFile: File) extends Exception(s"Unsupported file type detected in $importTag declared in $specFile (only .meta files can be imported)")
+    class UnsupportedImportException(importTag: Tag, specFile: File) extends GwenException(s"Unsupported file type detected in $importTag declared in $specFile (only .meta files can be imported)")
 
     /** Thrown when an unsupported data table file is detected. */
-    class UnsupportedDataFileException(dataTag: Tag, specFile: Option[File]) extends Exception(s"Unsupported file type detected in $dataTag${specFile.map(f => s" declared in $f").getOrElse("")}: only .csv data files supported")
+    class UnsupportedDataFileException(dataTag: Tag, specFile: Option[File]) extends GwenException(s"Unsupported file type detected in $dataTag${specFile.map(f => s" declared in $f").getOrElse("")}: only .csv data files supported")
     
     /** Thrown when a recursive import is detected. */
-    class RecursiveImportException(importTag: Tag, specFile: File) extends Exception(s"Recursive (cyclic) $importTag detected in $specFile") {
+    class RecursiveImportException(importTag: Tag, specFile: File) extends GwenException(s"Recursive (cyclic) $importTag detected in $specFile") {
       override def fillInStackTrace(): RecursiveImportException = this
     }
     
     /** Thrown when an SQL error is detected. */
-    class SQLException(msg: String) extends Exception(msg)
+    class SQLException(msg: String) extends GwenException(msg)
 
     /** Thrown when a data table error is detected. */
-    class DataTableException(msg: String) extends Exception(msg)
+    class DataTableException(msg: String) extends GwenException(msg)
 
     /** Thrown when a script evaluation error is detected. */
-    class ScriptException(language: String, script: String, cause: Throwable) extends Exception(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script}", cause)
+    class ScriptException(language: String, script: String, cause: Throwable) extends GwenException(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script}", cause)
 
   }
 }

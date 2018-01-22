@@ -34,9 +34,12 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
     case ie: gwen.errors.InvocationException =>
       System.err.println(ie.getMessage)
       System.exit(1)
+    case ge: gwen.errors.GwenException =>
+      System.err.println(s"ERROR - ${ge.getMessage}")
+      System.exit(1)
     case e: Throwable =>
       e.printStackTrace()
-      System.err.println(e.getMessage)
+      System.err.println(s"ERROR - ${e.getMessage}")
       System.exit(1)
   }
   

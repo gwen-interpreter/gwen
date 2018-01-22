@@ -104,9 +104,9 @@ trait GherkinParser {
           .filter(!_.isEmpty)
           .map(steps => Step(steps.get(0)))
           .map(step => Step(step, Position(1, step.pos.column)))
-          .getOrElse(parsingError(s"'Given|When|Then|And|But <expression>' expected"))
+          .getOrElse(syntaxError(s"'Given|When|Then|And|But <expression>' expected", 1))
         case Failure(e) =>
-          parsingError(s"'Given|When|Then|And|But <expression>' expected: ${e.getMessage}")
+          syntaxError(s"'Given|When|Then|And|But <expression>' expected: ${e.getMessage}", 1)
       }
     }
   }

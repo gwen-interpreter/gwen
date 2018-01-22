@@ -127,7 +127,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
       case TrySuccess(_) =>
         fail("expected failure")
       case TryFailure(err) =>
-        err.getMessage should be ("'Given|When|Then|And|But <expression>' expected")
+        err.getMessage should be ("Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
     }
   }
   
