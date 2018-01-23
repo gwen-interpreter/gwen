@@ -154,7 +154,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                       evaluate(step, env)
                     } catch {
                       case e: UndefinedStepException =>
-                        stepDefOpt.fold(throw e) { case (stepDef, _) => recursiveStepDefError(stepDef, step) }
+                        stepDefOpt.fold(throw e) { case (stepDef, _) =>
+                          recursiveStepDefError(stepDef, step)
+                        }
                     }
                   }
                 }
@@ -209,20 +211,23 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     env.stepScope.push(stepDef.name, params)
-    val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
-    dataTableOpt foreach { table =>
-      env.featureScope.pushObject("table", table)
-    }
     try {
-      val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
-      val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
-      Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
-        logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+      val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
+      dataTableOpt foreach { table =>
+        env.featureScope.pushObject("table", table)
+      }
+      try {
+        val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
+        val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
+        Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
+          logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+        }
+      } finally {
+        dataTableOpt foreach { _ =>
+          env.featureScope.popObject("table")
+        }
       }
     } finally {
-      dataTableOpt foreach { _ =>
-        env.featureScope.popObject("table")
-      }
       env.stepScope.pop
     }
   }

@@ -1,3 +1,9 @@
+2.12.2
+======
+Jan 23, 2018
+- Fix issue gwen-interpreter/gwen-web#46 raised by @Rahul9844: infinite recursion error when calling a step that
+  - expects a data table with no data table followed by another call with a data table
+
 2.12.1
 ======
 Jan 22, 2018
