@@ -168,10 +168,14 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         iStep
       }
     }
-    val fStep = eStep evalStatus match {
+    val fStep = eStep.evalStatus match {
       case Failed(_, e: StepFailure) if e.getCause != null && e.getCause.isInstanceOf[UndefinedStepException] =>
         pStep.getOrElse(eStep)
-      case _ => eStep;
+      case _ =>
+        eStep.evalStatus match {
+          case Passed(_) => eStep
+          case _ => pStep.filter(s => EvalStatus.isEvaluated(s.evalStatus.status)).getOrElse(eStep)
+        }
     }
     env.finaliseStep(fStep) tap { step =>
       logStatus("Step", step.toString, step.evalStatus)
