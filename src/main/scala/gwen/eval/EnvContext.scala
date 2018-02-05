@@ -146,8 +146,12 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     val matches = stepDefs.values.view.flatMap { stepDef =>
       val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
       if (expression.matches(pattern)) {
+        val names = "<.+?>".r.findAllIn(stepDef.name).toList
+        names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
+          ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
+        }
         val values = pattern.r.unapplySeq(expression).get
-        val params = "<.+?>".r.findAllIn(stepDef.name).toList zip values
+        val params = names zip values
         val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
         if (expression == resolved) {
           Some(stepDef, params)

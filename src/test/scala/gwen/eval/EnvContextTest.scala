@@ -87,10 +87,10 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
     env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
 
-    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <a> + <b>", Nil, None, Nil)
+    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <x> * <x>", Nil, None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
-      env.getStepDef("z = 1 + 1")
+      env.getStepDef("z = 3 * 4")
     }
     
   }
