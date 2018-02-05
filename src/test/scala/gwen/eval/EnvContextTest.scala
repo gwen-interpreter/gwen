@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,10 +87,10 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
     env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
 
-    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <x> * <x>", Nil, None, Nil)
+    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <a> + <b>", Nil, None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
-      env.getStepDef("z = 3 * 4")
+      env.getStepDef("z = 1 + 1")
     }
     
   }
@@ -416,10 +416,10 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "Issue #40: Stepdef with empty parameters" should "resolve" in {
 
-    val stepdef1 = Scenario(List(Tag("StepDef")), """I enter name "<name>"""", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("StepDef")), """I type name "<name>"""", Nil, None, Nil)
     val stepdef2 = Scenario(List(Tag("StepDef")), """I enter name "<name>", age "<age>"""", Nil, None, Nil)
-    val stepdef3 = Scenario(List(Tag("StepDef")), """I enter name "<name>", age "<age>" and gender "<gender>"""", Nil, None, Nil)
-    val stepdef4 = Scenario(List(Tag("StepDef")), """I enter name "<name>", age "<age>", gender "<gender>" and title "<title>"""", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("StepDef")), """I provide name "<name>", age "<age>" and gender "<gender>"""", Nil, None, Nil)
+    val stepdef4 = Scenario(List(Tag("StepDef")), """I give name "<name>", age "<age>", gender "<gender>" and title "<title>"""", Nil, None, Nil)
     val stepdef5 = Scenario(List(Tag("StepDef")), """I test "<param1>" "<param2>"""", Nil, None, Nil)
 
     val env = newEnv
@@ -429,7 +429,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
 
-    env.getStepDef("""I enter name """"") should be (
+    env.getStepDef("""I type name """"") should be (
       Some((stepdef1, List(("<name>", ""))))
     )
 
@@ -443,71 +443,71 @@ class EnvContextTest extends FlatSpec with Matchers {
       Some((stepdef2, List(("<name>", ""), ("<age>", "24"))))
     )
 
-    env.getStepDef("""I enter name "", age "" and gender """"") should be (
+    env.getStepDef("""I provide name "", age "" and gender """"") should be (
       Some((stepdef3, List(("<name>", ""), ("<age>", ""), ("<gender>", ""))))
     )
-    env.getStepDef("""I enter name "gwen", age "" and gender """"") should be (
+    env.getStepDef("""I provide name "gwen", age "" and gender """"") should be (
       Some((stepdef3, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""))))
     )
-    env.getStepDef("""I enter name "", age "24" and gender """"") should be (
+    env.getStepDef("""I provide name "", age "24" and gender """"") should be (
       Some((stepdef3, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""))))
     )
-    env.getStepDef("""I enter name "", age "" and gender "female"""") should be (
+    env.getStepDef("""I provide name "", age "" and gender "female"""") should be (
       Some((stepdef3, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"))))
     )
-    env.getStepDef("""I enter name "gwen", age "24" and gender """"") should be (
+    env.getStepDef("""I provide name "gwen", age "24" and gender """"") should be (
       Some((stepdef3, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""))))
     )
-    env.getStepDef("""I enter name "", age "24" and gender "female"""") should be (
+    env.getStepDef("""I provide name "", age "24" and gender "female"""") should be (
       Some((stepdef3, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"))))
     )
-    env.getStepDef("""I enter name "gwen", age "" and gender "female"""") should be (
+    env.getStepDef("""I provide name "gwen", age "" and gender "female"""") should be (
       Some((stepdef3, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"))))
     )
 
-    env.getStepDef("""I enter name "", age "", gender "" and title """"") should be (
+    env.getStepDef("""I give name "", age "", gender "" and title """"") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", ""), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "gwen", age "", gender "" and title """"") should be (
+    env.getStepDef("""I give name "gwen", age "", gender "" and title """"") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "", age "24", gender "" and title """"") should be (
+    env.getStepDef("""I give name "", age "24", gender "" and title """"") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "", age "", gender "female" and title """"") should be (
+    env.getStepDef("""I give name "", age "", gender "female" and title """"") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "", age "", gender "" and title "miss"""") should be (
+    env.getStepDef("""I give name "", age "", gender "" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", ""), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "gwen", age "24", gender "" and title """"") should be (
+    env.getStepDef("""I give name "gwen", age "24", gender "" and title """"") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "gwen", age "", gender "female" and title """"") should be (
+    env.getStepDef("""I give name "gwen", age "", gender "female" and title """"") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "gwen", age "", gender "" and title "miss"""") should be (
+    env.getStepDef("""I give name "gwen", age "", gender "" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "", age "24", gender "female" and title """"") should be (
+    env.getStepDef("""I give name "", age "24", gender "female" and title """"") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "", age "24", gender "" and title "miss"""") should be (
+    env.getStepDef("""I give name "", age "24", gender "" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "", age "", gender "female" and title "miss"""") should be (
+    env.getStepDef("""I give name "", age "", gender "female" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "gwen", age "24", gender "female" and title """"") should be (
+    env.getStepDef("""I give name "gwen", age "24", gender "female" and title """"") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", "female"), ("<title>", ""))))
     )
-    env.getStepDef("""I enter name "gwen", age "24", gender "" and title "miss"""") should be (
+    env.getStepDef("""I give name "gwen", age "24", gender "" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "gwen", age "", gender "female" and title "miss"""") should be (
+    env.getStepDef("""I give name "gwen", age "", gender "female" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"), ("<title>", "miss"))))
     )
-    env.getStepDef("""I enter name "", age "24", gender "female" and title "miss"""") should be (
+    env.getStepDef("""I give name "", age "24", gender "female" and title "miss"""") should be (
       Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"), ("<title>", "miss"))))
     )
 

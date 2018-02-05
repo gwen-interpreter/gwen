@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import scala.util.Try
 import gwen.eval.support._
 
 import scala.io.Source
+import scala.util.matching.Regex
 
 /**
   * Base environment context providing access to all resources and services to 
@@ -143,41 +144,23 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     */
   private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
     val matches = stepDefs.values.view.flatMap { stepDef =>
-      "<.+?>".r.findAllIn(stepDef.name).toList match {
-        case Nil => None
-        case names =>
-          names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-            ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
-          }
-          (stepDef.name.split(names.mkString("|")).toList match {
-            case tokens if tokens.forall(expression.contains(_)) =>
-              tokens.zipWithIndex.foldLeft((expression, List[String]())) { case ((expr, acc), (token, tIdx)) =>
-                expr.indexOf(token) match {
-                  case -1 => ("", Nil)
-                  case 0 => (expr.substring(token.length), if (tIdx > 1) "" :: acc else acc)
-                  case idx => (expr.substring(idx + token.length), expr.substring(0, idx) :: acc)
-                }
-              }
-            case _ => ("", Nil)
-          }) match {
-            case (value, values) =>
-              val params = names zip (
-                if (values.size == names.size) values.reverse
-                else if (value != "") (value :: values).reverse
-                else value :: values.reverse
-              )
-              val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
-              if (expression == resolved) {
-                Some(stepDef, params)
-              } else None
-          }
+      val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
+      if (expression.matches(pattern)) {
+        val values = pattern.r.unapplySeq(expression).get
+        val params = "<.+?>".r.findAllIn(stepDef.name).toList zip values
+        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
+        if (expression == resolved) {
+          Some(stepDef, params)
+        } else None
+      } else {
+        None
       }
     }
     val iter = matches.iterator
     if (iter.hasNext) {
       val first = Some(iter.next)
       if (iter.hasNext) {
-        val msg = s"Ambiguous condition in resolving '$expression': One StepDef match expected but ${matches.size} found" 
+        val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
         ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
       } else first
     } else None
