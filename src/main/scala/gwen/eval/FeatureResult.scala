@@ -16,7 +16,7 @@
 
 package gwen.eval
 
-import gwen.dsl.{EvalStatus, FeatureSpec, StatusKeyword}
+import gwen.dsl.{EvalStatus, FeatureSpec, Pending, StatusKeyword}
 import gwen.report.ReportFormat
 import java.io.File
 
@@ -50,7 +50,18 @@ class FeatureResult(
   lazy val duration: Duration = evalStatus.duration
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   
-  private[eval] lazy val scenarioCounts = StatusKeyword.countsByStatus(spec.scenarios.map(_.evalStatus))
+  private[eval] lazy val scenarioCounts =
+    StatusKeyword.countsByStatus(spec.scenarios.flatMap { s =>
+      if (s.isOutline) {
+        val scenarios = s.examples.flatMap(_.scenarios)
+        if (scenarios.nonEmpty) {
+          scenarios.map(_.evalStatus)
+        } else {
+          s.examples.flatMap(_.table.tail).map(_ => Pending).map(_.asInstanceOf[EvalStatus])
+        }
+      }
+      else List(s.evalStatus)
+    })
   private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
   override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }

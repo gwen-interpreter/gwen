@@ -2,6 +2,7 @@
 ======
 Feb 5, 2008
 - Fix StepDef parameter matching
+- Fix issue gwen-interpreter/gwen-web#48 raised by @Rahul9844: report count is incorrect in case of scenario outline
 
 2.12.3
 ======

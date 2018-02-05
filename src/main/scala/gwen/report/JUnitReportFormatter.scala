@@ -30,7 +30,7 @@ import gwen.eval.FeatureUnit
 import gwen.Predefs.Formatting._
 
 /** Formats the feature summary and detail reports in JUnit xml. */
-trait JUnitReportFormatter extends ReportFormatter {
+trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
   
   /**
     * Formats the feature detail report as HTML.
@@ -45,7 +45,14 @@ trait JUnitReportFormatter extends ReportFormatter {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
-      if (scenario.isOutline && EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
+      if (scenario.isOutline) {
+        val s = if (EvalStatus.isEvaluated(scenario.evalStatus.status)) {
+          scenario
+        } else {
+          expandScenarioOutline(scenario, scenario.background)
+        }
+        s.examples.flatMap(_.scenarios).map((_, true))
+      }
       else List((scenario, false))
     }
 
