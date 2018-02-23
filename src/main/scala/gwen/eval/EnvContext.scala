@@ -205,14 +205,13 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   }
   
   /**
-    * Adds error attachments to the current context.
+    * Adds error attachments to the current context. This includes the error trace and environment context.
     * 
     * @param failure the failed status
     */
   def addErrorAttachments(failure: Failed): Unit = { 
     addAttachment("Error details", "txt", failure.error.writeStackTrace())
-    addAttachment("Environment (all)", "txt", this.scopes.asString)
-    addAttachment("Environment (visible)", "txt", this.scopes.visible.asString)
+    addAttachment(s"Environment", "txt", this.scopes.visible.asString)
   }
   
   /**
