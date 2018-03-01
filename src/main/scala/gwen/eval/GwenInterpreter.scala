@@ -52,9 +52,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param options command line options
     */
   private[eval] def initialise(options: GwenOptions): T = {
-    logger.info("Initialising environment context")
-    engine.init(options,  new ScopedDataStack()) tap { env =>
-      logger.info(s"${env.getClass.getSimpleName} initialised")
+    engine.init(options, new ScopedDataStack()) tap { env =>
+      logger.info("Environment context initialised")
     }
   }
   
