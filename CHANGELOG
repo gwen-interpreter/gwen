@@ -1,6 +1,14 @@
+2.12.6
+======
+Mar 3, 2018
+- Update library dependencies
+  - scala-logging 3.7.2 to 3.8.0
+  - commons-text 1.1 to 1.2
+  - scalatest 3.0.4 to 3.0.5
+
 2.12.5
 ======
-Feb 24, 2008
+Feb 24, 2018
 - Fix issue gwen-interpreter/gwen-web#50 raised by @Rahul9844
   - Only log the visible environment bindings (global or global+scoped) on failure
 

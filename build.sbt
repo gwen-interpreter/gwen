@@ -40,13 +40,13 @@ libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0"
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.25"
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0"
 
 libraryDependencies += "jline" % "jline" % "2.14.5"
 
 libraryDependencies += "commons-codec" % "commons-codec" % "1.11"
 
-libraryDependencies += "org.apache.commons" % "commons-text" % "1.1"
+libraryDependencies += "org.apache.commons" % "commons-text" % "1.2"
 
 libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.5"
 
@@ -54,7 +54,7 @@ libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.4.0"
 
 libraryDependencies += "joda-time" % "joda-time" % "2.9.9"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 
