@@ -307,7 +307,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           val filepath = interpolate(v)(getBoundReferenceValue)
           evaluate("$[dryRun:file]") {
             if (new File(filepath).exists()) {
-              Source.fromFile(filepath).mkString
+              interpolate(Source.fromFile(filepath).mkString)(getBoundReferenceValue)
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
           }
         }
@@ -346,8 +346,57 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case "match regex" => actual.matches(expected)
       case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
+      case "match template" | "match template file" =>
+        val template = expected
+        val pattern = Regex.quote(template).replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
+        if (actual.matches(pattern)) {
+          val names = """@\{.*?\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
+            if (n == "&{}") s"&[$i]" else n
+          }
+          names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
+            ambiguousCaseError(s"$n parameter defined ${vs.size} times in template '$template'")
+          }
+          val lines = Source.fromString(template).getLines().toList zip Source.fromString(actual).getLines().toList
+
+          val values = (lines map { case (tLine, aLine) =>
+            (Regex.quote(tLine).replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine)
+          }).filter(_._1.contains("(.*?)")).flatMap { case (tLine, aLine) =>
+            tLine.r.unapplySeq(aLine).get
+          }
+          val params = names zip values
+          val resolved = params.foldLeft(template) { (result, param) =>
+            val (n, v) = param
+            if (n.matches("""@\[\d+\]""")) result.replaceFirst("""@\{\}""", v)
+            else result.replace(n, v)
+          }
+          actual == resolved tap { isMatch =>
+            if (isMatch) {
+              params.filter { case (n, _) => n.matches("""@\{.*?\}""") } foreach { case (n, v) =>
+                scopes.featureScope.set(n.substring(2, n.length-1), v) }
+            }
+          }
+        } else {
+          false
+        }
     }
     if (!negate) res else !res
+  }
+
+  def parseExpression(operator: String, expression: String): String = {
+    (if (operator == "match template file") {
+      val filepath = interpolate(expression)(getBoundReferenceValue)
+      if (new File(filepath).exists()) {
+        interpolate(Source.fromFile(filepath).mkString)(getBoundReferenceValue)
+      } else throw new FileNotFoundException(s"Template file not found: $filepath")
+    } else {
+      expression
+    }) tap { expr =>
+      if (isDryRun && operator.startsWith("match template")) {
+        """@\{.*?\}""".r.findAllIn(expr).toList foreach { name =>
+          featureScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
+        }
+      }
+    }
   }
   
 }
