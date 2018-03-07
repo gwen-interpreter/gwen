@@ -64,7 +64,7 @@ package gwen {
     def dataTableError(msg: String) = throw new DataTableException(msg)
     def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
     def javaScriptError(javascript: String, cause: Throwable) = throw new ScriptException("JavaScript", javascript, cause)
-    def templateMatchError(lineNo: Int, msg: String) = throw new TemplateMatchException(lineNo, msg)
+    def templateMatchError(msg: String) = throw new TemplateMatchException(msg)
 
     /** Base exception\. */
     class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
@@ -150,7 +150,7 @@ package gwen {
     class ScriptException(language: String, script: String, cause: Throwable) extends GwenException(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script}", cause)
 
     /** Thrown when a template match error is detected. */
-    class TemplateMatchException(lineNo: Int, msg: String) extends GwenException(s"Match error at template line $lineNo: $msg")
+    class TemplateMatchException(msg: String) extends GwenException(msg)
 
   }
 }

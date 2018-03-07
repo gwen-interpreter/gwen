@@ -25,7 +25,7 @@ import gwen.errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
@@ -235,9 +235,14 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
             case "xpath" => env.evaluateXPath(path, src, env.XMLNodeType.text)
           }
           val negate = Option(negation).isDefined
-          val result = env.compare(expected, actual, operator, negate)
+          val result = env.compare(s"$source at $matcher '$path'", expected, actual, operator, negate)
           val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
-          assert(result, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$opName '$expected' but got '$actual'")
+          result match {
+            case Success(assertion) =>
+              assert(assertion, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$opName '$expected' but got '$actual'")
+            case Failure(error) =>
+              assert(assertion = false, error.getMessage)
+          }
         }
       }
 
@@ -246,9 +251,14 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         val expected = env.parseExpression(operator, expression)
         env.perform {
           val negate = Option(negation).isDefined
-          val result = env.compare(expected, actualValue, operator, negate)
+          val result = env.compare(attribute, expected, actualValue, operator, negate)
           val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
-          assert(result, s"Expected $attribute to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
+          result match {
+            case Success(assertion) =>
+              assert(assertion, s"Expected $attribute to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
+            case Failure(error) =>
+              assert(assertion = false, error.getMessage)
+          }
         }
       }
 

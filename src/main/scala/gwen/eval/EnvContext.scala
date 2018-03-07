@@ -337,7 +337,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
   
-  def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
+  def compare(sourceName: String, expected: String, actual: String, operator: String, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
       case "be"      => expected.equals(actual)
       case "contain" => actual.contains(expected)
@@ -352,7 +352,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         val actualLines = Source.fromString(actual).getLines().toList
         if (templateLines.size != actualLines.size && !negate) {
           val lineCount = templateLines.size
-          templateMatchError(lineCount, s"Template has $lineCount line${if (lineCount != 1) "s" else ""} but got ${actualLines.size} in source: $actual" )
+          templateMatchError(s"Template has $lineCount line${if (lineCount != 1) "s" else ""} but got ${actualLines.size} in $sourceName" )
         }
         val names = """@\{.*?\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
           if (n == "&{}") s"&[$i]" else n
@@ -363,11 +363,15 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         val lines = templateLines zip actualLines
         val values = (lines map { case (tLine, aLine) =>
           (Regex.quote(tLine).replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine)
-        }).filter(_._1.contains("(.*?)")).zipWithIndex.flatMap { case ((tLine, aLine), lineIdx) =>
+        }).zipWithIndex.flatMap { case ((tLine, aLine), lineIdx) =>
           if (!aLine.matches(tLine) && !negate) {
-             templateMatchError(lineIdx + 1, s"Expected match but got: $aLine")
+             templateMatchError(s"Expected $sourceName to match '${templateLines(lineIdx)}'${if (lines.size > 1) s" at template line ${lineIdx + 1}" else ""} but got '$aLine'")
           }
-          tLine.r.unapplySeq(aLine).get
+          if (tLine.contains("(.*?)")) {
+            tLine.r.unapplySeq(aLine).get
+          } else {
+            Nil
+          }
         }
         val params = names zip values
         val resolved = params.foldLeft(template) { (result, param) =>
