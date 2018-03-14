@@ -66,7 +66,7 @@
            """
            {"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}
            """
-      Then my value should match template "{"id":@{},"category":{"name":"pet"},"name":"@{pet name}","status":"${my pet status}"}"
+      Then my value should match template "{"id":!{},"category":{"name":"pet"},"name":"@{pet name}","status":"${my pet status}"}"
        And category name should be absent
        And pet id should be absent
        And pet name should be "tiger"
@@ -91,7 +91,7 @@
              "category": {
                "name": "@{category name}"
              },
-             "name": "@{}",
+             "name": "!{}",
              "status": "${my pet status}"
            }
            """

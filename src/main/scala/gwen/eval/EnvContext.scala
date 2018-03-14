@@ -348,40 +348,28 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
       case "match template" | "match template file" =>
         val template = expected
-        val templateLines = Source.fromString(template).getLines().toList
-        val actualLines = Source.fromString(actual).getLines().toList
-        if (templateLines.size != actualLines.size && !negate) {
-          val lineCount = templateLines.size
-          templateMatchError(s"Template has $lineCount line${if (lineCount != 1) "s" else ""} but got ${actualLines.size} in $sourceName" )
-        }
-        val names = """@\{.*?\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
-          if (n == "&{}") s"&[$i]" else n
+        val names = """@\{.+?\}|!\{\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
+          if (n == "!{}") s"![$i]" else n
         }
         names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-          ambiguousCaseError(s"$n parameter defined ${vs.size} times in template '$template'")
+          templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
         }
-        val lines = templateLines zip actualLines
+        val lines = Source.fromString(template).getLines().toList zip Source.fromString(actual).getLines().toList
+
         val values = (lines map { case (tLine, aLine) =>
-          (Regex.quote(tLine).replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine)
-        }).zipWithIndex.flatMap { case ((tLine, aLine), lineIdx) =>
-          if (!aLine.matches(tLine) && !negate) {
-             templateMatchError(s"Expected $sourceName to match '${templateLines(lineIdx)}'${if (lines.size > 1) s" at template line ${lineIdx + 1}" else ""} but got '$aLine'")
-          }
-          if (tLine.contains("(.*?)")) {
-            tLine.r.unapplySeq(aLine).get
-          } else {
-            Nil
-          }
+          (Regex.quote(tLine).replaceAll("""@\{.+?\}|!\{\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine)
+        }).filter(_._1.contains("(.*?)")).flatMap { case (tLine, aLine) =>
+          tLine.r.unapplySeq(aLine).get
         }
         val params = names zip values
         val resolved = params.foldLeft(template) { (result, param) =>
           val (n, v) = param
-          if (n.matches("""@\[\d+\]""")) result.replaceFirst("""@\{\}""", v)
+          if (n.matches("""!\[\d+\]""")) result.replaceFirst("""!\{\}""", v)
           else result.replace(n, v)
         }
         actual == resolved tap { isMatch =>
           if (isMatch) {
-            params.filter { case (n, _) => n.matches("""@\{.*?\}""") } foreach { case (n, v) =>
+            params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
               scopes.featureScope.set(n.substring(2, n.length-1), v) }
           }
         }
