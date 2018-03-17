@@ -34,6 +34,8 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
+resolvers += Resolver.jcenterRepo
+
 libraryDependencies += "io.cucumber" % "gherkin" % "5.0.0"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0"
@@ -57,6 +59,10 @@ libraryDependencies += "joda-time" % "joda-time" % "2.9.9"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
+
+libraryDependencies += "com.h2database" % "h2" % "1.4.196" % "test"
+
+libraryDependencies += "com.typesafe.slick" %% "slick" % "3.2.2" % "test"
 
 mappings in (Compile, packageBin) ++= Seq(
   file("LICENSE") -> "LICENSE",
