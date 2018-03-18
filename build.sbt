@@ -34,8 +34,6 @@ javaSource in Test := baseDirectory.value / "src/test/scala"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-resolvers += Resolver.jcenterRepo
-
 libraryDependencies += "io.cucumber" % "gherkin" % "5.0.0"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0"
