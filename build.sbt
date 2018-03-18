@@ -1,64 +1,70 @@
 import com.typesafe.sbt.SbtGit._
-
-name := "gwen"
-
-description := "A Given-When-Then interpreter and automation platform"
-
-organization := "org.gweninterpreter"
-
-organizationHomepage := Some(url("http://gweninterpreter.org"))
-
-startYear := Some(2014)
-
-scalaVersion := "2.12.4"
-
-crossPaths := false
-
-scalacOptions += "-feature"
-
-scalacOptions += "-language:postfixOps"
-
-scalacOptions += "-deprecation"
-
-scalacOptions += "-target:jvm-1.8"
-
-trapExit := false
-
-licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")
-
-homepage := Some(url("https://github.com/gwen-interpreter/gwen"))
-
-javaSource in Compile := baseDirectory.value / "src/main/scala"
-
-javaSource in Test := baseDirectory.value / "src/test/scala"
+import sbt.Keys.{crossPaths, description, startYear}
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "io.cucumber" % "gherkin" % "5.0.0"
+lazy val commonSettings = Seq(
+  name := "gwen",
+  description := "A Given-When-Then interpreter and automation platform",
+  scalaVersion := "2.12.4",
+  organization := "org.gweninterpreter",
+  homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
+  organizationHomepage := Some(url("http://gweninterpreter.org")),
+  startYear := Some(2014),
+  licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
+  trapExit := false,
+  crossPaths := false,
+  scalacOptions ++= Seq(
+    "-feature",
+    "-language:postfixOps",
+    "-deprecation",
+    "-target:jvm-1.8"
+  )
+)
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0"
+lazy val testDependencies = {
+  val scalaTest = "3.0.5"
+  val mockitoAll = "1.10.19"
 
-libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.25"
+  Seq(
+    "org.scalatest" %% "scalatest" % scalaTest,
+    "org.mockito" % "mockito-all" % mockitoAll
+  ).map(_ % Test)
+}
 
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0"
+lazy val commonDependencies = {
+  val cucumberGherkin = "5.0.0"
+  val scopt = "3.7.0"
+  val slf4jLog4j = "1.7.25"
+  val scalaLogging = "3.8.0"
+  val jline = "2.14.5"
+  val commonCodec = "1.11"
+  val commonsText = "1.2"
+  val scalaCSV = "1.3.5"
+  val jsonPath = "2.4.0"
+  val jodaTime = "2.9.9"
 
-libraryDependencies += "jline" % "jline" % "2.14.5"
+  Seq(
+    "io.cucumber" % "gherkin" % cucumberGherkin,
+    "com.github.scopt" %% "scopt" % scopt,
+    "org.slf4j" % "slf4j-log4j12" % slf4jLog4j,
+    "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
+    "jline" % "jline" % jline,
+    "commons-codec" % "commons-codec" % commonCodec,
+    "org.apache.commons" % "commons-text" % commonsText,
+    "com.github.tototoshi" %% "scala-csv" % scalaCSV,
+    "com.jayway.jsonpath" % "json-path" % jsonPath,
+    "joda-time" % "joda-time" % jodaTime
+  )
+}
 
-libraryDependencies += "commons-codec" % "commons-codec" % "1.11"
+lazy val root = (project in file("."))
+  .settings(
+    commonSettings,
+    libraryDependencies ++= commonDependencies ++ testDependencies
+  )
 
-libraryDependencies += "org.apache.commons" % "commons-text" % "1.2"
-
-libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.5"
-
-libraryDependencies += "com.jayway.jsonpath" % "json-path" % "2.4.0"
-
-libraryDependencies += "joda-time" % "joda-time" % "2.9.9"
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
-
-libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
-
-mappings in (Compile, packageBin) ++= Seq(
+mappings in(Compile, packageBin) ++= Seq(
   file("LICENSE") -> "LICENSE",
   file("NOTICE") -> "NOTICE",
   file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY",
