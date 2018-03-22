@@ -4,12 +4,11 @@ pomIncludeRepository := { _ => false }
 
 publishArtifact in Test := false
 
-pomExtra := (
-  <scm>
-    <connection>scm:git:git@github.com:gwen-interpreter/gwen.git</connection>
-    <developerConnection>scm:git:git@github.com:gwen-interpreter/gwen.git</developerConnection>
-    <url>git@github.com:gwen-interpreter/gwen.git</url>
-  </scm>
+pomExtra := <scm>
+  <connection>scm:git:git@github.com:gwen-interpreter/gwen.git</connection>
+  <developerConnection>scm:git:git@github.com:gwen-interpreter/gwen.git</developerConnection>
+  <url>git@github.com:gwen-interpreter/gwen.git</url>
+</scm>
   <developers>
     <developer>
       <id>bjuric</id>
@@ -21,4 +20,4 @@ pomExtra := (
       <name>Brady Wood</name>
       <url>https://github.com/bradywood</url>
     </developer>
-  </developers>)
+  </developers>
