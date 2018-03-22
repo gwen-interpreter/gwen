@@ -58,6 +58,10 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
 libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 
+libraryDependencies += "com.h2database" % "h2" % "1.4.196" % "test"
+
+libraryDependencies += "com.typesafe.slick" %% "slick" % "3.2.2" % "test"
+
 mappings in (Compile, packageBin) ++= Seq(
   file("LICENSE") -> "LICENSE",
   file("NOTICE") -> "NOTICE",
