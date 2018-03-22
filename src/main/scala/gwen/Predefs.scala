@@ -32,7 +32,10 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.concurrent.duration.Duration
 import java.text.DecimalFormat
 
+import gwen.dsl.Position
 import org.apache.commons.text.StringEscapeUtils
+
+import scala.io.Source
 
 /**
   * Predefined implicits.
@@ -246,6 +249,18 @@ object Predefs extends LazyLogging {
       if (durations.isEmpty) Duration.Zero
       else if (durations.size == 1) durations.head
       else durations.reduce(_+_)
+  }
+
+  object StringOps {
+    def lastPositionIn(source: String): Position = {
+      Source.fromString(s"$source ").getLines().toList match {
+        case Nil =>
+          Position(1, 1)
+        case lines =>
+          val lastLength = lines.last.length - 1
+          Position(if (lines.size > 0) lines.size else 1, if (lastLength > 0) lastLength else 1)
+      }
+    }
   }
   
 }

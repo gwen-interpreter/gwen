@@ -28,7 +28,7 @@ import gwen.errors._
 import gwen.Settings
 
 import scala.sys.process._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import gwen.eval.support._
 
 import scala.io.Source
@@ -45,7 +45,7 @@ import scala.util.matching.Regex
   */
 class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluatable
   with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-  with SQLSupport with ScriptSupport with DecodingSupport with LazyLogging {
+  with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with LazyLogging {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -347,31 +347,11 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
       case "match template" | "match template file" =>
-        val template = expected
-        val names = """@\{.+?\}|!\{\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
-          if (n == "!{}") s"![$i]" else n
-        }
-        names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-          templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
-        }
-        val lines = Source.fromString(template).getLines().toList zip Source.fromString(actual).getLines().toList
-
-        val values = (lines map { case (tLine, aLine) =>
-          (Regex.quote(tLine).replaceAll("""@\{.+?\}|!\{\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine)
-        }).filter(_._1.contains("(.*?)")).flatMap { case (tLine, aLine) =>
-          tLine.r.unapplySeq(aLine).get
-        }
-        val params = names zip values
-        val resolved = params.foldLeft(template) { (result, param) =>
-          val (n, v) = param
-          if (n.matches("""!\[\d+\]""")) result.replaceFirst("""!\{\}""", v)
-          else result.replace(n, v)
-        }
-        actual == resolved tap { isMatch =>
-          if (isMatch) {
-            params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
-              scopes.featureScope.set(n.substring(2, n.length-1), v) }
-          }
+        matchTemplate(expected, actual, sourceName) match {
+          case Success(result) =>
+            if (negate) templateMatchError(s"Expected $sourceName to not match template but it did") else result
+          case Failure(failure) =>
+            if (negate) false else throw failure
         }
     }
     if (!negate) res else !res
