@@ -98,7 +98,7 @@ How to contribute:
 License
 -------
 
-Copyright 2014-2018 Branko Juric, Brady Wood
+Copyright 2014-2018 Branko Juric, Brady Wood and [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors)
 
 This software is open sourced under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
