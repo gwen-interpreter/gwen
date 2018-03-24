@@ -1,3 +1,20 @@
+2.13.0
+======
+Mar 4, 2018
+- Introduce template matching
+  - The following DSL's where introduced
+    - `<reference> <should|should not> match template "<expression>"`
+    - `<reference> <should|should not> match template file "<filepath>"`
+    - `<source> at <json path|xpath> "<path>" <should|should not> match template "<expression>"`
+    - `<source> at <json path|xpath> "<path>" <should|should not> match template file "<filepath>"`
+  - Template expressions may contain:
+    - Extract attributes: `@{name}`
+      - Extracts and binds the source value at `@{name}` in the template to the `name` attribute in the feature scope
+    - Ignore values: `!{}`
+      - Ignores the source value at `!{}` in the template
+    - Inject values: `${name}`
+      - Injects the value bound to the `name` attribute into `${name}` in the template
+
 2.12.6
 ======
 Mar 3, 2018

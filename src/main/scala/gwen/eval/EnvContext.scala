@@ -28,7 +28,7 @@ import gwen.errors._
 import gwen.Settings
 
 import scala.sys.process._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import gwen.eval.support._
 
 import scala.io.Source
@@ -45,7 +45,7 @@ import scala.util.matching.Regex
   */
 class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluatable
   with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-  with SQLSupport with ScriptSupport with DecodingSupport with LazyLogging {
+  with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with LazyLogging {
   
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
@@ -307,7 +307,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           val filepath = interpolate(v)(getBoundReferenceValue)
           evaluate("$[dryRun:file]") {
             if (new File(filepath).exists()) {
-              Source.fromFile(filepath).mkString
+              interpolate(Source.fromFile(filepath).mkString)(getBoundReferenceValue)
             } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
           }
         }
@@ -337,7 +337,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       logger.debug(s"getBoundReferenceValue($name)='$value'")
     }
   
-  def compare(expected: String, actual: String, operator: String, negate: Boolean): Boolean = {
+  def compare(sourceName: String, expected: String, actual: String, operator: String, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
       case "be"      => expected.equals(actual)
       case "contain" => actual.contains(expected)
@@ -346,8 +346,32 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       case "match regex" => actual.matches(expected)
       case "match xpath" => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case "match json path" => !evaluateJsonPath(expected, actual).isEmpty
+      case "match template" | "match template file" =>
+        matchTemplate(expected, actual, sourceName) match {
+          case Success(result) =>
+            if (negate) templateMatchError(s"Expected $sourceName to not match template but it did") else result
+          case Failure(failure) =>
+            if (negate) false else throw failure
+        }
     }
     if (!negate) res else !res
+  }
+
+  def parseExpression(operator: String, expression: String): String = {
+    (if (operator == "match template file") {
+      val filepath = interpolate(expression)(getBoundReferenceValue)
+      if (new File(filepath).exists()) {
+        interpolate(Source.fromFile(filepath).mkString)(getBoundReferenceValue)
+      } else throw new FileNotFoundException(s"Template file not found: $filepath")
+    } else {
+      expression
+    }) tap { expr =>
+      if (isDryRun && operator.startsWith("match template")) {
+        """@\{.*?\}""".r.findAllIn(expr).toList foreach { name =>
+          featureScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
+        }
+      }
+    }
   }
   
 }

@@ -25,8 +25,7 @@ import gwen.errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
 
-import scala.io.Source
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
@@ -227,25 +226,39 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.activeScope.set(s"$dbName rows affected", rowsAffected.toString)
       }
 
-      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
-        val src = env.activeScope.get(source)
+      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        val expected = env.parseExpression(operator, expression)
         env.perform {
+          val src = env.activeScope.get(source)
           val actual = matcher match {
             case "json path" => env.evaluateJsonPath(path, src)
             case "xpath" => env.evaluateXPath(path, src, env.XMLNodeType.text)
           }
           val negate = Option(negation).isDefined
-          val result = env.compare(expression, actual, operator, negate)
-          assert(result, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$operator '$expression' but got '$actual'")
+          val result = env.compare(s"$source at $matcher '$path'", expected, actual, operator, negate)
+          val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
+          result match {
+            case Success(assertion) =>
+              assert(assertion, s"Expected $source at $matcher '$path' to ${if(negate) "not " else ""}$opName '$expected' but got '$actual'")
+            case Failure(error) =>
+              assert(assertion = false, error.getMessage)
+          }
         }
       }
 
-      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val actualValue = env.getBoundReferenceValue(attribute)
+        val expected = env.parseExpression(operator, expression)
         env.perform {
           val negate = Option(negation).isDefined
-          val result = env.compare(expression, actualValue, operator, negate)
-          assert(result, s"Expected $attribute to ${if(negate) "not " else ""}$operator '$expression' but got '$actualValue'")
+          val result = env.compare(attribute, expected, actualValue, operator, negate)
+          val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
+          result match {
+            case Success(assertion) =>
+              assert(assertion, s"Expected $attribute to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
+            case Failure(error) =>
+              assert(assertion = false, error.getMessage)
+          }
         }
       }
 
