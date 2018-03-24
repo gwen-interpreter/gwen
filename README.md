@@ -16,6 +16,12 @@ to capture automation bindings and allow you to compose step definitions in a de
 
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
+- [User groups](#user-groups)
+
+### What's New?
+
+- [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
+- [Gwen Workspaces](https://gweninterpreter.wordpress.com/2017/12/18/gwen-workspaces/)
 
 Why Gwen?
 ---------
@@ -23,7 +29,8 @@ Why Gwen?
 > Gwen = [G]iven [W]hen Th[en]
 
 We wanted to make automation easier for non developers with little to no coding experience. So we developed an
-interpreter to read plain text Gherkin features as input and produce executing automation instructions as output through automation engines that can be developed and shared.
+interpreter to read plain text Gherkin features as input and produce executing automation instructions as output
+through automation engines that can be developed and shared.
 
 What engines are available?
 ---------------------------
@@ -64,12 +71,14 @@ Key Features
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 
-Mail Group
-----------
+User Groups
+-----------
 
-All announcements and discussions are posted and broadcast to all members in the following mail group. You are welcome to visit and join to receive notifications or get involved.
+All announcements and discussions are posted and broadcast to all members in the
+[Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter). Active users who join the mailing group will
+also receive an invitation to our Gwen Slack community where they can interact with other users and get more involved.
 
-- [Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter)
+-
 
 Credits
 -------

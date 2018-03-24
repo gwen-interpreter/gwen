@@ -59,6 +59,20 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     }
   }
 
+  """Single line template""" should "fail when extract tag contains only whitespace" in {
+    val template = """{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
+    val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
+
+    val result = templateSupport.matchTemplate(template, source, "my source")
+
+    result match {
+      case Success(_) =>
+        fail("Expected match to fail")
+      case Failure(err) =>
+        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template (check literals and/or syntax)""")
+    }
+  }
+
   """Single line template""" should "fail when ignore tag has a space" in {
     val template = """{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
@@ -167,6 +181,34 @@ class TemplateSupportTest extends FlatSpec with Matchers {
         fail("Expected match to fail")
       case Failure(err) =>
         err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{},' in template (check literals and/or syntax)""")
+    }
+  }
+
+  """Multi line template""" should "fail when extract tag contains only whitespace" in {
+    val template = """{
+                     |  "id": @{   },
+                     |  "category": {
+                     |    "name": "pet"
+                     |  },
+                     |  "name": "tiger",
+                     |  "status": "available"
+                     |}""".stripMargin
+    val source  = """{
+                     |  "id": 43,
+                     |  "category": {
+                     |    "name": "pet"
+                     |  },
+                     |  "name": "tiger",
+                     |  "status": "available"
+                     |}""".stripMargin
+
+    val result = templateSupport.matchTemplate(template, source, "my source")
+
+    result match {
+      case Success(_) =>
+        fail("Expected match to fail")
+      case Failure(err) =>
+        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{   },' in template (check literals and/or syntax)""")
     }
   }
 
