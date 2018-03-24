@@ -42,7 +42,7 @@ class SQLSupportTest
     db.close()
   }
 
-  "executeSQLQuery" should "the first column value of the first row in the result" in {
+  "executeSQLQuery" should "return the first column value of the first row in the result" in {
     val statement = "SELECT * FROM CAKES"
     sqlSupport.executeSQLQuery(statement, dbConfig.dbName) shouldBe "Brownie"
   }
