@@ -1,7 +1,10 @@
 2.13.0
 ======
-Mar 4, 2018
-- Introduce template matching
+Mar 24, 2018
+- Contributions by @acuciureanu
+  - PR #42 - Unit tests for SQL support
+  - PR #43 - Refactoring of sbt build file
+- Introduce [template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
   - The following DSL's where introduced
     - `<reference> <should|should not> match template "<expression>"`
     - `<reference> <should|should not> match template file "<filepath>"`

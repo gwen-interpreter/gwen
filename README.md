@@ -10,13 +10,14 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
+- [Join our user community](#user-groups)
+
 ### Current Status
 
 [![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
 
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
-- [User groups](#user-groups)
 
 ### What's New?
 
@@ -70,6 +71,7 @@ Key Features
 - [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
+- [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
 User Groups
 -----------
@@ -77,8 +79,6 @@ User Groups
 All announcements and discussions are posted and broadcast to all members in the
 [Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter). Active users who join the mailing group will
 also receive an invitation to our Gwen Slack community where they can interact with other users and get more involved.
-
--
 
 Credits
 -------
