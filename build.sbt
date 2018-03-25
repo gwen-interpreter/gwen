@@ -69,8 +69,9 @@ lazy val root = (project in file("."))
   )
 
 mappings in(Compile, packageBin) ++= Seq(
-  file("LICENSE") -> "LICENSE",
-  file("NOTICE") -> "NOTICE",
-  file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY",
-  file("CHANGELOG") -> "CHANGELOG"
+  file("README.md") -> "README.txt",
+  file("LICENSE") -> "LICENSE.txt",
+  file("NOTICE") -> "NOTICE.txt",
+  file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY.txt",
+  file("CHANGELOG") -> "CHANGELOG.txt"
 )

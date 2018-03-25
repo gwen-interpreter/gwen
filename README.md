@@ -10,7 +10,7 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-- [Join our user community](#user-groups)
+- [Join our user community](#user-community)
 
 ### Current Status
 
@@ -73,21 +73,27 @@ Key Features
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
-User Groups
------------
+User Community
+--------------
 
 All announcements and discussions are posted and broadcast to all members in the
-[Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter). Active users who join the mailing group will
-also receive an invitation to our Gwen Slack community where they can interact with other users and get more involved.
+[Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter). Active users who join the group will
+also receive an invitation to our Gwen Slack community where they can interact with active users and get more involved.
 
-Credits
+License
 -------
-- Cucumber/Gherkin
-- Scopt
-- JLine
-- Bootstrap
-- JQuery
-- Reel
+
+Copyright 2014-2018 Branko Juric, Brady Wood and [contributors](#contributors)
+
+This software is open sourced under the
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
+
+See also: [LICENSE](LICENSE)
+
+This project has dependencies on other open source projects. All distributed third party dependencies and their licenses are listed in the
+[LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
+
+Open sourced 14 May 2014 09:30 pm AEST
 
 Contributions
 -------------
@@ -104,18 +110,44 @@ How to contribute:
 4. Push your branch to your forked repository
 5. Create a pull request from your branch to here
 
-License
+Maintainers
+-----------
+
+- [Branko Juric](https://github.com/bjuric)
+- [Brady Wood](https://github.com/bradywood)
+
+Contributors
+------------
+
+We thank the following contributors and active users for helping to make Gwen better. You are all awesome!
+
+### Code Contributors
+
+The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests
+that have been merged:
+
+- [Jacob Juric](https://github.com/TheReturningVoid)
+- [Alexandru Cuciureanu](https://github.com/acuciureanu)
+
+### Active Users
+
+The following users raised issues or requests that have been addressed:
+
+- [Chris Leong](https://github.com/aztheque)
+- [Martino Turturiello](https://github.com/martino-jelli)
+- [bliddicoat](https://github.com/bliddicoat)
+- [Andrew Gillet](https://github.com/asgillett)
+- [anshu781126](https://github.com/anshu781126)
+- [ketu4u2010](https://github.com/ketu4u2010)
+- [Rahul9844](https://github.com/Rahul9844)
+
+Credits
 -------
+- [Cucumber/Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin)
+- [Scopt](https://github.com/scopt/scopt)
+- [JLine](https://github.com/jline/jline2)
+- [Bootstrap](https://getbootstrap.com/)
+- [JQuery](https://jquery.com/)
+- [Reel](https://github.com/pisi/Reel)
 
-Copyright 2014-2018 Branko Juric, Brady Wood and [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors)
-
-This software is open sourced under the
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
-
-See also: [LICENSE](LICENSE)
-
-This project has dependencies on other open source projects. All distributed third party dependencies and their licenses are listed in the
-[LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
-
-Open sourced 14 May 2014 09:30 pm AEST
-
+---
