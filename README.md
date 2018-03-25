@@ -76,34 +76,36 @@ Key Features
 User Community
 --------------
 
-All announcements and discussions are posted and broadcast to all members in the
-[Gwen mail group](https://groups.google.com/d/forum/gwen-interpreter). Active users who join the group will
-also receive an invitation to our Gwen Slack community where they can interact with active users and get more involved.
+All announcements and discussions are posted and broadcast to all members in the Gwen mail group. Active users who
+[join the group](https://groups.google.com/d/forum/gwen-interpreter) will also receive an invitation to our Gwen Slack
+community where they can interact with other users and help each other out.
 
 License
 -------
 
-Copyright 2014-2018 Branko Juric, Brady Wood and [contributors](#contributors)
+Copyright 2014-2018 Branko Juric, Brady Wood and [Gwen contributors](#code-contributors).
 
 This software is open sourced under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
 See also: [LICENSE](LICENSE)
 
-This project has dependencies on other open source projects. All distributed third party dependencies and their licenses are listed in the
-[LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
+This project has dependencies on other open source projects. All distributed third party dependencies and their
+licenses are listed in the [LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
 
 Open sourced 14 May 2014 09:30 pm AEST
 
 Contributions
 -------------
 
-New capabilities, improvements, and fixes are all valid candidates for contribution. Submissions can be made using pull requests. Each submission
-is reviewed and verified by the project committers before being integrated and released to the community. We ask that all code submissions include unit tests.
+New capabilities, improvements, and fixes are all valid candidates for contribution. Submissions can be made using
+pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being
+integrated and released to the community. We ask that all code submissions include unit tests.
 
-By submitting contributions, you agree to release your work under the license that covers this software.
+By submitting contributions, you agree to release your work under the [license](#license) that covers this software.
 
-How to contribute:
+### How to Contribute
+
 1. Fork this repository
 2. Create a branch on your forked repository
 3. Commit your changes to your branch
