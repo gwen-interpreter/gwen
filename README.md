@@ -138,7 +138,7 @@ The following users raised issues or requests that have been addressed:
 - [Chris Leong](https://github.com/aztheque)
 - [Martino Turturiello](https://github.com/martino-jelli)
 - [bliddicoat](https://github.com/bliddicoat)
-- [Andrew Gillet](https://github.com/asgillett)
+- [Andrew Gillett](https://github.com/asgillett)
 - [anshu781126](https://github.com/anshu781126)
 - [ketu4u2010](https://github.com/ketu4u2010)
 - [Rahul9844](https://github.com/Rahul9844)
