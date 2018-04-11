@@ -72,11 +72,11 @@ trait XPathSupport {
           case XMLNodeType.text => result.toString
           case XMLNodeType.node =>
             nodeToString(result.asInstanceOf[Node]) tap { nodeStr =>
-              if (nodeStr.trim().isEmpty()) xPathError(s"No such node: $xpath")
+              if (nodeStr.isEmpty()) xPathError(s"No such node: $xpath")
             }
           case XMLNodeType.nodeset =>
             nodeListToString(result.asInstanceOf[NodeList]) tap { nodeStr =>
-              if (nodeStr.trim().isEmpty()) xPathError(s"No such nodeset: $xpath")
+              if (nodeStr.isEmpty()) xPathError(s"No such nodeset: $xpath")
             }
         }
       }
@@ -114,12 +114,12 @@ trait XPathSupport {
     t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
     t.setOutputProperty(OutputKeys.INDENT, "yes")
     t.transform(new DOMSource(node), new StreamResult(sw))
-    sw.toString
+    sw.toString.trim
   }
   
   private def nodeListToString(nodeList: NodeList): String = {
     val result = for(i <- 0 to nodeList.getLength) yield nodeToString(nodeList.item(i))
-    result.mkString(sys.props("line.separator"))
+    result.mkString(sys.props("line.separator")).trim
   }
   
 }
