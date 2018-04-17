@@ -522,6 +522,34 @@ class EnvContextTest extends FlatSpec with Matchers {
     )
 
   }
+
+  "Issue gwen-web#55: Conflict of step def.." should "result in ambiguous error" in {
+    val stepdef1 = Scenario(List(Tag("StepDef")), """I "<a>" on "<b>" and "<c>"""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("StepDef")), """I "<a>" on "<b>"""", Nil, None, Nil)
+
+    val env = newEnv
+    env.addStepDef(stepdef1)
+    env.addStepDef(stepdef2)
+
+    intercept[AmbiguousCaseException] {
+      env.getStepDef("""I "1" on "2" and "3"""")
+    }
+
+  }
+
+  "Issue gwen-web#55-1: Conflict of step def.." should "result in ambiguous error" in {
+    val stepdef1 = Scenario(List(Tag("StepDef")), """I <a> on <b> and <c>""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("StepDef")), """I <a> on <b>""", Nil, None, Nil)
+
+    val env = newEnv
+    env.addStepDef(stepdef1)
+    env.addStepDef(stepdef2)
+
+    intercept[AmbiguousCaseException] {
+      env.getStepDef("""I 1 on 2 and 3""")
+    }
+
+  }
   
   private def newEnv: EnvContext = newEnv(GwenOptions())
   

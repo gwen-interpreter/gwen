@@ -2,6 +2,7 @@
 ======
 Apr 11, 2018
 - trim extracted xpath nodes
+- add some unit tests
 
 2.13.0
 ======
