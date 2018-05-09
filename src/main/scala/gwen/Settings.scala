@@ -128,7 +128,7 @@ object Settings {
       else propertyLoadError(nvp(0), "name-value pair expected")
     }
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
-      (n.substring(n.lastIndexOf('.') + 1), v)
+      (n.substring(singleName.length + 1), v)
     }).toMap
   }
   

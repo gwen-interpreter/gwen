@@ -75,4 +75,22 @@ class SettingsTest extends FlatSpec with Matchers {
     }
   }
 
+  "multi properties" should "should merge" in {
+    sys.props.put("gwen.web.chrome.prefs", "alternate_error_pages.enabled=false,session.length_limit=9999999999,other=?")
+    sys.props.put("gwen.web.chrome.pref.download.prompt_for_download", "false")
+    sys.props.put("gwen.web.chrome.pref.download.default_directory", "downloads")
+    try {
+      val props = Settings.findAllMulti("gwen.web.chrome.prefs", "gwen.web.chrome.pref")
+      props("alternate_error_pages.enabled") should be ("false")
+      props("session.length_limit") should be ("9999999999")
+      props("other") should be ("?")
+      props("download.prompt_for_download") should be ("false")
+      props("download.default_directory") should be ("downloads")
+    } finally {
+      sys.props -= "gwen.web.chrome.prefs"
+      sys.props -= "gwen.web.chrome.pref.download.prompt_for_download"
+      sys.props -= "gwen.web.chrome.pref.download.default_directory"
+    }
+  }
+
 }
