@@ -91,10 +91,12 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
     step.expression match {
 
-      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
-        Settings.add(name, value, overrideIfExists = true)
-      }
-        
+      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
+        Settings.setLocal(name, value)
+
+      case r"""I reset my (.+?)$name (?:property|setting)""" =>
+        Settings.clearLocal(name)
+
       case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
         env.featureScope.set(attribute, value)
       }

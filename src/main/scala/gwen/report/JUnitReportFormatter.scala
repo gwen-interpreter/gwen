@@ -20,7 +20,7 @@ import java.net.InetAddress
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import gwen.GwenInfo
+import gwen.{GwenInfo, Settings}
 import gwen.Predefs.Exceptions
 import gwen.dsl._
 import gwen.eval.FeatureResult
@@ -71,7 +71,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     
     Some(s"""<?xml version="1.0" encoding="UTF-8" ?>
 <testsuite$hostname$name$pkg$tests$errors$skipped$time$timestamp>
-    <properties>${sys.props.map { case (n, v) => s"""
+    <properties>${Settings.entries.map { case (n, v) => s"""
         <property name="${escapeXml(n)}" value="${escapeXml(v)}"/>"""}.mkString}
     </properties>${scenarios.zipWithIndex.map{case ((scenario, isExpanded), idx) => s"""
     <testcase name="Scenario ${padWithZeroes(idx + 1)}${if (isExpanded) " Outline" else ""}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {

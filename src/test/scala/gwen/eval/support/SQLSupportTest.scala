@@ -49,8 +49,8 @@ class SQLSupportTest
   )
 
   override def beforeAll(): Unit = {
-    Settings.add("gwen.db.testdb.driver", dbConfig.driver)
-    Settings.add("gwen.db.testdb.url", dbConfig.dbUrl)
+    Settings.set("gwen.db.testdb.driver", dbConfig.driver)
+    Settings.set("gwen.db.testdb.url", dbConfig.dbUrl)
 
     Await.result(awaitable = DB().seed, atMost = 5 seconds)
   }

@@ -20,7 +20,10 @@ import scala.collection.JavaConverters._
 import java.io.File
 import java.util.Properties
 import java.io.FileReader
+
 import gwen.errors._
+
+import scala.collection.mutable
 
 /**
   * Provides access to system properties loaded from properties files.
@@ -33,8 +36,13 @@ import gwen.errors._
   * @author Branko Juric
   */
 object Settings {
-  
-  private val InlineProperty = """.*\$\{(.+?)\}.*""".r
+
+  // thread local settings
+  private final val localSettings = new ThreadLocal[Properties]() {
+    override protected def initialValue: Properties = new Properties()
+  }
+
+  private final val InlineProperty = """.*\$\{(.+?)\}.*""".r
   
   loadAll(UserOverrides.UserProperties.toList)
   
@@ -44,7 +52,6 @@ object Settings {
     * @param propsFiles the properties files to load
     */
   def loadAll(propsFiles: List[File]): Unit = {
-    val sysProps = sys.props.keySet
     val props = propsFiles.foldLeft(new Properties()) { 
       (props, file) => 
         props.load(new FileReader(file))
@@ -56,10 +63,10 @@ object Settings {
     }
     props.entrySet().asScala.foreach { entry =>
       val key = entry.getKey.asInstanceOf[String]
-      if (!sysProps.contains(key)) {
+      if (!names.contains(key)) {
         try {
           val value = resolve(props.getProperty(key), props)
-          Settings.add(key, value, overrideIfExists = true)
+          Settings.set(key, value)
         } catch {
           case e: Throwable => propertyLoadError(key, e)
         }
@@ -80,7 +87,7 @@ object Settings {
       val inline = if (props.containsKey(key)) {
         props.getProperty(key)
       } else {
-        sys.props.get(key).getOrElse(missingPropertyError(key))
+        getOpt(key).getOrElse(missingPropertyError(key))
       }
       val resolved = inline match {
         case InlineProperty(_) => resolve(inline, props)
@@ -95,7 +102,7 @@ object Settings {
     * 
     * @param name the name of the property to get
     */
-  def getOpt(name: String): Option[String] = sys.props.get(name)
+  def getOpt(name: String): Option[String] = Option(localSettings.get.getProperty(name)).orElse(sys.props.get(name))
   
   /**
     * Gets a mandatory property (throws exception if not found)
@@ -111,7 +118,7 @@ object Settings {
     * @param predicate name => Boolean
     * @return map of properties that match the predicate
     */
-  def findAll(predicate: String => Boolean): Map[String, String] = sys.props.toMap.filter {
+  def findAll(predicate: String => Boolean): Map[String, String] = entries.filter {
     case (name, _) => predicate(name)
   }
 
@@ -131,27 +138,75 @@ object Settings {
       (n.substring(singleName.length + 1), v)
     }).toMap
   }
-  
+
+  /** Gets all settings names (keys). */
+  def names: mutable.Set[String] = localSettings.get.keySet.asScala.map(_.toString) ++ sys.props.keySet
+
+  /** Gets number of names (keys). */
+  def size: Int = names.size
+
+  /** Gets all settings entries (name-value pairs). */
+  def entries: Map[String, String] =
+    localSettings.get.entrySet().asScala.map(entry => (entry.getKey.toString, entry.getValue.toString)).toMap ++
+      sys.props.toMap.filter{case (k, _) => !localSettings.get.containsKey(k)}
+
   /**
-    * Adds a property.
-    * 
+    * Checks to see if a setting exists.
+    * @param name the name of the setting to check
+    * @return true if the setting exists, false otherwise
+    */
+  def contains(name: String): Boolean = getOpt(name).nonEmpty
+
+  /**
+    * Adds a system property (overrides any existing value)
+    *
     * @param name the name of the property to add
     * @param value the value to bind to the property
     */
-  def add(name: String, value: String): Unit = {
-    add(name, value, overrideIfExists = false)
+  def set(name: String, value: String): Unit = {
+    sys.props += ((name, value))
   }
-  
+
+  /**
+    * Clears local and global settings of the given name.
+    *
+    * @param name the name of the setting to clear
+    */
+  def clear(name: String): Unit = {
+    localSettings.get.remove(name)
+    sys.props -= name
+  }
    /**
-    * Adds a property.
+    * Adds a system property.
     * 
     * @param name the name of the property to add
     * @param value the value to bind to the property
     */
   private[gwen] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
-    if (overrideIfExists || !sys.props.contains(name)) {
-      sys.props += ((name, value))
+    if (overrideIfExists || !contains(name)) {
+      set(name, value)
     }
+  }
+
+  /**
+    * Adds a thread local Gwen setting (overrides any existing value)
+    *
+    * @param name the name of the setting to set
+    * @param value the value to bind to the setting
+    */
+  def setLocal(name: String, value: String): Unit = {
+    if (!name.startsWith("gwen.")) unsupportedLocalSetting(name)
+    localSettings.get.setProperty(name, value)
+  }
+
+  /**
+    * Clears a local Gwen settings entry.
+    * @param name the setting entry to remove
+    * @return the removed entry value
+    */
+  def clearLocal(name: String): Unit = {
+    if (!name.startsWith("gwen.")) unsupportedLocalSetting(name)
+    localSettings.get.remove(name)
   }
   
 }

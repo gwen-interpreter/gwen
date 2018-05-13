@@ -65,6 +65,7 @@ package gwen {
     def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
     def javaScriptError(javascript: String, cause: Throwable) = throw new ScriptException("JavaScript", javascript, cause)
     def templateMatchError(msg: String) = throw new TemplateMatchException(msg)
+    def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
 
     /** Base exception\. */
     class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
@@ -152,5 +153,7 @@ package gwen {
     /** Thrown when a template match error is detected. */
     class TemplateMatchException(msg: String) extends GwenException(msg)
 
+    /** Thrown when an attempt is made to set a non Gwen local setting. */
+    class UnsupportedLocalSettingException(name: String) extends GwenException(s"Unsupported thread-local setting '$name': only Gwen settings that start with 'gwen.' are supported here")
   }
 }
