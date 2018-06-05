@@ -1,3 +1,20 @@
+2.15.0
+======
+June 5, 2018
+- Add support for loading settings from one comma separated setting and from many individual
+  settings with arbitrarily named suffixes. If both forms are provided, then all values are merged.
+  - For example, the following 3 settings..
+      ```
+      setting.values=value1,value2=2
+      setting.values.0=value3
+      setting.values.1=valueX=1,valueY=2
+      ```
+      ..will resolve to the following 4 values:
+      - `value1`
+      - `value2=2`
+      - `value3`
+      - `valueX=1,valueY=2`
+
 2.14.0
 ======
 May 13, 2018

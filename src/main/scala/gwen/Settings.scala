@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,8 +128,8 @@ object Settings {
    * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
    */
   def findAllMulti(multiName: String, singleName: String): Map[String, String] = {
-    val prefs: Seq[String] = Settings.getOpt(multiName).map(_.split(",")).map(_.toList).getOrElse(Nil)
-    val nvps: Seq[(String, String)] = prefs.map(_.split('=')).map { nvp =>
+    val assignments: Seq[String] = Settings.getOpt(multiName).map(_.split(",")).map(_.toList).getOrElse(Nil)
+    val nvps: Seq[(String, String)] = assignments.map(_.split('=')).map { nvp =>
       if (nvp.length == 2) (nvp(0), nvp(1))
       else if (nvp.length == 1) (nvp(0), "")
       else propertyLoadError(nvp(0), "name-value pair expected")
@@ -137,6 +137,16 @@ object Settings {
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
       (n.substring(singleName.length + 1), v)
     }).toMap
+  }
+
+  /**
+   * Provides access to multiple settings. This method merges a comma separated list of name-value pairs
+   * set in the given multiName property with all name-value properties that start with singleName.
+   * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+   */
+  def findAllMulti(name: String): List[String] = {
+    val values = Settings.getOpt(name).map(_.split(",").toList.map(_.trim)).getOrElse(Nil)
+    values ++ Settings.findAll(_.startsWith(s"$name.")).map { case (_, v) => v }
   }
 
   /** Gets all settings names (keys). */

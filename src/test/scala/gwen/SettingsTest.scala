@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ class SettingsTest extends FlatSpec with Matchers {
     }
   }
 
-  "multi properties" should "should merge" in {
+  "multi name-value properties" should "should merge" in {
     withSetting("gwen.web.chrome.prefs", "alternate_error_pages.enabled=false,session.length_limit=9999999999,other=?") {
       withSetting("gwen.web.chrome.pref.download.prompt_for_download", "false") {
         withSetting("gwen.web.chrome.pref.download.default_directory", "downloads") {
@@ -133,6 +133,22 @@ class SettingsTest extends FlatSpec with Matchers {
           props("other") should be ("?")
           props("download.prompt_for_download") should be ("false")
           props("download.default_directory") should be ("downloads")
+        }
+      }
+    }
+  }
+
+  "multi value properties" should "should merge" in {
+    withSetting("gwen.web.chrome.args", "--touch-events=disabled,--incognito,--other") {
+      withSetting("gwen.web.chrome.args.0", "--ignore-certificate-errors") {
+        withSetting("gwen.web.chrome.args.1", "--window-size=1920,1080") {
+          val values = Settings.findAllMulti("gwen.web.chrome.args")
+          values.size should be (5)
+          values.contains("--touch-events=disabled") should be (true)
+          values.contains("--incognito") should be (true)
+          values.contains("--other") should be (true)
+          values.contains("--ignore-certificate-errors") should be (true)
+          values.contains("--window-size=1920,1080") should be (true)
         }
       }
     }
