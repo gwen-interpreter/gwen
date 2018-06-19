@@ -280,7 +280,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           if (!file.exists()) missingOrInvalidImportFileError(importTag, None)
           if (!file.getName.toLowerCase.endsWith(".csv")) unsupportedDataFileError(importTag, None)
           val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1, row.toList) }
-          Some(Examples(s"Data file: $filepath", Nil, table, Nil))
+          Some(Examples(Nil, s"Data file: $filepath", Nil, table, Nil))
         case r"""(?:E|e)xamples\(.*""" =>
           invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv")""")
         case _ => None

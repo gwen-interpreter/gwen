@@ -26,7 +26,6 @@ import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
 
 class TablesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
@@ -41,9 +40,6 @@ trait TablesEvalEngine extends DefaultEngineSupport[TablesEnvContext] {
 class TablesInterpreter
   extends GwenInterpreter[TablesEnvContext]
   with TablesEvalEngine
-
-object TablesInterpreter
-  extends GwenApp(new TablesInterpreter)
 
 class TablesInterpreterTest extends FlatSpec {
   

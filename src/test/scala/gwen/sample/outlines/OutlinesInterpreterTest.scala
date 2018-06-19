@@ -28,7 +28,6 @@ import gwen.eval.EvalEngine
 import gwen.dsl.Step
 import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
 
 class OutlinesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
   extends EnvContext(options, scopes) {
@@ -53,9 +52,6 @@ trait OutlinesEvalEngine extends EvalEngine[OutlinesEnvContext] {
 class OutlinesInterpreter
   extends GwenInterpreter[OutlinesEnvContext]
   with OutlinesEvalEngine
-
-object OutlinesInterpreter
-  extends GwenApp(new OutlinesInterpreter)
 
 class OutlinesInterpreterTest extends FlatSpec {
   

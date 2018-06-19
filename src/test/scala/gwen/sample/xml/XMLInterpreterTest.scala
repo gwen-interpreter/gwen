@@ -26,7 +26,6 @@ import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
 
 class XMLEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
@@ -41,9 +40,6 @@ trait XMLEvalEngine extends DefaultEngineSupport[XMLEnvContext] {
 class XMLInterpreter
   extends GwenInterpreter[XMLEnvContext]
   with XMLEvalEngine
-
-object XMLInterpreter
-  extends GwenApp(new XMLInterpreter)
 
 class XmlInterpreterTest extends FlatSpec {
   

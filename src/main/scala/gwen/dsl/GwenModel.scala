@@ -253,12 +253,13 @@ object Scenario {
 /**
   * Captures a gherkin scenario outline example group.
   *
+  * @param tags list of tags
   * @param name the example name
   * @param description option description lines
   * @param table header and body data (tuple of line position and rows of data)
   * @param scenarios list of expanded scenarios
   */
-case class Examples(name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
+case class Examples(tags: List[Tag], name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
 
   /**
     * Returns a list containing all the background steps (if any) followed by
@@ -290,6 +291,7 @@ object Examples {
         examples.getLocation.getColumn)
     }
     new Examples(
+      Option(examples.getTags).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)),
       examples.getName,
       Option(examples.getDescription).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       (header.getLocation.getLine, header.getCells.asScala.toList.map(_.getValue)) ::
@@ -300,7 +302,7 @@ object Examples {
     ) tap { e => e.pos = Position(examples.getLocation) }
   }
   def apply(examples: Examples, scenarios: List[Scenario]): Examples =
-    Examples(examples.name, examples.description, examples.table, scenarios) tap { e => e.pos = examples.pos }
+    Examples(examples.tags, examples.name, examples.description, examples.table, scenarios) tap { e => e.pos = examples.pos }
 }
 
 /**

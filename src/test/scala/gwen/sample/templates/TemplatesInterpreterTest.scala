@@ -26,7 +26,6 @@ import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
 
 class TemplatesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
@@ -41,9 +40,6 @@ trait TemplatesEvalEngine extends DefaultEngineSupport[TemplatesEnvContext] {
 class TemplatesInterpreter
   extends GwenInterpreter[TemplatesEnvContext]
   with TemplatesEvalEngine
-
-object TemplatesInterpreter
-  extends GwenApp(new TemplatesInterpreter)
 
 class TemplatesInterpreterTest extends FlatSpec {
   

@@ -32,7 +32,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       
       Scenario: Work unit 1
           Given I do work 1
-      
+
       @work
       Scenario: Work unit 2
           Given I do work 2
@@ -43,7 +43,19 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       
       @wip @play
       Scenario: Work unit 4
-          Given I do work 4"""
+          Given I do work 4
+
+      @work
+      Scenario Outline: Work unit 5
+          Given I do work <name>
+        @play
+        Examples: play examples
+          | name |
+          | play |
+        @rest
+        Examples: rest examples
+          | name |
+          | rest |"""
     
   "No tags" should "return same feature" in {
       val source = parse(featureString).get
@@ -74,9 +86,13 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       TagsFilter.filter(source, List(("@work", true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
-          scenarios.size should be (2)
+          scenarios.size should be (3)
           scenarios(0).name should be ("Work unit 2")
           scenarios(1).name should be ("Work unit 3")
+          scenarios(2).name should be ("Work unit 5")
+          scenarios(2).examples.size should be (2)
+          scenarios(2).examples(0).name should be ("play examples")
+          scenarios(2).examples(1).name should be ("rest examples")
           
         case None => fail("feature expected")
       }
@@ -112,8 +128,11 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       TagsFilter.filter(source, List(("@play", false), ("@work", true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
-          scenarios.size should be (1)
+          scenarios.size should be (2)
           scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 5")
+          scenarios(1).examples.size should be (1)
+          scenarios(1).examples(0).name should be ("rest examples")
           
         case None => fail("feature expected")
       }
@@ -132,10 +151,14 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       TagsFilter.filter(source, List(("@work", true), ("@play", true))) match {
         case Some(target) => 
           val scenarios = target.scenarios
-          scenarios.size should be (3)
+          scenarios.size should be (4)
           scenarios(0).name should be ("Work unit 2")
           scenarios(1).name should be ("Work unit 3")
           scenarios(2).name should be ("Work unit 4")
+          scenarios(3).name should be ("Work unit 5")
+          scenarios(3).examples.size should be (2)
+          scenarios(3).examples(0).name should be ("play examples")
+          scenarios(3).examples(1).name should be ("rest examples")
         case None => fail("feature expected")
       }
   }
@@ -145,9 +168,12 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
       TagsFilter.filter(source, List(("@work", true), ("@rest", false), ("@play", true))) match {
         case Some(target) => 
           val scenarios = target.scenarios
-          scenarios.size should be (2)
+          scenarios.size should be (3)
           scenarios(0).name should be ("Work unit 2")
           scenarios(1).name should be ("Work unit 4")
+          scenarios(2).name should be ("Work unit 5")
+          scenarios(2).examples.size should be (1)
+          scenarios(2).examples(0).name should be ("play examples")
         case None => fail("feature expected")
       }
   }
@@ -163,17 +189,123 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   "@Ignore tag" should "should be excluded by default" in {
     val source = parse(featureString + """
       @Ignore
-      Scenario: Work unit 5
-          Given I do work 5""").get
+      Scenario: Work unit 6
+          Given I do work 6""").get
       TagsFilter.filter(source, Nil) match {
         case Some(target) =>
           val scenarios = target.scenarios
-          scenarios.size should be (4)
+          scenarios.size should be (5)
           scenarios(0).name should be ("Work unit 1")
           scenarios(1).name should be ("Work unit 2")
           scenarios(2).name should be ("Work unit 3")
           scenarios(3).name should be ("Work unit 4")
+          scenarios(4).name should be ("Work unit 5")
+          scenarios(4).examples.size should be (2)
+          scenarios(4).examples(0).name should be ("play examples")
+          scenarios(4).examples(1).name should be ("rest examples")
           
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @play scenario and example level tags" should "return scenarios and examples with those tags" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@play", true))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (3)
+          scenarios(0).name should be ("Work unit 3")
+          scenarios(1).name should be ("Work unit 4")
+          scenarios(2).name should be ("Work unit 5")
+          scenarios(2).examples.size should be (1)
+          scenarios(2).examples(0).name should be ("play examples")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Exclude @rest and @play scenario and example level tags" should "return scenarios and examples without those tags" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@play", false), ("@rest", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 1")
+          scenarios(1).name should be ("Work unit 2")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @work and exclude @rest and @play scenario and example level tags" should "return scenarios and examples that match" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@work", true), ("@play", false), ("@rest", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (1)
+          scenarios(0).name should be ("Work unit 2")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @work and exclude @rest scenario and example level tags" should "return scenarios and examples that match" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@work", true), ("@rest", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 5")
+          scenarios(1).examples.size should be (1)
+          scenarios(1).examples(0).name should be ("play examples")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @work and exclude @play scenario and example level tags" should "return scenarios and examples that match" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@work", true), ("@play", false))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 2")
+          scenarios(1).name should be ("Work unit 5")
+          scenarios(1).examples.size should be (1)
+          scenarios(1).examples(0).name should be ("rest examples")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @rest scenario and example level tags" should "return scenarios and examples that match" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@rest", true))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (2)
+          scenarios(0).name should be ("Work unit 3")
+          scenarios(1).name should be ("Work unit 5")
+          scenarios(1).examples.size should be (1)
+          scenarios(1).examples(0).name should be ("rest examples")
+
+        case None => fail("feature expected")
+      }
+  }
+
+  "Include @play scenario and example level tags" should "return scenarios and examples that match" in {
+    val source = parse(featureString).get
+      TagsFilter.filter(source, List(("@play", true))) match {
+        case Some(target) =>
+          val scenarios = target.scenarios
+          scenarios.size should be (3)
+          scenarios(0).name should be ("Work unit 3")
+          scenarios(1).name should be ("Work unit 4")
+          scenarios(2).name should be ("Work unit 5")
+          scenarios(2).examples.size should be (1)
+          scenarios(2).examples(0).name should be ("play examples")
+
         case None => fail("feature expected")
       }
   }

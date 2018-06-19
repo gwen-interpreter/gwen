@@ -56,9 +56,9 @@ object prettyPrint {
       else if (docString.nonEmpty)
         formatTextLines(Formatting.formatDocString(docString.get).split("""\r?\n""").toList)
       else ""}"
-    case Examples(name, description, table, scenarios) => scenarios match {
+    case Examples(tags, name, description, table, scenarios) => scenarios match {
       case Nil =>
-        s"\n  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })}"
+        s"\n${formatTags("  ", tags)}  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })}"
       case _ =>
         scenarios.map(apply).mkString("")
     }

@@ -16,8 +16,7 @@
 
 package gwen.eval
 
-import gwen.dsl.FeatureSpec
-import gwen.dsl.Tag
+import gwen.dsl.{FeatureSpec, Scenario, Tag}
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -45,14 +44,29 @@ object TagsFilter {
     spec.scenarios flatMap { scenario =>
       val effectiveTags = spec.feature.tags ++ scenario.tags
       val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}
-      val includeSatisfied = includes.isEmpty || effectiveTags.map(_.name).exists(name => includes.contains(name))
-      val excludeSatisfied = excludes.isEmpty || effectiveTags.map(_.name).forall(name => !excludes.contains(name))
-      if (includeSatisfied && excludeSatisfied) Some(scenario)
+      if (isSatisfied(effectiveTags, includes, excludes) || isSatisfied(effectiveTags ++ scenario.examples.flatMap(_.tags), includes, excludes)) {
+        val filteredExamples = scenario.examples.filter { examples => isSatisfied(effectiveTags ++ examples.tags, includes, excludes) }
+        if (filteredExamples != scenario.examples) {
+          if (filteredExamples.isEmpty) {
+            None
+          } else {
+            Some(Scenario(scenario, filteredExamples))
+          }
+        } else {
+          Some(scenario)
+        }
+      }
       else None
     } match {
       case Nil => None
       case scenarios => Some(FeatureSpec(spec.feature, spec.background, scenarios, None, Nil))
     }
+  }
+
+  private def isSatisfied(tags: List[Tag], includes: List[String], excludes: List[String]): Boolean = {
+    val includeSatisfied = includes.isEmpty || tags.map(_.name).exists(name => includes.contains(name))
+    val excludeSatisfied = excludes.isEmpty || tags.map(_.name).forall(name => !excludes.contains(name))
+    includeSatisfied && excludeSatisfied
   }
   
 }
