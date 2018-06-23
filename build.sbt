@@ -6,7 +6,7 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 lazy val commonSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter and automation platform",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.6",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),
@@ -25,8 +25,8 @@ lazy val commonSettings = Seq(
 lazy val testDependencies = {
   val scalaTest = "3.0.5"
   val mockitoAll = "1.10.19"
-  val h2 = "1.4.196"
-  val slick = "3.2.2"
+  val h2 = "1.4.197"
+  val slick = "3.2.3"
 
   Seq(
     "org.scalatest" %% "scalatest" % scalaTest,
@@ -37,16 +37,16 @@ lazy val testDependencies = {
 }
 
 lazy val commonDependencies = {
-  val cucumberGherkin = "5.0.0"
+  val cucumberGherkin = "5.1.0"
   val scopt = "3.7.0"
   val slf4jLog4j = "1.7.25"
-  val scalaLogging = "3.8.0"
-  val jline = "2.14.5"
+  val scalaLogging = "3.9.0"
+  val jline = "2.14.6"
   val commonCodec = "1.11"
-  val commonsText = "1.2"
+  val commonsText = "1.4"
   val scalaCSV = "1.3.5"
   val jsonPath = "2.4.0"
-  val jodaTime = "2.9.9"
+  val jodaTime = "2.10"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
