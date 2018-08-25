@@ -21,6 +21,7 @@ to capture automation bindings and allow you to compose step definitions in a de
 
 ### What's New?
 
+- [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen-web/wiki/Synchronized-StepDefs)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 - [Gwen Workspaces](https://gweninterpreter.wordpress.com/2017/12/18/gwen-workspaces/)
 
@@ -142,6 +143,7 @@ The following users raised issues or requests that have been addressed:
 - [anshu781126](https://github.com/anshu781126)
 - [ketu4u2010](https://github.com/ketu4u2010)
 - [Rahul9844](https://github.com/Rahul9844)
+- [rkevin99](https://github.com/rkevin99)
 
 Credits
 -------

@@ -16,6 +16,8 @@
 
 package gwen.eval
 
+import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap, Semaphore}
+
 import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenSettings
 import gwen.dsl._
@@ -41,6 +43,9 @@ import scala.util.Failure
   * @author Branko Juric
   */
 trait EvalEngine[T <: EnvContext] extends LazyLogging {
+
+  // semaphores for managing synchronized StepDefs
+  val stepDefSemaphors: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
   
   /**
     * Initialises the engine and returns a bootstrapped evaluation context.
@@ -64,6 +69,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
       env.addStepDef(scenario)
+      if (scenario.isSynchronized) {
+        stepDefSemaphors.putIfAbsent(scenario.name, new Semaphore(1))
+      }
       val steps =
         if (!scenario.isOutline)
           scenario.steps map { step => Step(step, Loaded, step.attachments) }
@@ -161,7 +169,19 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                   }
                 }
               case (Some((stepDef, params))) =>
-                evalStepDef(stepDef, iStep, params, env)
+                if (stepDef.isSynchronized) {
+                  val semaphore = stepDefSemaphors.get(stepDef.name)
+                  semaphore.acquire()
+                  try {
+                    logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
+                    evalStepDef(stepDef, iStep, params, env)
+                  } finally {
+                    logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
+                    semaphore.release()
+                  }
+                } else {
+                  evalStepDef(stepDef, iStep, params, env)
+                }
             }
         }
       } else {
@@ -211,7 +231,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         Step(step, failure)
     }
   }
-  
+
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     env.stepScope.push(stepDef.name, params)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,6 +207,7 @@ case class Scenario(
   def isStepDef: Boolean = tags.contains(Tag.StepDefTag)
   def isForEach: Boolean = tags.contains(Tag.ForEachTag)
   def isDataTable: Boolean = tags.exists(_.name.startsWith(Tag.DataTableTag.name))
+  def isSynchronized: Boolean = tags.exists(t => t == Tag.SynchronizedTag || t == Tag.SynchronisedTag)
 
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
@@ -326,8 +327,10 @@ object Tag {
   val StepDefTag = Tag("StepDef")
   val ForEachTag = Tag("ForEach")
   val DataTableTag = Tag("DataTable")
+  val SynchronisedTag = Tag("Synchronised")
+  val SynchronizedTag = Tag("Synchronized")
 
-  val InbuiltTags = List(ImportTag, StepDefTag, ForEachTag, DataTableTag)
+  val InbuiltTags = List(ImportTag, StepDefTag, ForEachTag, DataTableTag, SynchronisedTag, SynchronizedTag)
 
   private val Regex = """~?@([^\s]+)""".r
 
