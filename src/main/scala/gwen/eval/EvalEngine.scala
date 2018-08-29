@@ -69,7 +69,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
       env.addStepDef(scenario)
-      if (scenario.isSynchronized) {
+      if (env.isParallel && scenario.isSynchronized) {
         stepDefSemaphors.putIfAbsent(scenario.name, new Semaphore(1))
       }
       val steps =
@@ -169,7 +169,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                   }
                 }
               case (Some((stepDef, params))) =>
-                if (stepDef.isSynchronized) {
+                if (stepDefSemaphors.containsKey(stepDef.name)) {
                   val semaphore = stepDefSemaphors.get(stepDef.name)
                   semaphore.acquire()
                   try {

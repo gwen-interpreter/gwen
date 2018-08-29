@@ -57,6 +57,9 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   /** Dry run flag. */
   val isDryRun: Boolean = options.dryRun
 
+  /** Parallel execution mode flag. */
+  val isParallel: Boolean = options.parallel
+
   /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
   var loadedMeta: List[File] = Nil
 
