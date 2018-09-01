@@ -1,3 +1,10 @@
+2.16.0
+======
+August 25, 2018
+- Introduced @Synchronized annotation for StepDefs to support synchronized execution of certain steps.
+  StepDefs having this annotation will have their steps executed by a single feature thread at a time in the case
+  of parallel execution. This feature was requested through PR gwen-interpreter/gwen-web#63 raised by @rkevin99.
+
 2.15.2
 ======
 June 23, 2018
