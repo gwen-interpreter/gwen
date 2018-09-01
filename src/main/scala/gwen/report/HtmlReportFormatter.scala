@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -447,8 +447,10 @@ trait HtmlReportFormatter extends ReportFormatter {
                       <strong>attachment${if (attachments.size > 1) "s" else ""}</strong>
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu pull-right" role="menu">${(attachments map { case (name, file) => s"""
-                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName}" target="_blank">${escapeHtml(name)}</a></li>"""}).mkString }
+                    <ul class="dropdown-menu pull-right" role="menu">${(attachments map { case (name, file) =>
+                    val number = file.getName.substring(0, file.getName.indexOf("-")).toInt
+                    s"""
+                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName}" target="_blank"><span class="line-no" style="width: 0px;">${number}. &nbsp; </span>${escapeHtml(name)}</a></li>"""}).mkString }
                     </ul>
                   </div>""" else ""}"""
 
