@@ -1,3 +1,8 @@
+2.16.1
+======
+October 2, 2018
+- Use `==` instead of `.equals` for string equality check in assertions (as per scala recommendation)
+
 2.16.0
 ======
 September 1, 2018

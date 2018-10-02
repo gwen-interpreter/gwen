@@ -342,7 +342,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   
   def compare(sourceName: String, expected: String, actual: String, operator: String, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
-      case "be"      => expected.equals(actual)
+      case "be"      => expected == actual
       case "contain" => actual.contains(expected)
       case "start with" => actual.startsWith(expected)
       case "end with" => actual.endsWith(expected)
