@@ -27,7 +27,12 @@ import gwen.report.ReportGenerator
 import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
 import java.util.concurrent.atomic.AtomicInteger
+
 import gwen.Settings
+
+import scala.concurrent._
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Launches the gwen interpreter.
@@ -90,17 +95,25 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
-      val counter = new AtomicInteger(0)
-      val started = new ThreadLocal[Boolean]()
-      started.set(false)
-      val results = featureStream.par.flatMap { unit =>
+      executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
+    } else {
+      executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
+    }
+  }
+
+  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+    val counter = new AtomicInteger(0)
+    val started = new ThreadLocal[Boolean]()
+    started.set(false)
+    val featureUnits = featureStream.map { unit =>
+      Future {
         if (!started.get) {
           started.set(true)
           GwenSettings.`gwen.rampup.interval.seconds` foreach { interval =>
             if (interval > 0) {
               val partition = counter.incrementAndGet()
               val period = (partition - 1) * interval
-              logger.info(s"Ramp up period for parallel partition $partition is $period second${if(period == 1) "" else "s"}")
+              logger.info(s"Ramp up period for parallel partition $partition is $period second${if (period == 1) "" else "s"}")
               Thread.sleep(period * 1000)
             }
           }
@@ -110,31 +123,41 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
-      results.toList.sortBy(_.finished).foldLeft(FeatureSummary()) (_+_) tap { summary => 
-        reportGenerators foreach { _.reportSummary(interpreter, summary) }
+    }
+    val results = Await.result(
+      Future.sequence(featureUnits.force),
+      Duration.Inf
+    )
+    results.flatten.sortBy(_.finished).foldLeft(FeatureSummary())(_ + _) tap { summary =>
+      reportGenerators foreach {
+        _.reportSummary(interpreter, summary)
       }
-    } else {
-      val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
-      featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
-        if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
-          summary
-        } else {
-          evaluateUnit(options, envOpt, unit) { result =>
-            (result match { 
-              case None => summary
-              case _ => 
-                (summary + result.map(bindReportFiles(reportGenerators, unit, _)).get) tap { accSummary =>
-                  if (!options.parallel) {
-                    reportGenerators foreach { _.reportSummary(interpreter, accSummary) }
+    }
+  }
+
+  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+    val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
+    featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
+      if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
+        summary
+      } else {
+        evaluateUnit(options, envOpt, unit) { result =>
+          (result match {
+            case None => summary
+            case _ =>
+              (summary + result.map(bindReportFiles(reportGenerators, unit, _)).get) tap { accSummary =>
+                if (!options.parallel) {
+                  reportGenerators foreach {
+                    _.reportSummary(interpreter, accSummary)
                   }
                 }
-            }) tap { _ => result.foreach(logFeatureStatus) }
-          }
+              }
+          }) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
     }
   }
-  
+
   private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], unit: FeatureUnit)(f: (Option[FeatureResult] => U)): U = {
     logger.info(("""|       
                     |  _    

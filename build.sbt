@@ -5,8 +5,8 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 lazy val commonSettings = Seq(
   name := "gwen",
-  description := "A Given-When-Then interpreter and automation platform",
-  scalaVersion := "2.12.6",
+  description := "A Given-When-Then interpreter for Gherkin",
+  scalaVersion := "2.12.7",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),

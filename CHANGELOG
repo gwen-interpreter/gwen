@@ -1,3 +1,10 @@
+2.16.2
+======
+October 6, 2018
+- Use java futures instead of parallel collections to ensure that all cores are utilised at all times during parallel
+  execution.
+- Update scala from version 2.12.6 to 2.12.7
+
 2.16.1
 ======
 October 2, 2018
