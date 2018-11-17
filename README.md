@@ -3,7 +3,7 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin) interpreter that turns Given-When-Then
+Gwen is a [Gherkin](https://docs.cucumber.io/gherkin/reference/) interpreter that turns Given-When-Then
 steps into automation instructions and executes them for you so you don't have to do all the programming work. It has
 an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
 automation capability to be built and mixed in.
@@ -147,11 +147,15 @@ The following users raised issues or requests that have been addressed:
 
 Credits
 -------
-- [Cucumber/Gherkin](https://github.com/cucumber/cucumber/wiki/Gherkin)
+- [Cucumber/Gherkin](https://docs.cucumber.io/gherkin/reference/)
 - [Scopt](https://github.com/scopt/scopt)
 - [JLine](https://github.com/jline/jline2)
 - [Bootstrap](https://getbootstrap.com/)
 - [JQuery](https://jquery.com/)
 - [Reel](https://github.com/pisi/Reel)
+
+Known Users
+-----------
+<a href="https://www.matrak.com.au" target="_blank"><img src="https://gwen-interpreter.github.io/assets/img/users/matrak.png" height="45"/></a>
 
 ---

@@ -1,3 +1,8 @@
+2.16.3
+======
+November 17, 2018
+- Add settings exception for raising invalid settings errors
+
 2.16.2
 ======
 October 6, 2018
