@@ -17,18 +17,20 @@
 package gwen.eval
 
 import java.io.File
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.dsl.Tag
 import gwen.dsl.Tag.string2Tag
+
 import scala.util.Success
 import scala.util.Try
 import scala.util.Failure
-import gwen.UserOverrides
 import gwen.sample.math.MathInterpreter
 import gwen.report.ReportFormat
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
+import gwen.Settings
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -709,7 +711,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     options.tags should be (tags)
     options.dryRun should be (dryRun)
     options.dataFile should be (dataFile)
-    options.metas should be (UserOverrides.addUserMeta(metaFiles))
+    options.metas should be (FileIO.appendFile(metaFiles, Settings.UserMeta))
     options.features should be (features)
     
   }

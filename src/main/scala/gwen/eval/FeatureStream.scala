@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import scala.collection.immutable.Stream.consWrapper
 import gwen.Predefs.FileIO._
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
-import gwen.{GwenSettings, UserOverrides}
+import gwen.GwenSettings
+import gwen.Predefs.FileIO
+import gwen.Settings
 
 /**
   * Reads and streams individual features and feature suites from the file system.  
@@ -84,7 +86,8 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
       location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
-      val unit = FeatureUnit(location, UserOverrides.mergeMetaFiles(metaFiles, inputMeta), None)
+      val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
+      val unit = FeatureUnit(location, metas, None)
       dataFile match {
         case Some(file) => new FeatureSet(unit, file).toStream
         case None =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package gwen.eval
 
 import java.io.File
-import gwen.GwenInfo
+
+import gwen.{GwenInfo, Settings}
 import gwen.Predefs.Kestrel
+import gwen.Predefs.FileIO
 import gwen.dsl.Tag
-import gwen.UserOverrides
 import scopt.OptionParser
 import gwen.errors._
 import gwen.report.ReportFormat
@@ -33,7 +34,7 @@ import gwen.report.ReportFormat
   * @param parallel true to run each given file/dir entry in parallel, false for serial
   *                 (default is false)      
   * @param reportDir optional directory to generate evaluation report into
-  * @param properties list of properties files to load into system properties
+  * @param properties list of properties files to load as settings
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
@@ -157,7 +158,7 @@ object GwenOptions {
       } text "Space separated list of feature files and/or directories"
     
     }
-  
+
     (parser.parse(args, GwenOptions()).map { options =>
       new GwenOptions(
         options.batch,
@@ -168,7 +169,7 @@ object GwenOptions {
         options.tags,
         options.dryRun,
         options.dataFile,
-        UserOverrides.addUserMeta(options.metas),
+        FileIO.appendFile(options.metas, Settings.UserMeta),
         options.features,
         Some(args)) 
       } tap { options =>

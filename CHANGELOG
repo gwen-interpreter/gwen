@@ -1,3 +1,14 @@
+2.17.0
+======
+November 24, 2018
+- Add global default and working Gwen properties. Properties are loaded in the following order of precedence:
+  - System properties passed through `-D` Java command line option
+  - `~/gwen.properties` file in root of user directory (user overrides)
+  - Properties files passed into Gwen through the -p/--properties command line option
+    - These are loaded in the order provided so that later ones override earlier ones
+  - `./gwen.properties` file in working directory where Gwen is invoked (working defaults)
+  - `~/.gwen/gwen.properties file` in `.gwen` folder of user home directory (global defaults)
+
 2.16.3
 ======
 November 17, 2018

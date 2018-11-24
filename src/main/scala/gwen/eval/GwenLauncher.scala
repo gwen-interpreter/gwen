@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import scala.Option.option2Iterable
 import com.typesafe.scalalogging.LazyLogging
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
-import gwen.UserOverrides
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
 import gwen.report.ReportGenerator
@@ -54,7 +53,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val startNanos = System.nanoTime
     try {
-      Settings.loadAll(UserOverrides.addUserProperties(options.properties))
+      Settings.loadAll(options.properties)
       val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {

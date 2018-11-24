@@ -22,20 +22,32 @@ import java.util.Properties
 import java.io.FileReader
 
 import gwen.errors._
+import gwen.Predefs.FileIO
 
 import scala.collection.mutable
 
 /**
-  * Provides access to system properties loaded from properties files.
-  * If a gwen.properties file exists in the user's home directory, then
-  * its properties are loaded first. Once a property is loaded it is never
-  * replaced. Therefore it is important to load properties in the right 
-  * order. Existing system properties are not overriden by values in 
-  * properties files (and therefore have precedence).
+  * Provides access to system properties loaded from properties files. Properties are loaded in the following order
+  * of precedence:
+  *   1. System properties passed through -D Java command line option
+  *   2. ~/gwen.properties (user overrides)
+  *   3. Properties files passed into Gwen through the -p/--properties command line option
+  *      - These are loaded in the order provided so that later ones override earlier ones
+  *   4. ./gwen.properties (working directory)
+  *   5. ~/.gwen/gwen.properties (global properties)
+  *
+  * Once a property is loaded it is never replaced. Therefore it is important to load properties in the right
+  * order as per above. System properties are not overridden.
   *
   * @author Branko Juric
   */
 object Settings {
+
+  val userProperties: Option[File] = FileIO.getUserFile("gwen.properties")
+  val workingProperties: Option[File] = FileIO.getFileOpt("gwen.properties")
+  val defaultProperties: Option[File] = FileIO.getUserFile(".gwen/gwen.properties")
+
+  val UserMeta: Option[File] = FileIO.getUserFile("gwen.meta")
 
   // thread local settings
   private final val localSettings = new ThreadLocal[Properties]() {
@@ -44,15 +56,20 @@ object Settings {
 
   private final val InlineProperty = """.*\$\{(.+?)\}.*""".r
   
-  loadAll(UserOverrides.UserProperties.toList)
-  
   /**
-    * Loads all properties from the given files.
+    * Loads the given properties files provided to Gwen on the command line in the order provided (later ones override
+    * earlier ones). See class level comment for full details about how properties are loaded and their precedences.
     * 
-    * @param propsFiles the properties files to load
+    * @param cmdProperties command line properties passed into Gwen
     */
-  def loadAll(propsFiles: List[File]): Unit = {
-    val props = propsFiles.foldLeft(new Properties()) { 
+  def loadAll(cmdProperties: List[File]): Unit = {
+
+    // create list of properties files in order of precedence (stripping out any duplicates)
+    val pFiles = cmdProperties.reverse ++ List(workingProperties, defaultProperties).flatten
+    val propFiles = pFiles.foldLeft(userProperties.toList) { FileIO.appendFile }
+
+    // load files in reverse  order to ensure those with lesser precedence are overwritten by higher ones
+    val props = propFiles.reverse.foldLeft(new Properties()) {
       (props, file) => 
         props.load(new FileReader(file))
         props.entrySet().asScala foreach { entry =>
@@ -61,6 +78,8 @@ object Settings {
         }
         props
     }
+
+    // resolve all nested values and store in settings
     props.entrySet().asScala.foreach { entry =>
       val key = entry.getKey.asInstanceOf[String]
       if (!names.contains(key)) {

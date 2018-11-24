@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2018 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,9 @@ object Predefs extends LazyLogging {
       case "json" => "application/json"
       case _ => "text/plain"
     }
-    
+
+    def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
+
   }
   
   object FileIO {
@@ -148,6 +150,11 @@ object Predefs extends LazyLogging {
         case dirs => metas ::: dirs.flatMap(dir => recursiveScan(dir, extension))
       }
     }
+    def getUserFile(filename: String): Option[File] =
+      sys.props.get("user.home").map(new File(_, filename)).filter(_.exists())
+    def getFileOpt(filepath: String): Option[File] = Option(new File(filepath)).filter(_.exists())
+    def appendFile(files: List[File], file: File): List[File] = appendFile(files, Option(file))
+    def appendFile(files: List[File], file: Option[File]): List[File] = (files.filter(!_.isSame(file)) ++ file).distinct
   }
   
   /** Exception functions. */
