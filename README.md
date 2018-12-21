@@ -10,7 +10,7 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-- [Join our user community and get support](#user-community)
+- [Join our user network and get support](#user-network)
 
 ### Current Status
 
@@ -74,8 +74,8 @@ Key Features
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
-User Community
---------------
+User Network
+------------
 
 All announcements and discussions are posted and broadcast to all users in our Gwen slack network. A private support channel is also provided to companies who register. [Submit your request to join here](https://www.gwenify.com/). 
 
