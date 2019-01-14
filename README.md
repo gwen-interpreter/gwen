@@ -10,7 +10,7 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-- [Join our user network and get support](#user-network)
+[User network and support](https://www.gwenify.com/)
 
 ### Current Status
 
@@ -74,12 +74,6 @@ Key Features
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
-User Network
-------------
-
-All announcements and discussions are posted and broadcast to all users in our Gwen slack network. A private support channel is also provided to companies who register. [Submit your request to join here](https://www.gwenify.com/). 
-
-
 License
 -------
 
@@ -100,7 +94,7 @@ Contributions
 
 New capabilities, improvements, and fixes are all valid candidates for contribution. Submissions can be made using
 pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being
-integrated and released to the community. We ask that all code submissions include unit tests.
+integrated and released to the community. We ask that all code sbmissions include unit tests.
 
 By submitting contributions, you agree to release your work under the [license](#license) that covers this software.
 
