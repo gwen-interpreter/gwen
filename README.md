@@ -10,7 +10,7 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-[User network and support](https://www.gwenify.com/)
+> [User network and support](https://www.gwenify.com/)
 
 ### Current Status
 
