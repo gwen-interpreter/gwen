@@ -179,8 +179,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <ul class="list-group">${
           (scenario.steps.zipWithIndex map { case (step, index) =>
             if (!scenario.isOutline) {
-              val reportingStatus = step.stepDef.map(sd => EvalStatus(sd.steps.map(_.evalStatus), ignoreWarnings = false)).getOrElse(step.evalStatus)
-              formatStepLine(step, reportingStatus.status, s"$scenarioId-${step.pos.line}-${index + 1}")
+              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}-${index + 1}")
             } else {
               formatRawStepLine(step, scenario.evalStatus.status)
             }
@@ -386,7 +385,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 val percentage = calcPercentage(count, total)
                 s"""
                 <div class="progress-bar progress-bar-${cssStatus(status)}" style="width: $percentage%">
-                  <span>$count $status - ${percentageRounded(percentage)}%</span>
+                  <span>$count $status${if (status == StatusKeyword.Warning && total > 1) "s" else ""} - ${percentageRounded(percentage)}%</span>
                 </div>"""}).mkString}
               </div>
               </td>

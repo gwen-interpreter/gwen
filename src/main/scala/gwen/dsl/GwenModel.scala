@@ -83,7 +83,7 @@ case class FeatureSpec(
   def attachments: List[(String, File)] = steps.flatMap(_.attachments)
 
   /** Gets the number of warnings. */
-  def noOfWarnings: Int = steps.flatMap(s => s.stepDef.map(_.steps).getOrElse(List(s))).count(_.evalStatus.status == StatusKeyword.Warning)
+  def noOfWarnings: Int = steps.count(_.evalStatus.status == StatusKeyword.Warning)
   
   /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {
@@ -215,7 +215,7 @@ case class Scenario(
   
   /** Returns the evaluation status of this scenario. */
   override lazy val evalStatus: EvalStatus =
-    if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus))
+    if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus), ignoreWarnings = !isStepDef)
 
   override def toString: String = name
   
