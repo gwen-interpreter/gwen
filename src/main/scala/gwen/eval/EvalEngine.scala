@@ -384,6 +384,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       logger.info(msg)
     case Failed(_, _) => 
       logger.error(msg)
+    case Warning(_, _) =>
+      logger.warn(msg)
     case _ => 
       logger.warn(msg)
   }

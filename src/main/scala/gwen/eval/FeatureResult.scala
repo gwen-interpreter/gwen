@@ -63,6 +63,6 @@ class FeatureResult(
       else List(s.evalStatus)
     })
   private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
+  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status}${if (spec.noOfWarnings > 0) s" with ${spec.noOfWarnings} warning${if (spec.noOfWarnings > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }
 

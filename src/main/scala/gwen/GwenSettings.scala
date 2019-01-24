@@ -35,7 +35,7 @@ object GwenSettings {
   /**
     * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution 
     * on first failure (default value is `false`). 
-    * Enabling this feature will exit exceution when the first failure is detected. 
+    * Enabling this feature will exit execution when the first failure is detected.
     */
   def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").getOrElse("false").toBoolean
   
@@ -88,5 +88,12 @@ object GwenSettings {
     * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
     */
   def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
+
+  /**
+    * Provides access to the `gwen.assertions.soft` property setting used to enable soft assertions
+    * (default value is `false`).
+    * Enabling this feature will cause feature execution to continue if an assertion step fails.
+    */
+  def `gwen.assertions.soft`: Boolean = Settings.getOpt("gwen.assertions.soft").getOrElse("false").toBoolean
 
 }

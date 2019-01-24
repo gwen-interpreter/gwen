@@ -25,7 +25,7 @@ import gwen.Predefs.Formatting._
 import gwen.dsl._
 import com.typesafe.scalalogging.LazyLogging
 import gwen.errors._
-import gwen.Settings
+import gwen.{GwenSettings, Settings}
 
 import scala.sys.process._
 import scala.util.{Failure, Success, Try}
@@ -198,12 +198,18 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         addErrorAttachments(failure)
       case _ => // noop
     }
-    if (currentAttachments.nonEmpty) {
+    val fStep = if (currentAttachments.nonEmpty) {
       Step(step, step.evalStatus, (step.attachments ++ currentAttachments).sortBy(_._2 .getName())) tap { _ =>
         currentAttachments = Nil
       }
     } else {
       step
+    }
+    fStep.evalStatus match {
+      case Failed(nanos, error) if error.getCause != null && error.getCause.isInstanceOf[AssertionError] && GwenSettings.`gwen.assertions.soft` =>
+        Step(fStep, Warning(nanos, error))
+      case _ =>
+        fStep
     }
   }
   

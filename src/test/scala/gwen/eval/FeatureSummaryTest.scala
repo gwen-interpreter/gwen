@@ -50,9 +50,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts.size should be (0)
     val summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("0 features: Passed 0, Failed 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("0 scenarios: Passed 0, Failed 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("0 steps: Passed 0, Failed 0, Skipped 0, Pending 0")
+    summaryLines(0) should be ("0 features: Passed 0, Failed 0, Warning 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 scenarios: Passed 0, Failed 0, Warning 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("0 steps: Passed 0, Failed 0, Warning 0, Skipped 0, Pending 0")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Passed") should be (true)
   }
@@ -102,9 +102,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 3)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("1 feature: Passed 1, Failed 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("1 scenario: Passed 1, Failed 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("3 steps: Passed 3, Failed 0, Skipped 0, Pending 0")
+    summaryLines(0) should be ("1 feature: Passed 1, Failed 0, Warning 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("1 scenario: Passed 1, Failed 0, Warning 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("3 steps: Passed 3, Failed 0, Warning 0, Skipped 0, Pending 0")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Passed") should be (true)
     
@@ -125,9 +125,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 4), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("2 features: Passed 1, Failed 1, Skipped 0, Pending 0")
-    summaryLines(1) should be ("2 scenarios: Passed 1, Failed 1, Skipped 0, Pending 0")
-    summaryLines(2) should be ("6 steps: Passed 4, Failed 1, Skipped 1, Pending 0")
+    summaryLines(0) should be ("2 features: Passed 1, Failed 1, Warning 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("2 scenarios: Passed 1, Failed 1, Warning 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("6 steps: Passed 4, Failed 1, Warning 0, Skipped 1, Pending 0")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Failed") should be (true)
     
@@ -153,9 +153,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("3 features: Passed 2, Failed 1, Skipped 0, Pending 0")
-    summaryLines(1) should be ("4 scenarios: Passed 3, Failed 1, Skipped 0, Pending 0")
-    summaryLines(2) should be ("12 steps: Passed 10, Failed 1, Skipped 1, Pending 0")
+    summaryLines(0) should be ("3 features: Passed 2, Failed 1, Warning 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("4 scenarios: Passed 3, Failed 1, Warning 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("12 steps: Passed 10, Failed 1, Warning 0, Skipped 1, Pending 0")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Failed") should be (true)
     
@@ -176,9 +176,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("4 features: Passed 2, Failed 1, Skipped 1, Pending 0")
-    summaryLines(1) should be ("5 scenarios: Passed 3, Failed 1, Skipped 1, Pending 0")
-    summaryLines(2) should be ("15 steps: Passed 10, Failed 1, Skipped 4, Pending 0")
+    summaryLines(0) should be ("4 features: Passed 2, Failed 1, Warning 0, Skipped 1, Pending 0")
+    summaryLines(1) should be ("5 scenarios: Passed 3, Failed 1, Warning 0, Skipped 1, Pending 0")
+    summaryLines(2) should be ("15 steps: Passed 10, Failed 1, Warning 0, Skipped 4, Pending 0")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Failed") should be (true)
     
@@ -198,9 +198,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4), (StatusKeyword.Pending -> 2)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("5 features: Passed 2, Failed 1, Skipped 1, Pending 1")
-    summaryLines(1) should be ("6 scenarios: Passed 3, Failed 1, Skipped 1, Pending 1")
-    summaryLines(2) should be ("17 steps: Passed 10, Failed 1, Skipped 4, Pending 2")
+    summaryLines(0) should be ("5 features: Passed 2, Failed 1, Warning 0, Skipped 1, Pending 1")
+    summaryLines(1) should be ("6 scenarios: Passed 3, Failed 1, Warning 0, Skipped 1, Pending 1")
+    summaryLines(2) should be ("17 steps: Passed 10, Failed 1, Warning 0, Skipped 4, Pending 2")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Failed") should be (true)
     
@@ -240,9 +240,9 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
     summary.stepCounts should equal (Map((StatusKeyword.Passed -> 21), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 6), (StatusKeyword.Pending -> 2)))
     summaryLines = summary.toString.split("\\r?\\n");
     summaryLines.size should be (7)
-    summaryLines(0) should be ("6 features: Passed 2, Failed 2, Skipped 1, Pending 1")
-    summaryLines(1) should be ("11 scenarios: Passed 7, Failed 2, Skipped 1, Pending 1")
-    summaryLines(2) should be ("31 steps: Passed 21, Failed 2, Skipped 6, Pending 2")
+    summaryLines(0) should be ("6 features: Passed 2, Failed 2, Warning 0, Skipped 1, Pending 1")
+    summaryLines(1) should be ("11 scenarios: Passed 7, Failed 2, Warning 0, Skipped 1, Pending 1")
+    summaryLines(2) should be ("31 steps: Passed 21, Failed 2, Warning 0, Skipped 6, Pending 2")
     summaryLines(3) should be ("")
     summaryLines(4).contains("Failed") should be (true)
     
