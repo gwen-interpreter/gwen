@@ -1,3 +1,13 @@
+2.18.0
+======
+January 25, 2019
+- Add support for soft assertions though new setting:
+  - `gwen.assertions.soft`
+    - Determines whether or not failed assertions are collected as sustained errors that permit execution to continue
+      instead of hard failures that halt execution.
+      - `true` to enable
+      - `false` to disable (default)
+
 2.17.0
 ======
 November 24, 2018

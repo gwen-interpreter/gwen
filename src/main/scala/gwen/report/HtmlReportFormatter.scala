@@ -293,7 +293,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val reportDir = ReportFormat.html.reportDir(options)
     val title = "Feature Summary"
     val status = summary.evalStatus.status
-    val noOfWarnings = summary.results.map(_.spec.noOfWarnings).sum
+    val sustainedCount = summary.sustainedCount
   
     Some(s"""<!DOCTYPE html>
 <html lang="en">
@@ -309,7 +309,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       </li>
       <li>
         <span class="badge badge-${cssStatus(status)}">$status</span>
-        ${if (noOfWarnings > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-warning">${noOfWarnings} warning${if (noOfWarnings > 1) "s" else ""}</span>""" else ""}
+        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</span>""" else ""}
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(summary.started.toString)}</small>
@@ -385,7 +385,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 val percentage = calcPercentage(count, total)
                 s"""
                 <div class="progress-bar progress-bar-${cssStatus(status)}" style="width: $percentage%">
-                  <span>$count $status${if (status == StatusKeyword.Warning && total > 1) "s" else ""} - ${percentageRounded(percentage)}%</span>
+                  <span>$count $status - ${percentageRounded(percentage)}%</span>
                 </div>"""}).mkString}
               </div>
               </td>
@@ -395,17 +395,17 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatSummaryLine(result: FeatureResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.featureFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
-      case Passed(nanos) if result.spec.noOfWarnings > 0 => Warning(nanos, null)
+      case Passed(nanos) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
     s"""
-                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(reportingStatus.status)}" else s" bg-${cssStatus(reportingStatus.status)}" }">
+                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }">
                   <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
                     <div class="line-no"><small>$seq</small></div>""").getOrElse("")}
                     <span style="padding-left: 15px; white-space: nowrap;"><small>${escapeHtml(result.finished.toString)}</small></span>
                   </div>
                   <div class="col-md-4">${reportPath.fold(s"${escapeHtml(featureName)}") { rpath =>
-                    s"""<a class="text-${cssStatus(result.evalStatus.status)}" href="$rpath">${escapeHtml(featureName)}</a>"""}}
+                    s"""<a class="text-${cssStatus(reportingStatus.status)}" style="color: ${linkColor(reportingStatus.status)};" href="$rpath"><span class="text-${cssStatus(reportingStatus.status)}">${escapeHtml(featureName)}</span></a>"""}}
                   </div>
                   <div class="col-md-5">
                     <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
@@ -480,10 +480,19 @@ object HtmlReportFormatter {
   private val cssStatus = Map(
     StatusKeyword.Passed -> "success", 
     StatusKeyword.Failed -> "danger",
-    StatusKeyword.Warning -> "warning",
+    StatusKeyword.Sustained -> "danger",
     StatusKeyword.Skipped -> "warning",
     StatusKeyword.Pending -> "info",
     StatusKeyword.Loaded -> "success")
+
+  private val linkColor = Map(
+    StatusKeyword.Passed -> "#3c763d",
+    StatusKeyword.Failed -> "#a94442",
+    StatusKeyword.Sustained -> "#a94442",
+    StatusKeyword.Skipped -> "#8a6d3b",
+    StatusKeyword.Pending -> "#31708f",
+    StatusKeyword.Loaded -> "#3c763d"
+  )
   
   private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
     <table width="100%" cellpadding="5">
@@ -507,7 +516,7 @@ object HtmlReportFormatter {
   private [report] def formatStatusHeader(unit: FeatureUnit, result: FeatureResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
     val status = result.evalStatus.status
     val renderStatusLink = status != StatusKeyword.Passed && status != StatusKeyword.Loaded
-    val noOfWarnings = result.spec.noOfWarnings
+    val sustainedCount = result.sustainedCount
     s"""
     <ol class="breadcrumb" style="padding-right: 20px;">${(breadcrumbs map { case (text, reportFile) => s"""
       <li>
@@ -515,7 +524,7 @@ object HtmlReportFormatter {
       </li>"""}).mkString}
       <li>
         <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a id="error-issue" href="#" style="color:white;">""" else ""}${status}${if (renderStatusLink) """</a><script>$(document).ready(function(){$('#error-issue').click(function(e){e.preventDefault();$('html, body').animate({scrollTop:$('.badge-error-issue').closest('.panel').offset().top},500);});});</script>""" else ""}</span>
-        ${if (noOfWarnings > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-warning"><a id="warning-issue" href="#" style="color:white;">${noOfWarnings} warning${if (noOfWarnings > 1) "s" else ""}</a><script>$$(document).ready(function(){$$('#warning-issue').click(function(e){e.preventDefault();$$('html, body').animate({scrollTop:$$('.badge-warning-issue').closest('.panel').offset().top},500);});});</script></span>""" else ""}
+        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger"><a id="sustained-issue" href="#" style="color:white;">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</a><script>$$(document).ready(function(){$$('#sustained-issue').click(function(e){e.preventDefault();$$('html, body').animate({scrollTop:$$('.badge-sustained-issue').closest('.panel').offset().top},500);});});</script></span>""" else ""}
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>

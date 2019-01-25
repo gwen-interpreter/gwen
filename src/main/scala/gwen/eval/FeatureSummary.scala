@@ -47,6 +47,7 @@ case class FeatureSummary(
   lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
   lazy val overhead: Duration = elapsedTime - resultsElapsedTime
   lazy val featureCounts: Map[_root_.gwen.dsl.StatusKeyword.Value, Int] = StatusKeyword.countsByStatus(statuses)
+  lazy val sustainedCount: Int = results.map(_.sustainedCount).sum
   
   /** 
     * Adds the given feature result to the current summary (accumulates). 
@@ -75,7 +76,7 @@ case class FeatureSummary(
         |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${formatDuration(resultsElapsedTime)}] ${evalStatus.status} ${evalStatus.emoticon}
+        |[${formatDuration(resultsElapsedTime)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}
         |[${formatDuration(overhead)}] Overhead
         |[${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }

@@ -207,7 +207,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     }
     fStep.evalStatus match {
       case Failed(nanos, error) if error.getCause != null && error.getCause.isInstanceOf[AssertionError] && GwenSettings.`gwen.assertions.soft` =>
-        Step(fStep, Warning(nanos, error))
+        Step(fStep, Sustained(nanos, error))
       case _ =>
         fStep
     }

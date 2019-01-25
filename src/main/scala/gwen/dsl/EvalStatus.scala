@@ -70,13 +70,13 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
 }
 
 /**
-  * Defines a warning evaluation status.
+  * Defines the sustained status.
   *
   * @param nanos the duration in nanoseconds
-  * @param error the warning
+  * @param error the error to sustain
   */
-case class Warning(nanos: Long, error: Throwable) extends EvalStatus {
-  val status = StatusKeyword.Warning
+case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
+  val status = StatusKeyword.Sustained
   override def exitCode = 0
   override def emoticon = "[:|]"
   override def cause = Option(error.getCause)
@@ -117,24 +117,24 @@ object EvalStatus {
     * 
     * @param statuses the list of evaluation statuses
     */
-  def apply(statuses: List[EvalStatus]): EvalStatus = apply(statuses, ignoreWarnings = true)
+  def apply(statuses: List[EvalStatus]): EvalStatus = apply(statuses, ignoreSustained = true)
 
   /**
     * Function for getting the effective evaluation status of a given list of statuses.
     *
     * @param statuses the list of evaluation statuses
-    * @param ignoreWarnings true to ignore warnings, false otherwise
+    * @param ignoreSustained true to ignore sustained errors, false otherwise
     */
-  def apply(statuses: List[EvalStatus], ignoreWarnings: Boolean): EvalStatus = {
+  def apply(statuses: List[EvalStatus], ignoreSustained: Boolean): EvalStatus = {
     if (statuses.nonEmpty) {
       val duration = DurationOps.sum(statuses.map(_.duration))
       statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
         case Some(failed) => Failed(duration.toNanos, failed.error)
         case None =>
-          statuses.collectFirst { case warning @ Warning(_, _) => warning } match {
-            case Some(warning) =>
-              if (ignoreWarnings) Passed(duration.toNanos)
-              else Warning(duration.toNanos, warning.error)
+          statuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
+            case Some(sustained) =>
+              if (ignoreSustained) Passed(duration.toNanos)
+              else Sustained(duration.toNanos, sustained.error)
             case None =>
               if (statuses.forall(_ == Loaded)) {
                 Loaded
@@ -164,12 +164,12 @@ object EvalStatus {
 
   /**
     * Returns true if the given status is an error status. A status is considered an error if it is
-    * Failed or Warning
+    * Failed or Sustained
     *
     * @param status the status to check
-    * @return true if the status is Failed or Warning, false otherwise
+    * @return true if the status is Failed or Sustained, false otherwise
     */
-  def isError(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Failed || status == StatusKeyword.Warning
+  def isError(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Failed || status == StatusKeyword.Sustained
   
 }
 
@@ -180,9 +180,9 @@ object EvalStatus {
   */
 object StatusKeyword extends Enumeration {
 
-  val Passed, Failed, Warning, Skipped, Pending, Loaded = Value
+  val Passed, Failed, Sustained, Skipped, Pending, Loaded = Value
   
-  val reportables = List(Passed, Failed, Warning, Skipped, Pending)
+  val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
 
   /**
     * Groups counts by status.
