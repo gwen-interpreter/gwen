@@ -21,7 +21,7 @@ to capture automation bindings and allow you to compose step definitions in a de
 
 ### What's New?
 
-- [Soft assertions](https://github.com/gwen-interpreter/gwen/wiki/Soft-Assertions)
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
@@ -74,7 +74,7 @@ Key Features
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
-- [Soft assertions](https://github.com/gwen-interpreter/gwen/wiki/Soft-Assertions)
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 
 License
 -------
