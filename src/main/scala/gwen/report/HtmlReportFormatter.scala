@@ -523,8 +523,8 @@ object HtmlReportFormatter {
         <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}">${escapeHtml(text)}</a>
       </li>"""}).mkString}
       <li>
-        <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a id="error-issue" href="#" style="color:white;">""" else ""}${status}${if (renderStatusLink) """</a><script>$(document).ready(function(){$('#error-issue').click(function(e){e.preventDefault();$('html, body').animate({scrollTop:$('.badge-error-issue').closest('.panel').offset().top},500);});});</script>""" else ""}</span>
-        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger"><a id="sustained-issue" href="#" style="color:white;">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</a><script>$$(document).ready(function(){$$('#sustained-issue').click(function(e){e.preventDefault();$$('html, body').animate({scrollTop:$$('.badge-sustained-issue').closest('.panel').offset().top},500);});});</script></span>""" else ""}
+        <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a id="failed-link" href="#" style="color:white;">""" else ""}${status}${if (renderStatusLink) """</a><script>$(document).ready(function(){$('#failed-link').click(function(e){e.preventDefault();$('html, body').animate({scrollTop:$('.badge-failed-issue').closest('.panel').offset().top},500);});});</script>""" else ""}</span>
+        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger"><a id="sustained-link" href="#" style="color:white;">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</a><script>$$(document).ready(function(){$$('#sustained-link').click(function(e){e.preventDefault();$$('html, body').animate({scrollTop:$$('.badge-sustained-issue').closest('.panel').offset().top},500);});});</script></span>""" else ""}
       </li>
       <li>
         <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>

@@ -16,6 +16,8 @@
 
 package gwen
 
+import gwen.dsl.AssertionMode
+
 /**
   * Provides access to gwen settings defined through system properties loaded 
   * from properties files.
@@ -90,10 +92,13 @@ object GwenSettings {
   def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
 
   /**
-    * Provides access to the `gwen.assertions.soft` property setting used to enable soft assertions
-    * (default value is `false`).
-    * Enabling this feature will cause feature execution to continue if an assertion step fails.
+    * Provides access to the `gwen.assertion.mode` property setting used to enable hard, soft, or sustained
+    * assertions (default value is `hard`).
+    *   - `hard` - Halts processing on first assertion failure
+    *   - `soft` - Collects all assertion failures and continues processing
+    *   - `sustained` - Collects all assertion failures and continues processing without raising failure
     */
-  def `gwen.assertions.soft`: Boolean = Settings.getOpt("gwen.assertions.soft").getOrElse("false").toBoolean
+  def `gwen.assertion.mode`: AssertionMode.Value =
+    Settings.getOpt("gwen.assertion.mode").map(_.toLowerCase).map(AssertionMode.withName).getOrElse(AssertionMode.hard)
 
 }

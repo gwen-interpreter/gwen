@@ -83,7 +83,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param input the input step
     * @param env the environment context
     * @return the evaluated step (or an exception if a runtime error occurs)
-    * @throws gwen.errors.ParsingException if the given step fails to parse
     */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = 
     parseStep(input).map(engine.evaluateStep(_, env))
@@ -97,7 +96,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param started the started time (default is current date)
     * @return the evaluated feature or nothing if the feature does not 
     *         satisfy specified tag filters
-    * @throws gwen.errors.ParsingException if the given feature fails to parse
     */
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] =
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
@@ -156,11 +154,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
             env.featureScope.set("gwen.scenario.name", scenario.name)
           }
-          (EvalStatus(acc.map(_.evalStatus)) match {
-            case Failed(_, _) =>
+          (EvalStatus(acc.map(_.evalStatus).reverse) match {
+            case Failed(_, error) =>
+              val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+              val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
               val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
               val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-              if (failfast && !exitOnFail) {
+              if (failfast && !exitOnFail && !isSoftAssert) {
                 Scenario(
                   scenario, 
                   scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
@@ -175,7 +175,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
                     })
                   }
                 )
-              } else if (exitOnFail) {
+              } else if (exitOnFail && !isSoftAssert) {
                 scenario
               } else {
                 engine.evaluateScenario(scenario, env)
@@ -207,7 +207,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param featureFile the current feature file
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
-    * @throws gwen.errors.ParsingException if the given meta fails to parse
     */
   private[eval] def loadMetaImports(featureSpec: FeatureSpec, featureFile: File, tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =
     getMetaImports(featureSpec, featureFile) flatMap { metaFile => 
@@ -241,7 +240,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param metaFiles the meta files to load
     * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @param env the environment context
-    * @throws gwen.errors.ParsingException if the given meta fails to parse
     */
   private[eval] def loadMeta(metaFiles: List[File], tagFilters: List[(Tag, Boolean)], env: T): List[FeatureResult] =
     metaFiles.flatMap(loadMetaFile(_, tagFilters, env))
