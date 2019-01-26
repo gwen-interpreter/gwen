@@ -154,7 +154,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
             env.featureScope.set("gwen.scenario.name", scenario.name)
           }
-          (EvalStatus(acc.map(_.evalStatus).reverse) match {
+          (EvalStatus(acc.map(_.evalStatus)) match {
             case Failed(_, error) =>
               val isAssertionError = error.getCause.isInstanceOf[AssertionError]
               val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
