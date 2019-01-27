@@ -51,3 +51,8 @@ object ReservedKeyword {
   val literals = FeatureKeyword.names.map(_ + ":") ++ FeatureSymbol.names ++ StepKeyword.names
 }
 
+object AssertionMode extends Enumeration {
+  type FeatureKeyword = Value
+  val hard, soft, sustained = Value
+}
+

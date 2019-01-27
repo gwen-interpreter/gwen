@@ -275,9 +275,15 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, _) =>
+        case Failed(_, error) =>
           env.evaluate(evaluateStep(step, env)) {
-            Step(step, Skipped, step.attachments)
+            val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+            val isHardAssert = env.evaluate(false) { GwenSettings.`gwen.assertion.mode` == AssertionMode.hard }
+            if (!isAssertionError || isHardAssert) {
+              Step(step, Skipped, step.attachments)
+            } else {
+              evaluateStep(step, env)
+            }
           }
         case _ => evaluateStep(step, env)
       }) :: acc
@@ -384,6 +390,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       logger.info(msg)
     case Failed(_, _) => 
       logger.error(msg)
+    case Sustained(_, _) =>
+      logger.warn(msg)
     case _ => 
       logger.warn(msg)
   }

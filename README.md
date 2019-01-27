@@ -21,9 +21,9 @@ to capture automation bindings and allow you to compose step definitions in a de
 
 ### What's New?
 
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
-- [Gwen Workspaces](https://gweninterpreter.wordpress.com/2017/12/18/gwen-workspaces/)
 
 Why Gwen?
 ---------
@@ -57,6 +57,7 @@ Key Features
 ------------
 
 - [Gherkin grammar](https://cucumber.io/docs/reference)
+- [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
 - [Command line interface](https://github.com/gwen-interpreter/gwen/wiki/Command-Line-Interface)
@@ -73,6 +74,7 @@ Key Features
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 
 License
 -------

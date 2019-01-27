@@ -49,6 +49,7 @@ class FeatureResult(
   lazy val evalStatus: EvalStatus = spec.evalStatus
   lazy val duration: Duration = evalStatus.duration
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
+  lazy val sustainedCount: Int = spec.sustainedCount
   
   private[eval] lazy val scenarioCounts =
     StatusKeyword.countsByStatus(spec.scenarios.flatMap { s =>
@@ -63,6 +64,6 @@ class FeatureResult(
       else List(s.evalStatus)
     })
   private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
+  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }
 

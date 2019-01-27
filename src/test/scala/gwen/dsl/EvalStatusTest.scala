@@ -79,6 +79,7 @@ Background: The tester
     featureSpec.steps foreach {
       _.evalStatus should be (Pending)
     }
+    featureSpec.sustainedCount should be(0)
   
   }
   
@@ -115,7 +116,129 @@ Background: The tester
     featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)    
     featureSpec.scenarios(2).evalStatus                should be (Loaded)
+    featureSpec.sustainedCount should be(0)
   
+  }
+
+  "Feature" should "pass when there is a sustained error in background" in {
+
+    // setup
+    val sustained = new Exception(StatusKeyword.Sustained.toString)
+    var featureSpec = normalise(parse(featureString).get, None, None)
+
+    featureSpec = FeatureSpec(
+      featureSpec.feature,
+      None,
+      featureSpec.scenarios map {scenario =>
+        Scenario(
+          scenario.tags,
+          scenario.name,
+          scenario.description,
+          scenario.background map { background =>
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else Passed(1))
+            })
+          },
+          scenario.steps map {step =>
+            Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
+          })
+      })
+
+    // assert
+
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(2).background                should be (None)
+    featureSpec.scenarios(2).evalStatus                should be (Loaded)
+    featureSpec.sustainedCount should be(6)
+
+  }
+
+  "Feature" should "pass when there is a sustained error in each scenario" in {
+
+    // setup
+    val sustained = new Exception(StatusKeyword.Sustained.toString)
+    var featureSpec = normalise(parse(featureString).get, None, None)
+
+    featureSpec = FeatureSpec(
+      featureSpec.feature,
+      None,
+      featureSpec.scenarios map {scenario =>
+        Scenario(
+          scenario.tags,
+          scenario.name,
+          scenario.description,
+          scenario.background map { background =>
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step.keyword, step.name, Passed(1))
+            })
+          },
+          scenario.steps.zipWithIndex map { case (step, index) =>
+            Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  Passed(1))
+          })
+      })
+
+    // assert
+
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(2).background                should be (None)
+    featureSpec.scenarios(2).evalStatus                should be (Loaded)
+    featureSpec.sustainedCount should be(2)
+
+  }
+
+  "Feature" should "pass when there is a sustained error in one scenario" in {
+
+    // setup
+    val sustained = new Exception(StatusKeyword.Sustained.toString)
+    var featureSpec = normalise(parse(featureString).get, None, None)
+
+    var isSustained = false
+
+    featureSpec = FeatureSpec(
+      featureSpec.feature,
+      None,
+      featureSpec.scenarios map {scenario =>
+        Scenario(
+          scenario.tags,
+          scenario.name,
+          scenario.description,
+          scenario.background map { background =>
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step.keyword, step.name, Passed(1))
+            })
+          },
+          scenario.steps map { step =>
+            val status = if (scenario.isStepDef) {
+              Loaded
+            } else if(!isSustained) {
+              isSustained = true
+              Sustained(1, sustained)
+            } else {
+              Passed(1)
+            }
+            Step(step.keyword, step.name, status)
+          })
+      })
+
+    // assert
+
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(2).background                should be (None)
+    featureSpec.scenarios(2).evalStatus                should be (Loaded)
+    featureSpec.sustainedCount should be(1)
+
   }
   
   "Scenario 1" should "fail when a background step in scenario 1 fails" in {
@@ -176,6 +299,8 @@ Background: The tester
           _.evalStatus should be (Pending)
         }
     }
+
+    featureSpec.sustainedCount should be(0)
   
   }
   
@@ -237,6 +362,8 @@ Background: The tester
           _.evalStatus should be (Pending)
         }
     }
+
+    featureSpec.sustainedCount should be(0)
   
   }
   
@@ -305,6 +432,8 @@ Background: The tester
           _.evalStatus should be (Pending)
         }
     }
+
+    featureSpec.sustainedCount should be(0)
   
   }
   
@@ -362,13 +491,16 @@ Background: The tester
         _.evalStatus should be (Pending)
       }
     }
+
+    featureSpec.sustainedCount should be(0)
   
   }
 
 
-  "isEvaluated on Passed and Failed" should "return true, false otherwise" in {
+  "isEvaluated on Passed, Failed, and Sustained" should "return true, false otherwise" in {
     EvalStatus.isEvaluated(StatusKeyword.Passed) should be (true)
     EvalStatus.isEvaluated(StatusKeyword.Failed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Sustained) should be (true)
     EvalStatus.isEvaluated(StatusKeyword.Skipped) should be (false)
     EvalStatus.isEvaluated(StatusKeyword.Pending) should be (false)
     EvalStatus.isEvaluated(StatusKeyword.Loaded) should be (false)

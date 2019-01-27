@@ -25,6 +25,7 @@ sealed trait EvalStatus {
   
   val status: StatusKeyword.Value
   val nanos: Long
+  val timestamp = new Date()
   
   /** Returns the duration in nanoseconds. */
   def duration: Duration = Duration.fromNanos(nanos)
@@ -34,6 +35,9 @@ sealed trait EvalStatus {
   
   /** Must be overriden to return an emoticon. */
   def emoticon: String
+
+  /** Optional error cause. */
+  def cause: Option[Throwable] = None
   
   override def toString: String =
     if (nanos > 0) {
@@ -56,13 +60,26 @@ case class Passed(nanos: Long) extends EvalStatus {
   * Defines a failed evaluation status.
   * 
   * @param nanos the duration in nanoseconds
-  * @param error the error message
+  * @param error the error
   */
 case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   val status = StatusKeyword.Failed
-  val timestamp = new Date()
   override def exitCode = 1
   override def emoticon = "[:(]"
+  override def cause = Option(error.getCause)
+}
+
+/**
+  * Defines the sustained status.
+  *
+  * @param nanos the duration in nanoseconds
+  * @param error the error to sustain
+  */
+case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
+  val status = StatusKeyword.Sustained
+  override def exitCode = 0
+  override def emoticon = "[:|]"
+  override def cause = Option(error.getCause)
 }
 
 /** Defines the skipped status. */
@@ -100,23 +117,37 @@ object EvalStatus {
     * 
     * @param statuses the list of evaluation statuses
     */
-  def apply(statuses: List[EvalStatus]): EvalStatus = {
+  def apply(statuses: List[EvalStatus]): EvalStatus = apply(statuses, ignoreSustained = true)
+
+  /**
+    * Function for getting the effective evaluation status of a given list of statuses.
+    *
+    * @param statuses the list of evaluation statuses
+    * @param ignoreSustained true to ignore sustained errors, false otherwise
+    */
+  def apply(statuses: List[EvalStatus], ignoreSustained: Boolean): EvalStatus = {
     if (statuses.nonEmpty) {
       val duration = DurationOps.sum(statuses.map(_.duration))
       statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
-        case Some(failed) => Failed(duration.toNanos, failed.error)  
+        case Some(failed) => Failed(duration.toNanos, failed.error)
         case None =>
-          if (statuses.forall(_ == Loaded)) {
-            Loaded
-          } else {
-            statuses.filter(_ != Loaded).lastOption match {
-              case Some(lastStatus) => lastStatus match {
-                case Passed(_) => Passed(duration.toNanos)
-                case Skipped => lastStatus
-                case _ => Pending
+          statuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
+            case Some(sustained) =>
+              if (ignoreSustained) Passed(duration.toNanos)
+              else Sustained(duration.toNanos, sustained.error)
+            case None =>
+              if (statuses.forall(_ == Loaded)) {
+                Loaded
+              } else {
+                statuses.filter(_ != Loaded).lastOption match {
+                  case Some(lastStatus) => lastStatus match {
+                    case Passed(_) => Passed(duration.toNanos)
+                    case Skipped => lastStatus
+                    case _ => Pending
+                  }
+                  case None => Pending
+                }
               }
-              case None => Pending
-            }
           }
       }
     } else Skipped
@@ -129,7 +160,16 @@ object EvalStatus {
     * @param status the status to check
     * @return true if the status is Passed or Failed, false otherwise
     */
-  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || status == StatusKeyword.Failed
+  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || isError(status)
+
+  /**
+    * Returns true if the given status is an error status. A status is considered an error if it is
+    * Failed or Sustained
+    *
+    * @param status the status to check
+    * @return true if the status is Failed or Sustained, false otherwise
+    */
+  def isError(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Failed || status == StatusKeyword.Sustained
   
 }
 
@@ -140,9 +180,9 @@ object EvalStatus {
   */
 object StatusKeyword extends Enumeration {
 
-  val Passed, Failed, Skipped, Pending, Loaded = Value
+  val Passed, Failed, Sustained, Skipped, Pending, Loaded = Value
   
-  val reportables = List(Passed, Failed, Skipped, Pending)
+  val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
 
   /**
     * Groups counts by status.

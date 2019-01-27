@@ -16,6 +16,8 @@
 
 package gwen
 
+import gwen.dsl.AssertionMode
+
 /**
   * Provides access to gwen settings defined through system properties loaded 
   * from properties files.
@@ -35,7 +37,7 @@ object GwenSettings {
   /**
     * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution 
     * on first failure (default value is `false`). 
-    * Enabling this feature will exit exceution when the first failure is detected. 
+    * Enabling this feature will exit execution when the first failure is detected.
     */
   def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").getOrElse("false").toBoolean
   
@@ -88,5 +90,15 @@ object GwenSettings {
     * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
     */
   def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
+
+  /**
+    * Provides access to the `gwen.assertion.mode` property setting used to enable hard, soft, or sustained
+    * assertions (default value is `hard`).
+    *   - `hard` - Halts processing on first assertion failure
+    *   - `soft` - Collects all assertion failures and continues processing
+    *   - `sustained` - Collects all assertion failures and continues processing without raising failure
+    */
+  def `gwen.assertion.mode`: AssertionMode.Value =
+    Settings.getOpt("gwen.assertion.mode").map(_.toLowerCase).map(AssertionMode.withName).getOrElse(AssertionMode.hard)
 
 }
