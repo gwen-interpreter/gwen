@@ -337,6 +337,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                 case _ =>
                   env.featureScope.pushObject(element, currentElement)
               }
+              env.featureScope.set(s"$element index", index.toString)
               env.featureScope.set(s"$element number", elementNumber.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
@@ -364,6 +365,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             } reverse
           } finally {
             env.featureScope.set(element, null)
+            env.featureScope.set(s"$element index", null)
             env.featureScope.set(s"$element number", null)
           }
       }
