@@ -1,7 +1,9 @@
 2.18.1
 ======
-January 17, 2019
+February 17, 2019
 - Honor hard, soft, and sustained assertion modes when processing data table records
+- Add implicit `record.index` attribute to current data table record scope
+  - `record.index` starts at 0 (whereas `record.number` starts at 1)
 
 2.18.0
 ======

@@ -120,6 +120,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
       val record = dataTable.recordScope(recIndex)
+      record.get("record.index") should be (s"$recIndex")
       record.get("record.number") should be (s"$recNo")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("name[2]") should be (table.get("name[2]"))
@@ -127,7 +128,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
       record.get("data[a]") should be (table.get(s"data[$recNo][a]"))
       record.get("data[b]") should be (table.get(s"data[$recNo][b]"))
       record.get("data[c]") should be (table.get(s"data[$recNo][c]"))
-      record.findEntries(_ => true).size should be (7)
+      record.findEntries(_ => true).size should be (8)
     }
 
   }
@@ -206,6 +207,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
       val record = dataTable.recordScope(recIndex)
+      record.get("record.index") should be (s"$recIndex")
       record.get("record.number") should be (s"$recNo")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("name[2]") should be (table.get("name[2]"))
@@ -213,7 +215,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
       record.get("data[a]") should be (table.get(s"data[$recNo][a]"))
       record.get("data[b]") should be (table.get(s"data[$recNo][b]"))
       record.get("data[c]") should be (table.get(s"data[$recNo][c]"))
-      record.findEntries(_ => true).size should be (7)
+      record.findEntries(_ => true).size should be (8)
     }
 
   }
@@ -285,10 +287,11 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
     dataTable.records.indices foreach { recIndex =>
       val recNo = recIndex + 1
       val record = dataTable.recordScope(recIndex)
+      record.get("record.index") should be (s"$recIndex")
       record.get("record.number") should be (s"$recNo")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("data[a]") should be (table.get("data[1][a]"))
-      record.findEntries(_ => true).size should be (3)
+      record.findEntries(_ => true).size should be (4)
     }
 
   }
