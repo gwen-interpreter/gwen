@@ -83,7 +83,13 @@ case class FeatureSpec(
   def attachments: List[(String, File)] = steps.flatMap(_.attachments)
 
   /** Gets the number of sustained errors. */
-  def sustainedCount: Int = steps.count(_.evalStatus.status == StatusKeyword.Sustained)
+  def sustainedCount: Int = steps.flatMap { s1 =>
+    s1.stepDef.map { s2 =>
+      s2.allSteps.flatMap { s3 =>
+        s3.stepDef.map(_.allSteps).getOrElse(List(s3))
+      }
+    }.getOrElse(List(s1))
+  }.count(_.evalStatus.status == StatusKeyword.Sustained)
   
   /** Returns the evaluation status of this feature spec. */
   override lazy val evalStatus: EvalStatus = {

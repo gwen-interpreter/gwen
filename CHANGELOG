@@ -1,3 +1,8 @@
+2.18.1
+======
+January 17, 2019
+- Honor hard, soft, and sustained assertion modes when processing data table records
+
 2.18.0
 ======
 January 26, 2019

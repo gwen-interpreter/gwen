@@ -340,9 +340,20 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
               env.featureScope.set(s"$element number", elementNumber.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
-                  case Failed(_, _) if env.evaluate(false) { GwenSettings.`gwen.feature.failfast` } =>
-                    logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                    Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep, Skipped)
+                  case Failed(_, error)  =>
+                    val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+                    val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+                    val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+                    val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+                    if (failfast && !exitOnFail && !isSoftAssert) {
+                      logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
+                      Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep, Skipped)
+                    } else if (exitOnFail && !isSoftAssert) {
+                      step
+                    } else {
+                      logger.info(s"Processing [$element] $elementNumber of $noOfElements")
+                      evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
+                    }
                   case _ =>
                     logger.info(s"Processing [$element] $elementNumber of $noOfElements")
                     evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
