@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -194,7 +194,13 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
           logger.error(scopes.visible.asString)
         }
         logger.error(failure.error.getMessage)
-        logger.debug(s"Exception: ", failure.error)
+        val error = failure.error
+        val cause = error.getCause
+        if (error.isInstanceOf[AssertionError] || (cause != null && cause.isInstanceOf[AssertionError])) {
+          logger.debug(s"Exception: ", error)
+        } else {
+          logger.error(s"Exception: ", error)
+        }
         addErrorAttachments(failure)
       case _ => // noop
     }
