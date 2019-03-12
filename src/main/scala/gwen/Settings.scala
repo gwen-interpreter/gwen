@@ -231,11 +231,17 @@ object Settings {
   /**
     * Clears a local Gwen settings entry.
     * @param name the setting entry to remove
-    * @return the removed entry value
     */
   def clearLocal(name: String): Unit = {
     if (!name.startsWith("gwen.")) unsupportedLocalSetting(name)
     localSettings.get.remove(name)
+  }
+
+  /**
+    * Clears all local Gwen settings.
+    */
+  def clearLocal(): Unit = {
+    localSettings.get.clear()
   }
   
 }

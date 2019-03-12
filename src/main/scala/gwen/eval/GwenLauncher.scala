@@ -163,6 +163,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
                     | { \," Evaluating feature..
                     |{_`/   """ + unit.featureFile.toString + """
                     |   `   """).stripMargin)
+    Settings.clearLocal()
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.isDefined) { interpreter.reset(env) }
