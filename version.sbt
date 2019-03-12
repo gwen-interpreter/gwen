@@ -1,6 +1,6 @@
 enablePlugins(GitVersioning)
 
-git.baseVersion := "2.18.2"
+git.baseVersion := "2.18.3"
 
 git.useGitDescribe := true
 
