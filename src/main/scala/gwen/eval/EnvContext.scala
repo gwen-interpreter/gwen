@@ -190,18 +190,16 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   private[eval] def finaliseStep(step: Step): Step = {
     step.evalStatus match {
       case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
-        if (options.batch) {
-          logger.error(scopes.visible.asString)
+        if (!failure.isDisabledError) {
+          if (options.batch) {
+            logger.error(scopes.visible.asString)
+          }
+          logger.error(failure.error.getMessage)
         }
-        logger.error(failure.error.getMessage)
-        val error = failure.error
-        val cause = error.getCause
-        if (error.isInstanceOf[AssertionError] || (cause != null && cause.isInstanceOf[AssertionError])) {
-          logger.debug(s"Exception: ", error)
-        } else {
-          logger.error(s"Exception: ", error)
+        if (failure.isTechError) {
+          logger.error(s"Exception: ", failure.error)
+          addErrorAttachments(failure)
         }
-        addErrorAttachments(failure)
       case _ => // noop
     }
     val fStep = if (currentAttachments.nonEmpty) {
@@ -212,8 +210,14 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       step
     }
     fStep.evalStatus match {
-      case Failed(nanos, error) if error.getCause != null && error.getCause.isInstanceOf[AssertionError] && GwenSettings.`gwen.assertion.mode` == AssertionMode.sustained =>
-        Step(fStep, Sustained(nanos, error))
+      case status @ Failed(nanos, error) =>
+        if (status.isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.sustained) {
+          Step(fStep, Sustained(nanos, error))
+        } else if (status.isDisabledError) {
+          Step(fStep, Disabled)
+        } else {
+          fStep
+        }
       case _ =>
         fStep
     }

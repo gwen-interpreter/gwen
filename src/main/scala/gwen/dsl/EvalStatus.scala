@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package gwen.dsl
 
 import scala.concurrent.duration._
 import java.util.Date
+
 import gwen.Predefs.Formatting._
+import gwen.errors.LicenseException
+import gwen.errors.DisabledStepException
 
 /** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {
@@ -38,6 +41,21 @@ sealed trait EvalStatus {
 
   /** Optional error cause. */
   def cause: Option[Throwable] = None
+
+  /** Determines whether or not this status is due to a technical error. */
+  def isTechError: Boolean = !isAssertionError && !isLicenseError && !isDisabledError
+
+  /** Determines whether or not this status is due to an assertion error. */
+  def isAssertionError: Boolean =
+    cause.exists(c => c != null && c.isInstanceOf[AssertionError])
+
+  /** Determines whether or not this status is due to an disabled step error. */
+  def isDisabledError: Boolean =
+    cause.exists(c => c != null && c.isInstanceOf[DisabledStepException])
+
+  /** Determines whether or not this status is due to a licens error. */
+  def isLicenseError: Boolean =
+    cause.exists(c => c != null && c.isInstanceOf[LicenseException])
   
   override def toString: String =
     if (nanos > 0) {
@@ -108,6 +126,14 @@ case object Loaded extends EvalStatus {
   override def emoticon = "[:)]"
 }
 
+/** Defines the disabled status. */
+case object Disabled extends EvalStatus {
+  val nanos = 0L
+  val status = StatusKeyword.Disabled
+  override def exitCode = 0
+  override def emoticon = "[:)]"
+}
+
 object EvalStatus {
 
   import gwen.Predefs.DurationOps
@@ -126,20 +152,21 @@ object EvalStatus {
     * @param ignoreSustained true to ignore sustained errors, false otherwise
     */
   def apply(statuses: List[EvalStatus], ignoreSustained: Boolean): EvalStatus = {
-    if (statuses.nonEmpty) {
-      val duration = DurationOps.sum(statuses.map(_.duration))
-      statuses.collectFirst { case failed @ Failed(_, _) => failed } match {
+    val fStatuses = statuses.filter(s => !EvalStatus.isDisabled(s.status))
+    if (fStatuses.nonEmpty) {
+      val duration = DurationOps.sum(fStatuses.map(_.duration))
+      fStatuses.collectFirst { case failed @ Failed(_, _) => failed } match {
         case Some(failed) => Failed(duration.toNanos, failed.error)
         case None =>
-          statuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
+          fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
             case Some(sustained) =>
               if (ignoreSustained) Passed(duration.toNanos)
               else Sustained(duration.toNanos, sustained.error)
             case None =>
-              if (statuses.forall(_ == Loaded)) {
+              if (fStatuses.forall(_ == Loaded)) {
                 Loaded
               } else {
-                statuses.filter(_ != Loaded).lastOption match {
+                fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
                     case Passed(_) => Passed(duration.toNanos)
                     case Skipped => lastStatus
@@ -155,12 +182,20 @@ object EvalStatus {
 
   /**
     * Returns true if the given status is an evaluated status. A status is considered evalauted if it is
-    * Passed or Failed.
+    * Passed, Failed, or Disabled.
     *
     * @param status the status to check
-    * @return true if the status is Passed or Failed, false otherwise
+    * @return true if the status is Passed, Failed or Disabled, false otherwise
     */
-  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || isError(status)
+  def isEvaluated(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Passed || isDisabled(status) || isError(status)
+
+   /**
+    * Returns true if the given status is Disabled.
+    *
+    * @param status the status to check
+    * @return true if the status Disabled, false otherwise
+    */
+  def isDisabled(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Disabled
 
   /**
     * Returns true if the given status is an error status. A status is considered an error if it is
@@ -180,7 +215,7 @@ object EvalStatus {
   */
 object StatusKeyword extends Enumeration {
 
-  val Passed, Failed, Sustained, Skipped, Pending, Loaded = Value
+  val Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled = Value
   
   val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
 

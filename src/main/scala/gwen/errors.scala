@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,14 @@ package gwen {
     }
     def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
     def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
+    def disabledStepError(step: Step) = throw new DisabledStepException(step)
     def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
     def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
     def missingPropertyError(name: String) = throw new MissingPropertyException(name)
     def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
     def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
     def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
+    def licenseError(msg: String) = throw new LicenseException(msg)
     def invalidTagError(msg: String) = throw new InvalidTagException(msg)
     def regexError(msg: String) = throw new RegexException(msg)
     def systemProcessError(msg: String) = throw new SystemProcessException(msg)
@@ -83,11 +85,17 @@ package gwen {
     /** Thrown when an unsupported or undefined step is encountered. */
     class UndefinedStepException(step: Step) extends GwenException(s"Unsupported or undefined step: $step")
 
+    /** Thrown when a step is disabled. */
+    class DisabledStepException(step: Step) extends GwenException(s"Disabled step: $step")
+
     /** Thrown when an attribute cannot be found in a scope. */
     class UnboundAttributeException(name: String, scope: Option[String]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
     
     /** Thrown when a property setting is not found. */
     class MissingPropertyException(name: String) extends GwenException(s"Property not found: $name")
+
+    /** Thrown when a an operation requires a license that could not be resolved. */
+    class LicenseException(msg: String) extends GwenException(msg)
     
     /** Thrown when a property file setting is invalid. */
     class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")

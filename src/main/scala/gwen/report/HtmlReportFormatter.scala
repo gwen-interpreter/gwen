@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import gwen.eval.FeatureUnit
 import gwen.report.HtmlReportFormatter._
 import gwen.Predefs.Formatting._
 import gwen.Predefs.{DurationOps, Formatting}
+import gwen.Predefs.FileIO
 
+import scala.io.Source
 import scala.util.Try
 
 /** Formats the feature summary and detail reports in HTML. */
@@ -413,7 +415,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 </div>"""
   }
   private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String): String = s"""
-        <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
+        <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
@@ -447,18 +449,24 @@ trait HtmlReportFormatter extends ReportFormatter {
                   </div>"""
     
   private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value) = s"""
-                  ${if (attachments.nonEmpty) s"""
+                  &nbsp; ${if (attachments.size > 1) s"""
                   <div class="dropdown bg-${cssStatus(status)}">
-                    <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-                      <strong>attachment${if (attachments.size > 1) "s" else ""}</strong>
+                    <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" style="vertical-align: text-top">
+                      <strong>attachments</strong>
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu pull-right" role="menu">${(attachments map { case (name, file) =>
-                    val number = file.getName.substring(0, file.getName.indexOf("-")).toInt
+                    <ul class="dropdown-menu pull-right" role="menu" style="padding-left:0;">${(attachments.zipWithIndex map { case ((name, file), index) =>
                     s"""
-                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="attachments/${file.getName}" target="_blank"><span class="line-no" style="width: 0px;">${number}. &nbsp; </span>${escapeHtml(name)}</a></li>"""}).mkString }
+                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="${attachmentHref(file)}" target="_blank"><span class="line-no" style="width: 0px;">${index + 1}. &nbsp; </span>${escapeHtml(name)}<span class="line-no" style="width: 0px;"> &nbsp; </span></a></li>"""}).mkString }
                     </ul>
-                  </div>""" else ""}"""
+                  </div>""" else if (attachments.size == 1) {
+                    val (name, file) = attachments(0)
+                    s"""
+                    <a href="${attachmentHref(file)}" target="_blank" style="color: ${linkColor(status)};">
+                      <strong style="font-size: 12px;">$name</strong>
+                    </a>"""} else ""}"""
+
+  private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
 
   private def formatJsHeader(rootPath: String) = s""" 
     <script src="${rootPath}resources/js/jquery.min.js"></script>
@@ -467,7 +475,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
   private def durationOrStatus(evalStatus: EvalStatus) =
-    if (EvalStatus.isEvaluated(evalStatus.status))  {
+    if (EvalStatus.isEvaluated(evalStatus.status) && !EvalStatus.isDisabled(evalStatus.status))  {
       formatDuration(evalStatus.duration)
     } else {
       evalStatus.status
@@ -483,7 +491,8 @@ object HtmlReportFormatter {
     StatusKeyword.Sustained -> "danger",
     StatusKeyword.Skipped -> "warning",
     StatusKeyword.Pending -> "info",
-    StatusKeyword.Loaded -> "success")
+    StatusKeyword.Loaded -> "success",
+    StatusKeyword.Disabled -> "default")
 
   private val linkColor = Map(
     StatusKeyword.Passed -> "#3c763d",
@@ -491,7 +500,8 @@ object HtmlReportFormatter {
     StatusKeyword.Sustained -> "#a94442",
     StatusKeyword.Skipped -> "#8a6d3b",
     StatusKeyword.Pending -> "#31708f",
-    StatusKeyword.Loaded -> "#3c763d"
+    StatusKeyword.Loaded -> "#3c763d",
+    StatusKeyword.Disabled -> "grey"
   )
   
   private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""

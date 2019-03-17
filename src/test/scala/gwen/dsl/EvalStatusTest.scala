@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -500,10 +500,29 @@ Background: The tester
   "isEvaluated on Passed, Failed, and Sustained" should "return true, false otherwise" in {
     EvalStatus.isEvaluated(StatusKeyword.Passed) should be (true)
     EvalStatus.isEvaluated(StatusKeyword.Failed) should be (true)
+    EvalStatus.isEvaluated(StatusKeyword.Disabled) should be (true)
     EvalStatus.isEvaluated(StatusKeyword.Sustained) should be (true)
     EvalStatus.isEvaluated(StatusKeyword.Skipped) should be (false)
     EvalStatus.isEvaluated(StatusKeyword.Pending) should be (false)
     EvalStatus.isEvaluated(StatusKeyword.Loaded) should be (false)
+  }
+
+  "Passed statuses with one Disabled" should "be Passed" in {
+    EvalStatus(List(Disabled, Passed(10), Passed(10))).status should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Disabled, Passed(10))).status should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Disabled)).status should be (StatusKeyword.Passed)
+  }
+
+  "Passed statuses with some Disabled" should "be Passed" in {
+    EvalStatus(List(Disabled, Passed(10), Passed(10), Disabled, Disabled)).status should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Disabled, Passed(10), Disabled, Disabled)).status should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Disabled, Disabled, Disabled)).status should be (StatusKeyword.Passed)
+  }
+
+  "All disabled statuses" should "be Skipped" in {
+    EvalStatus(List(Disabled)).status should be (StatusKeyword.Skipped)
+    EvalStatus(List(Disabled, Disabled)).status should be (StatusKeyword.Skipped)
+    EvalStatus(List(Disabled, Disabled, Disabled)).status should be (StatusKeyword.Skipped)
   }
 
 }

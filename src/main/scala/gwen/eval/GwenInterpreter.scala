@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,8 +155,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
             env.featureScope.set("gwen.scenario.name", scenario.name)
           }
           (EvalStatus(acc.map(_.evalStatus)) match {
-            case Failed(_, error) =>
-              val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+            case status @ Failed(_, error) =>
+              val isAssertionError = status.isAssertionError
               val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
               val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
               val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }

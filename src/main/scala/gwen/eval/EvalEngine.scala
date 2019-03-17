@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,9 +275,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
     (acc: List[Step], step: Step) => 
       (EvalStatus(acc.map(_.evalStatus)) match {
-        case Failed(_, error) =>
+        case status @ Failed(_, error) =>
           env.evaluate(evaluateStep(step, env)) {
-            val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+            val isAssertionError = status.isAssertionError
             val isHardAssert = env.evaluate(false) { GwenSettings.`gwen.assertion.mode` == AssertionMode.hard }
             if (!isAssertionError || isHardAssert) {
               Step(step, Skipped, step.attachments)
@@ -296,7 +296,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     *
     * @param step the step to evaluate
     * @param env the environment context
-    * @throws gwen.errors.UndefinedStepException unconditionally thrown by 
+    * @throws gwen.errors.UndefinedStepException unconditionally thrown by
     *         this default implementation
     */
   def evaluate(step: Step, env: T): Unit = undefinedStepError(step)
@@ -341,8 +341,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
               env.featureScope.set(s"$element number", elementNumber.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
-                  case Failed(_, error)  =>
-                    val isAssertionError = error.getCause.isInstanceOf[AssertionError]
+                  case status @ Failed(_, error)  =>
+                    val isAssertionError = status.isAssertionError
                     val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
                     val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
@@ -401,7 +401,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
       logger.debug(msg)
     case Passed(_) => 
       logger.info(msg)
-    case Failed(_, _) => 
+    case Failed(_, _) =>
       logger.error(msg)
     case Sustained(_, _) =>
       logger.warn(msg)

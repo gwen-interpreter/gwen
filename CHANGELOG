@@ -1,3 +1,8 @@
+2.19.0
+======
+March 17, 2019
+- Introduce Disabled evaluation status to support conditionally disabling steps
+
 2.18.3
 ======
 March 12, 2019
