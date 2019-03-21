@@ -244,7 +244,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
       Scenario: Work unit 3
           Given I do work 3
       
-      @wip play
+      @wip @play
       Scenario: Work unit 4
           Given I do work 4"""
     
