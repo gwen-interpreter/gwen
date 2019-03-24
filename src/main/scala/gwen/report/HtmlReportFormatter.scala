@@ -416,7 +416,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   }
   private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String): String = s"""
         <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
-                <div class="bg-${cssStatus(status)}">
+                <div class="bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
                   <div class="keyword-right"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}

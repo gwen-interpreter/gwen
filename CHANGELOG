@@ -1,6 +1,6 @@
 2.19.0
 ======
-March 17, 2019
+March 24, 2019
 - Introduce Disabled evaluation status to support conditionally disabling steps
 - Upgrade library dependencies
   - scopt from 3.7.0 to 3.7.1
