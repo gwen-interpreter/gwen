@@ -28,6 +28,9 @@ import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.FeatureUnit
 import gwen.Predefs.Formatting._
+import scala.sys.process._
+
+import scala.util.Try
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
@@ -56,7 +59,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
       else List((scenario, false))
     }
 
-    val hostname = s""" hostname="${escapeXml(InetAddress.getLocalHost.getHostName)}""""
+    val hostname = s""" hostname="${escapeXml(Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim))}""""
     val packageName = result.spec.featureFile.map(f => escapeXml(f.getPath)).getOrElse("")
     val name = s""" name="$packageName.Feature: ${escapeXml(result.spec.feature.name)}""""
     val pkg = result.spec.featureFile.map(_ => s""" package="$packageName"""").getOrElse("")
