@@ -195,10 +195,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
             logger.error(scopes.visible.asString)
           }
           logger.error(failure.error.getMessage)
+          addErrorAttachments(failure)
         }
         if (failure.isTechError) {
           logger.error(s"Exception: ", failure.error)
-          addErrorAttachments(failure)
         }
       case _ => // noop
     }

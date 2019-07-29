@@ -1,3 +1,8 @@
+2.19.3
+======
+July 29
+- Ensure error attachments are always added to reports for failing steps
+
 2.19.2
 ======
 July 27

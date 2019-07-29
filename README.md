@@ -10,7 +10,11 @@ automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
 to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-> [User network and support](https://www.gwenify.com/)
+> [Web engine (gwen-web)](https://github.com/gwen-interpreter/gwen-web)
+  | [Blog](https://gweninterpreter.wordpress.com)
+  | [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
+  | [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+  | [Support](https://www.gwenify.com/)
 
 ### Current Status
 
@@ -30,7 +34,7 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-We wanted to make automation easier for non developers with little to no coding experience. So we developed an
+We wanted to make automation with executable specifications simpler for everyone and easier for non developers with little to no coding experience. So we developed an
 interpreter to read plain text Gherkin features as input and produce executing automation instructions as output
 through automation engines that can be developed and shared.
 
@@ -39,14 +43,7 @@ What engines are available?
 
 - [gwen-web](https://github.com/gwen-interpreter/gwen-web)
   - A web automation engine for Gwen that you can download and use to quickly automate web application testing and
-    robotic online processing without having to develop any page objects or Selenium code.
-
-Links
------
-
-- [Blog](https://gweninterpreter.wordpress.com)
-- [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
-- [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
+    robotic online processing without having to manage native browser drivers, develop page objects or write Selenium code.
 
 Core Runtime Requirement
 ------------------------
