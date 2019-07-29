@@ -93,7 +93,7 @@ Contributions
 
 New capabilities, improvements, and fixes are all valid candidates for contribution. Submissions can be made using
 pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being
-integrated and released to the community. We ask that all code sbmissions include unit tests.
+integrated and released to the community. We ask that all code submissions include unit tests.
 
 By submitting contributions, you agree to release your work under the [license](#license) that covers this software.
 
