@@ -87,7 +87,16 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
 
 object HtmlSlideshowFormatter {
 
-  private def maxFramesPerSec(screenshots: List[File]) = if (screenshots.length < 10) screenshots.length else 10
+  private def maxFramesPerSec(screenshots: List[File]) = if (screenshots.length < 18) screenshots.length else 18
+  private def defaultFramesPerSec(screenshots: List[File]) = {
+    val fps = GwenSettings.`gwen.report.slideshow.framespersecond`
+    val max = maxFramesPerSec(screenshots)
+    if (fps < max) {
+      fps
+    } else {
+      max
+    }
+  }
   
   private[report] def formatSlideshow(screenshots: List[File], rootPath: String) = s"""
 <center>
@@ -173,7 +182,7 @@ object HtmlSlideshowFormatter {
       $$('#decrease-speed-btn').prop('disabled', framesPerSec == 1);
     }
     $$(function() {
-      $$('#frames-per-sec').val('${GwenSettings.`gwen.report.slideshow.framespersecond`}');
+      $$('#frames-per-sec').val('${defaultFramesPerSec(screenshots)}');
       $$('#increase-speed-btn').click(function(e) { increaseSpeed() });
       $$('#decrease-speed-btn').click(function(e) { decreaseSpeed() });
       toggleSpeedButtons(getFramesPerSec());
