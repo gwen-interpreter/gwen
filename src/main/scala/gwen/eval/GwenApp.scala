@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 
 package gwen.eval
 
+import gwen.Predefs.Exceptions
 import gwen.Predefs.Kestrel
+
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Gwen interpreter application.
   * 
   * @param interpreter the gwen interpreter
   */
-class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
+class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with LazyLogging {
     
   printBanner("Welcome to ")
   println()
@@ -31,15 +34,12 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App {
   try {
     System.exit(run(GwenOptions(args)))
   } catch {
-    case ie: gwen.errors.InvocationException =>
-      System.err.println(ie.getMessage)
-      System.exit(1)
-    case ge: gwen.errors.GwenException =>
-      System.err.println(s"ERROR - ${ge.getMessage}")
-      System.exit(1)
     case e: Throwable =>
-      e.printStackTrace()
+      logger.whenDebugEnabled {
+        println(e.writeStackTrace())
+      }
       System.err.println(s"ERROR - ${e.getMessage}")
+      println()
       System.exit(1)
   }
   

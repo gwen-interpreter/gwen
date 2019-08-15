@@ -1,3 +1,8 @@
+2.19.4
+======
+Aug 15
+- Only log stack traces to console if DEBUG logging is enabled
+
 2.19.3
 ======
 July 29

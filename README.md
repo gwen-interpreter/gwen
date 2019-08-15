@@ -3,14 +3,12 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://docs.cucumber.io/gherkin/reference/) interpreter that turns Given-When-Then
-steps into automation instructions and executes them for you so you don't have to do all the programming work. It has
-an abstracted [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of
-automation capability to be built and mixed in.
-[Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used
-to capture automation bindings and allow you to compose step definitions in a declarative manner.
+Gwen is a [Gherkin](https://docs.cucumber.io/gherkin/reference/) interpreter that turns Given-When-Then steps into automation instructions and executes them for you so you don't 
+have to do all the programming work. It has an abstracted 
+[evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation capability to be built and mixed in.
+[Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-> [Web engine (gwen-web)](https://github.com/gwen-interpreter/gwen-web)
+> [Gwen Web](https://github.com/gwen-interpreter/gwen-web)
   | [Blog](https://gweninterpreter.wordpress.com)
   | [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
   | [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
@@ -34,9 +32,7 @@ Why Gwen?
 
 > Gwen = [G]iven [W]hen Th[en]
 
-We wanted to make automation with executable specifications simpler for everyone and easier for non developers with little to no coding experience. So we developed an
-interpreter to read plain text Gherkin features as input and produce executing automation instructions as output
-through automation engines that can be developed and shared.
+We wanted to make automation with executable specifications simpler for everyone and easier for non developers with little to no coding experience. So we developed an interpreter to read plain text Gherkin features as input and produce executing automation instructions as output through automation engines that can be developed and shared.
 
 What engines are available?
 ---------------------------
@@ -91,9 +87,8 @@ Open sourced 14 May 2014 09:30 pm AEST
 Contributions
 -------------
 
-New capabilities, improvements, and fixes are all valid candidates for contribution. Submissions can be made using
-pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being
-integrated and released to the community. We ask that all code submissions include unit tests.
+New capabilities, improvements, and fixes and documentation are all valid candidates for contribution. Submissions can be made using pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being integrated and released 
+to the community. We ask that all code submissions include unit tests.
 
 By submitting contributions, you agree to release your work under the [license](#license) that covers this software.
 
@@ -122,20 +117,20 @@ The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/con
 that have been merged:
 
 - [Jacob Juric](https://github.com/TheReturningVoid)
-- [Alexandru Cuciureanu](https://github.com/acuciureanu)
+| [Alexandru Cuciureanu](https://github.com/acuciureanu)
 
 ### Active Users
 
 The following users raised issues or requests that have been addressed:
 
 - [Chris Leong](https://github.com/aztheque)
-- [Martino Turturiello](https://github.com/martino-jelli)
-- [bliddicoat](https://github.com/bliddicoat)
-- [Andrew Gillett](https://github.com/asgillett)
-- [anshu781126](https://github.com/anshu781126)
-- [ketu4u2010](https://github.com/ketu4u2010)
-- [Rahul9844](https://github.com/Rahul9844)
-- [rkevin99](https://github.com/rkevin99)
+| [Martino Turturiello](https://github.com/martino-jelli)
+| [bliddicoat](https://github.com/bliddicoat)
+| [Andrew Gillett](https://github.com/asgillett)
+| [anshu781126](https://github.com/anshu781126)
+| [ketu4u2010](https://github.com/ketu4u2010)
+| [Rahul9844](https://github.com/Rahul9844)
+| [rkevin99](https://github.com/rkevin99)
 
 Credits
 -------
