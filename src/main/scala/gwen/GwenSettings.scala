@@ -43,9 +43,9 @@ object GwenSettings {
   
   /**
    * Provides access to the `gwen.report.slideshow.framespersecond` property setting
-   * used to set the default frame per second (speed) of the slideshow (default value is 5).
+   * used to set the default frame per second (speed) of the slideshow (default value is 4).
    */
-  def `gwen.report.slideshow.framespersecond`: Int = Settings.getOpt("gwen.report.slideshow.framespersecond").map(_.toInt).getOrElse(5)
+  def `gwen.report.slideshow.framespersecond`: Int = Settings.getOpt("gwen.report.slideshow.framespersecond").map(_.toInt).getOrElse(4)
   
   /**
     * Provides access to the `gwen.report.overwrite` property setting used to overwrite 

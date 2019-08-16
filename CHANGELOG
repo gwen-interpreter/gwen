@@ -1,8 +1,8 @@
 2.19.4
 ======
-Aug 15
+Aug 16
 - Only log stack traces to console if DEBUG logging is enabled
-- Allow up to 18 frames per second in slideshow playback
+- Allow up to 18 frames per second in slideshow playback (default is now 4 instead of 1)
 
 2.19.3
 ======
