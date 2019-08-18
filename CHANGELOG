@@ -1,17 +1,22 @@
+2.20.0
+======
+August 18, 2019
+- Add support for interpolating environment variables using ${env.VARNAME} syntax
+
 2.19.4
 ======
-Aug 16
+August 16, 2019
 - Only log stack traces to console if DEBUG logging is enabled
 - Allow up to 18 frames per second in slideshow playback (default is now 4 instead of 1)
 
 2.19.3
 ======
-July 29
+July 29, 2019
 - Ensure error attachments are always added to reports for failing steps
 
 2.19.2
 ======
-July 27
+July 27, 2019
 - Use sbt 0.13.17 for builds
 
 2.19.1

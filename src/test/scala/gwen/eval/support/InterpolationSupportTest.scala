@@ -16,6 +16,8 @@
 
 package gwen.eval.support
 
+import gwen.Settings
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
@@ -97,7 +99,6 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   
   """interpolate stepdef with adjacent params: $<param-0> $<param-1>"""" should "resolve" in {
     interpolate("""Hey you $<param-0> $<param-1> thing!""") {
-      case "<id>" => "0"
       case "<param-0>" => "really"
       case "<param-1>" => "good"
       case _ => "undefined"
@@ -106,7 +107,6 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   
   """interpolate stepdef with adjacent params (no space): $<param-0>$<param-1>"""" should "resolve" in {
     interpolate("""Hey you $<param-0>$<param-1> thing!""") {
-      case "<id>" => "0"
       case "<param-0>" => "go"
       case "<param-1>" => "od"
       case _ => "undefined"
@@ -133,10 +133,66 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     interpolate("""I enter "+6149265587" in the phone field""") { _ => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
   }
 
+  """interpolate env var using property syntax: prefix "${property}"""" should "resolve" in {
+    interpolate("""home "${env.HOME}"""") { _ => Settings.getOpt("env.HOME"). getOrElse("") } should be (s"""home "${sys.env("HOME")}"""")
+  }
+  
+  """interpolate env var using property syntax: prefix ${property}""" should "resolve" in {
+    interpolate("""home ${env.HOME}""") { _ => Settings.getOpt("env.HOME"). getOrElse("") } should be (s"""home ${sys.env("HOME")}""")
+  }
+  
+  """interpolate env var using property syntax: "${property}" suffix""" should "resolve" in {
+    interpolate(""""${env.HOME}" home""") { _ => Settings.getOpt("env.HOME"). getOrElse("") } should be (s""""${sys.env("HOME")}" home""")
+  }
+  
+  """interpolate env var using property syntax: ${property} "suffix"""" should "resolve" in {
+    interpolate("""${property} "you"""") { _ => "hello" } should be ("""hello "you"""")
+    interpolate("""${env.HOME} home""") { _ => Settings.getOpt("env.HOME"). getOrElse("") } should be (s"""${sys.env("HOME")} home""")
+  }
+  
+  """interpolate env var using property syntax: prefix ${property} suffix""" should "resolve" in {
+    interpolate("""hello ${property} good thing""") { _ => "you" } should be ("""hello you good thing""")
+    interpolate("""home ${env.HOME} found""") { _ => Settings.getOpt("env.HOME"). getOrElse("") } should be (s"""home ${sys.env("HOME")} found""")
+  }
+  
+  """interpolate nested env var using property syntax: ${property1-${property0}}"""" should "resolve" in {
+    interpolate("""Hey you ${env.var-${env.id}} thing!""") {
+      case "env.id" => "0"
+      case "env.var-0" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
+  }
+  
+  """interpolate adjacent env var values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
+    interpolate("""Hey you ${env.var0} ${env.var1} thing!""") {
+      case "env.var0" => "really"
+      case "env.var1" => "good"
+      case _ => "undefined"
+    } should be ("""Hey you really good thing!""")
+  }
+  
+  """interpolate adjacent env var values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
+    interpolate("""Hey you ${env.var0}${env.var1} thing!""") {
+      case "env.var0" => "go"
+      case "env.var1" => "od"
+      case _ => "undefined"
+    } should be ("""Hey you good thing!""")
+  }
+
   """multi line string with properties""" should "resolve" in {
     val source =
       """hello
         |${property}""".stripMargin
+    val target =
+      """hello
+        |you""".stripMargin
+    interpolate(source) { _ => "you" } should be(target)
+  }
+
+  """multi line string with env vars""" should "resolve" in {
+    val source =
+      """hello
+        |${env.var}""".stripMargin
     val target =
       """hello
         |you""".stripMargin
@@ -151,6 +207,14 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
     } should be ("""Hey you good thing!""")
   }
 
+  """Nested parameter in env var: ${env.var_$<param>}"""" should "resolve" in {
+    interpolate("""Hey you ${env.var_$<id>} thing!""") {
+      case "<id>" => "0"
+      case "env.var_0" => "good"
+      case x => s"undefined($x)"
+    } should be ("""Hey you good thing!""")
+  }
+
   """Nested property in parameter: $<property-${param}>"""" should "resolve" in {
     interpolate("""Hey you $<property-${id}> thing!""") {
       case "id" => "0"
@@ -158,4 +222,13 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
   }
+
+  """Nested env var in parameter: $<property-${env.var}>"""" should "resolve" in {
+    interpolate("""Hey you $<property-${env.var}> thing!""") {
+      case "env.var" => "0"
+      case "<property-0>" => "good"
+      case x => s"undefined($x)"
+    } should be ("""Hey you good thing!""")
+  }
+
 }

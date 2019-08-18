@@ -29,6 +29,12 @@ class SettingsTest extends FlatSpec with Matchers {
       Settings.getOpt("user.home") should not be None
     }
   }
+
+  "HOME env var should" should "be available" in {
+    Settings.synchronized {
+      Settings.getOpt("env.HOME") should be (Some(sys.env("HOME")))
+    }
+  }
   
   "inline properties" should "resolve" in {
     val props = new Properties()

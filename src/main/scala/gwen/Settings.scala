@@ -27,14 +27,15 @@ import gwen.Predefs.FileIO
 import scala.collection.mutable
 
 /**
-  * Provides access to system properties loaded from properties files. Properties are loaded in the following order
-  * of precedence:
-  *   1. System properties passed through -D Java command line option
-  *   2. ~/gwen.properties (user overrides)
-  *   3. Properties files passed into Gwen through the -p/--properties command line option
+  * Provides access to enviornment variables and system properties loaded from properties files. 
+  * Values  are loaded in the following order of precedence:
+  *   1. Environment variables (setting names that start with `env.`)
+  *   2. System properties passed through -D Java command line option
+  *   3. ~/gwen.properties (user overrides)
+  *   4. Properties files passed into Gwen through the -p/--properties command line option
   *      - These are loaded in the order provided so that later ones override earlier ones
-  *   4. ./gwen.properties (working directory)
-  *   5. ~/.gwen/gwen.properties (global properties)
+  *   5. ./gwen.properties (working directory)
+  *   6. ~/.gwen/gwen.properties (global properties)
   *
   * Once a property is loaded it is never replaced. Therefore it is important to load properties in the right
   * order as per above. System properties are not overridden.
@@ -104,7 +105,7 @@ object Settings {
   private[gwen] def resolve(value: String, props: Properties): String = value match {
     case InlineProperty(key) =>
       val inline = if (props.containsKey(key)) {
-        props.getProperty(key)
+        getEnvOpt(key).getOrElse(props.getProperty(key))
       } else {
         getOpt(key).getOrElse(missingPropertyError(key))
       }
@@ -117,12 +118,30 @@ object Settings {
   }
   
   /**
-    * Gets an optional property (returns None if not found)
+    * Gets an optional property or enviroment variable (returns None if not found)
     * 
-    * @param name the name of the property to get
+    * @param name the name of the property to get ( `env.` prefix for env VARs)
     */
-  def getOpt(name: String): Option[String] = Option(localSettings.get.getProperty(name)).orElse(sys.props.get(name))
-  
+  def getOpt(name: String): Option[String] = {
+    getEnvOpt(name) match {
+      case None => Option(localSettings.get.getProperty(name)).orElse(sys.props.get(name))
+      case res @ _ => res
+      
+    }
+  }
+
+  /** 
+   * Gets an optional environment variable.
+   * 
+   * @param name the name of the environment variable (with optional `.env` prefix)
+   */
+  def getEnvOpt(name: String) = 
+    if (name.startsWith("env.") && name.length() > 4) {
+      sys.env.get(name.substring(4))
+    } else {
+      sys.env.get(name)
+    }
+
   /**
     * Gets a mandatory property (throws exception if not found)
     * 
