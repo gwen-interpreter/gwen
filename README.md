@@ -8,7 +8,8 @@ have to do all the programming work. It has an abstracted
 [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation capability to be built and mixed in.
 [Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used to capture automation bindings and allow you to compose step definitions in a declarative manner.
 
-> [Gwen Web](https://github.com/gwen-interpreter/gwen-web)
+> [Home](http://gweninterpreter.org)
+  | [Gwen Web](https://github.com/gwen-interpreter/gwen-web)
   | [Blog](https://gweninterpreter.wordpress.com)
   | [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
   | [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
