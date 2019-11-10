@@ -41,7 +41,7 @@ trait JsonReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
-    val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
+    val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
         if (EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
         else List((scenario, false))
@@ -68,7 +68,7 @@ trait JsonReportFormatter extends ReportFormatter {
         "name": "${escapeJson(tag.toString)}",
         "line": ${tag.pos.line}
       }"""}.mkString(",")}
-    ]""" else ""}${if(spec.scenarios.nonEmpty) s""",
+    ]""" else ""}${if(scenarios.nonEmpty) s""",
     "elements": [${scenarios.zipWithIndex.map { case ((scenario, isExpanded), idx) =>
         s"${scenario.background.map(bg => s"${renderBackground(bg, idx)},${Properties.lineSeparator}").getOrElse("")}${renderScenario(scenario, isExpanded, idx)}"
       }.mkString(",")

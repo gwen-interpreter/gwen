@@ -27,7 +27,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.Matchers
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import gwen.Predefs.Kestrel
 import gwen.dsl._
 import org.scalatest.FlatSpec
@@ -36,7 +36,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
   }
 
   val rootDir: File = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }

@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- Integated latest Gherkin parser from Cucumber to support rules and [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction) (`Rule` and `Example` keywords, synonyms, etc..)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
-- [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 
 Why Gwen?
 ---------
@@ -50,7 +50,7 @@ Core Runtime Requirement
 Key Features
 ------------
 
-- [Gherkin grammar](https://cucumber.io/docs/reference)
+- Integrated [Gherkin](https://cucumber.io/docs/reference) parser from Cucubmer
 - [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
 - [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
 - [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
@@ -68,8 +68,8 @@ Key Features
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
-- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
-
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/
+- Assertion-Modes)
 License
 -------
 

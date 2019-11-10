@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 Branko Juric, Brady Wood
+ * Copyright 2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.scalatest.Matchers
 import gwen.errors.AmbiguousCaseException
 import gwen.eval.DataRecord
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   object Feature {
    def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)

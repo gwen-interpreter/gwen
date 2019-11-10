@@ -369,7 +369,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
             env.featureScope.set(s"$element number", null)
           }
       }
-    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), element, Nil, None, steps, false, Nil, None)
+    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), FeatureKeyword.Scenario.toString, element, Nil, None, steps, false, Nil, None)
     env.foreachStepDefs += (step.uniqueId -> foreachStepDef)
     step
   }

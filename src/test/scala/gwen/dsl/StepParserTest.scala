@@ -27,7 +27,6 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
   "Valid steps" should "parse" in {
     
     StepKeyword.values foreach { keyword =>
-      parse(s"$keyword ").get                                                       should be (Step(keyword, ""))
       parse(s"$keyword I am a regular test step").get                               should be (Step(keyword, "I am a regular test step"))
       parse(s"""$keyword I contain a double quoted "literal"""").get                should be (Step(keyword, """I contain a double quoted "literal""""))
       parse(s"$keyword I contain a single quoted 'literal'").get                    should be (Step(keyword, "I contain a single quoted 'literal'"))
@@ -48,6 +47,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     StepKeyword.values foreach { keyword =>
       
       assertFail(s"$keyword",   "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword ",  "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
       assertFail(s"$keyword\t", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
       assertFail(s"$keyword\n", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
       

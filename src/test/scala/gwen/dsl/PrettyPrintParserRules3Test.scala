@@ -1,12 +1,12 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
- * 
+ * Copyright 2019 Branko Juric, Brady Wood
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.util.Success
 
-class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+class PrettyPrintParserRules3Test extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   private val parse = parseFeatureSpec(_: String)
 
@@ -36,21 +36,32 @@ Background: The butterfly effect
        When a small change is initially applied
        Then a large change will eventually result
 
-  @wip @test
-  Scenario: Evaluation
+   @wip @test
+   Example: Declarative to imperative mapping
             Gwen for executable specifications
             Business specs mapped to meta
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-  Scenario: Evaluation
+      Rule: Deterministic chaos
+            Unpredictable yet non random
+
+Background: A butterfly might impact a tornado
+            The change in atmosphere when a butterfly flaps
+            its wings could alter the path of a tornado
+      Given a butterfly
+        And a tornado
+       When the butterfly flaps its wings
+       Then the change in atmosphere might seam neglibile
+        But it could alter the path of the tornado
+
+   Example: Evaluation
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-   @Outline
-   Scenario Outline: Join two strings together
+   Scenario Template: Join two strings together
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "<string 1>"
         And string 2 is "<string 2>"
@@ -63,20 +74,23 @@ Background: The butterfly effect
             | howdy    | doo      | howdydoo |
             | any      | thing    | anything |
 
-  Scenario: Numbers as words
+      Rule: No background rule
+            Scenarios here will have no background
+
+   Example: Numbers as words
       Given a mapping of words to numbers
        Then the word should match the number
             | one   | 1 |
             | two   | 2 |
             | three | 3 |
 
-  Scenario: Multiline DocString
+   Example: Multiline DocString
       Given my line is
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns
             Given-When-Then steps into automation instructions.
             ${"\"\"\""}"""
- 
+
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     val ast1 = parse(featureString)
     val ast2 = parse(prettyPrint(ast1.get))
@@ -98,60 +112,73 @@ Background: The butterfly effect
        When a small change is initially applied
        Then a large change will eventually result
 
-  @wip @test
-  Scenario: Evaluation
+   @wip @test
+   Example: Declarative to imperative mapping
             Gwen for executable specifications
             Business specs mapped to meta
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-Background: The butterfly effect
-            Sensitivity to initial conditions
-      Given a deterministic nonlinear system
-       When a small change is initially applied
-       Then a large change will eventually result
+      Rule: Deterministic chaos
+            Unpredictable yet non random
 
-  Scenario: Evaluation
+Background: A butterfly might impact a tornado
+            The change in atmosphere when a butterfly flaps
+            its wings could alter the path of a tornado
+      Given a butterfly
+        And a tornado
+       When the butterfly flaps its wings
+       Then the change in atmosphere might seam neglibile
+        But it could alter the path of the tornado
+
+   Example: Evaluation
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-Background: The butterfly effect
-            Sensitivity to initial conditions
-      Given a deterministic nonlinear system
-       When a small change is initially applied
-       Then a large change will eventually result
+Background: A butterfly might impact a tornado
+            The change in atmosphere when a butterfly flaps
+            its wings could alter the path of a tornado
+      Given a butterfly
+        And a tornado
+       When the butterfly flaps its wings
+       Then the change in atmosphere might seam neglibile
+        But it could alter the path of the tornado
 
-  @Outline
-  Scenario: Join two strings together -- Example 1.1 Basic string concatenation
+   Example: Join two strings together -- Example 1.1 Basic string concatenation
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "howdy"
         And string 2 is "doo"
        When I join the two strings
        Then the result should be "howdydoo"
 
-Background: The butterfly effect
-            Sensitivity to initial conditions
-      Given a deterministic nonlinear system
-       When a small change is initially applied
-       Then a large change will eventually result
+Background: A butterfly might impact a tornado
+            The change in atmosphere when a butterfly flaps
+            its wings could alter the path of a tornado
+      Given a butterfly
+        And a tornado
+       When the butterfly flaps its wings
+       Then the change in atmosphere might seam neglibile
+        But it could alter the path of the tornado
 
-  @Outline
-  Scenario: Join two strings together -- Example 1.2 Basic string concatenation
+   Example: Join two strings together -- Example 1.2 Basic string concatenation
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "any"
         And string 2 is "thing"
        When I join the two strings
        Then the result should be "anything"
 
+      Rule: No background rule
+            Scenarios here will have no background
+
 Background: The butterfly effect
             Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-  Scenario: Numbers as words
+   Example: Numbers as words
       Given a mapping of words to numbers
        Then the word should match the number
             | one   | 1 |
@@ -164,7 +191,7 @@ Background: The butterfly effect
        When a small change is initially applied
        Then a large change will eventually result
 
-  Scenario: Multiline DocString
+   Example: Multiline DocString
       Given my line is
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns
@@ -172,5 +199,5 @@ Background: The butterfly effect
             ${"\"\"\""}""".replace("\r", ""))
 
   }
-    
+
 }

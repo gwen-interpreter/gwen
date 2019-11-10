@@ -34,7 +34,7 @@ import gwen.errors._
 import java.util.Date
 
 import com.github.tototoshi.csv.CSVReader
-import gherkin.ParserException
+import io.cucumber.gherkin.ParserException
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -149,41 +149,8 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     val resultSpec = FeatureSpec(
       featureSpec.feature, 
       None, 
-      featureSpec.scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s).foldLeft(List[Scenario]()) {
-        (acc: List[Scenario], scenario: Scenario) =>
-          if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
-            env.featureScope.set("gwen.scenario.name", scenario.name)
-          }
-          (EvalStatus(acc.map(_.evalStatus)) match {
-            case status @ Failed(_, error) =>
-              val isAssertionError = status.isAssertionError
-              val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
-              val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
-              val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-              if (failfast && !exitOnFail && !isSoftAssert) {
-                Scenario(
-                  scenario, 
-                  scenario.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
-                  scenario.steps.map(step => Step(step, Skipped, step.attachments)),
-                  scenario.examples.map { exs =>
-                    Examples(exs, exs.scenarios.map { s =>
-                      Scenario(
-                        s,
-                        s.background.map(bg => Background(bg, bg.steps.map(step => Step(step, Skipped, step.attachments)))),
-                        s.steps.map(step => Step(step, Skipped, step.attachments)),
-                        s.examples)
-                    })
-                  }
-                )
-              } else if (exitOnFail && !isSoftAssert) {
-                scenario
-              } else {
-                engine.evaluateScenario(scenario, env)
-              }
-            case _ =>
-              engine.evaluateScenario(scenario, env)
-          }) :: acc
-      } reverse,
+      evaluateScenarios(featureSpec.scenarios, specType, env),
+      evaluateRules(featureSpec.rules, specType, env),
       featureSpec.featureFile,
       metaResults.map(_.spec)
     )
@@ -197,6 +164,68 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       } else {
         logger.info(result.toString)
       }
+    }
+  }
+
+  private def evaluateScenarios(scenarios: List[Scenario], specType: SpecType.Value, env: T): List[Scenario] = {
+    scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s).foldLeft(List[Scenario]()) {
+      (acc: List[Scenario], scenario: Scenario) =>
+        evaluateScenario(scenario, specType, acc, env) :: acc
+    } reverse
+  }
+
+  private def evaluateScenario(scenario: Scenario, specType: SpecType.Value, acc: List[Scenario], env: T): Scenario = {
+    if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
+      env.featureScope.set("gwen.scenario.name", scenario.name)
+    }
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        val isAssertionError = status.isAssertionError
+        val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+        val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+        if (failfast && !exitOnFail && !isSoftAssert) {
+          scenario.skip
+        } else if (exitOnFail && !isSoftAssert) {
+          scenario
+        } else {
+          engine.evaluateScenario(scenario, env)
+        }
+      case _ =>
+        engine.evaluateScenario(scenario, env)
+    }
+  }
+
+  private def evaluateRules(rules: List[Rule], specType: SpecType.Value, env: T): List[Rule] = {
+    rules.foldLeft(List[Rule]()) {
+      (acc: List[Rule], rule: Rule) =>
+        evaluateRule(rule, specType, acc, env) :: acc
+    } reverse
+  }
+
+  private def evaluateRule(rule: Rule, specType: SpecType.Value, acc: List[Rule], env: T): Rule = {
+    env.featureScope.set("gwen.rule.name", rule.name)
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        val isAssertionError = status.isAssertionError
+        val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+        val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+        if (failfast && !exitOnFail && !isSoftAssert) {
+          rule.skip
+        } else if (exitOnFail && !isSoftAssert) {
+          rule
+        } else {
+          logger.info(s"Evaluating ${Rule.keyword}: $rule")
+          Rule(rule, evaluateScenarios(rule.scenarios, specType, env)) tap { r =>
+            logStatus(Rule.keyword, r.toString, r.evalStatus)
+          }
+        }
+      case _ =>
+        logger.info(s"Evaluating ${Rule.keyword}: $rule")
+        Rule(rule, evaluateScenarios(rule.scenarios, specType, env)) tap { r =>
+          logStatus(Rule.keyword, r.toString, r.evalStatus)
+        }
     }
   }
 

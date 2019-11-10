@@ -20,8 +20,7 @@ import scala.language.postfixOps
 
 object FeatureKeyword extends Enumeration {
   type FeatureKeyword = Value
-  val Feature, Background, Scenario, Examples = Value
-  val `Scenario Outline` = Value("Scenario Outline")
+  val Feature, Background, Rule, Scenario, Example, Examples = Value
 
   /** List of all keyword names. */
   val names: Set[String] = values.map(_.toString)

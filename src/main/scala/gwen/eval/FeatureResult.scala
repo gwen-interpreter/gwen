@@ -25,6 +25,8 @@ import java.util.Date
 
 import gwen.Predefs.Formatting._
 import gwen.Predefs.DurationOps
+import gwen.dsl.Scenario
+import gwen.dsl.FeatureKeyword
 
 /**
   * Captures the results of an evaluated feature.
@@ -51,10 +53,13 @@ class FeatureResult(
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   lazy val sustainedCount: Int = spec.sustainedCount
   
-  private[eval] lazy val scenarioCounts =
-    StatusKeyword.countsByStatus(spec.scenarios.flatMap { s =>
+  private[eval] lazy val exampleCounts = scenarioCountsFor(FeatureKeyword.Example.toString)
+  private[eval] lazy val scenarioCounts = scenarioCountsFor(FeatureKeyword.Scenario.toString)
+  
+  private def scenarioCountsFor(keyword: String) =
+    StatusKeyword.countsByStatus(spec.evalScenarios.filter(_.keyword == keyword).flatMap { s =>
       if (s.isOutline) {
-        val scenarios = s.examples.flatMap(_.scenarios)
+        val scenarios = s.examples.flatMap(_.scenarios).filter(_.keyword == keyword)
         if (scenarios.nonEmpty) {
           scenarios.map(_.evalStatus)
         } else {
@@ -63,7 +68,11 @@ class FeatureResult(
       }
       else List(s.evalStatus)
     })
-  private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.scenarios.flatMap(_.allSteps.map(_.evalStatus)))
+
+  private[eval] lazy val ruleCounts =
+    StatusKeyword.countsByStatus(spec.rules.map(_.evalStatus))
+
+  private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.evalScenarios.flatMap(_.allSteps.map(_.evalStatus)))
   override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }
 

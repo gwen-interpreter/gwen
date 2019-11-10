@@ -22,7 +22,7 @@ package gwen {
   import gwen.dsl.{Position, Scenario}
   import java.io.File
 
-  import gherkin.ParserException
+  import io.cucumber.gherkin.ParserException
   
   package object errors {
 

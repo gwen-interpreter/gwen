@@ -37,7 +37,7 @@ lazy val testDependencies = {
 }
 
 lazy val commonDependencies = {
-  val cucumberGherkin = "5.1.0"
+  val cucumberGherkin = "8.1.1"
   val scopt = "3.7.1"
   val slf4jLog4j = "1.7.25"
   val scalaLogging = "3.9.2"

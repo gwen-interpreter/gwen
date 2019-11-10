@@ -16,43 +16,20 @@
 
 package gwen.dsl
 
-import scala.language.postfixOps
-import gherkin.Parser
-import gherkin.AstBuilder
-
-import scala.util.{Failure, Success, Try}
 import gwen.errors._
 
+import io.cucumber.gherkin.Gherkin
+import io.cucumber.messages.Messages.GherkinDocument
+
+import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
+
+import java.util.Collections
+import java.util.stream.Collectors
+import io.cucumber.gherkin.ParserException
+
 /**
-  *  Uses the [[https://github.com/cucumber/gherkin3 Gherkin 3]] parser to  
-  *  produce an abstract syntax tree. Althouth the entire Gherkin grammar can 
-  *  be parsed, only the following minimal subset is supported by Gwen (we can 
-  *  add support for the remaining subsets in the future if required).
-  *  
-  *  {{{
-  *     
-  *     spec        = feature, 
-  *                   [background], 
-  *                   {scenario}
-  *     feature     = {tag}, 
-  *                   "Feature:", name
-  *                   [description]
-  *     background  = "Background:", name
-  *                   [description]
-  *                   {step}
-  *     scenario    = {tag}, 
-  *                   "Scenario:", name
-  *                   [description]
-  *                   {step}
-  *     tag         = "@", name
-  *     step        = keyword, expression
-  *     keyword     = "Given" | "When" | "Then" | "And" | "But"
-  *     name        = expression
-  *     description   {expression}
-  *     comment     = "#", expression
-  *     expression  = character, {character}
-  *  
-  *  }}}
+  *  Parses a Gherkin feature specification.
   * 
   *  The parsers defined in this class accept gherkin text as input to 
   *  produce an abstract syntax tree in the form of a [[FeatureSpec]] object.  
@@ -87,20 +64,18 @@ trait GherkinParser {
 
   /** Produces a complete feature spec tree (this method is used to parse entire feature files). */
   def parseFeatureSpec(feature: String): Try[FeatureSpec] = Try {
-    val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
-    FeatureSpec(parser.parse(feature))
+    FeatureSpec(parseDocument(feature))
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
-    val parser = new Parser[gherkin.ast.GherkinDocument](new AstBuilder())
     Try {
-      Try(parser.parse(s"Feature:\nScenario:\n$step")) match {
+      Try(parseDocument(s"Feature:\nScenario:\n$step")) match {
         case Success(ast) =>
           Option(ast.getFeature)
-          .map(_.getChildren)
+          .map(_.getChildrenList)
           .filter(!_.isEmpty)
-          .map(_.get(0).getSteps)
+          .map(_.get(0).getScenario.getStepsList)
           .filter(!_.isEmpty)
           .map(steps => Step(steps.get(0)))
           .map(step => Step(step, Position(1, step.pos.column)))
@@ -108,6 +83,17 @@ trait GherkinParser {
         case Failure(e) =>
           syntaxError(s"'Given|When|Then|And|But <expression>' expected: ${e.getMessage}", 1)
       }
+    }
+  }
+
+  private def parseDocument(feature: String): GherkinDocument = {
+    val envelope = Gherkin.makeSourceEnvelope(feature, "")
+    val envelopes = Gherkin.fromSources(Collections.singletonList(envelope), false, true, false).collect(Collectors.toList())
+    val result = envelopes.get(0)
+    if (result.hasAttachment()) {
+      throw new RuntimeException(s"Parser errors:\n${result.getAttachment().getData()}");
+    } else {
+      result.getGherkinDocument()
     }
   }
 
