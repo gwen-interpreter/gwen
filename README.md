@@ -24,7 +24,7 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
-- Integated latest Gherkin parser from Cucumber to support rules and [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction) (`Rule` and `Example` keywords, synonyms, etc..)
+- Integated the latest [Gherkin parser](https://github.com/cucumber/cucumber/tree/master/gherkin/java) from Cucumber to support [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 
@@ -68,8 +68,8 @@ Key Features
 - [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
-- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/
-- Assertion-Modes)
+- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
+
 License
 -------
 
