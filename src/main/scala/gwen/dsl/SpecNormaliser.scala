@@ -58,6 +58,14 @@ trait SpecNormaliser {
       } getOrElse spec.feature,
       None, 
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
+      spec.rules map { rule => 
+        Rule(
+          rule.name,
+          rule.description,
+          None,
+          expandScenarios(rule.scenarios, rule.background.orElse(spec.background))
+        )
+      },
       featureFile
     )
   }
@@ -68,7 +76,16 @@ trait SpecNormaliser {
       Step(keyword, s"""$name is "$value"""")
     }
     val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(tags, s"Bind data attributes", Nil, None, steps, isOutline = false, Nil, None) :: expandScenarios(scenarios, background)
+    Scenario(
+      tags, 
+      FeatureKeyword.Scenario.toString(),
+      s"Bind data attributes", 
+      Nil, 
+      None, 
+      steps, 
+      isOutline = false,
+       Nil, 
+       None) :: expandScenarios(scenarios, background)
   }
 
   private def expandScenarios(scenarios: List[Scenario], background: Option[Background]): List[Scenario] =
@@ -94,6 +111,7 @@ trait SpecNormaliser {
             val params: List[(String, String)] = names zip values
             new Scenario(
               outline.tags.filter(t => t != Tag.StepDefTag && !t.name.startsWith("Examples")),
+              if (outline.keyword.contains("Outline")) FeatureKeyword.Scenario.toString else FeatureKeyword.Example.toString,
               s"${Formatting.resolveParams(outline.name, params)} -- Example ${index + 1}.${subIndex + 1} ${exs.name}",
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None else background,

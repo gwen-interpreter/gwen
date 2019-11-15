@@ -28,13 +28,17 @@ import gwen.Predefs.DurationOps
   * Captures the feature summary results of an evaluated feature.
   * 
   * @param results the feature results
-  * @param scenarioCounts number of scenarios by status
+  * @param ruleCounts number of rules by status
+  * @param exampleCounts number of examples (include those in rules) by status
+  * @param scenarioCounts number of scenarios (include those in rules) by status
   * @param stepCounts number of steps by status
   * 
   * @author Branko Juric
   */
 case class FeatureSummary(
   results: List[FeatureResult],
+  ruleCounts: Map[StatusKeyword.Value, Int], 
+  exampleCounts: Map[StatusKeyword.Value, Int], 
   scenarioCounts: Map[StatusKeyword.Value, Int], 
   stepCounts: Map[StatusKeyword.Value, Int]) {
   
@@ -54,11 +58,16 @@ case class FeatureSummary(
     * 
     * @param featureResult the feature result to add
     */
-  def +(featureResult: FeatureResult): FeatureSummary = 
+  def +(featureResult: FeatureResult): FeatureSummary = {
     new FeatureSummary(
       this.results ++ List(featureResult), 
+      addCounts(this.ruleCounts, featureResult.ruleCounts),
+      addCounts(this.exampleCounts, featureResult.exampleCounts),
       addCounts(this.scenarioCounts, featureResult.scenarioCounts),
       addCounts(this.stepCounts, featureResult.stepCounts))
+  }
+
+  def evalScenarioCounts = addCounts(exampleCounts, scenarioCounts)
   
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
     (StatusKeyword.reportables flatMap { status => 
@@ -70,9 +79,13 @@ case class FeatureSummary(
     
   override def toString: String = {
     val featureCount = featureCounts.values.sum
+    val rulesCount = ruleCounts.values.sum
+    val exampleCount = exampleCounts.values.sum
     val scenarioCount = scenarioCounts.values.sum
     val stepCount = stepCounts.values.sum
     s"""|$featureCount feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
+        |$rulesCount rule${if (rulesCount == 1) "" else "s"}: ${formatCounts(ruleCounts)}
+        |$exampleCount example${if (exampleCount == 1) "" else "s"}: ${formatCounts(exampleCounts)}
         |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
@@ -91,8 +104,8 @@ case class FeatureSummary(
 
 /** Feature summary factory. */
 object FeatureSummary {
-  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
-  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map())
+  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Map(), Map())
+  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Map(), Map())
   def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
 }
 

@@ -47,7 +47,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
-    val scenarios = result.spec.scenarios.filter(!_.isStepDef).flatMap { scenario =>
+    val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
         val s = if (EvalStatus.isEvaluated(scenario.evalStatus.status)) {
           scenario
@@ -65,7 +65,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     val pkg = result.spec.featureFile.map(_ => s""" package="$packageName"""").getOrElse("")
     val scenarioCount = scenarios.length
     val tests = s""" tests="$scenarioCount""""
-    val counts = result.summary.scenarioCounts
+    val counts = result.summary.evalScenarioCounts
     val errorCount = counts.getOrElse(StatusKeyword.Failed, 0)
     val errors = s""" errors="$errorCount""""
     val skipped = s""" skipped="${counts.getOrElse(StatusKeyword.Skipped, 0) + counts.getOrElse(StatusKeyword.Pending, 0)}""""

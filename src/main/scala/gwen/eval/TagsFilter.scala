@@ -16,7 +16,7 @@
 
 package gwen.eval
 
-import gwen.dsl.{FeatureSpec, Scenario, Tag}
+import gwen.dsl.{FeatureSpec, Rule, Scenario, Tag}
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -41,7 +41,20 @@ object TagsFilter {
     */
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
     val filters = tagFilters ++ DefaultTags
-    spec.scenarios flatMap { scenario =>
+    def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
+    def rules = spec.rules map { rule =>
+      Rule(rule.name, rule.description, rule.background, filterScenarios(spec, tagFilters, rule.scenarios))
+    }
+    if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
+      None
+    } else {
+      Some(FeatureSpec(spec.feature, spec.background, scenarios, rules, None, Nil))
+    }
+  }
+
+  private def filterScenarios(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)], scenarios: List[Scenario]): List[Scenario] = {
+    val filters = tagFilters ++ DefaultTags
+    scenarios flatMap { scenario =>
       val effectiveTags = spec.feature.tags ++ scenario.tags
       val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}
       if (isSatisfied(effectiveTags, includes, excludes) || isSatisfied(effectiveTags ++ scenario.examples.flatMap(_.tags), includes, excludes)) {
@@ -57,9 +70,6 @@ object TagsFilter {
         }
       }
       else None
-    } match {
-      case Nil => None
-      case scenarios => Some(FeatureSpec(spec.feature, spec.background, scenarios, None, Nil))
     }
   }
 

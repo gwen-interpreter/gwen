@@ -37,19 +37,24 @@ object prettyPrint {
     * @param node the AST node to print
     */
   def apply(node: SpecNode): String = node match {
-    case spec @ FeatureSpec(feature, background, scenarios, _, _) =>
+    case spec @ FeatureSpec(feature, background, rules, scenarios, _, _) =>
       apply(feature) +
         formatStatus(spec.evalStatus) +
         background.map(apply).getOrElse("") +
+        printAll(rules.map(apply), "", "") +
         printAll(scenarios.map(apply), "", "")
     case Feature(language, tags, name, description) =>
       s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
     case background @ Background(name, description, steps) =>
       s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, name, description, background, steps, isOutline, examples, _) =>
+    case scenario @ Scenario(tags, keyword, name, description, background, steps, isOutline, examples, _) =>
       background.map(apply).getOrElse("") +
-        (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags("  ", tags)}  ${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
+        (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
+    case rule @ Rule(name, description, background, scenarios) =>
+      s"\n\n      ${Rule.keyword}: $name${formatTextLines(description)}" +
+        background.map(apply).getOrElse("") + 
+        printAll(scenarios.map(apply), "", "")
     case Step(keyword, name, evalStatus, _, _, table, docString) =>
       rightJustify(keyword.toString) + s"$keyword $name${formatStatus(evalStatus)}" + s"${if (table.nonEmpty)
         formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })
@@ -101,5 +106,7 @@ object prettyPrint {
     */
   private def printAll[T](nodes: List[T], prefix: String, separator: String) =
     nodes.map(prefix + _) mkString separator
+
+  private def paddingFor(keyword: String) = " "*(10 - keyword.split(' ')(0).length + (if (keyword.contains(' ')) 1 else 0))
 
 }

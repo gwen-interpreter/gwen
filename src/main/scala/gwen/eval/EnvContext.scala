@@ -121,7 +121,7 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile)))
+    stepDefs += ((stepDef.name, Scenario(tags, FeatureKeyword.Scenario.toString, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile)))
   }
   
   /**

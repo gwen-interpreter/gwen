@@ -31,7 +31,7 @@ class EvalEngineTest extends FlatSpec with Matchers {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
   }
 
   val engine = new TestEvalEngine

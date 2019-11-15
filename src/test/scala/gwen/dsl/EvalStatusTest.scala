@@ -23,7 +23,7 @@ class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with Ghe
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, name, description, background, steps, isOutline = false, Nil, None)
+      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
   }
 
   private val parse = parseFeatureSpec(_: String)
@@ -92,7 +92,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios map {scenario => 
+      featureSpec.scenarios map { scenario => 
         Scenario(
           scenario.tags,
           scenario.name, 
@@ -105,7 +105,8 @@ Background: The tester
           scenario.steps map {step =>
             Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           }) 
-      })
+      },
+      Nil)
     
     // assert
     
@@ -129,7 +130,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios map {scenario =>
+      featureSpec.scenarios map { scenario =>
         Scenario(
           scenario.tags,
           scenario.name,
@@ -142,7 +143,8 @@ Background: The tester
           scenario.steps map {step =>
             Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           })
-      })
+      },
+      Nil)
 
     // assert
 
@@ -166,7 +168,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios map {scenario =>
+      featureSpec.scenarios map { scenario =>
         Scenario(
           scenario.tags,
           scenario.name,
@@ -179,7 +181,8 @@ Background: The tester
           scenario.steps.zipWithIndex map { case (step, index) =>
             Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  Passed(1))
           })
-      })
+      },
+      Nil)
 
     // assert
 
@@ -205,7 +208,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios map {scenario =>
+      featureSpec.scenarios map { scenario =>
         Scenario(
           scenario.tags,
           scenario.name,
@@ -226,7 +229,8 @@ Background: The tester
             }
             Step(step.keyword, step.name, status)
           })
-      })
+      },
+      Nil)
 
     // assert
 
@@ -251,7 +255,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios.zipWithIndex map {zip =>
+      featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
         Scenario(
           scenario.tags,
@@ -268,7 +272,8 @@ Background: The tester
             }) 
           }, 
           scenario.steps) 
-      })
+      },
+      Nil)
     
     // assert
     
@@ -314,7 +319,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios.zipWithIndex map {zip =>
+      featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
         Scenario(
           scenario.tags,
@@ -331,7 +336,8 @@ Background: The tester
             }) 
           }, 
           scenario.steps) 
-      })
+      },
+      Nil)
     
     // assert
     
@@ -377,7 +383,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios.zipWithIndex map {zip =>
+      featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
         Scenario(
           scenario.tags,
@@ -399,7 +405,8 @@ Background: The tester
               case _ => step.evalStatus
             })
           }) 
-      })
+      },
+      Nil)
     
     // assert
     
@@ -447,7 +454,7 @@ Background: The tester
     featureSpec = FeatureSpec(
       featureSpec.feature,
       None,
-      featureSpec.scenarios.zipWithIndex map {zip =>
+      featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
         Scenario(
           scenario.tags,
@@ -466,7 +473,8 @@ Background: The tester
               case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus
             })
           }) 
-      })
+      },
+      Nil)
     
     // assert 
     

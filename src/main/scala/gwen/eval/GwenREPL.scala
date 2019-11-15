@@ -147,7 +147,13 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       case r"^Feature:(.*)$$$name" =>
         env.featureScope.set("gwen.feature.name", name.trim)
         s"[gwen.feature.name = ${name.trim}]"
-      case r"^Scenario(?: Outline)?:(.*)$$$name" =>
+      case r"^Rule:(.*)$$$name" =>
+        env.featureScope.set("gwen.rule.name", name.trim)
+        s"[gwen.rule.name = ${name.trim}]"
+      case r"^(Scenario|Example):(.*)$$$name" =>
+        env.featureScope.set("gwen.scenario.name", name.trim)
+        s"[gwen.scenario.name = ${name.trim}]"
+      case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
         env.featureScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case _ =>

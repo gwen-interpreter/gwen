@@ -79,6 +79,8 @@ trait HtmlReportFormatter extends ReportFormatter {
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.overhead)}</small></span>
           <table width="100%" cellpadding="5">
+            ${formatProgressBar("Rule", summary.ruleCounts)}
+            ${formatProgressBar("Example", summary.exampleCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
             ${formatProgressBar("Step", summary.stepCounts)}
           </table>
@@ -114,6 +116,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     </div>"""
         } else ""
       }${(result.spec.scenarios.zipWithIndex map { case (s, idx) => formatScenario(s, s"$idx") }).mkString}
+       ${(result.spec.rules.zipWithIndex map { case (s, idx) => formatRule(s, s"$idx") }).mkString}
   </body>
 </html>
 """)
@@ -238,8 +241,8 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <div class="bg-${cssStatus(status)}">
                   <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right"> </div>${if (status == StatusKeyword.Passed) formatExampleLink(rowHtml, status, s"$exampleId") else rowHtml }
-                  ${formatAttachments(scenario.attachments, status)} ${if (EvalStatus.isEvaluated(status)) formatExampleDiv(scenario, status, exampleId) else ""}
+                  <div class="keyword-right"> </div>${if (status != StatusKeyword.Failed) formatExampleLink(rowHtml, status, s"$exampleId") else rowHtml }
+                  ${formatAttachments(scenario.attachments, status)} ${formatExampleDiv(scenario, status, exampleId)}
                 </div>
               </li>"""
   }
@@ -248,7 +251,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   s"""<a class="inverted inverted-${cssStatus(status)}" role="button" data-toggle="collapse" href="#$exampleId" aria-expanded="true" aria-controls="$exampleId">${rowHtml}</a>"""
 
   private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value, exampleId: String): String = s"""
-                  <div id="$exampleId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel">
+                  <div id="$exampleId" class="panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}" role="tabpanel">
                   ${formatScenario(scenario, exampleId)}
                   </div>"""
 
@@ -281,6 +284,56 @@ trait HtmlReportFormatter extends ReportFormatter {
 
   private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): String = {
     s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex)).replaceAll("  ", " &nbsp;")}</code>"""
+  }
+
+  private def formatRule(rule: Rule, ruleId: String): String = {
+    val status = rule.evalStatus.status
+    val conflict = rule.scenarios.map(_.evalStatus.status).exists(_ != status)
+    s"""
+    <a name="rule-$ruleId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
+          <span class="label label-${cssStatus(status)}">${Rule.keyword}</span>${
+      if (rule.evalScenarios.size > 1)
+        s"""
+          <span class="pull-right"><small>${durationOrStatus(rule.evalStatus)}</small></span>""" else ""
+      }
+          ${escapeHtml(rule.name)}${formatDescriptionLines(rule.description, Some(status))}
+        </li>
+      </ul>
+      <div class="panel-body">${
+      (rule.background map { background =>
+        val status = background.evalStatus.status
+        val backgroundId = s"$ruleId-background"
+        s"""
+        <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
+          <ul class="list-group">
+            <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
+              <span class="label label-${cssStatus(status)}">${Background.keyword}</span>
+              <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
+              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status))}
+            </li>
+          </ul>
+          <div class="panel-body">
+            <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
+          (background.steps.zipWithIndex map { case (step, index) =>
+            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}-${index + 1}")
+          }).mkString
+        }
+            </ul>
+          </div>
+        </div>"""
+      }).getOrElse("")
+    }
+        <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
+          <ul class="list-group">${
+          (rule.scenarios.zipWithIndex map { case (scenario, index) =>
+            formatScenario(scenario, s"$ruleId-scenario-${scenario.pos.line}-${index + 1}")
+          }).mkString}
+          </ul>
+        </div>
+      </div>
+    </div>"""
   }
   
   /**
@@ -328,6 +381,8 @@ trait HtmlReportFormatter extends ReportFormatter {
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.overhead)}</small></span>
           <table width="100%" cellpadding="5">
             ${formatProgressBar("Feature", summary.featureCounts)}
+            ${formatProgressBar("Rule", summary.ruleCounts)}
+            ${formatProgressBar("Example", summary.exampleCounts)}
             ${formatProgressBar("Scenario", summary.scenarioCounts)}
             ${formatProgressBar("Step", summary.stepCounts)}
           </table>

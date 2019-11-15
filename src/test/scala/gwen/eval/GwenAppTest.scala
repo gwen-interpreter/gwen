@@ -22,7 +22,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.Matchers
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.FlatSpec
 import gwen.dsl.Passed
 
