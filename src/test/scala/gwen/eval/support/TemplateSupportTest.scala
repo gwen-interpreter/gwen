@@ -23,7 +23,7 @@ import scala.util.{Failure, Success}
 
 class TemplateSupportTest extends FlatSpec with Matchers {
 
-  val templateSupport: TemplateSupport = new EnvContext(GwenOptions(), new ScopedDataStack())
+  val templateSupport: TemplateSupport = new EnvContext(GwenOptions())
 
   """Single line static template""" should "match" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""

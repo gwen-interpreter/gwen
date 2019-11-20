@@ -73,8 +73,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
-    verify(mockInterpreter, never()).reset(mockEnv)
-    verify(mockInterpreter).close(mockEnv)
+    verify(mockEnv, never()).reset(StateLevel.feature)
+    verify(mockEnv).close()
     
     evalStatus should be (Passed(10))
     
@@ -95,8 +95,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
-    verify(mockInterpreter).reset(mockEnv)
-    verify(mockInterpreter, never()).close(mockEnv)
+    verify(mockEnv).reset(StateLevel.feature)
+    verify(mockEnv, never()).close()
     
     evalStatus should be (Passed(10))
     
@@ -126,8 +126,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
-    verify(mockInterpreter).reset(mockEnv)
-    verify(mockInterpreter, never()).close(mockEnv)
+    verify(mockEnv).reset(StateLevel.feature)
+    verify(mockEnv, never()).close()
     
     evalStatus should be (Passed(10))
     
@@ -158,8 +158,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
-    verify(mockInterpreter).reset(mockEnv)
-    verify(mockInterpreter, never()).close(mockEnv)
+    verify(mockEnv).reset(StateLevel.feature)
+    verify(mockEnv, never()).close()
     
     evalStatus should be (Passed(10))
     
@@ -190,8 +190,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
     
-    verify(mockInterpreter).reset(mockEnv)
-    verify(mockInterpreter, never()).close(mockEnv)
+    verify(mockEnv).reset(StateLevel.feature)
+    verify(mockEnv, never()).close()
     
     evalStatus should be (Passed(10))
     
@@ -224,8 +224,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     } catch {
       case e: Throwable => e.getMessage() should not be (null)
     } finally {
-      verify(mockInterpreter).reset(mockEnv)
-      verify(mockInterpreter, never()).close(mockEnv)
+      verify(mockEnv).reset(StateLevel.feature)
+      verify(mockEnv, never()).close()
     }
     
   }
@@ -254,8 +254,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockEnv))
 
-    verify(mockInterpreter).reset(mockEnv)
-    verify(mockInterpreter, never()).close(mockEnv)
+    verify(mockEnv).reset(StateLevel.feature)
+    verify(mockEnv, never()).close()
     
     evalStatus.status should be (StatusKeyword.Failed)
     
@@ -308,8 +308,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
-    verify(mockInterpreter, never()).reset(mockEnv)
-    verify(mockInterpreter, times(3)).close(mockEnv)
+    verify(mockEnv, never()).reset(StateLevel.feature)
+    verify(mockEnv, times(3)).close()
     
     evalStatus should be (Passed(6000))
     
@@ -337,8 +337,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
-    verify(mockInterpreter, never()).reset(mockEnv)
-    verify(mockInterpreter).close(mockEnv)
+    verify(mockEnv, never()).reset(StateLevel.feature)
+    verify(mockEnv).close()
     
     evalStatus should be (Passed(10))
     

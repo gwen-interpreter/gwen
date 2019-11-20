@@ -16,10 +16,6 @@
 
  Feature: Meta bindings
       
-Scenario: Init globals
-	Given a1 is "${property.a}"
-	  And a2 is "${a1}"
-      
 @StepDef
 Scenario: I bind more properties
     Given a3 is "${a2}"

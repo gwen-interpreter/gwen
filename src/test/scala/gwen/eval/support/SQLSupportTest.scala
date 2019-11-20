@@ -34,7 +34,7 @@ class SQLSupportTest
     with Matchers
     with BeforeAndAfterAll {
 
-  private val sqlSupport: SQLSupport = new EnvContext(GwenOptions(), new ScopedDataStack())
+  private val sqlSupport: SQLSupport = new EnvContext(GwenOptions())
 
   private implicit val dbConfig: DBConfig = DBConfig(driver = "org.h2.Driver", dbName = "testdb")
 

@@ -35,45 +35,52 @@ import scala.io.Source
 import scala.util.matching.Regex
 
 /**
-  * Base environment context providing access to all resources and services to 
-  * engines.  Specific [[EvalEngine evaluation engines]] can 
-  * define and use their own specific context by extending this one. 
-  * 
-  * Access to page scope data is provided through a dataScope method.
+  * Base environment context providing access to all resources and state.
   * 
   * @author Branko Juric
   */
-class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluatable
+class EnvContext(options: GwenOptions) extends Evaluatable
   with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
   with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with LazyLogging {
   
+  /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
+  var loadedMeta: List[File] = Nil
+
   /** Map of step definitions keyed by callable expression name. */
   private var stepDefs = Map[String, Scenario]()
-  
-  /** List of current attachments (name-file pairs). */
-  private var currentAttachments: List[(String, File)] = Nil
-  private var attachmentPrefix = padWithZeroes(1)
+
+  /** Scoped attributes and captured state. */
+  private var state = new EnvState(new ScopedDataStack())
 
   /** Dry run flag. */
   val isDryRun: Boolean = options.dryRun
 
-  /** Parallel execution mode flag. */
+  /** Parallel features or scenarios execution mode flag. */
   val isParallel: Boolean = options.parallel
 
-  /** Current list of loaded meta (used to track and avoid duplicate meta loads). */
-  var loadedMeta: List[File] = Nil
+  /** Parallel feature execution mode flag. */
+  val isParallelFeatures: Boolean = options.parallelFeatures
 
-  /** Map of for-each StepDefs. */
-  var foreachStepDefs: Map[String, Scenario] = Map[String, Scenario]()
+  /** Provides access to the configures state level. */
+  val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
   /** Provides access to the active data scope. */
-  def activeScope = scopes
+  def scopes = state.scopes
   
-  /** Provides access to the global feature scope. */
-  def featureScope: FeatureScope = scopes.featureScope
+  /** Provides access to the top level scope. */
+  def topScope: TopScope = scopes.topScope
 
   /** Provides access to the local step scope. */
-  private[eval] val stepScope = scopes.stepScope
+  private[eval] def stepScope = scopes.stepScope
+
+  /** Create a clone that preserves scoped data. */
+  def clone[T <: EnvContext](engine: EvalEngine[T]): T = {
+    engine.init(options) tap { clone => 
+      clone.loadedMeta = loadedMeta
+      clone.stepDefs = stepDefs
+      clone.state = EnvState(topScope)
+    }
+  }
 
   /**
     * Closes any resources associated with the evaluation context. This implementation
@@ -82,13 +89,13 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
   def close() { }
   
   /** Resets the current context but does not close it so it can be reused. */
-  def reset() {
-    scopes.reset()
-    stepDefs = Map[String, Scenario]()
-    currentAttachments = Nil
-    attachmentPrefix = padWithZeroes(1)
-    loadedMeta = Nil
-    foreachStepDefs = Map[String, Scenario]()
+  def reset(level: StateLevel.Value) {
+    logger.info(s"Resetting environment context")
+    state = EnvState(topScope)
+    if (StateLevel.feature.equals(level)) {
+      stepDefs = Map[String, Scenario]()
+      loadedMeta = Nil
+    }
   }
     
   def asString: String = scopes.asString
@@ -172,6 +179,13 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
       } else first
     } else None
   }
+
+  def addForeachStepDef(step: Step, stepDef: Scenario): Unit = {
+    state.addForeachStepDef(step, stepDef)
+  }
+
+  /** Gets the optional for-each StepDef for a given step. */
+  def getForeachStepDef(step: Step): Option[Scenario] = state.popForeachStepDef(step)
   
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 
@@ -202,10 +216,8 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         }
       case _ => // noop
     }
-    val fStep = if (currentAttachments.nonEmpty) {
-      Step(step, step.evalStatus, (step.attachments ++ currentAttachments).sortBy(_._2 .getName())) tap { _ =>
-        currentAttachments = Nil
-      }
+    val fStep = if (state.hasAttachments) {
+      Step(step, step.evalStatus, (step.attachments ++ state.popAttachments).sortBy(_._2 .getName()))
     } else {
       step
     }
@@ -232,40 +244,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     addAttachment("Error details", "txt", failure.error.writeStackTrace())
     addAttachment(s"Environment", "txt", this.scopes.visible.asString)
   }
-  
-  /**
-   * Creates an attachment file.
-   * 
-   * @param name the attachment name
-   * @param extension the filename extension
-   * @param content the content to write to the file
-   */
+
   def addAttachment(name: String, extension: String, content: String): (String, File) = { 
-    val file = File.createTempFile(s"$attachmentPrefix-", s".$extension")
-    file.deleteOnExit()
-    Option(content) foreach { file.writeText }
-    addAttachment((name, file))
+    state.addAttachment(name, extension, content)
   }
-  
-  /**
-    * Adds an attachment to the current context.
-    * 
-    * @param attachment the attachment (name-file pair) to add
-    */
-  def addAttachment(attachment: (String, File)): (String, File) = 
-    (attachment match {
-      case (name, file) => 
-        if (file.getName.startsWith(s"$attachmentPrefix-")) attachment
-        else {
-          val prefixedFilename = s"$attachmentPrefix-${file.getName}"
-          val prefixedFile = if (file.getParentFile != null) new File(file.getParentFile, prefixedFilename) else new File(prefixedFilename)
-          if (file.renameTo(prefixedFile)) (name, prefixedFile)
-          else attachment
-        }
-    }) tap { att =>
-      currentAttachments = att :: currentAttachments
-      attachmentPrefix = padWithZeroes(attachmentPrefix.toInt + 1)
-    }
 
   /**
     * Interpolate the given step before it is evaluated.
@@ -337,10 +319,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
         }
         else v
     } getOrElse {
-      (featureScope.getObject("record") match {
+      (topScope.getObject("record") match {
         case Some(scope: ScopedData) =>
           scope.getOpt(name)
-        case _ => featureScope.getObject("table") match {
+        case _ => topScope.getObject("table") match {
           case Some(table: DataTable) => table.tableScope.getOpt(name)
           case _ => None
         }
@@ -387,28 +369,10 @@ class EnvContext(options: GwenOptions, scopes: ScopedDataStack) extends Evaluata
     }) tap { expr =>
       if (isDryRun && operator.startsWith("match template")) {
         """@\{.*?\}""".r.findAllIn(expr).toList foreach { name =>
-          featureScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
+          topScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
         }
       }
     }
   }
   
-}
-
-/** Merges two contexts into one. */
-class HybridEnvContext[A <: EnvContext, B <: EnvContext](val envA: A, val envB: B, val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes) {
-  override def dsl: List[String] = envA.dsl ++ envB.dsl
-  override def close() {
-    try {
-      envB.close()
-    } finally {
-      envA.close()
-    }
-  }
-  override def getBoundReferenceValue(name: String): String =
-    try {
-      envB.getBoundReferenceValue(name)
-    } catch {
-      case _: Throwable => envA.getBoundReferenceValue(name)
-    }
 }

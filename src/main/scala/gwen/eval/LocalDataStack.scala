@@ -35,13 +35,6 @@ class LocalDataStack {
   private val localData = mutable.Stack[ScopedData]()
   
   /**
-    * Clears all items in the local stack.
-    */
-  def reset() {
-    localData.clear()
-  }
-  
-  /**
     * Adds the given parameters (name-value pairs) to a new scope 
     * and pushes it onto the stack
     * 

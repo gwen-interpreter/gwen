@@ -46,7 +46,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   private def interpreter(mockEnv: EnvContext) = {
     trait MockEvalEngine extends EvalEngine[EnvContext] {
       type EnvContextType = EnvContext
-      override private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): EnvContextType = mockEnv
+      override private [eval] def init(options: GwenOptions): EnvContextType = mockEnv
       override def evaluate(step: Step, env: EnvContextType) { }
     }
     new GwenInterpreter[EnvContext] with MockEvalEngine
@@ -58,24 +58,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     verify(mockEnv, never()).close()
   }
   
-  "closing interpreter" should "close env" in {
-    val mockEnv = mock[EnvContext]
-    interpreter(mockEnv).close(mockEnv)
-    verify(mockEnv).close()
-  }
-  
-  "resetting interpreter" should "reset env" in {
-    val mockEnv = mock[EnvContext]
-    interpreter(mockEnv).reset(mockEnv)
-    verify(mockEnv).reset()
-  }
-  
   "interpreting a valid step" should "return success" in {
     val mockEnv = mock[EnvContext]
-    val mockForeachScenarios = mock[Map[String,Scenario]]
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
-    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
-    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val step = Step(StepKeyword.Given, "I am a valid step")
     when(mockEnv.interpolate(step)).thenReturn(step)
     when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step, Passed(0)))
@@ -94,14 +79,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   "interpreting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
-    val mockForeachScenarios = mock[Map[String,Scenario]]
     val step1 = Step(StepKeyword.Given, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given, "I am a valid stepdef")
     val stepdef = Scenario(List[Tag](Tag.StepDefTag), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
-    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
-    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)))
     when(mockEnv.interpolate(step2)).thenReturn(step2)
@@ -119,9 +101,6 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   
   "interpreting an invalid step" should "return error" in {
     val mockEnv = mock[EnvContext]
-    val mockForeachScenarios = mock[Map[String,Scenario]]
-    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
-    when(mockForeachScenarios.get(anyString())).thenReturn(None)
     val result = interpreter(mockEnv).interpretStep("Yes I am an invalid step", mockEnv)
     result match {
       case TrySuccess(_) =>
@@ -143,12 +122,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
     val mockEnv = mock[EnvContext]
-    val mockFeatureScope = mock[FeatureScope]
-    val mockForeachScenarios = mock[Map[String,Scenario]]
+    val mockTopScope = mock[TopScope]
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
-    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
-    when(mockForeachScenarios.get(anyString())).thenReturn(None)
-    when(mockEnv.featureScope).thenReturn(mockFeatureScope)
+    when(mockEnv.topScope).thenReturn(mockTopScope)
     val step1 = Step(StepKeyword.Given, "I am an observer")
     val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
     val step3 = Step(StepKeyword.When, "a small change is initially applied")
@@ -162,12 +138,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
-        verify(mockFeatureScope).set("gwen.feature.file.name", featureFile.getName)
-        verify(mockFeatureScope).set("gwen.feature.file.path", featureFile.getPath)
-        verify(mockFeatureScope).set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
-        verify(mockFeatureScope).set("gwen.feature.name", "Gwen")
-        verify(mockFeatureScope).set("gwen.scenario.name", "The butterfly effect")
-        verify(mockFeatureScope, never()).set("gwen.feature.scenario", "The observer")
+        verify(mockTopScope).set("gwen.feature.file.name", featureFile.getName)
+        verify(mockTopScope).set("gwen.feature.file.path", featureFile.getPath)
+        verify(mockTopScope).set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
+        verify(mockTopScope).set("gwen.feature.name", "Gwen")
+        verify(mockTopScope).set("gwen.scenario.name", "The butterfly effect")
+        verify(mockTopScope, never()).set("gwen.feature.scenario", "The observer")
       case None => 
         fail("Some(FeatureResult) expected")
     }
@@ -201,10 +177,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         Step(StepKeyword.When, "a small change is initially applied"),
         Step(StepKeyword.Then, "a large change will eventually result")))
     val mockEnv = mock[EnvContext]
-    val mockFeatureScope = mock[FeatureScope]
-    val mockForeachScenarios = mock[Map[String,Scenario]]
-    when(mockEnv.foreachStepDefs).thenReturn(mockForeachScenarios)
-    when(mockForeachScenarios.get(anyString())).thenReturn(None)
+    val mockTopScope = mock[TopScope]
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
     when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
@@ -213,7 +186,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
-    when(mockEnv.featureScope).thenReturn(mockFeatureScope)
+    when(mockEnv.topScope).thenReturn(mockTopScope)
     val step1 = Step(StepKeyword.Given, "I am an observer")
     val step2 = Step(StepKeyword.Given, "the butterfly flaps its wings")
     val step3 = Step(StepKeyword.Given, "a deterministic nonlinear system")
@@ -229,14 +202,14 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
-        verify(mockFeatureScope).set("gwen.feature.file.name", featureFile.getName)
-        verify(mockFeatureScope).set("gwen.feature.file.path", featureFile.getPath)
-        verify(mockFeatureScope).set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
-        verify(mockFeatureScope).set("gwen.feature.name", "Gwen")
-        verify(mockFeatureScope).set("gwen.scenario.name", "The butterfly effect")
-        verify(mockFeatureScope, never()).set("gwen.feature.name", "Gwen meta")
-        verify(mockFeatureScope, never()).set("gwen.feature.scenario", "the butterfly flaps its wings")
-        verify(mockFeatureScope, never()).set("gwen.feature.scenario", "The observer")
+        verify(mockTopScope).set("gwen.feature.file.name", featureFile.getName)
+        verify(mockTopScope).set("gwen.feature.file.path", featureFile.getPath)
+        verify(mockTopScope).set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
+        verify(mockTopScope).set("gwen.feature.name", "Gwen")
+        verify(mockTopScope).set("gwen.scenario.name", "The butterfly effect")
+        verify(mockTopScope, never()).set("gwen.feature.name", "Gwen meta")
+        verify(mockTopScope, never()).set("gwen.feature.scenario", "the butterfly flaps its wings")
+        verify(mockTopScope, never()).set("gwen.feature.scenario", "The observer")
       case None => 
         fail("List(FeatureResult) expected")
     }

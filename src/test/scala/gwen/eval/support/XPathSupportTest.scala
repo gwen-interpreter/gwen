@@ -24,7 +24,7 @@ import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
 
 class XPathSupportTest extends FlatSpec with Matchers {
   
-  val xPathSupport: XPathSupport = new EnvContext(GwenOptions(), new ScopedDataStack())
+  val xPathSupport: XPathSupport = new EnvContext(GwenOptions())
   
   val XmlSource = 
     """<root><parent><name>P1</name><surname>O'Reilly</surname><children><child><name>C1</name></child><child><name>C2</name><middleName/><surname>CS2</surname></child></children></parent></root>"""
@@ -80,7 +80,7 @@ class XPathSupportTest extends FlatSpec with Matchers {
   }
 
   "match in dry run" should "not evalaute" in {
-    val support: XPathSupport = new EnvContext(GwenOptions(dryRun = true), new ScopedDataStack())
+    val support: XPathSupport = new EnvContext(GwenOptions(dryRun = true))
     support.evaluateXPath("root", XmlSource, support.XMLNodeType.node) should be ("$[dryRun:xpath]")
   }
   

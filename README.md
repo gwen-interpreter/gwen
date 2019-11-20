@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- [State levels](https://github.com/gwen-interpreter/gwen/wiki/StateLevels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
 - Integated the latest [Gherkin parser](https://github.com/cucumber/cucumber/tree/master/gherkin/java) from Cucumber to support [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
-- [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 
 Why Gwen?
 ---------
@@ -57,7 +57,7 @@ Key Features
 - [Command line interface](https://github.com/gwen-interpreter/gwen/wiki/Command-Line-Interface)
 - [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
 - [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
-- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution) (with configurable ramp up interval)
+- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution) for features or scenarios
 - [Dry run execution and validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
 - [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
 - [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
@@ -69,6 +69,8 @@ Key Features
 - [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
 - [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
+- [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
+
 
 License
 -------

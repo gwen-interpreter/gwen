@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,9 @@ import gwen.report.ReportFormat
 /**
   * Captures gwen command line options.
   *
-  * @param batch true to run in batch mode, false for interactive REPL
-  *              (default is false)
-  * @param parallel true to run each given file/dir entry in parallel, false for serial
-  *                 (default is false)      
+  * @param batch true to run in batch mode, false for interactive REPL (default is false)
+  * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
+  * @param parallelFeatures true to run features parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
   * @param properties list of properties files to load as settings
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
@@ -46,6 +45,7 @@ import gwen.report.ReportFormat
 case class GwenOptions(
     batch: Boolean = false,
     parallel: Boolean = false,
+    parallelFeatures: Boolean = false,
     reportDir: Option[File] = None,
     reportFormats: List[ReportFormat.Value] = Nil, 
     properties: List[File] = Nil,
@@ -88,11 +88,17 @@ object GwenOptions {
         (_, c) => c.copy(batch = true) 
       } text "Batch/server mode"
       
-      opt[Unit]('|', "parallel") action {
+      opt[Unit]("parallel") action {
         (_, c) => { 
           c.copy(parallel = true, batch = true)
         }
-      } text "Parallel batch execution mode)"
+      } text "Run features or scenarios in parallel depending on state level"
+
+      opt[Unit]("parallel-features") action {
+        (_, c) => { 
+          c.copy(parallelFeatures = true, batch = true)
+        }
+      } text "Run features in parallel regardless of state level"
     
       opt[String]('p', "properties") action {
         (ps, c) => 
@@ -163,6 +169,7 @@ object GwenOptions {
       new GwenOptions(
         options.batch,
         options.parallel,
+        options.parallelFeatures,
         options.reportDir,
         if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) List(ReportFormat.html) else Nil },
         options.properties,

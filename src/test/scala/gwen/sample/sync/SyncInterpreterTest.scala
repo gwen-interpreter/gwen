@@ -20,7 +20,7 @@ import gwen.dsl.Passed
 import gwen.eval.GwenOptions
 import java.io.File
 
-import org.scalatest.FlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
@@ -28,56 +28,64 @@ import gwen.eval.EnvContext
 import gwen.eval.EvalEngine
 import gwen.eval.GwenInterpreter
 import gwen.eval.support.DefaultEngineSupport
+import gwen.Settings
+import gwen.BaseTest
 
-class SyncEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class SyncEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait SyncEvalEngine extends EvalEngine[SyncEnvContext] with DefaultEngineSupport[SyncEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): SyncEnvContext = new SyncEnvContext(options, scopes)
+  override def init(options: GwenOptions): SyncEnvContext = new SyncEnvContext(options)
 }
 
 class SyncInterpreter
   extends GwenInterpreter[SyncEnvContext]
   with SyncEvalEngine
 
-class SyncInterpreterTest extends FlatSpec {
+class SyncInterpreterTest extends BaseTest {
   
-  "Synced StepDef" should "evaluate one feature at time in parallel execution mode" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      parallel = true,
-      reportDir = Some(new File("target/report/sync")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/sync"))
-    )
-      
-    val launcher = new GwenLauncher(new SyncInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"Synced StepDef using $level level state" should "evaluate one feature at time in parallel execution mode" in { 
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          parallel = true,
+          reportDir = Some(new File(s"target/report/sync/$level-level")),
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/sync"))
+        )
+          
+        val launcher = new GwenLauncher(new SyncInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   
-  "Synced StepDef" should "pass --dry-run test" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      parallel = true,
-      reportDir = Some(new File("target/report/sync-dry-run")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/sync")),
-      dryRun = true
-    )
-      
-    val launcher = new GwenLauncher(new SyncInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"Synced StepDef using $level level state" should "pass --dry-run test" in {  
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          parallel = true,
+          reportDir = Some(new File(s"target/report/sync-dry-run/$level-level")),
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/sync")),
+          dryRun = true
+        )
+          
+        val launcher = new GwenLauncher(new SyncInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   

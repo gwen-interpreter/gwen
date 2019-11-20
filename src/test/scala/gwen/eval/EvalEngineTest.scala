@@ -22,9 +22,9 @@ import gwen.dsl._
 import gwen.errors.UndefinedStepException
 import gwen.eval.support.DefaultEngineSupport
 
-class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
+class TestEnvContext(val options: GwenOptions) extends EnvContext(options)
 class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
+  override def init(options: GwenOptions): TestEnvContext = new TestEnvContext(options)
 }
   
 class EvalEngineTest extends FlatSpec with Matchers {
@@ -37,14 +37,14 @@ class EvalEngineTest extends FlatSpec with Matchers {
   val engine = new TestEvalEngine
   
   "Unsupported step" should "fail with UnsupportedStepException" in {
-    val env = engine.init(new GwenOptions(), new ScopedDataStack())
+    val env = engine.init(new GwenOptions())
     intercept[UndefinedStepException] {
       engine.evaluate(Step(StepKeyword.Given, " I am unsupported"), env)
     }
   }
   
   "Step that fails interpolation" should "not be evaluated" in {
-    val env = engine.init(new GwenOptions(), new ScopedDataStack())
+    val env = engine.init(new GwenOptions())
     var step = Step(StepKeyword.Given, """x is "${y}"""")
     step = engine.evaluateStep(step, env)
     step.evalStatus.status should be (StatusKeyword.Failed)
@@ -53,7 +53,7 @@ class EvalEngineTest extends FlatSpec with Matchers {
   }
   
   "Step that passes interpolation" should "should be evaluated" in {
-    val env = engine.init(new GwenOptions(), new ScopedDataStack())
+    val env = engine.init(new GwenOptions())
     env.scopes.set("y", "1")
     var step = Step(StepKeyword.Given, """x is "${y}"""")
     step = engine.evaluateStep(step, env)
@@ -63,7 +63,7 @@ class EvalEngineTest extends FlatSpec with Matchers {
   }
   
   "Step that is a stepdef" should "should be evaluated" in {
-    val env = engine.init(new GwenOptions(), new ScopedDataStack())
+    val env = engine.init(new GwenOptions())
     val stepDef = Scenario(List[Tag]("@StepDef"), "I assign x, y, and z", Nil, None, List(
         Step(StepKeyword.Given, """x is "1""""),
         Step(StepKeyword.When, """y is "2""""),

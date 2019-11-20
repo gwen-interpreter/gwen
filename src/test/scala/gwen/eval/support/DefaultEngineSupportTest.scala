@@ -26,19 +26,19 @@ import java.io.IOException
 import gwen.dsl.StepKeyword
 import gwen.Settings
 
-class TestEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) extends EnvContext(options, scopes)
+class TestEnvContext(val options: GwenOptions) extends EnvContext(options)
 class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
-  def init(options: GwenOptions, scopes: ScopedDataStack): TestEnvContext = new TestEnvContext(options, scopes)
+  def init(options: GwenOptions): TestEnvContext = new TestEnvContext(options)
 }
 
 class DefaultEngineSupportTest extends FlatSpec with Matchers {
 
   val engine = new TestEvalEngine
-  val env: TestEnvContext = engine.init(new GwenOptions(), new ScopedDataStack())
+  val env: TestEnvContext = engine.init(new GwenOptions())
   
   "Set attribute binding step" should "be successful" in {
     engine.evaluate(Step(StepKeyword.Given, """my name is "Gwen""""), env)
-    env.featureScope.get("my name") should be ("Gwen")
+    env.topScope.get("my name") should be ("Gwen")
   }
   
   "Set global setting step" should "be successful" in {

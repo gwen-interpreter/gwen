@@ -69,7 +69,7 @@ class ScopedDataStack() {
     * on the top of the stack.  All other scopes that are not at the
     * top of the stack are 'historical' scopes.
     */
-  private var scopes: mutable.ArrayStack[ScopedData] = _
+  private val scopes = mutable.ArrayStack[ScopedData]() tap { _ push new TopScope() }
   
   /** 
     *  Provides access to the local step scope (StepDef parameters
@@ -77,21 +77,16 @@ class ScopedDataStack() {
     *  are made). 
     */
   private[eval] val stepScope = new LocalDataStack()
-  
-  reset()
-  
-  /** Resets the data stack. */
-  def reset() {
-      scopes = mutable.ArrayStack[ScopedData]() tap { _ push new FeatureScope() }
-      stepScope.reset()
-  }
-  
+    
   /**
-    * Provides access to the global features scope (which is always at the
+    * Provides access to the top level scope (which is always at the
     * bottom of the stack).
     */
-  private[eval] def featureScope: FeatureScope =  scopes.last.asInstanceOf[FeatureScope]
+  private[eval] def topScope: TopScope =  scopes.last.asInstanceOf[TopScope]
   
+  /** Creates a clone containing all scoped data. */
+  override def clone(): ScopedDataStack = ScopedDataStack(scopes)
+
   /**
     * Provides access to the currently active scope.
     * 
@@ -109,17 +104,17 @@ class ScopedDataStack() {
   def addScope(scope: String): ScopedData = 
     if (scope != current.scope) {
       current.flashScope = None
-      featureScope.currentScope = None
-      if (scope == featureScope.scope) {
-        featureScope
+      topScope.currentScope = None
+      if (scope == topScope.scope) {
+        topScope
       } else {
-        if (current != featureScope && current.isEmpty) {
+        if (current != topScope && current.isEmpty) {
           scopes pop
         }
         scopes push ScopedData(scope)
         current tap { _ =>
           current.flashScope = Some(mutable.Map[String, String]())
-          featureScope.currentScope = Some(current)
+          topScope.currentScope = Some(current)
         }
       }
     } else {
@@ -135,7 +130,7 @@ class ScopedDataStack() {
   
   /** Gets the currently visible scoped data. */
   def visible: ScopedDataStack = filterData { data => 
-      data.isFeatureScope || current.scope == data.scope 
+      data.isTopScope || current.scope == data.scope 
   }
   
   /**
@@ -155,7 +150,20 @@ class ScopedDataStack() {
     * @return the value to bind to the attribute
     */
   def set(name: String, value: String) { 
-      if (!getOpt(name).contains(value)) {
+      if (name.contains('/')) {
+        findEntries { case (n, _) => 
+          val baseName = name.substring(0, name.indexOf('/'))
+          n == baseName || n == name
+        } match {
+          case first :: _ => 
+            if (first._1 != value) {
+              current.set(name, value)
+            }
+          case Nil =>
+            current.set(name, value)
+        }
+      }
+      else if (!getOpt(name).contains(value)) {
         current.set(name, value)
       }
   }
@@ -205,8 +213,8 @@ class ScopedDataStack() {
     (scopes.toIterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
       case Some(value) => value
     } match {
-      case None if !current.isFeatureScope =>
-        featureScope.findEntry(pred)
+      case None if !current.isTopScope =>
+        topScope.findEntry(pred)
       case x => x
     })
 
@@ -228,8 +236,8 @@ class ScopedDataStack() {
     */
   def findEntriesIn(scope: String)(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
     var entries = scopes.toList filter (_.scope == scope) flatMap (_.findEntries(pred))
-    if (scope != featureScope.scope) {
-      entries = entries ++ findEntriesIn(featureScope.scope)(pred)
+    if (scope != topScope.scope) {
+      entries = entries ++ findEntriesIn(topScope.scope)(pred)
     }
     entries.map(_._1).distinct.flatMap(name => entries.find { case (n, _) => n == name })
   }
@@ -277,8 +285,8 @@ class ScopedDataStack() {
     scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst {
       case Some(value) => value
     } match {
-      case None if scope != featureScope.scope =>
-        getInOpt(featureScope.scope, name)
+      case None if scope != topScope.scope =>
+        getInOpt(topScope.scope, name)
       case x => x
     }
 
@@ -299,8 +307,8 @@ class ScopedDataStack() {
     */
   def getAllIn(scope: String, name: String): Seq[String] = {
     val values = scopes.toList filter (_.scope == scope) flatMap (_.getAll(name))
-    if (scope != featureScope.scope) {
-      values ++ getAllIn(featureScope.scope, name)
+    if (scope != topScope.scope) {
+      values ++ getAllIn(topScope.scope, name)
     } else values
   }
   
@@ -342,7 +350,7 @@ object ScopedDataStack {
    */
   def apply(scopes: mutable.ArrayStack[ScopedData]): ScopedDataStack =
     new ScopedDataStack() tap { stack =>
-      if (scopes.exists(_.isFeatureScope)) stack.scopes.pop
+      if (scopes.exists(_.isTopScope)) stack.scopes.pop
       scopes.reverse.foreach { data =>
         stack.scopes.push(data)
       }

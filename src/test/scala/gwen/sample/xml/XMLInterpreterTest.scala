@@ -28,13 +28,13 @@ import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.support.DefaultEngineSupport
 
-class XMLEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class XMLEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait XMLEvalEngine extends DefaultEngineSupport[XMLEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): XMLEnvContext = new XMLEnvContext(options, scopes)
+  override def init(options: GwenOptions): XMLEnvContext = new XMLEnvContext(options)
 }
 
 class XMLInterpreter

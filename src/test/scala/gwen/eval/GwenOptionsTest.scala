@@ -116,12 +116,6 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   } 
   
   "Options with parallel option with implied batch mode" should "parse" in {
-    parseOptions(Array("-|", ".")) match {
-      case Success(options) => { 
-        assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
-      }
-      case _ => fail("expected options but failed")
-    }
     parseOptions(Array("--parallel", ".")) match {
       case Success(options) => { 
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
@@ -131,7 +125,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   "Options with parallel option with explicit batch mode" should "parse" in {
-    parseOptions(Array("-|b", ".")) match {
+    parseOptions(Array("--parallel", "-b", ".")) match {
       case Success(options) => { 
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
@@ -646,12 +640,13 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     val feature5 = createFile("dir5/file5.feature")
     val dir6 = createDir("dir6")
     
-    parseOptions(Array("-b|", "-r", reportDir.getPath, "-f", "html,junit", "-p", propsFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
+    parseOptions(Array("-b", "--parallel", "-r", reportDir.getPath, "-f", "html,junit", "-p", propsFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = true,
+          parallelFeatures = false,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
@@ -665,12 +660,33 @@ class GwenOptionsTest extends FlatSpec with Matchers {
         fail("expected options but failed")
     }
     
-    parseOptions(Array("--batch", "--parallel", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = true,
+          parallelFeatures = true,
+          Some(reportDir),
+          List(ReportFormat.html, ReportFormat.junit),
+          List(propsFile),
+          List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          dryRun = false,
+          Some(dataFile),
+          List(metaFile),
+          List(dir5, feature5, dir6))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+
+    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+      case Success(options) => {
+        assertOptions(
+          options,
+          batch = true,
+          parallel = false,
+          parallelFeatures = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
@@ -694,6 +710,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
                              options: GwenOptions,
                              batch: Boolean = false,
                              parallel: Boolean = false,
+                             parallelFeatures: Boolean = false,
                              reportDir: Option[File] = None,
                              reportFormats: List[ReportFormat.Value] = Nil,
                              properties: List[File] = Nil,
@@ -705,6 +722,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
     
     options.batch should be (batch)
     options.parallel should be (parallel)
+    options.parallelFeatures should be (parallelFeatures)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
     options.properties should be (properties)

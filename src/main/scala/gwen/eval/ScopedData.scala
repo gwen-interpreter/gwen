@@ -70,12 +70,12 @@ class ScopedData(val scope: String) extends LazyLogging {
     */
   private var closures = Map[String, () => String]()
 
-  val isFeatureScope = false
+  val isTopScope = false
   
   /** 
     *  Provides access to the local flash data (attributes are pushed into this 
     *  scope when global attributes are changed so that they become accessible in 
-    *  the current non feature scope). 
+    *  the current non top scope). 
     */
   private[eval] var flashScope: Option[mutable.Map[String, String]] = None
   
@@ -145,7 +145,7 @@ class ScopedData(val scope: String) extends LazyLogging {
         atts += nvp
       } tap { _ =>
         flashScope foreach { fs =>
-          if (!isFeatureScope && fs.nonEmpty) {
+          if (!isTopScope && fs.nonEmpty) {
             name match {
               case r"(.+?)$n/.*" => fs -= n
               case _ => fs -= name
@@ -186,7 +186,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    *         or None if no attributes are accepted
    */
   def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
-    val result = findEntries(pred).foldLeft(if (isFeatureScope) new FeatureScope() else ScopedData(scope)) { (data, entry) =>
+    val result = findEntries(pred).foldLeft(if (isTopScope) new TopScope() else ScopedData(scope)) { (data, entry) =>
       data.set(entry._1, entry._2)
     }
     if (result.isEmpty) None else Some(result)

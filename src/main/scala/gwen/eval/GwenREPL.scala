@@ -30,6 +30,8 @@ import jline.console.history.FileHistory
 
 import scala.collection.JavaConverters._
 import jline.console.completer.AggregateCompleter
+import gwen.GwenSettings
+import gwen.dsl.StateLevel
 
 /**
   * Read-Eval-Print-Loop console.
@@ -74,11 +76,11 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
         case None => Some(env.visibleScopes.asString)
         case _ => options.trim match {
           case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
-            case "-f" => Some(ScopedDataStack(env.featureScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
+            case "-f" => Some(ScopedDataStack(env.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
             case "-a" => Some(env.filterAtts(GwenREPL.attrFilter(filter)).asString)
           }
           case r"""(-f|-a)$$$switch""" => switch match {
-            case "-f" => Some(env.featureScope.asString())
+            case "-f" => Some(env.topScope.asString())
             case "-a" => Some(env.asString)
           }
           case r""""(.+?)"$$$filter""" =>
@@ -145,16 +147,19 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
   private def evaluateInput(input: String): String = {
     input.trim match {
       case r"^Feature:(.*)$$$name" =>
-        env.featureScope.set("gwen.feature.name", name.trim)
+        env.topScope.set("gwen.feature.name", name.trim)
         s"[gwen.feature.name = ${name.trim}]"
       case r"^Rule:(.*)$$$name" =>
-        env.featureScope.set("gwen.rule.name", name.trim)
+        env.topScope.set("gwen.rule.name", name.trim)
         s"[gwen.rule.name = ${name.trim}]"
       case r"^(Scenario|Example):(.*)$$$name" =>
-        env.featureScope.set("gwen.scenario.name", name.trim)
+        if (StateLevel.scenario.equals(env.stateLevel)) {
+          env.reset(StateLevel.scenario)
+        }
+        env.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
-        env.featureScope.set("gwen.scenario.name", name.trim)
+        env.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case _ =>
         interpreter.interpretStep(input, env) match {

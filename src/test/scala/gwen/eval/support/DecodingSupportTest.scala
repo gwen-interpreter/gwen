@@ -24,7 +24,7 @@ import gwen.eval.{GwenOptions, ScopedDataStack}
 
 class DecodingSupportTest extends FlatSpec with Matchers {
 
-  val decodingSupport: DecodingSupport = new EnvContext(GwenOptions(), new ScopedDataStack())
+  val decodingSupport: DecodingSupport = new EnvContext(GwenOptions())
 
   "Null Base64 source" should "throw error" in {
     intercept[DecodingException] {

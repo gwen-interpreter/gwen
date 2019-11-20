@@ -43,7 +43,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     step.expression match {
 
       case r"""(.+?)$doStep for each data record""" => doEvaluate(step, env) { _ =>
-        val dataTable = env.featureScope.getObject("table") match {
+        val dataTable = env.topScope.getObject("table") match {
           case Some(table: FlatTable) => table
           case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
           case _ => dataTableError("Calling step has no data table")
@@ -63,7 +63,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
-        val javascript = env.activeScope.get(s"$condition/javascript")
+        val javascript = env.scopes.get(s"$condition/javascript")
         env.evaluate(evaluateStep(Step(step.pos, step.keyword, doStep), env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
@@ -98,7 +98,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         Settings.clearLocal(name)
 
       case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
-        env.featureScope.set(attribute, value)
+        env.topScope.set(attribute, value)
       }
 
       case r"""I wait ([0-9]+?)$duration second(?:s?)""" =>
@@ -131,7 +131,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val value = Option(env.evaluateJS(env.formatJSReturn(env.interpolate(expression)(env.getBoundReferenceValue)))).map(_.toString).orNull
-        env.featureScope.set(attribute, value tap { content =>
+        env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
       }
@@ -141,31 +141,31 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         val result = env.evaluateXPath(expression, src, env.XMLNodeType.withName(targetType)) tap { content =>
           env.addAttachment(name, "txt", content)
         }
-        env.featureScope.set(name, result)
+        env.topScope.set(name, result)
 
       case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
         val result = env.extractByRegex(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
         }
-        env.featureScope.set(name, result)
+        env.topScope.set(name, result)
 
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
         val src = env.getBoundReferenceValue(source)
         val result = env.evaluateJsonPath(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
         }
-        env.featureScope.set(name, result)
+        env.topScope.set(name, result)
 
       case r"""I capture (.+?)$source as (.+?)$$$attribute""" =>
         val value = env.getBoundReferenceValue(source)
-        env.featureScope.set(attribute, value tap { content =>
+        env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
 
       case r"""I capture (.+?)$$$attribute""" =>
         val value = env.getBoundReferenceValue(attribute)
-        env.featureScope.set(attribute, value tap { content =>
+        env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
 
@@ -174,64 +174,64 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(name, "txt", content)
         }
-        env.featureScope.set(name, result)
+        env.topScope.set(name, result)
 
       case r"""I base64 decode (.+?)$attribute""" =>
         val source = env.getBoundReferenceValue(attribute)
         val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(attribute, "txt", content)
         }
-        env.featureScope.set(attribute, result)
+        env.topScope.set(attribute, result)
 
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         attrType match {
-          case "javascript" => env.activeScope.set(s"$attribute/javascript", expression)
-          case "system process" => env.activeScope.set(s"$attribute/sysproc", expression)
-          case "file" => env.activeScope.set(s"$attribute/file", expression)
-          case _ => env.featureScope.set(attribute, Settings.get(expression))
+          case "javascript" => env.scopes.set(s"$attribute/javascript", expression)
+          case "system process" => env.scopes.set(s"$attribute/sysproc", expression)
+          case "file" => env.scopes.set(s"$attribute/file", expression)
+          case _ => env.topScope.set(attribute, Settings.get(expression))
         }
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
-        env.activeScope.set(s"$attribute/xpath/source", source)
-        env.activeScope.set(s"$attribute/xpath/targetType", targetType)
-        env.activeScope.set(s"$attribute/xpath/expression", expression)
+        env.scopes.set(s"$attribute/xpath/source", source)
+        env.scopes.set(s"$attribute/xpath/targetType", targetType)
+        env.scopes.set(s"$attribute/xpath/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
-        env.activeScope.set(s"$attribute/regex/source", source)
-        env.activeScope.set(s"$attribute/regex/expression", expression)
+        env.scopes.set(s"$attribute/regex/source", source)
+        env.scopes.set(s"$attribute/regex/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
-        env.activeScope.set(s"$attribute/json path/source", source)
-        env.activeScope.set(s"$attribute/json path/expression", expression)
+        env.scopes.set(s"$attribute/json path/source", source)
+        env.scopes.set(s"$attribute/json path/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
-        env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
-        env.activeScope.set(s"$attribute/sql/dbName", dbName)
+        env.scopes.set(s"$attribute/sql/selectStmt", selectStmt)
+        env.scopes.set(s"$attribute/sql/dbName", dbName)
 
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" => step.orDocString(selectStmt) tap { selectStmt =>
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
-        env.activeScope.set(s"$attribute/sql/selectStmt", selectStmt)
-        env.activeScope.set(s"$attribute/sql/dbName", dbName)
+        env.scopes.set(s"$attribute/sql/selectStmt", selectStmt)
+        env.scopes.set(s"$attribute/sql/dbName", dbName)
       }
 
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" => step.orDocString(updateStmt) tap { updateStmt =>
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
         val rowsAffected = env.executeSQLUpdate(updateStmt, dbName)
-        env.activeScope.set(s"$dbName rows affected", rowsAffected.toString)
+        env.scopes.set(s"$dbName rows affected", rowsAffected.toString)
       }
 
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         val expected = env.parseExpression(operator, expression)
         env.perform {
-          val src = env.activeScope.get(source)
+          val src = env.scopes.get(source)
           val actual = matcher match {
             case "json path" => env.evaluateJsonPath(path, src)
             case "xpath" => env.evaluateXPath(path, src, env.XMLNodeType.text)

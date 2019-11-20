@@ -16,13 +16,16 @@
 
 package gwen.eval
 
-import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.errors.UnboundAttributeException
 
 import scala.collection.mutable
+import gwen.GwenSettings
+import gwen.Settings
+import gwen.BaseTest
 
-class ScopedDataStackTest extends FlatSpec with Matchers {
+class ScopedDataStackTest extends BaseTest with Matchers {
 
   "get" should "throw error when there are no scopes" in {
     
@@ -352,13 +355,17 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
     scope1 should not be scope2
   }
   
-  "addScope" should "should maintain only one feature scope" in {
-    val scopes = new ScopedDataStack()
-    scopes.current should be (scopes.featureScope)
-    val home = scopes.addScope("home")
-    home should be (scopes.current)
-    val feature = scopes.addScope("feature")
-    feature should be (scopes.featureScope)
+  forAll (levels) { level =>
+    "addScope" should s"should maintain only one $level scope" in {
+      withSetting("gwen.state.level", level) {
+        val scopes = new ScopedDataStack()
+        scopes.current should be (scopes.topScope)
+        val home = scopes.addScope("home")
+        home should be (scopes.current)
+        val top = scopes.addScope(level)
+        top should be (scopes.topScope)
+      }
+    }
   }
   
   "set" should "should not replicate already visible attributes with same name and value" in {
@@ -396,152 +403,165 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
                                                                         
   }
   
-  "filtering by findEntry" should "produce expected results" in {
+  forAll (levels) { level =>
+  
+    "filtering by findEntry" should s"produce expected results in $level scope" in {
     
-    val scopes = new ScopedDataStack()
-    scopes.set("middleName", "interpreter")
-    scopes.addScope("register")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "register")
-    scopes.addScope("person")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "person")
-    scopes.addScope("register")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "web")
-    
-    scopes.getOpt("middleName") should be (Some("interpreter"))
-    
-    scopes.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      middleName : "interpreter"
-        |    }
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |      lastName : "register"
-        |    }
-        |    scope : "person" {
-        |      firstName : "gwen"
-        |      lastName : "person"
-        |    }
-        |    scope : "register" {
-        |      lastName : "web"
-        |    }
-        |  }
-        |}""".stripMargin)
-    
-    val filtered1 = scopes.visible.filterAtts { case (n, _) => n == "firstName" }
-    filtered1.getOpt("firstName") should be (Some("gwen"))
-    filtered1.getOpt("middleName") should be (None)
-    filtered1.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
-    filtered1.findEntry { case (n, _) => n == "lastName" } should be (None)
-    filtered1.findEntry { case (n, _) => n == "middleName" } should be (None)
-    filtered1.asString should be (
-      """{
-        |  scopes {
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |    }
-        |  }
-        |}""".stripMargin)
-    
-    val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
-    filtered2.getOpt("firstName") should be (Some("gwen"))
-    filtered2.getOpt("middleName") should be (Some("interpreter"))
-    filtered2.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
-    filtered2.findEntry { case (n, _) => n == "lastName" } should be (None)
-    filtered2.findEntry { case (n, _) => n == "middleName" } should be (Some(("middleName", "interpreter")))
-    filtered2.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      middleName : "interpreter"
-        |    }
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |    }
-        |  }
-        |}""".stripMargin)
-                                                                        
+      withSetting("gwen.state.level", level) {
+      
+        val scopes = new ScopedDataStack()
+      
+        scopes.set("middleName", "interpreter")
+        scopes.addScope("register")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "register")
+        scopes.addScope("person")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "person")
+        scopes.addScope("register")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "web")
+        
+        scopes.getOpt("middleName") should be (Some("interpreter"))
+        
+        scopes.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      middleName : "interpreter"
+            |    }
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |      lastName : "register"
+            |    }
+            |    scope : "person" {
+            |      firstName : "gwen"
+            |      lastName : "person"
+            |    }
+            |    scope : "register" {
+            |      lastName : "web"
+            |    }
+            |  }
+            |}""".stripMargin)
+        
+        val filtered1 = scopes.visible.filterAtts { case (n, _) => n == "firstName" }
+        filtered1.getOpt("firstName") should be (Some("gwen"))
+        filtered1.getOpt("middleName") should be (None)
+        filtered1.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
+        filtered1.findEntry { case (n, _) => n == "lastName" } should be (None)
+        filtered1.findEntry { case (n, _) => n == "middleName" } should be (None)
+        filtered1.asString should be (
+          """{
+            |  scopes {
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |    }
+            |  }
+            |}""".stripMargin)
+        
+        val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
+        filtered2.getOpt("firstName") should be (Some("gwen"))
+        filtered2.getOpt("middleName") should be (Some("interpreter"))
+        filtered2.findEntry { case (n, _) => n == "firstName" } should be (Some(("firstName", "gwen")))
+        filtered2.findEntry { case (n, _) => n == "lastName" } should be (None)
+        filtered2.findEntry { case (n, _) => n == "middleName" } should be (Some(("middleName", "interpreter")))
+        filtered2.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      middleName : "interpreter"
+            |    }
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |    }
+            |  }
+            |}""".stripMargin)
+                                                                            
+      }
+    }
   }
 
-  "filtering by findEntries" should "produce expected results" in {
+  forAll (levels) { level =>
 
-    val scopes = new ScopedDataStack()
-    scopes.set("middleName", "interpreter")
-    scopes.addScope("register")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "register")
-    scopes.addScope("person")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "person")
-    scopes.addScope("register")
-    scopes.set("firstName", "gwen")
-    scopes.set("lastName", "web")
+    "filtering by findEntries" should s"produce expected results in $level scope" in {
 
-    scopes.getOpt("middleName") should be (Some("interpreter"))
+      withSetting("gwen.state.level", level) {
 
-    scopes.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      middleName : "interpreter"
-        |    }
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |      lastName : "register"
-        |    }
-        |    scope : "person" {
-        |      firstName : "gwen"
-        |      lastName : "person"
-        |    }
-        |    scope : "register" {
-        |      lastName : "web"
-        |    }
-        |  }
-        |}""".stripMargin)
+        val scopes = new ScopedDataStack()
+        scopes.set("middleName", "interpreter")
+        scopes.addScope("register")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "register")
+        scopes.addScope("person")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "person")
+        scopes.addScope("register")
+        scopes.set("firstName", "gwen")
+        scopes.set("lastName", "web")
 
-    val filtered1 = scopes.visible.filterAtts { case (n, _) => n.endsWith("Name")}
-    filtered1.getOpt("firstName") should be (Some("gwen"))
-    filtered1.getOpt("middleName") should be (Some("interpreter"))
-    filtered1.getOpt("lastName") should be (Some("web"))
-    filtered1.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
-    filtered1.findEntries { case (n, _) => n == "missing" } should be (Nil)
-    filtered1.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      middleName : "interpreter"
-        |    }
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |      lastName : "register"
-        |    }
-        |    scope : "register" {
-        |      lastName : "web"
-        |    }
-        |  }
-        |}""".stripMargin)
+        scopes.getOpt("middleName") should be (Some("interpreter"))
 
-    val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
-    filtered2.getOpt("firstName") should be (Some("gwen"))
-    filtered2.getOpt("middleName") should be (Some("interpreter"))
-    filtered2.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
-    filtered2.findEntries { case (n, _) => n == "lastName" } should be (Nil)
-    filtered2.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      middleName : "interpreter"
-        |    }
-        |    scope : "register" {
-        |      firstName : "gwen"
-        |    }
-        |  }
-        |}""".stripMargin)
+        scopes.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      middleName : "interpreter"
+            |    }
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |      lastName : "register"
+            |    }
+            |    scope : "person" {
+            |      firstName : "gwen"
+            |      lastName : "person"
+            |    }
+            |    scope : "register" {
+            |      lastName : "web"
+            |    }
+            |  }
+            |}""".stripMargin)
 
+        val filtered1 = scopes.visible.filterAtts { case (n, _) => n.endsWith("Name")}
+        filtered1.getOpt("firstName") should be (Some("gwen"))
+        filtered1.getOpt("middleName") should be (Some("interpreter"))
+        filtered1.getOpt("lastName") should be (Some("web"))
+        filtered1.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
+        filtered1.findEntries { case (n, _) => n == "missing" } should be (Nil)
+        filtered1.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      middleName : "interpreter"
+            |    }
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |      lastName : "register"
+            |    }
+            |    scope : "register" {
+            |      lastName : "web"
+            |    }
+            |  }
+            |}""".stripMargin)
+
+        val filtered2 = scopes.visible.filterAtts { case (n, _) => n == "firstName" || n == "middleName" }
+        filtered2.getOpt("firstName") should be (Some("gwen"))
+        filtered2.getOpt("middleName") should be (Some("interpreter"))
+        filtered2.findEntries { case (n, _) => n == "firstName" } should be (List(("firstName", "gwen")))
+        filtered2.findEntries { case (n, _) => n == "lastName" } should be (Nil)
+        filtered2.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      middleName : "interpreter"
+            |    }
+            |    scope : "register" {
+            |      firstName : "gwen"
+            |    }
+            |  }
+            |}""".stripMargin)
+
+      }
+    }
   }
 
   "filtering by allEntries" should "produce expected results" in {
@@ -567,23 +587,29 @@ class ScopedDataStackTest extends FlatSpec with Matchers {
 
   }
   
-  "new stack with no data" should "return empty current and feature scopes" in {
+  forAll (levels) { level =>
+  
+    "new stack with no data" should s"return empty current and $level scopes" in {
     
-    val scopes = ScopedDataStack(new mutable.ArrayStack[ScopedData]())
-    
-    scopes.current.scope should be ("feature")
-    scopes.featureScope.scope should be ("feature")
-    
-    intercept[UnboundAttributeException] { scopes.get("username") }
-    intercept[UnboundAttributeException] { scopes.get("password") }
-    intercept[UnboundAttributeException] { scopes.get("firstName") }
-    intercept[UnboundAttributeException] { scopes.get("lastName") }
-    
-    scopes.getOpt("username")  should be (None)
-    scopes.getOpt("password")  should be (None)
-    scopes.getOpt("firstName") should be (None)
-    scopes.getOpt("lastName")  should be (None)
-    
+      withSetting("gwen.state.level", level) {
+        
+        val scopes = ScopedDataStack(new mutable.ArrayStack[ScopedData]())
+        
+        scopes.current.scope should be (level)
+        scopes.topScope.scope should be (level)
+        
+        intercept[UnboundAttributeException] { scopes.get("username") }
+        intercept[UnboundAttributeException] { scopes.get("password") }
+        intercept[UnboundAttributeException] { scopes.get("firstName") }
+        intercept[UnboundAttributeException] { scopes.get("lastName") }
+        
+        scopes.getOpt("username")  should be (None)
+        scopes.getOpt("password")  should be (None)
+        scopes.getOpt("firstName") should be (None)
+        scopes.getOpt("lastName")  should be (None)
+        
+      }
+    }
   }
   
   "get entry Opt" should "return expected results" in {

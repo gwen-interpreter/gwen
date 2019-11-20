@@ -31,7 +31,9 @@ import gwen.Settings
 
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
+import gwen.dsl.StateLevel
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
 
 /**
   * Launches the gwen interpreter.
@@ -93,7 +95,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
-    if (options.parallel) {
+    if (options.parallel || options.parallelFeatures) {
       executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
     } else {
       executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
@@ -104,6 +106,13 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
+    implicit val ec = if (options.parallelFeatures || GwenSettings.`gwen.state.level` == StateLevel.feature) {
+      ExecutionContext.Implicits.global
+    } else {
+      val noOfProcessors = Runtime.getRuntime().availableProcessors()
+      val noOfThreads = noOfProcessors / 2
+      ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(noOfThreads))
+    }
     val featureUnits = featureStream.map { unit =>
       Future {
         if (!started.get) {
@@ -145,10 +154,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             case None => summary
             case _ =>
               (summary + result.map(bindReportFiles(reportGenerators, unit, _)).get) tap { accSummary =>
-                if (!options.parallel) {
-                  reportGenerators foreach {
-                    _.reportSummary(interpreter, accSummary)
-                  }
+                reportGenerators foreach {
+                  _.reportSummary(interpreter, accSummary)
                 }
               }
           }) tap { _ => result.foreach(logFeatureStatus) }
@@ -166,18 +173,21 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     Settings.clearLocal()
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
-      if (envOpt.isDefined) { interpreter.reset(env) }
+      if (envOpt.nonEmpty) { env.reset(StateLevel.feature) }
       val targetUnit = FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord)
       unit.dataRecord foreach { record =>
         record.data foreach { case (name, value) =>
-          env.featureScope.set(name, value)
+          env.topScope.set(name, value)
         }
       }
       f(interpreter.interpretFeature(targetUnit, options.tags, env) map { res =>
         new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
-      if (envOpt.isEmpty) { interpreter.close(env) }
+      if (envOpt.isEmpty) { 
+        env.close() 
+        logger.info("Environment context closed")
+      }
     }
   }
   

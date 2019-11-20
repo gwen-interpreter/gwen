@@ -68,7 +68,7 @@ class MathInterpreterTest extends FlatSpec {
     
     val options = new GwenOptions(dryRun = true)
     
-    val env = new MathEnvContext(new MathService(), options, new ScopedDataStack())
+    val env = new MathEnvContext(new MathService(), options)
     env.scopes.addScope("vars").set("y", "1")
         
     val interpreter = new MathInterpreter

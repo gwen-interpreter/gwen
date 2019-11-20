@@ -17,6 +17,7 @@
 package gwen
 
 import gwen.dsl.AssertionMode
+import gwen.dsl.StateLevel
 
 /**
   * Provides access to gwen settings defined through system properties loaded 
@@ -56,8 +57,8 @@ object GwenSettings {
   
   /**
    * Provides access to the `gwen.rampup.interval.seconds` property setting used
-   * to set the ramp up interval (in seconds) for staggering parallel executions  
-   * (this setting is optional and only used in parallel execution mode).
+   * to set the ramp up interval (in seconds) for staggering parallel feature executions  
+   * (this setting is optional and only used in for parallel execution options).
    */
   def `gwen.rampup.interval.seconds`: Option[Int] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toInt)
   
@@ -100,5 +101,14 @@ object GwenSettings {
     */
   def `gwen.assertion.mode`: AssertionMode.Value =
     Settings.getOpt("gwen.assertion.mode").map(_.toLowerCase).map(AssertionMode.withName).getOrElse(AssertionMode.hard)
+
+  /**
+    * Provides access to the `gwen.state.level` property setting used to control if state is maintained
+    * at the scenario or feature level during execution.
+    *   - `feature` - Feature level state is shared across scenarios (default)
+    *   - `scenario` - Each scenario gets a new state which is not shared across scenarios
+    */
+  def `gwen.state.level`: StateLevel.Value =
+    Settings.getOpt("gwen.state.level").map(_.toLowerCase).map(StateLevel.withName).getOrElse(StateLevel.feature)
 
 }

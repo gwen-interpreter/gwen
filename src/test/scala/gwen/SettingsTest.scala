@@ -16,13 +16,12 @@
 
 package gwen
 
-import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import java.util.Properties
 import gwen.errors.MissingPropertyException
 import gwen.errors.UnsupportedLocalSettingException
 
-class SettingsTest extends FlatSpec with Matchers {
+class SettingsTest extends BaseTest with Matchers {
 
   "user.home system property" should "be available" in {
     Settings.synchronized {
@@ -155,20 +154,6 @@ class SettingsTest extends FlatSpec with Matchers {
           values.contains("--other") should be (true)
           values.contains("--ignore-certificate-errors") should be (true)
           values.contains("--window-size=1920,1080") should be (true)
-        }
-      }
-    }
-  }
-
-  private def withSetting[T](name: String, value: String)(f: => T):T = {
-    Settings.synchronized {
-      val original = Settings.getOpt(name)
-      try {
-        Settings.set(name, value)
-        f
-      } finally {
-        original.fold(Settings.clear(name)) { v =>
-          Settings.set(name, v)
         }
       }
     }

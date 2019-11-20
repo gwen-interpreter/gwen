@@ -75,17 +75,14 @@ trait SpecNormaliser {
       val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
       Step(keyword, s"""$name is "$value"""")
     }
-    val tags = List(Tag(s"""Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""))
-    Scenario(
-      tags, 
-      FeatureKeyword.Scenario.toString(),
-      s"Bind data attributes", 
-      Nil, 
-      None, 
-      steps, 
-      isOutline = false,
-       Nil, 
-       None) :: expandScenarios(scenarios, background)
+    val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
+    val dataBackground = background match {
+      case Some(bg) =>
+        Background(s"${bg.name} (plus input data)", bg.description ++ List(description), steps ++ bg.steps)
+      case None =>
+        Background("Input data", List(description), steps)
+    }
+    expandScenarios(scenarios, Some(dataBackground))
   }
 
   private def expandScenarios(scenarios: List[Scenario], background: Option[Background]): List[Scenario] =

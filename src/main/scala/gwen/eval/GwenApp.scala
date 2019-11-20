@@ -61,7 +61,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
         }
       }
     } finally {
-      envOpt foreach { interpreter.close }
+      envOpt foreach { _.close() }
     }
   }
   
