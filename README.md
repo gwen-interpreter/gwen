@@ -24,7 +24,7 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
-- [State levels](https://github.com/gwen-interpreter/gwen/wiki/StateLevels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
+- [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
 - Integated the latest [Gherkin parser](https://github.com/cucumber/cucumber/tree/master/gherkin/java) from Cucumber to support [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 
