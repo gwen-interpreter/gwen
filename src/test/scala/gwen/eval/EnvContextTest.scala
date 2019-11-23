@@ -18,10 +18,13 @@ package gwen.eval
 
 import org.scalatest.Matchers
 import gwen.dsl._
-import org.scalatest.FlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
+import gwen.GwenSettings
+import gwen.Settings
+import gwen.BaseTest
 
-class EnvContextTest extends FlatSpec with Matchers {
+class EnvContextTest extends BaseTest with Matchers {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
@@ -49,7 +52,7 @@ class EnvContextTest extends FlatSpec with Matchers {
     
   }
   
-  "New StepDef added to env context" should "not be accessible after reset" in {
+  "New StepDef added to env context" should "not be accessible after feature level reset" in {
     
     val steps = List(
       Step(StepKeyword.Given, """I enter "gwen" in the search field"""),
@@ -61,8 +64,25 @@ class EnvContextTest extends FlatSpec with Matchers {
     env.addStepDef(stepdef)
     
     env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
-    env.reset()
+    env.reset(StateLevel.feature)
     env.getStepDef("""I search for "gwen"""") should be (None)
+    
+  }
+
+  "New StepDef added to env context" should "still be accessible after scenario level reset" in {
+    
+    val steps = List(
+      Step(StepKeyword.Given, """I enter "gwen" in the search field"""),
+      Step(StepKeyword.And, """I submit the search field""")
+    )
+    
+    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val env = newEnv
+    env.addStepDef(stepdef)
+    
+    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
+    env.reset(StateLevel.scenario)
+    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
     
   }
   
@@ -130,34 +150,63 @@ class EnvContextTest extends FlatSpec with Matchers {
     
   }
   
-  "New feature env context" should "have global feature scope" in {
-    val env = newEnv
-    env.featureScope.scope should be ("feature")
-    env.featureScope.isFeatureScope should be (true)
+  forAll (levels) { level =>
+    "New feature env context" should s"have $level scope" in {
+      withSetting("gwen.state.level", level) {
+        val env = newEnv
+        env.topScope.scope should be (level)
+        env.topScope.isTopScope should be (true)
+      }
+    }
   }
   
-  "Bound feature scope attribute" should "be removed after reset" in {
-    val env = newEnv
-    env.featureScope.set("engineName", "Gwen-Core")
-    env.featureScope.get("engineName") should be ("Gwen-Core")
-    env.reset()
-    env.featureScope.getOpt("engineName") should be (None)
-    env.featureScope.scope should be ("feature")
+  forAll (levels) { level =>
+    s"Bound $level scope attribute" should "be removed after reset" in {
+      withSetting("gwen.state.level", level) {
+        val env = newEnv
+        env.topScope.set("engineName", "Gwen-Core")
+        env.topScope.get("engineName") should be ("Gwen-Core")
+        env.reset(StateLevel.withName(level))
+        env.topScope.getOpt("engineName") should be (None)
+        env.topScope.scope should be (level)
+      }
+    }
   }
-  
-  "Bound feature scope attribute" should "show up in asString" in {
+
+  "Implicit top scope attribute" should "not be removed after feature level reset" in {
     val env = newEnv
-    env.featureScope.set("firstName", "Gwen")
-    env.featureScope.get("firstName") should be ("Gwen")
-    env.asString should be (
-      """{
-        |  scopes {
-        |    scope : "feature" {
-        |      firstName : "Gwen"
-        |    }
-        |  }
-        |}""".stripMargin)
-                                      
+    env.topScope.set("engineName", "Gwen-Core")
+    env.topScope.get("engineName") should be ("Gwen-Core")
+    env.topScope.set("gwen.feature.file.name", "file.feature")
+    env.topScope.set("gwen.feature.file.path", "path/file.feature")
+    env.topScope.set("gwen.feature.file.absolutePath", "/absolute/path/file.feature")
+    env.topScope.set("gwen.feature.name", "feature")
+    env.topScope.set("gwen.rule.name", "rule")
+    env.reset(StateLevel.feature)
+    env.topScope.getOpt("engineName") should be (None)
+    env.topScope.get("gwen.feature.file.name") should be ("file.feature")
+    env.topScope.get("gwen.feature.file.path") should be ("path/file.feature")
+    env.topScope.get("gwen.feature.file.absolutePath") should be ("/absolute/path/file.feature")
+    env.topScope.get("gwen.feature.name") should be ("feature")
+    env.topScope.get("gwen.rule.name") should be ("rule")
+  }
+
+  forAll (levels) { level =>
+    s"Bound $level level scope attribute" should "show up in asString" in {
+      withSetting("gwen.state.level", level) {
+        val env = newEnv
+        env.topScope.set("firstName", "Gwen")
+        env.topScope.get("firstName") should be ("Gwen")
+        env.asString should be (
+          s"""{
+            |  scopes {
+            |    scope : "$level" {
+            |      firstName : "Gwen"
+            |    }
+            |  }
+            |}""".stripMargin)                                   
+      }
+    }
   }
   
   "env.asString on new env context" should "contain empty scopes" in {
@@ -179,7 +228,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "env.asString on new env context with bound var in global scope" should "print the var" in {
     val env = newEnv
     val scope = env.addScope("vars").set("howdy", "partner")
-    scope.isFeatureScope should be (false)
+    scope.isTopScope should be (false)
     env.asString should be (
       """{
         |  scopes {
@@ -206,7 +255,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "env.asString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.reset()
+    env.reset(StateLevel.feature)
     env.asString should be (
       """{
         |  scopes { }
@@ -216,7 +265,7 @@ class EnvContextTest extends FlatSpec with Matchers {
   "visibleScopes.env.asString on reset env context" should "contain empty scopes" in {
     val env = newEnv
     env.addScope("vars").set("howdy", "partner")
-    env.reset()
+    env.reset(StateLevel.feature)
     env.visibleScopes.asString should be (
       """{
         |  scopes { }
@@ -319,50 +368,50 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "Getting bound objects from cache" should "get those objects" in {
     val env = newEnv
-    env.featureScope.pushObject("greeting", "howdy")
-    env.featureScope.pushObject("gwen", "interpreter")
-    env.featureScope.getObject("greeting") should be (Some("howdy"))
-    env.featureScope.getObject("gwen") should be (Some("interpreter"))
+    env.topScope.pushObject("greeting", "howdy")
+    env.topScope.pushObject("gwen", "interpreter")
+    env.topScope.getObject("greeting") should be (Some("howdy"))
+    env.topScope.getObject("gwen") should be (Some("interpreter"))
   }
 
   "Popping bound object from cache" should "clear that object" in {
     val env = newEnv
-    env.featureScope.pushObject("greeting", "howdy")
-    env.featureScope.pushObject("gwen", "interpreter")
-    env.featureScope.popObject("greeting") should be (Some("howdy"))
-    env.featureScope.getObject("greeting") should be (None)
-    env.featureScope.getObject("gwen") should be (Some("interpreter"))
+    env.topScope.pushObject("greeting", "howdy")
+    env.topScope.pushObject("gwen", "interpreter")
+    env.topScope.popObject("greeting") should be (Some("howdy"))
+    env.topScope.getObject("greeting") should be (None)
+    env.topScope.getObject("gwen") should be (Some("interpreter"))
   }
 
   "Resetting context" should "should clear all objects from cache" in {
     val env = newEnv
-    env.featureScope.pushObject("greeting", "howdy")
-    env.featureScope.pushObject("gwen", "interpreter")
-    env.reset()
-    env.featureScope.getObject("greeting") should be (None)
-    env.featureScope.getObject("gwen") should be (None)
+    env.topScope.pushObject("greeting", "howdy")
+    env.topScope.pushObject("gwen", "interpreter")
+    env.reset(StateLevel.feature)
+    env.topScope.getObject("greeting") should be (None)
+    env.topScope.getObject("gwen") should be (None)
   }
 
   "Managing bound and shadowed objects from cache" should "work as expected" in {
     val env = newEnv
-    env.featureScope.pushObject("greeting", "howdy")
-    env.featureScope.pushObject("gwen", "interpreter 1")
-    env.featureScope.pushObject("gwen", "interpreter 2")
+    env.topScope.pushObject("greeting", "howdy")
+    env.topScope.pushObject("gwen", "interpreter 1")
+    env.topScope.pushObject("gwen", "interpreter 2")
 
-    env.featureScope.getObject("greeting") should be (Some("howdy"))
-    env.featureScope.getObject("gwen") should be (Some("interpreter 2"))
+    env.topScope.getObject("greeting") should be (Some("howdy"))
+    env.topScope.getObject("gwen") should be (Some("interpreter 2"))
 
-    env.featureScope.popObject("gwen") should be (Some("interpreter 2"))
-    env.featureScope.getObject("greeting") should be (Some("howdy"))
-    env.featureScope.getObject("gwen") should be (Some("interpreter 1"))
+    env.topScope.popObject("gwen") should be (Some("interpreter 2"))
+    env.topScope.getObject("greeting") should be (Some("howdy"))
+    env.topScope.getObject("gwen") should be (Some("interpreter 1"))
 
-    env.featureScope.popObject("gwen") should be (Some("interpreter 1"))
-    env.featureScope.getObject("greeting") should be (Some("howdy"))
-    env.featureScope.getObject("gwen") should be (None)
+    env.topScope.popObject("gwen") should be (Some("interpreter 1"))
+    env.topScope.getObject("greeting") should be (Some("howdy"))
+    env.topScope.getObject("gwen") should be (None)
 
-    env.reset()
-    env.featureScope.getObject("greeting") should be (None)
-    env.featureScope.getObject("gwen") should be (None)
+    env.reset(StateLevel.feature)
+    env.topScope.getObject("greeting") should be (None)
+    env.topScope.getObject("gwen") should be (None)
 
   }
 
@@ -372,17 +421,17 @@ class EnvContextTest extends FlatSpec with Matchers {
     val table2 = new FlatTable(List(List("2")), List("token"))
 
     val env = newEnv
-    env.featureScope.pushObject("table", table1)
+    env.topScope.pushObject("table", table1)
     env.getBoundReferenceValue("data[1][token]") should be ("1")
-    env.featureScope.pushObject("table", table2)
+    env.topScope.pushObject("table", table2)
     env.getBoundReferenceValue("data[1][token]") should be ("2")
-    env.featureScope.pushObject("record", new ScopedData("record").set("data[token]", "0"))
+    env.topScope.pushObject("record", new ScopedData("record").set("data[token]", "0"))
     env.getBoundReferenceValue("data[token]") should be ("0")
-    env.featureScope.popObject("record").isDefined should be (true)
+    env.topScope.popObject("record").isDefined should be (true)
     env.getBoundReferenceValue("data[1][token]") should be ("2")
-    env.featureScope.popObject("table").isDefined should be (true)
+    env.topScope.popObject("table").isDefined should be (true)
     env.getBoundReferenceValue("data[1][token]") should be ("1")
-    env.featureScope.popObject("table").isDefined should be (true)
+    env.topScope.popObject("table").isDefined should be (true)
     intercept[UnboundAttributeException] {
       env.getBoundReferenceValue("data[1][token]")
     }
@@ -390,15 +439,15 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "scope with a blank attribute" should """yield blank for getBoundReferenceValue call""" in {
     val env = newEnv
-    env.featureScope.set("x", "")
-    env.featureScope.set("x", "1")
-    env.featureScope.set("x", "")
+    env.topScope.set("x", "")
+    env.topScope.set("x", "1")
+    env.topScope.set("x", "")
     env.getBoundReferenceValue("x") should be ("")
   }
 
   "scope with a null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
     val env = newEnv
-    env.featureScope.set("x", null)
+    env.topScope.set("x", null)
     intercept[UnboundAttributeException] {
       env.getBoundReferenceValue("x")
     }
@@ -406,9 +455,9 @@ class EnvContextTest extends FlatSpec with Matchers {
 
   "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
     val env = newEnv
-    env.featureScope.set("x", "1")
+    env.topScope.set("x", "1")
     env.getBoundReferenceValue("x") should be ("1")
-    env.featureScope.set("x", null)
+    env.topScope.set("x", null)
     intercept[UnboundAttributeException] {
       env.getBoundReferenceValue("x")
     }
@@ -553,11 +602,12 @@ class EnvContextTest extends FlatSpec with Matchers {
   
   private def newEnv: EnvContext = newEnv(GwenOptions())
   
-  private def newEnv(options: GwenOptions): EnvContext = new EnvContext(options, new ScopedDataStack()) { 
+  private def newEnv(options: GwenOptions): EnvContext = new EnvContext(options) { 
     var closed = false
     override def close() {
-      super.reset()
+      super.reset(StateLevel.feature)
       closed = true
     }
   }
+
 }

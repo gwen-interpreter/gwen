@@ -28,13 +28,13 @@ import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.support.DefaultEngineSupport
 
-class TablesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class TablesEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait TablesEvalEngine extends DefaultEngineSupport[TablesEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TablesEnvContext = new TablesEnvContext(options, scopes)
+  override def init(options: GwenOptions): TablesEnvContext = new TablesEnvContext(options)
 }
 
 class TablesInterpreter

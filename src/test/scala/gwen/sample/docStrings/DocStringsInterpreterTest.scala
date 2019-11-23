@@ -29,13 +29,13 @@ import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
 
-class DocStringsEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class DocStringsEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait DocStringsEvalEngine extends DefaultEngineSupport[DocStringsEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): DocStringsEnvContext = new DocStringsEnvContext(options, scopes)
+  override def init(options: GwenOptions): DocStringsEnvContext = new DocStringsEnvContext(options)
 }
 
 class DocStringsInterpreter

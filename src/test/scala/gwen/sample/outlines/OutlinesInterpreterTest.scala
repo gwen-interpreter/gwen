@@ -29,13 +29,13 @@ import gwen.dsl.Step
 import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
 
-class OutlinesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class OutlinesEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait OutlinesEvalEngine extends EvalEngine[OutlinesEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): OutlinesEnvContext = new OutlinesEnvContext(options, scopes)
+  override def init(options: GwenOptions): OutlinesEnvContext = new OutlinesEnvContext(options)
   override def evaluate(step: Step, env: OutlinesEnvContext) {
     step.expression match {
       case r"""(.+?)$name is "(.+?)"$$$value""" =>

@@ -35,6 +35,11 @@ import java.util.Date
 
 import com.github.tototoshi.csv.CSVReader
 import io.cucumber.gherkin.ParserException
+import scala.concurrent._
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
+import java.util.concurrent.CopyOnWriteArrayList
+import scala.collection.JavaConverters._
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -52,29 +57,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param options command line options
     */
   private[eval] def initialise(options: GwenOptions): T = {
-    engine.init(options, new ScopedDataStack()) tap { env =>
+    engine.init(options) tap { env =>
       logger.info("Environment context initialised")
     }
-  }
-  
-  /**
-    * Closes the given environment context.
-    * 
-    * @param env the environment context to close
-    */
-  private[eval] def close(env: T) {
-    logger.info("Closing environment context")
-    env.close()
-  }
-  
-  /**
-    * Resets the given environment context without closing it so it can be reused.
-    * 
-    * @param env the environment context to reset
-    */
-  private[eval] def reset(env: T) {
-    logger.info("Resetting environment context")
-    env.reset()
   }
   
   /**
@@ -101,7 +86,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val dataRecord = unit.dataRecord
       dataRecord foreach { rec =>
-        env.featureScope.set("data record number", rec.recordNo.toString)
+        env.topScope.set("data record number", rec.recordNo.toString)
       }
       parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
         case Success(featureSpec) =>
@@ -113,10 +98,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
               case Some(fspec) =>
                 val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env) ++ loadMeta(unit.metaFiles, tagFilters, env)
                 env.loadedMeta = Nil
-                env.featureScope.set("gwen.feature.file.name", featureFile.getName)
-                env.featureScope.set("gwen.feature.file.path", featureFile.getPath)
-                env.featureScope.set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
-                env.featureScope.set("gwen.feature.name", fspec.feature.name)
+                env.topScope.set("gwen.feature.file.name", featureFile.getName)
+                env.topScope.set("gwen.feature.file.path", featureFile.getPath)
+                env.topScope.set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
+                env.topScope.set("gwen.feature.name", fspec.feature.name)
                 Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env, started))
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
@@ -168,15 +153,44 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   }
 
   private def evaluateScenarios(scenarios: List[Scenario], specType: SpecType.Value, env: T): List[Scenario] = {
-    scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s).foldLeft(List[Scenario]()) {
-      (acc: List[Scenario], scenario: Scenario) =>
-        evaluateScenario(scenario, specType, acc, env) :: acc
-    } reverse
+    val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s)
+    if (!env.isParallelFeatures && env.isParallel && !SpecType.meta.equals(specType) && StateLevel.scenario.equals(env.stateLevel)) {
+      val stepDefOutput = input.filter(_.isStepDef).foldLeft(List[Scenario]()) {
+        (acc: List[Scenario], scenario: Scenario) =>
+          evaluateScenario(scenario, specType, acc, env) :: acc
+      }
+      val acc = new CopyOnWriteArrayList[Scenario](stepDefOutput.asJavaCollection)
+      val outputFutures = input.filter(!_.isStepDef).toStream.map { scenario =>
+        Future {
+          val envClone = env.clone(engine)
+          try {
+            evaluateScenario(scenario, specType, acc.asScala.toList, envClone) tap { s =>
+              acc.add(s)
+            }
+          } finally {
+            envClone.close()
+          }
+        }
+      }
+      Await.result(
+        Future.sequence(outputFutures.force),
+        Duration.Inf
+      )
+      acc.asScala.toList.sortBy(_.pos.line)
+    } else {
+      (input.foldLeft(List[Scenario]()) {
+        (acc: List[Scenario], scenario: Scenario) =>
+          evaluateScenario(scenario, specType, acc, env) :: acc
+      }).reverse
+    }
   }
 
   private def evaluateScenario(scenario: Scenario, specType: SpecType.Value, acc: List[Scenario], env: T): Scenario = {
     if (SpecType.feature.equals(specType) && !scenario.isStepDef) {
-      env.featureScope.set("gwen.scenario.name", scenario.name)
+      if (StateLevel.scenario.equals(env.stateLevel)) {
+        env.reset(StateLevel.scenario)
+      }
+      env.topScope.set("gwen.scenario.name", scenario.name)
     }
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
@@ -204,7 +218,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   }
 
   private def evaluateRule(rule: Rule, specType: SpecType.Value, acc: List[Rule], env: T): Rule = {
-    env.featureScope.set("gwen.rule.name", rule.name)
+    env.topScope.set("gwen.rule.name", rule.name)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         val isAssertionError = status.isAssertionError

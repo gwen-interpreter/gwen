@@ -20,61 +20,69 @@ import gwen.dsl.Passed
 import gwen.eval.GwenOptions
 import java.io.File
 
-import org.scalatest.FlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.support.DefaultEngineSupport
+import gwen.Settings
+import gwen.BaseTest
 
-class TemplatesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class TemplatesEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait TemplatesEvalEngine extends DefaultEngineSupport[TemplatesEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): TemplatesEnvContext = new TemplatesEnvContext(options, scopes)
+  override def init(options: GwenOptions): TemplatesEnvContext = new TemplatesEnvContext(options)
 }
 
 class TemplatesInterpreter
   extends GwenInterpreter[TemplatesEnvContext]
   with TemplatesEvalEngine
 
-class TemplatesInterpreterTest extends FlatSpec {
+class TemplatesInterpreterTest extends BaseTest {
   
-  "Templates" should "evaluate without error" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      reportDir = Some(new File("target/report/templates")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/templates"))
-    )
-      
-    val launcher = new GwenLauncher(new TemplatesInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"Templates using $level level state" should "evaluate without error" in {  
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          reportDir = Some(new File(s"target/report/templates/$level-level")),
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/templates"))
+        )
+          
+        val launcher = new GwenLauncher(new TemplatesInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   
-  "Templates" should "pass --dry-run test" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      reportDir = Some(new File("target/report/templates-dry-run")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/templates")),
-      dryRun = true
-    )
-      
-    val launcher = new GwenLauncher(new TemplatesInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"Templates using $level level state" should "pass --dry-run test" in {  
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          reportDir = Some(new File(s"target/report/templates-dry-run/$level-level")),
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/templates")),
+          dryRun = true
+        )
+          
+        val launcher = new GwenLauncher(new TemplatesInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   

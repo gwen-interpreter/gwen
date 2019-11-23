@@ -26,8 +26,8 @@ class MathService {
   def plus(x: Int, y: Int): Int = x + y
 }
 
-class MathEnvContext(val mathService: MathService, val options: GwenOptions, val scopes: ScopedDataStack) 
-  extends EnvContext(options, scopes) {
+class MathEnvContext(val mathService: MathService, val options: GwenOptions) 
+  extends EnvContext(options) {
   def vars: ScopedData = addScope("vars")
   override def dsl: List[String] = 
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
@@ -35,8 +35,8 @@ class MathEnvContext(val mathService: MathService, val options: GwenOptions, val
 
 trait MathEvalEngine extends EvalEngine[MathEnvContext] {
  
-  override def init(options: GwenOptions, scopes: ScopedDataStack): MathEnvContext =
-    new MathEnvContext(new MathService(), options, scopes)
+  override def init(options: GwenOptions): MathEnvContext =
+    new MathEnvContext(new MathService(), options)
  
   override def evaluate(step: Step, env: MathEnvContext) {
     val vars = env.vars

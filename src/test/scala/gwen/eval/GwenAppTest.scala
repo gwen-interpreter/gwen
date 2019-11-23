@@ -52,7 +52,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options)
-    verify(mockInterpreter).close(mockEnv)
+    verify(mockEnv).close()
     verify(mockRepl).run()
   }
   
@@ -69,7 +69,6 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options)
-    verify(mockInterpreter, never()).close(any[EnvContext])
     verify(mockRepl, never()).run()
   }
   
@@ -88,7 +87,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options)
-    verify(mockInterpreter).close(mockEnv)
+    verify(mockEnv).close()
     verify(mockRepl).run()
   }
   
@@ -106,7 +105,7 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter).initialise(options)
-    verify(mockInterpreter).close(mockEnv)
+    verify(mockEnv).close()
     verify(mockRepl).run()
   }
 
@@ -122,7 +121,6 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options)
-    verify(mockInterpreter, never()).close(any[EnvContext])
     verify(mockRepl, never()).run()
     
   }
@@ -140,7 +138,6 @@ class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
     app.run(options)(mockLauncher) should be (0)
     
     verify(mockInterpreter, never()).initialise(options)
-    verify(mockInterpreter, never()).close(any[EnvContext])
     verify(mockRepl, never()).run()
   }
   

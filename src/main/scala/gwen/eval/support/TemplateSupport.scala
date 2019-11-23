@@ -68,7 +68,7 @@ trait TemplateSupport {
     source == resolved tap { isMatch =>
       if (isMatch) {
         params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
-          activeScope.featureScope.set(n.substring(2, n.length-1), v) }
+          scopes.topScope.set(n.substring(2, n.length-1), v) }
       } else {
         val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
         val diffPos = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))

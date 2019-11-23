@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Branko Juric, Brady Wood
+ * Copyright 2016-2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,23 @@
 
 package gwen.eval
 
+import gwen.dsl.StateLevel
 import gwen.Predefs.Kestrel
+import gwen.GwenSettings
 
 /**
-  * Binds all global feature level attributes and adds flash attributes in the current scope when necessary. Also
-  * included is a cache for storing non string objects.
+  * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
+  * included is a cache for storing non string objects. The top scope can be a feature or scenario 
+  * level scope depending on the `gwen.state.level` setting.
   * 
   * @author Branko Juric
   */
-class FeatureScope extends ScopedData("feature") {
+class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   
-  override val isFeatureScope = true
+  override val isTopScope = true
   
   /** 
-    *  Provides access to the current (non feature) scope. 
+    *  Provides access to the current (non top) scope. 
     */
   private[eval] var currentScope: Option[ScopedData] = None
 
@@ -100,5 +103,9 @@ class FeatureScope extends ScopedData("feature") {
       case _ => None
     }
   }
+
+  /** Gets all implicit attributes. */
+  def implicitAtts: Seq[(String, String)] = 
+    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|path|absolutePath))|rule\.name)$""")}
 
 }

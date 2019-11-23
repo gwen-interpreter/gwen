@@ -14,14 +14,18 @@
 # limitations under the License.
 #
 
- Feature: Binding tests
+   Feature: Binding tests
+
+Background: Init globals
+	    Given a1 is "${property.a}"
+	      And a2 is "${a1}"
       
-Scenario: Check bindings
-    Given a1 should be "A"
-      And a2 should be "A"
-     When I bind more properties
-     Then a3 should be "A"
-      And b1 should be "B"
-      And b2 should be "B"
-      And b3 should be "B"
+  Scenario: Check bindings
+      Given a1 should be "A"
+        And a2 should be "A"
+       When I bind more properties
+       Then a3 should be "A"
+        And b1 should be "B"
+        And b2 should be "B"
+        And b3 should be "B"
 	

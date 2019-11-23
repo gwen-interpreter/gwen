@@ -22,7 +22,7 @@ import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
 
 class RegexSupportTest extends FlatSpec with Matchers {
 
-  val regexSuport: RegexSupport = new EnvContext(GwenOptions(), new ScopedDataStack())
+  val regexSuport: RegexSupport = new EnvContext(GwenOptions())
 
   """id=(\d+) on http://host:post/path?id=1""" should "return 1" in {
     regexSuport.extractByRegex("""id=(\d+)""", "http://host:post/path?id=1") should be ("1")

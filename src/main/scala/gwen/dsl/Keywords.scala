@@ -51,7 +51,12 @@ object ReservedKeyword {
 }
 
 object AssertionMode extends Enumeration {
-  type FeatureKeyword = Value
+  type AssertionMode = Value
   val hard, soft, sustained = Value
+}
+
+object StateLevel extends Enumeration {
+  type StateLevel = Value
+  val scenario, feature = Value
 }
 

@@ -20,7 +20,7 @@ import gwen.dsl.Passed
 import gwen.eval.GwenOptions
 import java.io.File
 
-import org.scalatest.FlatSpec
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
 import gwen.eval.ScopedDataStack
@@ -28,14 +28,16 @@ import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
+import gwen.Settings
+import gwen.BaseTest
 
-class BindingsEnvContext(val options: GwenOptions, val scopes: ScopedDataStack) 
-  extends EnvContext(options, scopes) {
+class BindingsEnvContext(val options: GwenOptions) 
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait BindingsEvalEngine extends DefaultEngineSupport[BindingsEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): BindingsEnvContext = new BindingsEnvContext(options, scopes)
+  override def init(options: GwenOptions): BindingsEnvContext = new BindingsEnvContext(options)
 }
 
 class BindingsInterpreter 
@@ -45,42 +47,48 @@ class BindingsInterpreter
 object BindingsInterpreter 
   extends GwenApp(new BindingsInterpreter)
 
-class BindingsInterpreterTest extends FlatSpec {
+class BindingsInterpreterTest extends BaseTest {
   
-  "binding features" should "evaluate without error" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      reportDir = Some(new File("target/report/bindings")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/bindings")),
-      properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
-    )
-      
-    val launcher = new GwenLauncher(new BindingsInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"binding features using $level level state" should "evaluate without error" in {
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          reportDir = Some(new File(s"target/report/bindings/$level-level")), 
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/bindings")),
+          properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
+        )
+          
+        val launcher = new GwenLauncher(new BindingsInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   
-  "binding features" should "pass --dry-run test" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      reportDir = Some(new File("target/report/bindings-dry-run")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/bindings")),
-      dryRun = true,
-      properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
-    )
-      
-    val launcher = new GwenLauncher(new BindingsInterpreter())
-    launcher.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+  forAll (levels) { level =>
+    s"binding features using $level level state" should "pass --dry-run test" in {  
+      withSetting("gwen.state.level", level) {
+        val options = GwenOptions(
+          batch = true,
+          reportDir = Some(new File(s"target/report/bindings-dry-run/$level-level")), 
+          reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+          features = List(new File("features/sample/bindings")),
+          dryRun = true,
+          properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
+        )
+          
+        val launcher = new GwenLauncher(new BindingsInterpreter())
+        launcher.run(options, None) match {
+          case Passed(_) => // excellent :)
+          case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+          case _ => fail("evaluation expected but got noop")
+        }
+      }
     }
   }
   

@@ -17,8 +17,8 @@
   Feature: Match and extract XML templates
 
 
- Scenario: Init
-     Given my pet status is "available"
+ Background: Init
+       Given my pet status is "available"
 
 
  Scenario: Match static single line XML template

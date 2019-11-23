@@ -30,13 +30,13 @@ import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.support.DefaultEngineSupport
 
-class RulesEnvContext(val options: GwenOptions, val scopes: ScopedDataStack)
-  extends EnvContext(options, scopes) {
+class RulesEnvContext(val options: GwenOptions)
+  extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
 trait RulesEvalEngine extends DefaultEngineSupport[RulesEnvContext] {
-  override def init(options: GwenOptions, scopes: ScopedDataStack): RulesEnvContext = new RulesEnvContext(options, scopes)
+  override def init(options: GwenOptions): RulesEnvContext = new RulesEnvContext(options)
 }
 
 class RulesInterpreter

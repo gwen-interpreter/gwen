@@ -23,7 +23,7 @@ import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
 
 class JsonPathSupportTest extends FlatSpec with Matchers {
 
-  val jsonSupport: JsonPathSupport= new EnvContext(GwenOptions(), new ScopedDataStack())
+  val jsonSupport: JsonPathSupport= new EnvContext(GwenOptions())
 
   val JsonSource = """
   {

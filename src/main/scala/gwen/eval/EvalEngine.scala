@@ -55,7 +55,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param options command line options
     * @param scopes initial data scopes
     */
-  private [eval] def init(options: GwenOptions, scopes: ScopedDataStack): T
+  private [eval] def init(options: GwenOptions): T
 
   /**
     * Evaluates a given scenario.
@@ -213,9 +213,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     val start = System.nanoTime - step.evalStatus.nanos
     Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
-        env.foreachStepDefs.get(step.uniqueId) match {
+        env.getForeachStepDef(step) match {
           case Some(foreachStepDef) =>
-            env.foreachStepDefs -= step.uniqueId
             Step(evaluatedStep, if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), foreachStepDef.attachments, foreachStepDef)
           case _ =>
             val status = evaluatedStep.stepDef.map(_.evalStatus ).getOrElse {
@@ -238,7 +237,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     try {
       val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
       dataTableOpt foreach { table =>
-        env.featureScope.pushObject("table", table)
+        env.topScope.pushObject("table", table)
       }
       try {
         val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
@@ -248,7 +247,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
         }
       } finally {
         dataTableOpt foreach { _ =>
-          env.featureScope.popObject("table")
+          env.topScope.popObject("table")
         }
       }
     } finally {
@@ -333,12 +332,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
               val elementNumber = index + 1
               currentElement match {
                 case stringValue: String =>
-                  env.featureScope.set(element, stringValue)
+                  env.topScope.set(element, stringValue)
                 case _ =>
-                  env.featureScope.pushObject(element, currentElement)
+                  env.topScope.pushObject(element, currentElement)
               }
-              env.featureScope.set(s"$element index", index.toString)
-              env.featureScope.set(s"$element number", elementNumber.toString)
+              env.topScope.set(s"$element index", index.toString)
+              env.topScope.set(s"$element number", elementNumber.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -360,28 +359,18 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                     evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
                 }
               } finally {
-                env.featureScope.popObject(element)
+                env.topScope.popObject(element)
               }) :: acc
             } reverse
           } finally {
-            env.featureScope.set(element, null)
-            env.featureScope.set(s"$element index", null)
-            env.featureScope.set(s"$element number", null)
+            env.topScope.set(element, null)
+            env.topScope.set(s"$element index", null)
+            env.topScope.set(s"$element number", null)
           }
       }
     val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), FeatureKeyword.Scenario.toString, element, Nil, None, steps, false, Nil, None)
-    env.foreachStepDefs += (step.uniqueId -> foreachStepDef)
+    env.addForeachStepDef(step, foreachStepDef)
     step
-  }
-  
-  /**
-    * Adds another engine to this one to create a new hybrid engine.
-    * 
-    * @param otherEngine the other engine
-    */
-  def +[U <: EnvContext](otherEngine: EvalEngine[U]) = new HybridEvalEngine[T, U] {
-    override val engineA: EvalEngine[T] = EvalEngine.this
-    override val engineB: EvalEngine[U] = otherEngine
   }
   
   /**
@@ -410,28 +399,3 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   }
   
 }
-
-/** Hybrid engine trait. */
-trait HybridEvalEngine[A <: EnvContext, B <: EnvContext] extends EvalEngine[HybridEnvContext[A, B]] {
-  
-  val engineA: EvalEngine[A]
-  val engineB: EvalEngine[B]
-  
-  override def init(options: GwenOptions, scopes: ScopedDataStack): HybridEnvContext[A, B] = 
-    new HybridEnvContext(
-      engineA.init(options, scopes), 
-      engineB.init(options, scopes), 
-      options,
-      scopes)
-  
-  override def evaluate(step: Step, env: HybridEnvContext[A, B]) {
-    try {
-      engineA.evaluate(step, env.envA)
-    } catch {
-      case _: UndefinedStepException => 
-        engineB.evaluate(step, env.envB)
-    }
-  }
-  
-}
-
