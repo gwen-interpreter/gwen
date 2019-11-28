@@ -23,6 +23,7 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
 import gwen.Predefs.Formatting._
 import gwen.Predefs.DurationOps
+import java.util.concurrent.TimeUnit
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -49,7 +50,7 @@ case class FeatureSummary(
   private lazy val statuses = results.map(_.spec.evalStatus)
   lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
   lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
-  lazy val overhead: Duration = elapsedTime - resultsElapsedTime
+  lazy val overhead: Duration = DurationOps.sum(results.map(_.overhead))
   lazy val featureCounts: Map[_root_.gwen.dsl.StatusKeyword.Value, Int] = StatusKeyword.countsByStatus(statuses)
   lazy val sustainedCount: Int = results.map(_.sustainedCount).sum
   

@@ -1,3 +1,8 @@
+2.22.2
+======
+November 28, 2019
+- Calculate summary overhead to be the sum of all feature overheads
+
 2.22.1
 ======
 November 23, 2019
