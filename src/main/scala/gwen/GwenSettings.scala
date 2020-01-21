@@ -17,6 +17,7 @@
 package gwen
 
 import gwen.dsl.AssertionMode
+import gwen.dsl.FeatureMode
 import gwen.dsl.StateLevel
 
 /**
@@ -110,5 +111,16 @@ object GwenSettings {
     */
   def `gwen.state.level`: StateLevel.Value =
     Settings.getOpt("gwen.state.level").map(_.toLowerCase).map(StateLevel.withName).getOrElse(StateLevel.feature)
+
+  /**
+    * Provides access to the `gwen.feature.mode` property setting used to determine whether the
+    * feature mode is declarative or imperative (default value is `imperative`). When declarative,
+    * the DSL steps defined in the Gwen engine cannot be used directly in features and must be 
+    * bound to step definitions defined in meta instead. This forces the user to write features 
+    * that are clean and free of automation concerns. When imperative, then DSL steps can be used 
+    * directly in features.
+    */
+    def `gwen.feature.mode`: FeatureMode.Value = 
+      Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.withName).getOrElse(FeatureMode.imperative)
 
 }

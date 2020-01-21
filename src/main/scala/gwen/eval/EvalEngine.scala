@@ -68,6 +68,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     if (scenario.isStepDef || scenario.isDataTable) {
       if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
+      if (GwenSettings.`gwen.feature.mode` == FeatureMode.declarative && isExecutingFeature(env)) {
+        imperativeStepDefError(scenario)
+      }
       env.addStepDef(scenario)
       if (env.isParallel && scenario.isSynchronized) {
         stepDefSemaphors.putIfAbsent(scenario.name, new Semaphore(1))
@@ -159,6 +162,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                 doEvaluate(iStep, env) { step =>
                   step tap { _ =>
                     try {
+                      if (GwenSettings.`gwen.feature.mode` == FeatureMode.declarative
+                          && isExecutingFeature(env) 
+                          && isExecutingTopLevelStep(env)) {
+                        imperativeStepError(iStep)
+                      }
                       evaluate(step, env)
                     } catch {
                       case e: UndefinedStepException =>
@@ -397,5 +405,16 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     case _ => 
       logger.warn(msg)
   }
+
+  /**
+   * Determines whether or not Gwen is currently executing a feature.
+   */
+  def isExecutingFeature(env: T): Boolean = 
+    env.topScope.getOpt("gwen.feature.file.path").filter(_.endsWith(".feature")).nonEmpty
+
+  /**
+   * Determines whether or not Gwen is currently executing a feature.
+   */
+  def isExecutingTopLevelStep(env: T): Boolean = env.stepScope.isEmpty
   
 }

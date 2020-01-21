@@ -1,3 +1,10 @@
+2.23.0
+======
+November 21, 2020
+- Introduce "declarative" mode for features to prevent the user of imperative 
+  steps in features. Controlled through mew Gwen setting
+  - `gwen.feature.mode=declarative|imperative` (imperative is default)
+
 2.22.2
 ======
 November 28, 2019
