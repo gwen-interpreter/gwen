@@ -60,3 +60,8 @@ object StateLevel extends Enumeration {
   val scenario, feature = Value
 }
 
+object FeatureMode extends Enumeration {
+  type Feature = Value
+  val declarative, imperative = Value
+}
+

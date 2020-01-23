@@ -83,6 +83,9 @@ class LocalDataStack {
     */
   def containsScope(scope: String): Boolean = localData.exists(_.scope == scope)
   
+  /** Checks whether or not the local stack is empty. */
+  def isEmpty = localData.isEmpty
+
   /**
     * Returns a string representation of the entire attribute stack
     */

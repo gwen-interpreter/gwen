@@ -69,6 +69,8 @@ package gwen {
     def templateMatchError(msg: String) = throw new TemplateMatchException(msg)
     def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
     def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
+    def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
+    def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
 
     /** Base exception\. */
     class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
@@ -167,6 +169,12 @@ package gwen {
 
     /** Thrown when an invalid setting is provided. */
     class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
+
+    /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
+    class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature at line ${step.pos.line} (move it to meta): $step")
+
+    /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
+    class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature at line ${stepDef.pos.line} (move it to meta): ${stepDef.name}")
 
   }
 }
