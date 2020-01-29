@@ -131,6 +131,8 @@ object Predefs extends LazyLogging {
 
     def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
 
+    def simpleName(): String = file.getName.replaceFirst("[.][^.]+$", "")
+
   }
   
   object FileIO {

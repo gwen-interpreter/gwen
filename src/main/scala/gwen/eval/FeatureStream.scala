@@ -87,7 +87,14 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
       location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
-      val unit = FeatureUnit(location, metas, None)
+      val unit = FeatureUnit(
+        location, 
+        if (GwenSettings.`gwen.associative.meta`)  {
+          applyAssociativeMeta(location, metas)
+        } else {
+          metas
+        },
+        None)
       dataFile match {
         case Some(file) => new FeatureSet(unit, file).toStream
         case None =>
@@ -124,6 +131,21 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
         if (dataFile.isEmpty) ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName} directory but found ${datas.size}")
         else inputs1
     }
+  }
+
+  private def applyAssociativeMeta(featureFile: File, metas: List[File]): List[File] = {
+    var associateMeta: Option[File] = None
+    // filter out all meta associated with other features files
+    val filteredMetas = metas.filter { m => 
+      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName}.feature")
+      val isAssociate = assocaitedFeature.isSame(Option(featureFile))
+      if (isAssociate) {
+        associateMeta = Some(m)
+      }
+      !isAssociate && !assocaitedFeature.exists
+    }
+    // put associate meta at end of list to ensure it is loaded last (so it overrides other meta)
+    filteredMetas ++ associateMeta.toList
   }
   
   /**

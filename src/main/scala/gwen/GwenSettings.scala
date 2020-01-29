@@ -123,4 +123,13 @@ object GwenSettings {
     def `gwen.feature.mode`: FeatureMode.Value = 
       Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.withName).getOrElse(FeatureMode.imperative)
 
+    /**
+    * Provides access to the `gwen.associative.meta` property setting used to control whether or 
+    * not meta files having the same name (excluding file extension) and same location as feature 
+    * files are only loaded for that feature and loaded last (default value is false).
+    * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
+    */
+  def `gwen.associative.meta`: Boolean = 
+    `gwen.auto.discover.meta` && Settings.getOpt("gwen.associative.meta").getOrElse("false").toBoolean
+
 }
