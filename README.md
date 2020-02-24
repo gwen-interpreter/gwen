@@ -13,7 +13,7 @@ have to do all the programming work. It has an abstracted
   | [Blog](https://gweninterpreter.wordpress.com)
   | [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
   | [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
-  | [Support](https://www.gwenify.com/)
+  | [Support](#user-network-and-support)
 
 ### Current Status
 
@@ -72,6 +72,11 @@ Key Features
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - Supports full Gherkin syntax including [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
+
+User Network and Support
+------------------------
+
+Join our user network at [Gwenify](https://www.gwenify.com/) to get access to the Gwen community and company level chat and support for your workplace.
 
 License
 -------
