@@ -17,11 +17,13 @@
  Feature: Join Strings Meta
 
   @StepDef
+  @Action
   Scenario: I join the two strings
       Given the result is "${string 1}${string 2}"
 
   @StepDef
-  Scenario Outline: I join two strings together
+  @Action
+  Scenario Outline: I join two strings in meta
 
        This scenario is loaded into memory and evaluated whenever
        the outline is referenced by a step in a feature
@@ -30,7 +32,6 @@
         And string 2 is "<string 2>"
        When I join the two strings
        Then the result should be "<result>"
-        And I join the two strings
 
        Examples:
 

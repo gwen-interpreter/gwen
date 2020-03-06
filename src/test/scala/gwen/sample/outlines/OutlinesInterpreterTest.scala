@@ -28,25 +28,15 @@ import gwen.eval.EvalEngine
 import gwen.dsl.Step
 import gwen.Predefs.RegexContext
 import gwen.eval.GwenInterpreter
+import gwen.eval.support.DefaultEngineSupport
 
 class OutlinesEnvContext(val options: GwenOptions)
   extends EnvContext(options) {
   override def dsl: List[String] = Nil
 }
 
-trait OutlinesEvalEngine extends EvalEngine[OutlinesEnvContext] {
+trait OutlinesEvalEngine extends DefaultEngineSupport[OutlinesEnvContext] {
   override def init(options: GwenOptions): OutlinesEnvContext = new OutlinesEnvContext(options)
-  override def evaluate(step: Step, env: OutlinesEnvContext) {
-    step.expression match {
-      case r"""(.+?)$name is "(.+?)"$$$value""" =>
-        env.scopes.set(name, value)
-      case r"""(.+?)$name should be "(.+?)"$$$value""" =>
-        val actual = env.scopes.get(name)
-        env.perform(assert(actual == value, s"Expected '$value' but got '$actual'"))
-      case _ =>
-        super.evaluate(step, env)
-    }
-  }
 }
 
 class OutlinesInterpreter

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,12 @@
  */
 package gwen {
 
-  import gwen.dsl.{Position, Scenario}
+  import gwen.dsl._
   import java.io.File
 
   import io.cucumber.gherkin.ParserException
   
   package object errors {
-
-    import gwen.dsl.Step
-    import gwen.dsl.Tag
 
     def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None)
     def syntaxError(msg: String, line: Int) = throw new GherkinSyntaxError(msg, Some(line), None)
@@ -70,7 +67,10 @@ package gwen {
     def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
     def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
     def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
-    def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
+    def imperativeStepDefError(stepDef: Scenario, specFile: Option[File]) = throw new ImperativeStepDefException(stepDef, specFile)
+    def improperBehaviorError(node: SpecNode, nodeType: String, specFile: Option[File]) = throw new ImproperBehaviorException(node, nodeType, specFile)
+    def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value, specFile: Option[File]) = throw new UnexpectedBehaviorException(step, expected, actual, specFile)
+    def undefinedStepDefBehaviorError(stepDef: Scenario, specFile: Option[File]) = throw new UndefinedStepDefBehaviorException(stepDef, specFile)
 
     /** Base exception\. */
     class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
@@ -174,7 +174,21 @@ package gwen {
     class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature at line ${step.pos.line} (move it to meta): $step")
 
     /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-    class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature at line ${stepDef.pos.line} (move it to meta): ${stepDef.name}")
+    class ImperativeStepDefException(stepDef: Scenario, specFile: Option[File]) extends GwenException(s"StepDef declaration not permitted in feature at ${specFile.map(f => s"$f:").getOrElse("line ")}${stepDef.pos.line} (move it to meta)")
+
+    /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
+    class ImproperBehaviorException(node: SpecNode, nodeType: String, specFile: Option[File]) 
+      extends GwenException(
+        s"Given-When-Then order not satisfied by steps in $nodeType at ${specFile.map(f => s"$f:").getOrElse("line ")}${node.pos.line}")
+
+    /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
+    class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value, specFile: Option[File]) 
+      extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected${step.stepDef.flatMap(_.metaFile.orElse(specFile)).map(f => s" (StepDef has @$actual tag at ${f.getPath}:${step.stepDef.get.behaviorTag.get.pos.line})").getOrElse("")}")
+
+    /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
+    class UndefinedStepDefBehaviorException(stepDef: Scenario, specFile: Option[File]) 
+      extends GwenException(
+        s"Missing @Context, @Action, or @Assertion behavior tag on StepDef at ${specFile.map(f => s"$f:").getOrElse("line ")}${stepDef.pos.line}")
 
   }
 }

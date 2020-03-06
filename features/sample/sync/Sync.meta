@@ -18,7 +18,8 @@
 
 @Synchronized
 @StepDef
-Scenario: I assign then increment x
+@Action
+Scenario: I increment x
     Given y is "${x}"
       And z is "${y}"
      Then z should be "${x}"
@@ -26,5 +27,6 @@ Scenario: I assign then increment x
       And x is "${a}"
 
 @StepDef
+@Assertion
 Scenario: x should equal <expected>
     Given x should be "$<expected>"

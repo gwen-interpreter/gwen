@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package gwen
 
 import gwen.dsl.AssertionMode
 import gwen.dsl.FeatureMode
+import gwen.dsl.BehaviorRules
 import gwen.dsl.StateLevel
 
 /**
@@ -131,5 +132,16 @@ object GwenSettings {
     */
   def `gwen.associative.meta`: Boolean = 
     `gwen.auto.discover.meta` && Settings.getOpt("gwen.associative.meta").getOrElse("false").toBoolean
+
+  /**
+    * Provides access to the `gwen.behavior.rules` property setting used to determine whether strict, 
+    * or lenient rules around Given-When-Then usage should be enforced in features (default value is 
+    * `lenient`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps 
+    * and Given steps set context, When steps must perform actions, and Then or But steps must perform 
+    * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is 
+    * an alias for this setting.
+    */
+    def `gwen.behavior.rules`: BehaviorRules.Value = 
+      Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorRules.withName).getOrElse(BehaviorRules.lenient)
 
 }

@@ -27,6 +27,7 @@ import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.FeatureUnit
+import gwen.eval.SpecNormaliser
 import gwen.Predefs.Formatting._
 import scala.sys.process._
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 Branko Juric, Brady Wood
+ * Copyright 2015-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ import scala.collection.mutable
   * @author Branko Juric
   */
 object Settings {
+
+  object Lock
 
   val userProperties: Option[File] = FileIO.getUserFile("gwen.properties")
   val workingProperties: Option[File] = FileIO.getFileOpt("gwen.properties")
@@ -232,6 +234,9 @@ object Settings {
     */
   private[gwen] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
     if (overrideIfExists || !contains(name)) {
+      if (overrideIfExists && localSettings.get.containsKey(name)) {
+        localSettings.get.setProperty(name, value)
+      }
       set(name, value)
     }
   }
@@ -261,6 +266,12 @@ object Settings {
     */
   def clearLocal(): Unit = {
     localSettings.get.clear()
+  }
+
+  def exclusively[T](body: => T):T = {
+    Settings.Lock.synchronized {
+      body
+    }
   }
   
 }

@@ -1,3 +1,18 @@
+2.25.0
+======
+March 8, 2020
+- Introduce behavior rules setting to enforce good Gherkin style
+  - `gwen.behavior.rules=strict|lenient`
+    - `strict`: The following rules are enforced in feature files with violations reported as errors:
+      - Steps in scenarios and backgrounds must satisfy *Given-When-Then* order
+      - *Given* steps must set context
+      - *When* steps must perform actions
+      - *Then* steps must perform assertions
+      - *But* steps must perform assertions (and are permitted after *Then* steps)
+    - `lenient`: no rules are enforced
+    - Default is `lenient` for backwards compatiblity but plan is to change it 
+      to `strict` in upcoming major (v3.0.0) release
+
 2.24.0
 ======
 January 29, 2020

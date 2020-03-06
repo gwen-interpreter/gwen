@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 Branko Juric, Brady Wood
+ * Copyright 2019 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package gwen.dsl
+package gwen.eval
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import gwen.dsl._
 import gwen.errors.AmbiguousCaseException
-import gwen.eval.DataRecord
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   object Feature {
    def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
@@ -36,7 +36,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
 
   val background = Background(
     "background",
-    List("Initialise"),
+    Nil,
     List(Step(StepKeyword.Given, "background step 1", Passed(2)))
   )
 
@@ -188,7 +188,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     }
   }
   
-  "Data driven feature with csv file and background" should "normalise without error" in {
+  "Data driven feature with csv file" should "normalise without error" in {
     val feature = FeatureSpec(
     Feature("About me", Nil), Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
@@ -203,39 +203,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     result.feature.name should be ("About me, [1] my age=18..")
     result.scenarios.length should be (1)
     result.scenarios(0).background.get.name should be (s"${background.name} (plus input data)")
-    result.scenarios(0).background.get.description should be (List("Initialise", """@Data(file="AboutMe.csv", record=1)"""))
+    result.scenarios(0).background.get.description should be (List("""@Data(file="AboutMe.csv", record=1)"""))
     result.scenarios(0).background.get.steps.size should be (4)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
     result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
     result.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
-    result.scenarios(0).background.get.steps(3).toString should be ("""Given background step 1""")
-    result.scenarios(0).name should be ("What am I?")
-    result.scenarios(0).description should be (Nil)
-    result.scenarios(0).steps(0).toString should be ("""Given I am ${my age} year(s) old""")
-    result.scenarios(0).steps(1).toString should be ("""When I am a ${my gender}""")
-    result.scenarios(0).steps(2).toString should be ("""Then I am a ${my age} year old ${my title}""")
-  }
-
-  "Data driven feature with csv file and no background" should "normalise without error" in {
-    val feature = FeatureSpec(
-    Feature("About me", Nil), None, List(
-      Scenario(List[Tag](), "What am I?", Nil, None, List(
-        Step(StepKeyword.Given, "I am ${my age} year(s) old"),
-        Step(StepKeyword.When, "I am a ${my gender}"),
-        Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
-      )), Nil)
-    val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord("AboutMe.csv", 1, data)
-    val result = normalise(feature, None, Some(dataRecord))
-    result.background should be (None)
-    result.feature.name should be ("About me, [1] my age=18..")
-    result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be ("Input data")
-    result.scenarios(0).background.get.description should be (List("""@Data(file="AboutMe.csv", record=1)"""))
-    result.scenarios(0).background.get.steps.size should be (3)
-    result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
-    result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
-    result.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
+    result.scenarios(0).background.get.steps(3).toString should be ("""And background step 1""")
     result.scenarios(0).name should be ("What am I?")
     result.scenarios(0).description should be (Nil)
     result.scenarios(0).steps(0).toString should be ("""Given I am ${my age} year(s) old""")

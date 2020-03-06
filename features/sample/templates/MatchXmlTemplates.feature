@@ -19,13 +19,15 @@
 
  Background: Init
        Given my pet status is "available"
-
+        When I capture my pet status
+        Then my pet status should be "available"
 
  Scenario: Match static single line XML template
      Given my value is
            """
            <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
            """
+      When I capture my value
       Then my value should match template "<result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>"
        And my value should match template
            """
@@ -46,6 +48,7 @@
                <status>available</status>
            </result>
            """
+      When I capture my value
       Then my value should not match template "<result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>"
        And my value should match template
            """
@@ -66,6 +69,7 @@
            """
            <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
            """
+      When I capture my value
       Then my value should match template "<result><id>!{}</id><category><name>pet</name></category><name>@{pet name}</name><status>${my pet status}</status></result>"
        And category name should be absent
        And pet id should be absent
@@ -84,6 +88,9 @@
                <status>available</status>
            </result>
            """
+       And the pet name is defined by the text in my value by xpath "result/name"
+       And the pet status is defined by the text in my value by xpath "result/status"
+      When I capture my value
       Then my value should match template
            """
            <result>
@@ -97,9 +104,7 @@
            """
        And pet id should be "42"
        And category name should be "pet"
-       And the pet name is defined by the text in my value by xpath "result/name"
        And the pet name should be "tiger"
-       And the pet status is defined by the text in my value by xpath "result/status"
        And the pet status should be "available"
 
 
@@ -108,6 +113,7 @@
            """
            <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
            """
+      When I capture my value
       Then my value should match template file "features/sample/templates/xml/DynamicSingleLineTemplate.xml"
        And category name 1 should be absent
        And pet id 1 should be absent
@@ -125,10 +131,11 @@
                <status>available</status>
            </result>
            """
+       And the pet name is defined by the text in my value by xpath "result/name"
+       And the pet status is defined by the text in my value by xpath "result/status"
+      When I capture my value
       Then my value should match template file "features/sample/templates/xml/DynamicMultiLineTemplate.xml"
        And pet id 2 should be "42"
        And category name 2 should be "pet"
-       And the pet name is defined by the text in my value by xpath "result/name"
        And the pet name should be "tiger"
-       And the pet status is defined by the text in my value by xpath "result/status"
        And the pet status should be "available"

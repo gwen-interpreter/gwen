@@ -106,7 +106,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
-    implicit val ec = if (options.parallelFeatures || GwenSettings.`gwen.state.level` == StateLevel.feature) {
+    implicit val ec = if (options.parallelFeatures || StateLevel.isFeature) {
       ExecutionContext.Implicits.global
     } else {
       val noOfProcessors = Runtime.getRuntime().availableProcessors()

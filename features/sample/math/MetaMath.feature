@@ -14,12 +14,8 @@
 # limitations under the License.
 #
  
- Feature: Increment integer
-          Uses stepdefs in meta to perform increment operations
-
-Background: Reset
-            Resets x to zero
-      Given x = 0
+ Feature: Integer math
+          Uses stepdefs in meta to perform integer math
             
 Scenario: Incrementing 0 should yield 1
     Given x = 0
@@ -27,7 +23,8 @@ Scenario: Incrementing 0 should yield 1
      Then x == 1
      
 Scenario: Addition with stepdef parameters
-    Given z = 1 + 2
+    Given z = 0
+     When z = 1 + 2
      Then z == 3
      
 Scenario: Addition using stepdef with leading parameter

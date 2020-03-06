@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
 - [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
 - [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
-- [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
 
 Why Gwen?
 ---------
@@ -72,6 +72,7 @@ Key Features
 - [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - Supports full Gherkin syntax including [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
+- [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
 
 User Network and Support
 ------------------------

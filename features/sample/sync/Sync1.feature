@@ -18,6 +18,6 @@
 
 Scenario: Sync 1 test
     Given x is "1"
-     When I assign then increment x
-      And x should equal 2
+     When I increment x
+     Then x should equal 2
   

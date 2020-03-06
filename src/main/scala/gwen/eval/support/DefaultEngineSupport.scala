@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Branko Juric, Brady Wood
+ * Copyright 2015-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package gwen.eval.support
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import gwen.Predefs.RegexContext
-import gwen.dsl.{FlatTable, Passed, Step}
+import gwen.dsl.{BehaviorType, FlatTable, Passed, Step}
 import gwen.eval.{EnvContext, EvalEngine}
 import gwen.errors._
 import gwen.Settings
@@ -92,21 +92,26 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     step.expression match {
 
       case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
+        checkStepRules(step, BehaviorType.Context, env)
         Settings.setLocal(name, value)
 
       case r"""I reset my (.+?)$name (?:property|setting)""" =>
+        checkStepRules(step, BehaviorType.Context, env)
         Settings.clearLocal(name)
 
       case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" => step.orDocString(value) tap { value =>
+        checkStepRules(step, BehaviorType.Context, env)
         env.topScope.set(attribute, value)
       }
 
       case r"""I wait ([0-9]+?)$duration second(?:s?)""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         env.perform {
           Thread.sleep(duration.toLong * 1000)
         }
       
       case r"""I execute system process "(.+?)"$$$systemproc""" => step.orDocString(systemproc) tap { systemproc =>
+        checkStepRules(step, BehaviorType.Action, env)
         env.perform {
           systemproc.! match {
             case 0 =>
@@ -116,6 +121,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""I execute a unix system process "(.+?)"$$$systemproc""" => step.orDocString(systemproc) tap { systemproc =>
+        checkStepRules(step, BehaviorType.Action, env)
         env.perform {
           Seq("/bin/sh", "-c", systemproc).! match {
             case 0 =>
@@ -125,11 +131,13 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""I execute javascript "(.+?)$javascript"""" => step.orDocString(javascript) tap { javascript =>
+        checkStepRules(step, BehaviorType.Action, env)
         env.evaluateJS(javascript)
       }
 
 
       case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Action, env)
         val value = Option(env.evaluateJS(env.formatJSReturn(env.interpolate(expression)(env.getBoundReferenceValue)))).map(_.toString).orNull
         env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
@@ -137,6 +145,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val src = env.getBoundReferenceValue(source)
         val result = env.evaluateXPath(expression, src, env.XMLNodeType.withName(targetType)) tap { content =>
           env.addAttachment(name, "txt", content)
@@ -144,6 +153,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.topScope.set(name, result)
 
       case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val src = env.getBoundReferenceValue(source)
         val result = env.extractByRegex(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
@@ -151,6 +161,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.topScope.set(name, result)
 
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val src = env.getBoundReferenceValue(source)
         val result = env.evaluateJsonPath(expression, src) tap { content =>
           env.addAttachment(name, "txt", content)
@@ -158,18 +169,21 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.topScope.set(name, result)
 
       case r"""I capture (.+?)$source as (.+?)$$$attribute""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val value = env.getBoundReferenceValue(source)
         env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
 
       case r"""I capture (.+?)$$$attribute""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val value = env.getBoundReferenceValue(attribute)
         env.topScope.set(attribute, value tap { content =>
           env.addAttachment(attribute, "txt", content)
         })
 
       case r"""I base64 decode (.+?)$attribute as (.+?)$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val source = env.getBoundReferenceValue(attribute)
         val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(name, "txt", content)
@@ -177,6 +191,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.topScope.set(name, result)
 
       case r"""I base64 decode (.+?)$attribute""" =>
+        checkStepRules(step, BehaviorType.Action, env)
         val source = env.getBoundReferenceValue(attribute)
         val result = env.decodeBase64(source) tap { content =>
           env.addAttachment(attribute, "txt", content)
@@ -184,6 +199,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.topScope.set(attribute, result)
 
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Context, env)
         attrType match {
           case "javascript" => env.scopes.set(s"$attribute/javascript", expression)
           case "system process" => env.scopes.set(s"$attribute/sysproc", expression)
@@ -193,28 +209,33 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Context, env)
         env.scopes.set(s"$attribute/xpath/source", source)
         env.scopes.set(s"$attribute/xpath/targetType", targetType)
         env.scopes.set(s"$attribute/xpath/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Context, env)
         env.scopes.set(s"$attribute/regex/source", source)
         env.scopes.set(s"$attribute/regex/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Context, env)
         env.scopes.set(s"$attribute/json path/source", source)
         env.scopes.set(s"$attribute/json path/expression", expression)
       }
 
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
+        checkStepRules(step, BehaviorType.Context, env)
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
         env.scopes.set(s"$attribute/sql/selectStmt", selectStmt)
         env.scopes.set(s"$attribute/sql/dbName", dbName)
 
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" => step.orDocString(selectStmt) tap { selectStmt =>
+        checkStepRules(step, BehaviorType.Context, env)
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
         env.scopes.set(s"$attribute/sql/selectStmt", selectStmt)
@@ -222,6 +243,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" => step.orDocString(updateStmt) tap { updateStmt =>
+        checkStepRules(step, BehaviorType.Action, env)
         Settings.get(s"gwen.db.${dbName}.driver")
         Settings.get(s"gwen.db.${dbName}.url")
         val rowsAffected = env.executeSQLUpdate(updateStmt, dbName)
@@ -229,6 +251,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Assertion, env)
         val expected = env.parseExpression(operator, expression)
         env.perform {
           val src = env.scopes.get(source)
@@ -249,6 +272,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+        checkStepRules(step, BehaviorType.Assertion, env)
         val actualValue = env.getBoundReferenceValue(attribute)
         val expected = env.parseExpression(operator, expression)
         env.perform {
@@ -265,6 +289,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$attribute should be absent""" =>
+        checkStepRules(step, BehaviorType.Assertion, env)
         env.perform {
           assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
         }

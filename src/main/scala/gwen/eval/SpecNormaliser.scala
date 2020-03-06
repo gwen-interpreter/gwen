@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package gwen.dsl
+package gwen.eval
 
 import java.io.File
 
 import gwen.Predefs.{Formatting, Kestrel}
+import gwen.dsl._
 import gwen.errors._
-import gwen.eval.DataRecord
 
 /**
   * Normalises a parsed feature spec by expanding scenarios and scenario outlines in preparation for evaluation.
@@ -31,23 +31,24 @@ import gwen.eval.DataRecord
   * 
   * @author Branko Juric
   */
-trait SpecNormaliser {
+trait SpecNormaliser extends EvalRules {
   
   /**
     * Normalises a parsed feature.
     * 
     * @param spec the feature spec
-    * @param featureFile optional source feature file
+    * @param specFile optional source feature file
     * @param dataRecord optional feature level data record
     */
-  def normalise(spec: FeatureSpec, featureFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
-    val scenarios = noDuplicateStepDefs(spec.scenarios, featureFile) map {scenario =>
-      if (scenario.isStepDef && featureFile.exists(_.getName.endsWith(".meta"))) {
-        Scenario(scenario, featureFile)
+  def normalise(spec: FeatureSpec, specFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
+    val scenarios = noDuplicateStepDefs(spec.scenarios, specFile) map {scenario =>
+      if (scenario.isStepDef && specFile.exists(_.getName.endsWith(".meta"))) {
+        Scenario(scenario, specFile)
       } else {
         scenario
       }
     }
+    validate(specFile, spec.background, scenarios)
     FeatureSpec(
       dataRecord map { record =>
         Feature(
@@ -59,6 +60,7 @@ trait SpecNormaliser {
       None, 
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
       spec.rules map { rule => 
+        validate(specFile, rule.background, rule.scenarios)
         Rule(
           rule.name,
           rule.description,
@@ -66,8 +68,17 @@ trait SpecNormaliser {
           expandScenarios(rule.scenarios, rule.background.orElse(spec.background))
         )
       },
-      featureFile
+      specFile
     )
+  }
+
+  private def validate(specFile: Option[File], background: Option[Background], scenarios: List[Scenario]) {
+    background foreach { bg => 
+      checkBackgroundRules(bg, specFile)
+    }
+    scenarios foreach { s =>
+      checkScenarioRules(s, specFile)
+    }
   }
   
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
@@ -78,7 +89,18 @@ trait SpecNormaliser {
     val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
     val dataBackground = background match {
       case Some(bg) =>
-        Background(s"${bg.name} (plus input data)", bg.description ++ List(description), steps ++ bg.steps)
+        val bgSteps = bg.steps match {
+          case head :: tail if steps.size > 0 =>
+            if (head.keyword == StepKeyword.Given) {
+              Step(head, StepKeyword.And) :: tail
+            } else {
+              bg.steps
+            }
+          case _ => bg.steps
+        }
+        Background(s"${bg.name} (plus input data)", bg.description ++ List(description), steps ++ bgSteps) tap { b => 
+          b.pos = bg.pos
+        }
       case None =>
         Background("Input data", List(description), steps)
     }
@@ -135,13 +157,13 @@ trait SpecNormaliser {
     * having the same name.
     * 
     * @param scenarios the list of scenarios to conditionally return
-    * @param featureFile optional file from which scenarios were loaded
+    * @param specFile optional file from which scenarios were loaded
     */
-  private def noDuplicateStepDefs(scenarios: List[Scenario], featureFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
+  private def noDuplicateStepDefs(scenarios: List[Scenario], specFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
     val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name.replaceAll("<.+?>", "<?>")) filter { case (_, stepDefs) => stepDefs.size > 1 }
     val dupCount = duplicates.size
     if (dupCount > 0) {
-      val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${featureFile.map(f => s" in file $f").getOrElse("")}" 
+      val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${specFile.map(f => s" in file $f").getOrElse("")}" 
       ambiguousCaseError(s"$msg: ${duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }.mkString}")
     }
   }

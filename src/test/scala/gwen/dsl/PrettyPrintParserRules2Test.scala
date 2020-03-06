@@ -19,6 +19,7 @@ package gwen.dsl
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import scala.util.Success
+import gwen.eval.SpecNormaliser
 
 class PrettyPrintParserRules2Test extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Branko Juric, Brady Wood
+ * Copyright 2017-2020 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package gwen.dsl
 
+import gwen.GwenSettings
 import scala.language.postfixOps
 
 object FeatureKeyword extends Enumeration {
@@ -37,8 +38,22 @@ object FeatureSymbol extends Enumeration {
 
 }
 
-object StepKeyword extends Enumeration {
+object BehaviorType extends Enumeration {
+  
+  type BehaviorType = Value
+  val Context, Action, Assertion = Value
 
+  def of(keyword: StepKeyword.Value): BehaviorType.Value = keyword match {
+    case StepKeyword.Given => BehaviorType.Context
+    case StepKeyword.When => BehaviorType.Action
+    case StepKeyword.Then | StepKeyword.But => BehaviorType.Assertion
+  }
+
+}
+
+object StepKeyword extends Enumeration {
+  
+  type StepKeyword = Value
   val Given, When, Then, And, But = Value
 
   /** List of all keyword names. */
@@ -53,15 +68,29 @@ object ReservedKeyword {
 object AssertionMode extends Enumeration {
   type AssertionMode = Value
   val hard, soft, sustained = Value
+  def isHard = GwenSettings.`gwen.assertion.mode` == hard
+  def isSoft = GwenSettings.`gwen.assertion.mode` == soft
+  def isSustained = GwenSettings.`gwen.assertion.mode` == sustained
 }
 
 object StateLevel extends Enumeration {
   type StateLevel = Value
   val scenario, feature = Value
+  def isScenario = GwenSettings.`gwen.state.level` == scenario
+  def isFeature = GwenSettings.`gwen.state.level` == feature
 }
 
 object FeatureMode extends Enumeration {
-  type Feature = Value
+  type FeatureMode = Value
   val declarative, imperative = Value
+  def isDeclarative = GwenSettings.`gwen.feature.mode` == declarative
+  def isImperative = GwenSettings.`gwen.feature.mode` == imperative
+}
+
+object BehaviorRules extends Enumeration {
+  type BehaviorRules = Value
+  val strict, lenient = Value
+  def isStrict = GwenSettings.`gwen.behavior.rules` == strict
+  def isLenient = GwenSettings.`gwen.behavior.rules` == lenient
 }
 

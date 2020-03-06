@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ object Position {
 /**
   * Base trait for capturing a feature spec in an abstract syntax tree.  
   * An spec node is the raw output produced by the [[GherkinParser]].
-  *
-  * @author Branko Juric
   */
 trait SpecNode {
   /** Returns the evaluation status of this node. */
@@ -46,7 +44,6 @@ trait SpecNode {
 
   /** The position of the node in the source. */
   var pos: Position = Position(0, 0)
-  
 }
 
 /**
@@ -166,6 +163,8 @@ case class Background(name: String, description: List[String], steps: List[Step]
 
   def skip = Background(this, steps.map(_.skip))
 
+  def gwtOrder: List[StepKeyword.Value] = steps.map(_.keyword).filter(_ != StepKeyword.And)
+
   override def toString: String = name
   
 }
@@ -268,7 +267,7 @@ case class Scenario(
   def isForEach: Boolean = tags.contains(Tag.ForEachTag)
   def isDataTable: Boolean = tags.exists(_.name.startsWith(Tag.DataTableTag.name))
   def isSynchronized: Boolean = tags.exists(t => t == Tag.SynchronizedTag || t == Tag.SynchronisedTag)
-
+  
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
   /** Returns the evaluation status of this scenario. */
@@ -276,6 +275,8 @@ case class Scenario(
     if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending else EvalStatus(allSteps.map(_.evalStatus), ignoreSustained = !isStepDef)
 
   def skip = Scenario(this, background.map(_.skip), steps.map(_.skip), examples.map(_.skip))
+
+  def behaviorTag: Option[Tag] = tags.find(tag => BehaviorType.values.exists(_.toString == tag.name))
 
   override def toString: String = name
   
@@ -459,8 +460,6 @@ case class Step(
 
   /** Returns a string representation of this step. */
   override def toString = s"$keyword ${expression}"
-
-  
 }
 
 object Step {
@@ -486,6 +485,8 @@ object Step {
     new Step(keyword, expression, status) tap { s => s.pos = pos }
   def apply(step: Step, pos: Position): Step =
     new Step(step.keyword, step.name, step.status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = pos}
+  def apply(step: Step, keyword: StepKeyword.Value): Step =
+    new Step(keyword, step.name, step.status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = step.pos}
   def apply(step: Step, expression: String): Step =
     new Step(step.keyword, expression, step.status, step.attachments, table = step.table, docString = step.docString) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =

@@ -17,8 +17,9 @@
  Feature: DocStrings Meta
 
    @StepDef
+   @Action
    Scenario: the current date is formatted as yyyy-mm-dd
-       Given the current date is defined by javascript
+       Given the formatted date is defined by javascript
              """JavaScript
              (function() {
                var d = new Date();
