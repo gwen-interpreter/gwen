@@ -35,5 +35,7 @@
        | howdy    | doo      | howdydoo |
        | any      | thing    | anything |
 
-   Scenario: Verify that we can join two strings together
-       Given I join two strings together
+   Scenario: Verify that we can join two strings in meta
+      Given result is ""
+       When I join two strings in meta
+       Then the result should not be ""

@@ -1,5 +1,5 @@
 # 
-# Copyright 2016 Brady Wood, Branko Juric
+# Copyright 2016-2020 Brady Wood, Branko Juric
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
 #
 
    Feature: Binding tests
-
-Background: Init globals
-	    Given a1 is "${property.a}"
-	      And a2 is "${a1}"
-      
+	    
   Scenario: Check bindings
-      Given a1 should be "A"
-        And a2 should be "A"
+      Given a1 is "${property.a}"
+        And a2 is "${a1}"
        When I bind more properties
-       Then a3 should be "A"
+       Then a1 should be "A"
+        And a2 should be "A"
+        And a3 should be "A"
         And b1 should be "B"
         And b2 should be "B"
         And b3 should be "B"

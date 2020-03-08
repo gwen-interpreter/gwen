@@ -16,75 +16,54 @@
 
  Feature: Number tables
 
-   Scenario: Single record horizontal data table with no header
+   Scenario: Various table forms
        Given single row without header contains a number in decimal and binary form
              | 3 | 11 |
-
-   Scenario: Single record horizontal data table with header
-       Given single row with header contains a number in decimal and binary form
+         And single row with header contains a number in decimal and binary form
              | decimal | binary |
              | 3       | 11     |
-
-   Scenario: Single record vertical data table with no header
-       Given single column without header contains a number in decimal and binary form
+         And single column without header contains a number in decimal and binary form
              | 3  |
              | 11 |
-
-   Scenario: Single record vertical data table with header
-       Given single column with header contains a number in decimal and binary form
+         And single column with header contains a number in decimal and binary form
              | decimal | 3  |
              | binary  | 11 |
-
-   Scenario: Horizontal table with header
-       Given each row contains a number and its square and cube
+         And each row contains a number and its square and cube
              | number | square | cube |
              | 1      | 1      | 1    |
              | 2      | 4      | 8    |
              | 3      | 9      | 27   |
-
-   Scenario: Horizontal data table with no header
-       Given each row contains a number in decimal and binary form
+         And each row contains a number in decimal and binary form
              | 1 | 1  |
              | 2 | 10 |
              | 3 | 11 |
-
-   Scenario: Vertical table with header
-       Given each column contains a number and its square and cube
+         And each column contains a number and its square and cube
              | number | 1 | 2 | 3  |
              | square | 1 | 4 | 9  |
              | cube   | 1 | 8 | 27 |
-
-   Scenario: Vertical data table with no header
-       Given each column contains a number in decimal and binary form
+         And each column contains a number in decimal and binary form
              | 4   | 5    | 6   |
              | 100 | 101  | 110 |
-
-   Scenario: Matrix table with top and left headers
-       Given the top and left numbers yield the product in the matrix
+         And the top and left numbers yield the product in the matrix
              | x | 1 | 2 | 3 |
              | 1 | 1 | 2 | 3 |
              | 2 | 2 | 4 | 6 |
              | 3 | 3 | 6 | 9 |
-
-   Scenario: Horizontal Fibonacci table with no header
-       Given each row contains two numbers that sum to a Fibonacci number in the third
+         And each row contains two numbers that sum to a Fibonacci number in the third
              | 0 | 1 | 1 |
              | 1 | 1 | 2 |
              | 1 | 2 | 3 |
              | 2 | 3 | 5 |
              | 3 | 5 | 8 |
-
-   Scenario: tables in nested stepdefs should not conflict
-       Given nested tables should match the right tables
-
-
-   Scenario: Vertical data table with no header (with table interpolation)
-       Given four in decimal is "4"
+         And four in decimal is "4"
          And five in decimal is "5"
          And six in decimal is "6"
          And four in binary is "100"
          And five in binary is "101"
          And six in binary is "110"
-       Given each column contains a number in decimal and binary form
+         And each column contains a number in decimal and binary form
              | ${four in decimal} | ${five in decimal} | ${six in decimal} |
              | ${four in binary}  | ${five in binary}  | ${six in binary}  |
+        When tables are nested in stepdefs
+        Then everything should be "ok"
+

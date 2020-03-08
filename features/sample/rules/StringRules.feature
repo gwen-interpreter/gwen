@@ -21,7 +21,9 @@
       Background: Reset strings
             Given string 1 is ""
               And string 2 is ""
-              And the result is ""
+             When I join the two strings
+             Then the result should be ""
+
 
          Scenario Template: Joining <string 1> and <string 2> should yield <result>
 
@@ -41,8 +43,10 @@
                   | howdy    | doo      | howdydoo |
                   | any      | thing    | anything |
 
-         Example: Verify that we can join two strings together
-            Given I join two strings together
+         Example: Verify that we can join two strings in meta
+            Given the result is ""
+             When I join two strings in meta
+             Then the result should not be ""
 
     Rule: Replacing a substring in a string should result in substitution of the substring
 
@@ -50,7 +54,8 @@
             Given string 1 is ""
               And string 2 is ""
               And string 3 is ""
-              And the result is ""
+             When I substitute string 1 for string 2 in string 3
+             Then the result should be ""
 
          Scenario Template: Substituting <string 1> for <string 2> in <string 3> should yield <result>
 

@@ -1,12 +1,12 @@
 #
-# Copyright 2018 Branko Juric, Brady Wood
-#
+# Copyright 2020 Branko Juric, Brady Wood
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 #     http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,22 +14,15 @@
 # limitations under the License.
 #
 
- Feature: XML meta
+ Feature: Calculator
+
+Scenario: Sum two values
+  Given a is "1"
+    And b is "2"
+   When I add a to b to get c
+   Then "c" should be "3"
 
 @StepDef
-@Action
-Scenario: I process unquoted XML <xml>
-    Given xml1 is "$<xml>"
-      And xml1 should match xpath "/Test"
-
-@StepDef
-@Action
-Scenario: I process quoted XML "<xml>"
-    Given xml2 is "$<xml>"
-      And xml2 should match xpath "/Test"
-
-@StepDef
-@Action
-Scenario: I process XML in <xml>
-    Given xml3 is "${$<xml>}"
-     And $<xml> should match xpath "/Test"
+@When
+Scenario: I add a to b to get c
+    Given c is defined by javascript "${a} + ${b}"

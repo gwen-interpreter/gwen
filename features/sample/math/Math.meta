@@ -17,12 +17,13 @@
  Feature: Math functions
 
 @StepDef
+@Action
 Scenario: ++x
-    Increments the value of x
     Given z = x + 1
      Then x = z
      
 @StepDef
+@Action
 Scenario: z = <x> + <y>
     Given x = $<x>
       And y = $<y>

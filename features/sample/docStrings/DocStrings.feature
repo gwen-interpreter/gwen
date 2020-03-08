@@ -17,9 +17,11 @@
  Feature: DocStrings
 
    Scenario: Javascript DocString binding
-       Given the current date is formatted as yyyy-mm-dd
-        Then the current date should match regex "\d{4}-\d{2}-\d{2}"
-         And the current date should be "${the current date}"
+       Given the formatted date is ""
+        When the current date is formatted as yyyy-mm-dd
+        Then the formatted date should match regex "\d{4}-\d{2}-\d{2}"
+         And the formatted date should be "${the formatted date}"
+         But the formatted date should not be ""
 
    Scenario: Paragraph of text
        Given my paragraph is
@@ -30,7 +32,8 @@
              in Gherkin) are used to capture automation bindings and allow you to compose step definitions by mapping
              'declarative' steps in features to 'imperative' steps in engines that perform operations.
              """
-        Then my paragraph should be
+        When I capture my paragraph as contents
+        Then contents should be
              """
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions and executes
              them for you so you don't have to do all the programming work. It has an abstracted evaluation engine
@@ -44,7 +47,8 @@
              """
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """
-        Then my line should be
+        When I capture my line as contents
+        Then contents should be
              """
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """
@@ -63,7 +67,8 @@
              you to compose step definitions by mapping 'declarative' steps in features to 'imperative' steps in engines
              that perform operations.
              """
-        Then my paragraph should be
+        When I capture my paragraph as contents
+        Then contents should be
              """
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions and
              executes them for you so you don't have to do all the programming work. It has an abstracted evaluation
@@ -79,7 +84,8 @@
              """text
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """
-        Then my line should be
+        When I capture my line as contents
+        Then contents should be
              """text
              Gwen is a Gherkin interpreter that turns Given-When-Then steps into automation instructions.
              """

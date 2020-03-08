@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import scala.util.Failure
   *
   * @author Branko Juric
   */
-trait EvalEngine[T <: EnvContext] extends LazyLogging {
+trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
 
   // semaphores for managing synchronized StepDefs
   val stepDefSemaphors: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
@@ -58,6 +58,30 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
   private [eval] def init(options: GwenOptions): T
 
   /**
+    * Should be overridden to evaluate a given step (this implementation 
+    * can be used as a fallback as it simply throws an unsupported step 
+    * exception)
+    *
+    * @param step the step to evaluate
+    * @param env the environment context
+    * @throws gwen.errors.UndefinedStepException unconditionally thrown by
+    *         this default implementation
+    */
+  def evaluate(step: Step, env: T): Unit = undefinedStepError(step)
+
+  /**
+    * Should be overridden to evaluate a priority step (this implementation returns None and can be overridden).
+    * For example, a step that calls another step needs to execute with priority to ensure that there is no
+    * match conflict between the two (which can occur if the step being called by a step is a StepDef or another step
+    * that matches the entire calling step).
+    *
+    * @param step the step to evaluate
+    * @param env the environment context
+    * @return Some(step) if the step is an evaluated composite step, None otherwise
+    */
+  def evaluatePriority(step: Step, env: T): Option[Step] = None
+
+  /**
     * Evaluates a given scenario.
     *
     * @param scenario the scenario to evaluate
@@ -68,9 +92,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     if (scenario.isStepDef || scenario.isDataTable) {
       if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
-      if (GwenSettings.`gwen.feature.mode` == FeatureMode.declarative && isExecutingFeature(env)) {
-        imperativeStepDefError(scenario)
-      }
       env.addStepDef(scenario)
       if (env.isParallel && scenario.isSynchronized) {
         stepDefSemaphors.putIfAbsent(scenario.name, new Semaphore(1))
@@ -162,11 +183,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                 doEvaluate(iStep, env) { step =>
                   step tap { _ =>
                     try {
-                      if (GwenSettings.`gwen.feature.mode` == FeatureMode.declarative
-                          && isExecutingFeature(env) 
-                          && isExecutingTopLevelStep(env)) {
-                        imperativeStepError(iStep)
-                      }
                       evaluate(step, env)
                     } catch {
                       case e: UndefinedStepException =>
@@ -241,25 +257,33 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
 
   private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
-    env.stepScope.push(stepDef.name, params)
-    try {
-      val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
-      dataTableOpt foreach { table =>
-        env.topScope.pushObject("table", table)
-      }
+    val eStep = doEvaluate(step, env) { s =>
+      checkStepDefRules(Step(s, stepDef), env)
+      step
+    }
+    if (eStep.status.status == StatusKeyword.Failed) {
+      eStep
+    } else {
+      env.stepScope.push(stepDef.name, params)
       try {
-        val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
-        val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
-        Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
-          logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+        val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
+        dataTableOpt foreach { table =>
+          env.topScope.pushObject("table", table)
+        }
+        try {
+          val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
+          val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
+          Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
+            logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+          }
+        } finally {
+          dataTableOpt foreach { _ =>
+            env.topScope.popObject("table")
+          }
         }
       } finally {
-        dataTableOpt foreach { _ =>
-          env.topScope.popObject("table")
-        }
+        env.stepScope.pop
       }
-    } finally {
-      env.stepScope.pop
     }
   }
 
@@ -279,46 +303,35 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     * @param env the environment context
     * @return the list of evaluated steps
     */
-  def evaluateSteps(steps: List[Step], env: T): List[Step] = steps.foldLeft(List[Step]()) {
-    (acc: List[Step], step: Step) => 
-      (EvalStatus(acc.map(_.evalStatus)) match {
-        case status @ Failed(_, error) =>
-          env.evaluate(evaluateStep(step, env)) {
-            val isAssertionError = status.isAssertionError
-            val isHardAssert = env.evaluate(false) { GwenSettings.`gwen.assertion.mode` == AssertionMode.hard }
-            if (!isAssertionError || isHardAssert) {
-              Step(step, Skipped, step.attachments)
-            } else {
-              evaluateStep(step, env)
-            }
+  def evaluateSteps(steps: List[Step], env: T): List[Step] = {
+    var behaviorCount = 0
+    try {
+      steps.foldLeft(List[Step]()) {
+        (acc: List[Step], step: Step) => 
+          if (step.keyword != StepKeyword.And) {
+            env.addBehavior(BehaviorType.of(step.keyword))
+            behaviorCount = behaviorCount + 1 
           }
-        case _ => evaluateStep(step, env)
-      }) :: acc
-  } reverse
-
-  /**
-    * Should be overridden to evaluate a given step (this implementation 
-    * can be used as a fallback as it simply throws an unsupported step 
-    * exception)
-    *
-    * @param step the step to evaluate
-    * @param env the environment context
-    * @throws gwen.errors.UndefinedStepException unconditionally thrown by
-    *         this default implementation
-    */
-  def evaluate(step: Step, env: T): Unit = undefinedStepError(step)
-
-  /**
-    * Should be overridden to evaluate a priority step (this implementation returns None and can be overridden).
-    * For example, a step that calls another step needs to execute with priority to ensure that there is no
-    * match conflict between the two (which can occur if the step being called by a step is a StepDef or another step
-    * that matches the entire calling step).
-    *
-    * @param step the step to evaluate
-    * @param env the environment context
-    * @return Some(step) if the step is an evaluated composite step, None otherwise
-    */
-  def evaluatePriority(step: Step, env: T): Option[Step] = None
+          (EvalStatus(acc.map(_.evalStatus)) match {
+            case status @ Failed(_, error) =>
+              env.evaluate(evaluateStep(step, env)) {
+                val isAssertionError = status.isAssertionError
+                val isHardAssert = env.evaluate(false) { AssertionMode.isHard }
+                if (!isAssertionError || isHardAssert) {
+                  Step(step, Skipped, step.attachments)
+                } else {
+                  evaluateStep(step, env)
+                }
+              }
+            case _ => evaluateStep(step, env)
+          }) :: acc
+      } reverse
+    } finally {
+      0 until behaviorCount foreach { _ =>
+        env.popBehavior()
+      }
+    }
+  }
 
   /**
     * Repeats a step for each element in list of elements of type U.
@@ -350,7 +363,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
                     val isAssertionError = status.isAssertionError
-                    val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+                    val isSoftAssert = env.evaluate(false) { isAssertionError && AssertionMode.isSoft }
                     val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
                     if (failfast && !exitOnFail && !isSoftAssert) {
@@ -405,16 +418,5 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging {
     case _ => 
       logger.warn(msg)
   }
-
-  /**
-   * Determines whether or not Gwen is currently executing a feature.
-   */
-  def isExecutingFeature(env: T): Boolean = 
-    env.topScope.getOpt("gwen.feature.file.path").filter(_.endsWith(".feature")).nonEmpty
-
-  /**
-   * Determines whether or not Gwen is currently executing a feature.
-   */
-  def isExecutingTopLevelStep(env: T): Boolean = env.stepScope.isEmpty
   
 }

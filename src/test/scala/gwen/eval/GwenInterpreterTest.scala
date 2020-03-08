@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
         fail(s"success expected but got $err")
     }
   }
-  
+
   "interpreting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
@@ -115,6 +115,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
      Feature: Gwen
   Background: The observer
         Given I am an observer
+         When I observe something
+         Then it will become real
     Scenario: The butterfly effect
         Given a deterministic nonlinear system
          When a small change is initially applied
@@ -125,15 +127,20 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockTopScope = mock[TopScope]
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockEnv.specFile).thenReturn(Some(new File("file.feature")))
     val step1 = Step(StepKeyword.Given, "I am an observer")
-    val step2 = Step(StepKeyword.Given, "a deterministic nonlinear system")
-    val step3 = Step(StepKeyword.When, "a small change is initially applied")
-    val step4 = Step(StepKeyword.Then, "a large change will eventually result")
+    val step2 = Step(StepKeyword.When, "I observe something")
+    val step3 = Step(StepKeyword.Then, "it will become real")
+    val step4 = Step(StepKeyword.Given, "a deterministic nonlinear system")
+    val step5 = Step(StepKeyword.When, "a small change is initially applied")
+    val step6 = Step(StepKeyword.Then, "a large change will eventually result")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)))
+    when(mockEnv.interpolate(step5)).thenReturn(step5)
+    when(mockEnv.interpolate(step6)).thenReturn(step6)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)), Step(step6, Passed(0)))
     val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, Nil, None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
@@ -153,6 +160,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val metaString = """
      Feature: Gwen meta
      @Stepdef
+     @When
     Scenario: the butterfly flaps its wings
         Given a deterministic nonlinear system
          When a small change is initially applied
@@ -161,8 +169,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
      Feature: Gwen
   Background: The observer
         Given I am an observer
+         When I observe something
+         Then it will become real
     Scenario: The butterfly effect
-        Given the butterfly flaps its wings"""
+        Given there is order
+         When the butterfly flaps its wings
+         Then order is lost"""
     
     val paramScope = new LocalDataStack()
     val metaFile = writeToFile(metaString, createFile("test2.meta"))
@@ -179,25 +191,38 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EnvContext]
     val mockTopScope = mock[TopScope]
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
+    when(mockEnv.getStepDef("I observe something")).thenReturn(None)
+    when(mockEnv.getStepDef("it will become real")).thenReturn(None)
+    when(mockEnv.getStepDef("there is order")).thenReturn(None)
     when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
+    when(mockEnv.getStepDef("order is lost")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockEnv.specFile).thenReturn(Some(new File("file.feature")))
     val step1 = Step(StepKeyword.Given, "I am an observer")
-    val step2 = Step(StepKeyword.Given, "the butterfly flaps its wings")
-    val step3 = Step(StepKeyword.Given, "a deterministic nonlinear system")
-    val step4 = Step(StepKeyword.When, "a small change is initially applied")
-    val step5 = Step(StepKeyword.Then, "a large change will eventually result")
+    val step2 = Step(StepKeyword.When, "I observe something")
+    val step3 = Step(StepKeyword.Then, "it will become real")
+    val step4 = Step(StepKeyword.Given, "there is order")
+    val step5 = Step(StepKeyword.When, "the butterfly flaps its wings")
+    val step6 = Step(StepKeyword.Given, "a deterministic nonlinear system")
+    val step7 = Step(StepKeyword.When, "a small change is initially applied")
+    val step8 = Step(StepKeyword.Then, "a large change will eventually result")
+    val step9 = Step(StepKeyword.Then, "order is lost")
     when(mockEnv.interpolate(step1)).thenReturn(step1)
     when(mockEnv.interpolate(step2)).thenReturn(step2)
     when(mockEnv.interpolate(step3)).thenReturn(step3)
     when(mockEnv.interpolate(step4)).thenReturn(step4)
     when(mockEnv.interpolate(step5)).thenReturn(step5)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)))
+    when(mockEnv.interpolate(step6)).thenReturn(step6)
+    when(mockEnv.interpolate(step7)).thenReturn(step7)
+    when(mockEnv.interpolate(step8)).thenReturn(step8)
+    when(mockEnv.interpolate(step9)).thenReturn(step9)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)), Step(step6, Passed(0)), Step(step7, Passed(0)), Step(step8, Passed(0)), Step(step9, Passed(0)))
     val result = interpreter(mockEnv).interpretFeature(FeatureUnit(featureFile, List(metaFile), None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>

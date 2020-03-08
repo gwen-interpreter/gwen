@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,8 @@ class EnvContext(options: GwenOptions) extends Evaluatable
   }
     
   def asString: String = scopes.asString
+
+  def specFile: Option[File] = topScope.getObject("spec.file").map(_.asInstanceOf[File])
   
   /** Returns the current visible scopes. */  
   def visibleScopes: ScopedDataStack = scopes.visible
@@ -128,7 +130,10 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    stepDefs += ((stepDef.name, Scenario(tags, FeatureKeyword.Scenario.toString, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile)))
+    val sd = Scenario(tags, FeatureKeyword.Scenario.toString, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile) tap { sd =>
+      sd.pos = stepDef.pos
+    }
+    stepDefs += ((stepDef.name, sd))
   }
   
   /**
@@ -186,6 +191,22 @@ class EnvContext(options: GwenOptions) extends Evaluatable
 
   /** Gets the optional for-each StepDef for a given step. */
   def getForeachStepDef(step: Step): Option[Scenario] = state.popForeachStepDef(step)
+
+  /** Adds current behavior. */
+  def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value = 
+    behavior tap { _ => state.addBehavior(behavior) }
+
+  /** Removes the current behavior. */
+  def popBehavior(): Option[BehaviorType.Value] = state.popBehavior()
+
+  /** Gets the current behavior. */
+  def currentBehavior: Option[BehaviorType.Value] = state.currentBehavior
+
+  /** Checks if a feature file is currently being evaluated. */
+  def isEvaluatingFeatureFile: Boolean = specFile.map(FileIO.isFeatureFile).getOrElse(false)
+
+  /** Checks if a top level step is currently being evaluated). */
+  def isEvaluatingTopLevelStep: Boolean = stepScope.isEmpty
   
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 
@@ -223,7 +244,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     }
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
-        if (status.isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.sustained) {
+        if (status.isAssertionError && AssertionMode.isSustained) {
           Step(fStep, Sustained(nanos, error))
         } else if (status.isDisabledError) {
           Step(fStep, Disabled)
@@ -373,6 +394,6 @@ class EnvContext(options: GwenOptions) extends Evaluatable
         }
       }
     }
-  }
+  }  
   
 }

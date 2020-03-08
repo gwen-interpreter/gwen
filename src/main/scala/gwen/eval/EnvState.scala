@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import gwen.Predefs.Kestrel
 import java.io.File
 import gwen.dsl.Scenario
 import gwen.dsl.Step
+import gwen.dsl.StepKeyword
+import gwen.dsl.BehaviorType
 
 class EnvState(val scopes: ScopedDataStack) {
 
@@ -30,7 +32,10 @@ class EnvState(val scopes: ScopedDataStack) {
   private var attachmentPrefix = padWithZeroes(1)
 
   /** Map of for-each StepDefs. */
-  private var foreachStepDefs: Map[String, Scenario] = Map[String, Scenario]()
+  private var foreachStepDefs = Map[String, Scenario]()
+
+  /** Stack of behaviors. */
+  private var behaviors = List[BehaviorType.Value]()
 
   /** Checks if attachments exist. */
   def hasAttachments: Boolean = attachments.nonEmpty
@@ -86,6 +91,23 @@ class EnvState(val scopes: ScopedDataStack) {
           foreachStepDefs -= step.uniqueId 
         }
       }
+
+    /** Adds the given behavior to the top of the stack. */
+    def addBehavior(behavior: BehaviorType.Value): Unit = {
+      behaviors = behavior :: behaviors
+    }
+
+    /** Removes the behavior at the top of the stack. */
+    def popBehavior(): Option[BehaviorType.Value] = behaviors match {
+      case head::tail => 
+        behaviors = tail
+        Some(head)
+      case _ =>
+        None
+    }
+
+    /** Gets the behavior at the top of the stack. */
+    def currentBehavior: Option[BehaviorType.Value] = behaviors.headOption
 }
 
 object EnvState {

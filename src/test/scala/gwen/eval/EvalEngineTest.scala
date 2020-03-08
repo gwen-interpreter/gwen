@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,18 +64,21 @@ class EvalEngineTest extends FlatSpec with Matchers {
   
   "Step that is a stepdef" should "should be evaluated" in {
     val env = engine.init(new GwenOptions())
-    val stepDef = Scenario(List[Tag]("@StepDef"), "I assign x, y, and z", Nil, None, List(
+    val stepDef = Scenario(List[Tag]("@StepDef", "@Action"), "I assign x, y, and z", Nil, None, List(
         Step(StepKeyword.Given, """x is "1""""),
-        Step(StepKeyword.When, """y is "2""""),
-        Step(StepKeyword.Then, """z is "3"""")))
+        Step(StepKeyword.And, """y is "2""""),
+        Step(StepKeyword.And, """z is "3""""),
+        Step(StepKeyword.When, """I capture x as a"""),
+        Step(StepKeyword.Then, """a should be "1"""")))
     env.addStepDef(stepDef)
     env.scopes.set("y", "1")
-    var step = Step(StepKeyword.Given, "I assign x, y, and z")
+    var step = Step(StepKeyword.When, "I assign x, y, and z")
     step = engine.evaluateStep(step, env)
     step.evalStatus.status should be (StatusKeyword.Passed)
     env.scopes.get("x") should be ("1")
     env.scopes.get("y") should be ("2")
     env.scopes.get("z") should be ("3")
+    env.scopes.get("a") should be ("1")
     step.stepDef should not be (None)
   }
   

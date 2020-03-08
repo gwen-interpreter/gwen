@@ -27,5 +27,8 @@ object SpecType extends Enumeration {
 
   val feature, meta = Value
 
+  def isFeature(specType: SpecType.Value):Boolean = specType == feature
+  def isMeta(specType: SpecType.Value):Boolean = specType == meta
+
 }
 

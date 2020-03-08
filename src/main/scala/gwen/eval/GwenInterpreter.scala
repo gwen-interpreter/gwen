@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,28 +126,37 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @return the evaluated Gwen feature result
     */
   private def evaluateFeature(featureSpec: FeatureSpec, metaResults: List[FeatureResult], env: T, started: Date): FeatureResult = {
-    val specType = featureSpec.featureFile.collect { case f if isMetaFile(f) => SpecType.meta } getOrElse SpecType.feature
-    (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
-      logger.info("")
-      logger.info(s"$action $specType: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: $file]").getOrElse("")}")
+    featureSpec.featureFile foreach { file =>
+      env.topScope.pushObject("spec.file", file)
     }
-    val resultSpec = FeatureSpec(
-      featureSpec.feature, 
-      None, 
-      evaluateScenarios(featureSpec.scenarios, specType, env),
-      evaluateRules(featureSpec.rules, specType, env),
-      featureSpec.featureFile,
-      metaResults.map(_.spec)
-    )
-    resultSpec.featureFile foreach { _ =>
-      logger.info(s"${if (SpecType.meta.equals(specType)) "Loaded" else "Evaluated"} $specType: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: $file]").getOrElse("")}")
-    }
-    logger.debug(prettyPrint(resultSpec))
-    new FeatureResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
-      if(SpecType.meta != specType) {
-        logStatus(specType.toString, resultSpec.toString, resultSpec.evalStatus)
-      } else {
-        logger.info(result.toString)
+    try {
+      val specType = featureSpec.featureFile.collect { case f if isMetaFile(f) => SpecType.meta } getOrElse SpecType.feature
+      (if(SpecType.meta.equals(specType)) "Loading" else "Evaluating") tap {action =>
+        logger.info("")
+        logger.info(s"$action $specType: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: $file]").getOrElse("")}")
+      }
+      val resultSpec = FeatureSpec(
+        featureSpec.feature, 
+        None, 
+        evaluateScenarios(featureSpec.scenarios, specType, env),
+        evaluateRules(featureSpec.rules, specType, env),
+        featureSpec.featureFile,
+        metaResults.map(_.spec)
+      )
+      resultSpec.featureFile foreach { _ =>
+        logger.info(s"${if (SpecType.meta.equals(specType)) "Loaded" else "Evaluated"} $specType: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: $file]").getOrElse("")}")
+      }
+      logger.debug(prettyPrint(resultSpec))
+      new FeatureResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
+        if(SpecType.meta != specType) {
+          logStatus(specType.toString, resultSpec.toString, resultSpec.evalStatus)
+        } else {
+          logger.info(result.toString)
+        }
+      }
+    } finally {
+      featureSpec.featureFile foreach { _ =>
+        env.topScope.popObject("spec.file")
       }
     }
   }
@@ -195,7 +204,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         val isAssertionError = status.isAssertionError
-        val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+        val isSoftAssert = env.evaluate(false) { isAssertionError && AssertionMode.isSoft }
         val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
@@ -222,7 +231,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         val isAssertionError = status.isAssertionError
-        val isSoftAssert = env.evaluate(false) { isAssertionError && GwenSettings.`gwen.assertion.mode` == AssertionMode.soft }
+        val isSoftAssert = env.evaluate(false) { isAssertionError && AssertionMode.isSoft }
         val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
