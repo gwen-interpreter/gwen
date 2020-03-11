@@ -148,8 +148,8 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
     }
-          <span class="label label-${cssStatus(status)}">${scenario.keyword}</span>${
-      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1)
+          <span class="label label-${cssStatus(status)}">${if (scenario.isForEach) "ForEach" else scenario.keyword}</span>${
+      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1 && !scenario.isForEach)
         s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
     }

@@ -354,6 +354,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
               currentElement match {
                 case stringValue: String =>
                   env.topScope.set(element, stringValue)
+                  if (env.isDryRun) {
+                    env.topScope.pushObject(element, currentElement)
+                  }
                 case _ =>
                   env.topScope.pushObject(element, currentElement)
               }
