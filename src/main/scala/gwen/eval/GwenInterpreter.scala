@@ -18,7 +18,6 @@ package gwen.eval
 
 import java.io.File
 
-import scala.io.Source
 import scala.language.postfixOps
 import scala.util.Failure
 import scala.util.Success
@@ -88,7 +87,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       dataRecord foreach { rec =>
         env.topScope.set("data record number", rec.recordNo.toString)
       }
-      parseFeatureSpec(Source.fromFile(featureFile).mkString) match {
+      parseFeatureFile(featureFile) match {
         case Success(featureSpec) =>
           if (featureFile.getName.endsWith(".meta")) {
             val metaResults = loadMetaImports(featureSpec, featureFile, tagFilters, env)
@@ -102,7 +101,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
                 env.topScope.set("gwen.feature.file.path", featureFile.getPath)
                 env.topScope.set("gwen.feature.file.absolutePath", featureFile.getAbsolutePath)
                 env.topScope.set("gwen.feature.name", fspec.feature.name)
-                Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env, started))
+                Dialect.withLanguage(fspec.feature.language) {
+                  Some(evaluateFeature(normalise(fspec, Some(featureFile), dataRecord), metaResults, env, started))
+                }
               case None => 
                 logger.info(s"Feature file skipped (does not satisfy tag filters): $featureFile")
                 None
@@ -239,15 +240,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         } else if (exitOnFail && !isSoftAssert) {
           rule
         } else {
-          logger.info(s"Evaluating ${Rule.keyword}: $rule")
+          logger.info(s"Evaluating ${rule.keyword}: $rule")
           Rule(rule, evaluateScenarios(rule.scenarios, specType, env)) tap { r =>
-            logStatus(Rule.keyword, r.toString, r.evalStatus)
+            logStatus(r.keyword, r.toString, r.evalStatus)
           }
         }
       case _ =>
-        logger.info(s"Evaluating ${Rule.keyword}: $rule")
+        logger.info(s"Evaluating ${rule.keyword}: $rule")
         Rule(rule, evaluateScenarios(rule.scenarios, specType, env)) tap { r =>
-          logStatus(Rule.keyword, r.toString, r.evalStatus)
+          logStatus(r.keyword, r.toString, r.evalStatus)
         }
     }
   }
@@ -330,7 +331,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           if (!file.exists()) missingOrInvalidImportFileError(importTag, None)
           if (!file.getName.toLowerCase.endsWith(".csv")) unsupportedDataFileError(importTag, None)
           val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1, row.toList) }
-          Some(Examples(Nil, s"Data file: $filepath", Nil, table, Nil))
+          Some(Examples(Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath", Nil, table, Nil))
         case r"""(?:E|e)xamples\(.*""" =>
           invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv")""")
         case _ => None

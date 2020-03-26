@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
 - [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
 - [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
-- [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
 
 Why Gwen?
 ---------
@@ -73,6 +73,7 @@ Key Features
 - Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
 - Supports full Gherkin syntax including [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
 - [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
+- [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
 
 User Network and Support
 ------------------------
@@ -141,6 +142,7 @@ The following users raised issues or requests that have been addressed:
 | [ketu4u2010](https://github.com/ketu4u2010)
 | [Rahul9844](https://github.com/Rahul9844)
 | [rkevin99](https://github.com/rkevin99)
+| [dfriquet](https://github.com/dfriquet)
 
 Credits
 -------

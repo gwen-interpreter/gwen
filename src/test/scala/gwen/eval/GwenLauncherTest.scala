@@ -36,7 +36,7 @@ import gwen.Settings
 class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
   }
 
   object Scenario {
@@ -49,7 +49,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   val feature = new FeatureSpec(
       Feature("test-feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a test", Passed(10))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test", Passed(10))))),
       Nil
   )
   val featureResult = new FeatureResult(feature, None, Nil, new Date(), new Date())
@@ -113,7 +113,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
       Nil
     )
     
@@ -145,7 +145,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
       Nil
     )
     
@@ -178,7 +178,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta step", Passed(10))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
       Nil
     )
     
@@ -206,7 +206,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta st ep", Failed(5, new Exception("failed")))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta st ep", Failed(5, new Exception("failed")))))),
       Nil
     )
     
@@ -242,7 +242,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta = new FeatureSpec(
       Feature("meta feature", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given, "I am a meta st ep", failedStatus)))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta st ep", failedStatus)))),
       Nil
     )
     
@@ -278,14 +278,14 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val feature6A = new FeatureSpec(
       Feature("test-feature-6a", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given, "I am a test 6A", Passed(1000))))),
+      List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6A", Passed(1000))))),
       Nil,
       Some(feature6a)
     )
     val feature6B = new FeatureSpec(
       Feature("test-feature-6b", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given, "I am a test 6B", Passed(2000))))),
+      List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6B", Passed(2000))))),
       Nil,
       Some(feature6b)
     )
@@ -293,7 +293,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val feature7A = new FeatureSpec(
       Feature("test-feature-7a", Nil), 
       None, 
-      List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given, "I am a test 7A", Passed(3000))))),
+      List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 7A", Passed(3000))))),
       Nil,
       Some(feature7a)
     )

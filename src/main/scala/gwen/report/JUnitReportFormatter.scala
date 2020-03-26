@@ -66,7 +66,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     val pkg = result.spec.featureFile.map(_ => s""" package="$packageName"""").getOrElse("")
     val scenarioCount = scenarios.length
     val tests = s""" tests="$scenarioCount""""
-    val counts = result.summary.evalScenarioCounts
+    val counts = result.summary.scenarioCounts
     val errorCount = counts.getOrElse(StatusKeyword.Failed, 0)
     val errors = s""" errors="$errorCount""""
     val skipped = s""" skipped="${counts.getOrElse(StatusKeyword.Skipped, 0) + counts.getOrElse(StatusKeyword.Pending, 0)}""""

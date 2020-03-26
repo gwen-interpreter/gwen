@@ -24,7 +24,7 @@ import gwen.errors.AmbiguousCaseException
 class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
   }
 
   object Scenario {
@@ -35,9 +35,10 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   private val parse = parseFeatureSpec(_: String)
 
   val background = Background(
+    "Background",
     "background",
     Nil,
-    List(Step(StepKeyword.Given, "background step 1", Passed(2)))
+    List(Step(StepKeyword.Given.toString, "background step 1", Passed(2)))
   )
 
   "Feature with no background and no step defs" should "normalise without error" in {
@@ -46,9 +47,9 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
       None,
       List(
       Scenario(List[Tag](), "scenario1", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )),
       Nil)
 
@@ -70,9 +71,9 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
       Some(background),
       List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.When, "step 2", Passed(1)),
-          Step(StepKeyword.Then, "step 3", Passed(2)))
+          Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+          Step(StepKeyword.When.toString, "step 2", Passed(1)),
+          Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )),
         Nil)
 
@@ -95,9 +96,9 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
       Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil)
 
     val result = normalise(meta, None, None)
@@ -116,9 +117,9 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val meta = FeatureSpec(
       Feature("meta1", Nil), Some(background), List(
         Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
-          Step(StepKeyword.Given, "step 1", Passed(2)),
-          Step(StepKeyword.When, "step 2", Passed(1)),
-          Step(StepKeyword.Then, "step 3", Passed(2)))
+          Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+          Step(StepKeyword.When.toString, "step 2", Passed(1)),
+          Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )), Nil)
 
     val result = normalise(meta, None, None)
@@ -138,14 +139,14 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
       Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       ),
       Scenario(List[Tag]("@StepDef"), "stepdef2", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil)
   normalise(meta, None, None)
   }
@@ -154,14 +155,14 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
       Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       ),
       Scenario(List[Tag]("@StepDef"), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil)
       
   intercept[AmbiguousCaseException] {
@@ -173,14 +174,14 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val meta = FeatureSpec(
     Feature("meta1", Nil), None, List(
       Scenario(List[Tag]("@StepDef"), "stepdef <number>", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       ),
       Scenario(List[Tag]("@StepDef"), "stepdef <index>", Nil, None, List(
-        Step(StepKeyword.Given, "step 1", Passed(2)),
-        Step(StepKeyword.When, "step 2", Passed(1)),
-        Step(StepKeyword.Then, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
+        Step(StepKeyword.When.toString, "step 2", Passed(1)),
+        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil)
       
     intercept[AmbiguousCaseException] {
@@ -192,9 +193,9 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val feature = FeatureSpec(
     Feature("About me", Nil), Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
-        Step(StepKeyword.Given, "I am ${my age} year(s) old"),
-        Step(StepKeyword.When, "I am a ${my gender}"),
-        Step(StepKeyword.Then, "I am a ${my age} year old ${my title}"))
+        Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
+        Step(StepKeyword.When.toString, "I am a ${my gender}"),
+        Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord("AboutMe.csv", 1, data)
@@ -273,10 +274,10 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     outline.name should be("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be(None)
     outline.description should be(List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
-    outline.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "<string 1>""""), Position(11, 5)))
-    outline.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "<string 2>""""), Position(12, 7)))
-    outline.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    outline.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "<result>""""), Position(14, 6)))
+    outline.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "<string 1>""""), Position(11, 5)))
+    outline.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "<string 2>""""), Position(12, 7)))
+    outline.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(13, 6)))
+    outline.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "<result>""""), Position(14, 6)))
 
     val examples = outline.examples
     examples.size should be(3)
@@ -298,12 +299,12 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenario1.name should be("Joining basket and ball should yield basketball -- Example 1.1 Compound words")
     scenario1.background.get.pos should be (Position(4, 5))
     scenario1.background.get.name should be ("background")
-    scenario1.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
+    scenario1.background.get.steps(0) should be(Step(Step(StepKeyword.Given.toString, "background step 1"), Position(5, 8)))
     scenario1.description should be(List("Substituting..", "string 1 = basket", "string 2 = ball", "result = basketball"))
-    scenario1.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "basket""""), Position(15, 5)))
-    scenario1.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ball""""), Position(16, 7)))
-    scenario1.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
-    scenario1.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "basketball""""), Position(18, 6)))
+    scenario1.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "basket""""), Position(15, 5)))
+    scenario1.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "ball""""), Position(16, 7)))
+    scenario1.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(17, 6)))
+    scenario1.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "basketball""""), Position(18, 6)))
 
     val scenario2 = example1.scenarios(1)
     scenario2.pos should be (Position(8, 5))
@@ -312,12 +313,12 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenario2.name should be("Joining any and thing should yield anything -- Example 1.2 Compound words")
     scenario2.background.get.pos should be (Position(4, 5))
     scenario2.background.get.name should be ("background")
-    scenario2.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
+    scenario2.background.get.steps(0) should be(Step(Step(StepKeyword.Given.toString, "background step 1"), Position(5, 8)))
     scenario2.description should be(List("Substituting..", "string 1 = any", "string 2 = thing", "result = anything"))
-    scenario2.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "any""""), Position(15, 5)))
-    scenario2.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "thing""""), Position(16, 7)))
-    scenario2.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
-    scenario2.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "anything""""), Position(18, 6)))
+    scenario2.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "any""""), Position(15, 5)))
+    scenario2.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "thing""""), Position(16, 7)))
+    scenario2.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(17, 6)))
+    scenario2.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "anything""""), Position(18, 6)))
 
     val example2 = examples(1)
     example2.pos should be (Position(26, 5))
@@ -338,12 +339,12 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenario3.name should be("Joining howdy and doo should yield howdydoo -- Example 2.1 Nonsensical compound words")
     scenario3.background.get.pos should be (Position(4, 5))
     scenario3.background.get.name should be ("background")
-    scenario3.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
+    scenario3.background.get.steps(0) should be(Step(Step(StepKeyword.Given.toString, "background step 1"), Position(5, 8)))
     scenario3.description should be(List("Substituting..", "string 1 = howdy", "string 2 = doo", "result = howdydoo"))
-    scenario3.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "howdy""""), Position(15, 5)))
-    scenario3.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "doo""""), Position(16, 7)))
-    scenario3.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
-    scenario3.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "howdydoo""""), Position(18, 6)))
+    scenario3.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "howdy""""), Position(15, 5)))
+    scenario3.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "doo""""), Position(16, 7)))
+    scenario3.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(17, 6)))
+    scenario3.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "howdydoo""""), Position(18, 6)))
 
     val scenario4 = example2.scenarios(1)
     scenario4.pos should be (Position(8, 5))
@@ -352,12 +353,12 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenario4.name should be("Joining yep and ok should yield yepok -- Example 2.2 Nonsensical compound words")
     scenario4.background.get.pos should be (Position(4, 5))
     scenario4.background.get.name should be ("background")
-    scenario4.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
+    scenario4.background.get.steps(0) should be(Step(Step(StepKeyword.Given.toString, "background step 1"), Position(5, 8)))
     scenario4.description should be(List("Substituting..", "string 1 = yep", "string 2 = ok", "result = yepok"))
-    scenario4.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "yep""""), Position(15, 5)))
-    scenario4.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "ok""""), Position(16, 7)))
-    scenario4.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
-    scenario4.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "yepok""""), Position(18, 6)))
+    scenario4.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "yep""""), Position(15, 5)))
+    scenario4.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "ok""""), Position(16, 7)))
+    scenario4.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(17, 6)))
+    scenario4.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "yepok""""), Position(18, 6)))
 
     val example3 = examples(2)
     example3.pos should be (Position(35, 5))
@@ -375,12 +376,12 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenario5.name should be("Joining ding and dong should yield dingdong -- Example 3.1 ")
     scenario5.background.get.pos should be (Position(4, 5))
     scenario5.background.get.name should be ("background")
-    scenario5.background.get.steps(0) should be(Step(Step(StepKeyword.Given, "background step 1"), Position(5, 8)))
+    scenario5.background.get.steps(0) should be(Step(Step(StepKeyword.Given.toString, "background step 1"), Position(5, 8)))
     scenario5.description should be(List("Substituting..", "string 1 = ding", "string 2 = dong", "result = dingdong"))
-    scenario5.steps(0) should be(Step(Step(StepKeyword.Given, """string 1 is "ding""""), Position(15, 5)))
-    scenario5.steps(1) should be(Step(Step(StepKeyword.And, """string 2 is "dong""""), Position(16, 7)))
-    scenario5.steps(2) should be(Step(Step(StepKeyword.When, "I join the two strings"), Position(17, 6)))
-    scenario5.steps(3) should be(Step(Step(StepKeyword.Then, """the result should be "dingdong""""), Position(18, 6)))
+    scenario5.steps(0) should be(Step(Step(StepKeyword.Given.toString, """string 1 is "ding""""), Position(15, 5)))
+    scenario5.steps(1) should be(Step(Step(StepKeyword.And.toString, """string 2 is "dong""""), Position(16, 7)))
+    scenario5.steps(2) should be(Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(17, 6)))
+    scenario5.steps(3) should be(Step(Step(StepKeyword.Then.toString, """the result should be "dingdong""""), Position(18, 6)))
 
     val scenarios = outline.examples.flatMap(_.scenarios)
     scenarios.size should be(5)

@@ -225,7 +225,6 @@ table tbody.summary td {
 .keyword-right {
   text-align: right; 
   display: inline-table; 
-  width: 45px;
 }
 
 .line-no {

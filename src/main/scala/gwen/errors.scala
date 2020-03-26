@@ -71,6 +71,8 @@ package gwen {
     def improperBehaviorError(node: SpecNode, nodeType: String, specFile: Option[File]) = throw new ImproperBehaviorException(node, nodeType, specFile)
     def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value, specFile: Option[File]) = throw new UnexpectedBehaviorException(step, expected, actual, specFile)
     def undefinedStepDefBehaviorError(stepDef: Scenario, specFile: Option[File]) = throw new UndefinedStepDefBehaviorException(stepDef, specFile)
+    def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
+    def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
 
     /** Base exception\. */
     class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
@@ -190,5 +192,10 @@ package gwen {
       extends GwenException(
         s"Missing @Context, @Action, or @Assertion behavior tag on StepDef at ${specFile.map(f => s"$f:").getOrElse("line ")}${stepDef.pos.line}")
 
+    /** Thrown when a keyword is unknown for a given language dialect. */
+    class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")
+
+    /** Thrown when an explicit dialiect directive is found in a meta spec. */
+    class MetaDialectException(language: String, specFile: File) extends GwenException(s"Language '$language' not supported in meta file at: $specFile (English 'en' supported for meta only)")
   }
 }

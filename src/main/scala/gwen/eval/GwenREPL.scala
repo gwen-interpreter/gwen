@@ -32,6 +32,7 @@ import scala.collection.JavaConverters._
 import jline.console.completer.AggregateCompleter
 import gwen.GwenSettings
 import gwen.dsl.StateLevel
+import gwen.dsl.Dialect
 
 /**
   * Read-Eval-Print-Loop console.
@@ -161,6 +162,9 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
       case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
         env.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
+      case r"""^#\s*language:\s*(\S+)$$$language""" =>
+        Dialect.setLanguage(language)
+        s"# language: $language"
       case _ =>
         interpreter.interpretStep(input, env) match {
           case Success(step) => s"\n[${step.evalStatus.status}]"

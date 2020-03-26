@@ -23,7 +23,7 @@ import scala.util.Success
 class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
   }
 
   object Scenario {
@@ -77,11 +77,11 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
       case Success(fspec) =>
         fspec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         fspec.background.get should be {
-          Background("The butterfly effect", List("Sensitivity to initial conditions"), 
+          Background("Background", "The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
-              Step(StepKeyword.Given, "a deterministic nonlinear system"),
-              Step(StepKeyword.When,  "a small change is initially applied"),
-              Step(StepKeyword.Then,  "a large change will eventually result")
+              Step(StepKeyword.Given.toString, "a deterministic nonlinear system"),
+              Step(StepKeyword.When.toString,  "a small change is initially applied"),
+              Step(StepKeyword.Then.toString,  "a large change will eventually result")
             )
           )
         }
@@ -89,29 +89,29 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
           List(
             Scenario(List[Tag](), "Evaluation", Nil, None,
               List(
-                Step(StepKeyword.Given, "any software behavior"),
-                Step(StepKeyword.When,  "expressed in Gherkin"),
-                Step(StepKeyword.Then,  "Gwen can evaluate it")
+                Step(StepKeyword.Given.toString, "any software behavior"),
+                Step(StepKeyword.When.toString,  "expressed in Gherkin"),
+                Step(StepKeyword.Then.toString,  "Gwen can evaluate it")
               )
             ),
             Scenario(List[Tag](), "The useless test", Nil, None, 
               List(
-                Step(StepKeyword.Given, "I am a test"),
-                Step(StepKeyword.And,   "I am generated from code"),
-                Step(StepKeyword.When,  "the code changes"),
-                Step(StepKeyword.Then,  "I change"),
-                Step(StepKeyword.And,   "so I won't fail"),
-                Step(StepKeyword.And,   "that's why I'm useless")
+                Step(StepKeyword.Given.toString, "I am a test"),
+                Step(StepKeyword.And.toString,   "I am generated from code"),
+                Step(StepKeyword.When.toString,  "the code changes"),
+                Step(StepKeyword.Then.toString,  "I change"),
+                Step(StepKeyword.And.toString,   "so I won't fail"),
+                Step(StepKeyword.And.toString,   "that's why I'm useless")
               )
             ),
             Scenario(List[Tag](), "The useful test", Nil, None, 
               List(
-                Step(StepKeyword.Given, "I am a test"),
-                Step(StepKeyword.And,   "I am written by a human"),
-                Step(StepKeyword.When,  "the code changes"),
-                Step(StepKeyword.Then,  "I don't"),
-                Step(StepKeyword.And,   "so I may fail"),
-                Step(StepKeyword.But,   "that's why I'm useful")
+                Step(StepKeyword.Given.toString, "I am a test"),
+                Step(StepKeyword.And.toString,   "I am written by a human"),
+                Step(StepKeyword.When.toString,  "the code changes"),
+                Step(StepKeyword.Then.toString,  "I don't"),
+                Step(StepKeyword.And.toString,   "so I may fail"),
+                Step(StepKeyword.But.toString,   "that's why I'm useful")
               )
             )
           )

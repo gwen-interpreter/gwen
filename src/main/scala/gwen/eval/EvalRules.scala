@@ -97,7 +97,7 @@ trait EvalRules {
         env.currentBehavior foreach { expectedBehavior =>
           if (actualBehavior != expectedBehavior) {
             unexpectedBehaviorError(step, expectedBehavior, actualBehavior, env.specFile)
-          } else if (step.keyword != StepKeyword.And) {
+          } else if (!StepKeyword.isAnd(step.keyword)) {
             val stepBehavior = BehaviorType.of(step.keyword) 
             if (stepBehavior != expectedBehavior) {
               unexpectedBehaviorError(step, expectedBehavior, stepBehavior, env.specFile)
@@ -108,8 +108,12 @@ trait EvalRules {
     }
   }
 
-  private def isProperBehavior(steps: List[Step]): Boolean =
-    steps.map(_.keyword).filter(_ != StepKeyword.And).mkString("-").matches("Given-When-Then(-But)?")
+  private def isProperBehavior(steps: List[Step]): Boolean = {
+    val order = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k)).map { keyword => 
+      StepKeyword.valueOf(keyword).toString
+    }
+    order.mkString("-").matches("Given-When-Then(-But)?")
+  }
 
   private def isFeatureFile(specFile: Option[File]):Boolean = 
     specFile.map(FileIO.isFeatureFile).getOrElse(false)

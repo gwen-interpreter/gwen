@@ -30,8 +30,14 @@ import scala.collection.JavaConverters._
 case class Position(line: Int, column: Int)
 
 object Position {
+  private val lineOffset = new ThreadLocal[Int]() {
+    override protected def initialValue: Int = 0
+  }
+  def setLineOffset(offset: Int) {
+    lineOffset.set(offset)
+  }
   def apply(location: Location): Position =
-    Option(location).map(loc => Position(loc.getLine, loc.getColumn)).getOrElse(Position(0, 0))
+    Option(location).map(loc => Position(loc.getLine + lineOffset.get, loc.getColumn)).getOrElse(Position(0, 0))
 }
 
 /**
@@ -128,67 +134,73 @@ object FeatureSpec {
   *
   * @param language the language identifier (example: en for English)
   * @param tags list of tags
+  * @param keyword the Gherkin keyword for this Feature
   * @param name the feature name
   * @param description optional description
   *
   * @author Branko Juric
   */
-case class Feature(language: String, tags: List[Tag], name: String, description: List[String]) extends SpecNode {
+case class Feature(language: String, tags: List[Tag], keyword: String, name: String, description: List[String]) extends SpecNode {
   override def toString: String = name
 }
 object Feature {
-  final val keyword = FeatureKeyword.Feature.toString
-  def apply(feature: GherkinDocument.Feature): Feature =
+  def apply(feature: GherkinDocument.Feature): Feature = {
     Feature(
       feature.getLanguage,
       Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)), 
+      feature.getKeyword,
       feature.getName, 
       Option(feature.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct
     ) tap { f => f.pos = Position(feature.getLocation) }
+  }
 }
 
 /**
   * Captures a gherkin background node.
   *
+  * @param keyword the Gherkin keyword for this Background
   * @param name the background name
   * @param description optional background description
   * @param steps list of background steps
   *
   * @author Branko Juric
  */
-case class Background(name: String, description: List[String], steps: List[Step]) extends SpecNode {
+case class Background(keyword: String, name: String, description: List[String], steps: List[Step]) extends SpecNode {
 
   /** Returns the evaluation status of this background. */
   override lazy val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
 
   def skip = Background(this, steps.map(_.skip))
 
-  def gwtOrder: List[StepKeyword.Value] = steps.map(_.keyword).filter(_ != StepKeyword.And)
+  def gwtOrder: List[String] = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k))
 
   override def toString: String = name
   
 }
 
 object Background {
-  final val keyword = FeatureKeyword.Background.toString
   def apply(background: io.cucumber.messages.Messages.GherkinDocument.Feature.Background): Background = 
     Background(
+      background.getKeyword,
       background.getName,
       Option(background.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(s))
     ) tap { b => b.pos = Position(background.getLocation) }
   def apply(background: Background, steps: List[Step]): Background =
-    Background(background.name, background.description, steps) tap { b => b.pos = background.pos }
+    Background(background.keyword, background.name, background.description, steps) tap { b => b.pos = background.pos }
 }
 
 /**
   * Captures a gherkin rule.
+  * 
+  * @param keyword the Gherkin keyword for this Rule
   * @param name the rule name
   * @param description optional description
   * @param background optional background
   * @param scenarios list of scenarios (or examples)
   */
 case class Rule(
+  keyword: String,
   name: String,
   description: List[String],
   background: Option[Background],
@@ -213,9 +225,9 @@ case class Rule(
   override def toString: String = name
 }
 object Rule {
-  final val keyword = FeatureKeyword.Rule.toString
   def apply(rule: io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild.Rule): Rule = {
     new Rule(
+      rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(x.getBackground)),
@@ -223,9 +235,9 @@ object Rule {
     ) tap { s => s.pos = Position(rule.getLocation) }
   }
   def apply(rule: Rule, background: Option[Background], scenarios: List[Scenario]): Rule =
-    new Rule(rule.name, rule.description, background, scenarios)
+    new Rule(rule.keyword, rule.name, rule.description, background, scenarios)
   def apply(rule: Rule, scenarios: List[Scenario]): Rule =
-    new Rule(rule.name, rule.description, rule.background, scenarios)
+    new Rule(rule.keyword, rule.name, rule.description, rule.background, scenarios)
 }
 
 /**
@@ -313,12 +325,13 @@ object Scenario {
   * Captures a gherkin scenario outline example group.
   *
   * @param tags list of tags
+  * @param keyword the Gherkin keyword for this Examples clause
   * @param name the example name
   * @param description option description lines
   * @param table header and body data (tuple of line position and rows of data)
   * @param scenarios list of expanded scenarios
   */
-case class Examples(tags: List[Tag], name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
+case class Examples(tags: List[Tag], keyword: String, name: String, description: List[String], table: List[(Int, List[String])], scenarios: List[Scenario]) extends SpecNode {
 
   /**
     * Returns a list containing all the background steps (if any) followed by
@@ -337,7 +350,6 @@ case class Examples(tags: List[Tag], name: String, description: List[String], ta
 }
 
 object Examples {
-  final val keyword = FeatureKeyword.Examples.toString
   def apply(examples: io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario.Examples, index: Int): Examples = {
     val header = examples.getTableHeader
     if (header == null) {
@@ -355,6 +367,7 @@ object Examples {
     }
     new Examples(
       Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(t)),
+      examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       (header.getLocation.getLine, header.getCellsList.asScala.toList.map(_.getValue)) ::
@@ -365,7 +378,7 @@ object Examples {
     ) tap { e => e.pos = Position(examples.getLocation) }
   }
   def apply(examples: Examples, scenarios: List[Scenario]): Examples =
-    Examples(examples.tags, examples.name, examples.description, examples.table, scenarios) tap { e => e.pos = examples.pos }
+    Examples(examples.tags, examples.keyword, examples.name, examples.description, examples.table, scenarios) tap { e => e.pos = examples.pos }
 }
 
 /**
@@ -434,7 +447,7 @@ object Tag {
   * @author Branko Juric
   */
 case class Step(
-    keyword: StepKeyword.Value,
+    keyword: String,
     name: String,
     status: EvalStatus = Pending, 
     attachments: List[(String, File)] = Nil,
@@ -473,22 +486,20 @@ object Step {
       (ds.getLocation.getLine, ds.getContent, Option(ds.getContentType).filter(_.trim.length > 0))
     }
     new Step(
-      StepKeyword.withName(step.getKeyword.trim),
+      step.getKeyword.trim,
       step.getText,
       table = dataTable,
       docString = docString
     ) tap { s => s.pos = Position(step.getLocation) }
   }
-  def apply(pos: Position, keyword: StepKeyword.Value, expression: String): Step =
+  def apply(pos: Position, keyword: String, expression: String): Step =
     new Step(keyword, expression) tap { s => s.pos = pos }
-  def apply(pos: Position, keyword: StepKeyword.Value, expression: String, status: EvalStatus): Step =
+  def apply(pos: Position, keyword: String, expression: String, status: EvalStatus): Step =
     new Step(keyword, expression, status) tap { s => s.pos = pos }
   def apply(step: Step, pos: Position): Step =
     new Step(step.keyword, step.name, step.status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = pos}
-  def apply(step: Step, keyword: StepKeyword.Value): Step =
-    new Step(keyword, step.name, step.status, step.attachments, step.stepDef, step.table, step.docString) tap { s => s.pos = step.pos}
-  def apply(step: Step, expression: String): Step =
-    new Step(step.keyword, expression, step.status, step.attachments, table = step.table, docString = step.docString) tap { s => s.pos = step.pos}
+  def apply(step: Step, keyword: String, expression: String): Step =
+    new Step(keyword, expression, step.status, step.attachments, table = step.table, docString = step.docString) tap { s => s.pos = step.pos}
   def apply(step: Step, stepDef: Scenario): Step =
     new Step(step.keyword, step.name, stepDef.evalStatus, stepDef.steps.flatMap(_.attachments), Some(stepDef), step.table, step.docString) tap { s => s.pos = step.pos }
   def apply(step: Step, status: EvalStatus): Step =

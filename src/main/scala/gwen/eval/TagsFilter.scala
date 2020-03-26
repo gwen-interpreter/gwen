@@ -43,7 +43,7 @@ object TagsFilter {
     val filters = tagFilters ++ DefaultTags
     def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
     def rules = spec.rules map { rule =>
-      Rule(rule.name, rule.description, rule.background, filterScenarios(spec, tagFilters, rule.scenarios))
+      Rule(rule.keyword, rule.name, rule.description, rule.background, filterScenarios(spec, tagFilters, rule.scenarios))
     }
     if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
       None

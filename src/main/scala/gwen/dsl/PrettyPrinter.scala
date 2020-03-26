@@ -43,16 +43,16 @@ object prettyPrint {
         background.map(apply).getOrElse("") +
         printAll(rules.map(apply), "", "") +
         printAll(scenarios.map(apply), "", "")
-    case Feature(language, tags, name, description) =>
-      s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   ${Feature.keyword}: $name${formatTextLines(description)}"
-    case background @ Background(name, description, steps) =>
-      s"\n\n${Background.keyword}: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
+    case Feature(language, tags, keyword, name, description) =>
+      s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   $keyword: $name${formatTextLines(description)}"
+    case background @ Background(keyword, name, description, steps) =>
+      s"\n\n$keyword: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
     case scenario @ Scenario(tags, keyword, name, description, background, steps, isOutline, examples, _) =>
       background.map(apply).getOrElse("") +
         (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
-    case rule @ Rule(name, description, background, scenarios) =>
-      s"\n\n      ${Rule.keyword}: $name${formatTextLines(description)}" +
+    case rule @ Rule(keyword, name, description, background, scenarios) =>
+      s"\n\n      $keyword: $name${formatTextLines(description)}" +
         background.map(apply).getOrElse("") + 
         printAll(scenarios.map(apply), "", "")
     case Step(keyword, name, evalStatus, _, _, table, docString) =>
@@ -61,9 +61,9 @@ object prettyPrint {
       else if (docString.nonEmpty)
         formatTextLines(Formatting.formatDocString(docString.get).split("""\r?\n""").toList)
       else ""}"
-    case Examples(tags, name, description, table, scenarios) => scenarios match {
+    case Examples(tags, keyword, name, description, table, scenarios) => scenarios match {
       case Nil =>
-        s"\n${formatTags("  ", tags)}  ${Examples.keyword}: $name${formatTextLines(description)}${formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })}"
+        s"\n${formatTags("  ", tags)}  $keyword: $name${formatTextLines(description)}${formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })}"
       case _ =>
         scenarios.map(apply).mkString("")
     }
