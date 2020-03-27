@@ -130,7 +130,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    val sd = Scenario(tags, FeatureKeyword.Scenario.toString, stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile) tap { sd =>
+    val sd = Scenario(tags, FeatureKeyword.nameOf(FeatureKeyword.Scenario), stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile) tap { sd =>
       sd.pos = stepDef.pos
     }
     stepDefs += ((stepDef.name, sd))

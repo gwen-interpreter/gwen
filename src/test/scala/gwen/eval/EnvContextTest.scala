@@ -39,8 +39,8 @@ class EnvContextTest extends BaseTest with Matchers {
   "New StepDef added to env context" should "be accessible" in {
     
     val steps = List(
-      Step(StepKeyword.Given, """I enter "gwen" in the search field"""),
-      Step(StepKeyword.And, """I submit the search field""")
+      Step(StepKeyword.Given.toString, """I enter "gwen" in the search field"""),
+      Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
     val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
@@ -55,8 +55,8 @@ class EnvContextTest extends BaseTest with Matchers {
   "New StepDef added to env context" should "not be accessible after feature level reset" in {
     
     val steps = List(
-      Step(StepKeyword.Given, """I enter "gwen" in the search field"""),
-      Step(StepKeyword.And, """I submit the search field""")
+      Step(StepKeyword.Given.toString, """I enter "gwen" in the search field"""),
+      Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
     val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
@@ -72,8 +72,8 @@ class EnvContextTest extends BaseTest with Matchers {
   "New StepDef added to env context" should "still be accessible after scenario level reset" in {
     
     val steps = List(
-      Step(StepKeyword.Given, """I enter "gwen" in the search field"""),
-      Step(StepKeyword.And, """I submit the search field""")
+      Step(StepKeyword.Given.toString, """I enter "gwen" in the search field"""),
+      Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
     val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)

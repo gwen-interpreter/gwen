@@ -30,8 +30,8 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
   private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
   
-  private val step1 = Step(StepKeyword.Given, "I am step 1")
-  private val step2 = Step(StepKeyword.Then, "I am not step 1")
+  private val step1 = Step(StepKeyword.Given.toString, "I am step 1")
+  private val step2 = Step(StepKeyword.Then.toString, "I am not step 1")
   
   private val comment1 = "# I am single line hash comment"
   
@@ -128,10 +128,10 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     outline.name should be ("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be (None)
     outline.description should be (List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
-    outline.steps(0) should be (Step(Step(StepKeyword.Given, """string 1 is "<string 1>""""), Position(11, 5)))
-    outline.steps(1) should be (Step(Step(StepKeyword.And, """string 2 is "<string 2>""""), Position(12, 7)))
-    outline.steps(2) should be (Step(Step(StepKeyword.When, "I join the two strings"), Position(13, 6)))
-    outline.steps(3) should be (Step(Step(StepKeyword.Then, """the result should be "<result>""""), Position(14, 6)))
+    outline.steps(0) should be (Step(Step(StepKeyword.Given.toString, """string 1 is "<string 1>""""), Position(11, 5)))
+    outline.steps(1) should be (Step(Step(StepKeyword.And.toString, """string 2 is "<string 2>""""), Position(12, 7)))
+    outline.steps(2) should be (Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(13, 6)))
+    outline.steps(3) should be (Step(Step(StepKeyword.Then.toString, """the result should be "<result>""""), Position(14, 6)))
 
     val examples = outline.examples
     examples.size should be (3)

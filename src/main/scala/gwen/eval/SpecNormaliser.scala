@@ -54,6 +54,7 @@ trait SpecNormaliser extends EvalRules {
         Feature(
           spec.feature.language,
           spec.feature.tags,
+          spec.feature.keyword,
           s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}",
           spec.feature.description)
       } getOrElse spec.feature,
@@ -62,6 +63,7 @@ trait SpecNormaliser extends EvalRules {
       spec.rules map { rule => 
         validate(specFile, rule.background, rule.scenarios)
         Rule(
+          rule.keyword,
           rule.name,
           rule.description,
           None,
@@ -83,7 +85,7 @@ trait SpecNormaliser extends EvalRules {
   
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
-      val keyword = if (index == 0) StepKeyword.Given else StepKeyword.And 
+      val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(keyword, s"""$name is "$value"""")
     }
     val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
@@ -91,18 +93,27 @@ trait SpecNormaliser extends EvalRules {
       case Some(bg) =>
         val bgSteps = bg.steps match {
           case head :: tail if steps.size > 0 =>
-            if (head.keyword == StepKeyword.Given) {
-              Step(head, StepKeyword.And) :: tail
+            if (StepKeyword.isGiven(head.keyword)) {
+              Step(head, StepKeyword.nameOf(StepKeyword.And), head.expression) :: tail
             } else {
               bg.steps
             }
           case _ => bg.steps
         }
-        Background(s"${bg.name} (plus input data)", bg.description ++ List(description), steps ++ bgSteps) tap { b => 
+        Background(
+          bg.keyword,
+          s"${bg.name} (plus input data)", 
+          bg.description ++ List(description), 
+          steps ++ bgSteps
+        ) tap { b => 
           b.pos = bg.pos
         }
       case None =>
-        Background("Input data", List(description), steps)
+        Background(
+          FeatureKeyword.nameOf(FeatureKeyword.Background), 
+          "Input data", 
+          List(description), 
+          steps)
     }
     expandScenarios(scenarios, Some(dataBackground))
   }
@@ -130,7 +141,7 @@ trait SpecNormaliser extends EvalRules {
             val params: List[(String, String)] = names zip values
             new Scenario(
               outline.tags.filter(t => t != Tag.StepDefTag && !t.name.startsWith("Examples")),
-              if (outline.keyword.contains("Outline")) FeatureKeyword.Scenario.toString else FeatureKeyword.Example.toString,
+              if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
               s"${Formatting.resolveParams(outline.name, params)} -- Example ${index + 1}.${subIndex + 1} ${exs.name}",
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None else background,

@@ -53,13 +53,10 @@ class FeatureResult(
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   lazy val sustainedCount: Int = spec.sustainedCount
   
-  private[eval] lazy val exampleCounts = scenarioCountsFor(FeatureKeyword.Example.toString)
-  private[eval] lazy val scenarioCounts = scenarioCountsFor(FeatureKeyword.Scenario.toString)
-  
-  private def scenarioCountsFor(keyword: String) =
-    StatusKeyword.countsByStatus(spec.evalScenarios.filter(_.keyword == keyword).flatMap { s =>
+  private[eval] lazy val scenarioCounts = 
+    StatusKeyword.countsByStatus(spec.evalScenarios.flatMap { s =>
       if (s.isOutline) {
-        val scenarios = s.examples.flatMap(_.scenarios).filter(_.keyword == keyword)
+        val scenarios = s.examples.flatMap(_.scenarios)
         if (scenarios.nonEmpty) {
           scenarios.map(_.evalStatus)
         } else {

@@ -144,4 +144,10 @@ object GwenSettings {
     def `gwen.behavior.rules`: BehaviorRules.Value = 
       Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorRules.withName).getOrElse(BehaviorRules.lenient)
 
+  /**
+    * Provides access to the `gwen.feature.dialect` property setting used to set the default 
+    * dialect for Gherkin keywords in features.
+    */
+    def `gwen.feature.dialect`: String = Settings.getOpt("gwen.feature.dialect").getOrElse("en")
+
 }

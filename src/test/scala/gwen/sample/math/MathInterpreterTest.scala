@@ -75,7 +75,7 @@ class MathInterpreterTest extends FlatSpec {
     env.dsl map { dsl =>
       dsl.replace("<integer>", "1")
     } foreach { dsl => 
-      StepKeyword.values foreach { keyword =>
+      StepKeyword.values.map(_.toString) foreach { keyword =>
         interpreter.evaluate(Step(keyword, dsl), env)
       }
     }

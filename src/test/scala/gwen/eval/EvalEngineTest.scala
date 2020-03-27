@@ -39,13 +39,13 @@ class EvalEngineTest extends FlatSpec with Matchers {
   "Unsupported step" should "fail with UnsupportedStepException" in {
     val env = engine.init(new GwenOptions())
     intercept[UndefinedStepException] {
-      engine.evaluate(Step(StepKeyword.Given, " I am unsupported"), env)
+      engine.evaluate(Step(StepKeyword.Given.toString, " I am unsupported"), env)
     }
   }
   
   "Step that fails interpolation" should "not be evaluated" in {
     val env = engine.init(new GwenOptions())
-    var step = Step(StepKeyword.Given, """x is "${y}"""")
+    var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
     step = engine.evaluateStep(step, env)
     step.evalStatus.status should be (StatusKeyword.Failed)
     env.scopes.getOpt("x") should be (None)
@@ -55,7 +55,7 @@ class EvalEngineTest extends FlatSpec with Matchers {
   "Step that passes interpolation" should "should be evaluated" in {
     val env = engine.init(new GwenOptions())
     env.scopes.set("y", "1")
-    var step = Step(StepKeyword.Given, """x is "${y}"""")
+    var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
     step = engine.evaluateStep(step, env)
     step.evalStatus.status should be (StatusKeyword.Passed)
     env.scopes.get("x") should be ("1")
@@ -65,14 +65,14 @@ class EvalEngineTest extends FlatSpec with Matchers {
   "Step that is a stepdef" should "should be evaluated" in {
     val env = engine.init(new GwenOptions())
     val stepDef = Scenario(List[Tag]("@StepDef", "@Action"), "I assign x, y, and z", Nil, None, List(
-        Step(StepKeyword.Given, """x is "1""""),
-        Step(StepKeyword.And, """y is "2""""),
-        Step(StepKeyword.And, """z is "3""""),
-        Step(StepKeyword.When, """I capture x as a"""),
-        Step(StepKeyword.Then, """a should be "1"""")))
+        Step(StepKeyword.Given.toString, """x is "1""""),
+        Step(StepKeyword.And.toString, """y is "2""""),
+        Step(StepKeyword.And.toString, """z is "3""""),
+        Step(StepKeyword.When.toString, """I capture x as a"""),
+        Step(StepKeyword.Then.toString, """a should be "1"""")))
     env.addStepDef(stepDef)
     env.scopes.set("y", "1")
-    var step = Step(StepKeyword.When, "I assign x, y, and z")
+    var step = Step(StepKeyword.When.toString, "I assign x, y, and z")
     step = engine.evaluateStep(step, env)
     step.evalStatus.status should be (StatusKeyword.Passed)
     env.scopes.get("x") should be ("1")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,18 @@
 
 package gwen.dsl
 
+import gwen.GwenSettings
 import gwen.errors._
+import gwen.Predefs.FileIO
 
 import io.cucumber.gherkin.Gherkin
 import io.cucumber.messages.Messages.GherkinDocument
 
 import scala.language.postfixOps
+import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
+import java.io.File
 import java.util.Collections
 import java.util.stream.Collectors
 import io.cucumber.gherkin.ParserException
@@ -62,26 +66,63 @@ import io.cucumber.gherkin.ParserException
   */
 trait GherkinParser {
 
+  private val languageSyntax = """(?s)\s*#\s*language:\s*(\S+).*""".r
+
   /** Produces a complete feature spec tree (this method is used to parse entire feature files). */
+  def parseFeatureFile(specFile: File): Try[FeatureSpec] = {
+    try {
+      val spec = Source.fromFile(specFile).mkString
+      val isMeta = FileIO.isMetaFile(specFile)
+      val featureStr = spec match {
+        case languageSyntax(lang) =>
+          if (isMeta && lang != "en") {
+            metaDialectError(lang, specFile)
+          } else {
+            spec
+          }
+        case _ =>
+          val language = if (isMeta) "en" else GwenSettings.`gwen.feature.dialect`
+          if (FileIO.isFeatureFile(specFile) && language != "en") {
+            Position.setLineOffset(-1)
+            s"""|# language: $language
+                |$spec""".stripMargin
+          } else {
+            spec
+          }
+      }
+      parseFeatureSpec(featureStr)
+    } finally {
+      Position.setLineOffset(0)
+    }
+  }
+
+  /** Produces a complete feature spec tree (this method is used to parse entire features). */
   def parseFeatureSpec(feature: String): Try[FeatureSpec] = Try {
     FeatureSpec(parseDocument(feature))
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
   def parseStep(step: String): Try[Step] = {
+    val language = if(StepKeyword.values.exists(k => step.trim.startsWith(s"${k.toString} "))) {
+      "en"
+    } else {
+      Dialect.instance.getLanguage
+    }
     Try {
-      Try(parseDocument(s"Feature:\nScenario:\n$step")) match {
-        case Success(ast) =>
-          Option(ast.getFeature)
-          .map(_.getChildrenList)
-          .filter(!_.isEmpty)
-          .map(_.get(0).getScenario.getStepsList)
-          .filter(!_.isEmpty)
-          .map(steps => Step(steps.get(0)))
-          .map(step => Step(step, Position(1, step.pos.column)))
-          .getOrElse(syntaxError(s"'Given|When|Then|And|But <expression>' expected", 1))
-        case Failure(e) =>
-          syntaxError(s"'Given|When|Then|And|But <expression>' expected: ${e.getMessage}", 1)
+      Dialect.withLanguage(language) {
+        Try(parseDocument(s"${if (language != "en") s"# language: ${language}\n${FeatureKeyword.nameOf(FeatureKeyword.Feature)}" else FeatureKeyword.Feature.toString}:\n${FeatureKeyword.nameOf(FeatureKeyword.Scenario)}:\n$step")) match {
+          case Success(ast) =>
+            Option(ast.getFeature)
+            .map(_.getChildrenList)
+            .filter(!_.isEmpty)
+            .map(_.get(0).getScenario.getStepsList)
+            .filter(!_.isEmpty)
+            .map(steps => Step(steps.get(0)))
+            .map(step => Step(step, Position(1, step.pos.column)))
+            .getOrElse(syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected", 1))
+          case Failure(e) =>
+            syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected: ${e.getMessage}", 1)
+        }
       }
     }
   }

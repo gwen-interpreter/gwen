@@ -26,7 +26,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
   
   "Valid steps" should "parse" in {
     
-    StepKeyword.values foreach { keyword =>
+    StepKeyword.values.map(_.toString) foreach { keyword =>
       parse(s"$keyword I am a regular test step").get                               should be (Step(keyword, "I am a regular test step"))
       parse(s"""$keyword I contain a double quoted "literal"""").get                should be (Step(keyword, """I contain a double quoted "literal""""))
       parse(s"$keyword I contain a single quoted 'literal'").get                    should be (Step(keyword, "I contain a single quoted 'literal'"))
@@ -44,7 +44,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
   
   "Invalid steps" should "not parse" in {
     
-    StepKeyword.values foreach { keyword =>
+    StepKeyword.values.map(_.toString) foreach { keyword =>
       
       assertFail(s"$keyword",   "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
       assertFail(s"$keyword ",  "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
@@ -81,7 +81,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val step = parse(stepString).get
 
-    step.keyword should be (StepKeyword.Then)
+    step.keyword should be (StepKeyword.Then.toString)
     step.name should be ("the word should match the number")
     step.table should be (
       // offset line numbers by implicit feature+scenario add by step string parser
@@ -120,7 +120,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val step = parse(stepString).get
 
-    step.keyword should be (StepKeyword.Given)
+    step.keyword should be (StepKeyword.Given.toString)
     step.name should be ("the following lines")
     step.table should be (Nil)
     step.docString.nonEmpty should be (true)
@@ -149,7 +149,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
 
     val step = parse(stepString).get
 
-    step.keyword should be (StepKeyword.Given)
+    step.keyword should be (StepKeyword.Given.toString)
     step.name should be ("the following lines")
     step.table should be (Nil)
     step.docString.nonEmpty should be (true)
@@ -173,14 +173,14 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
   }
 
   "toString on step clone" should "return same value" in {
-    val step1 = Step(StepKeyword.Given, "I am a step")
-    val step2 = Step(StepKeyword.Given, "I am a step")
+    val step1 = Step(StepKeyword.Given.toString, "I am a step")
+    val step2 = Step(StepKeyword.Given.toString, "I am a step")
     step1.toString should be (step2.toString)
   }
 
   "uniqueId on step clone" should "return different values" in {
-    val step1 = Step(StepKeyword.Given, "I am a step")
-    val step2 = Step(StepKeyword.Given, "I am a step")
+    val step1 = Step(StepKeyword.Given.toString, "I am a step")
+    val step2 = Step(StepKeyword.Given.toString, "I am a step")
     step1.uniqueId should not be (step2.uniqueId)
   }
   

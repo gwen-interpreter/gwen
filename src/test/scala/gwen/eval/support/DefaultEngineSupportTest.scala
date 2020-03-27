@@ -37,22 +37,22 @@ class DefaultEngineSupportTest extends FlatSpec with Matchers {
   val env: TestEnvContext = engine.init(new GwenOptions())
   
   "Set attribute binding step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """my name is "Gwen""""), env)
+    engine.evaluate(Step(StepKeyword.Given.toString, """my name is "Gwen""""), env)
     env.topScope.get("my name") should be ("Gwen")
   }
   
   "Set global setting step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """my gwen.username setting is "Gwen""""), env)
+    engine.evaluate(Step(StepKeyword.Given.toString, """my gwen.username setting is "Gwen""""), env)
     Settings.get("gwen.username") should be ("Gwen")
   }
   
   "Execute system process 'hostname'" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given, """I execute system process "hostname""""), env)
+    engine.evaluate(Step(StepKeyword.Given.toString, """I execute system process "hostname""""), env)
   }
   
   "Execute system process 'undefined'" should "fail with IOException" in {
     intercept[IOException] {
-      engine.evaluate(Step(StepKeyword.Given, """I execute system process "undefined""""), env)
+      engine.evaluate(Step(StepKeyword.Given.toString, """I execute system process "undefined""""), env)
     }
   }
   

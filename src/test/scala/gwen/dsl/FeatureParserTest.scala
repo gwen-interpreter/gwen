@@ -23,7 +23,7 @@ import scala.util.Success
 class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
 
   object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, name, description)
+   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
   }
 
   private def parse(input: String) = parseFeatureSpec(input).map(_.feature)

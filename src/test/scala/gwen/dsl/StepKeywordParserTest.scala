@@ -25,7 +25,7 @@ class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
   private val parse = parseStep(_: String).map(_.keyword)
   
   "Valid step keywords" should "parse" in {
-    StepKeyword.values foreach { keyword =>
+    StepKeyword.values.map(_.toString) foreach { keyword =>
       parse(s"$keyword I am step 1").get      should be (keyword)
       parse(s"\t$keyword I am step 2").get    should be (keyword)
       parse(s" $keyword I am step 3").get     should be (keyword)
@@ -37,7 +37,7 @@ class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
     
     assertFail("NonStepKeyword")
     
-    StepKeyword.values foreach { keyword =>
+    StepKeyword.values.map(_.toString) foreach { keyword =>
       assertFail(keyword.toString.toLowerCase())
       assertFail(keyword.toString.toUpperCase())
       assertFail(keyword + "x")

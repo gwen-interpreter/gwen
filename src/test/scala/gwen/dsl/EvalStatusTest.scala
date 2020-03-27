@@ -99,7 +99,7 @@ Background: The tester
           scenario.name, 
           scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map {step =>
+            Background(background.keyword, background.name, background.description, background.steps map {step =>
               Step(step.keyword, step.name, Passed(1))
             })
           }, 
@@ -137,7 +137,7 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map {step =>
+            Background(background.keyword, background.name, background.description, background.steps map {step =>
               Step(step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else Passed(1))
             })
           },
@@ -175,7 +175,7 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map {step =>
+            Background(background.keyword, background.name, background.description, background.steps map {step =>
               Step(step.keyword, step.name, Passed(1))
             })
           },
@@ -215,7 +215,7 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map {step =>
+            Background(background.keyword, background.name, background.description, background.steps map {step =>
               Step(step.keyword, step.name, Passed(1))
             })
           },
@@ -263,7 +263,7 @@ Background: The tester
           scenario.name, 
           scenario.description,
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
+            Background(background.keyword, background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step.keyword, step.name, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
@@ -327,7 +327,7 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
+            Background(background.keyword, background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step.keyword, step.name, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
@@ -391,7 +391,7 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map { step =>
+            Background(background.keyword, background.name, background.description, background.steps map { step =>
               Step(step.keyword, step.name, scenarioIndex match {
                 case 0 => Passed(1)
                 case _ => step.evalStatus
@@ -462,7 +462,7 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.name, background.description, background.steps map { step =>
+            Background(background.keyword, background.name, background.description, background.steps map { step =>
               Step(step.keyword, step.name, Passed(1))
             }) 
           }, 

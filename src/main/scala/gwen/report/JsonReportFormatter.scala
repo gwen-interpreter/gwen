@@ -58,7 +58,7 @@ trait JsonReportFormatter extends ReportFormatter {
     Some(s"""[
   {${spec.featureFile.map(file => s"""
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
-    "keyword": "${Feature.keyword}",
+    "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}",
     "line": ${feature.pos.line},
     "name": "${escapeJson(name)}",
@@ -79,16 +79,16 @@ trait JsonReportFormatter extends ReportFormatter {
   }
 
   private def renderBackground(background: Background, bIndex: Int) = {
-    val id = s"${Background.keyword.toLowerCase};${background.name.toLowerCase.replace(' ', '-')};${bIndex + 1}"
+    val id = s"${background.keyword.toLowerCase};${background.name.toLowerCase.replace(' ', '-')};${bIndex + 1}"
     val description = s"${background.description.mkString(Properties.lineSeparator)}"
     s"""
       {
-        "keyword": "${Background.keyword}",
+        "keyword": "${background.keyword}",
         "id": "${escapeJson(id)}",
         "line": ${background.pos.line},
         "name": "${escapeJson(background.name)}",
         "description": "${escapeJson(description)}",
-        "type": "${Background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
+        "type": "${background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
         "steps": [${renderSteps(background.steps, id)}
         ]""" else ""}
       }"""
@@ -119,7 +119,7 @@ trait JsonReportFormatter extends ReportFormatter {
           val examplesDescription = s"${examples.description.mkString(Properties.lineSeparator)}"
           s"""
            {
-             "keyword": "${Examples.keyword}",
+             "keyword": "${examples.keyword}",
              "name": "${escapeJson(examples.name)}",
              "line": ${examples.pos.line},
              "description": "${escapeJson(examplesDescription)}",

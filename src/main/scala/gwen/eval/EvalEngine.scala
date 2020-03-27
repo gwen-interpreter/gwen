@@ -148,9 +148,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     * @return the evaluated background
     */
   private[eval] def evaluateBackground(background: Background, env: T): Background = {
-    logger.info(s"Evaluating ${Background.keyword}: $background")
+    logger.info(s"Evaluating ${background.keyword}: $background")
     Background(background, evaluateSteps(background.steps, env)) tap { bg =>
-      logStatus(Background.keyword, bg.toString, bg.evalStatus)
+      logStatus(background.keyword, bg.toString, bg.evalStatus)
     }
   }
   
@@ -308,7 +308,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     try {
       steps.foldLeft(List[Step]()) {
         (acc: List[Step], step: Step) => 
-          if (step.keyword != StepKeyword.And) {
+          if (!StepKeyword.isAnd(step.keyword)) {
             env.addBehavior(BehaviorType.of(step.keyword))
             behaviorCount = behaviorCount + 1 
           }
@@ -371,16 +371,16 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
                     if (failfast && !exitOnFail && !isSoftAssert) {
                       logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                      Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep, Skipped)
+                      Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Skipped)
                     } else if (exitOnFail && !isSoftAssert) {
                       step
                     } else {
                       logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                      evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
+                      evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep), env)
                     }
                   case _ =>
                     logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                    evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.And, doStep), env)
+                    evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep), env)
                 }
               } finally {
                 env.topScope.popObject(element)
@@ -392,7 +392,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
             env.topScope.set(s"$element number", null)
           }
       }
-    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), FeatureKeyword.Scenario.toString, element, Nil, None, steps, false, Nil, None)
+    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), FeatureKeyword.nameOf(FeatureKeyword.Scenario), element, Nil, None, steps, false, Nil, None)
     env.addForeachStepDef(step, foreachStepDef)
     step
   }
