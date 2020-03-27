@@ -123,17 +123,19 @@ object StepKeyword extends Enumeration {
   type StepKeyword = Value
   val Given, When, Then, And, But = Value
 
-  def nameOf(keyword: StepKeyword.Value): String = namesOf(keyword).head
+  def nameOf(keyword: StepKeyword.Value): String = namesOf(keyword).filter(_ != "*").head
 
   private def namesOf(keyword: StepKeyword.Value): List[String] = {
     val dialect = Dialect.instance
-    (keyword match {
+    val names = (keyword match {
       case Given => dialect.getGivenKeywords
       case When => dialect.getWhenKeywords
       case Then => dialect.getThenKeywords
       case And => dialect.getAndKeywords
       case _ => dialect.getButKeywords
-    }).asScala.toList.map(_.trim).filter(_ != "*")
+    }).asScala.toList.map(_.trim)
+    if (keyword != And) names.filter(_ != "*")
+    else names
   }
   
   def names: List[String] =
@@ -141,7 +143,7 @@ object StepKeyword extends Enumeration {
     (When.toString::namesOf(When)) ++
     (Then.toString::namesOf(Then)) ++
     (And.toString::namesOf(And)) ++
-    (But.toString::namesOf(But))).distinct
+    (But.toString::namesOf(But))).filter(_ != "*").distinct
 
   def isGiven(keyword: String): Boolean = 
     Given.toString == keyword || namesOf(Given).exists(_ == keyword)
