@@ -55,7 +55,6 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
     val startNanos = System.nanoTime
     try {
-      Settings.loadAll(options.properties)
       val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {

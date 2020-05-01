@@ -1,3 +1,8 @@
+2.27.1
+======
+May 1, 2020
+- Fix loading of custom log4j configuration (issue #55)
+
 2.27.0
 ======
 March 28, 2020

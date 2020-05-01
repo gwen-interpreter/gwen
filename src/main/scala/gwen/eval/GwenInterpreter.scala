@@ -24,6 +24,7 @@ import scala.util.Success
 import scala.util.Try
 import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenInfo
+import gwen.Settings
 import gwen.GwenSettings
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
@@ -31,7 +32,8 @@ import gwen.Predefs.FileIO._
 import gwen.dsl._
 import gwen.errors._
 import java.util.Date
-
+import java.net.URL
+import org.apache.log4j.PropertyConfigurator
 import com.github.tototoshi.csv.CSVReader
 import io.cucumber.gherkin.ParserException
 import scala.concurrent._
@@ -56,6 +58,14 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param options command line options
     */
   private[eval] def initialise(options: GwenOptions): T = {
+    Settings.loadAll(options.properties)
+    Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
+      if (config.toLowerCase.trim startsWith "file:") {
+        PropertyConfigurator.configure(new URL(config));
+      } else {
+        PropertyConfigurator.configure(config); 
+      }
+    }
     engine.init(options) tap { env =>
       logger.info("Environment context initialised")
     }
