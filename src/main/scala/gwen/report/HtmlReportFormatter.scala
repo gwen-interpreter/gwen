@@ -142,7 +142,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
     val tags = scenario.tags.filter(t => t != Tag.StepDefTag && t != Tag.ForEachTag)
-    val scenarioKeywordPixels = scenario.steps.map(_.keyword.length).max * 9
+    val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     s"""
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
@@ -163,7 +163,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       (scenario.background map { background =>
         val status = background.evalStatus.status
         val backgroundId = s"$scenarioId-background"
-        val keywordPixels = background.steps.map(_.keyword.length).max * 9
+        val keywordPixels = noOfKeywordPixels(background.steps)
         s"""
         <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
           <ul class="list-group">
@@ -320,7 +320,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           </ul>
           <div class="panel-body">
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-          val keywordPixels = background.steps.map(_.keyword.length).max * 9
+          val keywordPixels = noOfKeywordPixels(background.steps)
           (background.steps.zipWithIndex map { case (step, index) =>
             formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}-${index + 1}", keywordPixels)
           }).mkString
@@ -634,5 +634,10 @@ object HtmlReportFormatter {
     $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
   </script>
   """
+
+  private def noOfKeywordPixels(steps: List[Step]): Int = steps match {
+    case Nil => 9
+    case _ => steps.map(_.keyword.length).max * 9
+  }
           
 }

@@ -1,3 +1,8 @@
+2.27.2
+======
+May 8, 2020
+- Fix `empty.max` error in HTML report generator
+
 2.27.1
 ======
 May 1, 2020
