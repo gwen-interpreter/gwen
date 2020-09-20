@@ -1,3 +1,9 @@
+2.27.3
+======
+Sep 19, 2020
+- Use work-stealing thread pool for parallel execution to ensure that all available processors 
+  are effectively utilised.
+
 2.27.2
 ======
 May 8, 2020

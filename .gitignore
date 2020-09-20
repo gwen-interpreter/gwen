@@ -11,3 +11,4 @@ project/project/target/
 .bloop/
 *.log
 /bin/
+.java-version

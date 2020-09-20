@@ -21,6 +21,7 @@ import java.io.File
 import gwen.{GwenInfo, Settings}
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
+import gwen.dsl.StateLevel
 import gwen.dsl.Tag
 import scopt.OptionParser
 import gwen.errors._
@@ -31,7 +32,7 @@ import gwen.report.ReportFormat
   *
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
-  * @param parallelFeatures true to run features parallel regardless of state level (default is false)
+  * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
   * @param properties list of properties files to load as settings
   * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
@@ -55,6 +56,8 @@ case class GwenOptions(
     metas: List[File] = Nil, 
     features: List[File] = Nil,
     args: Option[Array[String]] = None) {
+  
+  val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
   
   /**
     * Gets the command string used to invoke gwen.

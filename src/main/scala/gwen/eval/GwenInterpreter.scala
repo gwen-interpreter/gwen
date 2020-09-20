@@ -38,7 +38,7 @@ import com.github.tototoshi.csv.CSVReader
 import io.cucumber.gherkin.ParserException
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import java.util.concurrent.CopyOnWriteArrayList
 import scala.collection.JavaConverters._
 
@@ -174,11 +174,13 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
 
   private def evaluateScenarios(scenarios: List[Scenario], specType: SpecType.Value, env: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s)
-    if (!env.isParallelFeatures && env.isParallel && !SpecType.meta.equals(specType) && StateLevel.scenario.equals(env.stateLevel)) {
+    if (env.isParallelScenarios && !SpecType.meta.equals(specType) && StateLevel.scenario.equals(env.stateLevel)) {
       val stepDefOutput = input.filter(_.isStepDef).foldLeft(List[Scenario]()) {
         (acc: List[Scenario], scenario: Scenario) =>
           evaluateScenario(scenario, specType, acc, env) :: acc
       }
+      val executor = ParallelExecutor.createInstance(parallelScenarios = true)
+      implicit val ec = ExecutionContext.fromExecutorService(executor)
       val acc = new CopyOnWriteArrayList[Scenario](stepDefOutput.asJavaCollection)
       val outputFutures = input.filter(!_.isStepDef).toStream.map { scenario =>
         Future {

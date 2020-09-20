@@ -33,7 +33,6 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import gwen.dsl.StateLevel
 import scala.concurrent.ExecutionContext
-import java.util.concurrent.Executors
 
 /**
   * Launches the gwen interpreter.
@@ -105,13 +104,8 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
-    implicit val ec = if (options.parallelFeatures || StateLevel.isFeature) {
-      ExecutionContext.Implicits.global
-    } else {
-      val noOfProcessors = Runtime.getRuntime().availableProcessors()
-      val noOfThreads = noOfProcessors / 2
-      ExecutionContext.fromExecutorService(Executors.newWorkStealingPool(noOfThreads))
-    }
+    val executor = ParallelExecutor.createInstance(options.isParallelScenarios)
+    implicit val ec = ExecutionContext.fromExecutorService(executor)
     val featureUnits = featureStream.map { unit =>
       Future {
         if (!started.get) {
@@ -126,7 +120,6 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
           }
         }
         evaluateUnit(options, envOpt, unit) { result =>
-          println(result)
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }

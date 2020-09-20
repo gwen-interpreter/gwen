@@ -61,6 +61,9 @@ class EnvContext(options: GwenOptions) extends Evaluatable
   /** Parallel feature execution mode flag. */
   val isParallelFeatures: Boolean = options.parallelFeatures
 
+  /** Parallel scenario execution mode flag. */
+  val isParallelScenarios: Boolean = options.isParallelScenarios
+
   /** Provides access to the configures state level. */
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
