@@ -93,7 +93,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
-    if (options.parallel || options.parallelFeatures) {
+    if (options.parallel) {
       executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
     } else {
       executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
@@ -104,7 +104,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
-    val executor = ParallelExecutor.createInstance(options.isParallelScenarios)
+    val executor = ParallelExecutors.featureInstance
     implicit val ec = ExecutionContext.fromExecutorService(executor)
     val featureUnits = featureStream.map { unit =>
       Future {

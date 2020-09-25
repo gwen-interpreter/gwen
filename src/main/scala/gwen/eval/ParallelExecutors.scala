@@ -16,33 +16,30 @@
 
 package gwen.eval
 
-import gwen.dsl.StateLevel
+import gwen.errors.propertyLoadError
+import gwen.GwenSettings
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
+import com.typesafe.scalalogging.LazyLogging
 
 /** 
  * Creates and provides access to an executor for parallel feature or scenario 
- * execution based on the number of available processors.
+ * execution.
  */
-object ParallelExecutor {
-
-  private val processors = Runtime.getRuntime().availableProcessors()
+object ParallelExecutors extends LazyLogging {
+  
+  lazy val featureInstance = createExecutor()
+  lazy val scenarioInstance = createExecutor()
 
   /**
-    * Creates and returns an executor. The number of threads in the pool is set to the 
-    * total number of available processors when executing features in parallel. When 
-    * executing scenarios in parallel however, it is set to half that value for both 
-    * features and scenarios so that both are able to execute.
+    * Creates and returns an executor for parallel feature and scenario execution. 
+    * The number of threads in the pool is set to the `gwen.parallel.maxThreads` setting
+    * value or the number of available processors if not configured.
     *
-    * @param parallelScenarios true for executing parallel scenarios, false for features
     * @return an executor instance
     */
-  def createInstance(parallelScenarios: Boolean): ExecutorService = {
-    if (StateLevel.isScenario && parallelScenarios) {
-      Executors.newWorkStealingPool(processors / 2)
-    } else {
-      Executors.newWorkStealingPool()
-    }
+  private def createExecutor(): ExecutorService = {
+    Executors.newWorkStealingPool(GwenSettings.`gwen.parallel.maxThreads`)
   }
 
 }

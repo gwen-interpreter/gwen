@@ -179,7 +179,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         (acc: List[Scenario], scenario: Scenario) =>
           evaluateScenario(scenario, specType, acc, env) :: acc
       }
-      val executor = ParallelExecutor.createInstance(parallelScenarios = true)
+      val executor = ParallelExecutors.scenarioInstance
       implicit val ec = ExecutionContext.fromExecutorService(executor)
       val acc = new CopyOnWriteArrayList[Scenario](stepDefOutput.asJavaCollection)
       val outputFutures = input.filter(!_.isStepDef).toStream.map { scenario =>

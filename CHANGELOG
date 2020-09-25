@@ -1,3 +1,10 @@
+2.28.0
+======
+Sep 25, 2020
+- Added `gwen.parallel.maxThreads` to enable users to set the maximum number 
+  number of threads used for parallel execution (default = total available CPU processors)
+- Optimised parallel execution for both features and scenarios
+
 2.27.3
 ======
 Sep 19, 2020

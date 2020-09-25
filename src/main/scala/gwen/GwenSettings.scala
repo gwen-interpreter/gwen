@@ -20,6 +20,8 @@ import gwen.dsl.AssertionMode
 import gwen.dsl.FeatureMode
 import gwen.dsl.BehaviorRules
 import gwen.dsl.StateLevel
+import gwen.errors._
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Provides access to gwen settings defined through system properties loaded 
@@ -27,7 +29,12 @@ import gwen.dsl.StateLevel
   *
   * @author Branko Juric
   */
-object GwenSettings {
+object GwenSettings extends LazyLogging {
+
+  /** 
+   * Cap max threads to number of avilable processors.
+   */
+  val availableProcessors = Runtime.getRuntime().availableProcessors()
   
   /**
     * Provides access to the `gwen.feature.failfast` property setting used to enable 
@@ -149,5 +156,28 @@ object GwenSettings {
     * dialect for Gherkin keywords in features.
     */
     def `gwen.feature.dialect`: String = Settings.getOpt("gwen.feature.dialect").getOrElse("en")
+
+    /**
+      * Provides access to the `gwen.parallel.maxThreads` property setting used to set the maximum number
+      * of threads to use in parallel execution mode. The value will default to the 
+      * number of avialable processors in the host environment if it is not specified or exceeds
+      * that value.
+      */
+    def `gwen.parallel.maxThreads`: Int = {
+      Settings.getOpt("gwen.parallel.maxThreads").map(_.toInt).map { maxThreads =>
+        if (maxThreads < 1) {
+          propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
+        } else if (maxThreads > availableProcessors) {
+          logger.info(s"gwen.parallel.maxThreads = $availableProcessors (defaulted since $maxThreads exceeds available processors")
+          availableProcessors
+        } else {
+          logger.info(s"gwen.parallel.maxThreads = $maxThreads")
+          maxThreads
+        }
+      } getOrElse { 
+        logger.info(s"gwen.parallel.maxThreads = $availableProcessors (default)")
+        availableProcessors
+      }
+    }
 
 }
