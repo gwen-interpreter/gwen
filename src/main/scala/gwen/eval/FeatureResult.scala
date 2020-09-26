@@ -25,8 +25,6 @@ import java.util.Date
 
 import gwen.Predefs.Formatting._
 import gwen.Predefs.DurationOps
-import gwen.dsl.Scenario
-import gwen.dsl.FeatureKeyword
 
 /**
   * Captures the results of an evaluated feature.

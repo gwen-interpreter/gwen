@@ -1,32 +1,37 @@
-import com.typesafe.sbt.SbtGit._
 import sbt.Keys.{crossPaths, description, startYear}
-
-resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
 lazy val commonSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.13.3",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),
   startYear := Some(2014),
   licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
+  homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   trapExit := false,
   crossPaths := false,
   scalacOptions ++= Seq(
     "-feature",
     "-language:postfixOps",
     "-deprecation",
-    "-target:jvm-1.8"
-  )
+    "-target:8",
+    "-Xlint:_,-missing-interpolator"
+  ),
+  initialize := {
+    val _ = initialize.value
+    val javaVersion = sys.props("java.specification.version")
+    if (javaVersion != "1.8")
+      sys.error(s"JDK 8 is required to build this project. Found $javaVersion instead")
+  }
 )
 
 lazy val testDependencies = {
-  val scalaTest = "3.0.6"
+  val scalaTest = "3.0.9"
   val mockitoAll = "1.10.19"
-  val h2 = "1.4.199"
-  val slick = "3.3.0"
+  val h2 = "1.4.200"
+  val slick = "3.3.3"
 
   Seq(
     "org.scalatest" %% "scalatest" % scalaTest,
@@ -37,16 +42,16 @@ lazy val testDependencies = {
 }
 
 lazy val commonDependencies = {
-  val cucumberGherkin = "8.1.1"
+  val cucumberGherkin = "15.0.2"
   val scopt = "3.7.1"
-  val slf4jLog4j = "1.7.25"
+  val slf4jLog4j = "1.7.26"
   val scalaLogging = "3.9.2"
   val jline = "2.14.6"
-  val commonCodec = "1.12"
-  val commonsText = "1.6"
-  val scalaCSV = "1.3.5"
+  val commonCodec = "1.15"
+  val commonsText = "1.9"
+  val scalaCSV = "1.3.6"
   val jsonPath = "2.4.0"
-  val jodaTime = "2.10.1"
+  val jodaTime = "2.10.6"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,

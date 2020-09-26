@@ -6,9 +6,11 @@ project/project/target/
 .history
 .settings/
 .idea/
-.metals/
 .vscode/
+.metals/
 .bloop/
+.ammonite/
+metals.sbt
 *.log
 /bin/
 .java-version

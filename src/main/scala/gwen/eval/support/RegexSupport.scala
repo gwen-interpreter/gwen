@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.errors._
+import gwen.Errors._
 import gwen.eval.EnvContext
 
 /** Can be mixed into evaluation engines to provide Regex support. */
@@ -30,7 +30,7 @@ trait RegexSupport {
     * @param regex the regex extractor pattern
     * @param source the source string
     * @return the extracted value
-    * @throws gwen.errors.RegexException if the regex fails to evaluate
+    * @throws gwen.Errors.RegexException if the regex fails to evaluate
     */
   def extractByRegex(regex: String, source: String): String =
     evaluate("$[dryRun:regex]") {

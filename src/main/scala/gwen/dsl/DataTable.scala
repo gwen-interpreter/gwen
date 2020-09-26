@@ -15,7 +15,7 @@
  */
 package gwen.dsl
 
-import gwen.errors.{dataTableError, invalidTagError}
+import gwen.Errors.{dataTableError, invalidTagError}
 import gwen.eval.ScopedData
 
 /**

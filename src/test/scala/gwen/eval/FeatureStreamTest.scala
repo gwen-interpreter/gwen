@@ -16,7 +16,7 @@
 
 package gwen.eval
 
-import gwen.errors._
+import gwen.Errors._
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
 import java.io.File
@@ -52,8 +52,8 @@ class FeatureStreamTest extends BaseTest with Matchers {
     createDir("dir4")
     val featureFile = createFile("dir4/file.feature")
     val suite = featureStream.read(featureFile, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
         unit.dataRecord should be (None)
@@ -67,8 +67,8 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val featureFile = createFile("dir5/file.feature")
     val metaFile    = createFile("dir5/file.meta")
     val suite = featureStream.read(dir, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         unit.dataRecord should be (None)
@@ -82,8 +82,8 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val featureFile = createFile("dir5a/file.feature")
     val dataFile    = createDataFile("dir5a/file.csv")
     val suite = featureStream.read(dir, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
@@ -99,8 +99,8 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val metaFile    = createFile("dir5b/file.meta")
     val dataFile    = createDataFile("dir5b/file.csv")
     val suite = featureStream.read(dir, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
@@ -116,8 +116,8 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val metaFile    = createFile("dir5c/file.meta")
     val dataFile    = createDataFile("dir5c/file.csv")
     val suite = featureStream.read(dir, Some(dataFile))
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
@@ -132,10 +132,9 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val featureFile  = createFile("dir5d/file.feature")
     val metaFile     = createFile("dir5d/file.meta")
     val dataFile1    = createDataFile("dir5d/file1.csv")
-    val dataFile2    = createDataFile("dir5d/file2.csv")
     val suite = featureStream.read(dir, Some(dataFile1))
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
@@ -146,26 +145,26 @@ class FeatureStreamTest extends BaseTest with Matchers {
   }
   
   "1 input feature file with one meta and two data files in same dir" should "error" in {
-    val dir         =  createDir("dir5e")
-    val featureFile = createFile("dir5e/file.feature")
-    val metaFile    = createFile("dir5e/file.meta")
-    val dataFile1    = createDataFile("dir5e/file1.csv")
-    val dataFile2    = createDataFile("dir5e/file2.csv")
+    val dir = createDir("dir5e")
+    createFile("dir5e/file.feature")
+    createFile("dir5e/file.meta")
+    createDataFile("dir5e/file1.csv")
+    createDataFile("dir5e/file2.csv")
     intercept[AmbiguousCaseException] {
       featureStream.read(dir, None)
     }
   }
   
   "1 input feature file with 1 meta in same dir and 1 meta in parent" should "return the 1 feature and 2 meta" in {
-    val dir6        =  createDir("dir6")
-    val dir7        =  createDir("dir6/dir7")
+    val dir6 = createDir("dir6")
+    createDir("dir6/dir7")
     val metaFile1   = createFile("dir6/file1.meta")
     val metaFile2   = createFile("dir6/dir7/file2.meta")
     val featureFile = createFile("dir6/dir7/file.feature")
     val dataFile    = createDataFile("dir6/dir7/file.csv")
     val suite = featureStream.read(dir6, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
@@ -177,15 +176,15 @@ class FeatureStreamTest extends BaseTest with Matchers {
   
   "1 input feature file in bottom dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
     val dir61       =  createDir("dir61")
-    val dir71       =  createDir("dir61/dir71")
+    createDir("dir61/dir71")
+    createDataFile("dir61/file.csv")
     val metaFile1   = createFile("dir61/file1.meta")
-    val dataFile1   = createDataFile("dir61/file.csv")
     val metaFile2   = createFile("dir61/dir71/file2.meta")
     val featureFile = createFile("dir61/dir71/file.feature")
     val dataFile2   = createDataFile("dir61/dir71/file.csv")
     val suite = featureStream.read(dir61, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile2, new File(unit.dataRecord.get.dataFilePath))
@@ -197,15 +196,15 @@ class FeatureStreamTest extends BaseTest with Matchers {
   
   "1 input feature file in top dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
     val dir62       =  createDir("dir62")
-    val dir72       =  createDir("dir62/dir72")
+    createDir("dir62/dir72")
+    createDataFile("dir62/dir72/file.csv")
     val featureFile = createFile("dir62/file.feature")
-    val metaFile1   = createFile("dir62/file1.meta")
     val dataFile1   = createDataFile("dir62/file.csv")
+    val metaFile1 = createFile("dir62/file1.meta")
     val metaFile2   = createFile("dir62/dir72/file2.meta")
-    val dataFile2   = createDataFile("dir62/dir72/file.csv")
     val suite = featureStream.read(dir62, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
         assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
@@ -217,12 +216,12 @@ class FeatureStreamTest extends BaseTest with Matchers {
   
   "1 input feature file with no meta in same dir but 1 meta in parent " should "return the 1 feature and 1 meta" in {
     val dir8        =  createDir("dir8")
-    val dir9        =  createDir("dir8/dir9")
+    createDir("dir8/dir9")
     val metaFile    = createFile("dir8/file.meta")
     val featureFile = createFile("dir8/dir9/file.feature")
     val suite = featureStream.read(dir8, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
         unit.dataRecord should be (None)
@@ -232,16 +231,16 @@ class FeatureStreamTest extends BaseTest with Matchers {
   }
   
   "feature file with parent directory containing meta" should "return 1 feature and accumulated meta" in {
-    val dir10       =  createDir("dir10")
-    val dir11       =  createDir("dir10/dir11")
-    val dir12       =  createDir("dir10/dir11/dir12")
+    createDir("dir10")
+    createDir("dir10/dir11")
+    createDir("dir10/dir11/dir12")
     val metaFile1   = createFile("dir10/file1.meta")
     val metaFile2   = createFile("dir10/dir11/dir12/file2.meta")
     val metaFile3   = createFile("dir10/dir11/dir12/file3.meta")
     val featureFile = createFile("dir10/dir11/dir12/file.feature")
     val suite = featureStream.read(featureFile, None)
-    suite match {
-      case unit #:: Stream() => 
+    suite.toList match {
+      case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2, metaFile3), unit.metaFiles.sortBy(_.getName()))
         unit.dataRecord should be (None)
@@ -270,7 +269,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val metaFileDE     = createFile("dirD/dirE/file.meta")
     val featureFileDE  = createFile("dirD/dirE/fileDE.feature")
     val dirF           =  createDir("dirF")
-    val metaFileF      = createFile("dirF/file.meta")
+    createFile("dirF/file.meta")
     
     val suiteStream = featureStream.readAll(List(dirA, dirAB, dirAB1, dirAB2, featureFileAB2, dirD, featureFile2D, dirDE, dirF), None)
     val suites = suiteStream.iterator
@@ -407,7 +406,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       val metaFileKE     = createFile("dirK/dirE/fileKE.meta")
       val featureFileKE  = createFile("dirK/dirE/fileKE.feature")
       val dirL           =  createDir("dirL")
-      val metaFileF      = createFile("dirL/fileL.meta")
+      createFile("dirL/fileL.meta")
       
         val suiteStream = featureStream.readAll(List(dirJ, dirJB, dirJB1, dirJB2, featureFileJB2, dirK, featureFile2K, dirKE, dirL), None)
       val suites = suiteStream.iterator
@@ -526,7 +525,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
   }
   
   private def createFile(filepath: String): File = {
-    val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
+    val file = new File(rootDir.getPath + File.separator + filepath.replace('/', File.separatorChar))
     file.getParentFile.mkdirs()
     file.createNewFile()
     file
@@ -543,12 +542,12 @@ class FeatureStreamTest extends BaseTest with Matchers {
     dir
   }
   
-  private def assertFile(expected: File, actual: File) {
+  private def assertFile(expected: File, actual: File): Unit = {
     actual.getPath.startsWith("target") should be (true)
     actual.getPath should be (expected.getPath)
   }
   
-  private def assertMetaFiles(expecteds: List[File], actuals: List[File]) {
+  private def assertMetaFiles(expecteds: List[File], actuals: List[File]): Unit = {
     expecteds zip actuals foreach { case (expected, actual) =>
       val path = actual.getPath
       path.startsWith("target") should be (true)
@@ -556,7 +555,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     }
   }
   
-  private def assertEndOfStream(next: () => Unit) {
+  private def assertEndOfStream(next: () => Unit): Unit = {
     intercept[NoSuchElementException] {
       next()
     }

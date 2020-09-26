@@ -22,7 +22,6 @@ import gwen.Predefs.Kestrel
 import java.io.File
 import gwen.dsl.Scenario
 import gwen.dsl.Step
-import gwen.dsl.StepKeyword
 import gwen.dsl.BehaviorType
 
 class EnvState(val scopes: ScopedDataStack) {

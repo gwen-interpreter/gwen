@@ -23,12 +23,10 @@ import java.io.File
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
-import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp
 import gwen.eval.support.DefaultEngineSupport
-import gwen.Settings
 import gwen.BaseTest
 
 class BindingsEnvContext(val options: GwenOptions) 

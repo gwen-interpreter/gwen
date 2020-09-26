@@ -20,7 +20,7 @@ import java.io.File
 
 import gwen.Predefs.{Formatting, Kestrel}
 import gwen.dsl._
-import gwen.errors._
+import gwen.Errors._
 
 /**
   * Normalises a parsed feature spec by expanding scenarios and scenario outlines in preparation for evaluation.
@@ -74,7 +74,7 @@ trait SpecNormaliser extends EvalRules {
     )
   }
 
-  private def validate(specFile: Option[File], background: Option[Background], scenarios: List[Scenario]) {
+  private def validate(specFile: Option[File], background: Option[Background], scenarios: List[Scenario]): Unit = {
     background foreach { bg => 
       checkBackgroundRules(bg, specFile)
     }
@@ -170,7 +170,7 @@ trait SpecNormaliser extends EvalRules {
     * @param scenarios the list of scenarios to conditionally return
     * @param specFile optional file from which scenarios were loaded
     */
-  private def noDuplicateStepDefs(scenarios: List[Scenario], specFile: Option[File] = None): List[Scenario] = scenarios tap { scenarios =>
+  private def noDuplicateStepDefs(scenarios: List[Scenario], specFile: Option[File]): List[Scenario] = scenarios tap { scenarios =>
     val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name.replaceAll("<.+?>", "<?>")) filter { case (_, stepDefs) => stepDefs.size > 1 }
     val dupCount = duplicates.size
     if (dupCount > 0) {

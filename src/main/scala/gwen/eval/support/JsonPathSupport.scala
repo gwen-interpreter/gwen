@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.errors.jsonPathError
+import gwen.Errors.jsonPathError
 import com.jayway.jsonpath.JsonPath
 import gwen.eval.EnvContext
 

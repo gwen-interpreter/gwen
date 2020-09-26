@@ -17,7 +17,6 @@
 package gwen.eval
 
 import java.io.File
-import org.mockito.Matchers.any
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when

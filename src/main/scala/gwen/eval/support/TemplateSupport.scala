@@ -16,8 +16,8 @@
 
 package gwen.eval.support
 
-import gwen.errors._
-import gwen.eval.{EnvContext, ScopedDataStack}
+import gwen.Errors._
+import gwen.eval.EnvContext
 import gwen.Predefs.{Kestrel, StringOps}
 import org.apache.commons.lang3.StringUtils
 

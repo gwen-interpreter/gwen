@@ -74,7 +74,7 @@ class BackgroundParserTest extends FlatSpec with Matchers with GherkinParser {
      
   }
   
-  private def assertFail(input: String) {
+  private def assertFail(input: String): Unit = {
     parse(input) match {
       case Success(_) => fail("failure expected") 
       case _ => 

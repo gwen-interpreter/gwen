@@ -73,7 +73,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
 
   "Feature" should "parse" in {
     
-    val featureSpec = parse(featureString) match {
+    parse(featureString) match {
       case Success(fspec) =>
         fspec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         fspec.background.get should be {

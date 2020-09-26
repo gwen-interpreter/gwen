@@ -20,8 +20,8 @@ import scala.concurrent.duration._
 import java.util.Date
 
 import gwen.Predefs.Formatting._
-import gwen.errors.LicenseException
-import gwen.errors.DisabledStepException
+import gwen.Errors.LicenseException
+import gwen.Errors.DisabledStepException
 
 /** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {

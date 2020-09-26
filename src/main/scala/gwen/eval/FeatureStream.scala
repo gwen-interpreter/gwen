@@ -19,10 +19,9 @@ package gwen.eval
 import java.io.File
 
 import scala.annotation.tailrec
-import scala.collection.immutable.Stream.consWrapper
 import gwen.Predefs.FileIO._
 import com.typesafe.scalalogging.LazyLogging
-import gwen.errors._
+import gwen.Errors._
 import gwen.GwenSettings
 import gwen.Predefs.FileIO
 import gwen.Settings
@@ -48,9 +47,9 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     * @param dataFile optional data file (for data driven execution)
     * @return a stream of nested streams (one nested stream per given location)
     */
-  def readAll(locations: List[File], dataFile: Option[File]): Stream[Stream[FeatureUnit]] = locations.foldLeft(Stream[Stream[FeatureUnit]]()) { 
-    (suites: Stream[Stream[FeatureUnit]], location: File) => {
-      suites #::: Stream(read(location, dataFile)) 
+  def readAll(locations: List[File], dataFile: Option[File]): LazyList[LazyList[FeatureUnit]] = locations.foldLeft(LazyList[LazyList[FeatureUnit]]()) { 
+    (suites: LazyList[LazyList[FeatureUnit]], location: File) => {
+      suites #::: LazyList(read(location, dataFile)) 
     }
   } 
   
@@ -61,7 +60,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     * @param dataFile optional data file (for data driven execution)
     * @return a stream of [FeatureUnit]s found at the location
     */
-  def read(location: File, dataFile: Option[File]): Stream[FeatureUnit] = {
+  def read(location: File, dataFile: Option[File]): LazyList[FeatureUnit] = {
       val inputs = 
         if (location.getParentFile == null) {
           discoverInputs(location.getAbsoluteFile.getParentFile, (Nil, dataFile))
@@ -77,14 +76,14 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     * Recursively reads and streams features from a single file system location.
     *
     * @param location a file system location to read
-    * @param metaFiles optionally accumulated meta files (default is Nil)
+    * @param metaFiles optionally accumulated meta files
     * @param dataFile optional data file (for data driven execution)
     * @return a stream of [FeatureUnit]s found at the location
     */
-  private def deepRead(location: File, metaFiles: List[File] = Nil, dataFile: Option[File]): Stream[FeatureUnit] = {
+  private def deepRead(location: File, metaFiles: List[File], dataFile: Option[File]): LazyList[FeatureUnit] = {
     if (isDirectory(location)) {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
-      location.listFiles().toStream.flatMap(deepRead(_, inputs._1, inputs._2)) 
+      location.listFiles().to(LazyList).flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
       val unit = FeatureUnit(
@@ -96,16 +95,16 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
         },
         None)
       dataFile match {
-        case Some(file) => new FeatureSet(unit, file).toStream
+        case Some(file) => new FeatureSet(unit, file).to(LazyList)
         case None =>
           logger.info(s"Found $unit")
-          Stream(unit)
+          LazyList(unit)
       }
     } else {
       if (!isMetaFile(location)) {
         logger.debug(s"Ignoring file: $location")
       }
-      Stream()
+      LazyList()
     }
   }
   
@@ -114,7 +113,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     * 
     * @param dir the directory to scan in
     * @param inputs tuple of accumulated meta files and one optional data file
-    * @throws gwen.errors.AmbiguousCaseException if more than one data 
+    * @throws gwen.Errors.AmbiguousCaseException if more than one data 
     *         file is found in the given directory or more than one data file is 
     *         found in the directory path.
     */
@@ -137,7 +136,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     var associateMeta: Option[File] = None
     // filter out all meta associated with other features files
     val filteredMetas = metas.filter { m => 
-      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName}.feature")
+      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName()}.feature")
       val isAssociate = assocaitedFeature.isSame(Option(featureFile))
       if (isAssociate) {
         associateMeta = Some(m)

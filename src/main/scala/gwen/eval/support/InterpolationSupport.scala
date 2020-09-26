@@ -16,7 +16,6 @@
 package gwen.eval.support
 
 import gwen.Predefs.RegexContext
-import scala.annotation.tailrec
 import com.typesafe.scalalogging.LazyLogging
 
 /**

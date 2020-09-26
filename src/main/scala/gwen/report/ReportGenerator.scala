@@ -67,7 +67,7 @@ class ReportGenerator (
     val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
       val metaspec = metaResult.spec
       val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
-      reportFormat.createReportFile(new File(featureReportFile.getParentFile + File.separator + "meta"), prefix, metaspec, unit.dataRecord)
+      reportFormat.createReportFile(new File(featureReportFile.getParentFile, "meta"), prefix, metaspec, unit.dataRecord)
     }
     val reportFiles = featureReportFile :: metaReportFiles
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)

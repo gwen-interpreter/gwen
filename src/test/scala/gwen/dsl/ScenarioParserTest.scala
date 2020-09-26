@@ -19,7 +19,7 @@ package gwen.dsl
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 
-import scala.util.{Success, Try}
+import scala.util.Success
 
 class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
@@ -169,7 +169,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
 
   }
   
-  private def assertFail(input: String) {
+  private def assertFail(input: String): Unit = {
     parse(input) match {
       case Success(_) => fail("failure expected") 
       case _ => 

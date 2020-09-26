@@ -23,7 +23,6 @@ import java.io.File
 import org.scalatest.FlatSpec
 import gwen.eval.GwenLauncher
 import gwen.report.ReportFormat
-import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenApp

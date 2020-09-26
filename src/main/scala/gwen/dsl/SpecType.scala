@@ -16,8 +16,6 @@
 
 package gwen.dsl
 
-import scala.language.postfixOps
-
 /**
   * Enumeration of supported spec types.
   * 

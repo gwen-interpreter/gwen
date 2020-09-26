@@ -18,7 +18,7 @@
 package gwen.eval.support
 
 import gwen.Settings
-import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
+import gwen.eval.{EnvContext, GwenOptions}
 import org.scalatest._
 import slick.jdbc
 import slick.jdbc.H2Profile.api._
@@ -103,9 +103,9 @@ private class DB(db: JdbcBackend.DatabaseDef)(implicit dBConfig: DBConfig) {
 
   private def setup = DBIO.seq(
     cakes.schema.create,
-    cakes += ("Brownie", 2),
-    cakes += ("Butterkuchen", 3),
-    cakes += ("Apple Cake", 5)
+    cakes += (("Brownie", 2)),
+    cakes += (("Butterkuchen", 3)),
+    cakes += (("Apple Cake", 5))
   )
 
 }

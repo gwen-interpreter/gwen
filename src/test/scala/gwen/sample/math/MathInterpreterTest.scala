@@ -22,7 +22,6 @@ import gwen.eval.GwenOptions
 import java.io.File
 import org.scalatest.FlatSpec
 import gwen.eval.GwenLauncher
-import gwen.eval.ScopedDataStack
 import gwen.dsl.Step
 import gwen.dsl.StepKeyword
 import gwen.report.ReportFormat

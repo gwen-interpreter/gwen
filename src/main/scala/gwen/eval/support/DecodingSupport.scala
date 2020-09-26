@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.errors._
+import gwen.Errors._
 import gwen.eval.EnvContext
 import org.apache.commons.codec.binary.Base64
 

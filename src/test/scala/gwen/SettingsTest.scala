@@ -18,8 +18,8 @@ package gwen
 
 import org.scalatest.Matchers
 import java.util.Properties
-import gwen.errors.MissingPropertyException
-import gwen.errors.UnsupportedLocalSettingException
+import gwen.Errors.MissingPropertyException
+import gwen.Errors.UnsupportedLocalSettingException
 
 class SettingsTest extends BaseTest with Matchers {
 

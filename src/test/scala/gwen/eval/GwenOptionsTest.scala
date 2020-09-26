@@ -26,7 +26,6 @@ import gwen.dsl.Tag.string2Tag
 import scala.util.Success
 import scala.util.Try
 import scala.util.Failure
-import gwen.sample.math.MathInterpreter
 import gwen.report.ReportFormat
 import gwen.Predefs.Kestrel
 import gwen.Predefs.FileIO
@@ -577,7 +576,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with existing feature file path" should "parse" in {
     
-    val dir1 = createDir("dir1")
+    createDir("dir1")
     val feature1 = createFile("dir1/file1.feature")
     
     parseOptions(Array(feature1.getPath)) match {
@@ -631,7 +630,6 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with all valid options" should "parse" in {
     
     val reportDir = new File("target/report")
-    val reportFormats = List(ReportFormat.html, ReportFormat.junit)
     val propsFile = createFile("gwen-1.properties")
     val dataFile = createFile("gwen-1.csv")
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
@@ -718,7 +716,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
                              dryRun: Boolean = false,
                              dataFile: Option[File] = None,
                              metaFiles: List[File] = Nil,
-                             features: List[File] = Nil) {
+                             features: List[File] = Nil): Unit = {
     
     options.batch should be (batch)
     options.parallel should be (parallel)
@@ -735,7 +733,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   }
   
   private def createFile(filepath: String): File = {
-    val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
+    val file = new File(rootDir.getPath + File.separator + filepath.replace('/', File.separatorChar))
     if (file.exists) {
       file.delete()
     }

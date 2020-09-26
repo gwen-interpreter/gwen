@@ -19,7 +19,7 @@ package gwen.dsl
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 
-import scala.util.{Success, Try}
+import scala.util.Success
 
 class RuleParserTest extends FlatSpec with Matchers with GherkinParser {
 
@@ -112,7 +112,7 @@ class RuleParserTest extends FlatSpec with Matchers with GherkinParser {
     
   }
 
-  private def assertRule(ruleStr: String, name: String, description: List[String], hasBackground: Boolean, noOfScenarios: Int) {
+  private def assertRule(ruleStr: String, name: String, description: List[String], hasBackground: Boolean, noOfScenarios: Int): Unit = {
     def rule = parse(ruleStr).get
     rule.name should be (name)
     rule.description should be (description)
@@ -133,7 +133,7 @@ class RuleParserTest extends FlatSpec with Matchers with GherkinParser {
      
   }
   
-  private def assertFail(input: String) {
+  private def assertFail(input: String): Unit = {
     parse(input) match {
       case Success(_) => fail("failure expected") 
       case _ => 

@@ -91,7 +91,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
     */
-  private def executeFeatureUnits(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
+  private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
     val reportGenerators = ReportGenerator.generatorsFor(options)
     if (options.parallel) {
       executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
@@ -100,7 +100,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
 
-  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
@@ -135,7 +135,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
 
-  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: Stream[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
     val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
     featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
       if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
@@ -200,15 +200,15 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       result
   }
   
-  private def logFeatureStatus(result: FeatureResult) {
+  private def logFeatureStatus(result: FeatureResult): Unit = {
     logger.info("")
     logger.info(result.toString)
     logger.info("")
   }
       
-  private def printSummaryStatus(summary: FeatureSummary) {
-    println
+  private def printSummaryStatus(summary: FeatureSummary): Unit = {
+    println()
     println(summary.toString)
-    println
+    println()
   }
 }

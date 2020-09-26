@@ -28,9 +28,8 @@ import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import jline.console.completer.AggregateCompleter
-import gwen.GwenSettings
 import gwen.dsl.StateLevel
 import gwen.dsl.Dialect
 
@@ -174,7 +173,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
   }
 
   /** Runs the read-eval-print-loop. */
-  def run() {
+  def run(): Unit = {
     println("\nREPL Console\n")
     println("Enter steps to evaluate or type exit to quit..")
     while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) println(output) } ).nonEmpty) { }

@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.errors._
+import gwen.Errors._
 import java.sql.DriverManager
 
 import gwen.Settings
@@ -91,7 +91,7 @@ trait SQLSupport {
         try {
           val stmt = connection.createStatement()
           try {
-            return stmt.executeUpdate(sql)
+            stmt.executeUpdate(sql)
           } finally {
             stmt.close()
           }

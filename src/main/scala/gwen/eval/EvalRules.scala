@@ -17,8 +17,7 @@
 package gwen.eval
 
 import gwen.dsl._
-import gwen.errors._
-import gwen.GwenSettings
+import gwen.Errors._
 import gwen.Predefs.FileIO
 import java.io.File
 

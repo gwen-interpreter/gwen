@@ -40,7 +40,6 @@ object TagsFilter {
     *         Some otherwise (with only the scenarios that do)
     */
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
-    val filters = tagFilters ++ DefaultTags
     def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
     def rules = spec.rules map { rule =>
       Rule(rule.keyword, rule.name, rule.description, rule.background, filterScenarios(spec, tagFilters, rule.scenarios))

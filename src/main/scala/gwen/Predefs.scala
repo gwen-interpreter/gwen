@@ -92,13 +92,13 @@ object Predefs extends LazyLogging {
       case idx => file.getName.substring(idx + 1)
     }
     
-    def writeFile(source: File) {
+    def writeFile(source: File): Unit = {
       file.writeBinary(new BufferedInputStream(new FileInputStream(source)))
     }
 
     def readBytes: Array[Byte] = Files.readAllBytes(Paths.get(file.getAbsolutePath))
     
-    def deleteDir() {
+    def deleteDir(): Unit = {
       val files = file.listFiles() 
       if (files != null) { 
         files foreach { _.deleteFile() }
@@ -106,7 +106,7 @@ object Predefs extends LazyLogging {
       file.delete()
     }
     
-    def deleteFile() {
+    def deleteFile(): Unit = {
       if (file.isDirectory) {
         file.deleteDir()
       } else {
@@ -194,10 +194,10 @@ object Predefs extends LazyLogging {
       import scala.concurrent.duration._
   
       private val Formatters = List(
-        HOURS -> ("h", new DecimalFormat("00")),
-        MINUTES -> ("m", new DecimalFormat("00")),
-        SECONDS -> ("s", new DecimalFormat("00")),
-        MILLISECONDS -> ("ms", new DecimalFormat("000"))
+        HOURS -> (("h", new DecimalFormat("00"))),
+        MINUTES -> (("m", new DecimalFormat("00"))),
+        SECONDS -> (("s", new DecimalFormat("00"))),
+        MILLISECONDS -> (("ms", new DecimalFormat("000")))
       )
 
       /**

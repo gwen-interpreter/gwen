@@ -72,7 +72,7 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
     */
   private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
-  private def printBanner(intro: String) {
+  private def printBanner(intro: String): Unit = {
     println(("""|
                 |   __ ___      _____ _ __     _
                 |  / _` \ \ /\ / / _ \ '_ \   { \,"

@@ -132,7 +132,7 @@ class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
     feature.description(3) should be ("and some more text after a blank line")
   }
   
-  private def assertFail(input: String) {
+  private def assertFail(input: String): Unit = {
     parse(input) match {
       case Success(_) => fail("failure expected") 
       case _ => 

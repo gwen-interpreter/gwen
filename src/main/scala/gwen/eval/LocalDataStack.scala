@@ -17,7 +17,7 @@
 package gwen.eval
 
 import gwen.Predefs.Kestrel
-import gwen.errors.unboundAttributeError
+import gwen.Errors.unboundAttributeError
 
 import scala.collection.mutable
 
@@ -52,7 +52,7 @@ class LocalDataStack {
   }
   
   /** Pops the current data object off the stack. */
-  def pop: ScopedData = localData.pop
+  def pop: ScopedData = localData.pop()
   
   /**
     * Finds and retrieves an attribute bound in the local stack.

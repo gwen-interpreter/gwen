@@ -110,13 +110,6 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions(features = List(dir3), parallel = true)
     
-    val meta = new FeatureSpec(
-      Feature("meta feature", Nil), 
-      None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
-      Nil
-    )
-    
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     val metas = FileIO.appendFile(List(meta3), Settings.UserMeta)
@@ -141,14 +134,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta3 = createFile("dir3/meta/file3.meta")
     
     val options = GwenOptions(features = List(dir3), parallel = true, metas = List(metadir))
-    
-    val meta = new FeatureSpec(
-      Feature("meta feature", Nil), 
-      None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
-      Nil
-    )
-    
+        
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     val metas = FileIO.appendFile(List(meta3), Settings.UserMeta)
@@ -168,19 +154,12 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   "test launcher with duplicate meta" should "should not load duplicate" in {
     
     val dir31 = createDir("dir31")
-    val dirmeta32 = createDir("dirmeta32")
+    createDir("dirmeta32")
     val feature3 = createFile("dir31/file3.feature")
     val meta31 = createFile("dir31/file31.meta")
     val meta32 = createFile("dirmeta32/file32.meta")
     
     val options = GwenOptions(features = List(dir31), parallel = true, metas=List(meta31, meta32))
-    
-    val meta = new FeatureSpec(
-      Feature("meta feature", Nil), 
-      None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta step", Passed(10))))),
-      Nil
-    )
     
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
@@ -202,13 +181,6 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val dir4 = createDir("dir4")
     val feature4 = createFile("dir4/file4.feature")
     val meta4 = createFile("dir4/file4.meta")
-    
-    val meta = new FeatureSpec(
-      Feature("meta feature", Nil), 
-      None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta st ep", Failed(5, new Exception("failed")))))),
-      Nil
-    )
     
     val options = GwenOptions(batch = false, features = List(dir4))
     
@@ -237,15 +209,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
     val meta5 = createFile("dir5/file5.meta")
     
     val options = GwenOptions(batch = true, parallel = true, features = List(dir5))
-    
-    val failedStatus = Failed(5, new Exception("failed"))
-    val meta = new FeatureSpec(
-      Feature("meta feature", Nil), 
-      None, 
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a meta st ep", failedStatus)))),
-      Nil
-    )
-    
+        
     val mockInterpreter = mock[GwenInterpreter[EnvContext]]
     val mockEnv = mock[EnvContext]
     
@@ -264,9 +228,9 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   "test launcher with html reporting" should "generate html reports" in {
     
     val dir6 = createDir("dir6")
+    createDir("dir7")
     val feature6a = createFile("dir6/file6a.feature")
     val feature6b = createFile("dir6/file6b.feature")
-    val dir7 = createDir("dir7")
     val feature7a = createFile("dir7/file7a.feature")
     val reportDir = createDir("report")
     
@@ -352,7 +316,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar {
   }
   
   private def createFile(filepath: String): File = {
-    val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
+    val file = new File(rootDir.getPath + File.separator + filepath.replace('/', File.separatorChar))
     if (file.exists) {
       file.delete()
     }

@@ -19,8 +19,8 @@ package gwen.eval.support
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.eval.EnvContext
-import gwen.errors.DecodingException
-import gwen.eval.{GwenOptions, ScopedDataStack}
+import gwen.Errors.DecodingException
+import gwen.eval.GwenOptions
 
 class DecodingSupportTest extends FlatSpec with Matchers {
 

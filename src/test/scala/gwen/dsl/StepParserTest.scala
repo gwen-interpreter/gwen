@@ -165,7 +165,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     }
   }
   
-  private def assertFail(input: String, expected: String) {
+  private def assertFail(input: String, expected: String): Unit = {
     parse(input) match {
       case Failure(e) => e.getMessage should be (expected)
       case _ => fail("failure expected")

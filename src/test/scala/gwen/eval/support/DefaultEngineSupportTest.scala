@@ -18,7 +18,6 @@ package gwen.eval.support
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.eval.ScopedDataStack
 import gwen.eval.EnvContext
 import gwen.eval.GwenOptions
 import gwen.dsl.Step

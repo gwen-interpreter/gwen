@@ -18,9 +18,8 @@ package gwen.eval
 
 import org.scalatest.Matchers
 import gwen.BaseTest
-import gwen.eval.support.DefaultEngineSupport
 import gwen.dsl._
-import gwen.errors._
+import gwen.Errors._
 import gwen.Predefs.Kestrel
 
 import scala.io.Source
@@ -688,7 +687,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         }
     }
 
-    private def withSpecFile[T](specType: SpecType.Value)(body: File => T) {
+    private def withSpecFile[T](specType: SpecType.Value)(body: File => T): Unit = {
         val specFile = if (SpecType.isFeature(specType)) {
             new File("spec.feature")
         } else {

@@ -19,7 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.dsl._
-import gwen.errors.AmbiguousCaseException
+import gwen.Errors.AmbiguousCaseException
 
 class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 

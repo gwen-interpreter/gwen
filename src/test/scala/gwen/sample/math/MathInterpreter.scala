@@ -38,7 +38,7 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
   override def init(options: GwenOptions): MathEnvContext =
     new MathEnvContext(new MathService(), options)
  
-  override def evaluate(step: Step, env: MathEnvContext) {
+  override def evaluate(step: Step, env: MathEnvContext): Unit = {
     val vars = env.vars
     step.expression match {
       case r"""([a-z])$x = (\d+)$value""" =>

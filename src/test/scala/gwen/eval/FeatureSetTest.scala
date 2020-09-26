@@ -19,7 +19,6 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import java.io.File
-import gwen.dsl.Tag
 import scala.io.Source
 import gwen.dsl.GherkinParser
 import scala.util.Success

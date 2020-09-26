@@ -16,7 +16,6 @@
 
 package gwen.eval
 
-import gwen.errors.propertyLoadError
 import gwen.GwenSettings
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService

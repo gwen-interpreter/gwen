@@ -264,7 +264,6 @@ trait HtmlReportFormatter extends ReportFormatter {
               s"""
               ${step.table.indices map { rowIndex =>
                 val line = step.table(rowIndex)._1
-                val row = Formatting.formatTableRow(step.table, rowIndex)
               s"""
                 <div class="bg-${cssStatus(status)}">
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>

@@ -19,7 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-import gwen.errors.UnboundAttributeException
+import gwen.Errors.UnboundAttributeException
 
 class LocalDataStackTest extends FlatSpec with Matchers {
 

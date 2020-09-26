@@ -16,9 +16,8 @@
 
 package gwen.eval
 
-import scala.Option.option2Iterable
 import gwen.Predefs.Kestrel
-import gwen.errors._
+import gwen.Errors._
 
 import scala.collection.mutable
 
@@ -69,7 +68,7 @@ class ScopedDataStack() {
     * on the top of the stack.  All other scopes that are not at the
     * top of the stack are 'historical' scopes.
     */
-  private val scopes = mutable.ArrayStack[ScopedData]() tap { _ push new TopScope() }
+  private val scopes = mutable.Stack[ScopedData]() tap { _ push new TopScope() }
   
   /** 
     *  Provides access to the local step scope (StepDef parameters
@@ -109,7 +108,7 @@ class ScopedDataStack() {
         topScope
       } else {
         if (current != topScope && current.isEmpty) {
-          scopes pop
+          scopes.pop()
         }
         scopes push ScopedData(scope)
         current tap { _ =>
@@ -149,7 +148,7 @@ class ScopedDataStack() {
     * @param name the name of the attribute to bind
     * @return the value to bind to the attribute
     */
-  def set(name: String, value: String) { 
+  def set(name: String, value: String): Unit = { 
       if (name.contains('/')) {
         findEntries { case (n, _) => 
           val baseName = name.substring(0, name.indexOf('/'))
@@ -176,7 +175,7 @@ class ScopedDataStack() {
     *
     * @param name the name of the attribute to find
     * @return the attribute value
-    * @throws gwen.errors.UnboundAttributeException if the attribute is 
+    * @throws gwen.Errors.UnboundAttributeException if the attribute is 
     *         not bound to the given name
     */
   def get(name: String): String = 
@@ -210,7 +209,7 @@ class ScopedDataStack() {
     * @return Some((name, value)) or None if no match is found
     */
   def findEntryIn(scope: String)(pred: ((String, String)) => Boolean): Option[(String, String)] =
-    (scopes.toIterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
+    (scopes.iterator filter(_.scope == scope) map (_.findEntry(pred)) collectFirst {
       case Some(value) => value
     } match {
       case None if !current.isTopScope =>
@@ -265,7 +264,7 @@ class ScopedDataStack() {
     *
     * @param scope the scope name to scan
     * @param name the name of the attribute to find
-    * @throws gwen.errors.UnboundAttributeException if the attribute is bound 
+    * @throws gwen.Errors.UnboundAttributeException if the attribute is bound 
     *         to the given name in the given scope
     */
   def getIn(scope: String, name: String): String =
@@ -282,7 +281,7 @@ class ScopedDataStack() {
     * @return Some(value) if the attribute found or None otherwise
     */
   def getInOpt(scope: String, name: String): Option[String] =
-    scopes.toIterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst {
+    scopes.iterator filter(_.scope == scope) map (_.getOpt(name)) collectFirst {
       case Some(value) => value
     } match {
       case None if scope != topScope.scope =>
@@ -341,16 +340,16 @@ object ScopedDataStack {
    * @param scope the scope to merge
    */
   def apply(scope: Option[ScopedData]): ScopedDataStack = 
-    scope.map(x => ScopedDataStack(mutable.ArrayStack(x))).getOrElse(ScopedDataStack(mutable.ArrayStack[ScopedData]()))
+    scope.map(x => ScopedDataStack(mutable.Stack(x))).getOrElse(ScopedDataStack(mutable.Stack[ScopedData]()))
   
   /**
    * Merges a stack of scopes into a single ScopedDataStack object.
    * 
    * @param scopes the scopes to merge
    */
-  def apply(scopes: mutable.ArrayStack[ScopedData]): ScopedDataStack =
+  def apply(scopes: mutable.Stack[ScopedData]): ScopedDataStack =
     new ScopedDataStack() tap { stack =>
-      if (scopes.exists(_.isTopScope)) stack.scopes.pop
+      if (scopes.exists(_.isTopScope)) stack.scopes.pop()
       scopes.reverse.foreach { data =>
         stack.scopes.push(data)
       }

@@ -18,11 +18,9 @@ package gwen.eval
 
 import org.scalatest.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import gwen.errors.UnboundAttributeException
+import gwen.Errors.UnboundAttributeException
 
 import scala.collection.mutable
-import gwen.GwenSettings
-import gwen.Settings
 import gwen.BaseTest
 
 class ScopedDataStackTest extends BaseTest with Matchers {

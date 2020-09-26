@@ -17,20 +17,19 @@
 package gwen.dsl
 
 import gwen.GwenSettings
-import gwen.errors._
+import gwen.Errors._
 import gwen.Predefs.FileIO
 
 import io.cucumber.gherkin.Gherkin
+import io.cucumber.messages.IdGenerator
 import io.cucumber.messages.Messages.GherkinDocument
 
-import scala.language.postfixOps
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
 import java.io.File
 import java.util.Collections
 import java.util.stream.Collectors
-import io.cucumber.gherkin.ParserException
 
 /**
   *  Parses a Gherkin feature specification.
@@ -128,11 +127,12 @@ trait GherkinParser {
   }
 
   private def parseDocument(feature: String): GherkinDocument = {
+    val idGenerator = new IdGenerator.Incrementing()
     val envelope = Gherkin.makeSourceEnvelope(feature, "")
-    val envelopes = Gherkin.fromSources(Collections.singletonList(envelope), false, true, false).collect(Collectors.toList())
+    val envelopes = Gherkin.fromSources(Collections.singletonList(envelope), false, true, false, idGenerator).collect(Collectors.toList())
     val result = envelopes.get(0)
-    if (result.hasAttachment()) {
-      throw new RuntimeException(s"Parser errors:\n${result.getAttachment().getData()}");
+    if (result.hasParseError()) {
+      throw new RuntimeException(s"Parser errors:\n${result.getParseError().getMessage()}");
     } else {
       result.getGherkinDocument()
     }

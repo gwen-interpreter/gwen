@@ -18,7 +18,6 @@ package gwen.eval
 
 import java.io.File
 
-import scala.language.postfixOps
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
@@ -30,7 +29,7 @@ import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import gwen.Predefs.FileIO._
 import gwen.dsl._
-import gwen.errors._
+import gwen.Errors._
 import java.util.Date
 import java.net.URL
 import org.apache.log4j.PropertyConfigurator
@@ -40,7 +39,7 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext
 import java.util.concurrent.CopyOnWriteArrayList
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Interprets incoming feature specs by parsing and evaluating
@@ -182,7 +181,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       val executor = ParallelExecutors.scenarioInstance
       implicit val ec = ExecutionContext.fromExecutorService(executor)
       val acc = new CopyOnWriteArrayList[Scenario](stepDefOutput.asJavaCollection)
-      val outputFutures = input.filter(!_.isStepDef).toStream.map { scenario =>
+      val outputFutures = input.filter(!_.isStepDef).to(LazyList).map { scenario =>
         Future {
           val envClone = env.clone(engine)
           try {

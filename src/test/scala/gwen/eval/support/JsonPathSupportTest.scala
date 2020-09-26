@@ -18,8 +18,8 @@ package gwen.eval.support
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.errors.JsonPathException
-import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
+import gwen.Errors.JsonPathException
+import gwen.eval.{EnvContext, GwenOptions}
 
 class JsonPathSupportTest extends FlatSpec with Matchers {
 

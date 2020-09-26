@@ -24,7 +24,7 @@ import gwen.Predefs.FileIO
 import gwen.dsl.StateLevel
 import gwen.dsl.Tag
 import scopt.OptionParser
-import gwen.errors._
+import gwen.Errors._
 import gwen.report.ReportFormat
 
 /**
@@ -77,7 +77,7 @@ object GwenOptions {
     * Creates a new options object from the given command line arguments.
     *
     * @param args the command line arguments
-    * @throws gwen.errors.InvocationException if the given arguments fail to parse
+    * @throws gwen.Errors.InvocationException if the given arguments fail to parse
     */
   def apply(args: Array[String]): GwenOptions = {
     
@@ -159,7 +159,7 @@ object GwenOptions {
         }).getOrElse(success)
       } valueName "<meta files>" text "Comma separated list of meta files and directories"
     
-      arg[File]("<features>") unbounded() optional() action { 
+      arg[File]("<features>").unbounded().optional().action { 
         (f, c) => 
           c.copy(features = c.features :+ f)
       } validate {

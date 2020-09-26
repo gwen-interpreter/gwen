@@ -17,7 +17,7 @@
 package gwen.eval.support
 
 import javax.script.ScriptEngineManager
-import gwen.errors.scriptError
+import gwen.Errors.scriptError
 
 /**
   * Can be mixed into evaluation engines to provide Script support. Currently only

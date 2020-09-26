@@ -16,12 +16,12 @@
 
 package gwen
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.io.File
 import java.util.Properties
 import java.io.FileReader
 
-import gwen.errors._
+import gwen.Errors._
 import gwen.Predefs.FileIO
 
 import scala.collection.mutable
@@ -148,7 +148,7 @@ object Settings {
     * Gets a mandatory property (throws exception if not found)
     * 
     * @param name the name of the property to get
-    * @throws gwen.errors.MissingPropertyException if no such property is set
+    * @throws gwen.Errors.MissingPropertyException if no such property is set
     */
   def get(name: String): String = getOpt(name).getOrElse(missingPropertyError(name))
 

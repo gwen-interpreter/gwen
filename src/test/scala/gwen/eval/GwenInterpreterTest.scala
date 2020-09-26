@@ -47,7 +47,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     trait MockEvalEngine extends EvalEngine[EnvContext] {
       type EnvContextType = EnvContext
       override private [eval] def init(options: GwenOptions): EnvContextType = mockEnv
-      override def evaluate(step: Step, env: EnvContextType) { }
+      override def evaluate(step: Step, env: EnvContextType): Unit = { }
     }
     new GwenInterpreter[EnvContext] with MockEvalEngine
   }
@@ -241,7 +241,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
   }
 
   private def createFile(filepath: String): File = {
-    val file = new File(rootDir + File.separator + filepath.replace('/', File.separatorChar))
+    val file = new File(rootDir.getPath + File.separator + filepath.replace('/', File.separatorChar))
     if (file.exists) {
       file.delete()
     }

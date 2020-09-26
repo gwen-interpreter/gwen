@@ -25,6 +25,9 @@ import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
+import gwen.Errors._
+import gwen.eval.EnvContext
+
 import javax.xml.namespace.NamespaceContext
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -33,9 +36,6 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
-
-import gwen.errors._
-import gwen.eval.{EnvContext, Evaluatable}
 
 /** Can be mixed into evaluation contexts to provide XPath support. */
 trait XPathSupport {
@@ -53,7 +53,7 @@ trait XPathSupport {
     * @param source the xml source string
     * @param targetType the target node type
     * @return the result of evaluating the xpath expression
-    * @throws gwen.errors.XPathException if the xpath expression fails to evaluate
+    * @throws gwen.Errors.XPathException if the xpath expression fails to evaluate
     */
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String =
     evaluate("$[dryRun:xpath]") {
@@ -88,7 +88,7 @@ trait XPathSupport {
     * 
     *  @param expression the xpath expression
     *  @param f the function to apply
-    *  @throws gwen.errors.XPathException if the expression contains a namespace 
+    *  @throws gwen.Errors.XPathException if the expression contains a namespace 
     *          that cannot be mapped 
     */
   private def withXPath[T](expression: String)(f: (XPath, String) => T): T = expression match {

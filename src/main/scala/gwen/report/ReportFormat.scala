@@ -17,7 +17,6 @@
 package gwen.report
 
 import scala.language.implicitConversions
-import scala.language.postfixOps
 import gwen.eval.GwenOptions
 import java.io.File
 import gwen.dsl.FeatureSpec

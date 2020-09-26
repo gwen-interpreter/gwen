@@ -22,7 +22,7 @@ import com.typesafe.scalalogging.LazyLogging
 import gwen.GwenSettings
 import gwen.dsl._
 import gwen.Predefs._
-import gwen.errors._
+import gwen.Errors._
 
 import scala.util.Try
 import scala.util.Success
@@ -64,7 +64,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     *
     * @param step the step to evaluate
     * @param env the environment context
-    * @throws gwen.errors.UndefinedStepException unconditionally thrown by
+    * @throws gwen.Errors.UndefinedStepException unconditionally thrown by
     *         this default implementation
     */
   def evaluate(step: Step, env: T): Unit = undefinedStepError(step)

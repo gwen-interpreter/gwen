@@ -16,7 +16,6 @@
 
 package gwen.eval
 
-import gwen.dsl.StateLevel
 import gwen.Predefs.Kestrel
 import gwen.GwenSettings
 
@@ -68,7 +67,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     * @param name the name to bind the object to
     * @param obj the object to push
     */
-  def pushObject(name: String, obj: Any) {
+  def pushObject(name: String, obj: Any): Unit = {
     objectStack.get(name) match {
       case Some(objs) => objectStack += (name -> (obj :: objs))
       case None => objectStack += (name -> List(obj))

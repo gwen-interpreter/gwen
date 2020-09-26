@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.eval.{EnvContext, GwenOptions, ScopedDataStack}
+import gwen.eval.{EnvContext, GwenOptions}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}

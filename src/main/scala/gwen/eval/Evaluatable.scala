@@ -36,6 +36,6 @@ trait Evaluatable {
    *
    * @param operation the operation to execute
    */
-  def perform(operation: => Unit): Option[Unit] = if (!isDryRun) Some(operation) else None
+  def perform(operation: => Unit): Option[Any] = if (!isDryRun) Some(operation) else None
   
 }

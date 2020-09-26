@@ -17,13 +17,8 @@
 package gwen.dsl
 
 import gwen.GwenSettings
-import gwen.errors.keywordDialectError
-import scala.language.postfixOps
-import io.cucumber.gherkin.GherkinDialectProvider
 import scala.util.Try
-import scala.collection.JavaConverters._
-import java.{util => ju}
-import java.awt.Dialog
+import scala.jdk.CollectionConverters._
 
 object FeatureKeyword extends Enumeration {
   type FeatureKeyword = Value

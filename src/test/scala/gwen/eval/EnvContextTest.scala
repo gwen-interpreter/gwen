@@ -19,9 +19,7 @@ package gwen.eval
 import org.scalatest.Matchers
 import gwen.dsl._
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import gwen.errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
-import gwen.GwenSettings
-import gwen.Settings
+import gwen.Errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
 import gwen.BaseTest
 
 class EnvContextTest extends BaseTest with Matchers {
@@ -603,10 +601,8 @@ class EnvContextTest extends BaseTest with Matchers {
   private def newEnv: EnvContext = newEnv(GwenOptions())
   
   private def newEnv(options: GwenOptions): EnvContext = new EnvContext(options) { 
-    var closed = false
-    override def close() {
+    override def close(): Unit = {
       super.reset(StateLevel.feature)
-      closed = true
     }
   }
 

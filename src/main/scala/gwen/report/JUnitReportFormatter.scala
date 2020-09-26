@@ -81,7 +81,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     <testcase name="Scenario ${padWithZeroes(idx + 1)}${if (isExpanded) " Outline" else ""}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {
     case Failed(_, error) => 
       s""">
-        <error type="${escapeXml(error.getClass.getName)}" message="${escapeXml(error.writeStackTrace)}"/>
+        <error type="${escapeXml(error.getClass.getName)}" message="${escapeXml(error.writeStackTrace())}"/>
     </testcase>"""
     case Skipped | Pending => 
       s""">

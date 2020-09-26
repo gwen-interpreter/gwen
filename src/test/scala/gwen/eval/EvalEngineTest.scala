@@ -19,7 +19,7 @@ package gwen.eval
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import gwen.dsl._
-import gwen.errors.UndefinedStepException
+import gwen.Errors.UndefinedStepException
 import gwen.eval.support.DefaultEngineSupport
 
 class TestEnvContext(val options: GwenOptions) extends EnvContext(options)

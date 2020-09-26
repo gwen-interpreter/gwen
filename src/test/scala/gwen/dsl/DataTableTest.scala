@@ -17,7 +17,7 @@ package gwen.dsl
 
 import org.scalatest.{FlatSpec, Matchers}
 import gwen.dsl.Tag.string2Tag
-import gwen.errors.{DataTableException, InvalidTagException}
+import gwen.Errors.{DataTableException, InvalidTagException}
 
 /**
   * Data table tests.
@@ -91,7 +91,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
   }
 
-  def checkFlatTable_multiRecord(dataTable: FlatTable) {
+  def checkFlatTable_multiRecord(dataTable: FlatTable): Unit = {
 
     dataTable.records.size should be (5)
     dataTable.records.head.size should be (3)
@@ -190,7 +190,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
   }
 
-  def checkFlatTable_singleRecord(dataTable: FlatTable) {
+  def checkFlatTable_singleRecord(dataTable: FlatTable): Unit = {
 
     dataTable.records.size should be (1)
     dataTable.records.head.size should be (3)
@@ -274,7 +274,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
   }
 
-  def checkFlatTable_singleItem(dataTable: FlatTable) {
+  def checkFlatTable_singleItem(dataTable: FlatTable): Unit = {
 
     dataTable.records.size should be (1)
     dataTable.records.head.size should be (1)

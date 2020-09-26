@@ -21,7 +21,7 @@ import scala.sys.process.stringToProcess
 import gwen.Predefs.RegexContext
 import gwen.dsl.{BehaviorType, FlatTable, Passed, Step}
 import gwen.eval.{EnvContext, EvalEngine}
-import gwen.errors._
+import gwen.Errors._
 import gwen.Settings
 import gwen.Predefs.Kestrel
 
@@ -84,7 +84,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     *
     * @param step the step to evaluate
     * @param env the environment context
-    * @throws gwen.errors.UndefinedStepException if the given step is undefined
+    * @throws gwen.Errors.UndefinedStepException if the given step is undefined
     *         or unsupported
     */
   override def evaluate(step: Step, env: T): Unit = {

@@ -20,7 +20,7 @@ import gwen.dsl.AssertionMode
 import gwen.dsl.FeatureMode
 import gwen.dsl.BehaviorRules
 import gwen.dsl.StateLevel
-import gwen.errors._
+import gwen.Errors._
 import com.typesafe.scalalogging.LazyLogging
 
 /**

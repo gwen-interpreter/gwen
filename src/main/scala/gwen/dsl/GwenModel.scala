@@ -21,10 +21,10 @@ import io.cucumber.messages.Messages.Location
 
 import java.io.File
 
-import gwen.errors._
+import gwen.Errors._
 import gwen.Predefs.Kestrel
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /** Reperesents a position in the source.*/
 case class Position(line: Int, column: Int)
@@ -33,7 +33,7 @@ object Position {
   private val lineOffset = new ThreadLocal[Int]() {
     override protected def initialValue: Int = 0
   }
-  def setLineOffset(offset: Int) {
+  def setLineOffset(offset: Int): Unit = {
     lineOffset.set(offset)
   }
   def apply(location: Location): Position =
@@ -415,7 +415,7 @@ object Tag {
     * Implicitly converts a tag string to a tag object.
     *
     *  @param value the string value to convert
-    *  @throws gwen.errors.InvalidTagException if the tag string is invalid
+    *  @throws gwen.Errors.InvalidTagException if the tag string is invalid
     */
   implicit def string2Tag(value: String): Tag = value match {
     case Regex(name) => Tag(name)
@@ -483,7 +483,7 @@ object Step {
       }
     } getOrElse Nil
     val docString = Option(step.getDocString()).filter(_.getContent().trim.length > 0) map { ds =>
-      (ds.getLocation.getLine, ds.getContent, Option(ds.getContentType).filter(_.trim.length > 0))
+      (ds.getLocation.getLine, ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
     new Step(
       step.getKeyword.trim,

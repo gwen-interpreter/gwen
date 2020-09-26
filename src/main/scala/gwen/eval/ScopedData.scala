@@ -20,7 +20,7 @@ import gwen.Predefs.Kestrel
 import gwen.Predefs.RegexContext
 import gwen.Predefs.Formatting.padTailLines
 import com.typesafe.scalalogging.LazyLogging
-import gwen.errors._
+import gwen.Errors._
 
 import scala.collection.mutable
 
@@ -63,7 +63,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * new  attribute is added (by calling `set`), it is appended to the end of 
     * the list.
     */
-  private val atts = mutable.MutableList[(String, String)]()
+  private val atts = mutable.ListBuffer[(String, String)]()
 
   /**
     * Map name-closure pairs where the closure is a function that returns a string value.
@@ -112,7 +112,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *
     * @param name the name of the attribute to find
     * @return the attribute value if found (throws error otherwise)
-    * @throws gwen.errors.UnboundAttributeException if the attribute is bound 
+    * @throws gwen.Errors.UnboundAttributeException if the attribute is bound 
     *         to the given name
     */
   def get(name: String): String = 
@@ -211,7 +211,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
-    atts.map(resolveNVP).filter(pred) ++ flashScope.map(_.map(resolveNVP).filter(pred).toSeq).getOrElse(Nil)
+    atts.map(resolveNVP).filter(pred).toSeq ++ flashScope.map(_.map(resolveNVP).filter(pred).toSeq).getOrElse(Nil)
 
   /**
     * Returns this entire scope as a String.

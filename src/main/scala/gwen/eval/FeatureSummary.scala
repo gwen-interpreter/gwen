@@ -23,7 +23,6 @@ import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
 import gwen.Predefs.Formatting._
 import gwen.Predefs.DurationOps
-import java.util.concurrent.TimeUnit
 
 /**
   * Captures the feature summary results of an evaluated feature.

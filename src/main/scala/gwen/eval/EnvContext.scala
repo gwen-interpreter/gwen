@@ -21,10 +21,9 @@ import java.io.{File, FileNotFoundException}
 import gwen.Predefs.Exceptions
 import gwen.Predefs.FileIO
 import gwen.Predefs.Kestrel
-import gwen.Predefs.Formatting._
 import gwen.dsl._
 import com.typesafe.scalalogging.LazyLogging
-import gwen.errors._
+import gwen.Errors._
 import gwen.{GwenSettings, Settings}
 
 import scala.sys.process._
@@ -89,10 +88,10 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * Closes any resources associated with the evaluation context. This implementation
     * does nothing (but subclasses can override).
     */
-  def close() { }
+  def close(): Unit = { }
   
   /** Resets the current context but does not close it so it can be reused. */
-  def reset(level: StateLevel.Value) {
+  def reset(level: StateLevel.Value): Unit = {
     logger.info(s"Resetting environment context")
     state = EnvState(topScope)
     if (StateLevel.feature.equals(level)) {
@@ -128,7 +127,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * 
     * @param stepDef the step definition to add
     */
-  def addStepDef(stepDef: Scenario) {
+  def addStepDef(stepDef: Scenario): Unit = {
     StepKeyword.names foreach { keyword =>
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
@@ -172,7 +171,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
         val params = names zip values
         val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
         if (expression == resolved) {
-          Some(stepDef, params)
+          Some((stepDef, params))
         } else None
       } else {
         None
@@ -180,7 +179,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     }
     val iter = matches.iterator
     if (iter.hasNext) {
-      val first = Some(iter.next)
+      val first = Some(iter.next())
       if (iter.hasNext) {
         val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
         ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
@@ -241,7 +240,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       case _ => // noop
     }
     val fStep = if (state.hasAttachments) {
-      Step(step, step.evalStatus, (step.attachments ++ state.popAttachments).sortBy(_._2 .getName()))
+      Step(step, step.evalStatus, (step.attachments ++ state.popAttachments()).sortBy(_._2 .getName()))
     } else {
       step
     }
