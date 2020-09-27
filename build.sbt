@@ -1,6 +1,4 @@
-import sbt.Keys.{crossPaths, description, startYear}
-
-lazy val commonSettings = Seq(
+lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
   scalaVersion := "2.13.3",
@@ -9,7 +7,6 @@ lazy val commonSettings = Seq(
   organizationHomepage := Some(url("http://gweninterpreter.org")),
   startYear := Some(2014),
   licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
-  homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   trapExit := false,
   crossPaths := false,
   scalacOptions ++= Seq(
@@ -27,21 +24,7 @@ lazy val commonSettings = Seq(
   }
 )
 
-lazy val testDependencies = {
-  val scalaTest = "3.0.9"
-  val mockitoAll = "1.10.19"
-  val h2 = "1.4.200"
-  val slick = "3.3.3"
-
-  Seq(
-    "org.scalatest" %% "scalatest" % scalaTest,
-    "org.mockito" % "mockito-all" % mockitoAll,
-    "com.h2database" % "h2" % h2,
-    "com.typesafe.slick" %% "slick" % slick
-  ).map(_ % Test)
-}
-
-lazy val commonDependencies = {
+lazy val mainDependencies = {
   val cucumberGherkin = "15.0.2"
   val scopt = "3.7.1"
   val slf4jLog4j = "1.7.26"
@@ -67,10 +50,24 @@ lazy val commonDependencies = {
   )
 }
 
+lazy val testDependencies = {
+  val scalaTest = "3.0.9"
+  val mockitoAll = "1.10.19"
+  val h2 = "1.4.200"
+  val slick = "3.3.3"
+
+  Seq(
+    "org.scalatest" %% "scalatest" % scalaTest,
+    "org.mockito" % "mockito-all" % mockitoAll,
+    "com.h2database" % "h2" % h2,
+    "com.typesafe.slick" %% "slick" % slick
+  ).map(_ % Test)
+}
+
 lazy val root = (project in file("."))
   .settings(
-    commonSettings,
-    libraryDependencies ++= commonDependencies ++ testDependencies
+    projectSettings,
+    libraryDependencies ++= mainDependencies ++ testDependencies
   )
 
 mappings in(Compile, packageBin) ++= Seq(
