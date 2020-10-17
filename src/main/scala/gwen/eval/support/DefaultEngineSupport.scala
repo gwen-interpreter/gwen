@@ -130,13 +130,13 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
       }
 
-      case r"""I execute javascript "(.+?)$javascript"""" => step.orDocString(javascript) tap { javascript =>
+      case r"""I execute (?:javascript|js) "(.+?)$javascript"""" => step.orDocString(javascript) tap { javascript =>
         checkStepRules(step, BehaviorType.Action, env)
         env.evaluateJS(javascript)
       }
 
 
-      case r"""I capture (.+?)$attribute by javascript "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+      case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         checkStepRules(step, BehaviorType.Action, env)
         val value = Option(env.evaluateJS(env.formatJSReturn(env.interpolate(expression)(env.getBoundReferenceValue)))).map(_.toString).orNull
         env.topScope.set(attribute, value tap { content =>
@@ -198,10 +198,10 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
         env.topScope.set(attribute, result)
 
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|system process|property|setting|file)$attrType "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         checkStepRules(step, BehaviorType.Context, env)
         attrType match {
-          case "javascript" => env.scopes.set(s"$attribute/javascript", expression)
+          case "javascript" | "js" => env.scopes.set(s"$attribute/javascript", expression)
           case "system process" => env.scopes.set(s"$attribute/sysproc", expression)
           case "file" => env.scopes.set(s"$attribute/file", expression)
           case _ => env.topScope.set(attribute, Settings.get(expression))

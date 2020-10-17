@@ -1,3 +1,9 @@
+2.29.0
+======
+Oct 17, 2020
+- Introduce shorter DSL literals for convenience
+  - JavaScript DSLs accept `javascript` or `js` for short
+
 2.28.1
 ======
 Sep 27, 2020
