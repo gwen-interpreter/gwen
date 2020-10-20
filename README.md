@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
 - Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
 - [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
-- [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
 
 Why Gwen?
 ---------
@@ -75,6 +75,7 @@ Key Features
 - [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
 - [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
 - [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
+- [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
 
 User Network and Support
 ------------------------
@@ -153,5 +154,3 @@ Credits
 - [Bootstrap](https://getbootstrap.com/)
 - [JQuery](https://jquery.com/)
 - [Reel](https://github.com/pisi/Reel)
-
----

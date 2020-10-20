@@ -314,6 +314,8 @@ object Scenario {
     new Scenario(scenario.tags, keywordFor(scenario), scenario.name, scenario.description, scenario.background, scenario.steps, scenario.isOutline, scenario.examples, metaFile) tap { s => s.pos = scenario.pos }
   def apply(outline: Scenario, examples: List[Examples]): Scenario =
     new Scenario(outline.tags, keywordFor(outline), outline.name, outline.description, outline.background, outline.steps, outline.isOutline, examples, outline.metaFile) tap { s => s.pos = outline.pos }
+  def apply(tags: List[Tag], name: String, steps: List[Step], scenario: Scenario): Scenario = 
+    new Scenario(tags, FeatureKeyword.nameOf(FeatureKeyword.Scenario), name, scenario.description, scenario.background, steps, scenario.isOutline, scenario.examples, scenario.metaFile) tap { s => s.pos = scenario.pos }    
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
   def keywordFor(tags: List[Tag], keyword: String): String = 
     if(tags.contains(Tag.ForEachTag)) Tag.ForEachTag.name

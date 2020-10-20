@@ -83,7 +83,8 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
   private def deepRead(location: File, metaFiles: List[File], dataFile: Option[File]): LazyList[FeatureUnit] = {
     if (isDirectory(location)) {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
-      location.listFiles().to(LazyList).flatMap(deepRead(_, inputs._1, inputs._2)) 
+      val files = Option(location.listFiles).getOrElse(Array[File]())
+      files.to(LazyList).flatMap(deepRead(_, inputs._1, inputs._2)) 
     } else if (isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
       val unit = FeatureUnit(
@@ -119,7 +120,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     */
   private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
     val (metaFiles, dataFile) = inputs
-    val files = dir.listFiles
+    val files = Option(dir.listFiles).getOrElse(Array[File]())
     val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(isMetaFile).toList else Nil
     val inputs1 = (metaFiles ::: metas, dataFile)
     val datas = if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(isCsvFile).toList else Nil

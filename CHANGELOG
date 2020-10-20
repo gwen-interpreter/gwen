@@ -1,3 +1,8 @@
+2.30.0
+======
+Oct 20, 2020
+- Introduce @ForEach annotation to simplify looping over records in data tables
+
 2.29.0
 ======
 Oct 17, 2020

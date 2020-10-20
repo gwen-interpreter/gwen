@@ -132,10 +132,13 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
-    val sd = Scenario(tags, FeatureKeyword.nameOf(FeatureKeyword.Scenario), stepDef.name, stepDef.description, stepDef.background, stepDef.steps, stepDef.isOutline, stepDef.examples, stepDef.metaFile) tap { sd =>
-      sd.pos = stepDef.pos
+    if (stepDef.isForEach && stepDef.isDataTable) {
+      stepDefs += ((s"${stepDef.name};", Scenario(tags.filter(_.name != Tag.ForEachTag.name).filter(!_.name.startsWith(Tag.DataTableTag.name)), stepDef.name, stepDef.steps, stepDef)))
+      val step = Step(StepKeyword.When.toString, s"${stepDef.name}; for each data record")
+      stepDefs += ((stepDef.name, Scenario(tags.filter(_.name != Tag.ForEachTag.name), s"${stepDef.name} for each data record", List(step), stepDef)))
+    } else {
+      stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.steps, stepDef)))
     }
-    stepDefs += ((stepDef.name, sd))
   }
   
   /**
