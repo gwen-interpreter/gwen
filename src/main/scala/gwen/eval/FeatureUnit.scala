@@ -16,6 +16,9 @@
 
 package gwen.eval
 
+import gwen.dsl.Identifiable
+import gwen.dsl.NodeType
+
 import java.io.File
 
 /**
@@ -24,8 +27,23 @@ import java.io.File
   * @param featureFile the feature file
   * @param metaFiles the associated meta files (if any)
   * @param dataRecord optional data record
+  * @param result option result
   */
-case class FeatureUnit(featureFile: File, metaFiles: List[File], dataRecord: Option[DataRecord])
+case class FeatureUnit(
+    featureFile: File,
+    metaFiles: List[File], 
+    dataRecord: Option[DataRecord], 
+    result: Option[FeatureResult] = None) extends Identifiable {
+
+  val nodeType: NodeType.Value = NodeType.Unit
+  val uri: String = s"${featureFile.getPath}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
+}
+
+object FeatureUnit {
+  def apply(unit: FeatureUnit, result: FeatureResult): FeatureUnit = {
+    FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord, Some(result))
+  }
+}
 
 /**
   * Captures a data record used to initialise feature level data bindings

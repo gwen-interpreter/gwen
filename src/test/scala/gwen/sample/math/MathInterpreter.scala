@@ -16,9 +16,9 @@
 
 package gwen.sample.math
 
+import gwen._
 import gwen.dsl.Step
 import gwen.eval._
-import gwen.Predefs.RegexContext
 
 import scala.io.Source
 

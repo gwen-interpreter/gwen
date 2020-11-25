@@ -16,12 +16,10 @@
 
 package gwen.eval
 
-import java.io.File
-
 import com.github.tototoshi.csv.CSVReader
 import com.typesafe.scalalogging.LazyLogging
 
-import gwen.Predefs.Kestrel
+import java.io.File
 
 /**
  * Returns an iteration of feature units for each entry in a given 

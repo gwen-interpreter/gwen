@@ -17,11 +17,10 @@
 package gwen
 
 import gwen.dsl.AssertionMode
-import gwen.dsl.FeatureMode
 import gwen.dsl.BehaviorRules
+import gwen.dsl.FeatureMode
 import gwen.dsl.StateLevel
 import gwen.Errors._
-import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Provides access to gwen settings defined through system properties loaded 
@@ -29,7 +28,7 @@ import com.typesafe.scalalogging.LazyLogging
   *
   * @author Branko Juric
   */
-object GwenSettings extends LazyLogging {
+object GwenSettings {
 
   /** 
    * Cap max threads to number of avilable processors.
@@ -168,14 +167,11 @@ object GwenSettings extends LazyLogging {
         if (maxThreads < 1) {
           propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
         } else if (maxThreads > availableProcessors) {
-          logger.info(s"gwen.parallel.maxThreads = $availableProcessors (defaulted since $maxThreads exceeds available processors")
           availableProcessors
         } else {
-          logger.info(s"gwen.parallel.maxThreads = $maxThreads")
           maxThreads
         }
       } getOrElse { 
-        logger.info(s"gwen.parallel.maxThreads = $availableProcessors (default)")
         availableProcessors
       }
     }

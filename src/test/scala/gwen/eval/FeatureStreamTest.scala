@@ -16,13 +16,13 @@
 
 package gwen.eval
 
-import gwen.Errors._
-import gwen.Predefs.FileIO
-import gwen.Predefs.Kestrel
+import gwen._
+import gwen.Errors.AmbiguousCaseException
+
+import org.scalatest.Matchers
+
 import java.io.File
 import java.util.NoSuchElementException
-import org.scalatest.Matchers
-import gwen.BaseTest
 
 class FeatureStreamTest extends BaseTest with Matchers {
   

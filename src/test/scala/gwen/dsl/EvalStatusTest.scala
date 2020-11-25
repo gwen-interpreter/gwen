@@ -16,16 +16,13 @@
 
 package gwen.dsl
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import gwen.eval.SpecNormaliser
 
-class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
-  object Scenario {
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
-  }
+
+class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with GwenTestModel {
 
   private val parse = parseFeatureSpec(_: String)
 
@@ -99,14 +96,16 @@ Background: The tester
           scenario.name, 
           scenario.description,
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map {step =>
-              Step(step.keyword, step.name, Passed(1))
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step, step.keyword, step.name, Passed(1))
             })
           }, 
           scenario.steps map {step =>
-            Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           }) 
       },
+      Nil,
+      None,
       Nil)
     
     // assert
@@ -137,14 +136,16 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map {step =>
-              Step(step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else Passed(1))
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step, step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else Passed(1))
             })
           },
           scenario.steps map {step =>
-            Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           })
       },
+      Nil,
+      None,
       Nil)
 
     // assert
@@ -175,14 +176,16 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map {step =>
-              Step(step.keyword, step.name, Passed(1))
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step, step.keyword, step.name, Passed(1))
             })
           },
           scenario.steps.zipWithIndex map { case (step, index) =>
-            Step(step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  Passed(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  Passed(1))
           })
       },
+      Nil,
+      None,
       Nil)
 
     // assert
@@ -215,8 +218,8 @@ Background: The tester
           scenario.name,
           scenario.description,
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map {step =>
-              Step(step.keyword, step.name, Passed(1))
+            Background(background.name, background.description, background.steps map {step =>
+              Step(step, step.keyword, step.name, Passed(1))
             })
           },
           scenario.steps map { step =>
@@ -228,9 +231,11 @@ Background: The tester
             } else {
               Passed(1)
             }
-            Step(step.keyword, step.name, status)
+            Step(step, step.keyword, step.name, status)
           })
       },
+      Nil,
+      None,
       Nil)
 
     // assert
@@ -263,9 +268,9 @@ Background: The tester
           scenario.name, 
           scenario.description,
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.keyword, step.name, stepIndex match {
+              Step(step, step.keyword, step.name, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
                 case 3 if scenarioIndex == 0 => Failed(99, error)
                 case _ => step.evalStatus
@@ -274,6 +279,8 @@ Background: The tester
           }, 
           scenario.steps) 
       },
+      Nil,
+      None,
       Nil)
     
     // assert
@@ -327,9 +334,9 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps.zipWithIndex map {zip =>
+            Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
-              Step(step.keyword, step.name, stepIndex match {
+              Step(step, step.keyword, step.name, stepIndex match {
                 case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
                 case 3 if scenarioIndex == 1 => Failed(99, error)
                 case _ => if (scenarioIndex < 1) Passed(1) else step.evalStatus
@@ -338,6 +345,8 @@ Background: The tester
           }, 
           scenario.steps) 
       },
+      Nil,
+      None,
       Nil)
     
     // assert
@@ -391,8 +400,8 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map { step =>
-              Step(step.keyword, step.name, scenarioIndex match {
+            Background(background.name, background.description, background.steps map { step =>
+              Step(step, step.keyword, step.name, scenarioIndex match {
                 case 0 => Passed(1)
                 case _ => step.evalStatus
               })
@@ -400,13 +409,15 @@ Background: The tester
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.keyword, step.name, stepIndex match {
+            Step(step, step.keyword, step.name, stepIndex match {
               case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
               case 3 if scenarioIndex == 0 => Failed(99, error)
               case _ => step.evalStatus
             })
           }) 
       },
+      Nil,
+      None,
       Nil)
     
     // assert
@@ -462,19 +473,21 @@ Background: The tester
           scenario.name, 
           scenario.description, 
           scenario.background map { background =>
-            Background(background.keyword, background.name, background.description, background.steps map { step =>
-              Step(step.keyword, step.name, Passed(1))
+            Background(background.name, background.description, background.steps map { step =>
+              Step(step, step.keyword, step.name, Passed(1))
             }) 
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
-            Step(step.keyword, step.name, stepIndex match {
+            Step(step, step.keyword, step.name, stepIndex match {
               case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
               case 3 if scenarioIndex == 1 => Failed(99, error)
               case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus
             })
           }) 
       },
+      Nil,
+      None,
       Nil)
     
     // assert 

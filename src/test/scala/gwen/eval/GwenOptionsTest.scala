@@ -16,20 +16,18 @@
 
 package gwen.eval
 
-import java.io.File
+import gwen._
+import gwen.dsl.Tag
+import gwen.report.ReportFormat
+
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.dsl.Tag
-import gwen.dsl.Tag.string2Tag
 
-import scala.util.Success
-import scala.util.Try
-import scala.util.Failure
-import gwen.report.ReportFormat
-import gwen.Predefs.Kestrel
-import gwen.Predefs.FileIO
-import gwen.Settings
+import java.io.File
 
 class GwenOptionsTest extends FlatSpec with Matchers {
   
@@ -329,14 +327,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with tags option and valid single include tag" should "parse" in {
     parseOptions(Array("-t", "@wip")) match {
       case Success(options) => {
-        assertOptions(options, tags = List(("@wip", true)))
+        assertOptions(options, tags = List((Tag("@wip"), true)))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--tags", "@wip")) match {
       case Success(options) => {
-        assertOptions(options, tags = List(("@wip", true)))
+        assertOptions(options, tags = List((Tag("@wip"), true)))
       }
       case _ =>
         fail("expected options but failed")
@@ -346,14 +344,14 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   "Options with tags option and valid single exclude tag" should "parse" in {
     parseOptions(Array("-t", "~@wip")) match {
       case Success(options) => {
-        assertOptions(options, tags = List(("@wip", false)))
+        assertOptions(options, tags = List((Tag("@wip"), false)))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--tags", "~@wip")) match {
       case Success(options) => {
-        assertOptions(options, tags = List(("@wip", false)))
+        assertOptions(options, tags = List((Tag("@wip"), false)))
       }
       case _ =>
         fail("expected options but failed")
@@ -377,7 +375,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with tags option and mutiple includes" should "parse" in {
     val tags = "@wip,@regression,@transactional,@simple"
-    val expected: List[(Tag, Boolean)] = List(("@wip", true), ("@regression", true), ("@transactional", true), ("@simple", true))
+    val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@transactional"), true), (Tag("@simple"), true))
     parseOptions(Array("-t", tags)) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
@@ -396,7 +394,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with tags option and mutiple exclude tags" should "parse" in {
     val tags = "~@experimental,~@complex"
-    val expected: List[(Tag, Boolean)] = List(("@experimental", false), ("@complex", false))
+    val expected: List[(Tag, Boolean)] = List((Tag("@experimental"), false), (Tag("@complex"), false))
     parseOptions(Array("-t", tags)) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
@@ -415,7 +413,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
   
   "Options with tags option and mutiple include and exclude tags" should "parse" in {
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
-    val expected: List[(Tag, Boolean)] = List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true))
+    val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true))
     parseOptions(Array("-t", tags)) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
@@ -648,7 +646,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
-          List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
           List(metaFile),
@@ -668,7 +666,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
-          List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
           List(metaFile),
@@ -688,7 +686,7 @@ class GwenOptionsTest extends FlatSpec with Matchers {
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(propsFile),
-          List(("@wip", true), ("@regression", true), ("@experimental", false), ("@transactional", true), ("@complex", false), ("@simple", true)),
+          List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
           List(metaFile),

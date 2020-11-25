@@ -16,11 +16,12 @@
 
 package gwen.eval.support
 
+import gwen.Errors.DecodingException
+import gwen.eval.EnvContext
+import gwen.eval.GwenOptions
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.eval.EnvContext
-import gwen.Errors.DecodingException
-import gwen.eval.GwenOptions
 
 class DecodingSupportTest extends FlatSpec with Matchers {
 

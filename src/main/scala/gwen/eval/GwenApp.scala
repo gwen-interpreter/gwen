@@ -16,8 +16,7 @@
 
 package gwen.eval
 
-import gwen.Predefs.Exceptions
-import gwen.Predefs.Kestrel
+import gwen._
 
 import com.typesafe.scalalogging.LazyLogging
 

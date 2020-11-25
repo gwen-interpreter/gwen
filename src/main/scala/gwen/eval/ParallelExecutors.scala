@@ -17,9 +17,11 @@
 package gwen.eval
 
 import gwen.GwenSettings
+
+import com.typesafe.scalalogging.LazyLogging
+
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
-import com.typesafe.scalalogging.LazyLogging
 
 /** 
  * Creates and provides access to an executor for parallel feature or scenario 

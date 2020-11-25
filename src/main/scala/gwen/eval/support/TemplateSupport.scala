@@ -16,9 +16,9 @@
 
 package gwen.eval.support
 
-import gwen.Errors._
+import gwen._
 import gwen.eval.EnvContext
-import gwen.Predefs.{Kestrel, StringOps}
+
 import org.apache.commons.lang3.StringUtils
 
 import scala.io.Source
@@ -46,7 +46,7 @@ trait TemplateSupport {
       if (n == "!{}") s"![$i]" else n
     }
     names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-      templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
+      Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
     }
 
     val tLines = Source.fromString(template).getLines().toList
@@ -56,7 +56,7 @@ trait TemplateSupport {
       (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}|!\{\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "").replaceAll("""!\{.+?\}""", """\{!\}"""), aLine, idx)
     }).flatMap { case (tLine, aLine, idx) =>
       tLine.r.unapplySeq(aLine).getOrElse {
-        templateMatchError(s"Could not match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template (check literals and/or syntax)")
+        Errors.templateMatchError(s"Could not match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template (check literals and/or syntax)")
       }
     }
     val params = names zip values
@@ -74,7 +74,7 @@ trait TemplateSupport {
         val diffPos = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
         val diffChar = source.charAt(commonPrefix.length)
         val diffLine = s"${Source.fromString(commonPrefix).getLines().toList.last}[$diffChar].."
-        templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line ${diffPos.line} position ${diffPos.column} in $sourceName: '$diffLine'")
+        Errors.templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line ${diffPos.line} position ${diffPos.column} in $sourceName: '$diffLine'")
       }
     }
   }

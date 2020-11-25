@@ -16,7 +16,7 @@
 
 package gwen.eval
 
-import gwen.dsl.{FeatureSpec, Rule, Scenario, Tag}
+import gwen.dsl._
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -29,7 +29,7 @@ import gwen.dsl.{FeatureSpec, Rule, Scenario, Tag}
   */
 object TagsFilter {
 
-  private val DefaultTags = List((Tag("Ignore"), false))
+  private val DefaultTags = List((Tag(ReservedTags.Ignore), false))
   
   /**
     * Filters a feature using the given include/exclude tag filters.
@@ -42,12 +42,14 @@ object TagsFilter {
   def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
     def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
     def rules = spec.rules map { rule =>
-      Rule(rule.keyword, rule.name, rule.description, rule.background, filterScenarios(spec, tagFilters, rule.scenarios))
+      rule.copy(withScenarios = filterScenarios(spec, tagFilters, rule.scenarios))
     }
     if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
       None
     } else {
-      Some(FeatureSpec(spec.feature, spec.background, scenarios, rules, None, Nil))
+      Some(spec.copy(
+        withScenarios = scenarios, 
+        withRules = rules))
     }
   }
 
@@ -62,7 +64,7 @@ object TagsFilter {
           if (filteredExamples.isEmpty) {
             None
           } else {
-            Some(Scenario(scenario, filteredExamples))
+            Some(scenario.copy(withExamples = filteredExamples))
           }
         } else {
           Some(scenario)

@@ -16,11 +16,12 @@
 
 package gwen.eval.support
 
+import gwen._
+import gwen.Errors.XPathException
+import gwen.eval.{EnvContext, GwenOptions}
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.Errors.XPathException
-import gwen.Predefs.Kestrel
-import gwen.eval.{EnvContext, GwenOptions}
 
 class XPathSupportTest extends FlatSpec with Matchers {
   

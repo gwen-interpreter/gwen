@@ -16,7 +16,7 @@
 
 package gwen.eval.support
 
-import gwen.Errors._
+import gwen._
 import gwen.eval.EnvContext
 
 /** Can be mixed into evaluation engines to provide Regex support. */
@@ -34,7 +34,7 @@ trait RegexSupport {
     */
   def extractByRegex(regex: String, source: String): String =
     evaluate("$[dryRun:regex]") {
-      regex.r.findFirstMatchIn(source).getOrElse(regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
+      regex.r.findFirstMatchIn(source).getOrElse(Errors.regexError(s"'Regex match '$regex' not found in '$source'")).group(1)
     }
     
 }

@@ -16,9 +16,9 @@
 
 package gwen.eval
 
+import gwen._
 import gwen.dsl._
-import gwen.Errors._
-import gwen.Predefs.FileIO
+
 import java.io.File
 
  /**
@@ -35,7 +35,7 @@ trait EvalRules {
   def checkBackgroundRules(background: Background, specFile: Option[File]): Unit = {
     if (BehaviorRules.isStrict && isFeatureFile(specFile)) {
       if (!isProperBehavior(background.steps)) {
-        improperBehaviorError(background, "Background", specFile)
+        Errors.improperBehaviorError(background, "Background", specFile)
       }
     }
   }
@@ -49,11 +49,11 @@ trait EvalRules {
   def checkScenarioRules(scenario: Scenario, specFile: Option[File]): Unit = {
     if (isFeatureFile(specFile)) {
       if (FeatureMode.isDeclarative && scenario.isStepDef) {
-        imperativeStepDefError(scenario, specFile)
+        Errors.imperativeStepDefError(scenario, specFile)
       }
       if (BehaviorRules.isStrict && !(FeatureMode.isImperative && scenario.isStepDef)) {
         if (!isProperBehavior(scenario.steps)) {
-          improperBehaviorError(scenario, scenario.keyword, specFile)
+          Errors.improperBehaviorError(scenario, scenario.keyword, specFile)
         }
       }
     }
@@ -68,12 +68,12 @@ trait EvalRules {
   def checkStepDefRules[T <: EnvContext](step: Step, env: T): Unit = {
     if (env.isEvaluatingTopLevelStep && env.isEvaluatingFeatureFile) {
       if (BehaviorRules.isStrict) {
-        step.stepDef foreach { stepDef =>
+        step.stepDef foreach { case (stepDef, _) =>
           stepDef.behaviorTag match {
             case Some(behaviorTag) =>
               checkStepRules(step, BehaviorType.withName(behaviorTag.name), env)
             case _ =>
-              undefinedStepDefBehaviorError(stepDef, stepDef.metaFile)
+              Errors.undefinedStepDefBehaviorError(stepDef, stepDef.metaFile)
           }
         }
       }
@@ -90,16 +90,16 @@ trait EvalRules {
   def checkStepRules[T <: EnvContext](step: Step, actualBehavior: BehaviorType.Value, env: T): Unit = {
     if (env.isEvaluatingTopLevelStep && env.isEvaluatingFeatureFile) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
-        imperativeStepError(step)
+        Errors.imperativeStepError(step)
       }
       if (BehaviorRules.isStrict) {
         env.currentBehavior foreach { expectedBehavior =>
           if (actualBehavior != expectedBehavior) {
-            unexpectedBehaviorError(step, expectedBehavior, actualBehavior, env.specFile)
+            Errors.unexpectedBehaviorError(step, expectedBehavior, actualBehavior, env.specFile)
           } else if (!StepKeyword.isAnd(step.keyword)) {
             val stepBehavior = BehaviorType.of(step.keyword) 
             if (stepBehavior != expectedBehavior) {
-              unexpectedBehaviorError(step, expectedBehavior, stepBehavior, env.specFile)
+              Errors.unexpectedBehaviorError(step, expectedBehavior, stepBehavior, env.specFile)
             }
           }
         }

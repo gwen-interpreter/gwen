@@ -16,10 +16,12 @@
 
 package gwen
 
+import gwen.Formatting.formatDuration
+
+import scala.concurrent.duration.Duration
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import scala.concurrent.duration.Duration
-import gwen.Predefs.Formatting.formatDuration
 
 class DurationFormatterTest extends FlatSpec with Matchers {
 

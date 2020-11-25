@@ -16,19 +16,18 @@
 
  package gwen.eval
 
-import gwen.Predefs.FileIO
-import gwen.Predefs.Formatting._
-import gwen.Predefs.Kestrel
-import java.io.File
+import gwen._
+import gwen.dsl.BehaviorType
 import gwen.dsl.Scenario
 import gwen.dsl.Step
-import gwen.dsl.BehaviorType
+
+import java.io.File
 
 class EnvState(val scopes: ScopedDataStack) {
 
   /** List of current attachments (name-file pairs). */
   private var attachments: List[(String, File)] = Nil
-  private var attachmentPrefix = padWithZeroes(1)
+  private var attachmentPrefix = Formatting.padWithZeroes(1)
 
   /** Map of for-each StepDefs. */
   private var foreachStepDefs = Map[String, Scenario]()
@@ -75,19 +74,19 @@ class EnvState(val scopes: ScopedDataStack) {
         }
     }) tap { att =>
       attachments = att :: attachments
-      attachmentPrefix = padWithZeroes(attachmentPrefix.toInt + 1)
+      attachmentPrefix = Formatting.padWithZeroes(attachmentPrefix.toInt + 1)
     }
 
     /** Adds for-each StepDef for a given step. */
     def addForeachStepDef(step: Step, stepDef: Scenario): Unit = {
-      foreachStepDefs += (step.uniqueId -> stepDef)
+      foreachStepDefs += (step.uuid -> stepDef)
     }
 
     /** Gets the optional for-each StepDef for a given step. */
     def popForeachStepDef(step: Step): Option[Scenario] = 
-      foreachStepDefs.get(step.uniqueId) tap { stepDef =>
+      foreachStepDefs.get(step.uuid) tap { stepDef =>
         if (stepDef.nonEmpty) {
-          foreachStepDefs -= step.uniqueId 
+          foreachStepDefs -= step.uuid 
         }
       }
 

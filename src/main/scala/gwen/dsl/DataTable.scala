@@ -15,7 +15,7 @@
  */
 package gwen.dsl
 
-import gwen.Errors.{dataTableError, invalidTagError}
+import gwen._
 import gwen.eval.ScopedData
 
 /**
@@ -124,8 +124,6 @@ class MatrixTable(val records: List[List[String]], val topNames: List[String], v
   */
 object DataTable {
 
-  import gwen.Predefs.RegexContext
-
   def apply(tag: Tag, step: Step): DataTable = {
     tag.name.trim match {
       case r"""DataTable\(horizontal="([^".]+?)"$namesCSV\)""" =>
@@ -150,7 +148,7 @@ object DataTable {
     if (!validTags.exists(tag.name.matches(_))) tagSyntaxError(tag)
 
   private def tagSyntaxError(tag: Tag) =
-    invalidTagError(
+    Errors.invalidTagError(
       s"""Invalid tag syntax: $tag - correct table tags include: @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")"""
     )
 
@@ -166,14 +164,14 @@ object DataTable {
     val tableType = TableType.valueFor(headerType)
 
     if (rawTable.isEmpty)
-      dataTableError(s"Data table expected for StepDef with @DataTable annotation")
+      Errors.dataTableError(s"Data table expected for StepDef with @DataTable annotation")
 
     val table = if (tableType == TableType.vertical) rawTable.transpose else rawTable
 
     if (headers.isEmpty && table.size < 2)
-      dataTableError(s"Table with header has no records")
+      Errors.dataTableError(s"Table with header has no records")
     if (headers.nonEmpty && headers.size != table.head.size)
-      dataTableError(
+      Errors.dataTableError(
         s"""${table.head.size} names expected for data table but ${headers.size} specified: $tableType=\"${headers.mkString(",")}\"""")
 
     tableType match {

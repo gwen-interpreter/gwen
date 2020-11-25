@@ -15,14 +15,15 @@
  */
 package gwen.report
 
-import java.io.File
 import gwen.GwenInfo
 import gwen.GwenSettings
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
-import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
+import gwen.dsl.SpecType
+
+import java.io.File
 
 /** Formats the slideshow. */
 trait HtmlSlideshowFormatter extends ReportFormatter {
@@ -42,11 +43,11 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     if (screenshots.isEmpty || result.isMeta) None
     else {
     
-      val reportDir = ReportFormat.slideshow.reportDir(options)
+      val reportDir = HtmlSlideshowReportConfig.reportDir(options)
       val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
-      val featureCrumb = ("Feature", ReportFormat.html.createReportFile(ReportFormat.html.createReportDir(options, result.spec, unit.dataRecord), "", result.spec, unit.dataRecord))
+      val featureCrumb = (SpecType.Feature.toString, HtmlReportConfig.createReportFile(HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord), "", result.spec, unit.dataRecord))
       Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>

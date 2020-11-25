@@ -17,15 +17,16 @@ package gwen.sample.xml
 
 import gwen.dsl.Failed
 import gwen.dsl.Passed
-import gwen.eval.GwenOptions
-import java.io.File
-
-import org.scalatest.FlatSpec
-import gwen.eval.GwenLauncher
-import gwen.report.ReportFormat
 import gwen.eval.EnvContext
 import gwen.eval.GwenInterpreter
+import gwen.eval.GwenLauncher
+import gwen.eval.GwenOptions
 import gwen.eval.support.DefaultEngineSupport
+import gwen.report.ReportFormat
+
+import org.scalatest.FlatSpec
+
+import java.io.File
 
 class XMLEnvContext(val options: GwenOptions)
   extends EnvContext(options) {

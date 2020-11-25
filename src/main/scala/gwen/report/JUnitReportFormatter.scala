@@ -15,23 +15,24 @@
  */
 package gwen.report
 
-import java.io.File
-import java.net.InetAddress
-
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-import gwen.{GwenInfo, Settings}
-import gwen.Predefs.Exceptions
+import gwen._
 import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.FeatureUnit
 import gwen.eval.SpecNormaliser
-import gwen.Predefs.Formatting._
-import scala.sys.process._
+import gwen.Formatting.escapeXml
+import gwen.Formatting.padWithZeroes
 
+import scala.sys.process._
 import scala.util.Try
+
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+
+import java.io.File
+import java.net.InetAddress
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {

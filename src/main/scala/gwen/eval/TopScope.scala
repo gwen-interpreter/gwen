@@ -16,8 +16,7 @@
 
 package gwen.eval
 
-import gwen.Predefs.Kestrel
-import gwen.GwenSettings
+import gwen._
 
 /**
   * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also

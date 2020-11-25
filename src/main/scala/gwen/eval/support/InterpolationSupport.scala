@@ -15,7 +15,8 @@
  */
 package gwen.eval.support
 
-import gwen.Predefs.RegexContext
+import gwen._
+
 import com.typesafe.scalalogging.LazyLogging
 
 /**

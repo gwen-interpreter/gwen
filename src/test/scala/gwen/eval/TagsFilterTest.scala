@@ -16,10 +16,11 @@
 
 package gwen.eval
 
+import gwen.dsl.GherkinParser
+import gwen.dsl.Tag
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.dsl.Tag.string2Tag
-import gwen.dsl.GherkinParser
 
 class TagsFilterTest extends FlatSpec with Matchers with GherkinParser { 
 
@@ -67,7 +68,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Include feature level tag" should "return same feature" in {
       val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@wip", true))) match {
+      TagsFilter.filter(source, List((Tag("@wip"), true))) match {
         case Some(target) => source should be (target)
         case None => fail("same feature expected")
       }
@@ -75,7 +76,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Exclude feature level tag" should "return no feature" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@wip", false))) match {
+      TagsFilter.filter(source, List((Tag("@wip"), false))) match {
         case Some(target) => fail("None expected")
         case None => // success
       }
@@ -83,7 +84,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Include scenario level tag" should "return scenarios with only those tagged scenarios" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (3)
@@ -100,7 +101,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Exclude scenario level tag" should "return scenarios without those tagged scenarios" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", false))) match {
+      TagsFilter.filter(source, List((Tag("@work"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -113,7 +114,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Include and exclude scenario level tags" should "return scenarios with include tag minus exclude tag" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", true), ("@work", false))) match {
+      TagsFilter.filter(source, List((Tag("@play"), true), (Tag("@work"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (1)
@@ -125,7 +126,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Exclude and include scenario level tags" should "return scenarios without exclude tag plus include tag" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", false), ("@work", true))) match {
+      TagsFilter.filter(source, List((Tag("@play"), false), (Tag("@work"), true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -140,7 +141,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Include and exclude of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", true), ("@play", false))) match {
+      TagsFilter.filter(source, List((Tag("@play"), true), (Tag("@play"), false))) match {
         case Some(_) => fail("None expected")
         case None => // success
       }
@@ -148,7 +149,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Either of two scenario level include tags" should "return the feature" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true), ("@play", true))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true), (Tag("@play"), true))) match {
         case Some(target) => 
           val scenarios = target.scenarios
           scenarios.size should be (4)
@@ -165,7 +166,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Either of two scenario level include tags but not exclude tag" should "return the feature" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true), ("@rest", false), ("@play", true))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true), (Tag("@rest"), false), (Tag("@play"), true))) match {
         case Some(target) => 
           val scenarios = target.scenarios
           scenarios.size should be (3)
@@ -180,13 +181,13 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
   
   "Exclude and include of same scenario level tag" should "return no feature" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", false), ("@play", true))) match {
+      TagsFilter.filter(source, List((Tag("@play"), false), (Tag("@play"), true))) match {
         case Some(_) => fail("None expected")
         case None => // success
       }
   }
   
-  "@Ignore tag" should "should be excluded by default" in {
+  "@Ignore tag" should "be excluded by default" in {
     val source = parse(featureString + """
       @Ignore
       Scenario: Work unit 6
@@ -210,7 +211,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @play scenario and example level tags" should "return scenarios and examples with those tags" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", true))) match {
+      TagsFilter.filter(source, List((Tag("@play"), true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (3)
@@ -226,7 +227,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Exclude @rest and @play scenario and example level tags" should "return scenarios and examples without those tags" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", false), ("@rest", false))) match {
+      TagsFilter.filter(source, List((Tag("@play"), false), (Tag("@rest"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -239,7 +240,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @work and exclude @rest and @play scenario and example level tags" should "return scenarios and examples that match" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true), ("@play", false), ("@rest", false))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true), (Tag("@play"), false), (Tag("@rest"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (1)
@@ -251,7 +252,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @work and exclude @rest scenario and example level tags" should "return scenarios and examples that match" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true), ("@rest", false))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true), (Tag("@rest"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -266,7 +267,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @work and exclude @play scenario and example level tags" should "return scenarios and examples that match" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@work", true), ("@play", false))) match {
+      TagsFilter.filter(source, List((Tag("@work"), true), (Tag("@play"), false))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -281,7 +282,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @rest scenario and example level tags" should "return scenarios and examples that match" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@rest", true))) match {
+      TagsFilter.filter(source, List((Tag("@rest"), true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (2)
@@ -296,7 +297,7 @@ class TagsFilterTest extends FlatSpec with Matchers with GherkinParser {
 
   "Include @play scenario and example level tags" should "return scenarios and examples that match" in {
     val source = parse(featureString).get
-      TagsFilter.filter(source, List(("@play", true))) match {
+      TagsFilter.filter(source, List((Tag("@play"), true))) match {
         case Some(target) =>
           val scenarios = target.scenarios
           scenarios.size should be (3)

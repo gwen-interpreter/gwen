@@ -16,12 +16,11 @@
 
 package gwen.dsl
 
-import scala.concurrent.duration._
-import java.util.Date
+import gwen._
 
-import gwen.Predefs.Formatting._
-import gwen.Errors.LicenseException
-import gwen.Errors.DisabledStepException
+import scala.concurrent.duration._
+
+import java.util.Date
 
 /** Captures the evaluation status of a [[SpecNode]]. */
 sealed trait EvalStatus {
@@ -49,17 +48,21 @@ sealed trait EvalStatus {
   def isAssertionError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[AssertionError])
 
+  def isSustainedError = isAssertionError && AssertionMode.isSustained
+
   /** Determines whether or not this status is due to an disabled step error. */
   def isDisabledError: Boolean =
-    cause.exists(c => c != null && c.isInstanceOf[DisabledStepException])
+    cause.exists(c => c != null && c.isInstanceOf[Errors.DisabledStepException])
 
   /** Determines whether or not this status is due to a licens error. */
   def isLicenseError: Boolean =
-    cause.exists(c => c != null && c.isInstanceOf[LicenseException])
+    cause.exists(c => c != null && c.isInstanceOf[Errors.LicenseException])
   
+  def message: String = cause.map(_.getMessage).getOrElse(status.toString)
+
   override def toString: String =
     if (nanos > 0) {
-      s"[${formatDuration(duration)}] $status"
+      s"[${Formatting.formatDuration(duration)}] $status"
     } else status.toString
 }
 
@@ -85,6 +88,7 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override def exitCode = 1
   override def emoticon = "[:(]"
   override def cause = Option(error.getCause)
+  override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
 }
 
 /**
@@ -98,6 +102,7 @@ case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
   override def exitCode = 0
   override def emoticon = "[:|]"
   override def cause = Option(error.getCause)
+  override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
 }
 
 /** Defines the skipped status. */
@@ -135,8 +140,6 @@ case object Disabled extends EvalStatus {
 }
 
 object EvalStatus {
-
-  import gwen.Predefs.DurationOps
   
   /**
     * Function for getting the effective evaluation status of a given list of statuses.

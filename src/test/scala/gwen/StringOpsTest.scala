@@ -16,8 +16,9 @@
 
 package gwen
 
-import gwen.Predefs.StringOps.lastPositionIn
-import gwen.dsl.Position
+import gwen.Position
+import gwen.StringOps.lastPositionIn
+
 import org.scalatest.{FlatSpec, Matchers}
 
 class StringOpsTest extends FlatSpec with Matchers {

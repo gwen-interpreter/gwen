@@ -16,21 +16,21 @@
 
 package gwen.report
 
-import java.io.BufferedInputStream
-import java.io.File
-import scala.io.Source
-import com.typesafe.scalalogging.LazyLogging
-import gwen.GwenInfo
-import gwen.Predefs.Kestrel
+import gwen._
 import gwen.dsl.FeatureSpec
+import gwen.dsl.SpecType
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.DataRecord
-import gwen.Predefs.FileIO
 import gwen.eval.FeatureUnit
-import gwen.Predefs.Formatting
-import gwen.GwenSettings
+
+import scala.io.Source
+
+import com.typesafe.scalalogging.LazyLogging
+
+import java.io.BufferedInputStream
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -40,17 +40,17 @@ import java.util.Date
   * @author Branko Juric
   */
 class ReportGenerator (
-    val reportFormat: ReportFormat.Value,
+    val config: ReportConfig,
     private val options: GwenOptions) extends LazyLogging {
   formatter: ReportFormatter => 
 
-  private[report] def reportDir = reportFormat.reportDir(options) tap { dir =>
+  private[report] def reportDir = config.reportDir(options) tap { dir =>
     if (!dir.exists) {
       dir.mkdirs()
     }
   }
   
-  private val summaryReportFile = reportFormat.summaryFilename.map(name => new File(reportDir, s"$name.${reportFormat.fileExtension}"))
+  private val summaryReportFile = config.summaryFilename.map(name => new File(reportDir, s"$name.${config.fileExtension}"))
     
   /**
     * Generate and return a detail feature report.
@@ -63,11 +63,11 @@ class ReportGenerator (
   final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult): List[File] = {
     val featureSpec = result.spec
     val dataRecord = unit.dataRecord
-    val featureReportFile = reportFormat.createReportFile(reportFormat.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord)
+    val featureReportFile = config.createReportFile(config.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord)
     val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
       val metaspec = metaResult.spec
       val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
-      reportFormat.createReportFile(new File(featureReportFile.getParentFile, "meta"), prefix, metaspec, unit.dataRecord)
+      config.createReportFile(new File(featureReportFile.getParentFile, "meta"), prefix, metaspec, unit.dataRecord)
     }
     val reportFiles = featureReportFile :: metaReportFiles
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
@@ -78,13 +78,13 @@ class ReportGenerator (
       Nil
     } else {
       metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
-        val featureCrumb = ("Feature", reportFiles.head)
+        val featureCrumb = (SpecType.Feature.toString, reportFiles.head)
         val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
         val reportFile = reportFiles.tail(idx)
         formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
           reportFile tap { file =>
             file.writeText(content) 
-            logger.info(s"${reportFormat.name} meta detail report generated: ${file.getAbsolutePath}")
+            logger.info(s"${config.name} meta detail report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -97,7 +97,7 @@ class ReportGenerator (
       reportFile tap { file =>
         file.writeText(content)
         reportAttachments(result.spec, file)
-        logger.info(s"${reportFormat.name} feature detail report generated: ${file.getAbsolutePath}")
+        logger.info(s"${config.name} feature detail report generated: ${file.getAbsolutePath}")
       }
     }
   }
@@ -121,7 +121,7 @@ class ReportGenerator (
         reportFile foreach { file =>
           formatSummary(options, info, summary) foreach { content =>
             file.writeText(content)
-            logger.info(s"${reportFormat.name} feature summary report generated: ${file.getAbsolutePath}")
+            logger.info(s"${config.name} feature summary report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -158,7 +158,7 @@ object ReportGenerator {
       if (options.reportFormats.contains(ReportFormat.html)) 
         ReportFormat.slideshow :: options.reportFormats 
       else options.reportFormats
-    options.reportDir.map(_ => formats.map(_.reportGenerator(options))).getOrElse(Nil)
+    options.reportDir.map(_ => formats.flatMap(ReportFormat.configOf).map(_.reportGenerator(options))).getOrElse(Nil)
   }
   
   def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")

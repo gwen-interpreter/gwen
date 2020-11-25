@@ -16,17 +16,16 @@
 
 package gwen.dsl
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import scala.util.Success
 
-class FeatureParserTest extends FlatSpec with Matchers with GherkinParser {
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
-  object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
+class FeatureParserTest extends FlatSpec with Matchers with GherkinParser with GwenTestModel {
+
+  private def parse(input: String) = { 
+    parseFeatureSpec(input).map(_.feature).map(_.copy(withSourceRef = None))
   }
-
-  private def parse(input: String) = parseFeatureSpec(input).map(_.feature)
   
   "Valid features" should "parse" in {
 

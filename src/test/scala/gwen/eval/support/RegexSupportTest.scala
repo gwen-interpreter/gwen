@@ -16,9 +16,10 @@
 
 package gwen.eval.support
 
+import gwen.eval.{EnvContext, GwenOptions}
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.eval.{EnvContext, GwenOptions}
 
 class RegexSupportTest extends FlatSpec with Matchers {
 

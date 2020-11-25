@@ -16,14 +16,16 @@
 
 package gwen.eval
 
-import java.io.File
+import gwen.dsl.Passed
+
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatest.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.FlatSpec
-import gwen.dsl.Passed
+
+import java.io.File
 
 class GwenAppTest extends FlatSpec with Matchers with MockitoSugar {
 

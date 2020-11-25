@@ -16,13 +16,14 @@
 
 package gwen.eval
 
+import gwen._
 import gwen.dsl.StatusKeyword
-import scala.concurrent.duration._
-import java.util.Date
 import gwen.dsl.EvalStatus
 import gwen.dsl.Passed
-import gwen.Predefs.Formatting._
-import gwen.Predefs.DurationOps
+
+import scala.concurrent.duration._
+
+import java.util.Date
 
 /**
   * Captures the feature summary results of an evaluated feature.
@@ -82,9 +83,9 @@ case class FeatureSummary(
         |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
         |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
         |
-        |[${formatDuration(resultsElapsedTime)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}
-        |[${formatDuration(overhead)}] Overhead
-        |[${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
+        |[${Formatting.formatDuration(resultsElapsedTime)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}
+        |[${Formatting.formatDuration(overhead)}] Overhead
+        |[${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }
   
   private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 

@@ -16,20 +16,17 @@
 
 package gwen.dsl
 
-import gwen.GwenSettings
-import gwen.Errors._
-import gwen.Predefs.FileIO
-
-import io.cucumber.gherkin.Gherkin
-import io.cucumber.messages.IdGenerator
-import io.cucumber.messages.Messages.GherkinDocument
+import gwen._
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
+import io.cucumber.gherkin.Gherkin
+import io.cucumber.messages.IdGenerator
+import io.cucumber.messages.{Messages => Cucumber }
+
 import java.io.File
-import java.util.Collections
-import java.util.stream.Collectors
+import java.{util => ju}
 
 /**
   *  Parses a Gherkin feature specification.
@@ -63,6 +60,9 @@ import java.util.stream.Collectors
   *      
   *  @author Branko Juric
   */
+
+import gwen.SourceRef
+
 trait GherkinParser {
 
   private val languageSyntax = """(?s)\s*#\s*language:\s*(\S+).*""".r
@@ -75,29 +75,29 @@ trait GherkinParser {
       val featureStr = spec match {
         case languageSyntax(lang) =>
           if (isMeta && lang != "en") {
-            metaDialectError(lang, specFile)
+            Errors.metaDialectError(lang, specFile)
           } else {
             spec
           }
         case _ =>
           val language = if (isMeta) "en" else GwenSettings.`gwen.feature.dialect`
           if (FileIO.isFeatureFile(specFile) && language != "en") {
-            Position.setLineOffset(-1)
+            SourceRef.setLineOffset(-1)
             s"""|# language: $language
                 |$spec""".stripMargin
           } else {
             spec
           }
       }
-      parseFeatureSpec(featureStr)
+      parseFeatureSpec(featureStr, Some(specFile))
     } finally {
-      Position.setLineOffset(0)
+      SourceRef.setLineOffset(0)
     }
   }
-
+  
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
-  def parseFeatureSpec(feature: String): Try[FeatureSpec] = Try {
-    FeatureSpec(parseDocument(feature))
+  def parseFeatureSpec(feature: String, specFile: Option[File] = None): Try[FeatureSpec] = Try {
+    FeatureSpec(specFile.map(_.getPath).getOrElse(""), parseDocument(feature), specFile)
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
@@ -116,20 +116,20 @@ trait GherkinParser {
             .filter(!_.isEmpty)
             .map(_.get(0).getScenario.getStepsList)
             .filter(!_.isEmpty)
-            .map(steps => Step(steps.get(0)))
-            .map(step => Step(step, Position(1, step.pos.column)))
-            .getOrElse(syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected", 1))
+            .map(steps => Step("", steps.get(0)))
+            .map(_.copy(withSourceRef = None))
+            .getOrElse(Errors.syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected", 1))
           case Failure(e) =>
-            syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected: ${e.getMessage}", 1)
+            Errors.syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected: ${e.getMessage}", 1)
         }
       }
     }
   }
 
-  private def parseDocument(feature: String): GherkinDocument = {
+  private def parseDocument(feature: String): Cucumber.GherkinDocument = {
     val idGenerator = new IdGenerator.Incrementing()
     val envelope = Gherkin.makeSourceEnvelope(feature, "")
-    val envelopes = Gherkin.fromSources(Collections.singletonList(envelope), false, true, false, idGenerator).collect(Collectors.toList())
+    val envelopes = Gherkin.fromSources(ju.Collections.singletonList(envelope), false, true, false, idGenerator).collect(ju.stream.Collectors.toList())
     val result = envelopes.get(0)
     if (result.hasParseError()) {
       throw new RuntimeException(s"Parser errors:\n${result.getParseError().getMessage()}");

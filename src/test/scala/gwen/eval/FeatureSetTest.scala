@@ -16,13 +16,16 @@
 
 package gwen.eval
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
-import java.io.File
-import scala.io.Source
 import gwen.dsl.GherkinParser
+
+import scala.io.Source
 import scala.util.Success
 import scala.util.Failure
+
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
+
+import java.io.File
 
 class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with SpecNormaliser {
   

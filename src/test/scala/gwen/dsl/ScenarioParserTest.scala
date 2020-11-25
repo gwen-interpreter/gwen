@@ -16,19 +16,28 @@
 
 package gwen.dsl
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
+import gwen.Position
 
 import scala.util.Success
 
-class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
+import org.scalatest.Matchers
+import org.scalatest.FlatSpec
 
-  object Scenario {
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
+class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser with GwenTestModel {
+
+  private def parse(input: String, clearPos: Boolean = true) = { 
+    val scenario = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
+    if (clearPos) { 
+      scenario.map { sc => 
+        sc.copy(
+          withSourceRef = None,
+          withSteps = sc.steps map { s => 
+            s.copy(withSourceRef =  None)
+          })
+      }
+    }
+    else scenario
   }
-
-  private def parse(input: String) = parseFeatureSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
   
   private val step1 = Step(StepKeyword.Given.toString, "I am step 1")
   private val step2 = Step(StepKeyword.Then.toString, "I am not step 1")
@@ -36,36 +45,36 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
   private val comment1 = "# I am single line hash comment"
   
   "Valid scenarios" should "parse" in {
-      
+    
       parse("Scenario:").get   should be (Scenario(List[Tag](), "", Nil, None, Nil))
       parse("Scenario:\n").get should be (Scenario(List[Tag](), "", Nil, None, Nil))
       
-      parse(s"Scenario:name\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario: name\n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+      parse(s"Scenario:name\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario: name\n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
       
-      parse(s"Scenario:name\nI am a test scenario\n$step1").get   should be (Scenario(List[Tag](), "name", List("I am a test scenario"), None, List(Step(step1, Position(4, 1)))))
-      parse(s"Scenario: name\nI am another\nmultiline\n\nscenario\n$step1").get  should be (Scenario(List[Tag](), "name", List("I am another", "multiline", "", "scenario"), None, List(Step(step1, Position(7, 1)))))
+      parse(s"Scenario:name\nI am a test scenario\n$step1").get   should be (Scenario(List[Tag](), "name", List("I am a test scenario"), None, List(step1)))
+      parse(s"Scenario: name\nI am another\nmultiline\n\nscenario\n$step1").get  should be (Scenario(List[Tag](), "name", List("I am another", "multiline", "", "scenario"), None, List(step1)))
       
-      parse(s"\tScenario:name\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario:\tname\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario:\tname\t\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario:\tname \n$step1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario:\tname\t \n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
+      parse(s"\tScenario:name\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario:\tname\n$step1").get     should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario:\tname\t\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario:\tname \n$step1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario:\tname\t \n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
       
-      parse(s"Scenario: name\n$step1\n$step2").get should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+      parse(s"Scenario: name\n$step1\n$step2").get should be (Scenario(List[Tag](), "name", Nil, None, List(step1, step2)))
       
-      parse(s"Scenario: name\n$step1\n$comment1").get            should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)))))
-      parse(s"Scenario: name\n$step1\n$step2\n$comment1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
-      parse(s"Scenario: name\n$step1\n$comment1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(5, 1)))))
-      parse(s"Scenario: name\n$comment1\n$step1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(Step(step1, Position(4, 1)), Step(step2, Position(5, 1)))))
+      parse(s"Scenario: name\n$step1\n$comment1").get            should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario: name\n$step1\n$step2\n$comment1").get    should be (Scenario(List[Tag](), "name", Nil, None, List(step1, step2)))
+      parse(s"Scenario: name\n$step1\n$comment1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(step1, step2)))
+      parse(s"Scenario: name\n$comment1\n$step1\n$step2").get    should be (Scenario(List[Tag](), "name", Nil, None, List(step1, step2)))
       
-      parse(s"Scenario:\n$step1\n$step2").get    should be (Scenario(List[Tag](), s"", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
-      parse(s"Scenario: \n$step1\n$step2").get   should be (Scenario(List[Tag](), s"", Nil, None, List(Step(step1, Position(3, 1)), Step(step2, Position(4, 1)))))
+      parse(s"Scenario:\n$step1\n$step2").get    should be (Scenario(List[Tag](), s"", Nil, None, List(step1, step2)))
+      parse(s"Scenario: \n$step1\n$step2").get   should be (Scenario(List[Tag](), s"", Nil, None, List(step1, step2)))
       
       parse("Scenario: I dont have any steps").get should be (Scenario(List[Tag](), "I dont have any steps", Nil, None, Nil))
       
       StepKeyword.values foreach { keyword =>
-        parse(s"Scenario: I contain a $keyword keyword in name\n$step1").get should be (Scenario(List[Tag](), s"I contain a $keyword keyword in name", Nil, None, List(Step(step1, Position(3, 1)))))
+        parse(s"Scenario: I contain a $keyword keyword in name\n$step1").get should be (Scenario(List[Tag](), s"I contain a $keyword keyword in name", Nil, None, List(step1)))
       }
   }
   
@@ -119,25 +128,25 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
       | ding     | dong     | dingdong |
     """
 
-    val outline = parse(feature).get
+    val outline = parse(feature, clearPos=false).get
 
-    outline.pos should be (Position(4, 5))
+    outline.sourceRef.get.pos should be (Position(4, 5))
 
-    outline.tags should be (List(Tag("UnitTest")))
-    outline.tags(0).pos should be (Position(3, 5))
+    outline.tags.map(_.name) should be (List("UnitTest"))
+    outline.tags(0).sourceRef.get.pos should be (Position(3, 5))
     outline.name should be ("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be (None)
     outline.description should be (List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
-    outline.steps(0) should be (Step(Step(StepKeyword.Given.toString, """string 1 is "<string 1>""""), Position(11, 5)))
-    outline.steps(1) should be (Step(Step(StepKeyword.And.toString, """string 2 is "<string 2>""""), Position(12, 7)))
-    outline.steps(2) should be (Step(Step(StepKeyword.When.toString, "I join the two strings"), Position(13, 6)))
-    outline.steps(3) should be (Step(Step(StepKeyword.Then.toString, """the result should be "<result>""""), Position(14, 6)))
+    outline.steps(0) should be (Step(Position(11, 5), StepKeyword.Given.toString, """string 1 is "<string 1>""""))
+    outline.steps(1) should be (Step(Position(12, 7), StepKeyword.And.toString, """string 2 is "<string 2>""""))
+    outline.steps(2) should be (Step(Position(13, 6), StepKeyword.When.toString, "I join the two strings"))
+    outline.steps(3) should be (Step(Position(14, 6), StepKeyword.Then.toString, """the result should be "<result>""""))
 
     val examples = outline.examples
     examples.size should be (3)
 
     val example1 = examples(0)
-    example1.pos should be (Position(16, 5))
+    example1.sourceRef.get.pos should be (Position(16, 5))
     example1.name should be ("Compound words")
     example1.description should be (Nil)
     example1.table.size should be (3)
@@ -147,7 +156,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     example1.scenarios.size should be (0)
 
     val example2 = examples(1)
-    example2.pos should be (Position(22, 5))
+    example2.sourceRef.get.pos should be (Position(22, 5))
     example2.name should be ("Nonsensical compound words")
     example2.description.size should be (2)
     example2.description(0) should be ("Words that don't make any sense at all")
@@ -159,7 +168,7 @@ class ScenarioParserTest extends FlatSpec with Matchers with GherkinParser {
     example2.scenarios.size should be (0)
 
     val example3 = examples(2)
-    example3.pos should be (Position(31, 5))
+    example3.sourceRef.get.pos should be (Position(31, 5))
     example3.name should be ("")
     example3.description should be (Nil)
     example3.table.size should be (2)

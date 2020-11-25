@@ -16,11 +16,12 @@
 
 package gwen.dsl
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
 import scala.util.Failure
 
-class StepParserTest extends FlatSpec with Matchers with GherkinParser {
+import org.scalatest.Matchers
+import org.scalatest.FlatSpec
+
+class StepParserTest extends FlatSpec with Matchers with GherkinParser with GwenTestModel {
 
   private val parse = parseStep(_: String)
   
@@ -46,27 +47,27 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     
     StepKeyword.values.map(_.toString) foreach { keyword =>
       
-      assertFail(s"$keyword",   "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword ",  "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\t", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\n", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword",   "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword ",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\t", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\n", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
       
-      assertFail(s"I do not start with the $keyword clause", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"I do not start with the $keyword clause", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
     }
     
   }
   
   "invalid keywords" should "not parse" in {
     
-    assertFail("?",        "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^C",       "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^Q",       "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("{)()ASD}", "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail(";",        "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("\\s",      "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("/n",       "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("(?:.+)?",  "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("''",       "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("?",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^C",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^Q",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("{)()ASD}", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail(";",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("\\s",      "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("/n",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("(?:.+)?",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("''",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
   }
 
   "Step with valid data table " should "parse" in {
@@ -103,7 +104,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
         |       | three | 3 |
       """.stripMargin
 
-    assertFail(stepString, "Gherkin syntax error at line 1: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
+    assertFail(stepString, "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
 
   }
 
@@ -178,10 +179,10 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser {
     step1.toString should be (step2.toString)
   }
 
-  "uniqueId on step clone" should "return different values" in {
+  "uid on step clone" should "return different values" in {
     val step1 = Step(StepKeyword.Given.toString, "I am a step")
     val step2 = Step(StepKeyword.Given.toString, "I am a step")
-    step1.uniqueId should not be (step2.uniqueId)
+    step1.uuid should not be (step2.uuid)
   }
   
 }

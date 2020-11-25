@@ -15,23 +15,20 @@
  */
 package gwen.report
 
-import java.io.File
-import java.text.DecimalFormat
-
+import gwen._
 import gwen.dsl._
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.{GwenInfo, GwenSettings}
 import gwen.eval.GwenOptions
-import gwen.report.ReportFormat.value2ReportFormat
 import gwen.eval.FeatureUnit
+import gwen.Formatting._
 import gwen.report.HtmlReportFormatter._
-import gwen.Predefs.Formatting._
-import gwen.Predefs.{DurationOps, Formatting}
-import gwen.Predefs.FileIO
 
 import scala.io.Source
 import scala.util.Try
+
+import java.io.File
+import java.text.DecimalFormat
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -50,10 +47,10 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
-    val reportDir = ReportFormat.html.reportDir(options)
+    val reportDir = HtmlReportConfig.reportDir(options)
     val metaResults = result.metaResults
     val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
-    val title = s"${if (result.isMeta) "Meta" else "Feature"} Detail"
+    val title = s"${result.spec.specType} Detail"
     val summary = result.summary
     val screenshots = result.screenshots
     val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
@@ -77,14 +74,14 @@ trait HtmlReportFormatter extends ReportFormatter {
       }${ if (language != "en") s"""
         <span class="grayed"><p><small># language: $language</small></p></span>
         """ else ""}
-        <span class="label label-black">${if (result.isMeta) "Meta" else result.spec.feature.keyword}</span>
+        <span class="label label-black">${result.spec.specType}</span>
         ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.overhead)}</small></span>
           <table width="100%" cellpadding="5">
-            ${formatProgressBar("Rule", summary.ruleCounts)}
-            ${formatProgressBar("Scenario", summary.scenarioCounts)}
-            ${formatProgressBar("Step", summary.stepCounts)}
+            ${formatProgressBar(NodeType.Rule, summary.ruleCounts)}
+            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts)}
+            ${formatProgressBar(NodeType.Step, summary.stepCounts)}
           </table>
         </div>
       </div>
@@ -141,12 +138,16 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-    val tags = scenario.tags.filter(t => t != Tag.StepDefTag && t != Tag.ForEachTag)
+    val tags = scenario.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.ForEach.toString)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     s"""
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${
+        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${  
+      if (scenario.metaFile.nonEmpty)
+        s"""
+          <span class="grayed"><p><small>${scenario.sourceRef.map(ref => escapeHtml(ref.toString)).mkString("<br>")}</small></p></span>""" else ""
+    }${  
       if (tags.nonEmpty)
         s"""
           <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
@@ -176,7 +177,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <div class="panel-body">
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
           (background.steps.zipWithIndex map { case (step, index) =>
-            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}-${index + 1}", keywordPixels)
+            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.uuid}-${index + 1}", keywordPixels)
           }).mkString
         }
             </ul>
@@ -188,7 +189,7 @@ trait HtmlReportFormatter extends ReportFormatter {
           <ul class="list-group">${
           (scenario.steps.zipWithIndex map { case (step, index) =>
             if (!scenario.isOutline) {
-              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.pos.line}-${index + 1}", scenarioKeywordPixels)
+              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.uuid}-${index + 1}", scenarioKeywordPixels)
             } else {
               formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels)
             }
@@ -321,7 +322,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
           val keywordPixels = noOfKeywordPixels(background.steps)
           (background.steps.zipWithIndex map { case (step, index) =>
-            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.pos.line}-${index + 1}", keywordPixels)
+            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.uuid}-${index + 1}", keywordPixels)
           }).mkString
         }
             </ul>
@@ -332,7 +333,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
           <ul class="list-group">${
           (rule.scenarios.zipWithIndex map { case (scenario, index) =>
-            formatScenario(scenario, s"$ruleId-scenario-${scenario.pos.line}-${index + 1}")
+            formatScenario(scenario, s"$ruleId-scenario-${scenario.uuid}-${index + 1}")
           }).mkString}
           </ul>
         </div>
@@ -349,7 +350,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = {
     
-    val reportDir = ReportFormat.html.reportDir(options)
+    val reportDir = HtmlReportConfig.reportDir(options)
     val title = "Feature Summary"
     val status = summary.evalStatus.status
     val sustainedCount = summary.sustainedCount
@@ -384,10 +385,10 @@ trait HtmlReportFormatter extends ReportFormatter {
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.overhead)}</small></span>
           <table width="100%" cellpadding="5">
-            ${formatProgressBar("Feature", summary.featureCounts)}
-            ${formatProgressBar("Rule", summary.ruleCounts)}
-            ${formatProgressBar("Scenario", summary.scenarioCounts)}
-            ${formatProgressBar("Step", summary.stepCounts)}
+            ${formatProgressBar(NodeType.Feature, summary.featureCounts)}
+            ${formatProgressBar(NodeType.Rule, summary.ruleCounts)}
+            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts)}
+            ${formatProgressBar(NodeType.Step, summary.stepCounts)}
           </table>
         </div>
       </div>
@@ -432,12 +433,12 @@ trait HtmlReportFormatter extends ReportFormatter {
     <link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
     <link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
     
-  private def formatProgressBar(name: String, counts: Map[StatusKeyword.Value, Int]): String = { 
+  private def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): String = { 
     val total = counts.values.sum
     if (total > 0) {s"""
             <tr>
               <td align="right">
-                <span style="white-space: nowrap;">$total $name${if (total > 1) "s" else ""}</span>
+                <span style="white-space: nowrap;">$total $nodeType${if (total > 1) "s" else ""}</span>
               </td>
               <td width="99%">
                 <div class="progress">${(StatusKeyword.reportables map { status =>
@@ -476,9 +477,9 @@ trait HtmlReportFormatter extends ReportFormatter {
         <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
-                  <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (step.stepDef.isDefined && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ stepDef => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
+                  <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
+                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (step.stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
+                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
                 </div>
                 ${if (EvalStatus.isError(status) && step.stepDef.isEmpty) s"""
                 <ul>
@@ -493,7 +494,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatRawStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): String = s"""
               <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)}">
-                  <div class="line-no"><small>${if (step.pos.line > 0) step.pos.line else ""}</small></div>
+                  <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
                   <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${escapeHtml(step.name)}
                 </div>
               </li>"""
@@ -615,7 +616,7 @@ object HtmlReportFormatter {
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
     <div class="modal-body">
-    <a href="${ReportFormat.slideshow.getReportDetailFilename(spec, unit.dataRecord)}.${ReportFormat.slideshow.fileExtension}" id="full-screen">Full Screen</a>
+    <a href="${HtmlSlideshowReportConfig.getReportDetailFilename(spec, unit.dataRecord)}.${HtmlSlideshowReportConfig.fileExtension}" id="full-screen">Full Screen</a>
     <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
     ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
    </div>

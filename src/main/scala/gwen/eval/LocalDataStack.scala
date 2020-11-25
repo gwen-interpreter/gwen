@@ -16,8 +16,7 @@
 
 package gwen.eval
 
-import gwen.Predefs.Kestrel
-import gwen.Errors.unboundAttributeError
+import gwen._
 
 import scala.collection.mutable
 
@@ -62,7 +61,7 @@ class LocalDataStack {
     * @return the value if it is found (or throws error)
     */
   def get(name: String): String =
-    getOpt(name).getOrElse(unboundAttributeError(name, "local"))
+    getOpt(name).getOrElse(Errors.unboundAttributeError(name, "local"))
 
   /**
     * Finds and retrieves an optional attribute bound in the local stack.

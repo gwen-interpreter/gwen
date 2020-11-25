@@ -16,20 +16,14 @@
 
 package gwen.dsl
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import gwen.Position
+
 import scala.util.Success
 
-class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
-  object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
-  }
-
-  object Scenario {
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
-  }
+class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with GwenTestModel {
 
   private val parse = parseFeatureSpec(_: String)
   
@@ -75,9 +69,22 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
     
     parse(featureString) match {
       case Success(fspec) =>
-        fspec.feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
-        fspec.background.get should be {
-          Background("Background", "The butterfly effect", List("Sensitivity to initial conditions"), 
+        val feature = fspec.feature.copy(withSourceRef = None)
+        val background = fspec.background.map { bg => 
+          bg.copy(
+            withSourceRef = None,
+            withSteps = bg.steps.map(_.copy(withSourceRef = None))
+            )
+        }
+        val scenarios = fspec.scenarios.map { s => 
+          s.copy(
+            withSourceRef = None,
+            withSteps = s.steps.map(_.copy(withSourceRef = None))
+          )
+        }
+        feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        background.get should be {
+          Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
               Step(StepKeyword.Given.toString, "a deterministic nonlinear system"),
               Step(StepKeyword.When.toString,  "a small change is initially applied"),
@@ -85,7 +92,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
             )
           )
         }
-        fspec.scenarios should be {
+        scenarios should be {
           List(
             Scenario(List[Tag](), "Evaluation", Nil, None,
               List(
@@ -116,26 +123,26 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
             )
           )
         }
-        fspec.feature.pos should be (Position(3, 6))
-        fspec.background.get.pos should be (Position(8, 3))
-        fspec.scenarios(0).pos should be (Position(16, 5))
-        fspec.scenarios(0).steps(0).pos should be (Position(17, 9))
-        fspec.scenarios(0).steps(1).pos should be (Position(18, 10))
-        fspec.scenarios(0).steps(2).pos should be (Position(19, 10))
-        fspec.scenarios(1).pos should be (Position(21, 5))
-        fspec.scenarios(1).steps(0).pos should be (Position(22, 9))
-        fspec.scenarios(1).steps(1).pos should be (Position(23, 11))
-        fspec.scenarios(1).steps(2).pos should be (Position(24, 10))
-        fspec.scenarios(1).steps(3).pos should be (Position(25, 10))
-        fspec.scenarios(1).steps(4).pos should be (Position(26, 11))
-        fspec.scenarios(1).steps(5).pos should be (Position(27, 11))
-        fspec.scenarios(2).pos should be (Position(29, 5))
-        fspec.scenarios(2).steps(0).pos should be (Position(30, 9))
-        fspec.scenarios(2).steps(1).pos should be (Position(31, 11))
-        fspec.scenarios(2).steps(2).pos should be (Position(32, 10))
-        fspec.scenarios(2).steps(3).pos should be (Position(33, 10))
-        fspec.scenarios(2).steps(4).pos should be (Position(34, 11))
-        fspec.scenarios(2).steps(5).pos should be (Position(35, 11))
+        fspec.feature.sourceRef.get.pos should be (Position(3, 6))
+        fspec.background.get.sourceRef.get.pos should be (Position(8, 3))
+        fspec.scenarios(0).sourceRef.get.pos should be (Position(16, 5))
+        fspec.scenarios(0).steps(0).sourceRef.get.pos should be (Position(17, 9))
+        fspec.scenarios(0).steps(1).sourceRef.get.pos should be (Position(18, 10))
+        fspec.scenarios(0).steps(2).sourceRef.get.pos should be (Position(19, 10))
+        fspec.scenarios(1).sourceRef.get.pos should be (Position(21, 5))
+        fspec.scenarios(1).steps(0).sourceRef.get.pos should be (Position(22, 9))
+        fspec.scenarios(1).steps(1).sourceRef.get.pos should be (Position(23, 11))
+        fspec.scenarios(1).steps(2).sourceRef.get.pos should be (Position(24, 10))
+        fspec.scenarios(1).steps(3).sourceRef.get.pos should be (Position(25, 10))
+        fspec.scenarios(1).steps(4).sourceRef.get.pos should be (Position(26, 11))
+        fspec.scenarios(1).steps(5).sourceRef.get.pos should be (Position(27, 11))
+        fspec.scenarios(2).sourceRef.get.pos should be (Position(29, 5))
+        fspec.scenarios(2).steps(0).sourceRef.get.pos should be (Position(30, 9))
+        fspec.scenarios(2).steps(1).sourceRef.get.pos should be (Position(31, 11))
+        fspec.scenarios(2).steps(2).sourceRef.get.pos should be (Position(32, 10))
+        fspec.scenarios(2).steps(3).sourceRef.get.pos should be (Position(33, 10))
+        fspec.scenarios(2).steps(4).sourceRef.get.pos should be (Position(34, 11))
+        fspec.scenarios(2).steps(5).sourceRef.get.pos should be (Position(35, 11))
       case e => fail(e.toString)
     }
   }
@@ -166,26 +173,28 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
     val featureSpec = parse(featureString).get
 
     featureSpec.feature.tags.size should be (1)
-    featureSpec.feature.tags.contains(Tag("wip")) should be (true)
-    featureSpec.feature.tags(0).pos should be (Position(3, 8))
+    featureSpec.feature.tags(0).name should be ("wip")
+    featureSpec.feature.tags(0).sourceRef.get.pos should be (Position(3, 8))
 
     featureSpec.scenarios(0).tags.size should be (0)
 
-    featureSpec.scenarios(1).tags.size should be (1)
-    featureSpec.scenarios(1).tags.contains(Tag("work")) should be (true)
-    featureSpec.scenarios(1).tags(0).pos should be (Position(9, 7))
+    featureSpec.scenarios(1).tags.size should be (2)
+    featureSpec.scenarios(1).tags(0).name should be ("work")
+    featureSpec.scenarios(1).tags(1).name should be ("work")
+    featureSpec.scenarios(1).tags(0).sourceRef.get.pos should be (Position(9, 7))
+    featureSpec.scenarios(1).tags(1).sourceRef.get.pos should be (Position(9, 13))
 
     featureSpec.scenarios(2).tags.size should be (2)
-    featureSpec.scenarios(2).tags.contains(Tag("work")) should be (true)
-    featureSpec.scenarios(2).tags.contains(Tag("play")) should be (true)
-    featureSpec.scenarios(2).tags(0).pos should be (Position(13, 7))
-    featureSpec.scenarios(2).tags(1).pos should be (Position(14, 7))
+    featureSpec.scenarios(2).tags(0).name should be ("work")
+    featureSpec.scenarios(2).tags(1).name should be ("play")
+    featureSpec.scenarios(2).tags(0).sourceRef.get.pos should be (Position(13, 7))
+    featureSpec.scenarios(2).tags(1).sourceRef.get.pos should be (Position(14, 7))
     
     featureSpec.scenarios(3).tags.size should be (2)
-    featureSpec.scenarios(3).tags.contains(Tag("wip")) should be (true)
-    featureSpec.scenarios(3).tags.contains(Tag("play")) should be (true)
-    featureSpec.scenarios(3).tags(0).pos should be (Position(18, 7))
-    featureSpec.scenarios(3).tags(1).pos should be (Position(18, 12))
+    featureSpec.scenarios(3).tags(0).name should be ("wip")
+    featureSpec.scenarios(3).tags(1).name should be ("play")
+    featureSpec.scenarios(3).tags(0).sourceRef.get.pos should be (Position(18, 7))
+    featureSpec.scenarios(3).tags(1).sourceRef.get.pos should be (Position(18, 12))
   }
   
   "Scenario level tags" should "parse" in {
@@ -216,14 +225,14 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
     featureSpec.scenarios(0).tags.size should be (0)
     
     featureSpec.scenarios(1).tags.size should be (1)
-    featureSpec.scenarios(1).tags.contains(Tag("work")) should be (true)
+    featureSpec.scenarios(1).tags(0).name should be ("work")
     
     featureSpec.scenarios(2).tags.size should be (1)
-    featureSpec.scenarios(2).tags.contains(Tag("play")) should be (true)
+    featureSpec.scenarios(2).tags(0).name should be ("play")
     
     featureSpec.scenarios(3).tags.size should be (2)
-    featureSpec.scenarios(3).tags.contains(Tag("wip")) should be (true)
-    featureSpec.scenarios(3).tags.contains(Tag("play")) should be (true)
+    featureSpec.scenarios(3).tags(0).name should be ("wip")
+    featureSpec.scenarios(3).tags(1).name should be ("play")
     
   }
   
@@ -250,8 +259,8 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser {
     
     val featureSpec = parse(featureString)
     featureSpec.isSuccess should be (true)
-    featureSpec.get.scenarios(3).tags.contains(Tag("wip")) should be (true)
-    featureSpec.get.scenarios(3).tags.contains(Tag("play")) should be (true)
+    featureSpec.get.scenarios(3).tags(0).name should be ("wip")
+    featureSpec.get.scenarios(3).tags(1).name should be ("play")
     
   }
     

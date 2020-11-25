@@ -16,15 +16,14 @@
 
 package gwen.eval
 
-import gwen.dsl.{EvalStatus, FeatureSpec, Pending, StatusKeyword}
+import gwen._
+import gwen.dsl._
 import gwen.report.ReportFormat
-import java.io.File
 
 import scala.concurrent.duration._
-import java.util.Date
 
-import gwen.Predefs.Formatting._
-import gwen.Predefs.DurationOps
+import java.io.File
+import java.util.Date
 
 /**
   * Captures the results of an evaluated feature.
@@ -40,8 +39,10 @@ class FeatureResult(
   val reports: Option[Map[ReportFormat.Value, List[File]]], 
   val metaResults: List[FeatureResult],
   val started: Date,
-  val finished: Date) {
+  val finished: Date) extends Identifiable {
   
+  val nodeType: NodeType.Value = NodeType.Result
+
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots: List[File] = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta: Boolean = spec.featureFile.exists(_.getName.endsWith(".meta"))
@@ -68,6 +69,6 @@ class FeatureResult(
     StatusKeyword.countsByStatus(spec.rules.map(_.evalStatus))
 
   private[eval] lazy val stepCounts = StatusKeyword.countsByStatus(spec.evalScenarios.flatMap(_.allSteps.map(_.evalStatus)))
-  override def toString: String = s"""[${formatDuration(duration)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${formatDuration(overhead)}] Overhead, [${formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
+  override def toString: String = s"""[${Formatting.formatDuration(duration)}] ${evalStatus.status}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${Formatting.formatDuration(overhead)}] Overhead, [${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 }
 

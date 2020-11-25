@@ -16,21 +16,23 @@
 
 package gwen.eval.support
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import gwen.dsl.GwenTestModel
+import gwen.dsl.StepKeyword
 import gwen.eval.EnvContext
 import gwen.eval.GwenOptions
-import gwen.dsl.Step
-import java.io.IOException
-import gwen.dsl.StepKeyword
 import gwen.Settings
+
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
+
+import java.io.IOException
 
 class TestEnvContext(val options: GwenOptions) extends EnvContext(options)
 class TestEvalEngine extends DefaultEngineSupport[TestEnvContext] {
   def init(options: GwenOptions): TestEnvContext = new TestEnvContext(options)
 }
 
-class DefaultEngineSupportTest extends FlatSpec with Matchers {
+class DefaultEngineSupportTest extends FlatSpec with Matchers with GwenTestModel {
 
   val engine = new TestEvalEngine
   val env: TestEnvContext = engine.init(new GwenOptions())

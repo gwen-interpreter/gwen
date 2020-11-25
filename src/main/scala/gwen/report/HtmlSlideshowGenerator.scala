@@ -16,16 +16,17 @@
 
 package gwen.report
 
-import java.io.File
-import gwen.Predefs.Kestrel
+import gwen._
 import gwen.eval.GwenOptions
+
+import java.io.File
 
 /**
   * Generates a slideshow HTML file
   * 
   * @author Branko Juric
   */
-class HtmlSlideshowGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.slideshow, options) with HtmlSlideshowFormatter {
+class HtmlSlideshowGenerator(val options: GwenOptions) extends ReportGenerator(HtmlSlideshowReportConfig, options) with HtmlSlideshowFormatter {
 
   // copy in JS files (if they don't already exist)
   new File(reportDir, "resources/js") tap { dir =>

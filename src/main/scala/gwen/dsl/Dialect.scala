@@ -16,10 +16,11 @@
 
 package gwen.dsl
 
-import gwen.GwenSettings
+import gwen._
+
+import com.typesafe.scalalogging.LazyLogging
 import io.cucumber.gherkin.GherkinDialect
 import io.cucumber.gherkin.GherkinDialectProvider
-import com.typesafe.scalalogging.LazyLogging
 
 object Dialect extends LazyLogging {
 

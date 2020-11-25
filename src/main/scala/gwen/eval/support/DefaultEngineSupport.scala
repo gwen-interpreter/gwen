@@ -16,15 +16,12 @@
 
 package gwen.eval.support
 
+import gwen._
+import gwen.dsl._
+import gwen.eval.{EnvContext, EvalEngine}
+
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
-import gwen.Predefs.RegexContext
-import gwen.dsl.{BehaviorType, FlatTable, Passed, Step}
-import gwen.eval.{EnvContext, EvalEngine}
-import gwen.Errors._
-import gwen.Settings
-import gwen.Predefs.Kestrel
-
 import scala.util.{Failure, Success, Try}
 
 /** Provides the common default steps that all engines can support. */
@@ -38,20 +35,20 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
     * @param step the step to evaluate
     * @param env the environment context
     */
-  override def evaluatePriority(step: Step, env: T): Option[Step] = Option {
+  override def evaluatePriority(parent: Identifiable, step: Step, env: T): Option[Step] = Option {
 
     step.expression match {
 
       case r"""(.+?)$doStep for each data record""" => doEvaluate(step, env) { _ =>
         val dataTable = env.topScope.getObject("table") match {
           case Some(table: FlatTable) => table
-          case Some(other) => dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
-          case _ => dataTableError("Calling step has no data table")
+          case Some(other) => Errors.dataTableError(s"Cannot use for each on object of type: ${other.getClass.getName}")
+          case _ => Errors.dataTableError("Calling step has no data table")
         }
         val records = () => {
           dataTable.records.indices.map(idx => dataTable.recordScope(idx))
         }
-        foreach(records, "record", step, doStep, env)
+        foreach(records, "record", parent, step, doStep, env)
       }
 
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" => doEvaluate(step, env) { _ =>
@@ -59,18 +56,20 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         val values = () => {
           sourceValue.split(delimiter).toSeq
         }
-        foreach(values, entry, step, doStep, env)
+        foreach(values, entry, parent, step, doStep, env)
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
+        lifecycle.beforeStep(parent, step)
         val javascript = env.scopes.get(s"$condition/javascript")
-        env.evaluate(evaluateStep(Step(step.pos, step.keyword, doStep), env)) {
+        val iStep = step.copy(withName = doStep)
+        env.evaluate(evaluateStep(step, iStep, env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
-            evaluateStep(Step(step.pos, step.keyword, doStep), env)
+            evaluateStep(step, iStep, env)
           } else {
             logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
-            Step(step, Passed(0), Nil)
+            step.copy(withEvalStatus = Passed(0))
           }
         }
       }
@@ -115,7 +114,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.perform {
           systemproc.! match {
             case 0 =>
-            case _ => systemProcessError(s"The call to system process '$systemproc' has failed.")
+            case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
           }
         }
       }
@@ -125,7 +124,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         env.perform {
           Seq("/bin/sh", "-c", systemproc).! match {
             case 0 =>
-            case _ => systemProcessError(s"The call to system process '$systemproc' has failed.")
+            case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
           }
         }
       }
@@ -294,7 +293,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
         }
       
-      case _ => undefinedStepError(step)
+      case _ => Errors.undefinedStepError(step)
       
     }
   }

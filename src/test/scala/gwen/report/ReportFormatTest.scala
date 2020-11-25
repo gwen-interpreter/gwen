@@ -17,8 +17,6 @@ package gwen.report
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.eval.GwenOptions
-import java.io.File
 
 class ReportFormatTest extends FlatSpec with Matchers  {
 
@@ -28,35 +26,12 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.withName("junit") should be (ReportFormat.junit)
     ReportFormat.withName("json") should be (ReportFormat.json)
   }
-  
-  "File extensions for all report formats" should "map correctly" in {
-    ReportFormat.html.fileExtension should be ("html")
-    ReportFormat.slideshow.fileExtension should be ("html")
-    ReportFormat.junit.fileExtension should be ("xml")
-    ReportFormat.json.fileExtension should be ("json")
-  }
-  
-  "Names of all report formats" should "map correctly" in {
-    ReportFormat.html.name should be ("HTML")
-    ReportFormat.slideshow.name should be ("Slideshow")
-    ReportFormat.junit.name should be ("JUnit-XML")
-    ReportFormat.json.name should be ("JSON")
-  }
-  
-  "Output directory of all report formats" should "map correctly" in {
-    val options = GwenOptions(reportDir = Some(new File("target/report")))
-    ReportFormat.html.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
-    ReportFormat.slideshow.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
-    ReportFormat.junit.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}junit")
-    ReportFormat.json.reportDir(options).getPath should be (s"target${File.separatorChar}report${File.separatorChar}json")
-  }
-  
-  "Report generator for all report formats" should "map correctly" in {
-    val options = GwenOptions(reportDir = Some(new File("target/report")))
-    ReportFormat.html.reportGenerator(options).isInstanceOf[HtmlReportGenerator] should be (true)
-    ReportFormat.slideshow.reportGenerator(options).isInstanceOf[HtmlSlideshowGenerator] should be (true)
-    ReportFormat.junit.reportGenerator(options).isInstanceOf[JUnitReportGenerator] should be (true)
-    ReportFormat.json.reportGenerator(options).isInstanceOf[JsonReportGenerator] should be (true)
+
+  "configOf of all formats" should "map correctly" in {
+    ReportFormat.configOf(ReportFormat.html) should be (Some(HtmlReportConfig))
+    ReportFormat.configOf(ReportFormat.slideshow) should be (Some(HtmlSlideshowReportConfig))
+    ReportFormat.configOf(ReportFormat.junit) should be (Some(JUnitReportConfig))
+    ReportFormat.configOf(ReportFormat.json) should be (Some(JsonReportConfig))
   }
   
 }

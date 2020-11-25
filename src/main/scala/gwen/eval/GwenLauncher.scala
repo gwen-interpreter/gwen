@@ -16,23 +16,21 @@
 
 package gwen.eval
 
-import scala.Option.option2Iterable
-import com.typesafe.scalalogging.LazyLogging
-import gwen.Predefs.Kestrel
-import gwen.Predefs.FileIO
+import gwen._
 import gwen.dsl.EvalStatus
 import gwen.dsl.Failed
-import gwen.report.ReportGenerator
-import gwen.GwenSettings
 import gwen.dsl.StatusKeyword
-import java.util.concurrent.atomic.AtomicInteger
-
-import gwen.Settings
+import gwen.dsl.StateLevel
+import gwen.report.ReportGenerator
 
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-import gwen.dsl.StateLevel
 import scala.concurrent.ExecutionContext
+import scala.Option.option2Iterable
+
+import com.typesafe.scalalogging.LazyLogging
+
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
   * Launches the gwen interpreter.
@@ -49,6 +47,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     *               Some(env) to reuse an environment context for all, default is None)
     */
   def run(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
+    Settings.loadAll(options.properties)
     if (options.args.isDefined) {
       logger.info(options.commandString(interpreter))
     }
@@ -64,7 +63,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
         case _ =>
           EvalStatus { 
             optEnv.toList flatMap { env =>
-             interpreter.loadMeta(metaFiles, Nil, env).map(_.spec.evalStatus)
+             interpreter.loadMeta(None, metaFiles, Nil, env).map(_.spec.evalStatus)
             }
           } tap { _ =>
             if (options.features.nonEmpty) {
@@ -74,13 +73,15 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       }
     } catch {
       case e: Throwable =>
+        val failed = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
           logger.error(e.getMessage, e)
-          Failed(System.nanoTime - startNanos, e)
+          failed
         } else {
           throw e
         }
     }
+    
   }
   
   /**
@@ -166,13 +167,12 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     val env = envOpt.getOrElse(interpreter.initialise(options))
     try {
       if (envOpt.nonEmpty) { env.reset(StateLevel.feature) }
-      val targetUnit = FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord)
       unit.dataRecord foreach { record =>
         record.data foreach { case (name, value) =>
           env.topScope.set(name, value)
         }
       }
-      f(interpreter.interpretFeature(targetUnit, options.tags, env) map { res =>
+      f(interpreter.interpretFeature(unit, options.tags, env) map { res =>
         new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
@@ -192,7 +192,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     
   private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: FeatureResult): FeatureResult = {
     val reportFiles = reportGenerators.map { generator => 
-      (generator.reportFormat, generator.reportDetail(interpreter, unit, result)) 
+      (generator.config.format, generator.reportDetail(interpreter, unit, result)) 
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty) 
       new FeatureResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)

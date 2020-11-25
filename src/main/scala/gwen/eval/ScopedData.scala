@@ -16,13 +16,11 @@
 
 package gwen.eval
 
-import gwen.Predefs.Kestrel
-import gwen.Predefs.RegexContext
-import gwen.Predefs.Formatting.padTailLines
-import com.typesafe.scalalogging.LazyLogging
-import gwen.Errors._
+import gwen._
 
 import scala.collection.mutable
+
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Binds data attributes to an arbitrary scope that has a name. 
@@ -116,7 +114,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *         to the given name
     */
   def get(name: String): String = 
-    getOpt(name).getOrElse(unboundAttributeError(name, scope))
+    getOpt(name).getOrElse(Errors.unboundAttributeError(name, scope))
   
   /**
     * Finds and retrieves all attribute values from the scope by name.
@@ -225,7 +223,7 @@ class ScopedData(val scope: String) extends LazyLogging {
            case Nil => " }"
            case _ => s"""${allAtts map resolveNVP map {
              case (n, v) =>
-               s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
+               s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
            } mkString}
            |$padding}"""
          }}""".stripMargin

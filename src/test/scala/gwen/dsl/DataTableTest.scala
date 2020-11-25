@@ -15,9 +15,9 @@
  */
 package gwen.dsl
 
-import org.scalatest.{FlatSpec, Matchers}
-import gwen.dsl.Tag.string2Tag
 import gwen.Errors.{DataTableException, InvalidTagException}
+
+import org.scalatest.{FlatSpec, Matchers}
 
 /**
   * Data table tests.
@@ -29,7 +29,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in multi record horizontal table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(horizontal="a,b,c")""", parse(
+      Tag("""@DataTable(horizontal="a,b,c")"""), parse(
       """
         |Given a multi record horizontal table with no header
         |      | 0 | 1 | 1 |
@@ -46,7 +46,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in multi record horizontal table with a top header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="top")""", parse(
+      Tag("""@DataTable(header="top")"""), parse(
       """
         |Given a multi record horizontal table with a top header
         |      | a | b | c |
@@ -64,7 +64,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in multi record vertical table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(vertical="a,b,c")""", parse(
+      Tag("""@DataTable(vertical="a,b,c")"""), parse(
       """
         |Given a multi record vertical table with no header
         |      | 0 | 1 | 1 | 2 | 3 |
@@ -79,7 +79,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in multi record vertical table with a left header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="left")""", parse(
+      Tag("""@DataTable(header="left")"""), parse(
       """
         |Given a multi record horizontal table with a left header
         |      | a | 0 | 1 | 1 | 2 | 3 |
@@ -136,7 +136,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record horizontal table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(horizontal="a,b,c")""", parse(
+      Tag("""@DataTable(horizontal="a,b,c")"""), parse(
       """
         |Given a single record horizontal table with no header
         |      | 1 | 2 | 3 |
@@ -149,7 +149,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record horizontal table with a top header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="top")""", parse(
+      Tag("""@DataTable(header="top")"""), parse(
       """
         |Given a single record horizontal table with a top header
         |      | a | b | c |
@@ -163,7 +163,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record vertical table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(vertical="a,b,c")""", parse(
+      Tag("""@DataTable(vertical="a,b,c")"""), parse(
       """
         |Given a single record vertical table with no header
         |      | 1 |
@@ -178,7 +178,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record vertical table with a left header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="left")""", parse(
+      Tag("""@DataTable(header="left")"""), parse(
       """
         |Given a single record vertical table with a left header
         |      | a | 1 |
@@ -223,7 +223,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single item horizontal table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(horizontal="a")""", parse(
+      Tag("""@DataTable(horizontal="a")"""), parse(
       """
         |Given a single item horizontal table with no header
         |      | 1 |
@@ -236,7 +236,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single item horizontal table with top header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="top")""", parse(
+      Tag("""@DataTable(header="top")"""), parse(
       """
         |Given a single item horizontal table with a top header
         |      | a |
@@ -250,7 +250,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single item vertical table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(vertical="a")""", parse(
+      Tag("""@DataTable(vertical="a")"""), parse(
       """
         |Given a single item vertical table with no header
         |      | 1 |
@@ -264,7 +264,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single item vertical table with left header" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(header="left")""", parse(
+      Tag("""@DataTable(header="left")"""), parse(
       """
         |Given a single item vertical table with a left header
         |      | a | 1 |
@@ -300,7 +300,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
     intercept[DataTableException] {
       DataTable(
-        """@DataTable(header="top")""", parse(
+        Tag("""@DataTable(header="top")"""), parse(
         """
           |Given a zero item horizontal table with a top header
           |      |  a  |
@@ -313,7 +313,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
     intercept[DataTableException] {
       DataTable(
-        """@DataTable(header="left")""", parse(
+        Tag("""@DataTable(header="left")"""), parse(
         """
           |Given a zero item vertical table with a left header
           |      |  a  |
@@ -325,7 +325,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in multi record matrix table" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(type="matrix")""", parse(
+      Tag("""@DataTable(type="matrix")"""), parse(
       """
         |Given a multi record matrix table
         |      |  x  | uno | due | tre |
@@ -361,7 +361,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record horizontal matrix table" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(type="matrix")""", parse(
+      Tag("""@DataTable(type="matrix")"""), parse(
       """
         |Given a single record horizontal matrix table
         |      |  x  | uno | due | tre |
@@ -387,7 +387,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single record vertical matrix table" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(type="matrix")""", parse(
+      Tag("""@DataTable(type="matrix")"""), parse(
       """
         |Given a single record vertical matrix table
         |      |  x  | uno |
@@ -415,7 +415,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Data in single item matrix table" should "be accessible" in {
 
     val dataTable = DataTable(
-      """@DataTable(type="matrix")""", parse(
+      Tag("""@DataTable(type="matrix")"""), parse(
       """
         |Given a single item matrix table
         |      |  x  | uno |
@@ -438,7 +438,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
     intercept[DataTableException] {
       DataTable(
-        """@DataTable(type="matrix")""", parse(
+        Tag("""@DataTable(type="matrix")"""), parse(
         """
           |Given a single item matrix table
           |      |  x  |
@@ -450,7 +450,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   "Zero table" should "error" in {
 
     intercept[DataTableException] {
-      DataTable("""@DataTable(horizontal="none")""", parse("Given no table")).asInstanceOf[MatrixTable]
+      DataTable(Tag("""@DataTable(horizontal="none")"""), parse("Given no table")).asInstanceOf[MatrixTable]
     }
 
   }
@@ -471,7 +471,7 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
 
   def checkInvalidTag(tag: String): Unit = {
     intercept[InvalidTagException] {
-      DataTable.checkTagSyntax(tag)
+      DataTable.checkTagSyntax(Tag(tag))
     }
     intercept[InvalidTagException] {
       DataTable.checkTagSyntax(Tag(tag))
@@ -479,13 +479,13 @@ class DataTableTest extends FlatSpec with Matchers with GherkinParser {
   }
 
   "Valid data table tags" should "not error" in {
-    DataTable.checkTagSyntax("""@DataTable(horizontal="decimal,binary")""")
-    DataTable.checkTagSyntax("""@DataTable(horizontal="a,b,c")""")
-    DataTable.checkTagSyntax("""@DataTable(header="top")""")
-    DataTable.checkTagSyntax("""@DataTable(vertical="a,b,c")""")
-    DataTable.checkTagSyntax("""@DataTable(header="left")""")
-    DataTable.checkTagSyntax("""@DataTable(horizontal="a")""")
-    DataTable.checkTagSyntax("""@DataTable(type="matrix")""")
+    DataTable.checkTagSyntax(Tag("""@DataTable(horizontal="decimal,binary")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(horizontal="a,b,c")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(header="top")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(vertical="a,b,c")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(header="left")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(horizontal="a")"""))
+    DataTable.checkTagSyntax(Tag("""@DataTable(type="matrix")"""))
   }
 
 }

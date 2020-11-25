@@ -16,22 +16,18 @@
 
 package gwen.eval
 
-import java.io.{File, FileNotFoundException}
-
-import gwen.Predefs.Exceptions
-import gwen.Predefs.FileIO
-import gwen.Predefs.Kestrel
+import gwen._
 import gwen.dsl._
-import com.typesafe.scalalogging.LazyLogging
-import gwen.Errors._
-import gwen.{GwenSettings, Settings}
-
-import scala.sys.process._
-import scala.util.{Failure, Success, Try}
 import gwen.eval.support._
 
 import scala.io.Source
+import scala.sys.process._
 import scala.util.matching.Regex
+import scala.util.{Failure, Success, Try}
+
+import com.typesafe.scalalogging.LazyLogging
+
+import java.io.{File, FileNotFoundException}
 
 /**
   * Base environment context providing access to all resources and state.
@@ -129,15 +125,29 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     */
   def addStepDef(stepDef: Scenario): Unit = {
     StepKeyword.names foreach { keyword =>
-      if (stepDef.name.startsWith(keyword)) invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
+      if (stepDef.name.startsWith(keyword)) Errors.invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
-    val tags = stepDef.metaFile.map(meta => Tag(s"""Meta("${meta.getPath}")""")::stepDef.tags).getOrElse(stepDef.tags)
+    val tags = stepDef.tags
     if (stepDef.isForEach && stepDef.isDataTable) {
-      stepDefs += ((s"${stepDef.name};", Scenario(tags.filter(_.name != Tag.ForEachTag.name).filter(!_.name.startsWith(Tag.DataTableTag.name)), stepDef.name, stepDef.steps, stepDef)))
-      val step = Step(StepKeyword.When.toString, s"${stepDef.name}; for each data record")
-      stepDefs += ((stepDef.name, Scenario(tags.filter(_.name != Tag.ForEachTag.name), s"${stepDef.name} for each data record", List(step), stepDef)))
+      stepDefs += (
+        (
+          s"${stepDef.name};", 
+          stepDef.copy(
+            withTags = tags.filter(_.name != ReservedTags.ForEach.toString).filter(!_.name.startsWith(ReservedTags.DataTable.toString)))
+        )
+      )
+      val step = Step(None, StepKeyword.When.toString, s"${stepDef.name}; for each data record", Nil, None, Nil, None, Pending)
+      stepDefs += (
+        (
+          stepDef.name, 
+          stepDef.copy(
+            withTags = tags.filter(_.name != ReservedTags.ForEach.toString),
+            withName = s"${stepDef.name} for each data record",
+            withSteps = List(step))
+        )
+      )
     } else {
-      stepDefs += ((stepDef.name, Scenario(tags, stepDef.name, stepDef.steps, stepDef)))
+      stepDefs += ((stepDef.name, stepDef.copy(withTags = tags)))
     }
   }
   
@@ -168,7 +178,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       if (expression.matches(pattern)) {
         val names = "<.+?>".r.findAllIn(stepDef.name).toList
         names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-          ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
+          Errors.ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
         }
         val values = pattern.r.unapplySeq(expression).get
         val params = names zip values
@@ -185,7 +195,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       val first = Some(iter.next())
       if (iter.hasNext) {
         val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
-        ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
+        Errors.ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
       } else first
     } else None
   }
@@ -243,16 +253,18 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       case _ => // noop
     }
     val fStep = if (state.hasAttachments) {
-      Step(step, step.evalStatus, (step.attachments ++ state.popAttachments()).sortBy(_._2 .getName()))
+      step.copy(
+        withEvalStatus = step.evalStatus, 
+        withAttachments = (step.attachments ++ state.popAttachments()).sortBy(_._2 .getName()))
     } else {
       step
     }
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
-        if (status.isAssertionError && AssertionMode.isSustained) {
-          Step(fStep, Sustained(nanos, error))
+        if (status.isSustainedError) {
+          fStep.copy(withEvalStatus = Sustained(nanos, error))
         } else if (status.isDisabledError) {
-          Step(fStep, Disabled)
+          fStep.copy(withEvalStatus = Disabled)
         } else {
           fStep
         }
@@ -291,8 +303,11 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       (line, interpolate(content) { resolver }, contentType)
     }
     if (iName != step.name || iTable != step.table || iDocString != step.docString) {
-      Step(step.keyword, iName, step.status, step.attachments, step.stepDef, iTable, iDocString) tap { iStep =>
-        iStep.pos = step.pos
+      step.copy(
+        withName = iName,
+        withTable = iTable,
+        withDocString = iDocString
+      ) tap { iStep =>
         logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
       }
     } else step
@@ -355,7 +370,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       }).getOrElse {
           scopes.getOpt(name).getOrElse {
             Settings.getOpt(name).getOrElse {
-              unboundAttributeError(name)
+              Errors.unboundAttributeError(name)
             }
           }
         }
@@ -376,7 +391,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       case "match template" | "match template file" =>
         matchTemplate(expected, actual, sourceName) match {
           case Success(result) =>
-            if (negate) templateMatchError(s"Expected $sourceName to not match template but it did") else result
+            if (negate) Errors.templateMatchError(s"Expected $sourceName to not match template but it did") else result
           case Failure(failure) =>
             if (negate) false else throw failure
         }

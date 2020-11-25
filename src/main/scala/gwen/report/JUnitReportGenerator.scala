@@ -16,13 +16,13 @@
 
 package gwen.report
 
-import java.io.File
-
 import gwen.GwenInfo
 import gwen.dsl.FeatureSpec
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureUnit
 import gwen.eval.GwenOptions
+
+import java.io.File
 
 /**
   * Generates JUnit xml report files (for integration will build servers 
@@ -30,7 +30,7 @@ import gwen.eval.GwenOptions
   * 
   * @author Branko Juric
   */
-class JUnitReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.junit, options) with JUnitReportFormatter {
+class JUnitReportGenerator(val options: GwenOptions) extends ReportGenerator(JUnitReportConfig, options) with JUnitReportFormatter {
 
   override def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
     // noop

@@ -17,9 +17,10 @@
 package gwen.eval.support
 
 import gwen.eval.{EnvContext, GwenOptions}
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}
+
+import org.scalatest.{FlatSpec, Matchers}
 
 class TemplateSupportTest extends FlatSpec with Matchers {
 

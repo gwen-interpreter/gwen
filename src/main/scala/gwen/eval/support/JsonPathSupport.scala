@@ -16,11 +16,12 @@
 
 package gwen.eval.support
 
-import gwen.Errors.jsonPathError
-import com.jayway.jsonpath.JsonPath
+import gwen._
 import gwen.eval.EnvContext
 
 import scala.util.Try
+
+import com.jayway.jsonpath.JsonPath
 
 /** Can be mixed into evaluation contexts to provide Json path support. */
 trait JsonPathSupport {
@@ -37,7 +38,7 @@ trait JsonPathSupport {
   def evaluateJsonPath(jsonpath: String, source: String): String = {
     evaluate("$[dryRun:json path]") {
       if (source.trim().length() == 0) {
-        jsonPathError("Cannot evaluate Json path on empty source")
+        Errors.jsonPathError("Cannot evaluate Json path on empty source")
       }
       Try(JsonPath.parse(source).read(jsonpath).toString).getOrElse("")
     }

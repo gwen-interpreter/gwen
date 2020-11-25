@@ -16,11 +16,10 @@
 
 package gwen.eval.support
 
-import gwen.Errors._
-import java.sql.DriverManager
-
-import gwen.Settings
+import gwen._
 import gwen.eval.EnvContext
+
+import java.sql.DriverManager
 
 /** Can be mixed into evaluation engines to provide SQL support. */
 trait SQLSupport {
@@ -38,10 +37,10 @@ trait SQLSupport {
     val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate("$[dryRun:sql]") {
       if (sql.trim().length() == 0) {
-        sqlError("Cannot evaluate empty SQL statement")
+        Errors.sqlError("Cannot evaluate empty SQL statement")
       }
       if (database.trim().length() == 0) {
-        sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
+        Errors.sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
       }
 
       try {
@@ -54,7 +53,7 @@ trait SQLSupport {
             if (result.next) {
               result.getString(1)
             }
-            else sqlError(s"SQL did not return a result: $sql")
+            else Errors.sqlError(s"SQL did not return a result: $sql")
           } finally {
             stmt.close()
           }
@@ -62,7 +61,7 @@ trait SQLSupport {
           connection.close()
         }
       } catch {
-        case e: Exception => sqlError(s"Failed to run SQL query: ${sql}, reason is: ${e}")
+        case e: Exception => Errors.sqlError(s"Failed to run SQL query: ${sql}, reason is: ${e}")
       }
     }
   }
@@ -79,10 +78,10 @@ trait SQLSupport {
     val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate(0) {
       if (sql.trim().length() == 0) {
-        sqlError("Cannot execute empty SQL statement")
+        Errors.sqlError("Cannot execute empty SQL statement")
       }
       if (database.trim().length() == 0) {
-        sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
+        Errors.sqlError("Database not specified, please provide name of database setting to use: gwen.db.<name>")
       }
 
       try {
@@ -99,7 +98,7 @@ trait SQLSupport {
           connection.close()
         }
       } catch {
-        case e: Exception => sqlError(s"Failed to run SQL update statement: ${sql}, reason is: ${e}")
+        case e: Exception => Errors.sqlError(s"Failed to run SQL update statement: ${sql}, reason is: ${e}")
       }
     }
   }

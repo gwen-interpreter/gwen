@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,35 +14,27 @@
  * limitations under the License.
  */
 
-package gwen
-
-import java.io.FileWriter
-import java.io.File
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import java.io.FileOutputStream
-import java.io.FileInputStream
-import java.io.StringWriter
-import java.io.PrintWriter
-import java.nio.file.{Files, Paths}
-
-import scala.util.matching.Regex
-import com.typesafe.scalalogging.LazyLogging
-
 import scala.concurrent.duration.Duration
-import java.text.DecimalFormat
+import scala.io.Source
+import scala.util.matching.Regex
 
-import gwen.dsl.Position
 import org.apache.commons.text.StringEscapeUtils
 
-import scala.io.Source
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.FileWriter
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.nio.file.{Files, Paths}
+import java.text.DecimalFormat
+import java.{util => ju}
 
-/**
-  * Predefined implicits.
-  * 
-  * @author Branko Juric
-  */
-object Predefs extends LazyLogging {
+/** Predefs and implicits avaiable wherever this page is imported. */
+
+package object gwen {
   
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
@@ -179,7 +171,6 @@ object Predefs extends LazyLogging {
     */
   implicit class RegexContext(val sc: StringContext) extends AnyVal {
     def r: Regex = {
-      logger.debug(s"Matched: ${sc.parts.mkString}") 
       new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*) 
     }
   }
@@ -224,7 +215,8 @@ object Predefs extends LazyLogging {
   
     }
 
-    def padWithZeroes(num: Int): String = "%04d".format(num)
+    def padWithZeroes(num: Int): String = padWithZeroes(num, 4)
+    def padWithZeroes(num: Int, padding: Int): String = s"%0${padding}d".format(num)
     def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
     def escapeHtml(text: String): String = StringEscapeUtils.escapeHtml4(text)
     def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
@@ -271,5 +263,11 @@ object Predefs extends LazyLogging {
       }
     }
   }
-  
+
+  object UUIDGenerator {
+    val baseId = ju.UUID.randomUUID.toString
+    private val counter = new ju.concurrent.atomic.AtomicInteger(0)
+    def nextId: String = s"$baseId-${counter.incrementAndGet()}"
+  }
+
 }

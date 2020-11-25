@@ -16,23 +16,16 @@
 
 package gwen.eval
 
-import org.scalatest.Matchers
 import gwen.dsl._
+
+import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 
 import scala.concurrent.duration.Duration
+
 import java.util.Date
 
-class FeatureSummaryTest extends FlatSpec with Matchers {
-
-  object Feature {
-   def apply(name: String, description: List[String]): Feature = new Feature("en", Nil, "Feature", name, description)
-  }
-
-  object Scenario {
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
-  }
+class FeatureSummaryTest extends FlatSpec with Matchers with GwenTestModel {
   
   val Passed1 = Passed(1000000)
   val Passed2 = Passed(2000000)
@@ -71,11 +64,11 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.When.toString, "meta step 2", Passed1),
           Step(StepKeyword.Then.toString, "meta step 3", Passed2))
         ),
-        Scenario(List(Tag("StepDef")), "metaStepDef1", Nil, None, List(
+        Scenario(List(Tag("@StepDef")), "metaStepDef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Loaded),
           Step(StepKeyword.When.toString, "step 2", Loaded),
           Step(StepKeyword.Then.toString, "step 3", Loaded))
-        )), Nil)
+        )), Nil, None, Nil)
         
     // add 1 passed scenario
     val feature1 = FeatureSpec(
@@ -85,7 +78,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.When.toString, "step 2", Passed1),
           Step(StepKeyword.Then.toString, "step 3", Passed2))
         ),
-        Scenario(List(Tag("StepDef")), "StepDef1", Nil, None, List(
+        Scenario(List(Tag("@StepDef")), "StepDef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Loaded),
           Step(StepKeyword.When.toString, "step 2", Loaded),
           Step(StepKeyword.Then.toString, "step 3", Loaded))
@@ -118,7 +111,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Failed3),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
-        )), Nil)
+        )), Nil, None, Nil)
     featureResult = new FeatureResult(feature2, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -147,7 +140,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
           Step(StepKeyword.Then.toString, "step 3", Passed2))
-        )), Nil)
+        )), Nil, None, Nil)
     featureResult = new FeatureResult(feature3, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -171,7 +164,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.Given.toString, "step 1", Skipped),
           Step(StepKeyword.When.toString, "step 2", Skipped),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
-        )), Nil)
+        )), Nil, None, Nil)
     featureResult = new FeatureResult(feature4, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -194,7 +187,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Pending),
           Step(StepKeyword.When.toString, "step 2", Pending))
-        )), Nil)
+        )), Nil, None, Nil)
     featureResult =  new FeatureResult(feature5, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -237,7 +230,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers {
           Step(StepKeyword.When.toString, "step 2", Failed4),
           Step(StepKeyword.Then.toString, "step 3", Skipped),
           Step(StepKeyword.And.toString, "step 3", Skipped))
-        )), Nil)
+        )), Nil, None, Nil)
     featureResult = new FeatureResult(feature6, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)

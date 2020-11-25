@@ -16,15 +16,13 @@
 
 package gwen.eval
 
-import java.io.File
+import gwen._
 
 import scala.annotation.tailrec
-import gwen.Predefs.FileIO._
+
 import com.typesafe.scalalogging.LazyLogging
-import gwen.Errors._
-import gwen.GwenSettings
-import gwen.Predefs.FileIO
-import gwen.Settings
+
+import java.io.File
 
 /**
   * Reads and streams individual features and feature suites from the file system.  
@@ -81,11 +79,11 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     * @return a stream of [FeatureUnit]s found at the location
     */
   private def deepRead(location: File, metaFiles: List[File], dataFile: Option[File]): LazyList[FeatureUnit] = {
-    if (isDirectory(location)) {
+    if (FileIO.isDirectory(location)) {
       val inputs = discoverInputs(location, (metaFiles, dataFile))
       val files = Option(location.listFiles).getOrElse(Array[File]())
       files.to(LazyList).flatMap(deepRead(_, inputs._1, inputs._2)) 
-    } else if (isFeatureFile(location)) {
+    } else if (FileIO.isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
       val unit = FeatureUnit(
         location, 
@@ -102,7 +100,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
           LazyList(unit)
       }
     } else {
-      if (!isMetaFile(location)) {
+      if (!FileIO.isMetaFile(location)) {
         logger.debug(s"Ignoring file: $location")
       }
       LazyList()
@@ -121,14 +119,14 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
   private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
     val (metaFiles, dataFile) = inputs
     val files = Option(dir.listFiles).getOrElse(Array[File]())
-    val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(isMetaFile).toList else Nil
+    val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(FileIO.isMetaFile).toList else Nil
     val inputs1 = (metaFiles ::: metas, dataFile)
-    val datas = if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(isCsvFile).toList else Nil
+    val datas = if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(FileIO.isCsvFile).toList else Nil
     datas match {
       case Nil => inputs1
       case data :: Nil => (inputs1._1, Some(data))
       case _ => 
-        if (dataFile.isEmpty) ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName} directory but found ${datas.size}")
+        if (dataFile.isEmpty) Errors.ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName} directory but found ${datas.size}")
         else inputs1
     }
   }
@@ -157,7 +155,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     */
   @tailrec
   private def discoverInputsInPath(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = { 
-    val hasParentDir = hasParentDirectory(dir) 
+    val hasParentDir = FileIO.hasParentDirectory(dir) 
     if (!hasParentDir) {
       discoverInputs(dir, inputs)
     } else {

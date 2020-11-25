@@ -16,9 +16,10 @@
 
 package gwen.dsl
 
-import gwen.GwenSettings
-import scala.util.Try
+import gwen._
+
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 object FeatureKeyword extends Enumeration {
   type FeatureKeyword = Value
@@ -197,5 +198,25 @@ object BehaviorRules extends Enumeration {
   val strict, lenient = Value
   def isStrict = GwenSettings.`gwen.behavior.rules` == strict
   def isLenient = GwenSettings.`gwen.behavior.rules` == lenient
+}
+
+object ReservedTags extends Enumeration {
+  type Reserved = Value
+  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic = Value
+  val names: Set[String] = values.map(_.toString)
+}
+
+object NodeType extends Enumeration {
+  type NodeType = Value
+  val Root, Unit, Tag, Feature, Meta, Scenario, Background, Examples, Rule, StepDef, Step, Result = Value
+}
+
+object SpecType extends Enumeration {
+
+  val Feature, Meta = Value
+
+  def isFeature(specType: SpecType.Value):Boolean = specType == Feature
+  def isMeta(specType: SpecType.Value):Boolean = specType == Meta
+
 }
 

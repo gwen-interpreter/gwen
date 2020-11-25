@@ -16,8 +16,9 @@
 
 package gwen.eval.support
 
-import gwen.Errors._
+import gwen._
 import gwen.eval.EnvContext
+
 import org.apache.commons.codec.binary.Base64
 
 /** Can be mixed into evaluation engines to provide decoding support. */
@@ -34,7 +35,7 @@ trait DecodingSupport {
     evaluate("$[dryRun:decodeBase64]") {
       Option(source) match {
         case None =>
-          decodingError("Cannot Base64 decode null string")
+          Errors.decodingError("Cannot Base64 decode null string")
         case Some(_) =>
           new String(Base64.decodeBase64(source.getBytes()))
       }

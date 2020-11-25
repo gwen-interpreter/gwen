@@ -16,17 +16,18 @@
 
 package gwen.eval
 
-import org.scalatest.Matchers
 import gwen.BaseTest
 import gwen.dsl._
 import gwen.Errors._
-import gwen.Predefs.Kestrel
 
 import scala.io.Source
+
+import org.scalatest.Matchers
+
 import java.io.File
 
 
-class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalRules {
+class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalRules with GwenTestModel {
 
     private def parseFeature(file: File): FeatureSpec = 
         parseFeatureSpec(Source.fromFile(file).mkString).get
@@ -64,12 +65,12 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     "declartive feature with stepdef" should "fail declarative rules check" in {    
         withSetting("gwen.feature.mode", "declarative") {
             val stepDef = feature.scenarios(1)
-            withSpecFile(SpecType.feature) { specFile =>
+            withSpecFile(SpecType.Feature) { specFile =>
                 intercept[ImperativeStepDefException] {
                     checkScenarioRules(stepDef, Some(specFile))
                 }
             }
-            withSpecFile(SpecType.meta) { specFile =>
+            withSpecFile(SpecType.Meta) { specFile =>
                 checkScenarioRules(stepDef, Some(specFile))
             }
         }
@@ -104,22 +105,21 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             withSetting("gwen.behavior.rules", "strict") {
                 val stepDef = feature.scenarios(1)  
                 val stepDefNobehaviorTag = Scenario(
-                    List(Tag("StepDef")),
-                    stepDef.keyword,
+                    List(Tag("@StepDef")),
                     stepDef.name,
                     stepDef.description,
                     stepDef.background,
                     stepDef.steps,
                     stepDef.isOutline,
                     stepDef.examples,
-                    stepDef.metaFile) tap { sd => sd.pos = stepDef.pos }
-                val step = Step(feature.scenarios(0).steps(2), stepDefNobehaviorTag)
-                withSpecFile(SpecType.feature) { _ =>
+                    stepDef.metaFile)
+                val step = Step(feature.scenarios(0).steps(2), stepDefNobehaviorTag, stepDefNobehaviorTag.steps.flatMap(_.attachments))
+                withSpecFile(SpecType.Feature) { _ =>
                     intercept[UndefinedStepDefBehaviorException] {
                         checkStepDefRules(step, env)
                     }
                 }
-                withSpecFile(SpecType.meta) { _ =>
+                withSpecFile(SpecType.Meta) { _ =>
                     checkStepDefRules(step, env)
                 }
             }
@@ -129,12 +129,12 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     "declartive feature with imperative step" should "fail declarative rules check" in {
         withSetting("gwen.feature.mode", "declarative") {
             val step = feature.scenarios(0).steps(1)
-            withSpecFile(SpecType.feature) { _ =>
+            withSpecFile(SpecType.Feature) { _ =>
                 intercept[ImperativeStepException] {
                     checkStepRules(step, BehaviorType.Action, env)
                 }
             }
-            withSpecFile(SpecType.meta) { _ =>
+            withSpecFile(SpecType.Meta) { _ =>
                 checkStepRules(step, BehaviorType.Action, env)
             }
         }
@@ -239,7 +239,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -254,7 +254,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -278,7 +278,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -293,7 +293,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -314,7 +314,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -329,7 +329,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -352,7 +352,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -367,7 +367,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -391,7 +391,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -406,7 +406,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -428,7 +428,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -443,7 +443,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -464,7 +464,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -479,7 +479,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -499,7 +499,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         val scenario = createScenario(steps)
         val background = createBackground(steps)
 
-        withSpecFile(SpecType.feature) { specFile =>
+        withSpecFile(SpecType.Feature) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 intercept[ImproperBehaviorException] {
                     checkScenarioRules(scenario, Some(specFile))
@@ -514,7 +514,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { specFile =>
+        withSpecFile(SpecType.Meta) { specFile =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkScenarioRules(scenario, Some(specFile))
                 checkBackgroundRules(background, Some(specFile))
@@ -529,7 +529,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     "Cntext steps" should "pass strict Context rules checks" in {
         val behavior = BehaviorType.Context
         env.addBehavior(behavior)
-        withSpecFile(SpecType.feature) { _ =>
+        withSpecFile(SpecType.Feature) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(givenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)
@@ -557,7 +557,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { _ =>
+        withSpecFile(SpecType.Meta) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(givenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)
@@ -575,7 +575,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     "Action steps" should "pass strict Action rules checks" in {
         val behavior = BehaviorType.Action
         env.addBehavior(behavior)
-        withSpecFile(SpecType.feature) { _ =>
+        withSpecFile(SpecType.Feature) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(whenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)
@@ -603,7 +603,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { _ =>
+        withSpecFile(SpecType.Meta) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(whenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)
@@ -621,7 +621,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     "Assertion steps" should "pass strict Assertion rules checks" in {
         val behavior = BehaviorType.Assertion
         env.addBehavior(behavior)
-        withSpecFile(SpecType.feature) { _ =>
+        withSpecFile(SpecType.Feature) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(thenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)
@@ -653,7 +653,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
             }
         }
 
-        withSpecFile(SpecType.meta) { _ =>
+        withSpecFile(SpecType.Meta) { _ =>
             withSetting("gwen.behavior.rules", "strict") {
                 checkStepRules(thenStep, behavior, env)
                 checkStepRules(andStep, behavior, env)

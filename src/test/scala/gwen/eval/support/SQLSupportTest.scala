@@ -19,15 +19,16 @@ package gwen.eval.support
 
 import gwen.Settings
 import gwen.eval.{EnvContext, GwenOptions}
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+
 import org.scalatest._
 import slick.jdbc
 import slick.jdbc.H2Profile.api._
 import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcBackend.Database
 import slick.lifted.Tag
-
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 
 class SQLSupportTest
     extends FlatSpec

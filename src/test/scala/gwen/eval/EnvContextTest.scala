@@ -16,18 +16,14 @@
 
 package gwen.eval
 
-import org.scalatest.Matchers
-import gwen.dsl._
-import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import gwen.Errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
 import gwen.BaseTest
+import gwen.dsl._
+import gwen.Errors.{AmbiguousCaseException, InvalidStepDefException, UnboundAttributeException}
 
-class EnvContextTest extends BaseTest with Matchers {
+import org.scalatest.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
-  object Scenario {
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
-  }
+class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
   
   "New env context" should "contain no StepDefs" in {
     val env = newEnv
@@ -41,7 +37,7 @@ class EnvContextTest extends BaseTest with Matchers {
       Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
-    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -57,7 +53,7 @@ class EnvContextTest extends BaseTest with Matchers {
       Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
-    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -74,7 +70,7 @@ class EnvContextTest extends BaseTest with Matchers {
       Step(StepKeyword.And.toString, """I submit the search field""")
     )
     
-    val stepdef = Scenario(List(Tag("StepDef")), """I search for "gwen"""", Nil, None, steps)
+    val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
     val env = newEnv
     env.addStepDef(stepdef)
     
@@ -86,11 +82,11 @@ class EnvContextTest extends BaseTest with Matchers {
   
   "StepDef with params" should "resolve" in {
     
-    val stepdef1 = Scenario(List(Tag("StepDef")), """I enter "<searchTerm>" in the search field""", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), """I enter "<search term>" in the search field again""", Nil, None, Nil)
-    val stepdef3 = Scenario(List(Tag("StepDef")), "z = <x> + 1", Nil, None, Nil)
-    val stepdef4 = Scenario(List(Tag("StepDef")), "z = 1 + <x>", Nil, None, Nil)
-    val stepdef5 = Scenario(List(Tag("StepDef")), "z = <x> - <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), """I enter "<searchTerm>" in the search field""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), """I enter "<search term>" in the search field again""", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("@StepDef")), "z = <x> + 1", Nil, None, Nil)
+    val stepdef4 = Scenario(List(Tag("@StepDef")), "z = 1 + <x>", Nil, None, Nil)
+    val stepdef5 = Scenario(List(Tag("@StepDef")), "z = <x> - <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -105,7 +101,7 @@ class EnvContextTest extends BaseTest with Matchers {
     env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
     env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
 
-    val stepdef6 = Scenario(List(Tag("StepDef")), "z = <x> * <x>", Nil, None, Nil)
+    val stepdef6 = Scenario(List(Tag("@StepDef")), "z = <x> * <x>", Nil, None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
       env.getStepDef("z = 3 * 4")
@@ -115,9 +111,9 @@ class EnvContextTest extends BaseTest with Matchers {
   
   "Sample math StepDefs with parameters" should "resolve" in {
     
-    val stepdef1 = Scenario(List(Tag("StepDef")), "++x", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), "c = a + <b>", Nil, None, Nil)
-    val stepdef3 = Scenario(List(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), "++x", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), "c = a + <b>", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("@StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -135,8 +131,8 @@ class EnvContextTest extends BaseTest with Matchers {
   
   "Ambiguous math StepDefs with parameters" should "be detected" in {
     
-    val stepdef1 = Scenario(List(Tag("StepDef")), "z = a + <b>", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), "z = <x> + <y>", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), "z = a + <b>", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -357,7 +353,7 @@ class EnvContextTest extends BaseTest with Matchers {
   "StepDef names" should "not start with a keyword" in {
     val env = newEnv
     StepKeyword.names foreach { keyword =>
-      val stepdef = Scenario(List(Tag("StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
+      val stepdef = Scenario(List(Tag("@StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
       intercept[InvalidStepDefException] {
         env.addStepDef(stepdef)
       }
@@ -463,11 +459,11 @@ class EnvContextTest extends BaseTest with Matchers {
 
   "Issue #40: Stepdef with empty parameters" should "resolve" in {
 
-    val stepdef1 = Scenario(List(Tag("StepDef")), """I type name "<name>"""", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), """I enter name "<name>", age "<age>"""", Nil, None, Nil)
-    val stepdef3 = Scenario(List(Tag("StepDef")), """I provide name "<name>", age "<age>" and gender "<gender>"""", Nil, None, Nil)
-    val stepdef4 = Scenario(List(Tag("StepDef")), """I give name "<name>", age "<age>", gender "<gender>" and title "<title>"""", Nil, None, Nil)
-    val stepdef5 = Scenario(List(Tag("StepDef")), """I test "<param1>" "<param2>"""", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), """I type name "<name>"""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), """I enter name "<name>", age "<age>"""", Nil, None, Nil)
+    val stepdef3 = Scenario(List(Tag("@StepDef")), """I provide name "<name>", age "<age>" and gender "<gender>"""", Nil, None, Nil)
+    val stepdef4 = Scenario(List(Tag("@StepDef")), """I give name "<name>", age "<age>", gender "<gender>" and title "<title>"""", Nil, None, Nil)
+    val stepdef5 = Scenario(List(Tag("@StepDef")), """I test "<param1>" "<param2>"""", Nil, None, Nil)
 
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -571,8 +567,8 @@ class EnvContextTest extends BaseTest with Matchers {
   }
 
   "Issue gwen-web#55: Conflict of step def.." should "result in ambiguous error" in {
-    val stepdef1 = Scenario(List(Tag("StepDef")), """I "<a>" on "<b>" and "<c>"""", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), """I "<a>" on "<b>"""", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), """I "<a>" on "<b>" and "<c>"""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), """I "<a>" on "<b>"""", Nil, None, Nil)
 
     val env = newEnv
     env.addStepDef(stepdef1)
@@ -585,8 +581,8 @@ class EnvContextTest extends BaseTest with Matchers {
   }
 
   "Issue gwen-web#55-1: Conflict of step def.." should "result in ambiguous error" in {
-    val stepdef1 = Scenario(List(Tag("StepDef")), """I <a> on <b> and <c>""", Nil, None, Nil)
-    val stepdef2 = Scenario(List(Tag("StepDef")), """I <a> on <b>""", Nil, None, Nil)
+    val stepdef1 = Scenario(List(Tag("@StepDef")), """I <a> on <b> and <c>""", Nil, None, Nil)
+    val stepdef2 = Scenario(List(Tag("@StepDef")), """I <a> on <b>""", Nil, None, Nil)
 
     val env = newEnv
     env.addStepDef(stepdef1)

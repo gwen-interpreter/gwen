@@ -16,15 +16,14 @@
 
 package gwen
 
-import scala.jdk.CollectionConverters._
-import java.io.File
-import java.util.Properties
-import java.io.FileReader
-
 import gwen.Errors._
-import gwen.Predefs.FileIO
 
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
+
+import java.io.File
+import java.io.FileReader
+import java.util.Properties
 
 /**
   * Provides access to enviornment variables and system properties loaded from properties files. 

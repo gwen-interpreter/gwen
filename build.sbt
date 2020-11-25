@@ -1,3 +1,9 @@
+lazy val gwen = (project in file("."))
+  .settings(
+    projectSettings,
+    libraryDependencies ++= mainDependencies ++ testDependencies
+  )
+  
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
@@ -63,12 +69,6 @@ lazy val testDependencies = {
     "com.typesafe.slick" %% "slick" % slick
   ).map(_ % Test)
 }
-
-lazy val root = (project in file("."))
-  .settings(
-    projectSettings,
-    libraryDependencies ++= mainDependencies ++ testDependencies
-  )
 
 mappings in(Compile, packageBin) ++= Seq(
   file("README.md") -> "README.txt",

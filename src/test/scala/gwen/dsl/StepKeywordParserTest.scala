@@ -16,9 +16,10 @@
 
 package gwen.dsl
 
+import scala.util.Success
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import scala.util.Success
 
 class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
 

@@ -16,17 +16,16 @@
 
 package gwen.eval
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap, Semaphore}
-
-import com.typesafe.scalalogging.LazyLogging
-import gwen.GwenSettings
+import gwen._
 import gwen.dsl._
-import gwen.Predefs._
-import gwen.Errors._
 
+import scala.util.Failure
 import scala.util.Try
 import scala.util.Success
-import scala.util.Failure
+
+import com.typesafe.scalalogging.LazyLogging
+
+import java.{util => ju}
 
 /**
   * Base trait for gwen evaluation engines. An evaluation engine performs the
@@ -45,7 +44,11 @@ import scala.util.Failure
 trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
 
   // semaphores for managing synchronized StepDefs
-  val stepDefSemaphors: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
+  val stepDefSemaphors: ju.concurrent.ConcurrentMap[String, ju.concurrent.Semaphore] = 
+    new ju.concurrent.ConcurrentHashMap()
+
+  // dispatches lifecycle events to listeners
+  val lifecycle = new LifecycleEventDispatcher()
   
   /**
     * Initialises the engine and returns a bootstrapped evaluation context.
@@ -67,113 +70,119 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     * @throws gwen.Errors.UndefinedStepException unconditionally thrown by
     *         this default implementation
     */
-  def evaluate(step: Step, env: T): Unit = undefinedStepError(step)
+  def evaluate(step: Step, env: T): Unit = Errors.undefinedStepError(step)
 
   /**
     * Should be overridden to evaluate a priority step (this implementation returns None and can be overridden).
     * For example, a step that calls another step needs to execute with priority to ensure that there is no
     * match conflict between the two (which can occur if the step being called by a step is a StepDef or another step
     * that matches the entire calling step).
-    *
-    * @param step the step to evaluate
-    * @param env the environment context
-    * @return Some(step) if the step is an evaluated composite step, None otherwise
     */
-  def evaluatePriority(step: Step, env: T): Option[Step] = None
+  def evaluatePriority(parent: Identifiable, step: Step, env: T): Option[Step] = None
 
   /**
     * Evaluates a given scenario.
-    *
-    * @param scenario the scenario to evaluate
-    * @param env the environment context
-    * @return the evaluated scenario
     */
-  private[eval] def evaluateScenario(scenario: Scenario, env: T): Scenario = {
+  private[eval] def evaluateScenario(parent: Identifiable, scenario: Scenario, env: T): Scenario = {
     if (scenario.isStepDef || scenario.isDataTable) {
-      if (!scenario.isStepDef) dataTableError(s"${Tag.StepDefTag} tag also expected where ${Tag.DataTableTag} is specified")
+      if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
+      lifecycle.beforeStepDef(parent, scenario)
       logger.info(s"Loading ${scenario.keyword}: ${scenario.name}")
       env.addStepDef(scenario)
       if (env.isParallel && scenario.isSynchronized) {
-        stepDefSemaphors.putIfAbsent(scenario.name, new Semaphore(1))
+        stepDefSemaphors.putIfAbsent(scenario.name, new ju.concurrent.Semaphore(1))
       }
-      val steps =
-        if (!scenario.isOutline)
-          scenario.steps map { step => Step(step, Loaded, step.attachments) }
-        else scenario.steps
-      val examples =
-        if (scenario.isOutline)
-          scenario.examples map { exs =>
-            Examples(exs, exs.scenarios map { s =>
-              Scenario(
-                s,
-                s.background map { b =>
-                  Background(b, b.steps map { step => Step(step, Loaded, step.attachments) })
+      val tSteps = lifecycle.transitionSteps(scenario, scenario.steps, Loaded)
+      val steps = if (!scenario.isOutline) {
+        tSteps
+      } else {
+        scenario.steps
+      }
+      val examples = if (scenario.isOutline) {
+        scenario.examples map { exs =>
+          exs.copy(
+            withScenarios = exs.scenarios map { s =>
+              s.copy(
+                withBackground = s.background map { b =>
+                  b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
                 },
-                s.steps map { step => Step(step, Loaded, step.attachments) },
-                s.examples
+                withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
               )
-            })
-          }
-        else scenario.examples
-      Scenario(scenario, None, steps, examples)
+            }
+          )
+        }
+      } else  {
+        scenario.examples
+      }
+      scenario.copy(
+        withBackground = None,
+        withSteps = steps,
+        withExamples = examples
+      ) tap { s => 
+        lifecycle.afterStepDef(s)
+      }
     } else {
+      lifecycle.beforeScenario(parent, scenario)
       logger.info(s"Evaluating ${scenario.keyword}: $scenario")
-      if (!scenario.isOutline) {
-        scenario.background map (evaluateBackground(_, env)) match {
+      (if (!scenario.isOutline) {
+        scenario.background map (bg => evaluateBackground(scenario, bg, env)) match {
           case None =>
-            Scenario(scenario, None, evaluateSteps(scenario.steps, env), scenario.examples)
+            scenario.copy(
+              withBackground = None,
+              withSteps = evaluateSteps(scenario, scenario.steps, env)
+            )
           case Some(background) =>
             val steps: List[Step] = background.evalStatus match {
-              case Passed(_) => evaluateSteps(scenario.steps, env)
-              case Skipped if background.steps.isEmpty => evaluateSteps(scenario.steps, env)
-              case _ => scenario.steps map { step =>
-                Step(step, Skipped, step.attachments)
-              }
+              case Passed(_) => evaluateSteps(scenario, scenario.steps, env)
+              case Skipped if background.steps.isEmpty => evaluateSteps(scenario, scenario.steps, env)
+              case _ => scenario.steps map { _.copy(withEvalStatus = Skipped) }
             }
-            Scenario(scenario, Some(background), steps, scenario.examples)
+            scenario.copy(
+              withBackground = Some(background),
+              withSteps = steps
+            )
         }
       } else {
-        Scenario(scenario, scenario.background, scenario.steps, evaluateExamples(scenario.examples, env))
+        scenario.copy(
+          withExamples = evaluateExamples(scenario, scenario.examples, env)
+        )
+      }) tap { scenario =>
+        lifecycle.afterScenario(scenario)
       }
     } tap { scenario =>
-      logStatus(scenario.keyword, scenario.toString, scenario.evalStatus)
+      logStatus(scenario)
     }
   }
 
   /**
     * Evaluates a given background.
-    *
-    * @param background the background to evaluate
-    * @param env the environment context
-    * @return the evaluated background
     */
-  private[eval] def evaluateBackground(background: Background, env: T): Background = {
+  private[eval] def evaluateBackground(parent: Identifiable, background: Background, env: T): Background = {
+    lifecycle.beforeBackground(parent, background)
     logger.info(s"Evaluating ${background.keyword}: $background")
-    Background(background, evaluateSteps(background.steps, env)) tap { bg =>
-      logStatus(background.keyword, bg.toString, bg.evalStatus)
+    background.copy(withSteps = evaluateSteps(background, background.steps, env)) tap { bg =>
+      logStatus(bg)
+      lifecycle.afterBackground(bg)
     }
   }
   
   /**
     * Evaluates a given step.
-    * 
-    * @param step the step to evaluate
-    * @param env the environment context
     */
-  def evaluateStep(step: Step, env: T): Step = {
+  def evaluateStep(parent: Identifiable, step: Step, env: T): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     val iStep = doEvaluate(step, env) { env.interpolate }
-    logger.info(s"Evaluating Step: $iStep")
     var pStep: Option[Step] = None
+    logger.info(s"Evaluating Step: $iStep")
     doEvaluate(iStep, env) { s =>
-      pStep = evaluatePriority(s, env)
+      pStep = evaluatePriority(parent, s, env)
       pStep.getOrElse(s)
     }
     val eStep = pStep.filter(_.evalStatus.status != StatusKeyword.Failed).getOrElse {
       if (iStep.evalStatus.status != StatusKeyword.Failed) {
         Try(env.getStepDef(iStep.name)) match {
           case Failure(error) =>
-            Step(iStep, Failed(System.nanoTime - start, new StepFailure(iStep, error)))
+            iStep.copy(withEvalStatus = Failed(System.nanoTime - start, new Errors.StepFailure(iStep, error)))
           case Success(stepDefOpt) =>
             (stepDefOpt match {
               case Some((stepDef, _)) if env.stepScope.containsScope(stepDef.name) => None
@@ -183,11 +192,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                 doEvaluate(iStep, env) { step =>
                   step tap { _ =>
                     try {
+                      lifecycle.beforeStep(parent, step)
                       evaluate(step, env)
                     } catch {
-                      case e: UndefinedStepException =>
+                      case e: Errors.UndefinedStepException =>
                         stepDefOpt.fold(throw e) { case (stepDef, _) =>
-                          recursiveStepDefError(stepDef, step)
+                          Errors.recursiveStepDefError(stepDef, step)
                         }
                     }
                   }
@@ -198,22 +208,23 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                   semaphore.acquire()
                   try {
                     logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                    evalStepDef(stepDef, iStep, params, env)
+                    evalStepDef(parent, stepDef.copy(), iStep, params, env)
                   } finally {
                     logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
                     semaphore.release()
                   }
                 } else {
-                  evalStepDef(stepDef, iStep, params, env)
+                  evalStepDef(parent, stepDef.copy(), iStep, params, env)
                 }
             }
         }
       } else {
+        lifecycle.beforeStep(parent, iStep)
         iStep
       }
     }
     val fStep = eStep.evalStatus match {
-      case Failed(_, e: StepFailure) if e.getCause != null && e.getCause.isInstanceOf[UndefinedStepException] =>
+      case Failed(_, e: Errors.StepFailure) if e.getCause != null && e.getCause.isInstanceOf[Errors.UndefinedStepException] =>
         pStep.getOrElse(eStep)
       case _ =>
         eStep.evalStatus match {
@@ -222,7 +233,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
         }
     }
     env.finaliseStep(fStep) tap { step =>
-      logStatus("Step", step.toString, step.evalStatus)
+      logStatus(step)
+      lifecycle.afterStep(step)
     }
   }
   
@@ -239,29 +251,37 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       case Success(evaluatedStep) =>
         env.getForeachStepDef(step) match {
           case Some(foreachStepDef) =>
-            Step(evaluatedStep, if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), foreachStepDef.attachments, foreachStepDef)
+            evaluatedStep.copy(
+              withEvalStatus = if (foreachStepDef.steps.nonEmpty) foreachStepDef.evalStatus else Passed(System.nanoTime() - start), 
+              withAttachments = foreachStepDef.attachments, 
+              withStepDef = Some((foreachStepDef, Nil)))
           case _ =>
-            val status = evaluatedStep.stepDef.map(_.evalStatus ).getOrElse {
+            val status = evaluatedStep.stepDef.map(_._1.evalStatus).getOrElse {
               evaluatedStep.evalStatus match {
                 case Failed(_, error) => Failed(System.nanoTime - start, error)
                 case _ => Passed(System.nanoTime - start)
               }
             }
-            Step(evaluatedStep, status)
+            evaluatedStep.copy(withEvalStatus = status)
         }
       case Failure(error) =>
-        val failure = Failed(System.nanoTime - start, new StepFailure(step, error))
-        Step(step, failure)
+        val failure = Failed(System.nanoTime - start, new Errors.StepFailure(step, error))
+        step.copy(withEvalStatus = failure)
     }
   }
 
-  private def evalStepDef(stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
+  private def evalStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
+    val sdStep = step.copy(
+      withStepDef = Some((stepDef, params)),
+      withAttachments = stepDef.steps.flatMap(_.attachments)
+    )
+    lifecycle.beforeStep(parent, sdStep)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val eStep = doEvaluate(step, env) { s =>
-      checkStepDefRules(Step(s, stepDef), env)
+      checkStepDefRules(sdStep, env)
       step
     }
-    if (eStep.status.status == StatusKeyword.Failed) {
+    if (eStep.evalStatus.status == StatusKeyword.Failed) {
       eStep
     } else {
       env.stepScope.push(stepDef.name, params)
@@ -271,11 +291,28 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           env.topScope.pushObject("table", table)
         }
         try {
-          val steps = if (!stepDef.isOutline) evaluateSteps(stepDef.steps, env) else stepDef.steps
-          val examples = if (stepDef.isOutline) evaluateExamples(stepDef.examples, env) else stepDef.examples
-          Step(step, Scenario(stepDef, None, steps, examples)) tap { _ =>
-            logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+          lifecycle.beforeStepDef(sdStep, stepDef)
+          val steps = if (!stepDef.isOutline) {
+            evaluateSteps(stepDef, stepDef.steps, env)
+          } else { 
+            stepDef.steps
           }
+          val examples = if (stepDef.isOutline) {
+            evaluateExamples(stepDef, stepDef.examples, env)
+          } else { 
+            stepDef.examples
+          }
+          val eStepDef = stepDef.copy(
+            withBackground = None,
+            withSteps = steps,
+            withExamples = examples)
+          logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+          lifecycle.afterStepDef(eStepDef) 
+          step.copy(
+            withStepDef = Some((eStepDef, params)),
+            withAttachments = eStepDef.attachments,
+            withEvalStatus = eStepDef.evalStatus
+          )
         } finally {
           dataTableOpt foreach { _ =>
             env.topScope.popObject("table")
@@ -287,23 +324,23 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     }
   }
 
-  private def evaluateExamples(examples: List[Examples], env: T): List[Examples] = examples map { exs =>
-    Examples(
-      exs,
-      exs.scenarios map { scenario =>
-        evaluateScenario(scenario, env)
+  private def evaluateExamples(parent: Identifiable, examples: List[Examples], env: T): List[Examples] = { 
+    examples map { exs =>
+      lifecycle.beforeExamples(parent, exs)
+      exs.copy(
+        withScenarios = exs.scenarios map { scenario =>
+          evaluateScenario(exs, scenario, env)
+        }
+      ) tap { exs =>
+        lifecycle.afterExamples(exs)
       }
-    )
+    }
   }
   
   /**
     * Evaluates a list of steps.
-    * 
-    * @param steps the steps to evaluate
-    * @param env the environment context
-    * @return the list of evaluated steps
     */
-  def evaluateSteps(steps: List[Step], env: T): List[Step] = {
+  def evaluateSteps(parent: Identifiable, steps: List[Step], env: T): List[Step] = {
     var behaviorCount = 0
     try {
       steps.foldLeft(List[Step]()) {
@@ -314,16 +351,16 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           }
           (EvalStatus(acc.map(_.evalStatus)) match {
             case status @ Failed(_, error) =>
-              env.evaluate(evaluateStep(step, env)) {
+              env.evaluate(evaluateStep(parent, step, env)) {
                 val isAssertionError = status.isAssertionError
                 val isHardAssert = env.evaluate(false) { AssertionMode.isHard }
                 if (!isAssertionError || isHardAssert) {
-                  Step(step, Skipped, step.attachments)
+                  lifecycle.transitionStep(parent, step, Skipped)
                 } else {
-                  evaluateStep(step, env)
+                  evaluateStep(parent, step, env)
                 }
               }
-            case _ => evaluateStep(step, env)
+            case _ => evaluateStep(parent, step, env)
           }) :: acc
       } reverse
     } finally {
@@ -336,7 +373,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def foreach[U](elements: ()=>Seq[U], element: String, step: Step, doStep: String, env: T): Step = {
+  def foreach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, env: T): Step = {
+    lifecycle.beforeStep(parent, step)
     val steps =
       elements() match {
         case Nil =>
@@ -347,7 +385,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           logger.info(s"For-each[$element]: $noOfElements found")
           try {
             if(Try(env.getBoundReferenceValue(element)).isSuccess) {
-              ambiguousCaseError(s"For-each element name '$element' already bound (use a free name instead)")
+              Errors.ambiguousCaseError(s"For-each element name '$element' already bound (use a free name instead)")
             }
             elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
               val elementNumber = index + 1
@@ -371,16 +409,25 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
                     if (failfast && !exitOnFail && !isSoftAssert) {
                       logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                      Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Skipped)
+                      step.copy(
+                        withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), 
+                        withName = doStep, 
+                        withEvalStatus = Skipped) tap { skippedStep => 
+                        lifecycle.afterStep(skippedStep)
+                      }
                     } else if (exitOnFail && !isSoftAssert) {
-                      step
+                      step.copy(
+                        withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), 
+                        withName = doStep) tap { clonedStep => 
+                        lifecycle.afterStep(clonedStep)
+                      }
                     } else {
                       logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                      evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep), env)
+                      evaluateStep(step, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), env)
                     }
                   case _ =>
                     logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                    evaluateStep(Step(step.pos, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep), env)
+                    evaluateStep(step, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), env)
                 }
               } finally {
                 env.topScope.popObject(element)
@@ -392,34 +439,42 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
             env.topScope.set(s"$element number", null)
           }
       }
-    val foreachStepDef = new Scenario(List(Tag.StepDefTag, Tag.ForEachTag), FeatureKeyword.nameOf(FeatureKeyword.Scenario), element, Nil, None, steps, false, Nil, None)
+    val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
+    val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
+    val foreachStepDef = Scenario(None, tags, keyword, element, Nil, None, steps, false, Nil, None)
     env.addForeachStepDef(step, foreachStepDef)
     step
   }
   
   /**
-    * Logs the evaluation status of the given node.
+    * Logs the evaluation status of the given spec.
     * 
-    * @param node the node to log the evaluation status of
-    * @param name the name of the node that failed
-    * @param status the evaluation status
+    * @param spec the spec to log
     * @return the logged status message
     */
-  private[eval] def logStatus(node: String, name: String, status: EvalStatus) = {
-      logStatusMsg(s"${if (SpecType.meta.toString == node) Loaded else status} $node: $name", status)
+  private[eval] def logStatus(spec: FeatureSpec): Unit = {
+    logStatus(spec.nodeType, spec.feature.name, spec.evalStatus)
+  }
+
+  /**
+    * Logs the evaluation status of the given node.
+    * 
+    * @param node the node to log
+    * @return the logged status message
+    */
+  private[eval] def logStatus(node: SpecNode): Unit = {
+      logStatus(node.nodeType, node.name, node.evalStatus)
   }
   
-  private def logStatusMsg(msg: String, status: EvalStatus) = status match {
-    case Loaded => 
-      logger.debug(msg)
-    case Passed(_) => 
-      logger.info(msg)
-    case Failed(_, _) =>
-      logger.error(msg)
-    case Sustained(_, _) =>
-      logger.warn(msg)
-    case _ => 
-      logger.warn(msg)
+  private def logStatus(nodeType: NodeType.Value, name: String, evalStatus: EvalStatus): Unit = { 
+    val msg = s"$evalStatus $nodeType: $name"
+    evalStatus match {
+      case Loaded => logger.debug(msg)
+      case Passed(_) => logger.info(msg)
+      case Failed(_, _) => logger.error(msg)
+      case Sustained(_, _) => logger.warn(msg)
+      case _ => logger.warn(msg)
+    }
   }
   
 }

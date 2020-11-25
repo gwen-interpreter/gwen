@@ -16,9 +16,10 @@
 
 package gwen.report
 
-import java.io.File
-import gwen.Predefs.Kestrel
+import gwen._
 import gwen.eval.GwenOptions
+
+import java.io.File
 
 /**
   * Generates a HTML evaluation report. The report includes a feature
@@ -26,7 +27,7 @@ import gwen.eval.GwenOptions
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(ReportFormat.html, options) with HtmlReportFormatter {
+class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(HtmlReportConfig, options) with HtmlReportFormatter {
 
   // copy in CSS files (if they don't already exist)
   new File(reportDir, "resources/css") tap { dir =>

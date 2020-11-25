@@ -15,19 +15,20 @@
  */
 package gwen.sample.bindings
 
+import gwen.BaseTest
 import gwen.dsl.Failed
 import gwen.dsl.Passed
 import gwen.eval.GwenOptions
-import java.io.File
+import gwen.eval.GwenLauncher
+import gwen.eval.EnvContext
+import gwen.eval.GwenApp
+import gwen.eval.GwenInterpreter
+import gwen.eval.support.DefaultEngineSupport
+import gwen.report.ReportFormat
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import gwen.eval.GwenLauncher
-import gwen.report.ReportFormat
-import gwen.eval.EnvContext
-import gwen.eval.GwenInterpreter
-import gwen.eval.GwenApp
-import gwen.eval.support.DefaultEngineSupport
-import gwen.BaseTest
+
+import java.io.File
 
 class BindingsEnvContext(val options: GwenOptions) 
   extends EnvContext(options) {

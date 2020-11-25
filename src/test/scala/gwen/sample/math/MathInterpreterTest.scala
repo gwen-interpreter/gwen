@@ -16,17 +16,19 @@
 
 package gwen.sample.math
 
+import gwen.dsl.GwenTestModel
 import gwen.dsl.Failed
 import gwen.dsl.Passed
-import gwen.eval.GwenOptions
-import java.io.File
-import org.scalatest.FlatSpec
-import gwen.eval.GwenLauncher
-import gwen.dsl.Step
 import gwen.dsl.StepKeyword
+import gwen.eval.GwenLauncher
+import gwen.eval.GwenOptions
 import gwen.report.ReportFormat
 
-class MathInterpreterTest extends FlatSpec {
+import org.scalatest.FlatSpec
+
+import java.io.File
+
+class MathInterpreterTest extends FlatSpec with GwenTestModel {
   
   "math features" should "evaluate" in {
     

@@ -1,3 +1,11 @@
+2.31.0
+======
+Nov 25, 2020
+- Clean up and improve Gwen Gherkin model
+- Add UUID to each node
+- Add uri:lineNo to each node 
+- Introduce lifecycle events and listeners
+
 2.30.0
 ======
 Oct 20, 2020

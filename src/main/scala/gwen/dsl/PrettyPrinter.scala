@@ -16,7 +16,7 @@
 
 package gwen.dsl
 
-import gwen.Predefs.Formatting
+import gwen._
 
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
@@ -29,6 +29,14 @@ import gwen.Predefs.Formatting
   */
 object prettyPrint {
 
+  def apply(spec: FeatureSpec): String = {
+    apply(spec.feature) +
+      formatStatus(spec.evalStatus) +
+      spec.background.map(apply).getOrElse("") +
+      printAll(spec.scenarios.map(apply), "", "") +
+      printAll(spec.rules.map(apply), "", "")
+  }
+  
   /**
     * Prints an [[SpecNode]] to a string.  This method is implicitly 
     * called whenever `prettyPrint(specNode)` is called.  There is no need to 
@@ -37,31 +45,25 @@ object prettyPrint {
     * @param node the AST node to print
     */
   def apply(node: SpecNode): String = node match {
-    case spec @ FeatureSpec(feature, background, rules, scenarios, _, _) =>
-      apply(feature) +
-        formatStatus(spec.evalStatus) +
-        background.map(apply).getOrElse("") +
-        printAll(rules.map(apply), "", "") +
-        printAll(scenarios.map(apply), "", "")
-    case Feature(language, tags, keyword, name, description) =>
+    case Feature(language, _, tags, keyword, name, description) =>
       s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   $keyword: $name${formatTextLines(description)}"
-    case background @ Background(keyword, name, description, steps) =>
+    case background @ Background(_, keyword, name, description, steps) =>
       s"\n\n$keyword: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(tags, keyword, name, description, background, steps, isOutline, examples, _) =>
+    case scenario @ Scenario(_, tags, keyword, name, description, background, steps, isOutline, examples, _) =>
       background.map(apply).getOrElse("") +
         (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
-    case rule @ Rule(keyword, name, description, background, scenarios) =>
+    case rule @ Rule(_, keyword, name, description, background, scenarios) =>
       s"\n\n      $keyword: $name${formatTextLines(description)}" +
         background.map(apply).getOrElse("") + 
         printAll(scenarios.map(apply), "", "")
-    case Step(keyword, name, evalStatus, _, _, table, docString) =>
+    case Step(_, keyword, name, _, _, table, docString, evalStatus) =>
       rightJustify(keyword.toString) + s"$keyword $name${formatStatus(evalStatus)}" + s"${if (table.nonEmpty)
         formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })
       else if (docString.nonEmpty)
         formatTextLines(Formatting.formatDocString(docString.get).split("""\r?\n""").toList)
       else ""}"
-    case Examples(tags, keyword, name, description, table, scenarios) => scenarios match {
+    case Examples(_, tags, keyword, name, description, table, scenarios) => scenarios match {
       case Nil =>
         s"\n${formatTags("  ", tags)}  $keyword: $name${formatTextLines(description)}${formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })}"
       case _ =>

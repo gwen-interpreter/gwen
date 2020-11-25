@@ -16,10 +16,11 @@
 
 package gwen.eval
 
+import gwen.BaseTest
 import gwen.Errors.UnboundAttributeException
+
 import org.scalatest.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import gwen.BaseTest
 
 class TopScopeTest extends BaseTest with Matchers {
 

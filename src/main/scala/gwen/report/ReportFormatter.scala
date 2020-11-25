@@ -15,12 +15,13 @@
  */
 package gwen.report
 
-import java.io.File
+import gwen.eval.GwenOptions
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
-import gwen.GwenInfo
-import gwen.eval.GwenOptions
 import gwen.eval.FeatureUnit
+import gwen.GwenInfo
+
+import java.io.File
 
 /** Trait for formatting the feature summary and detail reports. */
 trait ReportFormatter {

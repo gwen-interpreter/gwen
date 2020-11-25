@@ -16,16 +16,14 @@
 
 package gwen.eval
 
-import java.io.File
-
-import gwen.{GwenInfo, Settings}
-import gwen.Predefs.Kestrel
-import gwen.Predefs.FileIO
+import gwen._
 import gwen.dsl.StateLevel
 import gwen.dsl.Tag
-import scopt.OptionParser
-import gwen.Errors._
 import gwen.report.ReportFormat
+
+import scopt.OptionParser
+
+import java.io.File
 
 /**
   * Captures gwen command line options.
@@ -126,7 +124,7 @@ object GwenOptions {
       
       opt[String]('t', "tags") action {
         (ts, c) => 
-          c.copy(tags = ts.split(",").toList.map(t => (Tag.string2Tag(t), t.startsWith("@"))))
+          c.copy(tags = ts.split(",").toList.map(t => (Tag(t), t.startsWith("@"))))
       } validate { ts =>
         ((ts.split(",") flatMap { t => 
           if (t.matches("""^(~?@\w+,?)+$""")) None 
@@ -185,13 +183,14 @@ object GwenOptions {
       } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
-            invocationError("No feature files or directories specified")
+            Errors.invocationError("No feature files or directories specified")
           }
-          if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
-            invocationError("No report directory specified")
+          val reportables = opt.reportFormats
+          if (reportables.nonEmpty && opt.reportDir.isEmpty) {
+            Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
         }
-      }).getOrElse(invocationError("Failed to read in gwen arguments"))
+      }).getOrElse(Errors.invocationError("Failed to read in gwen arguments"))
   }
   
 }

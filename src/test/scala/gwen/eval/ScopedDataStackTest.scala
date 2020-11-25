@@ -16,12 +16,13 @@
 
 package gwen.eval
 
-import org.scalatest.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import gwen.BaseTest
 import gwen.Errors.UnboundAttributeException
 
 import scala.collection.mutable
-import gwen.BaseTest
+
+import org.scalatest.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 class ScopedDataStackTest extends BaseTest with Matchers {
 

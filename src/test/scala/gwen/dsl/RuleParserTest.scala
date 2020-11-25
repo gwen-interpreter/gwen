@@ -16,10 +16,10 @@
 
 package gwen.dsl
 
+import scala.util.Success
+
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-
-import scala.util.Success
 
 class RuleParserTest extends FlatSpec with Matchers with GherkinParser {
 

@@ -16,18 +16,16 @@
 
 package gwen.eval.support
 
+import gwen._
+import gwen.eval.EnvContext
+
+import org.xml.sax.InputSource
+import org.w3c.dom.Node
+import org.w3c.dom.NodeList
+
 import java.io.StringReader
 import java.io.StringWriter
 import java.util.Iterator
-
-import org.w3c.dom.Node
-import org.w3c.dom.NodeList
-import org.xml.sax.InputSource
-import gwen.Predefs.Kestrel
-import gwen.Predefs.RegexContext
-import gwen.Errors._
-import gwen.eval.EnvContext
-
 import javax.xml.namespace.NamespaceContext
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -58,25 +56,25 @@ trait XPathSupport {
   def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String =
     evaluate("$[dryRun:xpath]") {
       if (source.trim().length() == 0) {
-        xPathError("Cannot evaluate XPath on empty source")
+        Errors.xPathError("Cannot evaluate XPath on empty source")
       }
       withXPath(xpath) { (xPath, expr) =>
         val qname = targetType match {
           case XMLNodeType.text => XPathConstants.STRING
           case XMLNodeType.node => XPathConstants.NODE
           case XMLNodeType.nodeset => XPathConstants.NODESET
-          case _ => xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
+          case _ => Errors.xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
         }
         val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
         targetType match {
           case XMLNodeType.text => result.toString
           case XMLNodeType.node =>
             nodeToString(result.asInstanceOf[Node]) tap { nodeStr =>
-              if (nodeStr.isEmpty()) xPathError(s"No such node: $xpath")
+              if (nodeStr.isEmpty()) Errors.xPathError(s"No such node: $xpath")
             }
           case XMLNodeType.nodeset =>
             nodeListToString(result.asInstanceOf[NodeList]) tap { nodeStr =>
-              if (nodeStr.isEmpty()) xPathError(s"No such nodeset: $xpath")
+              if (nodeStr.isEmpty()) Errors.xPathError(s"No such nodeset: $xpath")
             }
         }
       }
@@ -97,7 +95,7 @@ trait XPathSupport {
         xPath.setNamespaceContext(new NamespaceContext() { 
           def getNamespaceURI(prefix: String): String = {
             val mappings = namespaces.split(",").map(_.split("=")).map(pair => (pair(0).trim, pair(1).trim)).toMap
-            return mappings.getOrElse(prefix, xPathError(s"Unknown namespace prefix: $prefix"));
+            return mappings.getOrElse(prefix, Errors.xPathError(s"Unknown namespace prefix: $prefix"));
           }
           def getPrefix(uri: String): String = null
           def getPrefixes(uri: String): Iterator[String] = null

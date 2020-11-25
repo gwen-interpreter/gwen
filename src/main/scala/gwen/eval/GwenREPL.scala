@@ -16,22 +16,22 @@
 
 package gwen.eval
 
-import java.io.File
+import gwen._
+import gwen.dsl.Dialect
+import gwen.dsl.ReservedKeyword
+import gwen.dsl.StepKeyword
+import gwen.dsl.StateLevel
 
+import scala.jdk.CollectionConverters._
 import scala.util.Failure
 import scala.util.Success
-import gwen.Predefs.Formatting.padTailLines
-import gwen.Predefs.Kestrel
-import gwen.Predefs.RegexContext
-import gwen.dsl.{ReservedKeyword, StepKeyword}
+
+import jline.console.completer.AggregateCompleter
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
 
-import scala.jdk.CollectionConverters._
-import jline.console.completer.AggregateCompleter
-import gwen.dsl.StateLevel
-import gwen.dsl.Dialect
+import java.io.File
 
 /**
   * Read-Eval-Print-Loop console.
@@ -112,7 +112,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
           paste foreach { steps =>
             println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
             steps.reverse map { step =>
-              println(s"\ngwen> ${padTailLines(step, "      ")}\n")
+              println(s"\ngwen> ${Formatting.padTailLines(step, "      ")}\n")
               evaluateInput(step) tap { output => println(output) }
             }
           }

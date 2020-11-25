@@ -15,16 +15,17 @@
  */
 package gwen.report
 
-import java.io.File
-
-import gwen.GwenInfo
 import gwen.dsl._
-import gwen.Predefs.Formatting._
-import gwen.Predefs.FileIO
+import gwen.FileIO
+import gwen.Formatting.escapeJson
+import gwen.GwenInfo
 import gwen.eval.{FeatureResult, FeatureSummary, FeatureUnit, GwenOptions}
-import org.apache.commons.codec.binary.Base64
 
 import scala.util.Properties
+
+import org.apache.commons.codec.binary.Base64
+
+import java.io.File
 
 /** Formats the feature summary and detail reports in cucumber compliant JSON format. */
 trait JsonReportFormatter extends ReportFormatter {
@@ -59,14 +60,14 @@ trait JsonReportFormatter extends ReportFormatter {
   {${spec.featureFile.map(file => s"""
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
-    "id": "${escapeJson(id)}",
-    "line": ${feature.pos.line},
+    "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
+    "line": ${loc.pos.line}""" } getOrElse("")},
     "name": "${escapeJson(name)}",
     "description": "${escapeJson(description)}"${if(feature.tags.nonEmpty) s""",
-    "tags": [${feature.tags.filter(!_.isInBuilt).map { tag => s"""
+    "tags": [${feature.tags.filter(_.value.isEmpty).map { tag => s"""
       {
-        "name": "${escapeJson(tag.toString)}",
-        "line": ${tag.pos.line}
+        "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
+        "line": ${loc.pos.line}""" } getOrElse("")},
       }"""}.mkString(",")}
     ]""" else ""}${if(scenarios.nonEmpty) s""",
     "elements": [${scenarios.zipWithIndex.map { case ((scenario, isExpanded), idx) =>
@@ -84,8 +85,8 @@ trait JsonReportFormatter extends ReportFormatter {
     s"""
       {
         "keyword": "${background.keyword}",
-        "id": "${escapeJson(id)}",
-        "line": ${background.pos.line},
+        "id": "${escapeJson(id)}"${background.sourceRef.map { loc => s""",
+        "line": ${loc.pos.line}""" } getOrElse("")},
         "name": "${escapeJson(background.name)}",
         "description": "${escapeJson(description)}",
         "type": "${background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
@@ -101,14 +102,14 @@ trait JsonReportFormatter extends ReportFormatter {
     s"""
       {
         "keyword": "$keyword",
-        "id": "${escapeJson(scenarioId)}",
-        "line": ${scenario.pos.line},
+        "id": "${escapeJson(scenarioId)}"${scenario.sourceRef map { loc => s""",
+        "line": ${loc.pos.line}""" } getOrElse("")},
         "name": "${escapeJson(scenario.name)}",
         "description": "${escapeJson(description)}"${if(scenario.tags.nonEmpty) s""",
         "tags": [${scenario.tags.map { case tag => s"""
           {
-            "name": "${escapeJson(tag.toString)}",
-            "line": ${tag.pos.line}
+            "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
+            "line": ${loc.pos.line}""" } getOrElse("")},
           }"""}.mkString(",")}
         ]""" else ""},
         "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
@@ -120,8 +121,8 @@ trait JsonReportFormatter extends ReportFormatter {
           s"""
            {
              "keyword": "${examples.keyword}",
-             "name": "${escapeJson(examples.name)}",
-             "line": ${examples.pos.line},
+             "name": "${escapeJson(examples.name)}"${examples.sourceRef map { loc => s""",
+             "line": ${loc.pos.line}"""} getOrElse("")},
              "description": "${escapeJson(examplesDescription)}",
              "id": "${escapeJson(examplesId)}",
              "rows": [${examples.table.zipWithIndex.map { case ((line, table), rIndex) =>
@@ -145,19 +146,18 @@ trait JsonReportFormatter extends ReportFormatter {
     s"""
           {
             "keyword": "${step.keyword} ",
-            "name": "${escapeJson(step.name)}",
-            "line": ${step.pos.line},${if (screenshots.nonEmpty) s"""
+            "name": "${escapeJson(step.name)}"${step.sourceRef.map { loc => s""",
+            "line": ${loc.pos.line}"""} getOrElse("")},${if (screenshots.nonEmpty) s"""
             "embeddings": [${screenshots.map{ file => s"""
               {
                 "mime_type": "${escapeJson(file.mimeType)}",
                 "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map { stepDef =>
-              if (stepDef.metaFile.nonEmpty) {
-                val location = s"${stepDef.metaFile.get.getPath}:${stepDef.steps.headOption.map(_.pos.line - stepDef.description.size - 1).getOrElse(1)}"
+            ],""" else ""}${step.stepDef.map { case (stepDef, _) =>
+              if (stepDef.sourceRef.nonEmpty) {
                 s"""
             "match": {
-                "location": "${escapeJson(location)}"
+                "location": "${escapeJson(stepDef.sourceRef.get.toString)}"
             },"""} else ""}.getOrElse("")}${step.docString.map{ case (line, content, contentType) => s"""
             "doc_string": {
               "content_type": "${contentType.map(c => escapeJson(c)).getOrElse("")}",
@@ -176,9 +176,9 @@ trait JsonReportFormatter extends ReportFormatter {
               }"""}.mkString(",")}
             ],""" else ""}
             "result": {
-              "status": "${step.status.status.toString.toLowerCase}",${if(step.status.isInstanceOf[Failed]) s"""
-              "error_message": "${escapeJson(step.status.asInstanceOf[Failed].error.getMessage)}",""" else ""}
-              "duration": ${step.status.nanos}
+              "status": "${step.evalStatus.status.toString.toLowerCase}",${if(step.evalStatus.isInstanceOf[Failed]) s"""
+              "error_message": "${escapeJson(step.evalStatus.asInstanceOf[Failed].error.getMessage)}",""" else ""}
+              "duration": ${step.evalStatus.nanos}
             }
           }"""}.mkString(",")
 

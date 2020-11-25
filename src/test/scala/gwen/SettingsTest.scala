@@ -16,10 +16,12 @@
 
 package gwen
 
-import org.scalatest.Matchers
-import java.util.Properties
 import gwen.Errors.MissingPropertyException
 import gwen.Errors.UnsupportedLocalSettingException
+
+import org.scalatest.Matchers
+
+import java.util.Properties
 
 class SettingsTest extends BaseTest with Matchers {
 

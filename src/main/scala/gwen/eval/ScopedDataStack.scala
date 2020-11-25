@@ -16,8 +16,7 @@
 
 package gwen.eval
 
-import gwen.Predefs.Kestrel
-import gwen.Errors._
+import gwen._
 
 import scala.collection.mutable
 
@@ -179,7 +178,7 @@ class ScopedDataStack() {
     *         not bound to the given name
     */
   def get(name: String): String = 
-    getOpt(name).getOrElse(unboundAttributeError(name, current.scope))
+    getOpt(name).getOrElse(Errors.unboundAttributeError(name, current.scope))
   
   /**
     * Finds and retrieves an attribute in the currently active scope by scanning
@@ -268,7 +267,7 @@ class ScopedDataStack() {
     *         to the given name in the given scope
     */
   def getIn(scope: String, name: String): String =
-    getInOpt(scope, name).getOrElse(unboundAttributeError(name, scope))
+    getInOpt(scope, name).getOrElse(Errors.unboundAttributeError(name, scope))
   
   /**
     * Finds and retrieves an attribute in the a named scope by scanning for it 

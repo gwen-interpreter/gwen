@@ -16,9 +16,10 @@
 
 package gwen.eval
 
+import gwen.Errors.UnboundAttributeException
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import gwen.Errors.UnboundAttributeException
  
 class ScopedDataTest extends FlatSpec with Matchers {
 
