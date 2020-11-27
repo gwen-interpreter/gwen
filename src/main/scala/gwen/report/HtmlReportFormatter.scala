@@ -144,7 +144,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
       <ul class="list-group">
         <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${  
-      if (scenario.metaFile.nonEmpty)
+      if (scenario.isStepDef)
         s"""
           <span class="grayed"><p><small>${scenario.sourceRef.map(ref => escapeHtml(ref.toString)).mkString("<br>")}</small></p></span>""" else ""
     }${  
@@ -503,7 +503,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#$stepDefId" aria-expanded="true" aria-controls="$stepDefId">${escapeHtml(step.name)}</a>"""
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = s"""
-                  <div id="$stepDefId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel" ${if (stepDef.metaFile.isEmpty) """style="padding-left: 40px;"""" else ""}>
+                  <div id="$stepDefId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel">
                   ${formatScenario(stepDef, stepDefId)}
                   </div>"""
     

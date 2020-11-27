@@ -49,9 +49,9 @@ object prettyPrint {
       s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   $keyword: $name${formatTextLines(description)}"
     case background @ Background(_, keyword, name, description, steps) =>
       s"\n\n$keyword: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(_, tags, keyword, name, description, background, steps, isOutline, examples, _) =>
+    case scenario @ Scenario(_, tags, keyword, name, description, background, steps, examples) =>
       background.map(apply).getOrElse("") +
-        (if (isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
+        (if (scenario.isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
     case rule @ Rule(_, keyword, name, description, background, scenarios) =>
       s"\n\n      $keyword: $name${formatTextLines(description)}" +

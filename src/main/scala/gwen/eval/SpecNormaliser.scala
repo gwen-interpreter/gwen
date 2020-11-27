@@ -40,14 +40,8 @@ trait SpecNormaliser extends EvalRules {
     * @param dataRecord optional feature level data record
     */
   def normalise(spec: FeatureSpec, specFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
-    val scenarios = noDuplicateStepDefs(spec.scenarios, specFile) map {scenario =>
-      if (scenario.isStepDef && specFile.exists(_.getName.endsWith(".meta"))) {
-        scenario.copy(withMetaFile = specFile)
-      } else {
-        scenario
-      }
-    }
-    validate(specFile, spec.background, scenarios)
+    val scenarios = noDuplicateStepDefs(spec.scenarios, specFile)
+    validate(spec.background, scenarios, spec.specType)
     FeatureSpec(
       dataRecord map { record =>
         spec.feature.copy(
@@ -56,7 +50,7 @@ trait SpecNormaliser extends EvalRules {
       None, 
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
       spec.rules map { rule => 
-        validate(specFile, rule.background, rule.scenarios)
+        validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
           withBackground = None,
           withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background)))
@@ -66,12 +60,12 @@ trait SpecNormaliser extends EvalRules {
     )
   }
 
-  private def validate(specFile: Option[File], background: Option[Background], scenarios: List[Scenario]): Unit = {
+  private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType.Value): Unit = {
     background foreach { bg => 
-      checkBackgroundRules(bg, specFile)
+      checkBackgroundRules(bg, specType)
     }
     scenarios foreach { s =>
-      checkScenarioRules(s, specFile)
+      checkScenarioRules(s, specType)
     }
   }
   
@@ -152,9 +146,7 @@ trait SpecNormaliser extends EvalRules {
                   withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
                   withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) })
               },
-              isOutline = false,
-              Nil,
-              None
+              Nil
             )
           }
         )

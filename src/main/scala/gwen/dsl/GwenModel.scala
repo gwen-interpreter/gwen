@@ -25,12 +25,12 @@ import io.cucumber.messages.{Messages => Cucumber }
 import java.io.File
 
 trait Identifiable {
-  val nodeType: NodeType.Value
+  def nodeType: NodeType.Value
   val uuid: String = UUIDGenerator.nextId
 }
 
 object Root extends Identifiable {
-  val nodeType: NodeType.Value = NodeType.Root
+  def nodeType: NodeType.Value = NodeType.Root
   override val uuid: String = UUIDGenerator.baseId
 }
 
@@ -76,13 +76,13 @@ case class FeatureSpec(
     featureFile: Option[File],
     metaSpecs: List[FeatureSpec]) extends Identifiable {
   
-  val specType: SpecType.Value = feature.specType
-  val nodeType: NodeType.Value = NodeType.withName(specType.toString)
+  def specType: SpecType.Value = feature.specType
+  def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
-  val isMeta: Boolean = SpecType.isMeta(specType)
+  def isMeta: Boolean = SpecType.isMeta(specType)
 
   /** Resource id */
-  val uri = featureFile.map(_.getPath).getOrElse(uuid)
+  def uri = featureFile.map(_.getPath).getOrElse(uuid)
 
   /**
     * Gets the list of all steps contained in the feature spec. The list includes
@@ -164,8 +164,8 @@ case class Feature(
     name: String, 
     description: List[String]) extends SpecNode {
 
-  val specType = if (sourceRef.map(_.uri.contains(".meta")).getOrElse(false)) SpecType.Meta else SpecType.Feature
-  val nodeType: NodeType.Value = NodeType.Feature
+  def specType = if (sourceRef.map(_.uri.contains(".meta")).getOrElse(false)) SpecType.Meta else SpecType.Feature
+  def nodeType: NodeType.Value = NodeType.Feature
 
   def copy(
       withLanguage: String = language, 
@@ -208,7 +208,7 @@ case class Background(
     description: List[String], 
     steps: List[Step]) extends SpecNode {
 
-  val nodeType: NodeType.Value = NodeType.Background
+  def nodeType: NodeType.Value = NodeType.Background
   def gwtOrder: List[String] = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k))
 
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
@@ -254,7 +254,7 @@ case class Rule(
     background: Option[Background],
     scenarios: List[Scenario]) extends SpecNode {
   
-  val nodeType: NodeType.Value = NodeType.Rule
+  def nodeType: NodeType.Value = NodeType.Rule
 
   /**
     * Gets the list of all steps contained in the rule. The list includes
@@ -305,7 +305,6 @@ object Rule {
   * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
-  * @param isOutline true if this is a scenario outline; false otherwise
   * @param examples optional list of examples (scenario outline entries)
   * @param metaFile optional meta file (required if the scenario is a stepdef)
   */
@@ -317,16 +316,16 @@ case class Scenario(
     description: List[String],
     background: Option[Background],
     steps: List[Step],
-    isOutline: Boolean,
-    examples: List[Examples],
-    metaFile: Option[File]) extends SpecNode {
+    examples: List[Examples]) extends SpecNode {
 
-  val nodeType: NodeType.Value = if (tags.exists(_.name == ReservedTags.StepDef.toString)) {
-    NodeType.StepDef
-  } else {
-    NodeType.Scenario
+  def nodeType: NodeType.Value = {
+    if (isStepDef) {
+      NodeType.StepDef
+    } else {
+      NodeType.Scenario
+    }
   }
-
+  
   /**
     * Returns a list containing all steps.
     */
@@ -337,9 +336,10 @@ case class Scenario(
     else if(isOutline) examples.flatMap(_.scenarios)
     else List(this)
   
-  def isStepDef: Boolean = nodeType == NodeType.StepDef
-  def isForEach: Boolean = tags.map(_.name).contains(ReservedTags.ForEach.toString)
-  def isDataTable: Boolean = tags.map(_.name).exists(_.startsWith(ReservedTags.DataTable.toString))
+  def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == ReservedTags.Examples.toString)
+  def isStepDef: Boolean = tags.exists(_.name == ReservedTags.StepDef.toString)
+  def isForEach: Boolean = tags.exists(_.name == ReservedTags.ForEach.toString)
+  def isDataTable: Boolean = tags.exists(_.name.startsWith(ReservedTags.DataTable.toString))
   def isSynchronized: Boolean = tags.map(_.name).exists { 
     name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString
   }
@@ -361,10 +361,8 @@ case class Scenario(
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
-      withIsOutline: Boolean = isOutline,
-      withExamples: List[Examples] = examples,
-      withMetaFile: Option[File] = metaFile): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withIsOutline, withExamples, withMetaFile)
+      withExamples: List[Examples] = examples): Scenario = {
+    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples)
   }
   
 }
@@ -380,9 +378,7 @@ object Scenario {
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(uri, s)),
-      isOutline = scenario.getExamplesCount() > 0 || tags.exists(_.name == ReservedTags.Examples.toString),
-      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) },
-      None
+      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) }
     )
   }
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
@@ -415,7 +411,7 @@ case class Examples(
     table: List[(Int, List[String])], 
     scenarios: List[Scenario]) extends SpecNode {
 
-  val nodeType: NodeType.Value = NodeType.Examples
+  def nodeType: NodeType.Value = NodeType.Examples
 
   /**
     * Returns a list containing all the background steps (if any) followed by
@@ -480,7 +476,7 @@ object Examples {
   */
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends SpecNode {
   
-  val nodeType: NodeType.Value = NodeType.Tag
+  def nodeType: NodeType.Value = NodeType.Tag
 
   if (name.matches("""\s""")) {
     Errors.invalidTagError(s"Whitespace not allowed in tag name '$name'")
@@ -567,7 +563,7 @@ case class Step(
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus) extends SpecNode {
 
-  val nodeType: NodeType.Value = NodeType.Step
+  def nodeType: NodeType.Value = NodeType.Step
   
   def expression: String = docString map { case (_, content, _) =>
     val lines = content.split("""\r?\n""")

@@ -135,7 +135,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val mockLifecycle = mock[LifecycleEventDispatcher]
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     when(mockEnv.topScope).thenReturn(mockTopScope)
-    when(mockEnv.specFile).thenReturn(Some(new File("file.feature")))
+    when(mockEnv.specType).thenReturn(SpecType.Feature)
     val step1 = Step(StepKeyword.Given.toString, "I am an observer")
     val step2 = Step(StepKeyword.When.toString, "I observe something")
     val step3 = Step(StepKeyword.Then.toString, "it will become real")
@@ -215,7 +215,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockEnv.topScope).thenReturn(mockTopScope)
-    when(mockEnv.specFile).thenReturn(Some(new File("file.feature")))
+    when(mockEnv.specType).thenReturn(SpecType.Feature)
     val step1 = Step(StepKeyword.Given.toString, "I am an observer")
     val step2 = Step(StepKeyword.When.toString, "I observe something")
     val step3 = Step(StepKeyword.Then.toString, "it will become real")

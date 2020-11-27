@@ -19,8 +19,6 @@ package gwen.eval
 import gwen._
 import gwen.dsl._
 
-import java.io.File
-
  /**
   * Enfores certain rules depending on `gwen.feature.mode` and `gwen.behavior.rules` settings.
   */
@@ -30,12 +28,12 @@ trait EvalRules {
     * Checks that a background satisfies behavior rules before evaluation.
     *
     * @param background the background  to check
-    * @param specFile the file the background was loaded from
+    * @param specType the spec type currently being evaluated
     */
-  def checkBackgroundRules(background: Background, specFile: Option[File]): Unit = {
-    if (BehaviorRules.isStrict && isFeatureFile(specFile)) {
+  def checkBackgroundRules(background: Background, specType: SpecType.Value): Unit = {
+    if (BehaviorRules.isStrict && SpecType.isFeature(specType)) {
       if (!isProperBehavior(background.steps)) {
-        Errors.improperBehaviorError(background, "Background", specFile)
+        Errors.improperBehaviorError(background)
       }
     }
   }
@@ -44,16 +42,16 @@ trait EvalRules {
     * Checks that a scenario or stepdef satisfies behavior rules before evaluation.
     *
     * @param scenario the scenario to check
-    * @param specFile the file the scenario was loaded from
+    * @param specType the spec type currently being evaluated
     */
-  def checkScenarioRules(scenario: Scenario, specFile: Option[File]): Unit = {
-    if (isFeatureFile(specFile)) {
+  def checkScenarioRules(scenario: Scenario, specType: SpecType.Value): Unit = {
+    if (SpecType.isFeature(specType)) {
       if (FeatureMode.isDeclarative && scenario.isStepDef) {
-        Errors.imperativeStepDefError(scenario, specFile)
+        Errors.imperativeStepDefError(scenario)
       }
       if (BehaviorRules.isStrict && !(FeatureMode.isImperative && scenario.isStepDef)) {
         if (!isProperBehavior(scenario.steps)) {
-          Errors.improperBehaviorError(scenario, scenario.keyword, specFile)
+          Errors.improperBehaviorError(scenario)
         }
       }
     }
@@ -66,14 +64,14 @@ trait EvalRules {
     * @param env the environment context
     */
   def checkStepDefRules[T <: EnvContext](step: Step, env: T): Unit = {
-    if (env.isEvaluatingTopLevelStep && env.isEvaluatingFeatureFile) {
+    if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (BehaviorRules.isStrict) {
         step.stepDef foreach { case (stepDef, _) =>
           stepDef.behaviorTag match {
             case Some(behaviorTag) =>
               checkStepRules(step, BehaviorType.withName(behaviorTag.name), env)
             case _ =>
-              Errors.undefinedStepDefBehaviorError(stepDef, stepDef.metaFile)
+              Errors.undefinedStepDefBehaviorError(stepDef)
           }
         }
       }
@@ -88,18 +86,18 @@ trait EvalRules {
     * @param env the environment context
     */
   def checkStepRules[T <: EnvContext](step: Step, actualBehavior: BehaviorType.Value, env: T): Unit = {
-    if (env.isEvaluatingTopLevelStep && env.isEvaluatingFeatureFile) {
+    if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
         Errors.imperativeStepError(step)
       }
       if (BehaviorRules.isStrict) {
         env.currentBehavior foreach { expectedBehavior =>
           if (actualBehavior != expectedBehavior) {
-            Errors.unexpectedBehaviorError(step, expectedBehavior, actualBehavior, env.specFile)
+            Errors.unexpectedBehaviorError(step, expectedBehavior, actualBehavior)
           } else if (!StepKeyword.isAnd(step.keyword)) {
             val stepBehavior = BehaviorType.of(step.keyword) 
             if (stepBehavior != expectedBehavior) {
-              Errors.unexpectedBehaviorError(step, expectedBehavior, stepBehavior, env.specFile)
+              Errors.unexpectedBehaviorError(step, expectedBehavior, stepBehavior)
             }
           }
         }
@@ -113,8 +111,5 @@ trait EvalRules {
     }
     order.mkString("-").matches("Given-When-Then(-But)?")
   }
-
-  private def isFeatureFile(specFile: Option[File]):Boolean = 
-    specFile.map(FileIO.isFeatureFile).getOrElse(false)
 
 }

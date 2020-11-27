@@ -35,9 +35,9 @@ trait GwenTestModel {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline = false, Nil, None)
-    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], isOutline: Boolean, examples: List[Examples], metaFile: Option[File]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, isOutline, examples, metaFile)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil)
+    def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples)
   }
 
   object Step {

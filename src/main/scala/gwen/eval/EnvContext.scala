@@ -98,7 +98,8 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     
   def asString: String = scopes.asString
 
-  def specFile: Option[File] = topScope.getObject("spec.file").map(_.asInstanceOf[File])
+  /** The spec type currently being evaluated. */
+  def specType: SpecType.Value = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType.Value]).getOrElse(SpecType.Feature)
   
   /** Returns the current visible scopes. */  
   def visibleScopes: ScopedDataStack = scopes.visible
@@ -216,9 +217,6 @@ class EnvContext(options: GwenOptions) extends Evaluatable
 
   /** Gets the current behavior. */
   def currentBehavior: Option[BehaviorType.Value] = state.currentBehavior
-
-  /** Checks if a feature file is currently being evaluated. */
-  def isEvaluatingFeatureFile: Boolean = specFile.map(FileIO.isFeatureFile).getOrElse(false)
 
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = stepScope.isEmpty

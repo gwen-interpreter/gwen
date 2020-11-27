@@ -441,7 +441,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
-    val foreachStepDef = Scenario(None, tags, keyword, element, Nil, None, steps, false, Nil, None)
+    val foreachStepDef = Scenario(None, tags, keyword, element, Nil, None, steps, Nil)
     env.addForeachStepDef(step, foreachStepDef)
     step
   }

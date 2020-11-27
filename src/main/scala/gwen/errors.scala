@@ -56,10 +56,10 @@ object Errors {
   def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
-  def missingOrInvalidImportFileError(importTag: Tag, specFile: Option[File]) = throw new MissingOrInvalidImportFileException(importTag, specFile)
-  def unsupportedImportError(importTag: Tag, specFile: File) = throw new UnsupportedImportException(importTag, specFile)
-  def unsupportedDataFileError(dataTag: Tag, specFile: Option[File]) = throw new UnsupportedDataFileException(dataTag, specFile)
-  def recursiveImportError(importTag: Tag, specFile: File) = throw new RecursiveImportException(importTag, specFile)
+  def missingOrInvalidImportFileError(importTag: Tag) = throw new MissingOrInvalidImportFileException(importTag)
+  def unsupportedImportError(importTag: Tag) = throw new UnsupportedImportException(importTag)
+  def unsupportedDataFileError(dataTag: Tag) = throw new UnsupportedDataFileException(dataTag)
+  def recursiveImportError(importTag: Tag) = throw new RecursiveImportException(importTag)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
   def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
@@ -68,10 +68,10 @@ object Errors {
   def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
   def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
   def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
-  def imperativeStepDefError(stepDef: Scenario, specFile: Option[File]) = throw new ImperativeStepDefException(stepDef, specFile)
-  def improperBehaviorError(node: SpecNode, nodeType: String, specFile: Option[File]) = throw new ImproperBehaviorException(node, nodeType, specFile)
-  def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value, specFile: Option[File]) = throw new UnexpectedBehaviorException(step, expected, actual, specFile)
-  def undefinedStepDefBehaviorError(stepDef: Scenario, specFile: Option[File]) = throw new UndefinedStepDefBehaviorException(stepDef, specFile)
+  def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
+  def improperBehaviorError(node: SpecNode) = throw new ImproperBehaviorException(node)
+  def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) = throw new UnexpectedBehaviorException(step, expected, actual)
+  def undefinedStepDefBehaviorError(stepDef: Scenario) = throw new UndefinedStepDefBehaviorException(stepDef)
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
 
@@ -147,16 +147,16 @@ object Errors {
   class InvalidStepDefException(stepDef: Scenario, msg: String) extends GwenException(s"Invalid StepDef: $stepDef: $msg")
   
   /** Thrown when an import file is not found. */
-  class MissingOrInvalidImportFileException(importTag: Tag, specFile: Option[File]) extends GwenException(s"Missing or invalid file detected in $importTag${specFile.map(f => s" declared in $f").getOrElse("")}")
+  class MissingOrInvalidImportFileException(importTag: Tag) extends GwenException(s"Missing or invalid file detected in $importTag${at(SourceRef.asString(importTag.sourceRef))}")
 
   /** Thrown when an unsupported import file is detected. */
-  class UnsupportedImportException(importTag: Tag, specFile: File) extends GwenException(s"Unsupported file type detected in $importTag declared in $specFile (only .meta files can be imported)")
+  class UnsupportedImportException(importTag: Tag) extends GwenException(s"Unsupported file type detected in $importTag${at(SourceRef.asString(importTag.sourceRef))} (only .meta files can be imported)")
 
   /** Thrown when an unsupported data table file is detected. */
-  class UnsupportedDataFileException(dataTag: Tag, specFile: Option[File]) extends GwenException(s"Unsupported file type detected in $dataTag${specFile.map(f => s" declared in $f").getOrElse("")}: only .csv data files supported")
+  class UnsupportedDataFileException(dataTag: Tag) extends GwenException(s"Unsupported file type detected in $dataTag${at(SourceRef.asString(dataTag.sourceRef))}: only .csv data files supported")
   
   /** Thrown when a recursive import is detected. */
-  class RecursiveImportException(importTag: Tag, specFile: File) extends GwenException(s"Recursive (cyclic) $importTag detected in $specFile") {
+  class RecursiveImportException(importTag: Tag) extends GwenException(s"Recursive (cyclic) $importTag detected${at(SourceRef.asString(importTag.sourceRef))}") {
     override def fillInStackTrace(): RecursiveImportException = this
   }
   
@@ -182,19 +182,19 @@ object Errors {
   class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature${at(SourceRef.asString(step.sourceRef))} (move it to meta): $step")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario, specFile: Option[File]) extends GwenException(s"StepDef declaration not permitted in feature${at(SourceRef.asString(specFile, stepDef.sourceRef))} (move it to meta)")
+  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(SourceRef.asString(stepDef.sourceRef))} (move it to meta)")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
-  class ImproperBehaviorException(node: SpecNode, nodeType: String, specFile: Option[File]) 
-    extends GwenException(s"Given-When-Then order not satisfied by steps in $nodeType${at(SourceRef.asString(specFile, node.sourceRef))}")
+  class ImproperBehaviorException(node: SpecNode) 
+    extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(SourceRef.asString(node.sourceRef))}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
-  class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value, specFile: Option[File]) 
-    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected${step.stepDef.flatMap(_._1.metaFile.orElse(specFile)).map(f => s" (StepDef has @$actual tag${at(SourceRef.asString(Some(f), step.stepDef.flatMap(_._1.behaviorTag.flatMap(_.sourceRef))))})").getOrElse("")}")
+  class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) 
+    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_._1.behaviorTag.flatMap(_.sourceRef))))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
-  class UndefinedStepDefBehaviorException(stepDef: Scenario, specFile: Option[File]) 
-    extends GwenException(s"Missing @Context, @Action, or @Assertion behavior tag on StepDef${at(SourceRef.asString(specFile, stepDef.sourceRef))}")
+  class UndefinedStepDefBehaviorException(stepDef: Scenario) 
+    extends GwenException(s"Missing @Context, @Action, or @Assertion behavior tag on StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

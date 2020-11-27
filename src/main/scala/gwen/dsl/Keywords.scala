@@ -219,4 +219,3 @@ object SpecType extends Enumeration {
   def isMeta(specType: SpecType.Value):Boolean = specType == Meta
 
 }
-
