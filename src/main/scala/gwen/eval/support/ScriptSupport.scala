@@ -17,6 +17,7 @@
 package gwen.eval.support
 
 import gwen._
+import gwen.Sensitive
 
 import javax.script.ScriptEngineManager
 

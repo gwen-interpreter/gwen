@@ -18,19 +18,16 @@
 
 import gwen._
 import gwen.dsl.BehaviorType
-import gwen.dsl.Scenario
-import gwen.dsl.Step
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 class EnvState(val scopes: ScopedDataStack) {
 
   /** List of current attachments (name-file pairs). */
   private var attachments: List[(String, File)] = Nil
   private var attachmentPrefix = Formatting.padWithZeroes(1)
-
-  /** Map of for-each StepDefs. */
-  private var foreachStepDefs = Map[String, Scenario]()
 
   /** Stack of behaviors. */
   private var behaviors = List[BehaviorType.Value]()
@@ -58,6 +55,22 @@ class EnvState(val scopes: ScopedDataStack) {
   }
 
   /**
+   * Add a file attachment.
+   * 
+   * @param name the attachment name
+   * @param file the file to attach
+   */
+  def addAttachment(name: String, file: File): (String, File) = { 
+    val fileCopy = Files.copy(
+      file.toPath, 
+      File.createTempFile(s"$attachmentPrefix-${file.simpleName}-", s".${file.extension}").toPath,
+      StandardCopyOption.REPLACE_EXISTING
+    ).toFile
+    fileCopy.deleteOnExit()
+    addAttachment((name, fileCopy))
+  }
+
+  /**
     * Adds an attachment
     * 
     * @param attachment the attachment (name-file pair) to add
@@ -76,19 +89,6 @@ class EnvState(val scopes: ScopedDataStack) {
       attachments = att :: attachments
       attachmentPrefix = Formatting.padWithZeroes(attachmentPrefix.toInt + 1)
     }
-
-    /** Adds for-each StepDef for a given step. */
-    def addForeachStepDef(step: Step, stepDef: Scenario): Unit = {
-      foreachStepDefs += (step.uuid -> stepDef)
-    }
-
-    /** Gets the optional for-each StepDef for a given step. */
-    def popForeachStepDef(step: Step): Option[Scenario] = 
-      foreachStepDefs.get(step.uuid) tap { stepDef =>
-        if (stepDef.nonEmpty) {
-          foreachStepDefs -= step.uuid 
-        }
-      }
 
     /** Adds the given behavior to the top of the stack. */
     def addBehavior(behavior: BehaviorType.Value): Unit = {

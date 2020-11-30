@@ -17,9 +17,12 @@ package gwen.report
 
 import gwen.dsl._
 import gwen.FileIO
-import gwen.Formatting.escapeJson
 import gwen.GwenInfo
-import gwen.eval.{FeatureResult, FeatureSummary, FeatureUnit, GwenOptions}
+import gwen.Formatting.escapeJson
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureUnit
+import gwen.eval.FeatureSummary
+import gwen.eval.GwenOptions
 
 import scala.util.Properties
 
@@ -153,7 +156,7 @@ trait JsonReportFormatter extends ReportFormatter {
                 "mime_type": "${escapeJson(file.mimeType)}",
                 "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map { case (stepDef, _) =>
+            ],""" else ""}${step.stepDef.map({ case (sd, params) => (sd.stripVirtuals, params) }).map { case (stepDef, _) =>
               if (stepDef.sourceRef.nonEmpty) {
                 s"""
             "match": {

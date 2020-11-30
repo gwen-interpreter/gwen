@@ -35,6 +35,8 @@ import java.{util => ju}
 /** Predefs and implicits avaiable wherever this page is imported. */
 
 package object gwen {
+
+  val ZeroChar = '‎' // zero width space char
   
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
@@ -123,7 +125,7 @@ package object gwen {
 
     def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
 
-    def simpleName(): String = file.getName.replaceFirst("[.][^.]+$", "")
+    def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
   }
   
@@ -267,7 +269,11 @@ package object gwen {
   object UUIDGenerator {
     val baseId = ju.UUID.randomUUID.toString
     private val counter = new ju.concurrent.atomic.AtomicInteger(0)
-    def nextId: String = s"$baseId-${counter.incrementAndGet()}"
+    private val lastUuid = ThreadLocal.withInitial[String] { () => baseId }
+    def nextId: String = s"$baseId-${counter.incrementAndGet()}" tap { uuid => 
+      lastUuid.set(uuid)
+    }
+    def prevId = lastUuid.get
   }
 
 }

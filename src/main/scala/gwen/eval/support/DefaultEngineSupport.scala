@@ -24,6 +24,8 @@ import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import scala.util.{Failure, Success, Try}
 
+import java.io.File
+
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
@@ -60,7 +62,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
-        lifecycle.beforeStep(parent, step)
+        lifecycle.beforeStep(parent, step, env.scopes)
         val javascript = env.scopes.get(s"$condition/javascript")
         val iStep = step.copy(withName = doStep)
         env.evaluate(evaluateStep(step, iStep, env)) {
@@ -291,6 +293,16 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         checkStepRules(step, BehaviorType.Assertion, env)
         env.perform {
           assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
+        }
+
+      case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
+        val file = new File(filepath)
+        if (!file.exists) { 
+          Errors.fileAttachError(file, "not found")
+        }
+        env.perform {
+          env.addAttachment(name, file)
         }
       
       case _ => Errors.undefinedStepError(step)

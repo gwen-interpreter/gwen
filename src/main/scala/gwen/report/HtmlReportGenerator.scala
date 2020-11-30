@@ -27,26 +27,32 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class HtmlReportGenerator(val options: GwenOptions) extends ReportGenerator(HtmlReportConfig, options) with HtmlReportFormatter {
+class HtmlReportGenerator(options: GwenOptions) extends ReportGenerator(HtmlReportConfig, options) with HtmlReportFormatter {
 
-  // copy in CSS files (if they don't already exist)
-  new File(reportDir, "resources/css") tap { dir =>
-    copyClasspathTextResourceToFile("/gwen/report/html/css/gwen.css", dir)
-    copyClasspathTextResourceToFile("/gwen/report/html/css/bootstrap.min.css", dir)
+  reportDir foreach { rdir =>
+
+    // copy in CSS files (if they don't already exist)
+    new File(rdir, "resources/css") tap { dir =>
+      copyClasspathTextResourceToFile("/gwen/report/html/css/gwen.css", dir)
+      copyClasspathTextResourceToFile("/gwen/report/html/css/bootstrap.min.css", dir)
+    }
+
+    // copy in JS files (if they don't already exist)
+    new File(rdir, "resources/js") tap { dir =>
+      copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.min.js", dir)
+      copyClasspathTextResourceToFile("/gwen/report/html/js/bootstrap.min.js", dir)
+    }
+    
+    // copy in image files (if they don't already exist)
+    new File(rdir, "resources/img") tap { dir =>
+      copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
+    }
+    
+    // copy in index file
+    options.reportDir foreach { dir =>
+      copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", dir)
+    }
+
   }
-  
-  // copy in JS files (if they don't already exist)
-  new File(reportDir, "resources/js") tap { dir =>
-    copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.min.js", dir)
-    copyClasspathTextResourceToFile("/gwen/report/html/js/bootstrap.min.js", dir)
-  }
-  
-  // copy in image files (if they don't already exist)
-  new File(reportDir, "resources/img") tap { dir =>
-    copyClasspathBinaryResourceToFile("/gwen/report/html/img/gwen-logo.png", dir)
-  }
-  
-  // copy in index file
-  copyClasspathBinaryResourceToFile("/gwen/report/html/index.html", options.reportDir.get)
   
 }

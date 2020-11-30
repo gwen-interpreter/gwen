@@ -23,14 +23,17 @@ import scala.collection.mutable
 
 import com.typesafe.scalalogging.LazyLogging
 
+import java.{util => ju}
+
 object LifecyclePhase extends Enumeration {
   type LifecyclePhase = Value
   val before, after = Value
 }
 
-case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parentUuid: String, source: T) {
+case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parentUuid: String, source: T, callTrail: List[Step], scopes: ScopedDataStack) {
+  val time: ju.Date = ju.Calendar.getInstance.getTime
   override def toString: String = 
-    s"${phase}${source.nodeType} ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,$parentUuid,${source.uuid})"
+    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,$parentUuid,${source.uuid})"
 }
 
 /**
@@ -73,100 +76,144 @@ class LifecycleEventListener(val name: String, val bypass: Set[NodeType.Value] =
 class LifecycleEventDispatcher extends LazyLogging {
 
   private val listeners = new mutable.Queue[LifecycleEventListener]()
+  private val callTrail = ThreadLocal.withInitial[mutable.Queue[Step]] { () => mutable.Queue[Step]() }
+  private val isVirtual = ThreadLocal.withInitial[mutable.Queue[Boolean]] { () => mutable.Queue[Boolean]() }
+  private val virtualParents = ThreadLocal.withInitial[mutable.Queue[Identifiable]] { () => mutable.Queue[Identifiable]() }
+
+  private def pushCallTrail(step: Step): List[Step] = { 
+    callTrail.get += step 
+    callTrail.get.toList
+  }
+
+  private def popCallTrail(): Option[Step] = { 
+    callTrail.get.removeLastOption(false)
+  }
 
   def addListener(listener: LifecycleEventListener): Unit = { 
     listeners += listener
-    logger.info(s"Lifecycle event listener registered: ${listener.name}")
+    logger.debug(s"Lifecycle event listener registered: ${listener.name}")
   }
 
-  def beforeUnit(unit: FeatureUnit): Unit =
-    dispatchBeforeEvent(Root, unit) { (listener, event) => listener.beforeUnit(event) }
-  def afterUnit(unit: FeatureUnit): Unit =
-    dispatchAfterEvent(unit) { (listener, event) => listener.afterUnit(event) }
-  def beforeFeature(parent: Identifiable, featureSpec: FeatureSpec): Unit =
-    dispatchBeforeEvent(parent, featureSpec) { (listener, event) => listener.beforeFeature(event) }
-  def afterFeature(featureResult: FeatureResult): Unit =
-    dispatchAfterEvent(featureResult) { (listener, event) => listener.afterFeature(event) }
-  def beforeBackground(parent: Identifiable, background: Background): Unit =
-    dispatchBeforeEvent(parent, background) { (listener, event) => listener.beforeBackground(event) }
-  def afterBackground(background: Background): Unit =
-    dispatchAfterEvent(background) { (listener, event) => listener.afterBackground(event) }
-  def beforeScenario(parent: Identifiable, scenario: Scenario): Unit =
-    dispatchBeforeEvent(parent, scenario) { (listener, event) => listener.beforeScenario(event) }
-  def afterScenario(scenario: Scenario): Unit =
-    dispatchAfterEvent(scenario) { (listener, event) => listener.afterScenario(event) }
-  def beforeExamples(parent: Identifiable, examples: Examples): Unit =
-    dispatchBeforeEvent(parent, examples) { (listener, event) => listener.beforeExamples(event) }
-  def afterExamples(examples: Examples): Unit =
-    dispatchAfterEvent(examples) { (listener, event) => listener.afterExamples(event) }
-  def beforeRule(parent: Identifiable, rule: Rule): Unit =
-    dispatchBeforeEvent(parent, rule) { (listener, event) => listener.beforeRule(event) }
-  def afterRule(rule: Rule): Unit =
-    dispatchAfterEvent(rule) { (listener, event) => listener.afterRule(event) }
-  def beforeStepDef(parent: Identifiable, stepDef: Scenario): Unit =
-    dispatchBeforeEvent(parent, stepDef) { (listener, event) => listener.beforeStepDef(event) }
-  def afterStepDef(stepDef: Scenario): Unit =
-    dispatchAfterEvent(stepDef) { (listener, event) => listener.afterStepDef(event) }
-  def beforeStep(parent: Identifiable, step: Step): Unit =
-    dispatchBeforeEvent(parent, step) { (listener, event) => listener.beforeStep(event) }
-  def afterStep(step: Step): Unit =
-    dispatchAfterEvent(step) { (listener, event) => listener.afterStep(event) }
-
-  def transitionBackground(parent: Identifiable, background: Background, toStatus: EvalStatus): Background = {
-    beforeBackground(parent, background)
-    val steps = transitionSteps(background, background.steps, toStatus)
-    background.copy(withSteps = steps) tap { b => afterBackground(b) }
+  def removeListener(listener: LifecycleEventListener): Unit = { 
+    listeners -= listener
+    logger.debug(s"Lifecycle event listener removed: ${listener.name}")
   }
 
-  def transitionScenario(parent: Identifiable, scenario: Scenario, toStatus: EvalStatus): Scenario = {
-    beforeScenario(parent, scenario)
-    val background = scenario.background map { background => 
-      transitionBackground(scenario, background, toStatus)
+  def beforeUnit(unit: FeatureUnit, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(unit.parent, unit, scopes) { (listener, event) => listener.beforeUnit(event) }
+  def afterUnit(unit: FeatureUnit, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(unit, scopes) { (listener, event) => listener.afterUnit(event) }
+  def beforeFeature(parent: Identifiable, featureSpec: FeatureSpec, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, featureSpec, scopes) { (listener, event) => listener.beforeFeature(event) }
+  def afterFeature(featureResult: FeatureResult, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(featureResult,scopes) { (listener, event) => listener.afterFeature(event) }
+  def beforeBackground(parent: Identifiable, background: Background, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, background, scopes) { (listener, event) => listener.beforeBackground(event) }
+  def afterBackground(background: Background, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(background, scopes) { (listener, event) => listener.afterBackground(event) }
+  def beforeScenario(parent: Identifiable, scenario: Scenario, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, scenario, scopes) { (listener, event) => listener.beforeScenario(event) }
+  def afterScenario(scenario: Scenario, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(scenario, scopes) { (listener, event) => listener.afterScenario(event) }
+  def beforeExamples(parent: Identifiable, examples: Examples, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, examples, scopes) { (listener, event) => listener.beforeExamples(event) }
+  def afterExamples(examples: Examples, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(examples, scopes) { (listener, event) => listener.afterExamples(event) }
+  def beforeRule(parent: Identifiable, rule: Rule, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, rule, scopes) { (listener, event) => listener.beforeRule(event) }
+  def afterRule(rule: Rule, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(rule, scopes) { (listener, event) => listener.afterRule(event) }
+  def beforeStepDef(parent: Identifiable, stepDef: Scenario, scopes: ScopedDataStack): Unit = {
+    if (!isVirtual.get.lastOption.getOrElse(false) && stepDef.isVirtual) {
+      virtualParents.get += callTrail.get.last
     }
-    val steps = transitionSteps(scenario, scenario.steps, toStatus)
+    if (!stepDef.isVirtual) {
+      val parentNode = {
+        if(isVirtual.get.lastOption.getOrElse(false)) {
+          virtualParents.get.lastOption.getOrElse(parent)
+        } else parent
+      }
+      dispatchBeforeEvent(parentNode, stepDef, scopes) { (listener, event) => listener.beforeStepDef(event) }
+    }
+    isVirtual.get += stepDef.isVirtual
+  }
+  def afterStepDef(stepDef: Scenario, scopes: ScopedDataStack): Unit = {
+    if (!stepDef.isVirtual) {
+      dispatchAfterEvent(stepDef, scopes) { (listener, event) => listener.afterStepDef(event) }
+    }
+    else if (isVirtual.get.nonEmpty) {
+      virtualParents.get.removeLast()
+    }
+    isVirtual.get.removeLast()
+  }
+  def beforeStep(parent: Identifiable, step: Step, scopes: ScopedDataStack): Unit = {
+    if (!isVirtual.get.lastOption.getOrElse(false)) {
+      pushCallTrail(step)
+      dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
+    }
+  }
+  def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
+    if (!isVirtual.get.lastOption.getOrElse(false)) {
+      dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
+      popCallTrail()
+    }
+  }
+  def transitionBackground(parent: Identifiable, background: Background, toStatus: EvalStatus, scopes: ScopedDataStack): Background = {
+    beforeBackground(parent, background, scopes)
+    val steps = transitionSteps(background, background.steps, toStatus, scopes)
+    background.copy(withSteps = steps) tap { b => afterBackground(b, scopes) }
+  }
+
+  def transitionScenario(parent: Identifiable, scenario: Scenario, toStatus: EvalStatus, scopes: ScopedDataStack): Scenario = {
+    beforeScenario(parent, scenario, scopes)
+    val background = scenario.background map { background => 
+      transitionBackground(scenario, background, toStatus, scopes)
+    }
+    val steps = transitionSteps(scenario, scenario.steps, toStatus, scopes)
     val examples = scenario.examples map { exs =>
-      transitionExamples(scenario, exs.copy(withScenarios = Nil), toStatus)
+      transitionExamples(scenario, exs.copy(withScenarios = Nil), toStatus, scopes)
     }
     scenario.copy(
       withBackground = background,
       withSteps = steps,
       withExamples = examples
-    ) tap { s => afterScenario(s) }
+    ) tap { s => afterScenario(s, scopes) }
   }
 
-  def transitionExamples(parent: Identifiable, examples: Examples, toStatus: EvalStatus): Examples = {
-    beforeExamples(parent, examples)
-    examples.copy() tap { exs => afterExamples(exs) }
+  def transitionExamples(parent: Identifiable, examples: Examples, toStatus: EvalStatus, scopes: ScopedDataStack): Examples = {
+    beforeExamples(parent, examples, scopes)
+    examples.copy() tap { exs => afterExamples(exs, scopes) }
   }
 
-  def transitionStep(parent: Identifiable, step: Step, toStatus: EvalStatus): Step = {
-    beforeStep(parent, step)
-    step.copy(withEvalStatus = toStatus) tap { s => afterStep(s) }
+  def transitionStep(parent: Identifiable, step: Step, toStatus: EvalStatus, scopes: ScopedDataStack): Step = {
+    beforeStep(parent, step, scopes)
+    step.copy(withEvalStatus = toStatus) tap { s => afterStep(s, scopes) }
   }
 
-  def transitionSteps(parent: Identifiable, steps: List[Step], toStatus: EvalStatus): List[Step] = {
+  def transitionSteps(parent: Identifiable, steps: List[Step], toStatus: EvalStatus, scopes: ScopedDataStack): List[Step] = {
     steps.map { step => 
-      transitionStep(parent, step, toStatus) 
+      transitionStep(parent, step, toStatus, scopes) 
     }
   }
 
-  def transitionRule(parent: Identifiable, rule: Rule, toStatus: EvalStatus): Rule = {
-    beforeRule(parent, rule)
+  def transitionRule(parent: Identifiable, rule: Rule, toStatus: EvalStatus, scopes: ScopedDataStack): Rule = {
+    beforeRule(parent, rule, scopes)
     val background = rule.background.map { background => 
-      transitionBackground(rule, background, toStatus)
+      transitionBackground(rule, background, toStatus, scopes)
     }
     val scenarios = rule.scenarios.map { scenario => 
-      transitionScenario(rule, scenario, toStatus)
+      transitionScenario(rule, scenario, toStatus, scopes)
     }
     rule.copy(
       withBackground = background,
       withScenarios = scenarios
-    ) tap { r => afterRule(r) }
+    ) tap { r => afterRule(r, scopes) }
   }
 
   private def dispatchBeforeEvent[T <: Identifiable]( 
       parent: Identifiable,
-      source: T)
+      source: T,
+      scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
 
     listeners foreach { listener => 
@@ -174,18 +221,18 @@ class LifecycleEventDispatcher extends LazyLogging {
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
         listener.pause(source.uuid)
       } else {
-        dispatchEvent(listener, LifecyclePhase.before, parent.uuid, source) { dispatch }
+        dispatchEvent(listener, LifecyclePhase.before, parent.uuid, source, scopes) { dispatch }
       }
     }
 
   }
 
-  private def dispatchAfterEvent[T <: Identifiable](source: T)
+  private def dispatchAfterEvent[T <: Identifiable](source: T, scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
 
     listeners foreach { listener => 
       val parentUuid = listener.popUuid()
-      dispatchEvent(listener, LifecyclePhase.after, parentUuid, source) { dispatch } tap { _ =>
+      dispatchEvent(listener, LifecyclePhase.after, parentUuid, source, scopes) { dispatch } tap { _ =>
         if (listener.isPausedOn(parentUuid)) { 
           listener.resume()
         }
@@ -198,11 +245,12 @@ class LifecycleEventDispatcher extends LazyLogging {
       listener: LifecycleEventListener,
       phase: LifecyclePhase.Value, 
       parentUuid: String,
-      source: T)
+      source: T,
+      scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Option[LifecycleEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = LifecycleEvent(phase, parentUuid, source)
+      val event = LifecycleEvent(phase, parentUuid, source, callTrail.get.toList, scopes)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

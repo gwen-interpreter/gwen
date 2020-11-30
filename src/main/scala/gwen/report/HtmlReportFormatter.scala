@@ -47,7 +47,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
-    val reportDir = HtmlReportConfig.reportDir(options)
+    val reportDir = HtmlReportConfig.reportDir(options).get
     val metaResults = result.metaResults
     val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
     val title = s"${result.spec.specType} Detail"
@@ -138,7 +138,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-    val tags = scenario.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.ForEach.toString)
+    val tags = scenario.tags
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     s"""
     <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
@@ -187,12 +187,12 @@ trait HtmlReportFormatter extends ReportFormatter {
     }
         <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
           <ul class="list-group">${
-          (scenario.steps.zipWithIndex map { case (step, index) =>
+          (scenario.steps.zipWithIndex flatMap { case (step, index) =>
             if (!scenario.isOutline) {
-              formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.uuid}-${index + 1}", scenarioKeywordPixels)
-            } else {
-              formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels)
-            }
+              Some(formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.uuid}-${index + 1}", scenarioKeywordPixels))
+            } else if (!scenario.isExpanded) {
+              Some(formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels))
+            } else None
           }).mkString}
           </ul>
         ${if (scenario.isOutline) formatExamples(scenario.examples, scenarioId, scenarioKeywordPixels) else ""}
@@ -350,7 +350,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = {
     
-    val reportDir = HtmlReportConfig.reportDir(options)
+    val reportDir = HtmlReportConfig.reportDir(options).get
     val title = "Feature Summary"
     val status = summary.evalStatus.status
     val sustainedCount = summary.sustainedCount
@@ -473,15 +473,16 @@ trait HtmlReportFormatter extends ReportFormatter {
                   </div>
                 </div>"""
   }
-  private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String, keywordPixels: Int): String = s"""
-        <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
+  private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String, keywordPixels: Int): String = {
+    val stepDef = step.stepDef map { case (sd, params) => (sd.stripVirtuals, params) }
+    s"""<li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (step.stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.attachments, status)} ${step.stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
+                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
+                  ${formatAttachments(step.attachments, status)} ${stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
                 </div>
-                ${if (EvalStatus.isError(status) && step.stepDef.isEmpty) s"""
+                ${if (EvalStatus.isError(status) && stepDef.isEmpty) s"""
                 <ul>
                   <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
                     <div class="bg-${cssStatus(status)}">
@@ -490,6 +491,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   </li>
                 </ul>""" else ""}
               </li>"""
+    }
 
   private def formatRawStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): String = s"""
               <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
@@ -616,7 +618,7 @@ object HtmlReportFormatter {
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
     <div class="modal-body">
-    <a href="${HtmlSlideshowReportConfig.getReportDetailFilename(spec, unit.dataRecord)}.${HtmlSlideshowReportConfig.fileExtension}" id="full-screen">Full Screen</a>
+    <a href="${HtmlSlideshowReportConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowReportConfig.fileExtension.get}" id="full-screen">Full Screen</a>
     <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
     ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
    </div>

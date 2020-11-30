@@ -26,20 +26,24 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class HtmlSlideshowGenerator(val options: GwenOptions) extends ReportGenerator(HtmlSlideshowReportConfig, options) with HtmlSlideshowFormatter {
+class HtmlSlideshowGenerator(options: GwenOptions) extends ReportGenerator(HtmlSlideshowReportConfig, options) with HtmlSlideshowFormatter {
 
-  // copy in JS files (if they don't already exist)
-  new File(reportDir, "resources/js") tap { dir =>
-    copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.reel-min.js", dir)
-  }
-  
-  // copy in font files (if they don't already exist)
-  new File(reportDir, "resources/fonts") tap { dir =>
-    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.eot", dir)
-    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.svg", dir)
-    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.ttf", dir)
-    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff", dir)
-    copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
+  reportDir foreach { rdir =>
+
+    // copy in JS files (if they don't already exist)
+    new File(rdir, "resources/js") tap { dir =>
+      copyClasspathTextResourceToFile("/gwen/report/html/js/jquery.reel-min.js", dir)
+    }
+    
+    // copy in font files (if they don't already exist)
+    new File(rdir, "resources/fonts") tap { dir =>
+      copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.eot", dir)
+      copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.svg", dir)
+      copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.ttf", dir)
+      copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff", dir)
+      copyClasspathBinaryResourceToFile("/gwen/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
+    }
+
   }
   
 }

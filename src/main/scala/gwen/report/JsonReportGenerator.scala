@@ -16,23 +16,11 @@
 
 package gwen.report
 
-import gwen.GwenInfo
-import gwen.dsl.FeatureSpec
-import gwen.eval.{FeatureResult, FeatureUnit, GwenOptions}
-
-import java.io.File
+import gwen.eval.GwenOptions
 
 /**
   * Generates JSON report files (for integration with other gherkin report builders).
   * 
   * @author Branko Juric
   */
-class JsonReportGenerator(val options: GwenOptions) extends ReportGenerator(JsonReportConfig, options) with JsonReportFormatter {
-
-  override def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
-    // noop
-  }
-  
-  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = Nil
-  
-}
+class JsonReportGenerator(options: GwenOptions) extends NoopReportGenerator(JsonReportConfig, options) with JsonReportFormatter

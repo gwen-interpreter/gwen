@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 Branko Juric, Brady Wood
+ * Copyright 2015-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.withName("slideshow") should be (ReportFormat.slideshow)
     ReportFormat.withName("junit") should be (ReportFormat.junit)
     ReportFormat.withName("json") should be (ReportFormat.json)
+    ReportFormat.withName("rp") should be (ReportFormat.rp)
   }
 
   "configOf of all formats" should "map correctly" in {
@@ -32,6 +33,7 @@ class ReportFormatTest extends FlatSpec with Matchers  {
     ReportFormat.configOf(ReportFormat.slideshow) should be (Some(HtmlSlideshowReportConfig))
     ReportFormat.configOf(ReportFormat.junit) should be (Some(JUnitReportConfig))
     ReportFormat.configOf(ReportFormat.json) should be (Some(JsonReportConfig))
+    ReportFormat.configOf(ReportFormat.rp) should be (Some(RPReportConfig))
   }
   
 }

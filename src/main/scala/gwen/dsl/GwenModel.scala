@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -306,7 +306,6 @@ object Rule {
   * @param background optional background
   * @param steps list of scenario steps
   * @param examples optional list of examples (scenario outline entries)
-  * @param metaFile optional meta file (required if the scenario is a stepdef)
   */
 case class Scenario(
     sourceRef: Option[SourceRef],
@@ -337,12 +336,15 @@ case class Scenario(
     else List(this)
   
   def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == ReservedTags.Examples.toString)
+  def isExpanded: Boolean = examples.flatMap(_.scenarios).nonEmpty 
   def isStepDef: Boolean = tags.exists(_.name == ReservedTags.StepDef.toString)
   def isForEach: Boolean = tags.exists(_.name == ReservedTags.ForEach.toString)
   def isDataTable: Boolean = tags.exists(_.name.startsWith(ReservedTags.DataTable.toString))
   def isSynchronized: Boolean = tags.map(_.name).exists { 
     name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString
   }
+  def isSynthetic: Boolean = Tag.findByName(tags, ReservedTags.Synthetic.toString).nonEmpty
+  def isVirtual: Boolean = Tag.findByName(tags, ReservedTags.Virtual.toString).nonEmpty
   
   def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
   
@@ -363,6 +365,14 @@ case class Scenario(
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples): Scenario = {
     Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples)
+  }
+
+  def stripVirtuals: Scenario = {
+    if (isVirtual) {
+      steps.collectFirst { case step if (step.stepDef.nonEmpty) => step } flatMap { step =>
+        step.stepDef map { case (sd, _) => sd.stripVirtuals }
+      } getOrElse(this)
+    } else this
   }
   
 }
@@ -552,6 +562,8 @@ object Tag {
   * @param stepDef optional evaluated step def
   * @param table data table (List of tuples of line position and rows of data)
   * @param docString optional tuple of line, content, and content type
+  * @param evalStatus the evaluation status of the step
+  * @param ancestor the top most calling step
   */
 case class Step(
     sourceRef: Option[SourceRef],
@@ -564,6 +576,7 @@ case class Step(
     override val evalStatus: EvalStatus) extends SpecNode {
 
   def nodeType: NodeType.Value = NodeType.Step
+  val isVirtual: Boolean = name.endsWith(s"$ZeroChar")
   
   def expression: String = docString map { case (_, content, _) =>
     val lines = content.split("""\r?\n""")
@@ -587,6 +600,18 @@ case class Step(
       withEvalStatus: EvalStatus = evalStatus): Step = {
     Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus)
   }
+
+  lazy val errorTrails: List[List[Step]] = {
+    if (EvalStatus.isError(evalStatus.status)) {
+      stepDef map { case (sd, _) => 
+        sd.allSteps.filter(step => EvalStatus.isError(step.evalStatus.status)).flatMap { step => 
+          step.errorTrails map { trace => 
+            this :: trace
+          }
+        }
+      } getOrElse List(List(this))
+    } else Nil
+  }
 }
 
 object Step {
@@ -609,5 +634,12 @@ object Step {
       docString, 
       Pending)
   }
-
+  def errorTrails(node: SpecNode): List[List[Step]] = node match {
+    case b: Background => b.steps.flatMap(_.errorTrails)
+    case s: Scenario => s.allSteps.flatMap(_.errorTrails)
+    case e: Examples => e.allSteps.flatMap(_.errorTrails)
+    case r: Rule => r.allSteps.flatMap(_.errorTrails)
+    case s: Step => s.errorTrails
+    case _ => Nil
+  }
 }

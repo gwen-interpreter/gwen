@@ -17,6 +17,7 @@
 package gwen.eval
 
 import gwen.dsl.GherkinParser
+import gwen.dsl.Root
 
 import scala.io.Source
 import scala.util.Success
@@ -32,7 +33,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
   "Data driven feature with csv file" should "normalise without error" in {
     val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
     val dataFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.csv").getFile)
-    val featureSet = new FeatureSet(FeatureUnit(featureFile, Nil, None), dataFile)
+    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None), dataFile)
     
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next()

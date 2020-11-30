@@ -129,26 +129,24 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       if (stepDef.name.startsWith(keyword)) Errors.invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
     }
     val tags = stepDef.tags
+    val virtualStep = s"${stepDef.name}$ZeroChar"
     if (stepDef.isForEach && stepDef.isDataTable) {
-      stepDefs += (
-        (
-          s"${stepDef.name};", 
-          stepDef.copy(
-            withTags = tags.filter(_.name != ReservedTags.ForEach.toString).filter(!_.name.startsWith(ReservedTags.DataTable.toString)))
+      stepDefs += (virtualStep ->
+        stepDef.copy(
+          withTags = tags.filter(_.name != ReservedTags.ForEach.toString).filter(!_.name.startsWith(ReservedTags.DataTable.toString))
         )
       )
-      val step = Step(None, StepKeyword.When.toString, s"${stepDef.name}; for each data record", Nil, None, Nil, None, Pending)
-      stepDefs += (
-        (
-          stepDef.name, 
-          stepDef.copy(
-            withTags = tags.filter(_.name != ReservedTags.ForEach.toString),
-            withName = s"${stepDef.name} for each data record",
-            withSteps = List(step))
+      val step = Step(None, StepKeyword.When.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
+      stepDefs += (stepDef.name ->
+        stepDef.copy(
+          withSourceRef = None,
+          withTags = List(Tag(ReservedTags.Virtual), Tag(ReservedTags.Synthetic)) ++ tags.filter(_.name != ReservedTags.ForEach.toString),
+          withName = s"${stepDef.name} for each data record",
+          withSteps = List(step)
         )
       )
     } else {
-      stepDefs += ((stepDef.name, stepDef.copy(withTags = tags)))
+      stepDefs += (stepDef.name -> stepDef)
     }
   }
   
@@ -201,13 +199,6 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     } else None
   }
 
-  def addForeachStepDef(step: Step, stepDef: Scenario): Unit = {
-    state.addForeachStepDef(step, stepDef)
-  }
-
-  /** Gets the optional for-each StepDef for a given step. */
-  def getForeachStepDef(step: Step): Option[Scenario] = state.popForeachStepDef(step)
-
   /** Adds current behavior. */
   def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value = 
     behavior tap { _ => state.addBehavior(behavior) }
@@ -236,25 +227,28 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * @return the step with accumulated attachments
     */
   private[eval] def finaliseStep(step: Step): Step = {
-    step.evalStatus match {
-      case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
-        if (!failure.isDisabledError) {
-          if (options.batch) {
-            logger.error(scopes.visible.asString)
+    if (step.stepDef.isEmpty) {
+      step.evalStatus match {
+        case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
+          if (!failure.isDisabledError) {
+            if (options.batch) {
+              logger.error(scopes.visible.asString)
+            }
+            logger.error(failure.error.getMessage)
+            addErrorAttachments(failure)
           }
-          logger.error(failure.error.getMessage)
-          addErrorAttachments(failure)
-        }
-        logger.whenDebugEnabled {
-          logger.error(s"Exception: ", failure.error)
-        }
-      case _ => // noop
+          logger.whenDebugEnabled {
+            logger.error(s"Exception: ", failure.error)
+          }
+        case _ => // noop
+      }
     }
     val fStep = if (state.hasAttachments) {
       step.copy(
         withEvalStatus = step.evalStatus, 
         withAttachments = (step.attachments ++ state.popAttachments()).sortBy(_._2 .getName()))
     } else {
+      
       step
     }
     fStep.evalStatus match {
@@ -283,6 +277,10 @@ class EnvContext(options: GwenOptions) extends Evaluatable
 
   def addAttachment(name: String, extension: String, content: String): (String, File) = { 
     state.addAttachment(name, extension, content)
+  }
+
+  def addAttachment(name: String, file: File): (String, File) = { 
+    state.addAttachment(name, file)
   }
 
   /**

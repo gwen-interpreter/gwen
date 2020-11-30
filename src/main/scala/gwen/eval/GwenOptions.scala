@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2020 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,7 +185,7 @@ object GwenOptions {
           if (opt.batch && opt.features.isEmpty) {
             Errors.invocationError("No feature files or directories specified")
           }
-          val reportables = opt.reportFormats
+          val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
           if (reportables.nonEmpty && opt.reportDir.isEmpty) {
             Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
