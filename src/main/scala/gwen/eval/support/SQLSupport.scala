@@ -33,8 +33,6 @@ trait SQLSupport {
     * @return the first column value of the first row in the result
     */
   def executeSQLQuery(sql: String, database: String): String = {
-    val driverName = Settings.get(s"gwen.db.${database}.driver")
-    val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate("$[dryRun:sql]") {
       if (sql.trim().length() == 0) {
         Errors.sqlError("Cannot evaluate empty SQL statement")
@@ -44,21 +42,25 @@ trait SQLSupport {
       }
 
       try {
-        Class.forName(driverName)
-        val connection = DriverManager.getConnection(dbUrl)
-        try {
-          val stmt = connection.createStatement()
-          try {
-            val result = stmt.executeQuery(sql)
-            if (result.next) {
-              result.getString(1)
+        Sensitive.withValue(Settings.get(s"gwen.db.${database}.driver")) { driverName =>
+          Sensitive.withValue(Settings.get(s"gwen.db.${database}.url")) { dbUrl =>
+            Class.forName(driverName)
+            val connection = DriverManager.getConnection(dbUrl)
+            try {
+              val stmt = connection.createStatement()
+              try {
+                val result = stmt.executeQuery(sql)
+                if (result.next) {
+                  result.getString(1)
+                }
+                else Errors.sqlError(s"SQL did not return a result: $sql")
+              } finally {
+                stmt.close()
+              }
+            } finally {
+              connection.close()
             }
-            else Errors.sqlError(s"SQL did not return a result: $sql")
-          } finally {
-            stmt.close()
           }
-        } finally {
-          connection.close()
         }
       } catch {
         case e: Exception => Errors.sqlError(s"Failed to run SQL query: ${sql}, reason is: ${e}")
@@ -74,8 +76,6 @@ trait SQLSupport {
     * @return the number of rows affected (as a string)
     */
   def executeSQLUpdate(sql: String, database: String): Int = {
-    val driverName = Settings.get(s"gwen.db.${database}.driver")
-    val dbUrl = Settings.get(s"gwen.db.${database}.url")
     evaluate(0) {
       if (sql.trim().length() == 0) {
         Errors.sqlError("Cannot execute empty SQL statement")
@@ -85,17 +85,21 @@ trait SQLSupport {
       }
 
       try {
-        Class.forName(driverName)
-        val connection = DriverManager.getConnection(dbUrl)
-        try {
-          val stmt = connection.createStatement()
-          try {
-            stmt.executeUpdate(sql)
-          } finally {
-            stmt.close()
+        Sensitive.withValue(Settings.get(s"gwen.db.${database}.driver")) { driverName =>
+          Sensitive.withValue(Settings.get(s"gwen.db.${database}.url")) { dbUrl =>
+            Class.forName(driverName)
+            val connection = DriverManager.getConnection(dbUrl)
+            try {
+              val stmt = connection.createStatement()
+              try {
+                stmt.executeUpdate(sql)
+              } finally {
+                stmt.close()
+              }
+            } finally {
+              connection.close()
+            }
           }
-        } finally {
-          connection.close()
         }
       } catch {
         case e: Exception => Errors.sqlError(s"Failed to run SQL update statement: ${sql}, reason is: ${e}")

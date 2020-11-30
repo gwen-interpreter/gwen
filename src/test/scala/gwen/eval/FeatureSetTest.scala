@@ -40,7 +40,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
       case Success(spec) => normalise(spec, Some(unit1.featureFile), unit1.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
-    feature1.feature.name should be ("About me, [1] my age=18..")
+    feature1.feature.name should be ("About me [1]")
     feature1.scenarios.length should be (1)
     feature1.scenarios(0).background.get.name should be ("Input data")
     feature1.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=1)"""))
@@ -58,7 +58,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
       case Success(spec) => normalise(spec, Some(unit2.featureFile), unit2.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
-    feature2.feature.name should be ("About me, [2] my age=18..")
+    feature2.feature.name should be ("About me [2]")
     feature2.scenarios.length should be (1)
     feature2.scenarios(0).background.get.name should be ("Input data")
     feature2.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=2)"""))
@@ -76,7 +76,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
       case Success(spec) => normalise(spec, Some(unit3.featureFile), unit3.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
-    feature3.feature.name should be ("About me, [3] my age=22..")
+    feature3.feature.name should be ("About me [3]")
     feature3.scenarios.length should be (1)
     feature3.scenarios(0).background.get.name should be ("Input data")
     feature3.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=3)"""))

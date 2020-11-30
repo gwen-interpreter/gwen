@@ -1,10 +1,13 @@
 2.31.0
 ======
-Nov 25, 2020
-- Clean up and improve Gwen Gherkin model
-- Add UUID to each node
-- Add uri:lineNo to each node 
-- Introduce lifecycle events and listeners
+Dec 1, 2020
+- Introduce masked settings to make all your private and sensitive settings appear 
+  as `●●●●●` in all Gwen logs, reports, errors and console outputs
+- Internal cleanup and Refactor
+  - Improved Gwen Gherkin model
+  - Add UUID to each node
+  - Add uri and source reference to each node
+  - Introduce lifecycle events and listeners
 
 2.30.0
 ======

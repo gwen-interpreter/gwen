@@ -176,4 +176,18 @@ object GwenSettings {
       }
     }
 
+    /** 
+     * Provides access to the character used to mask settings defined with the `:masked` suffix.
+     * Default value is `●`.
+     */
+    def `gwen.mask.char`: Char = {
+      Settings.getOpt("gwen.mask.char") map { maskChar => 
+        if (maskChar.length != 1) {
+          Errors.invalidSettingError("gwen.mask.char", maskChar, "Mask character length must be 1")
+        } else {
+          maskChar(0)
+        }
+      } getOrElse('●')
+    }
+
 }

@@ -16,7 +16,7 @@
 
 package gwen
 
-import gwen.Errors._
+import gwen.Errors.GwenException
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -66,17 +66,27 @@ object Settings {
     */
   def loadAll(cmdProperties: List[File]): Unit = {
 
+    // mask any senstive ("*:masked") properties passed in the raw from the command line
+    sys.props.toMap filter { case (key, value) => 
+      Sensitive.isMaskedName(key) 
+    } foreach { case (key, value) =>
+      Sensitive.parse(key, value) foreach { case (mKey, mValue) => 
+        sys.props -= key
+        sys.props += ((mKey, mValue))
+      }
+    }
+
     // create list of properties files in order of precedence (stripping out any duplicates)
     val pFiles = cmdProperties.reverse ++ List(workingProperties, defaultProperties).flatten
     val propFiles = pFiles.foldLeft(userProperties.toList) { FileIO.appendFile }
 
-    // load files in reverse  order to ensure those with lesser precedence are overwritten by higher ones
+    // load files in reverse order to ensure those with lesser precedence are overwritten by higher ones
     val props = propFiles.reverse.foldLeft(new Properties()) {
       (props, file) => 
         props.load(new FileReader(file))
         props.entrySet().asScala foreach { entry =>
           val key = entry.getKey.asInstanceOf[String]
-          if (key == null || key.trim.isEmpty) invalidPropertyError(entry.toString, file)
+          if (key == null || key.trim.isEmpty) Errors.invalidPropertyError(entry.toString, file)
         }
         props
     }
@@ -89,7 +99,8 @@ object Settings {
           val value = resolve(props.getProperty(key), props)
           Settings.set(key, value)
         } catch {
-          case e: Throwable => propertyLoadError(key, e)
+          case ge: GwenException => throw ge
+          case t: Throwable => Errors.propertyLoadError(key, t)
         }
       }
     }
@@ -108,7 +119,7 @@ object Settings {
       val inline = if (props.containsKey(key)) {
         getEnvOpt(key).getOrElse(props.getProperty(key))
       } else {
-        getOpt(key).getOrElse(missingPropertyError(key))
+        getOpt(key).getOrElse(Errors.missingPropertyError(key))
       }
       val resolved = inline match {
         case InlineProperty(_) => resolve(inline, props)
@@ -117,7 +128,7 @@ object Settings {
       resolve(value.replaceAll("""\$\{""" + key + """\}""", resolved), props)
     case _ => value
   }
-  
+
   /**
     * Gets an optional property or enviroment variable (returns None if not found)
     * 
@@ -127,7 +138,6 @@ object Settings {
     getEnvOpt(name) match {
       case None => Option(localSettings.get.getProperty(name)).orElse(sys.props.get(name))
       case res @ _ => res
-      
     }
   }
 
@@ -136,12 +146,13 @@ object Settings {
    * 
    * @param name the name of the environment variable (with optional `.env` prefix)
    */
-  def getEnvOpt(name: String) = 
+  def getEnvOpt(name: String): Option[String] = {
     if (name.startsWith("env.") && name.length() > 4) {
       sys.env.get(name.substring(4))
     } else {
       sys.env.get(name)
     }
+  }
 
   /**
     * Gets a mandatory property (throws exception if not found)
@@ -149,7 +160,7 @@ object Settings {
     * @param name the name of the property to get
     * @throws gwen.Errors.MissingPropertyException if no such property is set
     */
-  def get(name: String): String = getOpt(name).getOrElse(missingPropertyError(name))
+  def get(name: String): String = getOpt(name).getOrElse(Errors.missingPropertyError(name))
 
   /**
     * Finds all properties that match the given predicate.
@@ -171,7 +182,7 @@ object Settings {
     val nvps: Seq[(String, String)] = assignments.map(_.split('=')).map { nvp =>
       if (nvp.length == 2) (nvp(0), nvp(1))
       else if (nvp.length == 1) (nvp(0), "")
-      else propertyLoadError(nvp(0), "name-value pair expected")
+      else Errors.propertyLoadError(nvp(0), "name-value pair expected")
     }
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
       (n.substring(singleName.length + 1), v)
@@ -213,7 +224,7 @@ object Settings {
     * @param value the value to bind to the property
     */
   def set(name: String, value: String): Unit = {
-    sys.props += ((name, value))
+    sys.props += Sensitive.parse(name, value).getOrElse((name, value))
   }
 
   /**
@@ -234,6 +245,9 @@ object Settings {
   private[gwen] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
     if (overrideIfExists || !contains(name)) {
       if (overrideIfExists && localSettings.get.containsKey(name)) {
+        if (Sensitive.isMaskedName(name)) {
+          Errors.unsupportedMaskedPropertyError(s"Cannot mask $name: Masks can only be defined in proeprties files.")
+        }
         localSettings.get.setProperty(name, value)
       }
       set(name, value)
@@ -247,8 +261,9 @@ object Settings {
     * @param value the value to bind to the setting
     */
   def setLocal(name: String, value: String): Unit = {
-    if (!name.startsWith("gwen.")) unsupportedLocalSetting(name)
-    localSettings.get.setProperty(name, value)
+    if (!name.startsWith("gwen.")) Errors.unsupportedLocalSetting(name)
+    val (n, v) = Sensitive.parse(name, value).getOrElse((name, value))
+    localSettings.get.setProperty(n, v)
   }
 
   /**
@@ -256,7 +271,7 @@ object Settings {
     * @param name the setting entry to remove
     */
   def clearLocal(name: String): Unit = {
-    if (!name.startsWith("gwen.")) unsupportedLocalSetting(name)
+    if (!name.startsWith("gwen.")) Errors.unsupportedLocalSetting(name)
     localSettings.get.remove(name)
   }
 

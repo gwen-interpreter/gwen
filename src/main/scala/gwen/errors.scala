@@ -41,6 +41,7 @@ object Errors {
   def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
   def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
   def missingPropertyError(name: String) = throw new MissingPropertyException(name)
+  def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
@@ -103,6 +104,9 @@ object Errors {
   
   /** Thrown when a property setting is not found. */
   class MissingPropertyException(name: String) extends GwenException(s"Property not found: $name")
+
+  /** Thrown when a property setting that does not support masking is masked. */
+  class UnsupportedMaskedPropertyException(msg: String) extends GwenException(msg)
 
   /** Thrown when a an operation requires a license that could not be resolved. */
   class LicenseException(msg: String) extends GwenException(msg)

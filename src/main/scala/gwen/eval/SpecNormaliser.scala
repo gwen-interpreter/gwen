@@ -45,7 +45,7 @@ trait SpecNormaliser extends EvalRules {
     FeatureSpec(
       dataRecord map { record =>
         spec.feature.copy(
-          withName = s"${spec.feature.name}, [${record.recordNo}] ${record.data.head match {case (name, value) => s"$name=$value${if (record.data.size > 1) ".." else ""}"}}")
+          withName = s"${spec.feature.name} [${record.recordNo}]")
       } getOrElse spec.feature,
       None, 
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),

@@ -62,7 +62,9 @@ trait ScriptSupport {
     */
   private def evaluateScript[T](language: String, script: String, params: Any*): T = {
     try {
-      new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $script })()").asInstanceOf[T]
+      Sensitive.withValue(script) { js =>
+        new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $js })()").asInstanceOf[T]
+      }
     } catch {
       case e: Throwable => Errors.scriptError(language, script, e)
     }

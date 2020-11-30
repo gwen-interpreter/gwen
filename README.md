@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- [Masked Settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#masked-settings) to make all your private and sensitive settings appear as `●●●●●` in all Gwen logs, reports, errors and console outputs
 - Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
 - Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
-- [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
 
 Why Gwen?
 ---------
@@ -76,6 +76,7 @@ Key Features
 - [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
 - [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
 - [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
+- [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
 
 User Network and Support
 ------------------------
