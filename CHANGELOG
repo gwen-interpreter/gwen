@@ -1,3 +1,8 @@
+2.31.1
+======
+Dec 4, 2020
+- Optimisation: bypass masked settings lookups for non-masked cases
+
 2.31.0
 ======
 Dec 1, 2020

@@ -68,20 +68,21 @@ object Sensitive {
   // Unmasks the given value and applies the given function to it
   def withValue[T](value: String)(apply: String => T): T = {
     apply(
-      if (MaskedValues.isEmpty) value else unmask(value)
+      if (MaskedValues.nonEmpty && value.contains(ZeroChar)) unmask(value) else value
     )
   }
 
   private def unmask[T](value: String): String = {
     value match {
       case MaskedValuePattern(masked) => 
-        val key = countZeroes(masked)
-        try {
-          val mValue = MaskedValues(key - 1)
-          val pattern = s"$MaskPattern$ZeroChar{$key}"
+        val zeroCount = countZeroes(masked)
+        val index = zeroCount - 1
+        if (index < MaskedValues.size) {
+          val mValue = MaskedValues(index)
+          val pattern = s"$MaskPattern$ZeroChar{$zeroCount}"
           unmask(value.replaceAll(pattern, mValue.plain))
-        } catch {
-          case _: Throwable => value
+        } else {
+          value
         }
       case _ => value
     }
