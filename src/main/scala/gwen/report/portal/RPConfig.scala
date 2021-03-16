@@ -60,15 +60,15 @@ object RPConfig {
     def isNone = RPSettings.`gwen.rp.send.failed.hierarchy` == ErrorReportingMode.none
   }
 
-  object StepNodes extends Enumeration {
-    type StepNodes = Value
+  object ErrorBlocks extends Enumeration {
+    type ErrorBlocks = Value
     val all, leaf, none = Value
   }
 
-  object AppendFailedMsgToStepNodes extends Enumeration {
-    def all = RPSettings.`gwen.rp.append.failed.msg.toStepNodes` == StepNodes.all
-    def leaf = RPSettings.`gwen.rp.append.failed.msg.toStepNodes` == StepNodes.leaf
-    def none = RPSettings.`gwen.rp.append.failed.msg.toStepNodes` == StepNodes.none
+  object AppendErrorBlocks extends Enumeration {
+    def all = RPSettings.`gwen.rp.send.failed.errorBlocks` == ErrorBlocks.all
+    def leaf = RPSettings.`gwen.rp.send.failed.errorBlocks` == ErrorBlocks.leaf
+    def none = RPSettings.`gwen.rp.send.failed.errorBlocks` == ErrorBlocks.none
   }
 
   def bypassNodeTypes: Set[NodeType.Value] = {

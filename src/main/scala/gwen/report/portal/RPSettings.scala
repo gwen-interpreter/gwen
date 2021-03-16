@@ -116,16 +116,16 @@ object RPSettings {
   def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.attached)
 
   /**
-   * Provides access to the `gwen.rp.append.failed.msg.toStepNodes` property setting used to 
+   * Provides access to the `gwen.rp.send.failed.errorBlocks` property setting used to 
    * determine which step nodes in a failed call chain will have the error message appended 
-   * to their descriptions (default is leaf).
+   * to their descriptions. Options include: all, leaf, or none (default is none).
    */
-  def `gwen.rp.append.failed.msg.toStepNodes`: StepNodes.Value = Settings.getOpt("gwen.rp.append.failed.msg.toStepNodes").map(_.toLowerCase).map(StepNodes.withName).getOrElse(StepNodes.leaf)
+  def `gwen.rp.send.failed.errorBlocks`: ErrorBlocks.Value = Settings.getOpt("gwen.rp.send.failed.errorBlocks").map(_.toLowerCase).map(ErrorBlocks.withName).getOrElse(ErrorBlocks.none)
   
   /**
-   * Provides access to the `gwen.rp.send.breadcrumb.atts` property setting used to 
+   * Provides access to the `gwen.rp.send.breadcrumbs` property setting used to 
    * determine whether to send breadcrumb (feature, rule, scenario, step names) attributes to reported feature nodes.
    */
-  def `gwen.rp.send.breadcrumb.atts`: Boolean = Settings.getOpt("gwen.rp.send.breadcrumb.atts").map(_.toBoolean).getOrElse(false)
+  def `gwen.rp.send.breadcrumbs`: Boolean = Settings.getOpt("gwen.rp.send.breadcrumbs").map(_.toBoolean).getOrElse(false)
 
 }

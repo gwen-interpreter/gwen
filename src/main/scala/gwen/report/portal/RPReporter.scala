@@ -281,7 +281,7 @@ class RPReporter(rpClient: RPClient)
     val evalStatus = node.evalStatus
       if (EvalStatus.isError(evalStatus.status) && callTrail.size > 0) {
       val errors = {
-        if (AppendFailedMsgToStepNodes.all || (AppendFailedMsgToStepNodes.leaf && isLeafNode(node))) {
+        if (AppendErrorBlocks.all || (AppendErrorBlocks.leaf && isLeafNode(node))) {
           errorMessages(callTrail, Step.errorTrails(node)) match {
             case Nil => s"```error\r\n${evalStatus.message}\r\n```"
             case msgs => msgs.map(msg => s"```error\r\n$msg\r\n```").mkString("\r\n") 
@@ -396,7 +396,7 @@ class RPReporter(rpClient: RPClient)
 
   private def breadcrumbAtts[T](sourceRef: Option[SourceRef], callTrail: List[Step], scopes: ScopedDataStack): Map[String, String] = {
     val isFeature = sourceRef.map(_.isFeature).getOrElse(false)
-    if (RPSettings.`gwen.rp.send.breadcrumb.atts` && isFeature && callTrail.size < 2) {
+    if (RPSettings.`gwen.rp.send.breadcrumbs` && isFeature && callTrail.size < 2) {
       breadcrumbBindings flatMap { case (bindingName, name) =>
         scopes.getOpt(bindingName) map { value => (name -> value) }
       } toMap
