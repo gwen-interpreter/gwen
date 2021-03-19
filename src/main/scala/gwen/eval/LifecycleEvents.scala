@@ -153,7 +153,15 @@ class LifecycleEventDispatcher extends LazyLogging {
     }
   }
   def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
-    if (!isVirtual.get.lastOption.getOrElse(false)) {
+    def virtualOverride = step.evalStatus match {
+      case status @ Failed(_, error)  =>
+        val isAssertionError = status.isAssertionError
+        val isSoftAssert = isAssertionError && AssertionMode.isSoft
+        val failfast = GwenSettings.`gwen.feature.failfast`
+        isSoftAssert || !failfast
+      case _ => true
+    }
+    if (!isVirtual.get.lastOption.getOrElse(false) && (!step.isVirtual || virtualOverride)) {
       dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
       popCallTrail()
     }

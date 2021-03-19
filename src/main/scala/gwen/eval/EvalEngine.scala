@@ -386,6 +386,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
     val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
       step.copy(
+        withName = doStep.replaceAll(s"$ZeroChar", ""),
         withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
       )
     }

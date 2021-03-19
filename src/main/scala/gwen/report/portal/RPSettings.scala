@@ -99,21 +99,21 @@ object RPSettings {
 
   /**
    * Provides access to the `gwen.rp.send.failed.errorTrace` property setting used to 
-   * determine how error traces are reported. Options include: inlined, attached, or none (default value is `attached`). 
+   * determine how error traces are reported. Options include: inlined, attached, or none (default value is `none`). 
    */
-  def `gwen.rp.send.failed.errorTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.errorTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.attached)
+  def `gwen.rp.send.failed.errorTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.errorTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
 
   /**
    * Provides access to the `gwen.rp.send.failed.envTrace` property setting used to 
-   * determine how environment traces are reported. Options include: inlined, attached, or none (default value is `attached`). 
+   * determine how environment traces are reported. Options include: inlined, attached, or none (default value is `none`). 
    */
-  def `gwen.rp.send.failed.envTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.envTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.attached)
+  def `gwen.rp.send.failed.envTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.envTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
 
   /**
    * Provides access to the `gwen.rp.send.failed.hierarchy` property setting used to 
-   * determine how failed step hierarchies are reported. Options include: inlined, attached, or none (default value is `attached`). 
+   * determine how failed step hierarchies are reported. Options include: inlined, attached, or none (default value is `inlined`). 
    */
-  def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.attached)
+  def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.inlined)
 
   /**
    * Provides access to the `gwen.rp.send.failed.errorBlocks` property setting used to 

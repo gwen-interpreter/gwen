@@ -239,10 +239,9 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
 
   private def mapStatus(evalStatus: EvalStatus): ItemStatus = {
     evalStatus.status match {
-      case StatusKeyword.Passed | StatusKeyword.Loaded => ItemStatus.PASSED
+      case StatusKeyword.Passed | StatusKeyword.Loaded | StatusKeyword.Sustained => ItemStatus.PASSED
       case StatusKeyword.Skipped | StatusKeyword.Pending | StatusKeyword.Disabled => ItemStatus.SKIPPED
-      case StatusKeyword.Sustained => ItemStatus.WARN
-      case StatusKeyword.Failed => ItemStatus.FAILED
+      case _ => ItemStatus.FAILED
     }
   }
 

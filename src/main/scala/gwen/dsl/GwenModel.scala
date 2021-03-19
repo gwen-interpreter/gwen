@@ -576,7 +576,7 @@ case class Step(
     override val evalStatus: EvalStatus) extends SpecNode {
 
   def nodeType: NodeType.Value = NodeType.Step
-  val isVirtual: Boolean = name.endsWith(s"$ZeroChar")
+  val isVirtual: Boolean = name.contains(s"$ZeroChar")
   
   def expression: String = docString map { case (_, content, _) =>
     val lines = content.split("""\r?\n""")
