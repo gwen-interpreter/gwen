@@ -58,7 +58,7 @@ class RPReporter(rpClient: RPClient)
     val nodeType = feature.nodeType
     val name = s"${spec.specType}: ${feature.name}"
     val desc = formatDescription(feature)
-    val tags = feature.tags
+    val tags = parseTags(feature.tags)
     val sourceRef = feature.sourceRef
     val breadcrumbs = breadcrumbAtts(sourceRef, event.callTrail, event.scopes)
     val atts = Map("language" -> feature.language) ++ breadcrumbs
@@ -102,7 +102,7 @@ class RPReporter(rpClient: RPClient)
     val nodeType = scenario.nodeType
     val name = s"${scenario.keyword}: ${scenario.name}"
     val desc = formatDescription(scenario)
-    val tags = scenario.tags
+    val tags = parseTags(scenario.tags)
     val sourceRef = scenario.sourceRef
     val atts = breadcrumbAtts(sourceRef, callTrail, scopes)
     rpClient.startItem(
@@ -130,7 +130,7 @@ class RPReporter(rpClient: RPClient)
     val nodeType = examples.nodeType
     val name = s"${examples.keyword}: ${examples.name}"
     val desc = formatDescription(examples)
-    val tags = examples.tags
+    val tags = parseTags(examples.tags)
     val sourceRef = examples.sourceRef
     rpClient.startItem(
       startTime, nodeType, inlined, name, desc, tags, Map(), sourceRef, examples.uuid, parentUuid
@@ -175,7 +175,7 @@ class RPReporter(rpClient: RPClient)
     val nodeType = stepDef.nodeType
     val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.name}"
     val desc = formatDescription(stepDef)
-    val tags = stepDef.tags
+    val tags = parseTags(stepDef.tags)
     val sourceRef = stepDef.sourceRef
     rpClient.startItem(
       startTime, nodeType, inlined, name, desc, tags, Map(), sourceRef, stepDef.uuid, parentUuid
@@ -403,6 +403,10 @@ class RPReporter(rpClient: RPClient)
     } else {
       Map()
     }
+  }
+
+  private def parseTags(tags: List[Tag]): List[Tag] = {
+    if (RPSettings.`gwen.rp.send.tags`) tags else Nil
   }
 
   def close(evalStatus: EvalStatus): Unit = {

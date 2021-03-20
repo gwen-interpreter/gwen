@@ -124,8 +124,15 @@ object RPSettings {
   
   /**
    * Provides access to the `gwen.rp.send.breadcrumbs` property setting used to 
-   * determine whether to send breadcrumb (feature, rule, scenario, step names) attributes to reported feature nodes.
+   * determine whether to send breadcrumb (feature, rule, scenario, step names) attributes to 
+   * report portal. Default is false.
    */
   def `gwen.rp.send.breadcrumbs`: Boolean = Settings.getOpt("gwen.rp.send.breadcrumbs").map(_.toBoolean).getOrElse(false)
+
+  /**
+   * Provides access to the `gwen.rp.send.tags` property setting used to 
+   * determine whether to send tags in feature files to report portal. Default is false.
+   */
+  def `gwen.rp.send.tags`: Boolean = Settings.getOpt("gwen.rp.send.tags").map(_.toBoolean).getOrElse(false)
 
 }
