@@ -569,7 +569,7 @@ object HtmlReportFormatter {
     <table width="100%" cellpadding="5">
       <tr>
         <td width="100px">
-          <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="83px" height="115px"></img></a>
+          <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="82px"></img></a>
         </td>
         <td>
           <h3>${escapeHtml(heading)}</h3>
