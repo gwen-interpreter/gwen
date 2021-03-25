@@ -474,7 +474,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 </div>"""
   }
   private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String, keywordPixels: Int): String = {
-    val stepDef = step.stepDef map { case (sd, params) => (sd.stripVirtuals, params) }
+    val stepDef = step.stepDef
     s"""<li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
                 <div class="bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}">
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>

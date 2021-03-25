@@ -140,8 +140,8 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       stepDefs += (stepDef.name ->
         stepDef.copy(
           withSourceRef = None,
-          withTags = List(Tag(ReservedTags.Virtual), Tag(ReservedTags.Synthetic)) ++ tags.filter(_.name != ReservedTags.ForEach.toString),
-          withName = s"${stepDef.name} for each data record",
+          withTags = List(Tag(ReservedTags.Synthetic)) ++ tags.filter(_.name != ReservedTags.ForEach.toString),
+          withName = s"$virtualStep for each data record",
           withSteps = List(step)
         )
       )

@@ -156,7 +156,7 @@ trait JsonReportFormatter extends ReportFormatter {
                 "mime_type": "${escapeJson(file.mimeType)}",
                 "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map({ case (sd, params) => (sd.stripVirtuals, params) }).map { case (stepDef, _) =>
+            ],""" else ""}${step.stepDef.map { case (stepDef, _) =>
               if (stepDef.sourceRef.nonEmpty) {
                 s"""
             "match": {

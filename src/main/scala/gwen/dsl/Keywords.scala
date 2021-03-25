@@ -202,7 +202,7 @@ object BehaviorRules extends Enumeration {
 
 object ReservedTags extends Enumeration {
   type Reserved = Value
-  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, Virtual = Value
+  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic = Value
   val names: Set[String] = values.map(_.toString)
 }
 

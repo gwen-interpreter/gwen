@@ -182,6 +182,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     val iStep = doEvaluate(step, env) { env.interpolate }
     var pStep: Option[Step] = None
     logger.info(s"Evaluating Step: $iStep")
+    lifecycle.beforeStep(parent, iStep, env.scopes)
     doEvaluate(iStep, env) { s =>
       pStep = evaluatePriority(parent, s, env)
       pStep.getOrElse(s)
@@ -201,7 +202,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                 doEvaluate(iStep, env) { step =>
                   step tap { _ =>
                     try {
-                      lifecycle.beforeStep(parent, step, env.scopes)
                       evaluate(step, env)
                     } catch {
                       case e: Errors.UndefinedStepException =>
@@ -217,18 +217,17 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                   semaphore.acquire()
                   try {
                     logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                    evalStepDef(parent, stepDef.copy(), iStep, params, env)
+                    evalStepDef(iStep, stepDef.copy(), iStep, params, env)
                   } finally {
                     logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
                     semaphore.release()
                   }
                 } else {
-                  evalStepDef(parent, stepDef.copy(), iStep, params, env)
+                  evalStepDef(iStep, stepDef.copy(), iStep, params, env)
                 }
             }
         }
       } else {
-        lifecycle.beforeStep(parent, iStep, env.scopes)
         iStep
       }
     }
@@ -276,7 +275,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       withStepDef = Some((stepDef, params)),
       withAttachments = stepDef.steps.flatMap(_.attachments)
     )
-    lifecycle.beforeStep(parent, sdStep, env.scopes)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val eStep = doEvaluate(step, env) { s =>
       checkStepDefRules(sdStep, env)
@@ -292,7 +290,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           env.topScope.pushObject("table", table)
         }
         try {
-          lifecycle.beforeStepDef(sdStep, stepDef, env.scopes)
+          lifecycle.beforeStepDef(parent, stepDef, env.scopes)
           val steps = if (!stepDef.isOutline) {
             evaluateSteps(stepDef, stepDef.steps, env)
           } else {
@@ -382,7 +380,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     * Repeats a step for each element in list of elements of type U.
     */
   def foreach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, env: T): Step = {
-    lifecycle.beforeStep(parent, step, env.scopes)
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
     val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
       step.copy(
@@ -424,17 +421,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     val isAssertionError = status.isAssertionError
                     val isSoftAssert = env.evaluate(false) { isAssertionError && AssertionMode.isSoft }
                     val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
-                    val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-                    if (failfast && !exitOnFail && !isSoftAssert) {
+                    if (failfast && !isSoftAssert) {
                       logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                      foreachSteps(index).copy(
-                        withEvalStatus = Skipped) tap { skippedStep => 
-                        lifecycle.afterStep(skippedStep, env.scopes)
-                      }
-                    } else if (exitOnFail && !isSoftAssert) {
-                      foreachSteps(index).copy() tap { clonedStep => 
-                        lifecycle.afterStep(clonedStep, env.scopes)
-                      }
+                      lifecycle.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, env.scopes)
                     } else {
                       logger.info(s"Processing [$element] $elementNumber of $noOfElements")
                       evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), env)

@@ -77,8 +77,6 @@ class LifecycleEventDispatcher extends LazyLogging {
 
   private val listeners = new mutable.Queue[LifecycleEventListener]()
   private val callTrail = ThreadLocal.withInitial[mutable.Queue[Step]] { () => mutable.Queue[Step]() }
-  private val isVirtual = ThreadLocal.withInitial[mutable.Queue[Boolean]] { () => mutable.Queue[Boolean]() }
-  private val virtualParents = ThreadLocal.withInitial[mutable.Queue[Identifiable]] { () => mutable.Queue[Identifiable]() }
 
   private def pushCallTrail(step: Step): List[Step] = { 
     callTrail.get += step 
@@ -123,48 +121,17 @@ class LifecycleEventDispatcher extends LazyLogging {
     dispatchBeforeEvent(parent, rule, scopes) { (listener, event) => listener.beforeRule(event) }
   def afterRule(rule: Rule, scopes: ScopedDataStack): Unit =
     dispatchAfterEvent(rule, scopes) { (listener, event) => listener.afterRule(event) }
-  def beforeStepDef(parent: Identifiable, stepDef: Scenario, scopes: ScopedDataStack): Unit = {
-    if (!isVirtual.get.lastOption.getOrElse(false) && stepDef.isVirtual) {
-      virtualParents.get += callTrail.get.last
-    }
-    if (!stepDef.isVirtual) {
-      val parentNode = {
-        if(isVirtual.get.lastOption.getOrElse(false)) {
-          virtualParents.get.lastOption.getOrElse(parent)
-        } else parent
-      }
-      dispatchBeforeEvent(parentNode, stepDef, scopes) { (listener, event) => listener.beforeStepDef(event) }
-    }
-    isVirtual.get += stepDef.isVirtual
-  }
-  def afterStepDef(stepDef: Scenario, scopes: ScopedDataStack): Unit = {
-    if (!stepDef.isVirtual) {
-      dispatchAfterEvent(stepDef, scopes) { (listener, event) => listener.afterStepDef(event) }
-    }
-    else if (isVirtual.get.nonEmpty) {
-      virtualParents.get.removeLast()
-    }
-    isVirtual.get.removeLast()
-  }
+  def beforeStepDef(parent: Identifiable, stepDef: Scenario, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, stepDef, scopes) { (listener, event) => listener.beforeStepDef(event) }
+  def afterStepDef(stepDef: Scenario, scopes: ScopedDataStack): Unit = 
+    dispatchAfterEvent(stepDef, scopes) { (listener, event) => listener.afterStepDef(event) }
   def beforeStep(parent: Identifiable, step: Step, scopes: ScopedDataStack): Unit = {
-    if (!isVirtual.get.lastOption.getOrElse(false)) {
-      pushCallTrail(step)
-      dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
-    }
+    pushCallTrail(step)
+    dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
   }
   def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
-    def virtualOverride = step.evalStatus match {
-      case status @ Failed(_, error)  =>
-        val isAssertionError = status.isAssertionError
-        val isSoftAssert = isAssertionError && AssertionMode.isSoft
-        val failfast = GwenSettings.`gwen.feature.failfast`
-        isSoftAssert || !failfast
-      case _ => true
-    }
-    if (!isVirtual.get.lastOption.getOrElse(false) && (!step.isVirtual || virtualOverride)) {
-      dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
-      popCallTrail()
-    }
+    dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
+    popCallTrail()
   }
   def transitionBackground(parent: Identifiable, background: Background, toStatus: EvalStatus, scopes: ScopedDataStack): Background = {
     beforeBackground(parent, background, scopes)

@@ -258,7 +258,7 @@ class RPReporter(rpClient: RPClient)
       time
     }
 
-    step.stepDef map { case (stepDef, _) => stepDef.stripVirtuals } foreach { stepDef =>
+    step.stepDef foreach { case (stepDef, _) => 
       val startTime = new ju.Date(endTime.getTime - stepDef.steps.map(_.evalStatus.duration.toMillis).sum)
       inject(startTime, stepDef, parentUuid, callTrail)
     }

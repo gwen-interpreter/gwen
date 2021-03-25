@@ -344,9 +344,16 @@ case class Scenario(
     name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString
   }
   def isSynthetic: Boolean = Tag.findByName(tags, ReservedTags.Synthetic.toString).nonEmpty
-  def isVirtual: Boolean = Tag.findByName(tags, ReservedTags.Virtual.toString).nonEmpty
+  def isVirtual: Boolean = name.contains(s"$ZeroChar")
   
-  def attachments: List[(String, File)] = allSteps.flatMap(_.attachments)
+  def attachments: List[(String, File)] = {
+    def attachments(step: Step): List[(String, File)] = {
+      step.attachments ++ (step.stepDef.map { case (stepDef, _) => 
+        stepDef.attachments
+      }).getOrElse(Nil)
+    }
+    allSteps.flatMap(step => attachments(step)).distinct
+  }
   
   /** Returns the evaluation status of this scenario. */
   override val evalStatus: EvalStatus =
@@ -365,14 +372,6 @@ case class Scenario(
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples): Scenario = {
     Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples)
-  }
-
-  def stripVirtuals: Scenario = {
-    if (isVirtual) {
-      steps.collectFirst { case step if (step.stepDef.nonEmpty) => step } flatMap { step =>
-        step.stepDef map { case (sd, _) => sd.stripVirtuals }
-      } getOrElse(this)
-    } else this
   }
   
 }
