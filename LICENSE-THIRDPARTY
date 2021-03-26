@@ -3,7 +3,7 @@ LICENSE-THIRDPARTY
 
 Dependency                                               | Version   | License
 -------------------------------------------------------- | --------- | -----------------------------------------------------------------------------
-com.epam.reportportal           client-java              | 5.0.15    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.epam.reportportal           client-java              | 5.0.21    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.epam.reportportal           commons-model            | 5.3.3     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.fasterxml.jackson.core      jackson-annotations      | 2.10.2    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.fasterxml.jackson.core      jackson-core             | 2.10.2    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)

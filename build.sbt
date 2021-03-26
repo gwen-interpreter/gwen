@@ -45,7 +45,7 @@ lazy val mainDependencies = {
   val jsonPath = "2.4.0"
   val jodaTime = "2.10.6"
   val rpCommon = "5.3.3"
-  val rpClientJava = "5.0.18"
+  val rpClientJava = "5.0.21"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,

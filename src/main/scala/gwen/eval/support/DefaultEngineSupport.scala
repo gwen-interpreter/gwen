@@ -62,10 +62,9 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
-        lifecycle.beforeStep(parent, step, env.scopes)
         val javascript = env.scopes.get(s"$condition/javascript")
         val iStep = step.copy(withName = doStep)
-        env.evaluate(evaluateStep(step, iStep, env)) {
+        val result = env.evaluate(evaluateStep(step, iStep, env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
             evaluateStep(step, iStep, env)
@@ -74,6 +73,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
             step.copy(withEvalStatus = Passed(0))
           }
         }
+        result.copy(withName = step.name)
       }
 
       case _ => null
