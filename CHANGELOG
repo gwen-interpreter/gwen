@@ -1,3 +1,10 @@
+2.31.1-beta-rp.5
+================
+Apr 7, 2021
+- Fix report portal markdown escaping to encode `<>*` characters only
+- Fix sequence of skipped steps in report portal
+- Introduce synthetic stepdefs for `if` and `repeat` steps for consistent structure
+
 2.31.1-beta-rp.4
 ================
 Mar 26, 2021

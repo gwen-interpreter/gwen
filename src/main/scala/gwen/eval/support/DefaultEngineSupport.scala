@@ -63,17 +63,20 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
         val javascript = env.scopes.get(s"$condition/javascript")
-        val iStep = step.copy(withName = doStep)
-        val result = env.evaluate(evaluateStep(step, iStep, env)) {
+        val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
+        val condStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil)
+        env.getStepDef(doStep) foreach { stepDef =>
+          checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)
+        }
+        env.evaluate(evalStepDef(step, condStepDef, step, Nil, env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
-            evaluateStep(step, iStep, env)
+            evalStepDef(step, condStepDef, step, Nil, env)
           } else {
             logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
             step.copy(withEvalStatus = Passed(0))
           }
         }
-        result.copy(withName = step.name)
       }
 
       case _ => null

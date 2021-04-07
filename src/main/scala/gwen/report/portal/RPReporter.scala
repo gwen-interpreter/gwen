@@ -32,6 +32,7 @@ import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 import java.{util => ju}
+import scala.concurrent.duration.Duration
 
 class RPReporter(rpClient: RPClient) 
     extends LifecycleEventListener("Report Portal Reporter", RPConfig.bypassNodeTypes) 
@@ -238,7 +239,7 @@ class RPReporter(rpClient: RPClient)
       scenario.steps foreach { step => 
         val sCallTrail = if (callTrail.lastOption.map(_.name != step.name).getOrElse(true)) callTrail ++ List(step) else callTrail
         beforeStep(time, step, scenario.uuid, sCallTrail, scopes, SendFailedStepDefs.isInlined)
-        time = new ju.Date(time.getTime + step.evalStatus.duration.toMillis)
+        time = new ju.Date(time.getTime + durationMsecs(step.evalStatus.duration))
         afterStep(time, step, step.uuid, sCallTrail, scopes)
         
       }
@@ -247,7 +248,7 @@ class RPReporter(rpClient: RPClient)
         examples.scenarios foreach { scenario => 
           time = inject(time, scenario, examples.uuid, callTrail)
         }
-        time = new ju.Date(time.getTime + examples.evalStatus.duration.toMillis)
+        time = new ju.Date(time.getTime + durationMsecs(examples.evalStatus.duration))
         afterExamples(time, examples, examples.uuid, callTrail)
       }
       if (scenario.isStepDef) {
@@ -256,6 +257,11 @@ class RPReporter(rpClient: RPClient)
         afterScenario(time, scenario, scenario.uuid, callTrail)
       }
       time
+    }
+
+    def durationMsecs(duration: Duration): Long = {
+      val msecs = step.evalStatus.duration.toMillis
+      if (msecs < 1) 1L else msecs
     }
 
     step.stepDef foreach { case (stepDef, _) => 

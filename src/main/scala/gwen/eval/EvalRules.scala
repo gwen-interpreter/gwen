@@ -67,11 +67,13 @@ trait EvalRules {
     if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (BehaviorRules.isStrict) {
         step.stepDef foreach { case (stepDef, _) =>
-          stepDef.behaviorTag match {
-            case Some(behaviorTag) =>
-              checkStepRules(step, BehaviorType.withName(behaviorTag.name), env)
-            case _ =>
-              Errors.undefinedStepDefBehaviorError(stepDef)
+          if (!stepDef.isSynthetic) {
+            stepDef.behaviorTag match {
+              case Some(behaviorTag) =>
+                checkStepRules(step, BehaviorType.withName(behaviorTag.name), env)
+              case _ =>
+                Errors.undefinedStepDefBehaviorError(stepDef)
+            }
           }
         }
       }

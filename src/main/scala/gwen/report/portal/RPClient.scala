@@ -21,7 +21,6 @@ import gwen.dsl._
 import gwen.Errors._
 import gwen.eval.GwenOptions
 import RPConfig._
-import Formatting.escapeHtml
 
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
@@ -157,7 +156,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     rq.setStartTime(startTime)
     rq.setType(mapItemType(nodeType).name)
     rq.setHasStats(!inlined)
-    rq.setName((if (inlined) escapeHtml(name) else name).replaceAll(s"$ZeroChar", ""))
+    rq.setName((if (inlined) escape(name) else name).replaceAll(s"$ZeroChar", ""))
     if (desc.size > 0) rq.setDescription(desc)
     val attributes = new ju.HashSet[ItemAttributesRQ]()
     attributes.addAll(tags.map(tag => new ItemAttributesRQ(null, tag.toString)).toSet.asJava)
@@ -210,10 +209,10 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     logger.debug(s"sendItemLog(level=$level, msg=$msg, file=${file})")
     file match {
       case Some(f) => 
-        val rpMessage = new ReportPortalMessage(f, msg)
+        val rpMessage = new ReportPortalMessage(f, escape(msg))
         ReportPortal.emitLog(rpMessage, level.name, ju.Calendar.getInstance.getTime)
       case None => 
-        ReportPortal.emitLog(msg, level.name, ju.Calendar.getInstance.getTime)
+        ReportPortal.emitLog(escape(msg), level.name, ju.Calendar.getInstance.getTime)
     }
   }
 
@@ -251,6 +250,13 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       case StatusKeyword.Passed => LogLevel.INFO
       case _ => LogLevel.WARN
     }
+  }
+
+  private def escape(raw: String): String = {
+    raw
+      .replaceAll("\\*", "&ast;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
   }
   
 }
