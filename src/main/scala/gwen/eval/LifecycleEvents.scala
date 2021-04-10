@@ -130,6 +130,10 @@ class LifecycleEventDispatcher extends LazyLogging {
     dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
   }
   def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
+    // to gurantee at least 1 millisecond delay for durations less than 1 msec
+    if (step.evalStatus.duration.toMillis < 1) {
+      Thread.sleep(1)
+    }
     dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
     popCallTrail()
   }

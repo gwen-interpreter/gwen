@@ -393,7 +393,7 @@ object Scenario {
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
   def keywordFor(tags: List[Tag], keyword: String): String = {
     tags.map(_.name) find { name =>
-      name == ReservedTags.Repeat.toString || name == ReservedTags.If.toString || name == ReservedTags.ForEach.toString || name == ReservedTags.StepDef.toString
+      name == ReservedTags.StepDef.toString || name == ReservedTags.ForEach.toString || name == ReservedTags.If.toString || name == ReservedTags.RepeatUntil.toString || name == ReservedTags.RepeatWhile.toString
     } getOrElse {
       keyword.trim
     }

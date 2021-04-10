@@ -1,3 +1,9 @@
+2.31.1-beta-rp.6
+================
+Apr 11, 2021
+- Fix composite steps involving if conditions
+- Add 1 ms delay to all lifecyce events to ensure millisecond timestamp accuracy
+
 2.31.1-beta-rp.5
 ================
 Apr 7, 2021

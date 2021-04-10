@@ -136,7 +136,16 @@ class EnvContext(options: GwenOptions) extends Evaluatable
           withTags = tags.filter(_.name != ReservedTags.ForEach.toString).filter(!_.name.startsWith(ReservedTags.DataTable.toString))
         )
       )
-      val step = Step(None, StepKeyword.When.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
+      val keyword = Tag.findByName(stepDef.tags, ReservedTags.Context.toString) map { _ => 
+        StepKeyword.Given
+      } getOrElse {
+        Tag.findByName(stepDef.tags, ReservedTags.Assertion.toString) map { _ => 
+          StepKeyword.Then
+        } getOrElse {
+          StepKeyword.When
+        }
+      }
+      val step = Step(None, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
       stepDefs += (stepDef.name ->
         stepDef.copy(
           withSourceRef = None,
