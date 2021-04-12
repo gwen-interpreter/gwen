@@ -179,7 +179,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     */
   def evaluateStep(parent: Identifiable, step: Step, env: T): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
-    val iStep = doEvaluate(step, env) { env.interpolate }
+    val ipStep = doEvaluate(step, env) { env.interpolateParams }
+    val iStep = doEvaluate(ipStep, env) { env.interpolate }
     val iStepDef = Try(env.getStepDef(iStep.name))
     var pStep: Option[Step] = None
     logger.info(s"Evaluating Step: $iStep")

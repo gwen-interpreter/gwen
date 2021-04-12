@@ -63,8 +63,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val mockLifecycle = mock[LifecycleEventDispatcher]
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
     val step = Step(StepKeyword.Given.toString, "I am a valid step")
-    when(mockEnv.interpolate(step)).thenReturn(step)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step, Passed(0)))
+    when(mockEnv.interpolateParams(any[Step])).thenReturn(step)
+    when(mockEnv.interpolate(any[Step])).thenReturn(step)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step, Passed(1)))
     val result = interpreter(mockEnv, mockLifecycle).interpretStep("Given I am a valid step", mockEnv)
     result match {
       case TrySuccess(s) =>
@@ -88,9 +89,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val stepdef = Scenario(List[Tag](Tag("@StepDef")), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
-    when(mockEnv.interpolate(step1)).thenReturn(step1)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)))
-    when(mockEnv.interpolate(step2)).thenReturn(step2)
+    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1)
+    when(mockEnv.interpolate(any[Step])).thenReturn(step1)
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)))
+    when(mockEnv.interpolateParams(any[Step])).thenReturn(step2)
+    when(mockEnv.interpolate(any[Step])).thenReturn(step2)
     when(mockEnv.stepScope).thenReturn(paramScope)
     val result = interpreter(mockEnv, mockLifecycle).interpretStep("Given I am a valid stepdef", mockEnv)
     result match {
@@ -142,8 +145,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val step4 = Step(StepKeyword.Given.toString, "a deterministic nonlinear system")
     val step5 = Step(StepKeyword.When.toString, "a small change is initially applied")
     val step6 = Step(StepKeyword.Then.toString, "a large change will eventually result")
+    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6)
     when(mockEnv.interpolate(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)), Step(step6, Passed(0)))
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)), Step(step3, Passed(1)), Step(step4, Passed(1)), Step(step5, Passed(1)), Step(step6, Passed(1)))
     val result = interpreter(mockEnv, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, Nil, None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>
@@ -225,8 +229,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val step7 = Step(StepKeyword.When.toString, "a small change is initially applied")
     val step8 = Step(StepKeyword.Then.toString, "a large change will eventually result")
     val step9 = Step(StepKeyword.Then.toString, "order is lost")
+    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6, step7, step8, step9)
     when(mockEnv.interpolate(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6, step7, step8, step9)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(0)), Step(step2, Passed(0)), Step(step3, Passed(0)), Step(step4, Passed(0)), Step(step5, Passed(0)), Step(step6, Passed(0)), Step(step7, Passed(0)), Step(step8, Passed(0)), Step(step9, Passed(0)))
+    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)), Step(step3, Passed(1)), Step(step4, Passed(1)), Step(step5, Passed(1)), Step(step6, Passed(1)), Step(step7, Passed(1)), Step(step8, Passed(1)), Step(step9, Passed(1)))
     val result = interpreter(mockEnv, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, List(metaFile), None), Nil, mockEnv)
     result match {
       case Some(featureResult) =>

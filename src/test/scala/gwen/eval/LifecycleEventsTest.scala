@@ -53,6 +53,8 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val step = mock[Step]
     val scopes = mock[ScopedDataStack]
 
+    when(step.evalStatus).thenReturn(Passed(1))
+    
     when(unit.parent).thenReturn(parent())
 
     dispatcher.addListener(listener)
@@ -135,6 +137,10 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val stepUuid3 = UUIDGenerator.nextId
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
+
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
 
     when(step1.nodeType).thenReturn(NodeType.Step)
     when(step2.nodeType).thenReturn(NodeType.Step)
@@ -248,6 +254,11 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val stepUuid4 = UUIDGenerator.nextId
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
+
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
+    when(step4.evalStatus).thenReturn(Passed(1))
 
     when(featureSpec.nodeType).thenReturn(NodeType.Feature)
     when(featureResult.nodeType).thenReturn(NodeType.Result)

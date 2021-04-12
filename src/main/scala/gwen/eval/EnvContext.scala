@@ -293,19 +293,29 @@ class EnvContext(options: GwenOptions) extends Evaluatable
   }
 
   /**
-    * Interpolate the given step before it is evaluated.
+    * Interpolate all parameters in the given step before it is evaluated.
     * 
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolate(step: Step): Step = {
+  def interpolateParams(step: Step): Step = interpolate(step, interpolateParams)
+
+  /**
+    * Interpolate all references in the given step before it is evaluated.
+    * 
+    * @param step the step to interpolate
+    * @return the interpolated step
+    */
+  def interpolate(step: Step): Step = interpolate(step, interpolate)
+
+  private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
     val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
-    val iName = interpolate(step.name) { resolver }
+    val iName = interpolator(step.name) { resolver }
     val iTable = step.table map { case (line, record) =>
-      (line, record.map(cell => interpolate(cell) { resolver }))
+      (line, record.map(cell => interpolator(cell) { resolver }))
     }
     val iDocString = step.docString map { case (line, content, contentType) =>
-      (line, interpolate(content) { resolver }, contentType)
+      (line, interpolator(content) { resolver }, contentType)
     }
     if (iName != step.name || iTable != step.table || iDocString != step.docString) {
       step.copy(

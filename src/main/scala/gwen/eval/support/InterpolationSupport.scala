@@ -19,6 +19,9 @@ import gwen._
 
 import com.typesafe.scalalogging.LazyLogging
 
+import scala.util.Try
+import scala.util.Success
+
 /**
  * Provides support for string interpolation.
  */
@@ -27,7 +30,8 @@ trait InterpolationSupport extends LazyLogging {
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
 
-  final def interpolate(source: String)(resolve: String => String): String = source match {
+  final def interpolate(source: String)(resolve: String => String): String = {
+    source match {
       case propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
         val iProperty = interpolate(property) { resolve }
@@ -49,4 +53,22 @@ trait InterpolationSupport extends LazyLogging {
         }
       case _ => source
     }
+  }
+
+  final def interpolateParams(source: String)(resolve: String => String): String = {
+    source match {
+      case paramSyntax(prefix, param, suffix) =>
+        logger.debug(s"Resolving param-syntax binding: $$<$param>")
+        Try(resolve(s"<${param}>")) match {
+          case Success(resolved) => 
+            val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
+            interpolateParams(s"$prefix${substitution}$suffix") { resolve }
+          case _ =>
+            s"${interpolateParams(prefix)(resolve)}$$<$param>${interpolateParams(suffix)(resolve)}"
+        }
+        
+      case _ => source
+    } 
+  }
+
 }
