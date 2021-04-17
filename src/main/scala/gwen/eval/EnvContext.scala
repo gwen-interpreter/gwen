@@ -329,70 +329,43 @@ class EnvContext(options: GwenOptions) extends Evaluatable
   }
 
   /**
-    * Gets the scoped attribute or settings value bound to the given name.
+    * Gets get value bound to the given name.
     * Subclasses can override this method to perform additional lookups.
     *
     *  @param name the name of the attribute or value
     */
   def getBoundReferenceValue(name: String): String = {
-    val attScopes = scopes.visible.filterAtts{case (n, _) => n.startsWith(name)}
-    attScopes.findEntry { case (n, v) => n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")} map {
-      case (n, v) =>
-        if (n == s"$name/text") v
-        else if (n == s"$name/javascript")
-          evaluate("$[dryRun:javascript]") {
-            Option(evaluateJS(formatJSReturn(interpolate(v)(getBoundReferenceValue)))).map(_.toString).getOrElse("")
-          }
-        else if (n.startsWith(s"$name/xpath")) {
-          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
-          val targetType = interpolate(attScopes.get(s"$name/xpath/targetType"))(getBoundReferenceValue)
-          val expression = interpolate(attScopes.get(s"$name/xpath/expression"))(getBoundReferenceValue)
-          evaluateXPath(expression, source, XMLNodeType.withName(targetType))
-        }
-        else if (n.startsWith(s"$name/regex")) {
-          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/regex/source")))(getBoundReferenceValue)
-          val expression = interpolate(attScopes.get(s"$name/regex/expression"))(getBoundReferenceValue)
-          extractByRegex(expression, source)
-        }
-        else if (n.startsWith(s"$name/json path")) {
-          val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/json path/source")))(getBoundReferenceValue)
-          val expression = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
-          evaluateJsonPath(expression, source)
-        }
-        else if (n == s"$name/sysproc") evaluate("$[dryRun:sysproc]") { v.!!.trim }
-        else if (n == s"$name/file") {
-          val filepath = interpolate(v)(getBoundReferenceValue)
-          evaluate("$[dryRun:file]") {
-            if (new File(filepath).exists()) {
-              interpolate(Source.fromFile(filepath).mkString)(getBoundReferenceValue)
-            } else throw new FileNotFoundException(s"File bound to '$name' not found: $filepath")
-          }
-        }
-        else if (n.startsWith(s"$name/sql")) {
-          val selectStmt = interpolate(attScopes.get(s"$name/sql/selectStmt"))(getBoundReferenceValue)
-          val dbName = interpolate(attScopes.get(s"$name/sql/dbName"))(getBoundReferenceValue)
-          executeSQLQuery(selectStmt, dbName)
-        }
-        else v
-    } getOrElse {
-      (topScope.getObject("record") match {
-        case Some(scope: ScopedData) =>
-          scope.getOpt(name)
-        case _ => topScope.getObject("table") match {
-          case Some(table: DataTable) => table.tableScope.getOpt(name)
-          case _ => None
-        }
-      }).getOrElse {
-          scopes.getOpt(name).getOrElse {
-            Settings.getOpt(name).getOrElse {
-              Errors.unboundAttributeError(name)
-            }
-          }
-        }
+    getBoundReferenceValue(getBinding(name))
+  }
+
+  /**
+    * Gets a bound reference value
+    *
+    *  @param binding the binding to get the value of
+    */
+  def getBoundReferenceValue(binding: Binding): String = {
+    binding match {
+      case TextBinding(_, value) => value
+      case JavaScriptBinding(_, javascript) => evaluate("$[dryRun:javascript]") {
+        Option(evaluateJS(formatJSReturn(javascript))).map(_.toString).getOrElse("")
       }
-    } tap { value =>
-      logger.debug(s"getBoundReferenceValue($name)='$value'")
+      case XPathBinding(_, xpath, target, source) => evaluateXPath(xpath, source, XMLNodeType.withName(target))
+      case RegexBinding(_, regex, source) => extractByRegex(regex, source)
+      case JsonPathBinding(_, jsonPath, source) => evaluateJsonPath(jsonPath, source)
+      case SysprocBinding(_, sysproc) => evaluate("$[dryRun:sysproc]") { sysproc.!!.trim }
+      case FileBinding(name, file) => evaluate("$[dryRun:file]") {
+        if (file.exists()) {
+          interpolate(Source.fromFile(file).mkString)(getBoundReferenceValue)
+        } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
+      }
+      case SQLBinding(_, db, sql) => executeSQLQuery(sql, db)
+      case RecordBinding(name, record) => record.get(name)
+      case TableBinding(name, table) => table.tableScope.get(name)
+      case SettingsBinding(_, value) => value
+      case AttributeBinding(_, value) =>  value
+      case _ => Errors.unboundAttributeError(binding.name)
     }
+  }
   
   def compare(sourceName: String, expected: String, actual: String, operator: String, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
@@ -429,6 +402,76 @@ class EnvContext(options: GwenOptions) extends Evaluatable
         }
       }
     }
-  }  
+  }
+
+  def getBinding(name: String): Binding = {
+    val attScopes = scopes.visible.filterAtts{case (n, _) => n.startsWith(name)}
+    attScopes.findEntry { case (n, v) => 
+      n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")
+    } map { case (n, v) =>
+      if (n == s"$name/text") {
+        TextBinding(name, v)
+      }
+      else if (n == s"$name/javascript") {
+        val javascript = interpolate(v)(getBoundReferenceValue)
+        JavaScriptBinding(name, javascript)
+      }
+      else if (n.startsWith(s"$name/xpath")) {
+        val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/xpath/source")))(getBoundReferenceValue)
+        val target = interpolate(attScopes.get(s"$name/xpath/targetType"))(getBoundReferenceValue)
+        val xpath = interpolate(attScopes.get(s"$name/xpath/expression"))(getBoundReferenceValue)
+        XPathBinding(name, xpath, target, source)
+      }
+      else if (n.startsWith(s"$name/regex")) {
+        val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/regex/source")))(getBoundReferenceValue)
+        val xpath = interpolate(attScopes.get(s"$name/regex/expression"))(getBoundReferenceValue)
+        RegexBinding(name, xpath, source)
+      }
+      else if (n.startsWith(s"$name/json path")) {
+        val source = interpolate(getBoundReferenceValue(attScopes.get(s"$name/json path/source")))(getBoundReferenceValue)
+        val jsonPath = interpolate(attScopes.get(s"$name/json path/expression"))(getBoundReferenceValue)
+        JsonPathBinding(name, jsonPath, source)
+      }
+      else if (n == s"$name/sysproc") {
+        SysprocBinding(name, v)
+      }
+      else if (n == s"$name/file") {
+        val filepath = interpolate(v)(getBoundReferenceValue)
+        FileBinding(name, new File(filepath))
+      }
+      else if (n.startsWith(s"$name/sql")) {
+        val sql = interpolate(attScopes.get(s"$name/sql/selectStmt"))(getBoundReferenceValue)
+        val db = interpolate(attScopes.get(s"$name/sql/dbName"))(getBoundReferenceValue)
+        SQLBinding(name, db, sql)
+      }
+      else {
+        AttributeBinding(name, v)
+      }
+    } getOrElse {
+      (topScope.getObject("record") match {
+        case Some(record: ScopedData) => 
+          record.getOpt(name) map { _ => 
+            RecordBinding(name, record)
+          }
+        case _ => topScope.getObject("table") match {
+          case Some(table: DataTable) => 
+            table.tableScope.getOpt(name) map { _ =>
+              TableBinding(name, table)
+            }
+          case _ => None
+        }
+      }).getOrElse {
+        scopes.getOpt(name) map { value => 
+          AttributeBinding(name, value)
+        } getOrElse {
+          Settings.getOpt(name) map { value => 
+            SettingsBinding(name, value)
+          } getOrElse {
+            Errors.unboundAttributeError(name)
+          }
+        }
+      }
+    }
+  }
   
 }

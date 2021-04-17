@@ -135,4 +135,12 @@ object RPSettings {
    */
   def `gwen.rp.send.tags`: Boolean = Settings.getOpt("gwen.rp.send.tags").map(_.toBoolean).getOrElse(false)
 
+  /**
+   * Provides access to the `gwen.rp.escapeForMarkdown` property setting used to 
+   * determine whether or not to escape inlined steps and log messages for markdown view. 
+   * Default is true. Set this to true to target markdown view and false to target console 
+   * view in report portal.
+   */
+  def `gwen.rp.escapeForMarkdown`: Boolean = Settings.getOpt("gwen.rp.escapeForMarkdown").map(_.toBoolean).getOrElse(true)
+
 }

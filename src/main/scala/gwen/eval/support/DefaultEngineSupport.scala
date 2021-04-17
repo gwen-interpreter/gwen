@@ -278,7 +278,8 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         checkStepRules(step, BehaviorType.Assertion, env)
-        val actualValue = env.getBoundReferenceValue(attribute)
+        val binding = env.getBinding(attribute)
+        val actualValue = env.getBoundReferenceValue(binding)
         val expected = env.parseExpression(operator, expression)
         env.perform {
           val negate = Option(negation).isDefined
@@ -286,7 +287,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
           result match {
             case Success(assertion) =>
-              assert(assertion, s"Expected $attribute to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
+              assert(assertion, s"Expected $binding to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
             case Failure(error) =>
               assert(assertion = false, error.getMessage)
           }

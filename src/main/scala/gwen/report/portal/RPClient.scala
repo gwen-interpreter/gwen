@@ -59,6 +59,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private val tcids = new ju.concurrent.ConcurrentHashMap[String, String]()
   private val launchLock = new ju.concurrent.Semaphore(1)
   private var launchUuid: Option[String] = None
+  private val escapeForMarkdown = RPSettings.`gwen.rp.escapeForMarkdown`
 
   private lazy val session: Launch = init()
 
@@ -156,7 +157,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     rq.setStartTime(startTime)
     rq.setType(mapItemType(nodeType).name)
     rq.setHasStats(!inlined)
-    rq.setName((if (inlined) escape(name) else name).replaceAll(s"$ZeroChar", ""))
+    rq.setName(encode(name, inlined))
     if (desc.size > 0) rq.setDescription(desc)
     val attributes = new ju.HashSet[ItemAttributesRQ]()
     attributes.addAll(tags.map(tag => new ItemAttributesRQ(null, tag.toString)).toSet.asJava)
@@ -207,12 +208,13 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
 
   def sendItemLog(level: LogLevel, msg: String, file: Option[File]): Unit = {
     logger.debug(s"sendItemLog(level=$level, msg=$msg, file=${file})")
+    val encodedMsg = encode(msg, true)
     file match {
       case Some(f) => 
-        val rpMessage = new ReportPortalMessage(f, escape(msg))
+        val rpMessage = new ReportPortalMessage(f, encodedMsg)
         ReportPortal.emitLog(rpMessage, level.name, ju.Calendar.getInstance.getTime)
       case None => 
-        ReportPortal.emitLog(escape(msg), level.name, ju.Calendar.getInstance.getTime)
+        ReportPortal.emitLog(encodedMsg, level.name, ju.Calendar.getInstance.getTime)
     }
   }
 
@@ -252,11 +254,17 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     }
   }
 
-  private def escape(raw: String): String = {
-    raw
-      .replaceAll("\\*", "&ast;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
+  private def encode(source: String, markdownable: Boolean): String = {
+    (if (markdownable && escapeForMarkdown) {
+      source
+        .replaceAll("\\*", "&ast;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("~", "&tilde;")
+        .replaceAll("  ", " &nbsp;")
+    } else {
+      source
+    }).replaceAll(s"$ZeroChar", "")
   }
   
 }
