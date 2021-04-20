@@ -82,10 +82,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = {
     parseStep(input).map { step => 
-      engine.evaluateStep(
-        Root, 
-        step, 
-        env)
+      engine.evaluateStep(Root, step, 0, env)
     }
   }
   
@@ -102,9 +99,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] = {
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val isMeta = FileIO.isMetaFile(featureFile)
-      if (!isMeta) {
-        lifecycle.beforeUnit(unit, env.scopes)
-      }
       val dataRecord = unit.dataRecord
       dataRecord foreach { rec =>
         env.topScope.set("data record number", rec.recordNo.toString)
@@ -117,6 +111,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           } else {
             TagsFilter.filter(featureSpec, tagFilters) match {
               case Some(fspec) =>
+                lifecycle.beforeUnit(unit, env.scopes)
                 val metaResults = loadMetaImports(unit, featureSpec, tagFilters, env) ++ loadMeta(Some(unit), unit.metaFiles, tagFilters, env)
                 env.loadedMeta = Nil
                 env.topScope.set("gwen.feature.file.name", featureFile.getName)
@@ -139,7 +134,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       }
       result tap { _ => 
         if (!isMeta) {
-          lifecycle.afterUnit(result.map(res => FeatureUnit(unit.ancestor, unit, res)).getOrElse(unit), env.scopes)
+          result foreach { res =>
+            lifecycle.afterUnit(FeatureUnit(unit.ancestor, unit, res), env.scopes)
+          }
         }
       }
     }).getOrElse(None tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })

@@ -54,7 +54,7 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val scopes = mock[ScopedDataStack]
 
     when(step.evalStatus).thenReturn(Passed(1))
-    
+
     when(unit.parent).thenReturn(parent())
 
     dispatcher.addListener(listener)
@@ -114,6 +114,10 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     dispatcher.afterRule(rule, scopes)
     verify(listener).afterRule(ruleEventCaptor.capture())
     ruleEventCaptor.getValue().phase should be (LifecyclePhase.after)
+
+    dispatcher.healthCheck(parent(), step, scopes)
+    verify(listener).healthCheck(stepEventCaptor.capture())
+    stepEventCaptor.getValue().phase should be (LifecyclePhase.healthCheck)
 
   }
 

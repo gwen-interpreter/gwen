@@ -143,4 +143,11 @@ object RPSettings {
    */
   def `gwen.rp.escapeForMarkdown`: Boolean = Settings.getOpt("gwen.rp.escapeForMarkdown").map(_.toBoolean).getOrElse(true)
 
+  /**
+   * Provides access to the `gwen.rp.heartbeat` property setting used to determine whether 
+   * or not to check report portal connection before the first step of each scenario 
+   * executes and fail fast when it goes offline. Default is true (enabled).
+   */
+  def `gwen.rp.heartbeat`: Boolean = Settings.getOpt("gwen.rp.heartbeat").map(_.toBoolean).getOrElse(true)
+
 }

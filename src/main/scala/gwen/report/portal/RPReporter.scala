@@ -26,17 +26,22 @@ import gwen.eval.LifecycleEventListener
 import gwen.eval.ScopedDataStack
 import gwen.report.RPReportConfig
 
+import scala.concurrent.duration.Duration
 import scala.io.Source
 
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
 import java.{util => ju}
-import scala.concurrent.duration.Duration
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 class RPReporter(rpClient: RPClient) 
     extends LifecycleEventListener("Report Portal Reporter", RPConfig.bypassNodeTypes) 
     with LazyLogging {
+
+  private val heartbeat = RPSettings.`gwen.rp.heartbeat`
 
   override def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { 
     val unit = event.source
@@ -225,6 +230,18 @@ class RPReporter(rpClient: RPClient)
     }
     val desc = formatDescriptionWithError(step, callTrail)
     rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
+  }
+
+  override def healthCheck(event: LifecycleEvent[Step]): Unit = { 
+    if (heartbeat) {
+      Try(rpClient.checkAvailability()) match {
+        case Success(_) => 
+          logger.info("Report portal heartbeat OK")
+        case Failure(e) => 
+          logger.error(s"Report portal heartbeat FAILED: ${e.getMessage}")
+          throw e
+      }
+    }
   }
 
   def injectErrorTrail(endTime: ju.Date, step: Step, parentUuid: String, callTrail: List[Step], scopes: ScopedDataStack): Unit = {

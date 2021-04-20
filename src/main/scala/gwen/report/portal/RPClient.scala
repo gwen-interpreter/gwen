@@ -94,7 +94,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     }
   }
 
-  private def checkAvailability(): Unit = {
+  def checkAvailability(): Unit = {
     val endpoint = RPSettings.`rp.endpoint`
     try {
       val conn = new URL(endpoint).openConnection().asInstanceOf[HttpURLConnection]

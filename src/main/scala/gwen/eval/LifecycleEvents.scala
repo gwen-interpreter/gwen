@@ -24,10 +24,12 @@ import scala.collection.mutable
 import com.typesafe.scalalogging.LazyLogging
 
 import java.{util => ju}
+import scala.util.Try
+import scala.util.Failure
 
 object LifecyclePhase extends Enumeration {
   type LifecyclePhase = Value
-  val before, after = Value
+  val before, after, healthCheck = Value
 }
 
 case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parentUuid: String, source: T, callTrail: List[Step], scopes: ScopedDataStack) {
@@ -70,6 +72,7 @@ class LifecycleEventListener(val name: String, val bypass: Set[NodeType.Value] =
   def afterStepDef(event: LifecycleEvent[Scenario]): Unit = { }
   def beforeStep(event: LifecycleEvent[Step]): Unit = { }
   def afterStep(event: LifecycleEvent[Step]): Unit = { }
+  def healthCheck(event: LifecycleEvent[Step]): Unit = { }
 
 }
 
@@ -137,6 +140,18 @@ class LifecycleEventDispatcher extends LazyLogging {
     dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
     popCallTrail()
   }
+  def healthCheck(parent: Identifiable, step: Step, scopes: ScopedDataStack): Unit = { 
+    dispatchHealthCheckEvent(parent, step, scopes) { (listener, event) => 
+      Try(listener.healthCheck(event)) match {
+        case Failure(e) => 
+          Settings.setLocal("gwen.feature.failfast", "true")
+          Settings.setLocal("gwen.feature.failfast.exit", "false")
+          throw e
+        case _ => // noop
+      }
+    }
+  }
+
   def transitionBackground(parent: Identifiable, background: Background, toStatus: EvalStatus, scopes: ScopedDataStack): Background = {
     beforeBackground(parent, background, scopes)
     val steps = transitionSteps(background, background.steps, toStatus, scopes)
@@ -194,7 +209,6 @@ class LifecycleEventDispatcher extends LazyLogging {
       source: T,
       scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
-
     listeners foreach { listener => 
       listener.pushUuid(source.uuid)
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
@@ -203,12 +217,10 @@ class LifecycleEventDispatcher extends LazyLogging {
         dispatchEvent(listener, LifecyclePhase.before, parent.uuid, source, scopes) { dispatch }
       }
     }
-
   }
 
   private def dispatchAfterEvent[T <: Identifiable](source: T, scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
-
     listeners foreach { listener => 
       val parentUuid = listener.popUuid()
       dispatchEvent(listener, LifecyclePhase.after, parentUuid, source, scopes) { dispatch } tap { _ =>
@@ -217,7 +229,14 @@ class LifecycleEventDispatcher extends LazyLogging {
         }
       }
     }
+  }
 
+  private def dispatchHealthCheckEvent[T <: Identifiable](parent: Identifiable, source: T, scopes: ScopedDataStack)
+      (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
+    listeners foreach { listener => 
+      val parentUuid = parent.uuid
+      dispatchEvent(listener, LifecyclePhase.healthCheck, parentUuid, source, scopes) { dispatch }
+    }
   }
 
   private def dispatchEvent[T <: Identifiable](

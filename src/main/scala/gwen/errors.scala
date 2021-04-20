@@ -77,7 +77,6 @@ object Errors {
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
   def serviceUnavailableError(name: String, endpoint: String) = throw new ServiceUnavailableException(name, endpoint)
-  def serviceIntegrationError(msg: String, cause: Throwable) = throw new ServiceIntegrationException(msg, cause)
 
   private def at(sourceRef: String): String = {
     if (sourceRef.length > 0) s" [at $sourceRef]"
@@ -212,9 +211,7 @@ object Errors {
   /** Thrown when a file cannot be attached. */
   class FileAttachException(file: File, msg: String) extends GwenException(s"Failed to attach file $file: $msg")
 
-  /** Thrown when a service endpoint is unavailable. */
+  /** Thrown when a service endpoint is unavailable or goes offline. */
   class ServiceUnavailableException(name: String, endpoint: String) extends GwenException(s"$name service unavailable or unreachable at $endpoint")
 
-  /** Thrown when a service integration fails. */
-  class ServiceIntegrationException(msg: String, cause: Throwable) extends GwenException(msg, cause)
 }

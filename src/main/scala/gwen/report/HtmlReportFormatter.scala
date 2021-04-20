@@ -486,7 +486,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                 <ul>
                   <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
                     <div class="bg-${cssStatus(status)}">
-                      <span class="badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.timestamp.toString)} - ${escapeHtml(step.evalStatus.cause.get.getMessage)}</small></span>
+                      <span class="badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.timestamp.toString)} - ${escapeHtml(step.evalStatus.message)}</small></span>
                     </div>
                   </li>
                 </ul>""" else ""}
