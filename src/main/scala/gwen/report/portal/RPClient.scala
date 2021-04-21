@@ -59,7 +59,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private val tcids = new ju.concurrent.ConcurrentHashMap[String, String]()
   private val launchLock = new ju.concurrent.Semaphore(1)
   private var launchUuid: Option[String] = None
-  private val escapeForMarkdown = RPSettings.`gwen.rp.escapeForMarkdown`
 
   private lazy val session: Launch = init()
 
@@ -255,7 +254,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   }
 
   private def encode(source: String, markdownable: Boolean): String = {
-    (if (markdownable && escapeForMarkdown) {
+    (if (markdownable && RPSettings.`gwen.rp.escapeForMarkdown`) {
       source
         .replaceAll("\\*", "&ast;")
         .replaceAll("<", "&lt;")

@@ -41,8 +41,6 @@ class RPReporter(rpClient: RPClient)
     extends LifecycleEventListener("Report Portal Reporter", RPConfig.bypassNodeTypes) 
     with LazyLogging {
 
-  private val heartbeat = RPSettings.`gwen.rp.heartbeat`
-
   override def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { 
     val unit = event.source
     val nodeType = unit.nodeType
@@ -233,7 +231,7 @@ class RPReporter(rpClient: RPClient)
   }
 
   override def healthCheck(event: LifecycleEvent[Step]): Unit = { 
-    if (heartbeat) {
+    if (RPSettings.`gwen.rp.heartbeat`) {
       Try(rpClient.checkAvailability()) match {
         case Success(_) => 
           logger.info("Report portal heartbeat OK")
