@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@ object GwenSettings {
     * Enabling this feature will fail a feature as soon as the first scenario in that 
     * feature fails.  Other features (if provided) will resume.
     */
-  def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").getOrElse("true").toBoolean
+  def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").map(_.toBoolean).getOrElse(true)
   
   /**
     * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution 
     * on first failure (default value is `false`). 
     * Enabling this feature will exit execution when the first failure is detected.
     */
-  def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").getOrElse("false").toBoolean
+  def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").map(_.toBoolean).getOrElse(false)
   
   /**
    * Provides access to the `gwen.report.slideshow.framespersecond` property setting
@@ -61,7 +61,7 @@ object GwenSettings {
     * or create backups of previously generated reports (default value is `false`). 
     * Enabling this feature will create timestamped backups of previous reports. 
     */
-  def `gwen.report.overwrite`: Boolean = Settings.getOpt("gwen.report.overwrite").getOrElse("false").toBoolean
+  def `gwen.report.overwrite`: Boolean = Settings.getOpt("gwen.report.overwrite").map(_.toBoolean).getOrElse(false)
   
   /**
    * Provides access to the `gwen.rampup.interval.seconds` property setting used
@@ -74,14 +74,14 @@ object GwenSettings {
     * Provides access to the `gwen.report.suppress.meta` setting used to control whether 
     * or not meta report generation will be suppressed (default value is `false`).
     */
-  def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").getOrElse("false").toBoolean
+  def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").map(_.toBoolean).getOrElse(false)
 
   /**
     * Controls whether or not slideshows should be generated in HTML reports. This property is implicitly set to true
     * in the web engine only if screenshot capturing is enabled (gwen.web.capture.screenshots=true in web engine settings).
     * Users should not explicitly set this value.
     */
-  def `gwen.report.slideshow.create` = Settings.getOpt("gwen.report.slideshow.create").getOrElse("false").toBoolean
+  def `gwen.report.slideshow.create` = Settings.getOpt("gwen.report.slideshow.create").map(_.toBoolean).getOrElse(false)
 
   /**
     * Provides access to the `gwen.auto.discover.meta` property setting used to enable
@@ -90,7 +90,7 @@ object GwenSettings {
     * executing feature, forcing the user to control explicitly through the -m/--meta command line option which meta
     * files to load.
     */
-  def `gwen.auto.discover.meta`: Boolean = Settings.getOpt("gwen.auto.discover.meta").getOrElse("true").toBoolean
+  def `gwen.auto.discover.meta`: Boolean = Settings.getOpt("gwen.auto.discover.meta").map(_.toBoolean).getOrElse(true)
 
   /**
     * Provides access to the `gwen.auto.discover.data.csv` property setting used to enable
@@ -98,7 +98,7 @@ object GwenSettings {
     * Disabling this will prevent Gwen from automatically discovering and loading CSV files in the path of an executing
     * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
     */
-  def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").getOrElse("true").toBoolean
+  def `gwen.auto.discover.data.csv`: Boolean = Settings.getOpt("gwen.auto.discover.data.csv").map(_.toBoolean).getOrElse(true)
 
   /**
     * Provides access to the `gwen.assertion.mode` property setting used to enable hard, soft, or sustained
@@ -137,7 +137,7 @@ object GwenSettings {
     * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
     */
   def `gwen.associative.meta`: Boolean = 
-    `gwen.auto.discover.meta` && Settings.getOpt("gwen.associative.meta").getOrElse("false").toBoolean
+    `gwen.auto.discover.meta` && Settings.getOpt("gwen.associative.meta").map(_.toBoolean).getOrElse(false)
 
   /**
     * Provides access to the `gwen.behavior.rules` property setting used to determine whether strict, 

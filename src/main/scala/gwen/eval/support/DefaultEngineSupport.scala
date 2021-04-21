@@ -24,6 +24,8 @@ import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import scala.util.{Failure, Success, Try}
 
+import java.io.File
+
 /** Provides the common default steps that all engines can support. */
 trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
@@ -60,13 +62,17 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
-        lifecycle.beforeStep(parent, step)
         val javascript = env.scopes.get(s"$condition/javascript")
-        val iStep = step.copy(withName = doStep)
-        env.evaluate(evaluateStep(step, iStep, env)) {
+        env.getStepDef(doStep) foreach { stepDef =>
+          checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)
+        }
+        val iStep = step.copy(withEvalStatus = Pending)
+        val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
+        val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil)
+        env.evaluate(evalStepDef(step, iStepDef, iStep, Nil, env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
-            evaluateStep(step, iStep, env)
+            evalStepDef(step, iStepDef, iStep, Nil, env)
           } else {
             logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
             step.copy(withEvalStatus = Passed(0))
@@ -272,7 +278,8 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
 
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" => step.orDocString(expression) tap { expression =>
         checkStepRules(step, BehaviorType.Assertion, env)
-        val actualValue = env.getBoundReferenceValue(attribute)
+        val binding = env.getBinding(attribute)
+        val actualValue = env.getBoundReferenceValue(binding)
         val expected = env.parseExpression(operator, expression)
         env.perform {
           val negate = Option(negation).isDefined
@@ -280,7 +287,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           val opName = if (operator.endsWith(" file")) operator.substring(0, operator.length - 5) else operator
           result match {
             case Success(assertion) =>
-              assert(assertion, s"Expected $attribute to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
+              assert(assertion, s"Expected $binding to ${if(negate) "not " else ""}$opName '$expected' but got '$actualValue'")
             case Failure(error) =>
               assert(assertion = false, error.getMessage)
           }
@@ -291,6 +298,16 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         checkStepRules(step, BehaviorType.Assertion, env)
         env.perform {
           assert(Try(env.getBoundReferenceValue(attribute)).isFailure, s"Expected $attribute to be absent")
+        }
+
+      case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
+        checkStepRules(step, BehaviorType.Action, env)
+        val file = new File(filepath)
+        if (!file.exists) { 
+          Errors.fileAttachError(file, "not found")
+        }
+        env.perform {
+          env.addAttachment(name, file)
         }
       
       case _ => Errors.undefinedStepError(step)

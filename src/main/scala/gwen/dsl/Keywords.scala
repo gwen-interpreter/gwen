@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 Branko Juric, Brady Wood
+ * Copyright 2017-2021 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,7 +202,7 @@ object BehaviorRules extends Enumeration {
 
 object ReservedTags extends Enumeration {
   type Reserved = Value
-  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic = Value
+  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, RepeatWhile, RepeatUntil = Value
   val names: Set[String] = values.map(_.toString)
 }
 

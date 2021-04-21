@@ -37,6 +37,8 @@ object Position {
 
 /** Reperesents a location in source. */
 case class SourceRef(uri: String, pos: Position) {
+  def isFeature = uri.endsWith(".feature")
+  def isMeta = uri.endsWith(".meta")
   override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column))
 }
 object SourceRef {

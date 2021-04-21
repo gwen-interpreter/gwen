@@ -20,6 +20,7 @@ import gwen.Settings
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import gwen.Errors
 
 class InterpolationSupportTest extends FlatSpec with Matchers with InterpolationSupport {
 
@@ -229,6 +230,37 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
       case "<property-0>" => "good"
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
+  }
+
+  """Interpolation of Params""" should "resolve 1 available param" in {
+    interpolateParams("""Hey you ${env.var0} $<param> thing!""") {
+      case "<param>" => "good"
+      case x => Errors.unboundAttributeError(x, "local")
+    } should be ("""Hey you ${env.var0} good thing!""")
+  }
+
+  """Interpolation of Params""" should "resolve 2 available params" in {
+    interpolateParams("""Hey you $<param1> ${env.var0} thing $<param2>!""") {
+      case "<param1>" => "good"
+      case "<param2>" => "you"
+      case x => Errors.unboundAttributeError(x, "local")
+    } should be ("""Hey you good ${env.var0} thing you!""")
+  }
+
+  """Interpolation of Params""" should "resolve 2 available params and skip missing param" in {
+    interpolateParams("""Hey you $<param1> $<param2> thing $<param3>!""") {
+      case "<param1>" => "good"
+      case "<param3>" => "you"
+      case x => Errors.unboundAttributeError(x, "local")
+    } should be ("""Hey you good $<param2> thing you!""")
+  }
+
+  """Interpolation of Params""" should "resolve 2 available params and skip composite param" in {
+    interpolateParams("""Hey you $<param1> $<${env.var0}> thing $<param2>!""") {
+      case "<param1>" => "good"
+      case "<param2>" => "you"
+      case x => Errors.unboundAttributeError(x, "local")
+    } should be ("""Hey you good $<${env.var0}> thing you!""")
   }
 
 }

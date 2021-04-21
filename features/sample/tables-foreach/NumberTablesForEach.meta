@@ -28,35 +28,35 @@
    @DataTable(header="top")
    @Context
    Scenario: single row with header contains a number in decimal and binary form
-        Then the decimal data[decimal] should be data[binary] in binary for each data record
+        Then the decimal data[decimal] should be data[binary] in binary
 
    @StepDef
    @ForEach
    @DataTable(vertical="decimal,binary")
    @Context
    Scenario: single column without header contains a number in decimal and binary form
-        Then the decimal data[decimal] should be data[binary] in binary for each data record
+        Then the decimal data[decimal] should be data[binary] in binary
 
    @StepDef
    @ForEach
    @DataTable(header="left")
    @Context
    Scenario: single column with header contains a number in decimal and binary form
-        Then the decimal data[decimal] should be data[binary] in binary for each data record
+        Then the decimal data[decimal] should be data[binary] in binary
 
    @StepDef
    @ForEach
    @DataTable(horizontal="decimal,binary")
    @Context
    Scenario: each row contains a number in decimal and binary form
-        Then the decimal data[decimal] should be data[binary] in binary for each data record
+        Then the decimal data[decimal] should be data[binary] in binary
 
    @StepDef
    @ForEach
    @DataTable(vertical="decimal,binary")
    @Context
    Scenario: each column contains a number in decimal and binary form
-        Then the decimal data[decimal] should be data[binary] in binary for each data record
+        Then the decimal data[decimal] should be data[binary] in binary
 
   @StepDef
   Scenario: the decimal <decimal> should be <binary> in binary
@@ -71,16 +71,16 @@
   @DataTable(header="top")
   @Context
   Scenario: each row contains a number and its square and cube
-       Then number ^ 2 = square of number for each data record
-        And number ^ 3 = cube of number for each data record
+       Then number ^ 2 = square of number
+        And number ^ 3 = cube of number
 
   @StepDef
   @ForEach
   @DataTable(header="left")
   @Context
   Scenario: each column contains a number and its square and cube
-       Then number ^ 2 = square of number for each data record
-        And number ^ 3 = cube of number for each data record
+       Then number ^ 2 = square of number
+        And number ^ 3 = cube of number
 
   @StepDef
   Scenario: number ^ <power> = <function> of number

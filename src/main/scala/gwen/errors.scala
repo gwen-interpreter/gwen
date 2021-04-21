@@ -75,6 +75,7 @@ object Errors {
   def undefinedStepDefBehaviorError(stepDef: Scenario) = throw new UndefinedStepDefBehaviorException(stepDef)
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
+  def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
 
   private def at(sourceRef: String): String = {
     if (sourceRef.length > 0) s" [at $sourceRef]"
@@ -205,4 +206,8 @@ object Errors {
 
   /** Thrown when an explicit dialiect directive is found in a meta spec. */
   class MetaDialectException(language: String, specFile: File) extends GwenException(s"Language '$language' not supported in meta file at: $specFile (English 'en' supported for meta only)")
+
+  /** Thrown when a file cannot be attached. */
+  class FileAttachException(file: File, msg: String) extends GwenException(s"Failed to attach file $file: $msg")
+
 }

@@ -51,6 +51,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     engine.lifecycle.addListener(listener)
   }
 
+  def removeLifecycleEventListener(listener: LifecycleEventListener): Unit = {
+    engine.lifecycle.removeListener(listener)
+  }
+
   /**
     * Initialises the interpreter by creating the environment context
     * 
@@ -78,10 +82,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     */
   private[eval] def interpretStep(input: String, env: T): Try[Step] = {
     parseStep(input).map { step => 
-      engine.evaluateStep(
-        Root, 
-        step, 
-        env)
+      engine.evaluateStep(Root, step, 0, env)
     }
   }
   
@@ -98,9 +99,6 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   private[eval] def interpretFeature(unit: FeatureUnit, tagFilters: List[(Tag, Boolean)], env: T, started: Date = new Date()): Option[FeatureResult] = {
     (Option(unit.featureFile).filter(_.exists()) map { (featureFile: File) =>
       val isMeta = FileIO.isMetaFile(featureFile)
-      if (!isMeta) {
-        lifecycle.beforeUnit(unit)
-      }
       val dataRecord = unit.dataRecord
       dataRecord foreach { rec =>
         env.topScope.set("data record number", rec.recordNo.toString)
@@ -109,10 +107,11 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         case Success(featureSpec) =>
           if (featureFile.getName.endsWith(".meta")) {
             val metaResults = loadMetaImports(unit, featureSpec, tagFilters, env)
-            Some(evaluateFeature(unit, normalise(featureSpec, Some(featureFile), dataRecord), metaResults, env, new Date()))
+            Some(evaluateFeature(unit.ancestor, normalise(featureSpec, Some(featureFile), dataRecord), metaResults, env, new Date()))
           } else {
             TagsFilter.filter(featureSpec, tagFilters) match {
               case Some(fspec) =>
+                lifecycle.beforeUnit(unit, env.scopes)
                 val metaResults = loadMetaImports(unit, featureSpec, tagFilters, env) ++ loadMeta(Some(unit), unit.metaFiles, tagFilters, env)
                 env.loadedMeta = Nil
                 env.topScope.set("gwen.feature.file.name", featureFile.getName)
@@ -135,7 +134,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       }
       result tap { _ => 
         if (!isMeta) {
-          lifecycle.afterUnit(result.map(res => FeatureUnit(unit, res)).getOrElse(unit))
+          result foreach { res =>
+            lifecycle.afterUnit(FeatureUnit(unit.ancestor, unit, res), env.scopes)
+          }
         }
       }
     }).getOrElse(None tap { _ => logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") })
@@ -148,7 +149,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     val specType = featureSpec.specType
     env.topScope.pushObject(SpecType.toString, specType)
     try {
-      lifecycle.beforeFeature(parent, featureSpec)
+      lifecycle.beforeFeature(parent, featureSpec, env.scopes)
       (if(featureSpec.isMeta) "Loading" else "Evaluating") tap {action =>
         logger.info("")
         logger.info(s"$action $specType: ${featureSpec.feature.name}${featureSpec.featureFile.map(file => s" [file: $file]").getOrElse("")}")
@@ -169,7 +170,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         } else {
           logger.info(result.toString)
         }
-        lifecycle.afterFeature(result)
+        lifecycle.afterFeature(result, env.scopes)
       }
     } finally {
       featureSpec.featureFile foreach { _ =>
@@ -227,9 +228,9 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
-          lifecycle.transitionScenario(parent, scenario, Skipped)
+          lifecycle.transitionScenario(parent, scenario, Skipped, env.scopes)
         } else if (exitOnFail && !isSoftAssert) {
-          lifecycle.transitionScenario(parent, scenario, scenario.evalStatus)
+          lifecycle.transitionScenario(parent, scenario, scenario.evalStatus, env.scopes)
         } else {
           engine.evaluateScenario(parent, scenario, env)
         }
@@ -254,27 +255,27 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = env.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
-          lifecycle.transitionRule(parent, rule, Skipped)
+          lifecycle.transitionRule(parent, rule, Skipped, env.scopes)
         } else if (exitOnFail && !isSoftAssert) {
-          lifecycle.transitionRule(parent, rule, rule.evalStatus)
+          lifecycle.transitionRule(parent, rule, rule.evalStatus, env.scopes)
         } else {
-          lifecycle.beforeRule(parent, rule)
+          lifecycle.beforeRule(parent, rule, env.scopes)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, env)
           ) tap { r =>
             logStatus(r)
-            lifecycle.afterRule(r)
+            lifecycle.afterRule(r, env.scopes)
           }
         }
       case _ =>
-        lifecycle.beforeRule(parent, rule)
+        lifecycle.beforeRule(parent, rule, env.scopes)
         logger.info(s"Evaluating ${rule.keyword}: $rule")
         rule.copy(
           withScenarios = evaluateScenarios(rule, rule.scenarios, env)
         ) tap { r =>
           logStatus(r)
-          lifecycle.afterRule(r)
+          lifecycle.afterRule(r, env.scopes)
         }
     }
   }
@@ -326,7 +327,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   
   private def loadMetaFile(unit: Option[FeatureUnit], metaFile: File, tagFilters: List[(Tag, Boolean)], env: T): Option[FeatureResult] = 
     if (!env.loadedMeta.contains(metaFile)) {
-      val metaUnit = FeatureUnit(metaFile, Nil, None)
+      val metaUnit = FeatureUnit(unit.getOrElse(Root), metaFile, Nil, None)
       interpretFeature(metaUnit, tagFilters, env) tap {
         case Some(metaResult) =>
           val meta = metaResult.spec

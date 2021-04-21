@@ -35,6 +35,8 @@ import java.{util => ju}
 /** Predefs and implicits avaiable wherever this page is imported. */
 
 package object gwen {
+
+  val ZeroChar = '‎' // zero width space char
   
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
@@ -123,7 +125,7 @@ package object gwen {
 
     def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
 
-    def simpleName(): String = file.getName.replaceFirst("[.][^.]+$", "")
+    def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
   }
   
@@ -218,7 +220,7 @@ package object gwen {
     def padWithZeroes(num: Int): String = padWithZeroes(num, 4)
     def padWithZeroes(num: Int, padding: Int): String = s"%0${padding}d".format(num)
     def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
-    def escapeHtml(text: String): String = StringEscapeUtils.escapeHtml4(text)
+    def escapeHtml(text: String): String = StringEscapeUtils.escapeHtml4(text).replaceAll("  ", " &nbsp;")
     def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
     def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
     def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
@@ -267,7 +269,11 @@ package object gwen {
   object UUIDGenerator {
     val baseId = ju.UUID.randomUUID.toString
     private val counter = new ju.concurrent.atomic.AtomicInteger(0)
-    def nextId: String = s"$baseId-${counter.incrementAndGet()}"
+    private val lastUuid = ThreadLocal.withInitial[String] { () => baseId }
+    def nextId: String = s"$baseId-${counter.incrementAndGet()}" tap { uuid => 
+      lastUuid.set(uuid)
+    }
+    def prevId = lastUuid.get
   }
 
 }

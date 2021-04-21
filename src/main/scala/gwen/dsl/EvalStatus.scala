@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ sealed trait EvalStatus {
   def cause: Option[Throwable] = None
 
   /** Determines whether or not this status is due to a technical error. */
-  def isTechError: Boolean = !isAssertionError && !isLicenseError && !isDisabledError
+  def isTechError: Boolean = !isLicenseError && !isDisabledError
 
   /** Determines whether or not this status is due to an assertion error. */
   def isAssertionError: Boolean =
@@ -196,9 +196,17 @@ object EvalStatus {
     * Returns true if the given status is Disabled.
     *
     * @param status the status to check
-    * @return true if the status Disabled, false otherwise
+    * @return true if the status is Disabled, false otherwise
     */
   def isDisabled(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Disabled
+
+  /**
+    * Returns true if the given status is Sustained.
+    *
+    * @param status the status to check
+    * @return true if the status is Sustained, false otherwise
+    */
+  def isSustained(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Sustained
 
   /**
     * Returns true if the given status is an error status. A status is considered an error if it is
@@ -207,7 +215,7 @@ object EvalStatus {
     * @param status the status to check
     * @return true if the status is Failed or Sustained, false otherwise
     */
-  def isError(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Failed || status == StatusKeyword.Sustained
+  def isError(status: StatusKeyword.Value): Boolean = status == StatusKeyword.Failed || isSustained(status)
   
 }
 

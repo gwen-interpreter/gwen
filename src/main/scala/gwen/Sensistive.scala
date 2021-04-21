@@ -34,7 +34,6 @@ object Sensitive {
 
   private val MaskedValues = mutable.ArrayBuffer[MaskedValue]()
 
-  private val ZeroChar = '‎' // zero width space char
   private val ZeroCounter = new AtomicInteger(0)
   private val Mask = GwenSettings.`gwen.mask.char`.toString * 5
   private val MaskPattern = Pattern.quote(Mask)

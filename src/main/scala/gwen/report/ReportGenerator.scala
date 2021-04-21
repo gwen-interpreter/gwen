@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ package gwen.report
 
 import gwen._
 import gwen.dsl.FeatureSpec
+import gwen.dsl.EvalStatus
 import gwen.dsl.SpecType
 import gwen.eval.FeatureResult
 import gwen.eval.FeatureSummary
 import gwen.eval.GwenOptions
 import gwen.eval.DataRecord
+import gwen.eval.EnvContext
 import gwen.eval.FeatureUnit
+import gwen.eval.GwenInterpreter
 
 import scala.io.Source
 
@@ -40,18 +43,31 @@ import java.util.Date
   * @author Branko Juric
   */
 class ReportGenerator (
-    val config: ReportConfig,
-    private val options: GwenOptions) extends LazyLogging {
+    config: ReportConfig,
+    options: GwenOptions) extends LazyLogging {
   formatter: ReportFormatter => 
 
-  private[report] def reportDir = config.reportDir(options) tap { dir =>
-    if (!dir.exists) {
-      dir.mkdirs()
+  private[report] def reportDir: Option[File] = {
+    config.reportDir(options) tap { dir =>
+      dir.filter(!_.exists).foreach(_.mkdirs())
     }
   }
   
-  private val summaryReportFile = config.summaryFilename.map(name => new File(reportDir, s"$name.${config.fileExtension}"))
+  private val summaryReportFile: Option[File] = {
+    config.summaryFilename.flatMap { name => 
+      reportDir flatMap { dir =>
+        config.fileExtension map { ext => 
+          new File(dir, s"$name.$ext") 
+        }
+      }
+    }
+  }
+
+  val format: ReportFormat.Value = config.format
     
+  def init[T <: EnvContext](interpreter: GwenInterpreter[T]): Unit = { }
+  def close[T <: EnvContext](interpreter: GwenInterpreter[T], evalStatus: EvalStatus): Unit = { }
+
   /**
     * Generate and return a detail feature report.
     * 
@@ -63,13 +79,17 @@ class ReportGenerator (
   final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult): List[File] = {
     val featureSpec = result.spec
     val dataRecord = unit.dataRecord
-    val featureReportFile = config.createReportFile(config.createReportDir(options, featureSpec, dataRecord), "", featureSpec, dataRecord)
-    val metaReportFiles = result.metaResults.zipWithIndex map { case (metaResult, idx) =>
+    val featureReportFile = config.createReportDir(options, featureSpec, dataRecord) flatMap { dir => 
+      config.createReportFile(dir, "", featureSpec, dataRecord)
+    }
+    val metaReportFiles = result.metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
       val metaspec = metaResult.spec
       val prefix = s"${Formatting.padWithZeroes(idx + 1)}-"
-      config.createReportFile(new File(featureReportFile.getParentFile, "meta"), prefix, metaspec, unit.dataRecord)
+      featureReportFile flatMap { reportFile =>
+        config.createReportFile(new File(reportFile.getParentFile, "meta"), prefix, metaspec, unit.dataRecord)
+      }
     }
-    val reportFiles = featureReportFile :: metaReportFiles
+    val reportFiles = featureReportFile.map(_ :: metaReportFiles).getOrElse(Nil)
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
   }
   
@@ -92,12 +112,13 @@ class ReportGenerator (
   }
   
   private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult, reportFiles: List[File]): Option[File] = {
-    val reportFile = reportFiles.head
-    formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
-      reportFile tap { file =>
-        file.writeText(content)
-        reportAttachments(result.spec, file)
-        logger.info(s"${config.name} feature detail report generated: ${file.getAbsolutePath}")
+    reportFiles.headOption flatMap { reportFile =>
+      formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
+        reportFile tap { file =>
+          file.writeText(content)
+          reportAttachments(result.spec, file)
+          logger.info(s"${config.name} feature detail report generated: ${file.getAbsolutePath}")
+        }
       }
     }
   }
@@ -158,7 +179,11 @@ object ReportGenerator {
       if (options.reportFormats.contains(ReportFormat.html)) 
         ReportFormat.slideshow :: options.reportFormats 
       else options.reportFormats
-    options.reportDir.map(_ => formats.flatMap(ReportFormat.configOf).map(_.reportGenerator(options))).getOrElse(Nil)
+
+    formats.flatMap(ReportFormat.configOf) map { config =>
+      config.reportGenerator(options)
+    }
+  
   }
   
   def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")

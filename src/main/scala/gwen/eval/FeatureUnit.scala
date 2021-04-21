@@ -20,6 +20,7 @@ import gwen.dsl.Identifiable
 import gwen.dsl.NodeType
 
 import java.io.File
+import gwen.dsl.Root
 
 /**
   * Captures a feature file and its associated meta as a unit.
@@ -30,18 +31,25 @@ import java.io.File
   * @param result option result
   */
 case class FeatureUnit(
+    parent: Identifiable,
     featureFile: File,
     metaFiles: List[File], 
     dataRecord: Option[DataRecord], 
     result: Option[FeatureResult] = None) extends Identifiable {
 
   val nodeType: NodeType.Value = NodeType.Unit
+  def ancestor: Identifiable = parent match {
+    case parentUnit @ FeatureUnit(grandparent, _, _, _, _) => 
+      if (grandparent == Root) parent
+      else parentUnit.ancestor
+    case _ => this
+  }
   val uri: String = s"${featureFile.getPath}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
 }
 
 object FeatureUnit {
-  def apply(unit: FeatureUnit, result: FeatureResult): FeatureUnit = {
-    FeatureUnit(unit.featureFile, unit.metaFiles, unit.dataRecord, Some(result))
+  def apply(parent: Identifiable, unit: FeatureUnit, result: FeatureResult): FeatureUnit = {
+    FeatureUnit(parent, unit.featureFile, unit.metaFiles, unit.dataRecord, Some(result))
   }
 }
 

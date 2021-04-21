@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,14 @@ import gwen.dsl.Failed
 import gwen.dsl.StatusKeyword
 import gwen.dsl.StateLevel
 import gwen.report.ReportGenerator
+import gwen.Settings
 
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext
-import scala.Option.option2Iterable
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -57,13 +60,11 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
-          val summary = executeFeatureUnits(options, featureStream.flatten, optEnv)
-          printSummaryStatus(summary)
-          summary.evalStatus
+          executeFeatureUnits(options, featureStream.flatten, optEnv)
         case _ =>
           EvalStatus { 
             optEnv.toList flatMap { env =>
-             interpreter.loadMeta(None, metaFiles, Nil, env).map(_.spec.evalStatus)
+              interpreter.loadMeta(None, metaFiles, Nil, env).map(_.spec.evalStatus)
             }
           } tap { _ =>
             if (options.features.nonEmpty) {
@@ -92,12 +93,24 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     * @param envOpt optional environment context (reused across all feature units if provided, 
     *               otherwise a new context is created for each unit)
     */
-  private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T]): FeatureSummary = {
+  private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T]): EvalStatus = {
+    val start = System.nanoTime
     val reportGenerators = ReportGenerator.generatorsFor(options)
-    if (options.parallel) {
-      executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
-    } else {
-      executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
+    reportGenerators.foreach(_.init(interpreter))
+    Try {
+      if (options.parallel) {
+        executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
+      } else {
+        executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
+      }
+    } match {
+      case Success(s) => 
+        reportGenerators.foreach(_.close(interpreter, s.evalStatus))
+        printSummaryStatus(s)
+        s.evalStatus
+      case Failure(f) => 
+        reportGenerators.foreach(_.close(interpreter, Failed(System.nanoTime - start, f)))
+        throw f
     }
   }
 
@@ -192,7 +205,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     
   private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: FeatureResult): FeatureResult = {
     val reportFiles = reportGenerators.map { generator => 
-      (generator.config.format, generator.reportDetail(interpreter, unit, result)) 
+      (generator.format, generator.reportDetail(interpreter, unit, result)) 
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty) 
       new FeatureResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)

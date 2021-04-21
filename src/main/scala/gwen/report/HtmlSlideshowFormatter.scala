@@ -43,11 +43,13 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     if (screenshots.isEmpty || result.isMeta) None
     else {
     
-      val reportDir = HtmlSlideshowReportConfig.reportDir(options)
+      val reportDir = HtmlSlideshowReportConfig.reportDir(options).get
       val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
-      val featureCrumb = (SpecType.Feature.toString, HtmlReportConfig.createReportFile(HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord), "", result.spec, unit.dataRecord))
+      val dir = HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord).get
+      val file = HtmlReportConfig.createReportFile(dir, "", result.spec, unit.dataRecord).get
+      val featureCrumb = (SpecType.Feature.toString, file)
       Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>

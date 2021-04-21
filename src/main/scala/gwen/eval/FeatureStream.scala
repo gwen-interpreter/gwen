@@ -17,6 +17,7 @@
 package gwen.eval
 
 import gwen._
+import gwen.dsl.Root
 
 import scala.annotation.tailrec
 
@@ -86,6 +87,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     } else if (FileIO.isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
       val unit = FeatureUnit(
+        Root,
         location, 
         if (GwenSettings.`gwen.associative.meta`)  {
           applyAssociativeMeta(location, metas)
@@ -135,7 +137,7 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
     var associateMeta: Option[File] = None
     // filter out all meta associated with other features files
     val filteredMetas = metas.filter { m => 
-      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName()}.feature")
+      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName}.feature")
       val isAssociate = assocaitedFeature.isSame(Option(featureFile))
       if (isAssociate) {
         associateMeta = Some(m)

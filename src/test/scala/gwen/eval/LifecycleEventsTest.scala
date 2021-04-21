@@ -51,64 +51,73 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val background = mock[Background]
     val rule = mock[Rule]
     val step = mock[Step]
+    val scopes = mock[ScopedDataStack]
+
+    when(step.evalStatus).thenReturn(Passed(1))
+
+    when(unit.parent).thenReturn(parent())
 
     dispatcher.addListener(listener)
             
-    dispatcher.beforeUnit(unit)
+    dispatcher.beforeUnit(unit, scopes)
     verify(listener).beforeUnit(unitEventCaptor.capture())
     unitEventCaptor.getValue().phase should be (LifecyclePhase.before)
 
-    dispatcher.afterUnit(unit)
+    dispatcher.afterUnit(unit, scopes)
     verify(listener).afterUnit(unitEventCaptor.capture())
     unitEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeFeature(parent(), featureSpec)
+    dispatcher.beforeFeature(parent(), featureSpec, scopes)
     verify(listener).beforeFeature(featureSpecEventCaptor.capture())
     featureSpecEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterFeature(featureResult)
+    dispatcher.afterFeature(featureResult, scopes)
     verify(listener).afterFeature(featureResultEventCaptor.capture())
     featureResultEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeScenario(parent(), scenario)
+    dispatcher.beforeScenario(parent(), scenario, scopes)
     verify(listener).beforeScenario(scenarioEventCaptor.capture())
     scenarioEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterScenario(scenario)
+    dispatcher.afterScenario(scenario, scopes)
     verify(listener).afterScenario(scenarioEventCaptor.capture())
     scenarioEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeBackground(parent(), background)
+    dispatcher.beforeBackground(parent(), background, scopes)
     verify(listener).beforeBackground(backgroundEventCaptor.capture())
     backgroundEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterBackground(background)
+    dispatcher.afterBackground(background, scopes)
     verify(listener).afterBackground(backgroundEventCaptor.capture())
     backgroundEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeStep(parent(), step)
+    dispatcher.beforeStep(parent(), step, scopes)
     verify(listener).beforeStep(stepEventCaptor.capture())
     stepEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterStep(step)
+    dispatcher.afterStep(step, scopes)
     verify(listener).afterStep(stepEventCaptor.capture())
     stepEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeStepDef(parent(), stepDef)
+    dispatcher.beforeStepDef(parent(), stepDef, scopes)
     verify(listener).beforeStepDef(scenarioEventCaptor.capture())
     scenarioEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterStepDef(stepDef)
+    dispatcher.afterStepDef(stepDef, scopes)
     verify(listener).afterStepDef(scenarioEventCaptor.capture())
     scenarioEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeRule(parent(), rule)
+    dispatcher.beforeRule(parent(), rule, scopes)
     verify(listener).beforeRule(ruleEventCaptor.capture())
     ruleEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterRule(rule)
+    dispatcher.afterRule(rule, scopes)
     verify(listener).afterRule(ruleEventCaptor.capture())
     ruleEventCaptor.getValue().phase should be (LifecyclePhase.after)
+
+    dispatcher.healthCheck(parent(), step, scopes)
+    verify(listener).healthCheck(stepEventCaptor.capture())
+    stepEventCaptor.getValue().phase should be (LifecyclePhase.healthCheck)
 
   }
 
@@ -126,11 +135,16 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val step3 = mock[Step]
     val stepDef1 = mock[Scenario]
     val stepDef2 = mock[Scenario]
+    val scopes = mock[ScopedDataStack]
     val stepUuid1 = UUIDGenerator.nextId
     val stepUuid2 = UUIDGenerator.nextId
     val stepUuid3 = UUIDGenerator.nextId
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
+
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
 
     when(step1.nodeType).thenReturn(NodeType.Step)
     when(step2.nodeType).thenReturn(NodeType.Step)
@@ -147,65 +161,65 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     dispatcher.addListener(listener2)
     dispatcher.addListener(listener3)
 
-    dispatcher.beforeStep(parent(), step1)
+    dispatcher.beforeStep(parent(), step1, scopes)
     listeners.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStepDef(parent(),stepDef1)
+    dispatcher.beforeStepDef(parent(),stepDef1, scopes)
     verify(listener2, never()).beforeStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step2)
+    dispatcher.beforeStep(parent(), step2, scopes)
     verify(listener2, never()).beforeStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStep(step2)
+    dispatcher.afterStep(step2, scopes)
     verify(listener2, never()).afterStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.beforeStepDef(parent(), stepDef2)
+    dispatcher.beforeStepDef(parent(), stepDef2, scopes)
     verify(listener2, never()).beforeStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step3)
+    dispatcher.beforeStep(parent(), step3, scopes)
     verify(listener2, never()).beforeStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStep(step3)
+    dispatcher.afterStep(step3, scopes)
     verify(listener2, never()).afterStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStepDef(stepDef2)
+    dispatcher.afterStepDef(stepDef2, scopes)
     verify(listener2, never()).afterStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.afterStepDef(stepDef1)
+    dispatcher.afterStepDef(stepDef1, scopes)
     verify(listener2, never()).afterStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.afterStep(step1)
+    dispatcher.afterStep(step1, scopes)
     listeners.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
@@ -232,6 +246,8 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val stepDef1 = mock[Scenario]
     val stepDef2 = mock[Scenario]
 
+    val scopes = mock[ScopedDataStack]
+
     val featureSpecUuid = UUIDGenerator.nextId
     val featureResultUuid = UUIDGenerator.nextId
     val metaSpecUuid = UUIDGenerator.nextId
@@ -242,6 +258,11 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val stepUuid4 = UUIDGenerator.nextId
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
+
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
+    when(step4.evalStatus).thenReturn(Passed(1))
 
     when(featureSpec.nodeType).thenReturn(NodeType.Feature)
     when(featureResult.nodeType).thenReturn(NodeType.Result)
@@ -269,103 +290,103 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     dispatcher.addListener(listener2)
     dispatcher.addListener(listener3)
 
-    dispatcher.beforeFeature(parent(), metaSpec)
+    dispatcher.beforeFeature(parent(), metaSpec, scopes)
     verify(listener2, never()).beforeFeature(any[LifecycleEvent[FeatureSpec]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeFeature(any[LifecycleEvent[FeatureSpec]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step1)
+    dispatcher.beforeStep(parent(), step1, scopes)
     verify(listener2, never()).beforeStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.afterStep(step1)
+    dispatcher.afterStep(step1, scopes)
     verify(listener2, never()).afterStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStepDef(parent(), stepDef1)
+    dispatcher.beforeStepDef(parent(), stepDef1, scopes)
     verify(listener2, never()).beforeStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step2)
+    dispatcher.beforeStep(parent(), step2, scopes)
     verify(listener2, never()).beforeStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStep(step2)
+    dispatcher.afterStep(step2, scopes)
     verify(listener2, never()).afterStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStepDef(stepDef1)
+    dispatcher.afterStepDef(stepDef1, scopes)
     verify(listener2, never()).afterStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.afterFeature(metaResult)
+    dispatcher.afterFeature(metaResult, scopes)
     verify(listener2, never()).afterFeature(any[LifecycleEvent[FeatureResult]])
     listeners1and3.foreach { listener => 
       verify(listener).afterFeature(any[LifecycleEvent[FeatureResult]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeFeature(parent(), featureSpec)
+    dispatcher.beforeFeature(parent(), featureSpec, scopes)
     listeners.foreach { listener => 
       verify(listener).beforeFeature(any[LifecycleEvent[FeatureSpec]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStepDef(parent(), stepDef2)
+    dispatcher.beforeStepDef(parent(), stepDef2, scopes)
     verify(listener2, never()).beforeStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step3)
+    dispatcher.beforeStep(parent(), step3, scopes)
     verify(listener2, never()).beforeStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStep(step3)
+    dispatcher.afterStep(step3, scopes)
     verify(listener2, never()).afterStep(any[LifecycleEvent[Step]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStepDef(stepDef2)
+    dispatcher.afterStepDef(stepDef2, scopes)
     verify(listener2, never()).afterStepDef(any[LifecycleEvent[Scenario]])
     listeners1and3.foreach { listener => 
       verify(listener).afterStepDef(any[LifecycleEvent[Scenario]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeStep(parent(), step4)
+    dispatcher.beforeStep(parent(), step4, scopes)
     listeners.foreach { listener => 
       verify(listener).beforeStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterStep(step4)
+    dispatcher.afterStep(step4, scopes)
     listeners.foreach { listener => 
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterFeature(featureResult)
+    dispatcher.afterFeature(featureResult, scopes)
     listeners.foreach { listener => 
       verify(listener).afterFeature(any[LifecycleEvent[FeatureResult]])
     }

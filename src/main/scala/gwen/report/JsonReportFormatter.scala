@@ -17,9 +17,12 @@ package gwen.report
 
 import gwen.dsl._
 import gwen.FileIO
-import gwen.Formatting.escapeJson
 import gwen.GwenInfo
-import gwen.eval.{FeatureResult, FeatureSummary, FeatureUnit, GwenOptions}
+import gwen.Formatting.escapeJson
+import gwen.eval.FeatureResult
+import gwen.eval.FeatureUnit
+import gwen.eval.FeatureSummary
+import gwen.eval.GwenOptions
 
 import scala.util.Properties
 
