@@ -282,12 +282,12 @@ trait HtmlReportFormatter extends ReportFormatter {
               s"""
                 <div class="bg-${cssStatus(status)}">
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"> </div><code class="bg-${cssStatus(status)} doc-string">${escapeHtml(contentLine).replaceAll("  ", " &nbsp;")}</code>${if (index == 0) contentType.map(cType => s"""<code class="bg-${cssStatus(status)} doc-string-type">${escapeHtml(cType)}</code>""").getOrElse("") else ""}
+                  <div class="keyword-right" style="width:${keywordPixels}px"> </div><code class="bg-${cssStatus(status)} doc-string">${escapeHtml(contentLine)}</code>${if (index == 0) contentType.map(cType => s"""<code class="bg-${cssStatus(status)} doc-string-type">${escapeHtml(cType)}</code>""").getOrElse("") else ""}
                 </div>"""} mkString}"""
   }
 
   private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): String = {
-    s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex)).replaceAll("  ", " &nbsp;")}</code>"""
+    s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex))}</code>"""
   }
 
   private def formatRule(rule: Rule, ruleId: String): String = {

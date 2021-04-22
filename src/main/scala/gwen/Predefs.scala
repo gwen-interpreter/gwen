@@ -234,11 +234,14 @@ package object gwen {
           resolveParams(source.replaceAll(s"<$name>", value), tail)
       }
     }
+    def formatTable(table: List[(Int, List[String])]): String = {
+      (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
+    }
     def formatTableRow(table: List[(Int, List[String])], rowIndex: Int): String = {
       val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
       s"| ${(table(rowIndex)._2.zipWithIndex map { case (data, dataIndex) => s"${rightPad(data, maxWidths(dataIndex))}" }).mkString(" | ") } |"
     }
-    def formatDocString(docString: (Int, String, Option[String]), includeType: Boolean = false) = docString match {
+    def formatDocString(docString: (Int, String, Option[String]), includeType: Boolean = true) = docString match {
       case (_, content, contentType) =>
         s"""|${"\"\"\""}${if(includeType) contentType.getOrElse("") else ""}
             |$content

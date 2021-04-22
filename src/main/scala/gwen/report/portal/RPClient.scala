@@ -23,6 +23,7 @@ import gwen.eval.GwenOptions
 import RPConfig._
 
 import scala.concurrent.duration.Duration
+import scala.io.Source
 import scala.jdk.CollectionConverters._
 
 import com.epam.reportportal.listeners.ItemStatus
@@ -42,6 +43,7 @@ import io.reactivex.observers.DisposableMaybeObserver
 
 import java.io.File
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
 import java.{util => ju}
 
@@ -59,12 +61,12 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private val tcids = new ju.concurrent.ConcurrentHashMap[String, String]()
   private val launchLock = new ju.concurrent.Semaphore(1)
   private var launchUuid: Option[String] = None
+  private val maxChars = 1024
 
   private lazy val session: Launch = init()
 
   private def init(): Launch = {
     RPSettings.init()
-    checkAvailability()
     val reportPortal = ReportPortal.builder().build()
     val parameters = reportPortal.getParameters
     val rq = new StartLaunchRQ()
@@ -93,31 +95,47 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     }
   }
 
-  def checkAvailability(): Unit = {
+  def healthCheck(timeoutSecs: Int): Unit = {
     val endpoint = RPSettings.`rp.endpoint`
+    val healthUrl = s"${RPSettings.`rp.endpoint`}${if (RPSettings.`rp.endpoint`.endsWith("/")) "" else "/" }health"
     try {
-      val conn = new URL(endpoint).openConnection().asInstanceOf[HttpURLConnection]
-      conn.setRequestMethod("HEAD");
-      if (conn.getResponseCode != 200) {
-        serviceUnavailableError("Report portal", endpoint)
+      val conn = new URL(healthUrl).openConnection().asInstanceOf[HttpURLConnection]
+      conn.setConnectTimeout(timeoutSecs * 1000)
+      conn.setReadTimeout(timeoutSecs * 1000)
+      conn.setRequestMethod("GET");
+      val code = conn.getResponseCode
+      if (code != 200) {
+        serviceHealthCheckError(s"Report Portal unavailable or unreachable at $endpoint")
+      } else {
+        val body = Source.fromInputStream(conn.getInputStream()).mkString.trim
+        if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
+          logger.info(s"Report Portal heartbeat OK: $code $body")
+        } else {
+          logger.error(s"Report Portal heartbeat FAILED")
+          serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
+        }
       }
     } catch {
+      case e: SocketTimeoutException =>
+        logger.error(s"Report Portal heartbeat FAILED")
+        serviceHealthCheckError(s"Report Portal health check at $healthUrl timed out after ${timeoutSecs} second(s)")
       case e: Throwable => 
-        serviceUnavailableError("Report portal", endpoint)
+        logger.error(s"Report Portal heartbeat FAILED")
+        serviceHealthCheckError(s"Report Portal health check FAILED: $e")
     }
   }
 
   def close(evalStatus: EvalStatus): Option[String] = {
     launchLock.acquire()
     launchUuid map { launchId =>
-      logger.info(s"Closing report portal connection..")
+      logger.info(s"Closing Report Portal connection..")
       sendLaunchLog(mapLevel(evalStatus), s"Finished ${evalStatus}")
       val rq = new FinishExecutionRQ()
       rq.setEndTime(ju.Calendar.getInstance.getTime)
       val start = System.nanoTime
       session.finish(rq)
       val duration = Formatting.formatDuration(Duration.fromNanos(System.nanoTime - start))
-      logger.info(s"[$duration] Report portal connection closed${launchUuid.map(uuid => s" [Launch uuid $uuid]").getOrElse("")}")
+      logger.info(s"[$duration] Report Portal connection closed${launchUuid.map(uuid => s" [Launch uuid $uuid]").getOrElse("")}")
       val endpoint = RPSettings.`rp.endpoint`
       //s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all/$launchId"
       s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all"
@@ -156,7 +174,8 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     rq.setStartTime(startTime)
     rq.setType(mapItemType(nodeType).name)
     rq.setHasStats(!inlined)
-    rq.setName(encode(name, inlined))
+    val truncatedName = truncate(name)
+    rq.setName(encode(truncatedName.getOrElse(name), inlined))
     if (desc.size > 0) rq.setDescription(desc)
     val attributes = new ju.HashSet[ItemAttributesRQ]()
     attributes.addAll(tags.map(tag => new ItemAttributesRQ(null, tag.toString)).toSet.asJava)
@@ -179,6 +198,9 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       session.startTestItem(rq) // root
     }
     rpids.put(uuid, rpid)
+    truncatedName foreach { _ =>
+      sendItemLog(LogLevel.INFO, name)
+    }
 
   }
 
@@ -200,6 +222,10 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       ju.Calendar.getInstance.getTime)
   }
 
+  def sendItemLog(level: LogLevel, msg: String): Unit = {
+    sendItemLog(level, msg, None)
+  }
+
   def sendItemLog(evalStatus: EvalStatus, msg: String, file: Option[File]): Unit = {
     val level = mapLevel(evalStatus)
     sendItemLog(level, msg, file)
@@ -207,13 +233,13 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
 
   def sendItemLog(level: LogLevel, msg: String, file: Option[File]): Unit = {
     logger.debug(s"sendItemLog(level=$level, msg=$msg, file=${file})")
-    val encodedMsg = encode(msg, true)
+    //val encodedMsg = encode(msg, true)
     file match {
       case Some(f) => 
-        val rpMessage = new ReportPortalMessage(f, encodedMsg)
+        val rpMessage = new ReportPortalMessage(f, msg)
         ReportPortal.emitLog(rpMessage, level.name, ju.Calendar.getInstance.getTime)
       case None => 
-        ReportPortal.emitLog(encodedMsg, level.name, ju.Calendar.getInstance.getTime)
+        ReportPortal.emitLog(msg, level.name, ju.Calendar.getInstance.getTime)
     }
   }
 
@@ -253,17 +279,20 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     }
   }
 
-  private def encode(source: String, markdownable: Boolean): String = {
-    (if (markdownable && RPSettings.`gwen.rp.escapeForMarkdown`) {
-      source
-        .replaceAll("\\*", "&ast;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("~", "&tilde;")
-        .replaceAll("  ", " &nbsp;")
+  private def encode(text: String, markdownable: Boolean): String = {
+    (if (markdownable && RPSettings.`gwen.rp.send.markdownBlocks`) {
+      s"""|```
+          |$text
+          |```""".stripMargin
     } else {
-      source
+      text
     }).replaceAll(s"$ZeroChar", "")
+  }
+
+  private def truncate(text: String): Option[String] = {
+    val max = if (RPSettings.`gwen.rp.send.markdownBlocks`) maxChars - 10 else maxChars
+    if (text.length > max) Some(s"${text.substring(0, max - 4)}... ")
+    else None
   }
   
 }

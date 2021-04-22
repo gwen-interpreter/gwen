@@ -30,12 +30,10 @@ import scala.concurrent.duration.Duration
 import scala.io.Source
 
 import com.typesafe.scalalogging.LazyLogging
+import com.epam.reportportal.listeners.LogLevel
 
 import java.io.File
 import java.{util => ju}
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
 
 class RPReporter(rpClient: RPClient) 
     extends LifecycleEventListener("Report Portal Reporter", RPConfig.bypassNodeTypes) 
@@ -139,6 +137,9 @@ class RPReporter(rpClient: RPClient)
     rpClient.startItem(
       startTime, nodeType, inlined, name, desc, tags, Map(), sourceRef, examples.uuid, parentUuid
     )
+    if (examples.table.nonEmpty) {
+      rpClient.sendItemLog(LogLevel.INFO, Formatting.formatTable(examples.table))
+    }
   }
 
   override def afterExamples(event: LifecycleEvent[Examples]): Unit = {
@@ -212,6 +213,12 @@ class RPReporter(rpClient: RPClient)
     rpClient.startItem(
       startTime, nodeType, inlined, name, desc, Nil, atts, sourceRef, step.uuid, parentUuid
     )
+    step.docString foreach { docString =>
+      rpClient.sendItemLog(LogLevel.INFO, Formatting.formatDocString(docString))
+    }
+    if (step.table.nonEmpty) {
+      rpClient.sendItemLog(LogLevel.INFO, Formatting.formatTable(step.table))
+    }
   }
 
   override def afterStep(event: LifecycleEvent[Step]): Unit = {
@@ -232,13 +239,7 @@ class RPReporter(rpClient: RPClient)
 
   override def healthCheck(event: LifecycleEvent[Step]): Unit = { 
     if (RPSettings.`gwen.rp.heartbeat`) {
-      Try(rpClient.checkAvailability()) match {
-        case Success(_) => 
-          logger.info("Report portal heartbeat OK")
-        case Failure(e) => 
-          logger.error(s"Report portal heartbeat FAILED: ${e.getMessage}")
-          throw e
-      }
+      rpClient.healthCheck(RPSettings.`gwen.rp.heartbeat.timeoutSecs`)
     }
   }
 
@@ -325,16 +326,14 @@ class RPReporter(rpClient: RPClient)
         val examplesDesc = Option(e.description.mkString(" "))
         val tableDesc = e.table match {
           case Nil => None
-          case table => 
-            Some(s"<pre>${(table.indices.toList map { rowIndex => Formatting.formatTableRow(table, rowIndex) }).mkString("\r\n")}</pre>")
+          case table => Some(s"<pre>${Formatting.formatTable(table)}</pre>")
         }
         (examplesDesc ++ tableDesc).mkString("<br><br>")
       case s: Step => 
         s.table match {
           case Nil => 
             s.docString.map(ds => s"<pre>${Formatting.formatDocString(ds)}</pre>").getOrElse("")
-          case table => 
-            s"<pre>${(table.indices.toList map { rowIndex => Formatting.formatTableRow(table, rowIndex) }).mkString("\r\n")}</pre>"
+          case table => s"<pre>${Formatting.formatTable(table)}</pre>"
         }
       case _ => ""
     }

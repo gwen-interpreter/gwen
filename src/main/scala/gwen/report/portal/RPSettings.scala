@@ -136,12 +136,11 @@ object RPSettings {
   def `gwen.rp.send.tags`: Boolean = Settings.getOpt("gwen.rp.send.tags").map(_.toBoolean).getOrElse(false)
 
   /**
-   * Provides access to the `gwen.rp.escapeForMarkdown` property setting used to 
-   * determine whether or not to escape inlined steps and log messages for markdown view. 
-   * Default is true. Set this to true to target markdown view and false to target console 
-   * view in report portal.
+   * Provides access to the `gwen.rp.send.markdownBlocks` property setting used to 
+   * determine whether or not to surround all markdown content with triple back ticks
+   * so that it renedrs verbatim in markdown view. Default is true.
    */
-  def `gwen.rp.escapeForMarkdown`: Boolean = Settings.getOpt("gwen.rp.escapeForMarkdown").map(_.toBoolean).getOrElse(true)
+  def `gwen.rp.send.markdownBlocks`: Boolean = Settings.getOpt("gwen.rp.send.markdownBlocks").map(_.toBoolean).getOrElse(true)
 
   /**
    * Provides access to the `gwen.rp.heartbeat` property setting used to determine whether 
@@ -149,5 +148,11 @@ object RPSettings {
    * executes and fail fast when it goes offline. Default is true (enabled).
    */
   def `gwen.rp.heartbeat`: Boolean = Settings.getOpt("gwen.rp.heartbeat").map(_.toBoolean).getOrElse(true)
+
+  /**
+   * Provides access to the `gwen.rp.heartbeat.timeoutSecs` property setting used to timeout 
+   * hearbeat requests. Default is 3 seconds. Only honoured if `gwen.rp.heartbeat` is `true`.
+   */
+  def `gwen.rp.heartbeat.timeoutSecs`: Int = Settings.getOpt("gwen.rp.heartbeat.timeoutSecs").map(_.toInt).getOrElse(3)
 
 }
