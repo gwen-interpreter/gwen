@@ -45,6 +45,8 @@ case class Examples(
 
   def nodeType: NodeType.Value = NodeType.Examples
 
+  def isExpanded: Boolean = scenarios.nonEmpty 
+
   /**
     * Returns a list containing all the background steps (if any) followed by
     * all the scenario steps.

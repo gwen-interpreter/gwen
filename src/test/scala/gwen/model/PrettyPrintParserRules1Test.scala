@@ -79,7 +79,8 @@ Background: The butterfly effect
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns
             Given-When-Then steps into automation instructions.
-            ${"\"\"\""}"""
+            ${"\"\"\""}
+"""
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     val ast1 = parse(featureString)
@@ -174,7 +175,8 @@ Background: The butterfly effect
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns
             Given-When-Then steps into automation instructions.
-            ${"\"\"\""}""".replace("\r", ""))
+            ${"\"\"\""}
+""".replace("\r", ""))
 
   }
     

@@ -51,6 +51,11 @@ case class Step(
 
   def nodeType: NodeType.Value = NodeType.Step
   val isVirtual: Boolean = name.contains(s"$ZeroChar")
+
+  def isExpanded(parent: Identifiable) = parent match {
+    case scenario: Scenario => scenario.isExpanded
+    case _ => false
+  }
   
   def expression: String = docString map { case (_, content, _) =>
     val lines = content.split("""\r?\n""")
