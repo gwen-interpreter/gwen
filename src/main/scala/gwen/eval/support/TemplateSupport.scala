@@ -17,13 +17,13 @@
 package gwen.eval.support
 
 import gwen._
-import gwen.eval.EnvContext
 
 import org.apache.commons.lang3.StringUtils
 
 import scala.io.Source
 import scala.util.Try
 import scala.util.matching.Regex
+import gwen.model.state.TopScope
 
 /**
   * Can be mixed into evaluation engines to provide template matching support. This will allow users to match any
@@ -31,7 +31,6 @@ import scala.util.matching.Regex
   * in scope.
   */
 trait TemplateSupport {
-  this: EnvContext =>
 
   /**
     * Matches a template against a given source and extracts, ignores, or injects values.
@@ -41,7 +40,7 @@ trait TemplateSupport {
     * @param sourceName the name of the source attribute
     * @return success if there is a match; an error otherwise
     */
-  def matchTemplate(template: String, source: String, sourceName: String): Try[Boolean] = Try {
+  def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
     val names = """@\{.+?\}|!\{\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
       if (n == "!{}") s"![$i]" else n
     }
@@ -68,7 +67,7 @@ trait TemplateSupport {
     source == resolved tap { isMatch =>
       if (isMatch) {
         params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
-          scopes.topScope.set(n.substring(2, n.length-1), v) }
+          topScope.set(n.substring(2, n.length-1), v) }
       } else {
         val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
         val diffPos = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))

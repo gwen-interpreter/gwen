@@ -17,12 +17,8 @@
 package gwen.eval
 
 import gwen._
-import gwen.dsl.EvalStatus
-import gwen.dsl.Failed
-import gwen.dsl.StatusKeyword
-import gwen.dsl.StateLevel
+import gwen.model._
 import gwen.report.ReportGenerator
-import gwen.Settings
 
 import scala.concurrent._
 import scala.concurrent.duration.Duration
@@ -40,16 +36,16 @@ import java.util.concurrent.atomic.AtomicInteger
   * 
   * @param interpreter the interpreter to launch
   */
-class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends LazyLogging {
+class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends LazyLogging {
   
   /**
     * Runs the interpreter with the given options.
     * 
     * @param options the command line options
-    * @param optEnv optional environment context (None to have Gwen create an env context for each feature unit, 
-    *               Some(env) to reuse an environment context for all, default is None)
+    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit, 
+    *               Some(ctx) to reuse a context for all, default is None)
     */
-  def run(options: GwenOptions, optEnv: Option[T] = None): EvalStatus = {
+  def run(options: GwenOptions, ctxOpt: Option[T] = None): EvalStatus = {
     Settings.loadAll(options.properties)
     if (options.args.isDefined) {
       logger.info(options.commandString(interpreter))
@@ -60,11 +56,11 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
       val featureStream = new FeatureStream(metaFiles)
       featureStream.readAll(options.features, options.dataFile) match {
         case featureStream @ _ #:: _ =>
-          executeFeatureUnits(options, featureStream.flatten, optEnv)
+          executeFeatureUnits(options, featureStream.flatten, ctxOpt)
         case _ =>
           EvalStatus { 
-            optEnv.toList flatMap { env =>
-              interpreter.loadMeta(None, metaFiles, Nil, env).map(_.spec.evalStatus)
+            ctxOpt.toList flatMap { ctx =>
+              interpreter.loadMeta(None, metaFiles, Nil, ctx).map(_.spec.evalStatus)
             }
           } tap { _ =>
             if (options.features.nonEmpty) {
@@ -90,18 +86,18 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     *
     * @param options the command line options
     * @param featureStream the feature stream to execute
-    * @param envOpt optional environment context (reused across all feature units if provided, 
-    *               otherwise a new context is created for each unit)
+    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit, 
+    *               Some(ctx) to reuse a context for all, default is None)
     */
-  private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T]): EvalStatus = {
+  private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T]): EvalStatus = {
     val start = System.nanoTime
     val reportGenerators = ReportGenerator.generatorsFor(options)
     reportGenerators.foreach(_.init(interpreter))
     Try {
       if (options.parallel) {
-        executeFeatureUnitsParallel(options, featureStream, envOpt, reportGenerators)
+        executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
       } else {
-        executeFeatureUnitsSequential(options, featureStream, envOpt, reportGenerators)
+        executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
       }
     } match {
       case Success(s) => 
@@ -114,7 +110,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
 
-  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): FeatureSummary = {
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
@@ -133,7 +129,7 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
             }
           }
         }
-        evaluateUnit(options, envOpt, unit) { result =>
+        evaluateUnit(options, ctxOpt, unit) { result =>
           result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
         }
       }
@@ -149,13 +145,13 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
 
-  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: LazyList[FeatureUnit], envOpt: Option[T], reportGenerators: List[ReportGenerator]) = {
+  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): FeatureSummary = {
     val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
     featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
       if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
         summary
       } else {
-        evaluateUnit(options, envOpt, unit) { result =>
+        evaluateUnit(options, ctxOpt, unit) { result =>
           (result match {
             case None => summary
             case _ =>
@@ -170,28 +166,30 @@ class GwenLauncher[T <: EnvContext](interpreter: GwenInterpreter[T]) extends Laz
     }
   }
 
-  private def evaluateUnit[U](options: GwenOptions, envOpt: Option[T], unit: FeatureUnit)(f: (Option[FeatureResult] => U)): U = {
+  private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[FeatureResult] => U)): U = {
     logger.info(("""|       
                     |  _    
                     | { \," Evaluating feature..
                     |{_`/   """ + unit.featureFile.toString + """
                     |   `   """).stripMargin)
     Settings.clearLocal()
-    val env = envOpt.getOrElse(interpreter.initialise(options))
-    try {
-      if (envOpt.nonEmpty) { env.reset(StateLevel.feature) }
-      unit.dataRecord foreach { record =>
-        record.data foreach { case (name, value) =>
-          env.topScope.set(name, value)
+    val ctx = ctxOpt.getOrElse(interpreter.initialise(options))
+    ctx.withEnv { env =>
+      try {
+        ctxOpt.foreach(_.reset(StateLevel.feature))
+        unit.dataRecord foreach { record =>
+          record.data foreach { case (name, value) =>
+            env.topScope.set(name, value)
+          }
         }
-      }
-      f(interpreter.interpretFeature(unit, options.tags, env) map { res =>
-        new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
-      })
-    } finally {
-      if (envOpt.isEmpty) { 
-        env.close() 
-        logger.info("Environment context closed")
+        f(interpreter.interpretFeature(unit, options.tags, ctx) map { res =>
+          new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
+        })
+      } finally {
+        if (ctxOpt.isEmpty) { 
+          ctx.close() 
+          logger.info("Evaluation context closed")
+        }
       }
     }
   }

@@ -15,30 +15,32 @@
  */
 package gwen.sample.tables
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
-import gwen.eval.GwenOptions
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
-import gwen.eval.support.DefaultEngineSupport
+import gwen.model.Failed
+import gwen.model.Passed
+
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class TablesEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class TablesEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait TablesEvalEngine extends DefaultEngineSupport[TablesEnvContext] {
-  override def init(options: GwenOptions): TablesEnvContext = new TablesEnvContext(options)
+trait TablesEvalEngine extends DefaultEngine[TablesEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TablesEvalContext = new TablesEvalContext()
 }
 
 class TablesInterpreter
-  extends GwenInterpreter[TablesEnvContext]
+  extends GwenInterpreter[TablesEvalContext]
   with TablesEvalEngine
 
 class TablesInterpreterTest extends FlatSpec {

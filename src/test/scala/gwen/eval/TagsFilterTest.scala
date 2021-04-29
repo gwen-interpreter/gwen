@@ -16,15 +16,15 @@
 
 package gwen.eval
 
-import gwen.dsl.GherkinParser
-import gwen.dsl.Tag
+import gwen.model.Tag
+import gwen.model.gherkin.GherkinParser
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class TagsFilterTest extends FlatSpec with Matchers with GherkinParser { 
 
-  private val parse = parseFeatureSpec(_: String)
+  private val parse = parseSpecification(_: String)
   
   private val featureString = """
       

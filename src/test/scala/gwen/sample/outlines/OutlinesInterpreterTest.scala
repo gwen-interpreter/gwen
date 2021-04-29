@@ -15,30 +15,31 @@
  */
 package gwen.sample.outlines
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
-import gwen.eval.GwenOptions
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
-import gwen.eval.support.DefaultEngineSupport
+import gwen.model.Failed
+import gwen.model.Passed
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class OutlinesEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class OutlinesEvalContext() 
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait OutlinesEvalEngine extends DefaultEngineSupport[OutlinesEnvContext] {
-  override def init(options: GwenOptions): OutlinesEnvContext = new OutlinesEnvContext(options)
+trait OutlinesEvalEngine extends DefaultEngine[OutlinesEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): OutlinesEvalContext = new OutlinesEvalContext()
 }
 
 class OutlinesInterpreter
-  extends GwenInterpreter[OutlinesEnvContext]
+  extends GwenInterpreter[OutlinesEvalContext]
   with OutlinesEvalEngine
 
 class OutlinesInterpreterTest extends FlatSpec {

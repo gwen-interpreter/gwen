@@ -16,16 +16,17 @@
 
 package gwen.eval
 
-import gwen.dsl._
 import gwen.Errors.AmbiguousCaseException
-import gwen.Position
+import gwen.TestModel
+import gwen.model._
+import gwen.model.gherkin._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with GwenTestModel {
+class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
-  private val parse = parseFeatureSpec(_: String)
+  private val parse = parseSpecification(_: String)
 
   val background = Background(
     "background",
@@ -34,7 +35,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   )
 
   "Feature with no background and no step defs" should "normalise without error" in {
-    val feature = FeatureSpec(
+    val feature = Specification(
     Feature("feature1", Nil),
       None,
       List(
@@ -60,7 +61,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
 
   "Feature with background and no step defs" should "normalise without error" in {
-    val feature = FeatureSpec(
+    val feature = Specification(
       Feature("feature1", Nil),
       Some(background),
       List(
@@ -89,7 +90,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
   
   "StepDef without background and one step def" should "normalise without error" in {
-    val meta = FeatureSpec(
+    val meta = Specification(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -110,7 +111,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
 
   "StepDef with background and one step def" should "normalise without error" in {
-    val meta = FeatureSpec(
+    val meta = Specification(
       Feature("meta1", Nil), Some(background), List(
         Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -132,7 +133,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
   
   "Meta with multiple unique step defs" should "normalise without error" in {
-    val meta = FeatureSpec(
+    val meta = Specification(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -148,7 +149,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
   
   "Meta with duplicate step def" should "error" in {
-    val meta = FeatureSpec(
+    val meta = Specification(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -167,7 +168,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
   
   "Meta with duplicate step def with params" should "error" in {
-    val meta = FeatureSpec(
+    val meta = Specification(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef <number>", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -186,7 +187,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
   
   "Data driven feature with csv file and background" should "normalise without error" in {
-    val feature = FeatureSpec(
+    val feature = Specification(
     Feature("About me", Nil), Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
@@ -214,7 +215,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
   }
 
   "Data driven feature with csv file and no background" should "normalise without error" in {
-    val feature = FeatureSpec(
+    val feature = Specification(
     Feature("About me", Nil), None, List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),

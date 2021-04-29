@@ -17,7 +17,8 @@
 package gwen.eval
 
 import gwen._
-import gwen.dsl._
+import gwen.model._
+import gwen.model.gherkin._
 
  /**
   * Enfores certain rules depending on `gwen.feature.mode` and `gwen.behavior.rules` settings.
@@ -63,7 +64,7 @@ trait EvalRules {
     * @param step the step to check
     * @param env the environment context
     */
-  def checkStepDefRules[T <: EnvContext](step: Step, env: T): Unit = {
+  def checkStepDefRules(step: Step, env: EvalEnvironment): Unit = {
     if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (BehaviorRules.isStrict) {
         step.stepDef foreach { case (stepDef, _) =>
@@ -87,7 +88,7 @@ trait EvalRules {
     * @param actualBehavior the actual behavior type of the step
     * @param env the environment context
     */
-  def checkStepRules[T <: EnvContext](step: Step, actualBehavior: BehaviorType.Value, env: T): Unit = {
+  def checkStepRules(step: Step, actualBehavior: BehaviorType.Value, env: EvalEnvironment): Unit = {
     if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
         Errors.imperativeStepError(step)

@@ -17,7 +17,6 @@
 package gwen.eval.support
 
 import gwen._
-import gwen.eval.EnvContext
 
 import org.xml.sax.InputSource
 import org.w3c.dom.Node
@@ -37,7 +36,6 @@ import javax.xml.xpath.XPathFactory
 
 /** Can be mixed into evaluation contexts to provide XPath support. */
 trait XPathSupport {
-  this: EnvContext =>
 
   object XMLNodeType extends Enumeration {
     val text, node, nodeset = Value
@@ -53,33 +51,32 @@ trait XPathSupport {
     * @return the result of evaluating the xpath expression
     * @throws gwen.Errors.XPathException if the xpath expression fails to evaluate
     */
-  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String =
-    evaluate("$[dryRun:xpath]") {
-      if (source.trim().length() == 0) {
-        Errors.xPathError("Cannot evaluate XPath on empty source")
+  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = {
+    if (source.trim().length() == 0) {
+      Errors.xPathError("Cannot evaluate XPath on empty source")
+    }
+    withXPath(xpath) { (xPath, expr) =>
+      val qname = targetType match {
+        case XMLNodeType.text => XPathConstants.STRING
+        case XMLNodeType.node => XPathConstants.NODE
+        case XMLNodeType.nodeset => XPathConstants.NODESET
+        case _ => Errors.xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
       }
-      withXPath(xpath) { (xPath, expr) =>
-        val qname = targetType match {
-          case XMLNodeType.text => XPathConstants.STRING
-          case XMLNodeType.node => XPathConstants.NODE
-          case XMLNodeType.nodeset => XPathConstants.NODESET
-          case _ => Errors.xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
-        }
-        val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
-        targetType match {
-          case XMLNodeType.text => result.toString
-          case XMLNodeType.node =>
-            nodeToString(result.asInstanceOf[Node]) tap { nodeStr =>
-              if (nodeStr.isEmpty()) Errors.xPathError(s"No such node: $xpath")
-            }
-          case XMLNodeType.nodeset =>
-            nodeListToString(result.asInstanceOf[NodeList]) tap { nodeStr =>
-              if (nodeStr.isEmpty()) Errors.xPathError(s"No such nodeset: $xpath")
-            }
-        }
+      val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
+      targetType match {
+        case XMLNodeType.text => result.toString
+        case XMLNodeType.node =>
+          nodeToString(result.asInstanceOf[Node]) tap { nodeStr =>
+            if (nodeStr.isEmpty()) Errors.xPathError(s"No such node: $xpath")
+          }
+        case XMLNodeType.nodeset =>
+          nodeListToString(result.asInstanceOf[NodeList]) tap { nodeStr =>
+            if (nodeStr.isEmpty()) Errors.xPathError(s"No such nodeset: $xpath")
+          }
       }
     }
-
+  }
+  
   /**
     * Creates an xpath evaluator from the given expression and then applied
     * the given function to it,

@@ -16,8 +16,8 @@
 
 package gwen
 
-import gwen.Position
 import gwen.StringOps.lastPositionIn
+import gwen.model.Position
 
 import org.scalatest.{FlatSpec, Matchers}
 

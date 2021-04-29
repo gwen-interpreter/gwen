@@ -15,30 +15,31 @@
  */
 package gwen.sample.xml
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
-import gwen.eval.GwenOptions
-import gwen.eval.support.DefaultEngineSupport
+import gwen.model.Failed
+import gwen.model.Passed
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class XMLEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class XMLEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait XMLEvalEngine extends DefaultEngineSupport[XMLEnvContext] {
-  override def init(options: GwenOptions): XMLEnvContext = new XMLEnvContext(options)
+trait XMLEvalEngine extends DefaultEngine[XMLEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): XMLEvalContext = new XMLEvalContext()
 }
 
 class XMLInterpreter
-  extends GwenInterpreter[XMLEnvContext]
+  extends GwenInterpreter[XMLEvalContext]
   with XMLEvalEngine
 
 class XmlInterpreterTest extends FlatSpec {

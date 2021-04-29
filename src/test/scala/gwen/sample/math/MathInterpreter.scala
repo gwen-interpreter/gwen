@@ -17,8 +17,9 @@
 package gwen.sample.math
 
 import gwen._
-import gwen.dsl.Step
 import gwen.eval._
+import gwen.model.gherkin.Step
+import gwen.model.state.ScopedData
 
 import scala.io.Source
 
@@ -26,20 +27,23 @@ class MathService {
   def plus(x: Int, y: Int): Int = x + y
 }
 
-class MathEnvContext(val mathService: MathService, val options: GwenOptions) 
-  extends EnvContext(options) {
+class MathEnv extends EvalEnvironment {
   def vars: ScopedData = addScope("vars")
+}
+
+class MathEvalContext(options: GwenOptions, val mathService: MathService) 
+  extends EvalContext(options, new MathEnv()) {
   override def dsl: List[String] = 
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 
-trait MathEvalEngine extends EvalEngine[MathEnvContext] {
+trait MathEvalEngine extends EvalEngine[MathEvalContext] {
  
-  override def init(options: GwenOptions): MathEnvContext =
-    new MathEnvContext(new MathService(), options)
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): MathEvalContext =
+    new MathEvalContext(options, new MathService())
  
-  override def evaluate(step: Step, env: MathEnvContext): Unit = {
-    val vars = env.vars
+  override def evaluate(step: Step, ctx: MathEvalContext): Unit = ctx.withEnv { env =>
+    val vars = env.asInstanceOf[MathEnv].vars
     step.expression match {
       case r"""([a-z])$x = (\d+)$value""" =>
         vars.set(x, value)
@@ -48,25 +52,25 @@ trait MathEvalEngine extends EvalEngine[MathEnvContext] {
       case r"""z = ([a-z])$x \+ ([a-z])$y""" =>
         val xvalue = vars.get(x).toInt
         val yvalue = vars.get(y).toInt
-        env.evaluate(vars.set("z", "0")) {
+        ctx.evaluate(vars.set("z", "0")) {
           logger.info(s"evaluating z = $xvalue + $yvalue")
-          val zresult = env.mathService.plus(xvalue, yvalue)
+          val zresult = ctx.mathService.plus(xvalue, yvalue)
           vars.set("z", zresult.toString)
         }
       case r"""([a-z])$x == (\d+)$value""" =>
         val xvalue = vars.get(x).toInt
-        env.perform {
+        ctx.perform {
           assert (xvalue.toInt == value.toInt)
         }
       case _ =>
-        super.evaluate(step, env)
+        super.evaluate(step, ctx)
     }
   }
 }
 
 class MathInterpreter 
-  extends GwenInterpreter[MathEnvContext]
+  extends GwenInterpreter[MathEvalContext]
   with MathEvalEngine
 
 object MathInterpreter 
-  extends GwenApp(new MathInterpreter)
+  extends Gwen(new MathInterpreter)

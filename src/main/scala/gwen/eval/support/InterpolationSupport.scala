@@ -30,26 +30,26 @@ trait InterpolationSupport extends LazyLogging {
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
 
-  final def interpolate(source: String)(resolve: String => String): String = {
+  final def interpolateString(source: String)(resolve: String => String): String = {
     source match {
       case propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
-        val iProperty = interpolate(property) { resolve }
-        interpolate(s"$prefix${resolve(iProperty)}$suffix") { resolve }
+        val iProperty = interpolateString(property) { resolve }
+        interpolateString(s"$prefix${resolve(iProperty)}$suffix") { resolve }
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         val resolved = resolve(s"<${param}>")
         val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
-        interpolate(s"$prefix${substitution}$suffix") { resolve }
+        interpolateString(s"$prefix${substitution}$suffix") { resolve }
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
         logger.debug(s"Resolving concat-syntax binding: + $binding +")
-        interpolate(s"$prefix${resolve(binding)}$suffix") { resolve }
+        interpolateString(s"$prefix${resolve(binding)}$suffix") { resolve }
       case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" =>
         if(binding.contains('"')) {
           source
         } else {
           logger.debug(s"""Resolving concat-syntax binding: "" + $binding""")
-          interpolate(s"""$prefix${resolve(binding)}"""") { resolve }
+          interpolateString(s"""$prefix${resolve(binding)}"""") { resolve }
         }
       case _ => source
     }

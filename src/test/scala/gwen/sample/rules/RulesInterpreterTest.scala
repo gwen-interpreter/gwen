@@ -15,30 +15,31 @@
  */
 package gwen.sample.rules
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
-import gwen.eval.GwenLauncher
-import gwen.eval.GwenOptions
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
-import gwen.eval.support.DefaultEngineSupport
+import gwen.eval.GwenLauncher
+import gwen.model.Failed
+import gwen.model.Passed
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class RulesEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class RulesEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait RulesEvalEngine extends DefaultEngineSupport[RulesEnvContext] {
-  override def init(options: GwenOptions): RulesEnvContext = new RulesEnvContext(options)
+trait RulesEvalEngine extends DefaultEngine[RulesEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): RulesEvalContext = new RulesEvalContext()
 }
 
 class RulesInterpreter
-  extends GwenInterpreter[RulesEnvContext]
+  extends GwenInterpreter[RulesEvalContext]
   with RulesEvalEngine
 
 class RulesInterpreterTest extends FlatSpec {

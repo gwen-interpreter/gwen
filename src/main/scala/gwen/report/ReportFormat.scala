@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 Branko Juric, Brady Wood
+ * Copyright 2015-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,6 @@ object ReportFormat extends Enumeration {
 
   type ReportFormat = Value
   val html, slideshow, junit, json = Value
-  
-  def configOf(format: ReportFormat.Value): Option[ReportConfig] = {
-    format match {
-      case ReportFormat.html => Some(HtmlReportConfig)
-      case ReportFormat.slideshow => Some(HtmlSlideshowReportConfig)
-      case ReportFormat.junit => Some(JUnitReportConfig)
-      case ReportFormat.json => Some(JsonReportConfig)
-      case _ => None
-    }
-  }
   
 }
 

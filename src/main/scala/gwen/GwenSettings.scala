@@ -16,10 +16,10 @@
 
 package gwen
 
-import gwen.dsl.AssertionMode
-import gwen.dsl.BehaviorRules
-import gwen.dsl.FeatureMode
-import gwen.dsl.StateLevel
+import gwen.model.AssertionMode
+import gwen.model.BehaviorRules
+import gwen.model.FeatureMode
+import gwen.model.StateLevel
 import gwen.Errors._
 
 /**

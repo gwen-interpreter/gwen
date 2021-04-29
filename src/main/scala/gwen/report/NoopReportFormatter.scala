@@ -17,7 +17,10 @@
 package gwen.report
 
 import gwen.GwenInfo
-import gwen.eval.{FeatureResult, FeatureSummary, FeatureUnit, GwenOptions}
+import gwen.GwenOptions
+import gwen.model.FeatureResult
+import gwen.model.FeatureSummary
+import gwen.model.FeatureUnit
 
 import java.io.File
 

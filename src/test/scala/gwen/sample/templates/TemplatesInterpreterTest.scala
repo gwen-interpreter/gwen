@@ -16,30 +16,31 @@
 package gwen.sample.templates
 
 import gwen.BaseTest
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenLauncher
 import gwen.eval.GwenInterpreter
-import gwen.eval.GwenOptions
-import gwen.eval.support.DefaultEngineSupport
+import gwen.model.Failed
+import gwen.model.Passed
 import gwen.report.ReportFormat
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 import java.io.File
 
-class TemplatesEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class TemplatesEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait TemplatesEvalEngine extends DefaultEngineSupport[TemplatesEnvContext] {
-  override def init(options: GwenOptions): TemplatesEnvContext = new TemplatesEnvContext(options)
+trait TemplatesEvalEngine extends DefaultEngine[TemplatesEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TemplatesEvalContext = new TemplatesEvalContext()
 }
 
 class TemplatesInterpreter
-  extends GwenInterpreter[TemplatesEnvContext]
+  extends GwenInterpreter[TemplatesEvalContext]
   with TemplatesEvalEngine
 
 class TemplatesInterpreterTest extends BaseTest {

@@ -17,14 +17,19 @@
 package gwen.eval
 
 import gwen._
-import gwen.dsl._
+import gwen.eval.event.LifecycleEventDispatcher
+import gwen.model._
+import gwen.model.gherkin._
+import gwen.model.state._
 
 import scala.util.{Failure => TryFailure}
 import scala.util.{Success => TrySuccess}
 
 import org.mockito.Matchers.any
 import org.mockito.Matchers.anyString
+import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.never
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
@@ -35,38 +40,39 @@ import org.scalatestplus.mockito.MockitoSugar
 import java.io.File
 import java.io.FileWriter
 
-class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with GwenTestModel {
+class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with TestModel {
 
   val rootDir: File = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
   
   val options = new GwenOptions()
   
-  private def interpreter(mockEnv: EnvContext, mockLifecycle: LifecycleEventDispatcher) = {
-    trait MockEvalEngine extends EvalEngine[EnvContext] {
-      type EnvContextType = EnvContext
+  private def interpreter(mockCtx: EvalContext, mockLifecycle: LifecycleEventDispatcher) = {
+    trait MockEvalEngine extends EvalEngine[EvalContext] {
       override val lifecycle = mockLifecycle
-      override private [eval] def init(options: GwenOptions): EnvContextType = mockEnv
-      override def evaluate(step: Step, env: EnvContextType): Unit = { }
+      override private [eval] def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): EvalContext = mockCtx
+      override def evaluate(step: Step, ctx: EvalContext): Unit = { }
     }
-    new GwenInterpreter[EnvContext] with MockEvalEngine
+    new GwenInterpreter[EvalContext]() with MockEvalEngine
   }
 
   "initialise interpreter" should "create new env" in {
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockLifecycle = mock[LifecycleEventDispatcher]
-    interpreter(mockEnv, mockLifecycle).initialise(options)
+    interpreter(mockCtx, mockLifecycle).initialise(options)
     verify(mockEnv, never()).close()
   }
   
   "interpreting a valid step" should "return success" in {
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockLifecycle = mock[LifecycleEventDispatcher]
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
     val step = Step(StepKeyword.Given.toString, "I am a valid step")
-    when(mockEnv.interpolateParams(any[Step])).thenReturn(step)
-    when(mockEnv.interpolate(any[Step])).thenReturn(step)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step, Passed(1)))
-    val result = interpreter(mockEnv, mockLifecycle).interpretStep("Given I am a valid step", mockEnv)
+    doReturn(step).when(mockCtx).interpolateParams(any[Step])
+    doReturn(step).when(mockCtx).interpolate(any[Step])
+    doReturn(Step(step, Passed(1))).when(mockCtx).finaliseStep(any[Step])
+    val result = interpreter(mockCtx, mockLifecycle).interpretStep("Given I am a valid step", mockCtx)
     result match {
       case TrySuccess(s) =>
         s.keyword should be (StepKeyword.Given.toString)
@@ -82,20 +88,21 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
 
   "interpreting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockLifecycle = mock[LifecycleEventDispatcher]
     val step1 = Step(StepKeyword.Given.toString, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given.toString, "I am a valid stepdef")
     val stepdef = Scenario(List[Tag](Tag("@StepDef")), "I am a valid stepdef", Nil, None, List(step1))
     when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
-    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1)
-    when(mockEnv.interpolate(any[Step])).thenReturn(step1)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)))
-    when(mockEnv.interpolateParams(any[Step])).thenReturn(step2)
-    when(mockEnv.interpolate(any[Step])).thenReturn(step2)
+    doReturn(step1).when(mockCtx).interpolateParams(any[Step])
+    doReturn(step1).when(mockCtx).interpolate(any[Step])
+    doReturn(Step(step1, Passed(1))).doReturn(Step(step2, Passed(1))).when(mockCtx).finaliseStep(any[Step])
+    doReturn(step2).when(mockCtx).interpolateParams(any[Step])
+    doReturn(step2).when(mockCtx).interpolate(any[Step])
     when(mockEnv.stepScope).thenReturn(paramScope)
-    val result = interpreter(mockEnv, mockLifecycle).interpretStep("Given I am a valid stepdef", mockEnv)
+    val result = interpreter(mockCtx, mockLifecycle).interpretStep("Given I am a valid stepdef", mockCtx)
     result match {
       case TrySuccess(step) =>
         step.keyword should be (StepKeyword.Given.toString)
@@ -109,9 +116,10 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
   }
   
   "interpreting an invalid step" should "return error" in {
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockLifecycle = mock[LifecycleEventDispatcher]
-    val result = interpreter(mockEnv, mockLifecycle).interpretStep("Yes I am an invalid step", mockEnv)
+    val result = interpreter(mockCtx, mockLifecycle).interpretStep("Yes I am an invalid step", mockCtx)
     result match {
       case TrySuccess(_) =>
         fail("expected failure")
@@ -133,7 +141,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
          Then a large change will eventually result"""
     
     val featureFile = writeToFile(featureString, createFile("test1.feature"))
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
@@ -145,10 +154,31 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val step4 = Step(StepKeyword.Given.toString, "a deterministic nonlinear system")
     val step5 = Step(StepKeyword.When.toString, "a small change is initially applied")
     val step6 = Step(StepKeyword.Then.toString, "a large change will eventually result")
-    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6)
-    when(mockEnv.interpolate(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)), Step(step3, Passed(1)), Step(step4, Passed(1)), Step(step5, Passed(1)), Step(step6, Passed(1)))
-    val result = interpreter(mockEnv, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, Nil, None), Nil, mockEnv)
+    doReturn(step1)
+      .doReturn(step2)
+      .doReturn(step3)
+      .doReturn(step4)
+      .doReturn(step5)
+      .doReturn(step6)
+      .when(mockCtx)
+      .interpolateParams(any[Step])
+    doReturn(step1)
+      .doReturn(step2)
+      .doReturn(step3)
+      .doReturn(step4)
+      .doReturn(step5)
+      .doReturn(step6)
+      .when(mockCtx)
+      .interpolate(any[Step])
+    doReturn(Step(step1, Passed(1)))
+      .doReturn(Step(step2, Passed(1)))
+      .doReturn(Step(step3, Passed(1)))
+      .doReturn(Step(step4, Passed(1)))
+      .doReturn(Step(step5, Passed(1)))
+      .doReturn(Step(step6, Passed(1)))
+      .when(mockCtx)
+      .finaliseStep(any[Step])
+    val result = interpreter(mockCtx, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, Nil, None), Nil, mockCtx)
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
@@ -158,7 +188,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
         verify(mockTopScope).set("gwen.feature.name", "Gwen")
         verify(mockTopScope).set("gwen.scenario.name", "The butterfly effect")
         verify(mockTopScope, never()).set("gwen.feature.scenario", "The observer")
-        verify(mockLifecycle).beforeFeature(any[Identifiable], any[FeatureSpec], any[ScopedDataStack])
+        verify(mockLifecycle).beforeFeature(any[Identifiable], any[Specification], any[ScopedDataStack])
         verify(mockLifecycle).afterFeature(any[FeatureResult], any[ScopedDataStack])
         verify(mockLifecycle).beforeBackground(any[Identifiable], any[Background], any[ScopedDataStack])
         verify(mockLifecycle).afterBackground(any[Background], any[ScopedDataStack])
@@ -203,7 +233,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
         Step(StepKeyword.Given.toString, "a deterministic nonlinear system"),
         Step(StepKeyword.When.toString, "a small change is initially applied"),
         Step(StepKeyword.Then.toString, "a large change will eventually result")))
-    val mockEnv = mock[EnvContext]
+    val mockEnv = mock[EvalEnvironment]
+    val mockCtx = spy(new EvalContext(GwenOptions(),mockEnv))
     val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
@@ -228,11 +259,41 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val step6 = Step(StepKeyword.Given.toString, "a deterministic nonlinear system")
     val step7 = Step(StepKeyword.When.toString, "a small change is initially applied")
     val step8 = Step(StepKeyword.Then.toString, "a large change will eventually result")
-    val step9 = Step(StepKeyword.Then.toString, "order is lost")
-    when(mockEnv.interpolateParams(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6, step7, step8, step9)
-    when(mockEnv.interpolate(any[Step])).thenReturn(step1, step2, step3, step4, step5, step6, step7, step8, step9)
-    when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)), Step(step3, Passed(1)), Step(step4, Passed(1)), Step(step5, Passed(1)), Step(step6, Passed(1)), Step(step7, Passed(1)), Step(step8, Passed(1)), Step(step9, Passed(1)))
-    val result = interpreter(mockEnv, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, List(metaFile), None), Nil, mockEnv)
+    val step9 = Step(StepKeyword.Then.toString, "order is lost")    
+    doReturn(step1)
+      .doReturn(step2)
+      .doReturn(step3)
+      .doReturn(step4)
+      .doReturn(step5)
+      .doReturn(step6)
+      .doReturn(step7)
+      .doReturn(step8)
+      .doReturn(step9)
+      .when(mockCtx)
+      .interpolateParams(any[Step])
+    doReturn(step1)
+      .doReturn(step2)
+      .doReturn(step3)
+      .doReturn(step4)
+      .doReturn(step5)
+      .doReturn(step6)
+      .doReturn(step7)
+      .doReturn(step8)
+      .doReturn(step9)
+      .when(mockCtx)
+      .interpolate(any[Step])
+    doReturn(Step(step1, Passed(1)))
+      .doReturn(Step(step2, Passed(1)))
+      .doReturn(Step(step3, Passed(1)))
+      .doReturn(Step(step4, Passed(1)))
+      .doReturn(Step(step5, Passed(1)))
+      .doReturn(Step(step6, Passed(1)))
+      .doReturn(Step(step7, Passed(1)))
+      .doReturn(Step(step8, Passed(1)))
+      .doReturn(Step(step9, Passed(1)))
+      .when(mockCtx)
+      .finaliseStep(any[Step])
+    val result = interpreter(mockCtx, mockLifecycle).interpretFeature(FeatureUnit(Root, featureFile, List(metaFile), None), Nil, mockCtx)
     result match {
       case Some(featureResult) =>
         featureResult.spec.evalStatus.status should be (StatusKeyword.Passed)
@@ -244,7 +305,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
         verify(mockTopScope, never()).set("gwen.feature.name", "Gwen meta")
         verify(mockTopScope, never()).set("gwen.feature.scenario", "the butterfly flaps its wings")
         verify(mockTopScope, never()).set("gwen.feature.scenario", "The observer")
-        verify(mockLifecycle, times(2)).beforeFeature(any[Identifiable], any[FeatureSpec], any[ScopedDataStack])
+        verify(mockLifecycle, times(2)).beforeFeature(any[Identifiable], any[Specification], any[ScopedDataStack])
         verify(mockLifecycle, times(2)).afterFeature(any[FeatureResult], any[ScopedDataStack])
         verify(mockLifecycle).beforeBackground(any[Identifiable], any[Background], any[ScopedDataStack])
         verify(mockLifecycle).afterBackground(any[Background], any[ScopedDataStack])

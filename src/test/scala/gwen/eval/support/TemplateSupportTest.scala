@@ -16,27 +16,27 @@
 
 package gwen.eval.support
 
-import gwen.eval.{EnvContext, GwenOptions}
+import gwen.model.state.TopScope
 
 import scala.util.{Failure, Success}
 
 import org.scalatest.{FlatSpec, Matchers}
 
-class TemplateSupportTest extends FlatSpec with Matchers {
+class TemplateSupportTest extends FlatSpec with Matchers with TemplateSupport {
 
-  val templateSupport: TemplateSupport = new EnvContext(GwenOptions())
+  val topScope = new TopScope()
 
   """Single line static template""" should "match" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source = template
-    templateSupport.matchTemplate(template, source, "my source").isSuccess should be (true)
+    matchTemplate(template, source, "my source", topScope).isSuccess should be (true)
   }
 
   """Single line static template""" should "not match when source is different" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -50,7 +50,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     val template = """{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -64,7 +64,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     val template = """{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -78,7 +78,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     val template = """{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -92,7 +92,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     val template = """{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -106,7 +106,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
     val template = """{"id":!{},"category":{"name":"pet"},"name":"tiger","state":"available"}"""
     val source =   """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -126,7 +126,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
     val source = template
-    templateSupport.matchTemplate(template, source, "my source").get should be (true)
+    matchTemplate(template, source, "my source", topScope).get should be (true)
   }
 
   """Multi line static template""" should "not match when source is different" in {
@@ -147,7 +147,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -175,7 +175,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -203,7 +203,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -231,7 +231,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -259,7 +259,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>
@@ -287,7 +287,7 @@ class TemplateSupportTest extends FlatSpec with Matchers {
                      |  "state": "available"
                      |}""".stripMargin
 
-    val result = templateSupport.matchTemplate(template, source, "my source")
+    val result = matchTemplate(template, source, "my source", topScope)
 
     result match {
       case Success(_) =>

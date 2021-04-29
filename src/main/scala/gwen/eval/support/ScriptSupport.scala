@@ -42,8 +42,9 @@ trait ScriptSupport {
     * @param javascript the script predicate expression to execute (must evaluate to true or false)
     * @param params optional parameters to the script
     */
-  def evaluateJSPredicate(javascript: String, params: Any*): Boolean =
+  def evaluateJSPredicate(javascript: String, params: Any*): Boolean = {
     evaluateJS(formatJSReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
+  }
 
   /**
     * Formats the given javascript expression in preparation for execute and return

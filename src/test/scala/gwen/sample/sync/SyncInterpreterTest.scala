@@ -15,32 +15,33 @@
  */
 package gwen.sample.sync
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.GwenOptions
-import gwen.eval.GwenLauncher
-import gwen.report.ReportFormat
-import gwen.eval.EnvContext
+import gwen.BaseTest
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.EvalEngine
 import gwen.eval.GwenInterpreter
-import gwen.eval.support.DefaultEngineSupport
-import gwen.BaseTest
+import gwen.eval.GwenLauncher
+import gwen.model.Failed
+import gwen.model.Passed
+import gwen.report.ReportFormat
 
 import java.io.File
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
-class SyncEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class SyncEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait SyncEvalEngine extends EvalEngine[SyncEnvContext] with DefaultEngineSupport[SyncEnvContext] {
-  override def init(options: GwenOptions): SyncEnvContext = new SyncEnvContext(options)
+trait SyncEvalEngine extends EvalEngine[SyncEvalContext] with DefaultEngine[SyncEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): SyncEvalContext = new SyncEvalContext()
 }
 
 class SyncInterpreter
-  extends GwenInterpreter[SyncEnvContext]
+  extends GwenInterpreter[SyncEvalContext]
   with SyncEvalEngine
 
 class SyncInterpreterTest extends BaseTest {

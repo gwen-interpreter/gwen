@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package gwen.eval
 
 import gwen._
-import gwen.dsl.Dialect
-import gwen.dsl.ReservedKeyword
-import gwen.dsl.StepKeyword
-import gwen.dsl.StateLevel
+import gwen.model.ReservedKeyword
+import gwen.model.StepKeyword
+import gwen.model.StateLevel
+import gwen.model.gherkin.Dialect
+import gwen.model.state.ScopedDataStack
 
 import scala.jdk.CollectionConverters._
 import scala.util.Failure
@@ -38,20 +39,22 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T) {
+class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], val ctx: T) {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile)
 
   private var paste: Option[List[String]] = None
   private var pastingDocString = false
 
-  private lazy val reader = new ConsoleReader() tap { reader =>
-    reader.setHistory(history)
-    reader.setBellEnabled(false)
-    reader.setExpandEvents(false)
-    reader.setPrompt("gwen> ")
-    reader.addCompleter(new StringsCompleter((StepKeyword.names ++ List("help", "env", "history", "exit")).asJava))
-    reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
+  private lazy val reader = ctx.withEnv { env =>
+    new ConsoleReader() tap { reader =>
+      reader.setHistory(history)
+      reader.setBellEnabled(false)
+      reader.setExpandEvents(false)
+      reader.setPrompt("gwen> ")
+      reader.addCompleter(new StringsCompleter((StepKeyword.names ++ List("help", "env", "history", "exit")).asJava))
+      reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
+    }
   }
 
   /** Reads an input string or command from the command line. */
@@ -66,7 +69,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
     * @param input an input step or command
     * @return optional result of the command as a string
     */
-  private def eval(input: String): Option[String] =
+  private def eval(input: String): Option[String] = ctx.withEnv { env =>
     Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
       case "" if paste.isEmpty =>
         Some("[noop]")
@@ -143,8 +146,9 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
           Some(input)
         }
     }
+  }
 
-  private def evaluateInput(input: String): String = {
+  private def evaluateInput(input: String): String = ctx.withEnv { env =>
     input.trim match {
       case r"^Feature:(.*)$$$name" =>
         env.topScope.set("gwen.feature.name", name.trim)
@@ -154,7 +158,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
         s"[gwen.rule.name = ${name.trim}]"
       case r"^(Scenario|Example):(.*)$$$name" =>
         if (StateLevel.scenario.equals(env.stateLevel)) {
-          env.reset(StateLevel.scenario)
+          ctx.reset(StateLevel.scenario)
         }
         env.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
@@ -165,7 +169,7 @@ class GwenREPL[T <: EnvContext](val interpreter: GwenInterpreter[T], val env: T)
         Dialect.setLanguage(language)
         s"# language: $language"
       case _ =>
-        interpreter.interpretStep(input, env) match {
+        interpreter.interpretStep(input, ctx) match {
           case Success(step) => s"\n[${step.evalStatus.status}]"
           case Failure(error) => s"$error\n\n[non-step]"
         }

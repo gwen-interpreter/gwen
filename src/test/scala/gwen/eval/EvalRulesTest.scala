@@ -17,8 +17,10 @@
 package gwen.eval
 
 import gwen.BaseTest
-import gwen.dsl._
 import gwen.Errors._
+import gwen.TestModel
+import gwen.model._
+import gwen.model.gherkin._
 
 import scala.io.Source
 
@@ -26,17 +28,17 @@ import org.scalatest.Matchers
 
 import java.io.File
 
-class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalRules with GwenTestModel {
+class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalRules with TestModel {
 
-    private def parseFeature(file: File): FeatureSpec = 
-        parseFeatureSpec(Source.fromFile(file).mkString).get
+    private def parseFeature(file: File): Specification = 
+        parseSpecification(Source.fromFile(file).mkString).get
 
     private def createScenario(steps: String): Scenario = {
         val input = s"""
         | Scenario: scenario
         |     $steps
         | """.stripMargin
-        parseFeatureSpec(s"Feature: feature\n$input").map(_.scenarios.head).get
+        parseSpecification(s"Feature: feature\n$input").map(_.scenarios.head).get
     }
 
     private def createBackground(steps: String): Background = {
@@ -44,12 +46,12 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         | Background: background
         |       $steps
         | """.stripMargin
-        parseFeatureSpec(s"Feature: feature\n$input").map(_.background.head).get
+        parseSpecification(s"Feature: feature\n$input").map(_.background.head).get
     }
 
     private def createStep(step: String): Step = parseStep(step).get
 
-    val env = new EnvContext(GwenOptions()) {
+    val env = new EvalEnvironment() {
         topScope.pushObject("spec.file", featureFile)
     }
 

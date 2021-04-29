@@ -16,7 +16,9 @@
 
 package gwen.eval
 
-import gwen.dsl._
+import gwen.model._
+import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Scenario
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -39,7 +41,7 @@ object TagsFilter {
     * @return None if the given feature does not have any scenarios that satisfy all tags; 
     *         Some otherwise (with only the scenarios that do)
     */
-  def filter(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)]): Option[FeatureSpec] = { 
+  def filter(spec: Specification, tagFilters: List[(Tag, Boolean)]): Option[Specification] = { 
     def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
     def rules = spec.rules map { rule =>
       rule.copy(withScenarios = filterScenarios(spec, tagFilters, rule.scenarios))
@@ -53,7 +55,7 @@ object TagsFilter {
     }
   }
 
-  private def filterScenarios(spec: FeatureSpec, tagFilters: List[(Tag, Boolean)], scenarios: List[Scenario]): List[Scenario] = {
+  private def filterScenarios(spec: Specification, tagFilters: List[(Tag, Boolean)], scenarios: List[Scenario]): List[Scenario] = {
     val filters = tagFilters ++ DefaultTags
     scenarios flatMap { scenario =>
       val effectiveTags = spec.feature.tags ++ scenario.tags

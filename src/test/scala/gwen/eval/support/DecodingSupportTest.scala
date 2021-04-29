@@ -17,34 +17,30 @@
 package gwen.eval.support
 
 import gwen.Errors.DecodingException
-import gwen.eval.EnvContext
-import gwen.eval.GwenOptions
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class DecodingSupportTest extends FlatSpec with Matchers {
-
-  val decodingSupport: DecodingSupport = new EnvContext(GwenOptions())
+class DecodingSupportTest extends FlatSpec with Matchers with DecodingSupport {
 
   "Null Base64 source" should "throw error" in {
     intercept[DecodingException] {
-      decodingSupport.decodeBase64(null)
+      decodeBase64(null)
     }
   }
   
   "Empty Base64 source" should "return empty string" in {
-    decodingSupport.decodeBase64("") should be ("")
+    decodeBase64("") should be ("")
   }
   
   "Space Base64 source" should "return empty string" in {
-    decodingSupport.decodeBase64(" ") should be ("")
+    decodeBase64(" ") should be ("")
   }
   
   "Valid Base64 source" should "decode correctly" in {
     val source = "WW91IGNhbiB0ZXN0IGZvciB0aGUgcHJlc2VuY2Ugb2YgYnVncyBidXQgbmV2ZXIgdGhlaXIgYWJzZW5jZSE="
     val target = "You can test for the presence of bugs but never their absence!"
-    decodingSupport.decodeBase64(source) should be (target)
+    decodeBase64(source) should be (target)
   }
   
 }

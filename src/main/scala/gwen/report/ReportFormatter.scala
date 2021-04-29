@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package gwen.report
 
-import gwen.eval.GwenOptions
-import gwen.eval.FeatureResult
-import gwen.eval.FeatureSummary
-import gwen.eval.FeatureUnit
+import gwen.GwenOptions
+import gwen.model.FeatureResult
+import gwen.model.FeatureSummary
+import gwen.model.FeatureUnit
 import gwen.GwenInfo
 
 import java.io.File

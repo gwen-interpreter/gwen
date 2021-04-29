@@ -18,7 +18,6 @@
 package gwen.eval.support
 
 import gwen.Settings
-import gwen.eval.{EnvContext, GwenOptions}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -33,9 +32,8 @@ import slick.lifted.Tag
 class SQLSupportTest
     extends FlatSpec
     with Matchers
-    with BeforeAndAfterAll {
-
-  private val sqlSupport: SQLSupport = new EnvContext(GwenOptions())
+    with BeforeAndAfterAll
+    with SQLSupport {
 
   private implicit val dbConfig: DBConfig = DBConfig(driver = "org.h2.Driver", dbName = "testdb")
 
@@ -62,7 +60,7 @@ class SQLSupportTest
 
   "executeSQLQuery" should "return the first column value of the first row in the result" in {
     val statement = "SELECT * FROM CAKES"
-    sqlSupport.executeSQLQuery(statement, dbConfig.dbName) shouldBe "Brownie"
+    executeSQLQuery(statement, dbConfig.dbName) shouldBe "Brownie"
   }
 
   "executeSQLUpdate" should "update statement against a database and returns the number of rows affected" in {
@@ -73,7 +71,7 @@ class SQLSupportTest
         |WHERE PRICE = 3
       """.stripMargin
 
-    sqlSupport.executeSQLUpdate(statement, dbConfig.dbName) shouldBe 1
+    executeSQLUpdate(statement, dbConfig.dbName) shouldBe 1
   }
 }
 

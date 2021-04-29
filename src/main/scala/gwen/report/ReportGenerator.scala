@@ -17,16 +17,16 @@
 package gwen.report
 
 import gwen._
-import gwen.dsl.FeatureSpec
-import gwen.dsl.EvalStatus
-import gwen.dsl.SpecType
-import gwen.eval.FeatureResult
-import gwen.eval.FeatureSummary
-import gwen.eval.GwenOptions
-import gwen.eval.DataRecord
-import gwen.eval.EnvContext
-import gwen.eval.FeatureUnit
+import gwen.GwenOptions
+import gwen.eval.EvalContext
 import gwen.eval.GwenInterpreter
+import gwen.model._
+import gwen.model.gherkin.Specification
+
+import gwen.report.html.HtmlReportConfig
+import gwen.report.html.HtmlSlideshowConfig
+import gwen.report.json.JsonReportConfig
+import gwen.report.junit.JUnitReportConfig
 
 import scala.io.Source
 
@@ -65,8 +65,8 @@ class ReportGenerator (
 
   val format: ReportFormat.Value = config.format
     
-  def init[T <: EnvContext](interpreter: GwenInterpreter[T]): Unit = { }
-  def close[T <: EnvContext](interpreter: GwenInterpreter[T], evalStatus: EvalStatus): Unit = { }
+  def init[T <: EvalContext](interpreter: GwenInterpreter[T]): Unit = { }
+  def close[T <: EvalContext](interpreter: GwenInterpreter[T], evalStatus: EvalStatus): Unit = { }
 
   /**
     * Generate and return a detail feature report.
@@ -123,7 +123,7 @@ class ReportGenerator (
     }
   }
   
-  def reportAttachments(spec: FeatureSpec, featureReportFile: File): Unit = {
+  def reportAttachments(spec: Specification, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
     spec.attachments foreach { case (_, file) =>
       new File(attachmentsDir, file.getName).writeFile(file)
@@ -180,7 +180,15 @@ object ReportGenerator {
         ReportFormat.slideshow :: options.reportFormats 
       else options.reportFormats
 
-    formats.flatMap(ReportFormat.configOf) map { config =>
+    formats.flatMap { format =>
+      format match {
+        case ReportFormat.html => Some(HtmlReportConfig)
+        case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
+        case ReportFormat.junit => Some(JUnitReportConfig)
+        case ReportFormat.json => Some(JsonReportConfig)
+        case _ => None
+      }
+    } map { config =>
       config.reportGenerator(options)
     }
   

@@ -15,35 +15,37 @@
  */
 package gwen.sample.docStrings
 
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.EnvContext
-import gwen.eval.GwenOptions
-import gwen.eval.GwenLauncher
-import gwen.eval.GwenApp
+import gwen.Gwen
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
-import gwen.eval.support.DefaultEngineSupport
+import gwen.eval.GwenLauncher
+import gwen.model.Failed
+import gwen.model.Passed
+
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class DocStringsEnvContext(val options: GwenOptions)
-  extends EnvContext(options) {
+class DocStringsEvalContext
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait DocStringsEvalEngine extends DefaultEngineSupport[DocStringsEnvContext] {
-  override def init(options: GwenOptions): DocStringsEnvContext = new DocStringsEnvContext(options)
+trait DocStringsEvalEngine extends DefaultEngine[DocStringsEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): DocStringsEvalContext = new DocStringsEvalContext()
 }
 
 class DocStringsInterpreter
-  extends GwenInterpreter[DocStringsEnvContext]
+  extends GwenInterpreter[DocStringsEvalContext]
   with DocStringsEvalEngine
 
 object DocStringsInterpreter
-  extends GwenApp(new DocStringsInterpreter)
+  extends Gwen(new DocStringsInterpreter)
 
 class DocStringsInterpreterTest extends FlatSpec {
   

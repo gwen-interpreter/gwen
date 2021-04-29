@@ -16,19 +16,19 @@
 
 package gwen.sample.math
 
-import gwen.dsl.GwenTestModel
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.dsl.StepKeyword
+import gwen.GwenOptions
+import gwen.TestModel
 import gwen.eval.GwenLauncher
-import gwen.eval.GwenOptions
+import gwen.model.Failed
+import gwen.model.Passed
+import gwen.model.StepKeyword
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class MathInterpreterTest extends FlatSpec with GwenTestModel {
+class MathInterpreterTest extends FlatSpec with TestModel {
   
   "math features" should "evaluate" in {
     
@@ -69,16 +69,22 @@ class MathInterpreterTest extends FlatSpec with GwenTestModel {
     
     val options = new GwenOptions(dryRun = true)
     
-    val env = new MathEnvContext(new MathService(), options)
-    env.scopes.addScope("vars").set("y", "1")
-        
-    val interpreter = new MathInterpreter
-    env.dsl map { dsl =>
-      dsl.replace("<integer>", "1")
-    } foreach { dsl => 
-      StepKeyword.values.map(_.toString) foreach { keyword =>
-        interpreter.evaluate(Step(keyword, dsl), env)
+    val ctx = new MathEvalContext(options, new MathService())
+
+    ctx.withEnv { env =>
+
+      env.scopes.addScope("vars").set("y", "1")
+          
+      val interpreter = new MathInterpreter
+      env.dsl map { dsl =>
+        dsl.replace("<integer>", "1")
+      } foreach { dsl => 
+        StepKeyword.values.map(_.toString) foreach { keyword =>
+          interpreter.evaluate(Step(keyword, dsl), ctx)
+        }
       }
+
     }
+    
   }
 }

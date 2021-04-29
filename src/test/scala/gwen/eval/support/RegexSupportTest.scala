@@ -16,25 +16,21 @@
 
 package gwen.eval.support
 
-import gwen.eval.{EnvContext, GwenOptions}
-
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
-class RegexSupportTest extends FlatSpec with Matchers {
-
-  val regexSuport: RegexSupport = new EnvContext(GwenOptions())
+class RegexSupportTest extends FlatSpec with Matchers with RegexSupport {
 
   """id=(\d+) on http://host:post/path?id=1""" should "return 1" in {
-    regexSuport.extractByRegex("""id=(\d+)""", "http://host:post/path?id=1") should be ("1")
+    extractByRegex("""id=(\d+)""", "http://host:post/path?id=1") should be ("1")
   }
   
   """id=(\d+) on http://host:post/path?id=1&name=gwen""" should "return 1" in {
-    regexSuport.extractByRegex("""id=(\d+)""", "http://host:post/path?id=1&name=gwen") should be ("1")
+    extractByRegex("""id=(\d+)""", "http://host:post/path?id=1&name=gwen") should be ("1")
   }
   
   """id=(\d+) on http://host:post/path?value=x&id=1&name=gwen""" should "return 1" in {
-    regexSuport.extractByRegex("""id=(\d+)""", "http://host:post/path?value=x&id=1&name=gwen") should be ("1")
+    extractByRegex("""id=(\d+)""", "http://host:post/path?value=x&id=1&name=gwen") should be ("1")
   }
   
 }

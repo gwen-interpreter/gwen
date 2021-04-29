@@ -16,35 +16,36 @@
 package gwen.sample.bindings
 
 import gwen.BaseTest
-import gwen.dsl.Failed
-import gwen.dsl.Passed
-import gwen.eval.GwenOptions
-import gwen.eval.GwenLauncher
-import gwen.eval.EnvContext
-import gwen.eval.GwenApp
+import gwen.Gwen
+import gwen.GwenOptions
+import gwen.eval.DefaultEngine
+import gwen.eval.EvalContext
+import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
-import gwen.eval.support.DefaultEngineSupport
+import gwen.eval.GwenLauncher
+import gwen.model.Failed
+import gwen.model.Passed
 import gwen.report.ReportFormat
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 import java.io.File
 
-class BindingsEnvContext(val options: GwenOptions) 
-  extends EnvContext(options) {
+class BindingsEvalContext 
+  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
   override def dsl: List[String] = Nil
 }
 
-trait BindingsEvalEngine extends DefaultEngineSupport[BindingsEnvContext] {
-  override def init(options: GwenOptions): BindingsEnvContext = new BindingsEnvContext(options)
+trait BindingsEvalEngine extends DefaultEngine[BindingsEvalContext] {
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): BindingsEvalContext = new BindingsEvalContext()
 }
 
 class BindingsInterpreter 
-  extends GwenInterpreter[BindingsEnvContext]
+  extends GwenInterpreter[BindingsEvalContext]
   with BindingsEvalEngine
 
 object BindingsInterpreter 
-  extends GwenApp(new BindingsInterpreter)
+  extends Gwen(new BindingsInterpreter)
 
 class BindingsInterpreterTest extends BaseTest {
   

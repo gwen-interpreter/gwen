@@ -17,7 +17,9 @@
 package gwen.eval
 
 import gwen._
-import gwen.dsl._
+import gwen.eval.EvalRules
+import gwen.model._
+import gwen.model.gherkin._
 
 import java.io.File
 
@@ -39,10 +41,10 @@ trait SpecNormaliser extends EvalRules {
     * @param specFile optional source feature file
     * @param dataRecord optional feature level data record
     */
-  def normalise(spec: FeatureSpec, specFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
+  def normalise(spec: Specification, specFile: Option[File], dataRecord: Option[DataRecord]): Specification = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, specFile)
     validate(spec.background, scenarios, spec.specType)
-    FeatureSpec(
+    Specification(
       dataRecord map { record =>
         spec.feature.copy(
           withName = s"${spec.feature.name} [${record.recordNo}]")
