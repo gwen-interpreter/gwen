@@ -41,10 +41,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 /**
   * Interprets and executes all steps via a mixed in evaluation engine.
-  * 
-  * @author Branko Juric
   */
-class GwenInterpreter[T <: EvalContext] extends GwenInfo with GherkinParser with SpecNormaliser with LazyLogging {
+class GwenInterpreter[T <: EvalContext] extends MetaLoader[T] with GherkinParser with SpecNormaliser with GwenInfo with LazyLogging {
   engine: EvalEngine[T] =>
 
   def addLifecycleEventListener(listener: LifecycleEventListener): Unit = {
@@ -279,71 +277,6 @@ class GwenInterpreter[T <: EvalContext] extends GwenInfo with GherkinParser with
           lifecycle.afterRule(r, env.scopes)
         }
     }
-  }
-
-  /**
-    * Loads meta imports.
-    */
-  private[eval] def loadMetaImports(unit: FeatureUnit, featureSpec: Specification, tagFilters: List[(Tag, Boolean)], ctx: T): List[FeatureResult] =
-    getMetaImports(featureSpec, unit.featureFile) flatMap { metaFile => 
-      try {
-        loadMetaFile(Some(unit), metaFile, tagFilters, ctx)
-      } catch {
-        case _: StackOverflowError =>
-          Errors.recursiveImportError(Tag(ReservedTags.Import, unit.featureFile.getPath))
-      }
-    }
-  
-  private def getMetaImports(featureSpec: Specification, specFile: File): List[File] = {
-    featureSpec.feature.tags.flatMap { tag =>
-      tag match {
-        case Tag(_, name, Some(filepath)) =>
-          if (name == ReservedTags.Import.toString) {
-            val file = new File(filepath)
-            if (!file.exists()) Errors.missingOrInvalidImportFileError(tag)
-            if (!file.getName.endsWith(".meta")) Errors.unsupportedImportError(tag)
-            if (file.getCanonicalPath.equals(specFile.getCanonicalPath)) {
-              Errors.recursiveImportError(tag)
-            }
-            Some(file)
-          } else if (name.equalsIgnoreCase(ReservedTags.Import.toString)) {
-            Errors.invalidTagError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
-          } else {
-            None
-          }
-        case _ => None
-      }
-    }
-  }
-  
-  /**
-    * Loads the meta.
-    * 
-    * @param metaFiles the meta files to load
-    * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
-    * @param env the environment context
-    */
-  private[eval] def loadMeta(unit: Option[FeatureUnit], metaFiles: List[File], tagFilters: List[(Tag, Boolean)], ctx: T): List[FeatureResult] = {
-    metaFiles.flatMap(metaFile => loadMetaFile(unit, metaFile, tagFilters, ctx))
-  }
-  
-  private def loadMetaFile(unit: Option[FeatureUnit], metaFile: File, tagFilters: List[(Tag, Boolean)], ctx: T): Option[FeatureResult] = ctx.withEnv { env =>
-    if (!env.loadedMeta.contains(metaFile)) {
-      val metaUnit = FeatureUnit(unit.getOrElse(Root), metaFile, Nil, None)
-      interpretFeature(metaUnit, tagFilters, ctx) tap {
-        case Some(metaResult) =>
-          val meta = metaResult.spec
-          meta.evalStatus match {
-            case Passed(_) | Loaded =>
-              env.loadedMeta = meta.featureFile.get :: env.loadedMeta
-            case Failed(_, error) =>
-              Errors.evaluationError(s"Failed to load meta: $meta: ${error.getMessage}")
-            case _ =>
-              Errors.evaluationError(s"Failed to load meta: $meta")
-          }
-        case _ => Nil
-      }
-    } else None
   }
 
   /**
