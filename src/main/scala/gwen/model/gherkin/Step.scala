@@ -94,7 +94,7 @@ case class Step(
 }
 
 object Step {
-  def apply(uri: String, step: Cucumber.GherkinDocument.Feature.Step): Step = {
+  def apply(uri: String, step: Cucumber.GherkinDocument.Feature.Step, index: Int): Step = {
     val dataTable = Option(step.getDataTable).map { dt =>
       dt.getRowsList.asScala.toList map { row =>
         (row.getLocation.getLine, row.getCellsList.asScala.toList.map(_.getValue))
@@ -104,7 +104,7 @@ object Step {
       (ds.getLocation.getLine, ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
     Step(
-      Option(step.getLocation).map(loc => SourceRef(uri, loc)),
+      Option(step.getLocation).map(loc => SourceRef(uri, loc, index)),
       step.getKeyword.trim, 
       step.getText, 
       Nil, 

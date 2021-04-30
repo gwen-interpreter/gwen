@@ -135,7 +135,10 @@ trait SpecNormaliser extends EvalRules {
           withScenarios = exs.table.tail.zipWithIndex.map { case ((_, values), subIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
-              outline.sourceRef,
+              outline.sourceRef map { sref => 
+                val pos = sref.pos
+                SourceRef(sref.uri, Position(pos.line, pos.column, subIndex))
+              },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
               s"${Formatting.resolveParams(outline.name, params)} -- Example ${index + 1}.${subIndex + 1} ${exs.name}",

@@ -88,8 +88,10 @@ object Examples {
         examples.getLocation.getColumn)
     }
     Examples(
-      Option(examples.getLocation).map(loc => SourceRef(uri, loc)),
-      Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil).map(t =>Tag(uri, t)),
+      Option(examples.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (t, i) => 
+        Tag(uri, t, i) 
+      },
       examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),

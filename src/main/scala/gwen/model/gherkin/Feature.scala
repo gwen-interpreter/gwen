@@ -57,11 +57,13 @@ case class Feature(
 }
 
 object Feature {
-  def apply(uri: String, feature: Cucumber.GherkinDocument.Feature): Feature = {
+  def apply(uri: String, feature: Cucumber.GherkinDocument.Feature, index: Int): Feature = {
     Feature(
       feature.getLanguage,  
-      Option(feature.getLocation).map(loc => SourceRef(uri, loc)),
-      Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(uri, t)), 
+      Option(feature.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (t, i) => 
+        Tag(uri, t, i)
+      }, 
       feature.getKeyword,
       feature.getName, 
       Option(feature.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct

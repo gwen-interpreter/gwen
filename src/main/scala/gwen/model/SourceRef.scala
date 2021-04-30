@@ -33,8 +33,8 @@ object SourceRef {
   def setLineOffset(offset: Int): Unit = {
     lineOffset.set(offset)
   }
-  def apply(uri: String, location: Cucumber.Location): SourceRef = {
-    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn))
+  def apply(uri: String, location: Cucumber.Location, index: Int): SourceRef = {
+    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn, index))
   }
   def asString(sourceRef: Option[SourceRef]): String = {
     SourceRef.asString(None, sourceRef)

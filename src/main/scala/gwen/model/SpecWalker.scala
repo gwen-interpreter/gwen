@@ -19,39 +19,40 @@ package gwen.model
 import gwen.model.gherkin._
 
 /**
-  * Walks the nodes of a given specification.
+  * Walks the nodes of a given specification and accumuates a value of type T.
   * 
   * @param spec the specification to walk
   */
-abstract class SpecWalker(spec: Specification) {
+abstract class SpecWalker[T](spec: Specification) {
 
   // overrideable callbacks
-  def onSpecification(parent: Identifiable, spec: Specification): Unit = { }
-  def onFeature(parent: Identifiable, feature: Feature): Unit = { }
-  def onBackground(parent: Identifiable, background: Background): Unit = { }
-  def onRule(parent: Identifiable, rule: Rule): Unit = { }
-  def onScenario(parent: Identifiable, scenario: Scenario): Unit = { }
-  def onExamples(parent: Identifiable, examples: Examples): Unit = { }
-  def onStep(parent: Identifiable, step: Step): Unit = { }
+  def onSpecification(parent: Identifiable, spec: Specification, acc: T): T = acc
+  def onFeature(parent: Identifiable, feature: Feature, acc: T): T = acc
+  def onBackground(parent: Identifiable, background: Background, acc: T): T = acc
+  def onRule(parent: Identifiable, rule: Rule, acc: T): T = acc
+  def onScenario(parent: Identifiable, scenario: Scenario, acc: T): T = acc
+  def onExamples(parent: Identifiable, examples: Examples, acc: T): T = acc
+  def onStep(parent: Identifiable, step: Step, acc: T): T = acc
 
   /**
-    * Walks all nodes in a feature specification.
+    * Walks all nodes in a feature specification and accumulates a value.
     *
-    * @param parent optional parent (default is Root)
-    * 
+    * @param parent the parent node (or Root)
+    * @param zero the zero (start) accumulator value
     */
-  def walk(parent: Identifiable = Root): Unit = {
-    onSpecification(parent, spec)
-    onFeature(spec, spec.feature)
+  def walk(parent: Identifiable, zero: T): T = {
+    var acc = onSpecification(parent, spec, zero)
+    acc = onFeature(spec, spec.feature, acc)
     spec.background foreach { background => 
-      walk(spec.feature, background)
+      acc = walk(spec.feature, background, acc)
     }
     spec.scenarios foreach { scenario => 
-      walk(spec.feature, scenario)
+      acc = walk(spec.feature, scenario, acc)
     }
     spec.rules foreach { rule => 
-      walk(spec.feature, rule)
+      acc = walk(spec.feature, rule, acc)
     }
+    acc
   }
   
   /**
@@ -59,39 +60,47 @@ abstract class SpecWalker(spec: Specification) {
     *
     * @param parent the parent
     * @param node the node to walk
+    * @param current the current accumulator value
     */
-  private def walk(parent: Identifiable, node: SpecNode): Unit = node match {
-    case background: Background =>
-      onBackground(parent, background)
-      background.steps foreach { step => 
-        walk(background, step)
-      }
-    case rule: Rule =>
-      onRule(parent, rule)
-      rule.background foreach { background => 
-        walk(rule, background)
-      }
-      rule.scenarios foreach { scenario => 
-        walk(rule, scenario)
-      }
-    case scenario: Scenario =>
-      scenario.background foreach { background =>
-        walk(parent, background)
-      }
-      onScenario(parent, scenario)
-      scenario.steps foreach { step => 
-        walk(scenario, step)
-      }
-      scenario.examples foreach { exs =>
-        walk(scenario, exs)
-      }
-    case examples: Examples  => 
-      onExamples(parent, examples)
-      examples.scenarios foreach { scenario => 
-        walk(examples, scenario)
-      }
-    case step: Step =>
-      onStep(parent, step)
+  private def walk(parent: Identifiable, node: SpecNode, current: T): T = {
+    var acc = current
+    node match {
+      case background: Background =>
+        acc = onBackground(parent, background, acc)
+        background.steps foreach { step => 
+          acc = walk(background, step, acc)
+        }
+        acc
+      case rule: Rule =>
+        acc = onRule(parent, rule, acc)
+        rule.background foreach { background => 
+          acc = walk(rule, background, acc)
+        }
+        rule.scenarios foreach { scenario => 
+          acc = walk(rule, scenario, acc)
+        }
+        acc
+      case scenario: Scenario =>
+        scenario.background foreach { background =>
+          acc = walk(parent, background, acc)
+        }
+        acc = onScenario(parent, scenario, acc)
+        scenario.steps foreach { step => 
+          acc = walk(scenario, step, acc)
+        }
+        scenario.examples foreach { exs =>
+          acc = walk(scenario, exs, acc)
+        }
+        acc
+      case examples: Examples  => 
+        acc = onExamples(parent, examples, acc)
+        examples.scenarios foreach { scenario => 
+          acc = walk(examples, scenario, acc)
+        }
+        acc
+      case step: Step =>
+        onStep(parent, step, acc)
+    }
   }
   
 }

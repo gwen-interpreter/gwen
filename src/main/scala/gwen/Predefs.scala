@@ -237,7 +237,8 @@ package object gwen {
       }
     }
     def formatTable(table: List[(Int, List[String])]): String = {
-      (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
+      val lines = table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }
+      lines.mkString("\r\n")
     }
     def formatTableRow(table: List[(Int, List[String])], rowIndex: Int): String = {
       val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
@@ -249,6 +250,7 @@ package object gwen {
             |$content
             |${"\"\"\""}""".stripMargin
     }
+    def splitLines(blob: String): List[String] = blob.split("\\r?\\n").toList
   }
   
   object DurationOps {
@@ -263,10 +265,14 @@ package object gwen {
     def lastPositionIn(source: String): Position = {
       Source.fromString(s"$source ").getLines().toList match {
         case Nil =>
-          Position(1, 1)
+          Position(1, 1, 0)
         case lines =>
           val lastLength = lines.last.length - 1
-          Position(if (lines.size > 0) lines.size else 1, if (lastLength > 0) lastLength else 1)
+          Position(
+            if (lines.size > 0) lines.size else 1, 
+            if (lastLength > 0) lastLength else 1,
+            0
+          )
       }
     }
   }

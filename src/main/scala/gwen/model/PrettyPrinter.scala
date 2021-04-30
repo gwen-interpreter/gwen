@@ -34,104 +34,107 @@ import java.io.StringWriter
 object prettyPrint {
 
   def apply(spec: Specification): String = {
-    val sw = new StringWriter()
-    new PrettyPrinter(spec, new PrintWriter(sw)).walk()
-    sw.toString
+    new StringWriter() tap { sw =>
+      new PrettyPrinter(spec).walk(Root, new PrintWriter(sw))
+    } toString
   }
 
 }
 
-class PrettyPrinter(spec: Specification, out: PrintWriter) extends SpecWalker(spec) {
+class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
 
-  override def onFeature(parent: Identifiable, feature: Feature): Unit = { 
+  override def onFeature(parent: Identifiable, feature: Feature, out: PrintWriter): PrintWriter = { 
     val language = feature.language
     if (language != "en") {
       out.println(s"# language: $language")
       out.println()
     }
-    printTags("   ", feature.tags)
+    printTags("   ", feature.tags, out)
     out.print(s"   ${feature.keyword}: ${feature.name}")
-    printTextLines(feature.description)
+    printTextLines(feature.description, out)
     out.println()
+    out
   }
 
-  override def onBackground(parent: Identifiable, background: Background): Unit = { 
+  override def onBackground(parent: Identifiable, background: Background, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"${background.keyword}: ${background.name}")
-    printTextLines(background.description)
-    printStatus(background.evalStatus)
+    printTextLines(background.description, out)
+    printStatus(background.evalStatus, out)
     out.println()
+    out
   }
 
-  override def onScenario(parent: Identifiable, scenario: Scenario): Unit = { 
+  override def onScenario(parent: Identifiable, scenario: Scenario, out: PrintWriter): PrintWriter = { 
     if (!scenario.isExpanded) {
       val keyword = scenario.keyword
       out.println()
-      printTags(paddingFor(keyword), scenario.tags)
+      printTags(paddingFor(keyword), scenario.tags, out)
       out.print(paddingFor(keyword))
       out.print(s"${keyword}: ${scenario.name}")
-      printTextLines(scenario.description)
-      printStatus(scenario.evalStatus)
+      printTextLines(scenario.description, out)
+      printStatus(scenario.evalStatus, out)
       out.println()
     }
+    out
   }
 
-  override def onStep(parent: Identifiable, step: Step): Unit = { 
+  override def onStep(parent: Identifiable, step: Step, out: PrintWriter): PrintWriter = { 
     if (!step.isExpanded(parent)) {
       val keyword = step.keyword
-      val table = step.table
-      val docString = step.docString
       out.print("  ")
       out.print(rightJustify(keyword.toString))
       out.print(s"${keyword} ${step.name}")
-      printStatus(step.evalStatus)
-      if (table.nonEmpty) {
-          val rows = table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) }
-          printTextLines(rows)
-      } else if (docString.nonEmpty) {
-          printTextLines(Formatting.formatDocString(docString.get).split("""\r?\n""").toList)
+      printStatus(step.evalStatus, out)
+      if (step.table.nonEmpty) {
+        printTextLines(Formatting.splitLines(Formatting.formatTable(step.table)), out)
+      } else {
+        step.docString foreach { docString => 
+          printTextLines(Formatting.splitLines(Formatting.formatDocString(docString)), out)
+        }
       }
       out.println()
     }
+    out
   }
 
-  override def onRule(parent: Identifiable, rule: Rule): Unit = {
+  override def onRule(parent: Identifiable, rule: Rule, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"      ${rule.keyword}: ${rule.name}")
-    printTextLines(rule.description)
+    printTextLines(rule.description, out)
     out.println()
+    out
   }
   
-  override def onExamples(parent: Identifiable, examples: Examples): Unit = {
+  override def onExamples(parent: Identifiable, examples: Examples, out: PrintWriter): PrintWriter = { 
     if (!examples.isExpanded) {
-      printTags("  ", examples.tags)
+      printTags("  ", examples.tags, out)
       out.print(s"  ${examples.keyword}: ${examples.name}")
-      printTextLines(examples.description)
-      val table = examples.table
-      val rows = table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) }
-      printTextLines(rows)
+      printTextLines(examples.description, out)
+      printTextLines(Formatting.splitLines(Formatting.formatTable(examples.table)), out)
       out.println()
     }
+    out
   }
   
-  private def printTextLines(lines: List[String]): Unit = {
+  private def printTextLines(lines: List[String], out: PrintWriter): Unit = {
     lines foreach { line =>
       out.println()
       out.print(s"            $line")
     }
   }
   
-  private def printTags(indent: String, tags: List[Tag]): Unit = { 
+  private def printTags(indent: String, tags: List[Tag], out: PrintWriter): Unit = { 
     if (tags.nonEmpty) {
       out.println(s"$indent${tags.mkString(" ")}")
     }
   }
   
-  private def printStatus(status: EvalStatus): Unit = {
+  private def printStatus(status: EvalStatus, out: PrintWriter): Unit = {
     status match {
       case Failed(_, error) => out.print(s" # $status: ${error.getMessage}")
       case Pending => // noop
-      case _ => print(s" # $status")
+      case _ => out.print(s" # $status")
     }
   }
   

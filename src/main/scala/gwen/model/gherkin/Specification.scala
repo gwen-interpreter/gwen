@@ -109,10 +109,10 @@ case class Specification(
 
 object Specification {
   def apply(uri: String, spec: Cucumber.GherkinDocument, specFile: Option[File]): Specification = {
-    val feature = Feature(uri, spec.getFeature)
-    val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground))
-    val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).map(x => Scenario(uri, x.getScenario))
-    val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).map(x => Rule(uri, x.getRule()))
+    val feature = Feature(uri, spec.getFeature, 0)
+    val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground, 0))
+    val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).zipWithIndex.map { case (x, i) => Scenario(uri, x.getScenario, i) }
+    val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).zipWithIndex.map { case (x, i) => Rule(uri, x.getRule, i) }
     Specification(feature, background, scenarios, rules, specFile, Nil)
   }
 }

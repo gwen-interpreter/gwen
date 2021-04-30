@@ -69,14 +69,14 @@ case class Rule(
 }
 
 object Rule {
-  def apply(uri: String, rule: Cucumber.GherkinDocument.Feature.FeatureChild.Rule): Rule = {
+  def apply(uri: String, rule: Cucumber.GherkinDocument.Feature.FeatureChild.Rule, index: Int): Rule = {
     Rule(
-      Option(rule.getLocation).map(loc => SourceRef(uri, loc)),
+      Option(rule.getLocation).map(loc => SourceRef(uri, loc, index)),
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground)),
-      rule.getChildrenList.asScala.toList.filter(_.hasScenario).map(x => Scenario(uri, x.getScenario))
+      rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground, 0)),
+      rule.getChildrenList.asScala.toList.filter(_.hasScenario).zipWithIndex.map { case (x, i) => Scenario(uri, x.getScenario, i) }
     )
   }
 }

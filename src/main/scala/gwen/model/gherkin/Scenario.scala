@@ -107,16 +107,18 @@ case class Scenario(
 }
 
 object Scenario {
-  def apply(uri: String, scenario: Cucumber.GherkinDocument.Feature.Scenario): Scenario = {
-    def tags = Option(scenario.getTagsList).map(_.asScala.toList).getOrElse(Nil).map(t => Tag(uri, t)).distinct
+  def apply(uri: String, scenario: Cucumber.GherkinDocument.Feature.Scenario, index: Int): Scenario = {
+    def tags = Option(scenario.getTagsList).map(_.asScala.toList).getOrElse(Nil).distinct.zipWithIndex map { case (t, i) => 
+      Tag(uri, t, i)
+    }
     Scenario(
-      Option(scenario.getLocation).map(loc => SourceRef(uri, loc)),
+      Option(scenario.getLocation).map(loc => SourceRef(uri, loc, index)),
       tags,
       keywordFor(tags, scenario.getKeyword),
       scenario.getName,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
-      Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(uri, s)),
+      Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (s, i) => Step(uri, s, i) },
       scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) }
     )
   }

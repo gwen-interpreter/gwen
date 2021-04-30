@@ -43,6 +43,9 @@ trait SpecNode extends Identifiable {
   /** Returns the evaluation status of this node. */
   val evalStatus: EvalStatus = Pending
   
+  /** Gets the index of the node relative to parent. */
+  def index = sourceRef.map(_.pos.index).getOrElse(0)
+
   override def toString: String = name
 
 }

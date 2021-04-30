@@ -17,7 +17,7 @@
 package gwen.model
 
 /** Line and column number coordinates (base is 1). */
-case class Position(line: Int, column: Int) {
+case class Position(line: Int, column: Int, index: Int) {
   override def toString: String = Position.asString(Some(line), Some(column))
 }
 object Position {

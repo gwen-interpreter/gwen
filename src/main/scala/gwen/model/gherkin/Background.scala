@@ -56,13 +56,13 @@ case class Background(
 }
 
 object Background {
-  def apply(uri: String, background: Cucumber.GherkinDocument.Feature.Background): Background = {
+  def apply(uri: String, background: Cucumber.GherkinDocument.Feature.Background, index: Int): Background = {
     Background(
-      Option(background.getLocation).map(loc => SourceRef(uri, loc)),
+      Option(background.getLocation).map(loc => SourceRef(uri, loc, index)),
       background.getKeyword,
       background.getName,
       Option(background.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(uri, s))
+      Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (s, i) => Step(uri, s, i) }
     )
   }
 }
