@@ -51,7 +51,7 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
     }
     printTags("   ", feature.tags, out)
     out.print(s"   ${feature.keyword}: ${feature.name}")
-    printTextLines(feature.description, out)
+    printDescription(feature.description, out)
     out.println()
     out
   }
@@ -59,7 +59,7 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
   override def onBackground(parent: Identifiable, background: Background, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"${background.keyword}: ${background.name}")
-    printTextLines(background.description, out)
+    printDescription(background.description, out)
     printStatus(background.evalStatus, out)
     out.println()
     out
@@ -72,7 +72,7 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
       printTags(paddingFor(keyword), scenario.tags, out)
       out.print(paddingFor(keyword))
       out.print(s"${keyword}: ${scenario.name}")
-      printTextLines(scenario.description, out)
+      printDescription(scenario.description, out)
       printStatus(scenario.evalStatus, out)
       out.println()
     }
@@ -87,10 +87,10 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
       out.print(s"${keyword} ${step.name}")
       printStatus(step.evalStatus, out)
       if (step.table.nonEmpty) {
-        printTextLines(Formatting.splitLines(Formatting.formatTable(step.table)), out)
+        printTable(step.table, out)
       } else {
         step.docString foreach { docString => 
-          printTextLines(Formatting.splitLines(Formatting.formatDocString(docString)), out)
+          printDocString(docString, out)
         }
       }
       out.println()
@@ -101,7 +101,7 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
   override def onRule(parent: Identifiable, rule: Rule, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"      ${rule.keyword}: ${rule.name}")
-    printTextLines(rule.description, out)
+    printDescription(rule.description, out)
     out.println()
     out
   }
@@ -110,17 +110,29 @@ class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
     if (!examples.isExpanded) {
       printTags("  ", examples.tags, out)
       out.print(s"  ${examples.keyword}: ${examples.name}")
-      printTextLines(examples.description, out)
-      printTextLines(Formatting.splitLines(Formatting.formatTable(examples.table)), out)
+      printDescription(examples.description, out)
+      printTable(examples.table, out)
       out.println()
     }
     out
   }
   
-  private def printTextLines(lines: List[String], out: PrintWriter): Unit = {
+  private def printDescription(desc: List[String], out: PrintWriter): Unit = {
+    printTextLines("        ", desc, out)
+  }
+
+  private def printTable(table: List[(Int, List[String])], out: PrintWriter): Unit = {
+    printTextLines("            ", Formatting.splitLines(Formatting.formatTable(table)), out)
+  }
+
+  private def printDocString(docString: (Int, String, Option[String]), out: PrintWriter): Unit = {
+    printTextLines("            ", Formatting.splitLines(Formatting.formatDocString(docString)), out)
+  }
+
+  private def printTextLines(indent: String, lines: List[String], out: PrintWriter): Unit = {
     lines foreach { line =>
       out.println()
-      out.print(s"            $line")
+      out.print(s"$indent$line")
     }
   }
   

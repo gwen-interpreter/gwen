@@ -28,20 +28,20 @@ class PrettyPrintParserTest extends FlatSpec with Matchers with SpecNormaliser w
 
   private val featureString = s"""   @wip
    Feature: Gwen
-            As a tester
-            I want to automate tests
-            So that gwen can run them
+        As a tester
+        I want to automate tests
+        So that gwen can run them
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
   @wip @test
   Scenario: Evaluation
-            Gwen for executable specifications
-            Business specs mapped to meta
+        Gwen for executable specifications
+        Business specs mapped to meta
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
@@ -53,14 +53,14 @@ Background: The butterfly effect
 
    @Outline
    Scenario Outline: Join two strings together
-            This scenario is evaluated at the point where the outline is declared
+        This scenario is evaluated at the point where the outline is declared
       Given string 1 is "<string 1>"
         And string 2 is "<string 2>"
        When I join the two strings
        Then the result should be "<result>"
   Examples: Basic string concatenation
-            The header row contains the placeholder names. The body rows that
-            follow contain the data that is bound to each scenario that is evaluated.
+        The header row contains the placeholder names. The body rows that
+        follow contain the data that is bound to each scenario that is evaluated.
             | string 1 | string 2 | result   |
             | howdy    | doo      | howdydoo |
             | any      | thing    | anything |
@@ -91,26 +91,26 @@ Background: The butterfly effect
     val specFeature = normalise(parse(featureString).get, None, None)
     prettyPrint(specFeature).replace("\r", "") should be (s"""   @wip
    Feature: Gwen
-            As a tester
-            I want to automate tests
-            So that gwen can run them
+        As a tester
+        I want to automate tests
+        So that gwen can run them
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
   @wip @test
   Scenario: Evaluation
-            Gwen for executable specifications
-            Business specs mapped to meta
+        Gwen for executable specifications
+        Business specs mapped to meta
       Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
@@ -121,35 +121,35 @@ Background: The butterfly effect
        Then Gwen can evaluate it
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
   @Outline
   Scenario: Join two strings together -- Example 1.1 Basic string concatenation
-            This scenario is evaluated at the point where the outline is declared
+        This scenario is evaluated at the point where the outline is declared
       Given string 1 is "howdy"
         And string 2 is "doo"
        When I join the two strings
        Then the result should be "howdydoo"
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
   @Outline
   Scenario: Join two strings together -- Example 1.2 Basic string concatenation
-            This scenario is evaluated at the point where the outline is declared
+        This scenario is evaluated at the point where the outline is declared
       Given string 1 is "any"
         And string 2 is "thing"
        When I join the two strings
        Then the result should be "anything"
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
@@ -162,7 +162,7 @@ Background: The butterfly effect
             | three | 3 |
 
 Background: The butterfly effect
-            Sensitivity to initial conditions
+        Sensitivity to initial conditions
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
