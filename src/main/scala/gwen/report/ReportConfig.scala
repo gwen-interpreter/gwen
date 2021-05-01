@@ -19,7 +19,7 @@ package gwen.report
 import gwen.FileIO
 import gwen.GwenOptions
 import gwen.model.DataRecord
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 
 import java.io.File
 
@@ -30,15 +30,15 @@ class ReportConfig(
   val summaryFilename: Option[String],
   val getGenerator: GwenOptions => ReportGenerator, 
   val getReportDir: GwenOptions => Option[File],
-  val getReportDetailFilename: (Specification, Option[DataRecord]) => Option[String]) {
+  val getReportDetailFilename: (Spec, Option[DataRecord]) => Option[String]) {
 
   def reportGenerator(options: GwenOptions): ReportGenerator = getGenerator(options)
   def reportDir(options: GwenOptions): Option[File] = getReportDir(options)
-  def getReportFilename(spec: Specification, dataRecord: Option[DataRecord]): Option[String] = getReportDetailFilename(spec, dataRecord)
-  def createReportDir(options: GwenOptions, spec: Specification, dataRecord: Option[DataRecord]): Option[File] = {
+  def getReportFilename(spec: Spec, dataRecord: Option[DataRecord]): Option[String] = getReportDetailFilename(spec, dataRecord)
+  def createReportDir(options: GwenOptions, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = {
     val reportDir = getReportDir(options)
     val dataRecordDir = ReportGenerator.encodeDataRecordNo(dataRecord)
-    val reportPath = spec.featureFile match {
+    val reportPath = spec.specFile match {
       case Some(file) =>
         reportDir map { dir =>
           file.toPath(dir, Some(dataRecordDir + FileIO.encodeDir(file.getName.substring(0, file.getName.lastIndexOf(".")))))
@@ -50,7 +50,7 @@ class ReportConfig(
     }
     reportPath map { path => new File(path) }
   }
-  def createReportFile(toDir: File, prefix: String, spec: Specification, dataRecord: Option[DataRecord]): Option[File] = {
+  def createReportFile(toDir: File, prefix: String, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = {
     fileExtension flatMap { ext => 
       getReportFilename(spec, dataRecord) map { filename =>
         new File(toDir, s"$prefix$filename.$ext")

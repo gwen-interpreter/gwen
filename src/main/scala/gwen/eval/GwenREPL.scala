@@ -39,7 +39,7 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], val ctx: T) {
+class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], ctx: T) {
 
   private val history = new FileHistory(new File(".history").getAbsoluteFile)
 

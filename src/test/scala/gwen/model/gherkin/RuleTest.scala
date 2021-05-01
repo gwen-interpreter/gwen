@@ -25,7 +25,7 @@ import org.scalatest.FlatSpec
 
 class RuleTest extends FlatSpec with Matchers with GherkinParser {
 
-  private def parse(input: String) = parseSpecification(s"Feature: ftest\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
+  private def parse(input: String) = parseSpec(s"Feature: ftest\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
   
   private def background = """
     Background: The butterfly effect

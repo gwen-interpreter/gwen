@@ -16,7 +16,7 @@
 package gwen.sample.outlines
 
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -34,7 +34,7 @@ class OutlinesEvalContext()
   override def dsl: List[String] = Nil
 }
 
-trait OutlinesEvalEngine extends DefaultEngine[OutlinesEvalContext] {
+trait OutlinesEvalEngine extends EvalEngine[OutlinesEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): OutlinesEvalContext = new OutlinesEvalContext()
 }
 

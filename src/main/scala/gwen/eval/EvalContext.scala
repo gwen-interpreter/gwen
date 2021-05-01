@@ -33,14 +33,39 @@ import gwen.model.Failed
 import gwen.model.Sustained
 import gwen.model.Disabled
 import gwen.model.StateLevel
+import gwen.model.event.LifecycleEventListener
+
+import org.apache.log4j.PropertyConfigurator
+
+import java.net.URL
 
 /**
   * Provides all evaluation capabilities.
   */
 class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
   with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
-  
+
+  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
+    if (config.toLowerCase.trim startsWith "file:") {
+      PropertyConfigurator.configure(new URL(config));
+    } else {
+      PropertyConfigurator.configure(config); 
+    }
+  }
+
+  // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
+
+  // dispatches lifecycle events to listeners
+  def lifecycle = env.lifecycle
+
+  def addLifecycleEventListener(listener: LifecycleEventListener): Unit = {
+    lifecycle.addListener(listener)
+  }
+
+  def removeLifecycleEventListener(listener: LifecycleEventListener): Unit = {
+    lifecycle.removeListener(listener)
+  }
 
   def close(): Unit = { 
     env.close()

@@ -17,7 +17,6 @@ package gwen.sample.sync
 
 import gwen.BaseTest
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.EvalEngine
@@ -36,7 +35,7 @@ class SyncEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait SyncEvalEngine extends EvalEngine[SyncEvalContext] with DefaultEngine[SyncEvalContext] {
+trait SyncEvalEngine extends EvalEngine[SyncEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): SyncEvalContext = new SyncEvalContext()
 }
 

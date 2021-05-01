@@ -53,14 +53,21 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
     val startNanos = System.nanoTime
     try {
       val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
-      val featureStream = new FeatureStream(metaFiles)
+      val featureStream = new FeatureStream(metaFiles, options.tagFilter)
       featureStream.readAll(options.features, options.dataFile) match {
-        case featureStream @ _ #:: _ =>
-          executeFeatureUnits(options, featureStream.flatten, ctxOpt)
+        case stream @ _ #:: _ =>
+          executeFeatureUnits(options, stream.flatten, ctxOpt)
         case _ =>
           EvalStatus { 
-            ctxOpt.toList flatMap { ctx =>
-              interpreter.loadMeta(None, metaFiles, Nil, ctx).map(_.spec.evalStatus)
+            if (metaFiles.nonEmpty) {
+              val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
+              ctxOpt flatMap { ctx =>
+                interpreter.evaluateUnit(unit, ctx) map { result =>
+                  result.evalStatus
+                }
+              } toList
+            } else {
+              Nil
             }
           } tap { _ =>
             if (options.features.nonEmpty) {
@@ -110,7 +117,7 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
     }
   }
 
-  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): FeatureSummary = {
+  private def executeFeatureUnitsParallel(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): ResultsSummary = {
     val counter = new AtomicInteger(0)
     val started = new ThreadLocal[Boolean]()
     started.set(false)
@@ -130,7 +137,7 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
           }
         }
         evaluateUnit(options, ctxOpt, unit) { result =>
-          result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logFeatureStatus) }
+          result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logSpecStatus) }
         }
       }
     }
@@ -138,16 +145,16 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
       Future.sequence(featureUnits.force),
       Duration.Inf
     )
-    results.flatten.sortBy(_.finished).foldLeft(FeatureSummary())(_ + _) tap { summary =>
+    results.flatten.sortBy(_.finished).foldLeft(ResultsSummary())(_ + _) tap { summary =>
       reportGenerators foreach {
         _.reportSummary(interpreter, summary)
       }
     }
   }
 
-  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): FeatureSummary = {
+  private def executeFeatureUnitsSequential(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T], reportGenerators: List[ReportGenerator]): ResultsSummary = {
     val exitOnFail = GwenSettings.`gwen.feature.failfast.exit` && !options.dryRun
-    featureStream.foldLeft(FeatureSummary()) { (summary, unit) =>
+    featureStream.foldLeft(ResultsSummary()) { (summary, unit) =>
       if (exitOnFail && summary.evalStatus.status == StatusKeyword.Failed) {
         summary
       } else {
@@ -160,18 +167,20 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
                   _.reportSummary(interpreter, accSummary)
                 }
               }
-          }) tap { _ => result.foreach(logFeatureStatus) }
+          }) tap { _ => result.foreach(logSpecStatus) }
         }
       }
     }
   }
 
-  private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[FeatureResult] => U)): U = {
-    logger.info(("""|       
-                    |  _    
-                    | { \," Evaluating feature..
-                    |{_`/   """ + unit.featureFile.toString + """
-                    |   `   """).stripMargin)
+  private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
+    if (FileIO.isMetaFile(unit.featureFile)) {
+      logger.info(("""|       
+                      |  _    
+                      | { \," Evaluating feature..
+                      |{_`/   """ + unit.featureFile.toString + """
+                      |   `   """).stripMargin)
+    }
     Settings.clearLocal()
     val ctx = ctxOpt.getOrElse(interpreter.initialise(options))
     ctx.withEnv { env =>
@@ -182,8 +191,8 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
             env.topScope.set(name, value)
           }
         }
-        f(interpreter.interpretFeature(unit, options.tags, ctx) map { res =>
-          new FeatureResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
+        f(interpreter.evaluateUnit(unit, ctx) map { res =>
+          new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
         })
       } finally {
         if (ctxOpt.isEmpty) { 
@@ -194,30 +203,30 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
     }
   }
   
-  private def flattenResults(results: List[FeatureResult]): List[FeatureResult] = {
-    def flattenResults(results: List[FeatureResult]): List[FeatureResult] = results.flatMap { 
+  private def flattenResults(results: List[SpecResult]): List[SpecResult] = {
+    def flattenResults(results: List[SpecResult]): List[SpecResult] = results.flatMap { 
       r => r::flattenResults(r.metaResults)
     }
     flattenResults(results).sortBy(_.finished)
   }
     
-  private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: FeatureResult): FeatureResult = {
+  private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: SpecResult): SpecResult = {
     val reportFiles = reportGenerators.map { generator => 
       (generator.format, generator.reportDetail(interpreter, unit, result)) 
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty) 
-      new FeatureResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)
+      new SpecResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)
     else 
       result
   }
   
-  private def logFeatureStatus(result: FeatureResult): Unit = {
+  private def logSpecStatus(result: SpecResult): Unit = {
     logger.info("")
     logger.info(result.toString)
     logger.info("")
   }
       
-  private def printSummaryStatus(summary: FeatureSummary): Unit = {
+  private def printSummaryStatus(summary: ResultsSummary): Unit = {
     println()
     println(summary.toString)
     println()

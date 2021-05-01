@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package gwen.eval.event
+package gwen.model.event
 
-import gwen.model.Identifiable
-import gwen.model.gherkin.Step
-import gwen.model.state.ScopedDataStack
-
-import java.{util => ju}
-
-case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parentUuid: String, source: T, callTrail: List[Step], scopes: ScopedDataStack) {
-  val time: ju.Date = ju.Calendar.getInstance.getTime
-  override def toString: String = 
-    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,$parentUuid,${source.uuid})"
+object LifecyclePhase extends Enumeration {
+  type LifecyclePhase = Value
+  val before, after, healthCheck = Value
 }

@@ -42,7 +42,7 @@ trait JsonReportFormatter extends ReportFormatter {
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
@@ -54,12 +54,12 @@ trait JsonReportFormatter extends ReportFormatter {
     val spec = result.spec
     val feature = spec.feature
 
-    val id = s"${result.spec.featureFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
-    val name = s"${result.spec.featureFile.map(f => s"${f.getPath}: ").getOrElse("")}${feature.name}"
+    val id = s"${result.spec.specFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
+    val name = s"${result.spec.specFile.map(f => s"${f.getPath}: ").getOrElse("")}${feature.name}"
     val description = s"${feature.description.mkString(Properties.lineSeparator)}"
     
     Some(s"""[
-  {${spec.featureFile.map(file => s"""
+  {${spec.specFile.map(file => s"""
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
@@ -191,6 +191,6 @@ trait JsonReportFormatter extends ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = None
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
   
 }

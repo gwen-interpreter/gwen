@@ -24,19 +24,21 @@ import java.io.File
   * @param featureFile the feature file
   * @param metaFiles the associated meta files (if any)
   * @param dataRecord optional data record
-  * @param result option result
+  * @param tagFilter tag filter
+  * @param result optional result
   */
 case class FeatureUnit(
     parent: Identifiable,
     featureFile: File,
     metaFiles: List[File], 
     dataRecord: Option[DataRecord], 
-    result: Option[FeatureResult] = None) extends Identifiable {
+    tagFilter: TagFilter,
+    result: Option[SpecResult] = None) extends Identifiable {
 
   val nodeType: NodeType.Value = NodeType.Unit
   def ancestor: Identifiable = parent match {
-    case parentUnit @ FeatureUnit(grandparent, _, _, _, _) => 
-      if (grandparent == Root) parent
+    case parentUnit: FeatureUnit => 
+      if (parentUnit.parent == Root) parent
       else parentUnit.ancestor
     case _ => this
   }
@@ -44,8 +46,8 @@ case class FeatureUnit(
 }
 
 object FeatureUnit {
-  def apply(parent: Identifiable, unit: FeatureUnit, result: FeatureResult): FeatureUnit = {
-    FeatureUnit(parent, unit.featureFile, unit.metaFiles, unit.dataRecord, Some(result))
+  def apply(parent: Identifiable, unit: FeatureUnit, result: SpecResult): FeatureUnit = {
+    FeatureUnit(parent, unit.featureFile, unit.metaFiles, unit.dataRecord, unit.tagFilter, Some(result))
   }
 }
 

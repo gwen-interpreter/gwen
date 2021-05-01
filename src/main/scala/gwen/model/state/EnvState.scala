@@ -18,12 +18,13 @@
 
 import gwen._
 import gwen.model.BehaviorType
+import gwen.model.event.LifecycleEventDispatcher
 
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
-class EnvState(val scopes: ScopedDataStack) {
+class EnvState(val scopes: ScopedDataStack, val lifecycle: LifecycleEventDispatcher) {
 
   /** List of current attachments (name-file pairs). */
   private var attachments: List[(String, File)] = Nil
@@ -109,8 +110,8 @@ class EnvState(val scopes: ScopedDataStack) {
 }
 
 object EnvState {
-  def apply(topScope: TopScope): EnvState = {
-    new EnvState(new ScopedDataStack()) tap { newState => 
+  def apply(topScope: TopScope, lifecycle: LifecycleEventDispatcher): EnvState = {
+    new EnvState(new ScopedDataStack(), lifecycle) tap { newState => 
       topScope.implicitAtts foreach { case (n, v) => 
         newState.scopes.topScope.set(n, v)
       }

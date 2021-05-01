@@ -22,23 +22,18 @@ import gwen.TestModel
 import gwen.model._
 import gwen.model.gherkin._
 
-import scala.io.Source
-
 import org.scalatest.Matchers
 
 import java.io.File
 
 class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalRules with TestModel {
 
-    private def parseFeature(file: File): Specification = 
-        parseSpecification(Source.fromFile(file).mkString).get
-
     private def createScenario(steps: String): Scenario = {
         val input = s"""
         | Scenario: scenario
         |     $steps
         | """.stripMargin
-        parseSpecification(s"Feature: feature\n$input").map(_.scenarios.head).get
+        parseSpec(s"Feature: feature\n$input").map(_.scenarios.head).get
     }
 
     private def createBackground(steps: String): Background = {
@@ -46,7 +41,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
         | Background: background
         |       $steps
         | """.stripMargin
-        parseSpecification(s"Feature: feature\n$input").map(_.background.head).get
+        parseSpec(s"Feature: feature\n$input").map(_.background.head).get
     }
 
     private def createStep(step: String): Step = parseStep(step).get
@@ -56,7 +51,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
     }
 
     val featureFile = new File(getClass.getResource("/gwen/evalrules/InlinedStepDef.feature").getFile)
-    val feature = parseFeature(featureFile)
+    val feature = parseSpec(featureFile).get
     val givenStep = createStep("Given I set the context")
     val whenStep = createStep("When I peform an action")
     val thenStep = createStep("Then this should happen")

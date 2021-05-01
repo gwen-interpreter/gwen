@@ -19,7 +19,7 @@ package gwen.model.gherkin
 import gwen._
 import gwen.model._
 import gwen.model.gherkin.Dialect
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.model.gherkin.Step
 
 import scala.io.Source
@@ -34,43 +34,14 @@ import java.{util => ju}
 
 /**
   *  Parses a Gherkin feature specification.
-  * 
-  *  The parsers defined in this class accept gherkin text as input to 
-  *  produce an abstract syntax tree in the form of a [[Specification]] object.  
-  *  Any input that does not conform to the standard Gherkin grammar results 
-  *  in a parser error.  The error contains a the location of the error and 
-  *  a description of the violation.
-  *   
-  *  The following example shows a valid feature that conforms to the
-  *  grammar and will parse successfully (whether or not it evaluates 
-  *  is the responsibility of the [[gwen.eval.EvalEngine evaluation]] 
-  *  layer):
-  *  
-  *  {{{
-  *  
-  *     Feature: Gwen
-  *
-  *  Background: The butterfly effect
-  *        Given a deterministic nonlinear system
-  *         When a small change is initially applied
-  *         Then a large change will eventually result
-  *       
-  *    Scenario: Evaluation
-  *        Given a software behavior
-  *         When expressed in Gherkin
-  *         Then Gwen can evaluate it
-  *      
-  *  }}}
-  *      
-  *  @author Branko Juric
   */
 
 trait GherkinParser {
 
   private val languageSyntax = """(?s)\s*#\s*language:\s*(\S+).*""".r
 
-  /** Produces a complete feature spec tree (this method is used to parse entire feature files). */
-  def parseFeatureFile(specFile: File): Try[Specification] = {
+  /** Parses a Gherkin feature specification */
+  def parseSpec(specFile: File): Try[Spec] = {
     try {
       val spec = Source.fromFile(specFile).mkString
       val isMeta = FileIO.isMetaFile(specFile)
@@ -91,15 +62,15 @@ trait GherkinParser {
             spec
           }
       }
-      parseSpecification(featureStr, Some(specFile))
+      parseSpec(featureStr, Some(specFile))
     } finally {
       SourceRef.setLineOffset(0)
     }
   }
   
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
-  def parseSpecification(feature: String, specFile: Option[File] = None): Try[Specification] = Try {
-    Specification(specFile.map(_.getPath).getOrElse(""), parseDocument(feature), specFile)
+  def parseSpec(feature: String, specFile: Option[File] = None): Try[Spec] = Try {
+    Spec(specFile.map(_.getPath).getOrElse(""), parseDocument(feature), specFile)
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */

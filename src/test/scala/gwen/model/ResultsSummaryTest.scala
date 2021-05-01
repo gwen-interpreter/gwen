@@ -27,7 +27,7 @@ import scala.concurrent.duration.Duration
 
 import java.util.Date
 
-class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
+class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
   
   val Passed1 = Passed(1000000)
   val Passed2 = Passed(2000000)
@@ -38,7 +38,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
   val Failed4 = Failed(4000000, new Exception())
 
   "No results in summary" should "yield empty metrics" in {
-    val summary = FeatureSummary(Duration.Zero)
+    val summary = ResultsSummary(Duration.Zero)
     summary.results.size should be (0)
     summary.featureCounts.size should be (0)
     summary.scenarioCounts.size should be (0)
@@ -55,11 +55,11 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
   
   "Accumulated feature results in summary" should "sum correctly" in {
     
-    var summary = FeatureSummary(Duration.Zero)
+    var summary = ResultsSummary(Duration.Zero)
     var summaryLines = Array[String]()
     
     // add 1 meta
-    val meta1 = Specification(
+    val meta1 = Spec(
       Feature("meta1", Nil), None, List(
         Scenario(List[Tag](), "metaScenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "meta step 1", Passed2),
@@ -73,7 +73,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
         )), Nil, None, Nil)
         
     // add 1 passed scenario
-    val feature1 = Specification(
+    val feature1 = Spec(
       Feature("feature1", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
@@ -89,8 +89,8 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
       None,
       List(meta1))
         
-    val metaResult = new FeatureResult(meta1, None, Nil, new Date(), new Date())
-    var featureResult = new FeatureResult(feature1, None, List(metaResult), new Date(), new Date())
+    val metaResult = new SpecResult(meta1, None, Nil, new Date(), new Date())
+    var featureResult = new SpecResult(feature1, None, List(metaResult), new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Passed)
     summary.results.size should be (1)
@@ -107,14 +107,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
     summaryLines(5).contains("Passed") should be (true)
     
     // add 1 failed scenario
-    val feature2 = Specification(
+    val feature2 = Spec(
       Feature("feature2", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Failed3),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
         )), Nil, None, Nil)
-    featureResult = new FeatureResult(feature2, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature2, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (2)
@@ -131,7 +131,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
     summaryLines(5).contains("Failed") should be (true)
     
     // add 2 passed scenarios
-    val feature3 = Specification(
+    val feature3 = Spec(
       Feature("feature3", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
@@ -143,7 +143,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.When.toString, "step 2", Passed1),
           Step(StepKeyword.Then.toString, "step 3", Passed2))
         )), Nil, None, Nil)
-    featureResult = new FeatureResult(feature3, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature3, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (3)
@@ -160,14 +160,14 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
     summaryLines(5).contains("Failed") should be (true)
     
     // add 1 skipped scenario
-    val feature4 = Specification(
+    val feature4 = Spec(
       Feature("feature4", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Skipped),
           Step(StepKeyword.When.toString, "step 2", Skipped),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
         )), Nil, None, Nil)
-    featureResult = new FeatureResult(feature4, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature4, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (4)
@@ -184,13 +184,13 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
     summaryLines(5).contains("Failed") should be (true)
     
     // add 1 pending scenario
-    val feature5 = Specification(
+    val feature5 = Spec(
       Feature("feature5", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Pending),
           Step(StepKeyword.When.toString, "step 2", Pending))
         )), Nil, None, Nil)
-    featureResult =  new FeatureResult(feature5, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature5, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (5)
@@ -207,7 +207,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
     summaryLines(5).contains("Failed") should be (true)
     
     // add 4 passed and 1 failed scenario
-    val feature6 = Specification(
+    val feature6 = Spec(
       Feature("feature6", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
@@ -233,7 +233,7 @@ class FeatureSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.Then.toString, "step 3", Skipped),
           Step(StepKeyword.And.toString, "step 3", Skipped))
         )), Nil, None, Nil)
-    featureResult = new FeatureResult(feature6, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature6, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
     summary.results.size should be (6)

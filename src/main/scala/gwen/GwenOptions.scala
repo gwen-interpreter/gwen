@@ -18,6 +18,7 @@ package gwen
 
 import gwen.model.StateLevel
 import gwen.model.Tag
+import gwen.model.TagFilter
 import gwen.report.ReportFormat
 
 import scopt.OptionParser
@@ -32,7 +33,7 @@ import java.io.File
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
   * @param properties list of properties files to load as settings
-  * @param tags list of tags to include and exclude (tag, True=include|False=exclude) 
+  * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude) 
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
   * @param metas optional list of meta file and/or directories
@@ -56,6 +57,8 @@ case class GwenOptions(
   
   val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
   
+  def tagFilter = new TagFilter(tags)
+
   /**
     * Gets the command string used to invoke gwen.
     * 

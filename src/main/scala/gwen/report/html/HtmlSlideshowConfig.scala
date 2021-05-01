@@ -16,7 +16,7 @@
 
 package gwen.report.html
 
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.report.ReportConfig
 import gwen.report.ReportFormat
 
@@ -29,5 +29,5 @@ object HtmlSlideshowConfig extends ReportConfig(
   None, 
   options => new HtmlSlideshowGenerator(options), 
   options => options.reportDir.map(dir => new File(dir, "html")),
-  (spec: Specification, _) =>
-    Some(s"${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}.slideshow"))
+  (spec: Spec, _) =>
+    Some(s"${spec.specFile.map(_.getName).getOrElse(spec.feature.name)}.slideshow"))

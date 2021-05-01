@@ -34,11 +34,11 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
   "Data driven feature with csv file" should "normalise without error" in {
     val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
     val dataFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.csv").getFile)
-    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None), dataFile)
+    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), dataFile)
     
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next()
-    val feature1 = parseSpecification(Source.fromFile(unit1.featureFile).mkString) match {
+    val feature1 = parseSpec(Source.fromFile(unit1.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit1.featureFile), unit1.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
@@ -56,7 +56,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     
     featureSet.hasNext should be (true)
     val unit2 = featureSet.next()
-    val feature2 = parseSpecification(Source.fromFile(unit2.featureFile).mkString) match {
+    val feature2 = parseSpec(Source.fromFile(unit2.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit2.featureFile), unit2.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
@@ -74,7 +74,7 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     
     featureSet.hasNext should be (true)
     val unit3 = featureSet.next()
-    val feature3 = parseSpecification(Source.fromFile(unit3.featureFile).mkString) match {
+    val feature3 = parseSpec(Source.fromFile(unit3.featureFile).mkString) match {
       case Success(spec) => normalise(spec, Some(unit3.featureFile), unit3.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }

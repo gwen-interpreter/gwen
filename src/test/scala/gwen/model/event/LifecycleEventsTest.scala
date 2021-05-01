@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.eval.event
+package gwen.model.event
 
 import gwen.UUIDGenerator
 import gwen.model._
@@ -35,8 +35,8 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
   "When pause is not set at disptatcher level then all events" should "be dispatched" in {
       
     val unitEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[FeatureUnit]])
-    val featureSpecEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[Specification]])
-    val featureResultEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[FeatureResult]])
+    val featureSpecEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[Spec]])
+    val featureResultEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[SpecResult]])
     val scenarioEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[Scenario]])
     val backgroundEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[Background]])
     val ruleEventCaptor = ArgumentCaptor.forClass(classOf[LifecycleEvent[Rule]])
@@ -46,8 +46,8 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val dispatcher = new LifecycleEventDispatcher()
 
     val unit = mock[FeatureUnit]
-    val featureSpec = mock[Specification]
-    val featureResult = mock[FeatureResult]
+    val featureSpec = mock[Spec]
+    val featureResult = mock[SpecResult]
     val scenario = mock[Scenario]
     val stepDef = mock[Scenario]
     val background = mock[Background]
@@ -69,12 +69,12 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     verify(listener).afterUnit(unitEventCaptor.capture())
     unitEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
-    dispatcher.beforeFeature(parent(), featureSpec, scopes)
-    verify(listener).beforeFeature(featureSpecEventCaptor.capture())
+    dispatcher.beforeSpec(parent(), featureSpec, scopes)
+    verify(listener).beforeSpec(featureSpecEventCaptor.capture())
     featureSpecEventCaptor.getValue().phase should be (LifecyclePhase.before)
     
-    dispatcher.afterFeature(featureResult, scopes)
-    verify(listener).afterFeature(featureResultEventCaptor.capture())
+    dispatcher.afterSpec(featureResult, scopes)
+    verify(listener).afterSpec(featureResultEventCaptor.capture())
     featureResultEventCaptor.getValue().phase should be (LifecyclePhase.after)
     
     dispatcher.beforeScenario(parent(), scenario, scopes)
@@ -237,10 +237,10 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     val listeners1and3 = List(listener1, listener3)
     val dispatcher = new LifecycleEventDispatcher()
 
-    val featureSpec = mock[Specification]
-    val featureResult = mock[FeatureResult]
-    val metaSpec = mock[Specification]
-    val metaResult = mock[FeatureResult]
+    val featureSpec = mock[Spec]
+    val featureResult = mock[SpecResult]
+    val metaSpec = mock[Spec]
+    val metaResult = mock[SpecResult]
     val step1 = mock[Step]
     val step2 = mock[Step]
     val step3 = mock[Step]
@@ -292,10 +292,10 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     dispatcher.addListener(listener2)
     dispatcher.addListener(listener3)
 
-    dispatcher.beforeFeature(parent(), metaSpec, scopes)
-    verify(listener2, never()).beforeFeature(any[LifecycleEvent[Specification]])
+    dispatcher.beforeSpec(parent(), metaSpec, scopes)
+    verify(listener2, never()).beforeSpec(any[LifecycleEvent[Spec]])
     listeners1and3.foreach { listener => 
-      verify(listener).beforeFeature(any[LifecycleEvent[Specification]])
+      verify(listener).beforeSpec(any[LifecycleEvent[Spec]])
     }
     listeners.foreach(listener => reset(listener))
 
@@ -339,16 +339,16 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.afterFeature(metaResult, scopes)
-    verify(listener2, never()).afterFeature(any[LifecycleEvent[FeatureResult]])
+    dispatcher.afterSpec(metaResult, scopes)
+    verify(listener2, never()).afterSpec(any[LifecycleEvent[SpecResult]])
     listeners1and3.foreach { listener => 
-      verify(listener).afterFeature(any[LifecycleEvent[FeatureResult]])
+      verify(listener).afterSpec(any[LifecycleEvent[SpecResult]])
     }
     listeners.foreach(listener => reset(listener))
 
-    dispatcher.beforeFeature(parent(), featureSpec, scopes)
+    dispatcher.beforeSpec(parent(), featureSpec, scopes)
     listeners.foreach { listener => 
-      verify(listener).beforeFeature(any[LifecycleEvent[Specification]])
+      verify(listener).beforeSpec(any[LifecycleEvent[Spec]])
     }
     listeners.foreach(listener => reset(listener))
 
@@ -388,9 +388,9 @@ class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
       verify(listener).afterStep(any[LifecycleEvent[Step]])
     }
 
-    dispatcher.afterFeature(featureResult, scopes)
+    dispatcher.afterSpec(featureResult, scopes)
     listeners.foreach { listener => 
-      verify(listener).afterFeature(any[LifecycleEvent[FeatureResult]])
+      verify(listener).afterSpec(any[LifecycleEvent[SpecResult]])
     }
     listeners.foreach(listener => reset(listener))
 

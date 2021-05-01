@@ -17,7 +17,7 @@
 package gwen.model
 
 import gwen._
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.report.ReportFormat
 
 import scala.concurrent.duration._
@@ -26,7 +26,7 @@ import java.io.File
 import java.util.Date
 
 /**
-  * Captures the results of an evaluated feature.
+  * Captures the results of an evaluated specification.
   * 
   * @param spec the evaluated feature
   * @param metaResults the evaluated meta results
@@ -34,10 +34,10 @@ import java.util.Date
   * @param started the started time
   * @param finished the finished time
   */
-class FeatureResult(
-  val spec: Specification, 
+class SpecResult(
+  val spec: Spec, 
   val reports: Option[Map[ReportFormat.Value, List[File]]], 
-  val metaResults: List[FeatureResult],
+  val metaResults: List[SpecResult],
   val started: Date,
   val finished: Date) extends Identifiable {
   
@@ -45,8 +45,8 @@ class FeatureResult(
 
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots: List[File] = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
-  lazy val isMeta: Boolean = spec.featureFile.exists(_.getName.endsWith(".meta"))
-  lazy val summary = FeatureSummary(this)
+  lazy val isMeta: Boolean = spec.specFile.exists(_.getName.endsWith(".meta"))
+  lazy val summary = ResultsSummary(this)
   lazy val evalStatus: EvalStatus = spec.evalStatus
   lazy val duration: Duration = evalStatus.duration
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))

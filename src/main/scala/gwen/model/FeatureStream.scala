@@ -38,7 +38,7 @@ import java.io.File
   *  
   * @author Branko Juric
   */
-class FeatureStream(inputMeta: List[File]) extends LazyLogging {
+class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLogging {
   
   /**
     * Reads and streams features from multiple file system locations.  
@@ -96,7 +96,8 @@ class FeatureStream(inputMeta: List[File]) extends LazyLogging {
         } else {
           metas
         },
-        None)
+        None,
+        tagFilter)
       dataFile match {
         case Some(file) => new FeatureSet(unit, file).to(LazyList)
         case None =>

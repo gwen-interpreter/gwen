@@ -18,9 +18,9 @@ package gwen.report
 
 import gwen.GwenInfo
 import gwen.GwenOptions
-import gwen.model.FeatureResult
+import gwen.model.SpecResult
 import gwen.model.FeatureUnit
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 
 import java.io.File
 
@@ -29,7 +29,7 @@ import java.io.File
   */
 abstract class NoopReportGenerator(config: ReportConfig, options: GwenOptions) extends ReportGenerator(config, options) with ReportFormatter {
   
-  override def reportAttachments(spec: Specification, featureReportFile: File): Unit = {}
-  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = Nil
+  override def reportAttachments(spec: Spec, featureReportFile: File): Unit = {}
+  override def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = Nil
 
 }

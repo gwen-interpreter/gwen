@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.eval.event
+package gwen.model.event
 
 import gwen._
 import gwen.model._
@@ -56,10 +56,10 @@ class LifecycleEventDispatcher extends LazyLogging {
     dispatchBeforeEvent(unit.parent, unit, scopes) { (listener, event) => listener.beforeUnit(event) }
   def afterUnit(unit: FeatureUnit, scopes: ScopedDataStack): Unit =
     dispatchAfterEvent(unit, scopes) { (listener, event) => listener.afterUnit(event) }
-  def beforeFeature(parent: Identifiable, featureSpec: Specification, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, featureSpec, scopes) { (listener, event) => listener.beforeFeature(event) }
-  def afterFeature(featureResult: FeatureResult, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(featureResult,scopes) { (listener, event) => listener.afterFeature(event) }
+  def beforeSpec(parent: Identifiable, spec: Spec, scopes: ScopedDataStack): Unit =
+    dispatchBeforeEvent(parent, spec, scopes) { (listener, event) => listener.beforeSpec(event) }
+  def afterSpec(result: SpecResult, scopes: ScopedDataStack): Unit =
+    dispatchAfterEvent(result,scopes) { (listener, event) => listener.afterSpec(event) }
   def beforeBackground(parent: Identifiable, background: Background, scopes: ScopedDataStack): Unit =
     dispatchBeforeEvent(parent, background, scopes) { (listener, event) => listener.beforeBackground(event) }
   def afterBackground(background: Background, scopes: ScopedDataStack): Unit =

@@ -19,7 +19,7 @@ package gwen.report.junit
 import gwen.FileIO
 import gwen.GwenOptions
 import gwen.model.DataRecord
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.report.ReportConfig
 import gwen.report.ReportFormat
 import gwen.report.ReportGenerator
@@ -33,10 +33,10 @@ object JUnitReportConfig extends ReportConfig(
   None, 
   options => new JUnitReportGenerator(options), 
   options => options.reportDir.map(dir => new File(dir, "junit")),
-  (spec: Specification, dataRecord: Option[DataRecord]) => {
-    val parentDirPath = spec.featureFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
+  (spec: Spec, dataRecord: Option[DataRecord]) => {
+    val parentDirPath = spec.specFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
     val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
-    Some(s"TEST-${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.featureFile.map(_.getName).getOrElse(spec.feature.name)}")
+    Some(s"TEST-${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.specFile.map(_.getName).getOrElse(spec.feature.name)}")
   }) {
-    override def createReportDir(options: GwenOptions, spec: Specification, dataRecord: Option[DataRecord]): Option[File] = getReportDir(options)
+    override def createReportDir(options: GwenOptions, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = getReportDir(options)
 }

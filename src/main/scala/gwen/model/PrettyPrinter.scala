@@ -33,15 +33,15 @@ import java.io.StringWriter
   */
 object prettyPrint {
 
-  def apply(spec: Specification): String = {
+  def apply(spec: Spec): String = {
     new StringWriter() tap { sw =>
-      new PrettyPrinter(spec).walk(Root, new PrintWriter(sw))
+      new PrettyPrinter().walk(Root, spec, new PrintWriter(sw))
     } toString
   }
 
 }
 
-class PrettyPrinter(spec: Specification) extends SpecWalker[PrintWriter](spec) {
+class PrettyPrinter extends SpecWalker[PrintWriter] {
 
   override def onFeature(parent: Identifiable, feature: Feature, out: PrintWriter): PrintWriter = { 
     val language = feature.language

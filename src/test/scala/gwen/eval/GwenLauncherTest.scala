@@ -29,7 +29,6 @@ import org.mockito.Mockito.when
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.mockito.Matchers.any
-import org.mockito.Matchers.same
 import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.File
@@ -39,7 +38,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
 
   val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
   
-  val feature = new Specification(
+  val feature = new Spec(
       Feature("test-feature", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test", Passed(10))))),
@@ -47,7 +46,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
       None,
       Nil
   )
-  val featureResult = new FeatureResult(feature, None, Nil, new ju.Date(), new ju.Date())
+  val result = new SpecResult(feature, None, Nil, new ju.Date(), new ju.Date())
   
   private def launcher(mockInterpreter: GwenInterpreter[EvalContext]) = {
     new GwenLauncher(mockInterpreter)
@@ -65,7 +64,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -88,7 +87,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockCtx))
     
@@ -112,7 +111,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockCtx))
     
@@ -137,7 +136,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockCtx))
     
@@ -163,7 +162,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockCtx))
     
@@ -187,7 +186,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     try {
       launcher(mockInterpreter).run(options, Some(mockCtx))
@@ -214,7 +213,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
     
     val evalStatus = launcher(mockInterpreter).run(options, Some(mockCtx))
 
@@ -240,7 +239,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockEnv = mock[EvalEnvironment]
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
-    val feature6A = new Specification(
+    val feature6A = new Spec(
       Feature("test-feature-6a", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6A", Passed(1000))))),
@@ -248,7 +247,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
       Some(feature6a),
       Nil
     )
-    val feature6B = new Specification(
+    val feature6B = new Spec(
       Feature("test-feature-6b", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6B", Passed(2000))))),
@@ -257,7 +256,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
       Nil
     )
     
-    val feature7A = new Specification(
+    val feature7A = new Spec(
       Feature("test-feature-7a", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 7A", Passed(3000))))),
@@ -270,10 +269,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     when(mockInterpreter.implVersion).thenReturn("-SNAPSHOT")
     when(mockInterpreter.releaseNotesUrl).thenReturn(None)
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(Nil), any[EvalContext], any[ju.Date])).thenReturn(
-      Some(new FeatureResult(feature6A, None, Nil, new ju.Date(), new ju.Date())),
-      Some(new FeatureResult(feature6B, None, Nil, new ju.Date(), new ju.Date())),
-      Some(new FeatureResult(feature7A, None, Nil, new ju.Date(), new ju.Date())))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(
+      Some(new SpecResult(feature6A, None, Nil, new ju.Date(), new ju.Date())),
+      Some(new SpecResult(feature6B, None, Nil, new ju.Date(), new ju.Date())),
+      Some(new SpecResult(feature7A, None, Nil, new ju.Date(), new ju.Date())))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     
@@ -303,7 +302,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, mockEnv))
     
     when(mockInterpreter.initialise(options)).thenReturn(mockCtx)
-    when(mockInterpreter.interpretFeature(any[FeatureUnit], same(tagFilters), any[EvalContext], any[ju.Date])).thenReturn(Some(featureResult))
+    when(mockInterpreter.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
     
     val evalStatus = launcher(mockInterpreter).run(options)
     

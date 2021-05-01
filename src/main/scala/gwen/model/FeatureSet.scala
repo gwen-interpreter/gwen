@@ -41,7 +41,7 @@ class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit
     val data = headers zip values
     val dataRecord = new DataRecord(dataFile.getPath, index, data.toList)
     logger.debug(s"$dataRecord: $data")
-    FeatureUnit(Root, unit.featureFile, unit.metaFiles, Some(dataRecord)) tap { unit => 
+    FeatureUnit(Root, unit.featureFile, unit.metaFiles, Some(dataRecord), unit.tagFilter) tap { unit => 
       logger.info(s"Mapped $unit")
     }
   }

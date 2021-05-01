@@ -21,7 +21,7 @@ import gwen.GwenOptions
 import gwen.eval.EvalContext
 import gwen.eval.GwenInterpreter
 import gwen.model._
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 
 import gwen.report.html.HtmlReportConfig
 import gwen.report.html.HtmlSlideshowConfig
@@ -76,7 +76,7 @@ class ReportGenerator (
     * @param result the evaluated feature result
     * @return the list of report files (head = feature report, tail = meta reports)
     */
-  final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult): List[File] = {
+  final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: SpecResult): List[File] = {
     val featureSpec = result.spec
     val dataRecord = unit.dataRecord
     val featureReportFile = config.createReportDir(options, featureSpec, dataRecord) flatMap { dir => 
@@ -93,7 +93,7 @@ class ReportGenerator (
     reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
   }
   
-  private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[FeatureResult], reportFiles: List[File]): List[File] = {
+  private[report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = {
     if (GwenSettings.`gwen.report.suppress.meta`) {
       Nil
     } else {
@@ -111,7 +111,7 @@ class ReportGenerator (
     }
   }
   
-  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: FeatureResult, reportFiles: List[File]): Option[File] = {
+  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: SpecResult, reportFiles: List[File]): Option[File] = {
     reportFiles.headOption flatMap { reportFile =>
       formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
         reportFile tap { file =>
@@ -123,7 +123,7 @@ class ReportGenerator (
     }
   }
   
-  def reportAttachments(spec: Specification, featureReportFile: File): Unit = {
+  def reportAttachments(spec: Spec, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
     spec.attachments foreach { case (_, file) =>
       new File(attachmentsDir, file.getName).writeFile(file)
@@ -136,7 +136,7 @@ class ReportGenerator (
     * @param info the gwen info
     * @param summary the feature summary to report
     */
-  final def reportSummary(info: GwenInfo, summary: FeatureSummary): Option[File] =
+  final def reportSummary(info: GwenInfo, summary: ResultsSummary): Option[File] =
     if (summary.results.nonEmpty) {
       summaryReportFile tap { reportFile =>
         reportFile foreach { file =>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.eval.event
+package gwen.model.event
 
 import gwen.model._
 import gwen.model.gherkin._
@@ -32,17 +32,17 @@ class LifecycleEventListener(val name: String, val bypass: Set[NodeType.Value] =
   private val paused = ThreadLocal.withInitial[Option[String]] { () => None }
   private val parentUuids = ThreadLocal.withInitial[mutable.Queue[String]] { () => mutable.Queue[String]() }
 
-  private [eval] def isPaused: Boolean = paused.get.nonEmpty
-  private [eval] def isPausedOn(uuid: String): Boolean = paused.get.contains(uuid)
-  private [eval] def pause(uuid: String): Unit = { paused.set(Some(uuid)) }
-  private [eval] def resume(): Unit = { paused.set(None) }
-  private [eval] def pushUuid(uuid: String): Unit = { parentUuids.get += uuid }
-  private [eval] def popUuid(): String = parentUuids.get.removeLast()
+  private [event] def isPaused: Boolean = paused.get.nonEmpty
+  private [event] def isPausedOn(uuid: String): Boolean = paused.get.contains(uuid)
+  private [event] def pause(uuid: String): Unit = { paused.set(Some(uuid)) }
+  private [event] def resume(): Unit = { paused.set(None) }
+  private [event] def pushUuid(uuid: String): Unit = { parentUuids.get += uuid }
+  private [event] def popUuid(): String = parentUuids.get.removeLast()
   
   def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { }
   def afterUnit(event: LifecycleEvent[FeatureUnit]): Unit = { }
-  def beforeFeature(event: LifecycleEvent[Specification]): Unit = { }
-  def afterFeature(event: LifecycleEvent[FeatureResult]): Unit = { }
+  def beforeSpec(event: LifecycleEvent[Spec]): Unit = { }
+  def afterSpec(event: LifecycleEvent[SpecResult]): Unit = { }
   def beforeBackground(event: LifecycleEvent[Background]): Unit = { }
   def afterBackground(event: LifecycleEvent[Background]): Unit = { }
   def beforeScenario(event: LifecycleEvent[Scenario]): Unit = { }

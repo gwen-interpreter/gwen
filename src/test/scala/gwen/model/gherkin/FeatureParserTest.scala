@@ -28,7 +28,7 @@ import org.scalatest.Matchers
 class FeatureParserTest extends FlatSpec with Matchers with GherkinParser with TestModel {
 
   private def parse(input: String) = { 
-    parseSpecification(input).map(_.feature).map(_.copy(withSourceRef = None))
+    parseSpec(input).map(_.feature).map(_.copy(withSourceRef = None))
   }
   
   "Valid features" should "parse" in {

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package gwen.eval
+package gwen.model
 
-import gwen.model._
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.model.gherkin.Scenario
+
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
@@ -27,26 +28,31 @@ import gwen.model.gherkin.Scenario
   * tags are pruned of all scenarios that do not and are wrapped and 
   * returned as Some types.
   * 
-  * @author Branko Juric
+  * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
   */
-object TagsFilter {
 
-  private val DefaultTags = List((Tag(ReservedTags.Ignore), false))
+object TagFilter {
+  private val DefaultFilters = List((Tag(ReservedTags.Ignore), false))
+}
+
+class TagFilter(tagFilters: List[(Tag, Boolean)]) extends LazyLogging {
   
   /**
     * Filters a feature using the given include/exclude tag filters.
     * 
     * @param spec the parsed feature spec to check
-    * @param tagFilters user provided tag filters (includes:(tag, true) and excludes:(tag, false))
     * @return None if the given feature does not have any scenarios that satisfy all tags; 
     *         Some otherwise (with only the scenarios that do)
     */
-  def filter(spec: Specification, tagFilters: List[(Tag, Boolean)]): Option[Specification] = { 
-    def scenarios = filterScenarios(spec, tagFilters, spec.scenarios)
+  def filter(spec: Spec): Option[Spec] = { 
+    def scenarios = filterScenarios(spec, spec.scenarios)
     def rules = spec.rules map { rule =>
-      rule.copy(withScenarios = filterScenarios(spec, tagFilters, rule.scenarios))
+      rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
     }
     if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
+      spec.specFile foreach { file =>
+        logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
+      }
       None
     } else {
       Some(spec.copy(
@@ -55,8 +61,8 @@ object TagsFilter {
     }
   }
 
-  private def filterScenarios(spec: Specification, tagFilters: List[(Tag, Boolean)], scenarios: List[Scenario]): List[Scenario] = {
-    val filters = tagFilters ++ DefaultTags
+  private def filterScenarios(spec: Spec, scenarios: List[Scenario]): List[Scenario] = {
+    val filters = tagFilters ++ TagFilter.DefaultFilters
     scenarios flatMap { scenario =>
       val effectiveTags = spec.feature.tags ++ scenario.tags
       val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}

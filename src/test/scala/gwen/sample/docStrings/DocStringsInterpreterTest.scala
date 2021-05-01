@@ -17,7 +17,7 @@ package gwen.sample.docStrings
 
 import gwen.Gwen
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -36,7 +36,7 @@ class DocStringsEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait DocStringsEvalEngine extends DefaultEngine[DocStringsEvalContext] {
+trait DocStringsEvalEngine extends EvalEngine[DocStringsEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): DocStringsEvalContext = new DocStringsEvalContext()
 }
 

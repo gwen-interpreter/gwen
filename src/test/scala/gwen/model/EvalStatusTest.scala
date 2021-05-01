@@ -19,7 +19,7 @@ package gwen.model
 import gwen.TestModel
 import gwen.eval.SpecNormaliser
 import gwen.model.gherkin.GherkinParser
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -27,7 +27,7 @@ import org.scalatest.Matchers
 
 class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
-  private val parse = parseSpecification(_: String)
+  private val parse = parseSpec(_: String)
 
   private val featureString = """
    
@@ -90,7 +90,7 @@ Background: The tester
     
     var featureSpec = normalise(parse(featureString).get, None, None)
     
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios map { scenario => 
@@ -130,7 +130,7 @@ Background: The tester
     val sustained = new Exception(StatusKeyword.Sustained.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
 
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios map { scenario =>
@@ -170,7 +170,7 @@ Background: The tester
     val sustained = new Exception(StatusKeyword.Sustained.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
 
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios map { scenario =>
@@ -212,7 +212,7 @@ Background: The tester
 
     var isSustained = false
 
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios map { scenario =>
@@ -261,7 +261,7 @@ Background: The tester
     val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
     
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
@@ -327,7 +327,7 @@ Background: The tester
     val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
     
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
@@ -393,7 +393,7 @@ Background: The tester
     val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
     
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
@@ -466,7 +466,7 @@ Background: The tester
     val error = new Exception(StatusKeyword.Failed.toString)
     var featureSpec = normalise(parse(featureString).get, None, None)
     
-    featureSpec = Specification(
+    featureSpec = Spec(
       featureSpec.feature,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>

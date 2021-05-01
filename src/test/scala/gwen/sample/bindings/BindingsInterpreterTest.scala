@@ -18,7 +18,7 @@ package gwen.sample.bindings
 import gwen.BaseTest
 import gwen.Gwen
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -36,7 +36,7 @@ class BindingsEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait BindingsEvalEngine extends DefaultEngine[BindingsEvalContext] {
+trait BindingsEvalEngine extends EvalEngine[BindingsEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): BindingsEvalContext = new BindingsEvalContext()
 }
 

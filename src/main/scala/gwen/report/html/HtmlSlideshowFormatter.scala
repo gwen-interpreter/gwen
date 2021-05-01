@@ -36,13 +36,13 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     val screenshots = result.screenshots
     if (screenshots.isEmpty || result.isMeta) None
     else {
     
       val reportDir = HtmlSlideshowConfig.reportDir(options).get
-      val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
+      val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
       val dir = HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord).get
@@ -70,7 +70,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = None
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
   
   private def formatJsHeader(rootPath: String) = s""" 
     <script src="${rootPath}resources/js/jquery.min.js"></script>

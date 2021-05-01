@@ -46,11 +46,11 @@ trait HtmlReportFormatter extends ReportFormatter {
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val reportDir = HtmlReportConfig.reportDir(options).get
     val metaResults = result.metaResults
-    val featureName = result.spec.featureFile.map(_.getPath()).getOrElse(result.spec.feature.name)
+    val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
     val title = s"${result.spec.specType} Detail"
     val summary = result.summary
     val screenshots = result.screenshots
@@ -349,7 +349,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = {
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = {
     
     val reportDir = HtmlReportConfig.reportDir(options).get
     val title = "Feature Summary"
@@ -454,8 +454,8 @@ trait HtmlReportFormatter extends ReportFormatter {
             </tr>"""} else ""
   }
   
-  private def formatSummaryLine(result: FeatureResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
-    val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.featureFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
+  private def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
+    val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
       case Passed(nanos) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
@@ -470,7 +470,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                     s"""<a class="text-${cssStatus(reportingStatus.status)}" style="color: ${linkColor(reportingStatus.status)};" href="$rpath"><span class="text-${cssStatus(reportingStatus.status)}">${escapeHtml(featureName)}</span></a>"""}}
                   </div>
                   <div class="col-md-5">
-                    <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.featureFile.map(_.getPath()).getOrElse("")}
+                    <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.specFile.map(_.getPath()).getOrElse("")}
                   </div>
                 </div>"""
   }
@@ -585,7 +585,7 @@ object HtmlReportFormatter {
       </tr>
     </table>"""
          
-  private [report] def formatStatusHeader(unit: FeatureUnit, result: FeatureResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
+  private [report] def formatStatusHeader(unit: FeatureUnit, result: SpecResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
     val status = result.evalStatus.status
     val renderStatusLink = status != StatusKeyword.Passed && status != StatusKeyword.Loaded
     val sustainedCount = result.sustainedCount
@@ -614,7 +614,7 @@ object HtmlReportFormatter {
     </ol>"""
   }
 
-  private def formatSlideshow(screenshots: List[File], spec: Specification, unit: FeatureUnit, rootPath: String) = s"""
+  private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String) = s"""
   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">

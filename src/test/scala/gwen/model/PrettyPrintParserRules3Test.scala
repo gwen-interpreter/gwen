@@ -24,7 +24,7 @@ import org.scalatest.Matchers
 
 class PrettyPrintParserRules3Test extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
-  private val parse = parseSpecification(_: String)
+  private val parse = parseSpec(_: String)
 
   private val featureString = s"""   @wip
    Feature: Gwen

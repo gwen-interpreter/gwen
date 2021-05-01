@@ -29,7 +29,7 @@ import org.scalatest.Matchers
 
 class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with TestModel {
 
-  private val parse = parseSpecification(_: String)
+  private val parse = parseSpec(_: String)
   
   private val featureString = """
    

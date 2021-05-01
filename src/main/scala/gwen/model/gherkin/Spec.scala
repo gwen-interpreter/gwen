@@ -25,35 +25,33 @@ import io.cucumber.messages.{ Messages => Cucumber }
 import java.io.File
 
 /**
- * Abstract syntax tree of a successfully parsed feature.
- * The [[GherkinParser]] parses all plain text features into a tree of
- * this type.  The [[gwen.eval.GwenInterpreter interpreter]] normalises 
- * the tree before passing it down to the 
- * [[gwen.eval.EvalEngine evaluation engine]] and lower layers for 
- * processing.
+ * A Gherkin feature specification.
  *
- * @param feature the feature
+ * @param name the feature name
  * @param background optional background
  * @param scenarios list of scenarios
- * @param featureFile optional source feature file
+ * @param specFile optional source feature file
  * @param metaSpecs optional list of meta specs
  */
 
-case class Specification(
+case class Spec(
     feature: Feature, 
     background: Option[Background], 
     scenarios: List[Scenario],
     rules: List[Rule],
-    featureFile: Option[File],
-    metaSpecs: List[Specification]) extends Identifiable {
-  
+    specFile: Option[File],
+    metaSpecs: List[Spec]) extends SpecNode {
+
+  val name = feature.name
+  val sourceRef = feature.sourceRef
+
   def specType: SpecType.Value = feature.specType
   def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
   def isMeta: Boolean = SpecType.isMeta(specType)
 
   /** Resource id */
-  def uri = featureFile.map(_.getPath).getOrElse(uuid)
+  def uri = specFile.map(_.getPath).getOrElse(uuid)
 
   /**
     * Gets the list of all steps contained in the feature spec. The list includes
@@ -81,7 +79,7 @@ case class Specification(
   }
   
   /** Returns the evaluation status of this feature spec. */
-  lazy val evalStatus: EvalStatus = {
+  override val evalStatus: EvalStatus = {
     val ss = steps.map(_.evalStatus)
     val specStatus = EvalStatus(ss)
     metaSpecs match {
@@ -100,19 +98,19 @@ case class Specification(
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios,
       withRules: List[Rule] = rules,
-      withFeatureFile: Option[File] = featureFile,
-      withMetaSpecs: List[Specification] = metaSpecs): Specification = {
-    Specification(withFeature, withBackground, withScenarios, withRules, withFeatureFile, withMetaSpecs)
+      withSpecFile: Option[File] = specFile,
+      withMetaSpecs: List[Spec] = metaSpecs): Spec = {
+    Spec(withFeature, withBackground, withScenarios, withRules, withSpecFile, withMetaSpecs)
   }
   
 }
 
-object Specification {
-  def apply(uri: String, spec: Cucumber.GherkinDocument, specFile: Option[File]): Specification = {
+object Spec {
+  def apply(uri: String, spec: Cucumber.GherkinDocument, specFile: Option[File]): Spec = {
     val feature = Feature(uri, spec.getFeature, 0)
     val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground, 0))
     val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).zipWithIndex.map { case (x, i) => Scenario(uri, x.getScenario, i) }
     val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).zipWithIndex.map { case (x, i) => Rule(uri, x.getRule, i) }
-    Specification(feature, background, scenarios, rules, specFile, Nil)
+    Spec(feature, background, scenarios, rules, specFile, Nil)
   }
 }

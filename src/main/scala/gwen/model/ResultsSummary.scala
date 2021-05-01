@@ -32,8 +32,8 @@ import java.util.Date
   * 
   * @author Branko Juric
   */
-case class FeatureSummary(
-  results: List[FeatureResult],
+case class ResultsSummary(
+  results: List[SpecResult],
   ruleCounts: Map[StatusKeyword.Value, Int], 
   scenarioCounts: Map[StatusKeyword.Value, Int], 
   stepCounts: Map[StatusKeyword.Value, Int]) {
@@ -52,14 +52,14 @@ case class FeatureSummary(
   /** 
     * Adds the given feature result to the current summary (accumulates). 
     * 
-    * @param featureResult the feature result to add
+    * @param result the feature result to add
     */
-  def +(featureResult: FeatureResult): FeatureSummary = {
-    new FeatureSummary(
-      this.results ++ List(featureResult), 
-      addCounts(this.ruleCounts, featureResult.ruleCounts),
-      addCounts(this.scenarioCounts, featureResult.scenarioCounts),
-      addCounts(this.stepCounts, featureResult.stepCounts))
+  def +(result: SpecResult): ResultsSummary = {
+    new ResultsSummary(
+      this.results ++ List(result), 
+      addCounts(this.ruleCounts, result.ruleCounts),
+      addCounts(this.scenarioCounts, result.scenarioCounts),
+      addCounts(this.stepCounts, result.stepCounts))
   }
 
   private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
@@ -94,10 +94,10 @@ case class FeatureSummary(
 }
 
 /** Feature summary factory. */
-object FeatureSummary {
-  def apply(): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Map())
-  def apply(elapsedTime: Duration): FeatureSummary = new FeatureSummary(Nil, Map(), Map(), Map())
-  def apply(result: FeatureResult): FeatureSummary = FeatureSummary() + result
+object ResultsSummary {
+  def apply(): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map())
+  def apply(elapsedTime: Duration): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map())
+  def apply(result: SpecResult): ResultsSummary = ResultsSummary() + result
 }
 
 

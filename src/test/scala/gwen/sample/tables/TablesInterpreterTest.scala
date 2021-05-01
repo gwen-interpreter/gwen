@@ -16,7 +16,7 @@
 package gwen.sample.tables
 
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -35,7 +35,7 @@ class TablesEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait TablesEvalEngine extends DefaultEngine[TablesEvalContext] {
+trait TablesEvalEngine extends EvalEngine[TablesEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TablesEvalContext = new TablesEvalContext()
 }
 

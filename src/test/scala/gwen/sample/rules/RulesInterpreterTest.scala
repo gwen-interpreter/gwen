@@ -16,7 +16,7 @@
 package gwen.sample.rules
 
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -34,7 +34,7 @@ class RulesEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait RulesEvalEngine extends DefaultEngine[RulesEvalContext] {
+trait RulesEvalEngine extends EvalEngine[RulesEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): RulesEvalContext = new RulesEvalContext()
 }
 

@@ -16,7 +16,7 @@
 
 package gwen.report.html
 
-import gwen.model.gherkin.Specification
+import gwen.model.gherkin.Spec
 import gwen.report.ReportConfig
 import gwen.report.ReportFormat
 
@@ -29,5 +29,5 @@ object HtmlReportConfig extends ReportConfig(
   Some("feature-summary"), 
   options => new HtmlReportGenerator(options), 
   options => options.reportDir.map(dir => new File(dir, "html")),
-  (spec: Specification, _) =>
-    Some(spec.featureFile.map(_.getName).getOrElse(spec.feature.name)))
+  (spec: Spec, _) =>
+    Some(spec.specFile.map(_.getName).getOrElse(spec.feature.name)))

@@ -26,7 +26,7 @@ import java.util.NoSuchElementException
 
 class FeatureStreamTest extends BaseTest with Matchers {
   
-  val featureStream = new FeatureStream(Nil)
+  val featureStream = new FeatureStream(Nil, new TagFilter(Nil))
   
   val rootDir: File = new File("target" + File.separator + "features") tap { _.mkdirs() }
   

@@ -17,7 +17,7 @@ package gwen.sample.templates
 
 import gwen.BaseTest
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenLauncher
@@ -35,7 +35,7 @@ class TemplatesEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait TemplatesEvalEngine extends DefaultEngine[TemplatesEvalContext] {
+trait TemplatesEvalEngine extends EvalEngine[TemplatesEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TemplatesEvalContext = new TemplatesEvalContext()
 }
 

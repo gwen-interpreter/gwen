@@ -26,7 +26,7 @@ import org.scalatest.Matchers
 
 class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
-  private val parse = parseSpecification(_: String)
+  private val parse = parseSpec(_: String)
 
   val background = Background(
     "background",
@@ -35,7 +35,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   )
 
   "Feature with no background and no step defs" should "normalise without error" in {
-    val feature = Specification(
+    val feature = Spec(
     Feature("feature1", Nil),
       None,
       List(
@@ -61,7 +61,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
 
   "Feature with background and no step defs" should "normalise without error" in {
-    val feature = Specification(
+    val feature = Spec(
       Feature("feature1", Nil),
       Some(background),
       List(
@@ -90,7 +90,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
   
   "StepDef without background and one step def" should "normalise without error" in {
-    val meta = Specification(
+    val meta = Spec(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -111,7 +111,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
 
   "StepDef with background and one step def" should "normalise without error" in {
-    val meta = Specification(
+    val meta = Spec(
       Feature("meta1", Nil), Some(background), List(
         Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -133,7 +133,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
   
   "Meta with multiple unique step defs" should "normalise without error" in {
-    val meta = Specification(
+    val meta = Spec(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -149,7 +149,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
   
   "Meta with duplicate step def" should "error" in {
-    val meta = Specification(
+    val meta = Spec(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -168,7 +168,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
   
   "Meta with duplicate step def with params" should "error" in {
-    val meta = Specification(
+    val meta = Spec(
     Feature("meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef <number>", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -187,7 +187,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
   }
   
   "Data driven feature with csv file" should "normalise without error" in {
-    val feature = Specification(
+    val feature = Spec(
     Feature("About me", Nil), Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),

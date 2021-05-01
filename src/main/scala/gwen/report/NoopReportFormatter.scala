@@ -18,8 +18,8 @@ package gwen.report
 
 import gwen.GwenInfo
 import gwen.GwenOptions
-import gwen.model.FeatureResult
-import gwen.model.FeatureSummary
+import gwen.model.SpecResult
+import gwen.model.ResultsSummary
 import gwen.model.FeatureUnit
 
 import java.io.File
@@ -29,7 +29,7 @@ import java.io.File
   */
 trait NoopReportFormatter extends ReportFormatter {
  
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: FeatureResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = None
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: FeatureSummary): Option[String] = None
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = None
+  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
 
 }

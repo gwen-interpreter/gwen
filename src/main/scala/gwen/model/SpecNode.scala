@@ -19,6 +19,8 @@ package gwen.model
 import gwen._
 import gwen.model._
 
+import com.typesafe.scalalogging.LazyLogging
+
 trait Identifiable {
   def nodeType: NodeType.Value
   val uuid: String = UUIDGenerator.nextId
@@ -32,7 +34,7 @@ object Root extends Identifiable {
 /**
   * Base trait for all Gherkin specification nodes.  
   */
-trait SpecNode extends Identifiable {
+trait SpecNode extends Identifiable with LazyLogging {
 
   /** The location in the Gherkin file or None if the node is synthetic or instantiated directly. */
   val sourceRef: Option[SourceRef]
@@ -42,9 +44,20 @@ trait SpecNode extends Identifiable {
 
   /** Returns the evaluation status of this node. */
   val evalStatus: EvalStatus = Pending
-  
+
   /** Gets the index of the node relative to parent. */
   def index = sourceRef.map(_.pos.index).getOrElse(0)
+  
+  def logStatus(): Unit = { 
+    val msg = s"$evalStatus $nodeType: $name"
+    evalStatus match {
+      case Loaded => logger.debug(msg)
+      case Passed(_) => logger.info(msg)
+      case Failed(_, _) => logger.error(msg)
+      case Sustained(_, _) => logger.warn(msg)
+      case _ => logger.warn(msg)
+    }
+  }
 
   override def toString: String = name
 

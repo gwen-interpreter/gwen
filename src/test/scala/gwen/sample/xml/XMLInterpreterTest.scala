@@ -16,7 +16,7 @@
 package gwen.sample.xml
 
 import gwen.GwenOptions
-import gwen.eval.DefaultEngine
+import gwen.eval.EvalEngine
 import gwen.eval.EvalContext
 import gwen.eval.EvalEnvironment
 import gwen.eval.GwenInterpreter
@@ -34,7 +34,7 @@ class XMLEvalContext
   override def dsl: List[String] = Nil
 }
 
-trait XMLEvalEngine extends DefaultEngine[XMLEvalContext] {
+trait XMLEvalEngine extends EvalEngine[XMLEvalContext] {
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): XMLEvalContext = new XMLEvalContext()
 }
 

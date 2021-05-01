@@ -26,6 +26,7 @@ import scala.util.matching.Regex
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
+import gwen.model.event.LifecycleEventDispatcher
 
 /**
   * Base environment context providing access to all resources and state.
@@ -35,7 +36,7 @@ import java.io.File
 class EvalEnvironment() extends LazyLogging {
   
   private var stepDefs = Map[String, Scenario]()
-  private var state = new EnvState(new ScopedDataStack())
+  private var state = new EnvState(new ScopedDataStack(), new LifecycleEventDispatcher())
 
   var loadedMeta: List[File] = Nil
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
@@ -45,12 +46,14 @@ class EvalEnvironment() extends LazyLogging {
   def scopes = state.scopes
   def topScope: TopScope = scopes.topScope
 
+  def lifecycle = state.lifecycle
+
   /** Create a clone that preserves scoped data. */
   def copy(): EvalEnvironment = {
     new EvalEnvironment() tap { env =>
       env.loadedMeta = loadedMeta
       env.stepDefs = stepDefs
-      env.state = EnvState(topScope)
+      env.state = EnvState(topScope, state.lifecycle)
     }
   }
 
@@ -63,7 +66,7 @@ class EvalEnvironment() extends LazyLogging {
   /** Resets the current context but does not close it so it can be reused. */
   def reset(level: StateLevel.Value): Unit = {
     logger.info(s"Resetting environment context")
-    state = EnvState(topScope)
+    state = EnvState(topScope, state.lifecycle)
     if (StateLevel.feature.equals(level)) {
       stepDefs = Map[String, Scenario]()
       loadedMeta = Nil
