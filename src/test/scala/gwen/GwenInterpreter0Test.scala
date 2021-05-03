@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package gwen.eval
+package gwen
 
-import gwen._
+import gwen.eval.EvalContext
+import gwen.eval.EvalEngine
+import gwen.eval.EvalEnvironment
 import gwen.model._
 import gwen.model.event.LifecycleEventDispatcher
 import gwen.model.gherkin._
@@ -40,7 +42,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import java.io.File
 import java.io.FileWriter
 
-class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with TestModel {
+class GwenInterpreter0Test extends FlatSpec with Matchers with MockitoSugar with TestModel {
 
   val rootDir: File = new File("target" + File.separator + "GwenInterpreterTest") tap { _.mkdirs() }
   
@@ -48,11 +50,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
   
   private def interpreter(mockCtx: EvalContext, mockLifecycle: LifecycleEventDispatcher) = {
     when(mockCtx.lifecycle).thenReturn(mockLifecycle)
-    trait MockEvalEngine extends EvalEngine[EvalContext] {
+    val engine = new EvalEngine[EvalContext] {
       override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): EvalContext = mockCtx
       override def evaluate(step: Step, ctx: EvalContext): Unit = { }
     }
-    new GwenInterpreter[EvalContext] with MockEvalEngine
+    new GwenInterpreter(engine)
   }
 
   "initialise interpreter" should "create new env" in {
@@ -178,7 +180,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
       .doReturn(Step(step6, Passed(1)))
       .when(mockCtx)
       .finaliseStep(any[Step])
-    val result = interpreter(mockCtx, mockLifecycle).evaluateUnit(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), mockCtx)
+    val result = interpreter(mockCtx, mockLifecycle).interpretUnit(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), mockCtx)
     result match {
       case Some(result) =>
         result.spec.evalStatus.status should be (StatusKeyword.Passed)
@@ -293,7 +295,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
       .doReturn(Step(step9, Passed(1)))
       .when(mockCtx)
       .finaliseStep(any[Step])
-    val result = interpreter(mockCtx, mockLifecycle).evaluateUnit(FeatureUnit(Root, featureFile, List(metaFile), None, new TagFilter(Nil)), mockCtx)
+    val result = interpreter(mockCtx, mockLifecycle).interpretUnit(FeatureUnit(Root, featureFile, List(metaFile), None, new TagFilter(Nil)), mockCtx)
     result match {
       case Some(result) =>
         result.spec.evalStatus.status should be (StatusKeyword.Passed)

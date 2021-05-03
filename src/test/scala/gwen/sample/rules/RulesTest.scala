@@ -15,11 +15,8 @@
  */
 package gwen.sample.rules
 
+import gwen.DefaultGwenInterpreter
 import gwen.GwenOptions
-import gwen.eval.EvalEngine
-import gwen.eval.EvalContext
-import gwen.eval.EvalEnvironment
-import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
 import gwen.model.Failed
 import gwen.model.Passed
@@ -29,21 +26,10 @@ import org.scalatest.FlatSpec
 
 import java.io.File
 
-class RulesEvalContext
-  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
-  override def dsl: List[String] = Nil
-}
+class RulesTest extends FlatSpec {
 
-trait RulesEvalEngine extends EvalEngine[RulesEvalContext] {
-  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): RulesEvalContext = new RulesEvalContext()
-}
+  val launcher = new GwenLauncher(DefaultGwenInterpreter)
 
-class RulesInterpreter
-  extends GwenInterpreter[RulesEvalContext]
-  with RulesEvalEngine
-
-class RulesInterpreterTest extends FlatSpec {
-  
   "Scenario rules" should "evaluate without error" in {
     
     val options = GwenOptions(
@@ -53,8 +39,7 @@ class RulesInterpreterTest extends FlatSpec {
       features = List(new File("features/sample/rules"))
     )
       
-    val launcher = new GwenLauncher(new RulesInterpreter())
-    launcher.run(options, None) match {
+    launcher.run(options) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
@@ -71,8 +56,7 @@ class RulesInterpreterTest extends FlatSpec {
       dryRun = true
     )
       
-    val launcher = new GwenLauncher(new RulesInterpreter())
-    launcher.run(options, None) match {
+    launcher.run(options) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")

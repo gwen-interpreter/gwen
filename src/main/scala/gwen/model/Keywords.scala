@@ -22,6 +22,8 @@ import gwen.model.gherkin.Dialect
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
+import java.io.File
+
 object FeatureKeyword extends Enumeration {
   type FeatureKeyword = Value
   val Feature, Ability, Background, Rule, Scenario, Example, Examples, Scenarios = Value
@@ -218,5 +220,10 @@ object SpecType extends Enumeration {
 
   def isFeature(specType: SpecType.Value):Boolean = specType == Feature
   def isMeta(specType: SpecType.Value):Boolean = specType == Meta
+
+  def ofFile(specFile: File): SpecType.Value = {
+    if (FileIO.isMetaFile(specFile)) SpecType.Meta
+    else SpecType.Feature
+  }
 
 }

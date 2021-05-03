@@ -41,7 +41,7 @@ class EvalEnvironment() extends LazyLogging {
   var loadedMeta: List[File] = Nil
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
-  private[eval] def stepScope = scopes.stepScope
+  def stepScope = scopes.stepScope
 
   def scopes = state.scopes
   def topScope: TopScope = scopes.topScope

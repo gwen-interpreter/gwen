@@ -31,18 +31,18 @@ class MathEnv extends EvalEnvironment {
   def vars: ScopedData = addScope("vars")
 }
 
-class MathEvalContext(options: GwenOptions, val mathService: MathService) 
+class MathContext(options: GwenOptions, val mathService: MathService) 
   extends EvalContext(options, new MathEnv()) {
   override def dsl: List[String] = 
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 
-trait MathEvalEngine extends EvalEngine[MathEvalContext] {
+class MathEngine extends EvalEngine[MathContext] {
  
-  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): MathEvalContext =
-    new MathEvalContext(options, new MathService())
+  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): MathContext =
+    new MathContext(options, new MathService())
  
-  override def evaluate(step: Step, ctx: MathEvalContext): Unit = ctx.withEnv { env =>
+  override def evaluate(step: Step, ctx: MathContext): Unit = ctx.withEnv { env =>
     val vars = env.asInstanceOf[MathEnv].vars
     step.expression match {
       case r"""([a-z])$x = (\d+)$value""" =>
@@ -67,10 +67,3 @@ trait MathEvalEngine extends EvalEngine[MathEvalContext] {
     }
   }
 }
-
-class MathInterpreter 
-  extends GwenInterpreter[MathEvalContext]
-  with MathEvalEngine
-
-object MathInterpreter 
-  extends Gwen(new MathInterpreter)

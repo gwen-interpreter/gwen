@@ -16,6 +16,7 @@
 
 package gwen.sample.math
 
+import gwen.GwenInterpreter
 import gwen.GwenOptions
 import gwen.TestModel
 import gwen.eval.GwenLauncher
@@ -30,6 +31,10 @@ import java.io.File
 
 class MathInterpreterTest extends FlatSpec with TestModel {
   
+  val engine = new MathEngine()
+  val interpreter = new GwenInterpreter(engine)
+  val launcher = new GwenLauncher(interpreter)
+
   "math features" should "evaluate" in {
     
     val options = GwenOptions(
@@ -39,7 +44,6 @@ class MathInterpreterTest extends FlatSpec with TestModel {
       features = List(new File("features/sample/math"))
     )
       
-    val launcher = new GwenLauncher(new MathInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -57,7 +61,6 @@ class MathInterpreterTest extends FlatSpec with TestModel {
       dryRun = true
     )
       
-    val launcher = new GwenLauncher(new MathInterpreter())
     launcher.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -69,18 +72,17 @@ class MathInterpreterTest extends FlatSpec with TestModel {
     
     val options = new GwenOptions(dryRun = true)
     
-    val ctx = new MathEvalContext(options, new MathService())
+    val ctx = engine.init(options)
 
     ctx.withEnv { env =>
 
       env.scopes.addScope("vars").set("y", "1")
           
-      val interpreter = new MathInterpreter
       env.dsl map { dsl =>
         dsl.replace("<integer>", "1")
       } foreach { dsl => 
         StepKeyword.values.map(_.toString) foreach { keyword =>
-          interpreter.evaluate(Step(keyword, dsl), ctx)
+          engine.evaluate(Step(keyword, dsl), ctx)
         }
       }
 

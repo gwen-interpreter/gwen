@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Branko Juric, Brady Wood
+ * Copyright 2018 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,50 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.sample.templates
+package gwen.sample.sync
 
+import gwen.DefaultGwenInterpreter
 import gwen.BaseTest
 import gwen.GwenOptions
-import gwen.eval.EvalEngine
-import gwen.eval.EvalContext
-import gwen.eval.EvalEnvironment
 import gwen.eval.GwenLauncher
-import gwen.eval.GwenInterpreter
 import gwen.model.Failed
 import gwen.model.Passed
 import gwen.report.ReportFormat
 
-import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-
 import java.io.File
 
-class TemplatesEvalContext
-  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
-  override def dsl: List[String] = Nil
-}
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
-trait TemplatesEvalEngine extends EvalEngine[TemplatesEvalContext] {
-  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TemplatesEvalContext = new TemplatesEvalContext()
-}
+class SyncTest extends BaseTest {
 
-class TemplatesInterpreter
-  extends GwenInterpreter[TemplatesEvalContext]
-  with TemplatesEvalEngine
+  val launcher = new GwenLauncher(DefaultGwenInterpreter)
 
-class TemplatesInterpreterTest extends BaseTest {
-  
   forAll (levels) { level =>
-    s"Templates using $level level state" should "evaluate without error" in {  
+    s"Synced StepDef using $level level state" should "evaluate one feature at time in parallel execution mode" in { 
       withSetting("gwen.state.level", level) {
         val options = GwenOptions(
           batch = true,
-          reportDir = Some(new File(s"target/report/templates/$level-level")),
+          parallel = true,
+          reportDir = Some(new File(s"target/report/sync/$level-level")),
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-          features = List(new File("features/sample/templates"))
+          features = List(new File("features/sample/sync"))
         )
           
-        val launcher = new GwenLauncher(new TemplatesInterpreter())
-        launcher.run(options, None) match {
+        launcher.run(options) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
@@ -66,18 +52,18 @@ class TemplatesInterpreterTest extends BaseTest {
   }
   
   forAll (levels) { level =>
-    s"Templates using $level level state" should "pass --dry-run test" in {  
+    s"Synced StepDef using $level level state" should "pass --dry-run test" in {  
       withSetting("gwen.state.level", level) {
         val options = GwenOptions(
           batch = true,
-          reportDir = Some(new File(s"target/report/templates-dry-run/$level-level")),
+          parallel = true,
+          reportDir = Some(new File(s"target/report/sync-dry-run/$level-level")),
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-          features = List(new File("features/sample/templates")),
+          features = List(new File("features/sample/sync")),
           dryRun = true
         )
           
-        val launcher = new GwenLauncher(new TemplatesInterpreter())
-        launcher.run(options, None) match {
+        launcher.run(options) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")

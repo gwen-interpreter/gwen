@@ -29,6 +29,14 @@ import scala.util.{Failure, Success, Try}
 import java.io.File
 import gwen.eval.support.SQLSupport
 
+object EvalEngine {
+  val defaultEngine = new EvalEngine[EvalContext]() {
+    override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): EvalContext = {
+      new EvalContext(options, new EvalEnvironment())
+    }
+  }
+}
+
 /**
   * Base trait for gwen evaluation engines.
   *
@@ -42,7 +50,7 @@ trait EvalEngine[T <: EvalContext] extends UnitEngine[T] {
     * @param options command line options
     * @param envOpt optional environment context to use
     */
-  def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): T
+  def init(options: GwenOptions, envOpt: Option[EvalEnvironment]): T
 
   /**
     * Defines the default composite steps supported by all engines.

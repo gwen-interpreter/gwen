@@ -58,18 +58,18 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
         case stream @ _ #:: _ =>
           executeFeatureUnits(options, stream.flatten, ctxOpt)
         case _ =>
-          EvalStatus { 
+          (EvalStatus { 
             if (metaFiles.nonEmpty) {
               val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
               ctxOpt flatMap { ctx =>
-                interpreter.evaluateUnit(unit, ctx) map { result =>
+                interpreter.interpretUnit(unit, ctx) map { result =>
                   result.evalStatus
                 }
               } toList
             } else {
               Nil
             }
-          } tap { _ =>
+          }) tap { _ =>
             if (options.features.nonEmpty) {
               logger.warn("No features found in specified files and/or directories!")
             }
@@ -174,15 +174,8 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
   }
 
   private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
-    if (FileIO.isMetaFile(unit.featureFile)) {
-      logger.info(("""|       
-                      |  _    
-                      | { \," Evaluating feature..
-                      |{_`/   """ + unit.featureFile.toString + """
-                      |   `   """).stripMargin)
-    }
     Settings.clearLocal()
-    val ctx = ctxOpt.getOrElse(interpreter.initialise(options))
+    val ctx = ctxOpt.getOrElse(interpreter.init(options))
     ctx.withEnv { env =>
       try {
         ctxOpt.foreach(_.reset(StateLevel.feature))
@@ -191,7 +184,7 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
             env.topScope.set(name, value)
           }
         }
-        f(interpreter.evaluateUnit(unit, ctx) map { res =>
+        f(interpreter.interpretUnit(unit, ctx) map { res =>
           new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
         })
       } finally {

@@ -16,12 +16,8 @@
 package gwen.sample.bindings
 
 import gwen.BaseTest
-import gwen.Gwen
+import gwen.DefaultGwenInterpreter
 import gwen.GwenOptions
-import gwen.eval.EvalEngine
-import gwen.eval.EvalContext
-import gwen.eval.EvalEnvironment
-import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
 import gwen.model.Failed
 import gwen.model.Passed
@@ -31,24 +27,10 @@ import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 import java.io.File
 
-class BindingsEvalContext 
-  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
-  override def dsl: List[String] = Nil
-}
+class BindingsTest extends BaseTest {
 
-trait BindingsEvalEngine extends EvalEngine[BindingsEvalContext] {
-  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): BindingsEvalContext = new BindingsEvalContext()
-}
+  val launcher = new GwenLauncher(DefaultGwenInterpreter)
 
-class BindingsInterpreter 
-  extends GwenInterpreter[BindingsEvalContext]
-  with BindingsEvalEngine
-
-object BindingsInterpreter 
-  extends Gwen(new BindingsInterpreter)
-
-class BindingsInterpreterTest extends BaseTest {
-  
   forAll (levels) { level =>
     s"binding features using $level level state" should "evaluate without error" in {
       withSetting("gwen.state.level", level) {
@@ -60,8 +42,7 @@ class BindingsInterpreterTest extends BaseTest {
           properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
         )
           
-        val launcher = new GwenLauncher(new BindingsInterpreter())
-        launcher.run(options, None) match {
+        launcher.run(options) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
@@ -82,8 +63,7 @@ class BindingsInterpreterTest extends BaseTest {
           properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
         )
           
-        val launcher = new GwenLauncher(new BindingsInterpreter())
-        launcher.run(options, None) match {
+        launcher.run(options) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")

@@ -17,9 +17,7 @@
 package gwen.report
 
 import gwen._
-import gwen.GwenOptions
 import gwen.eval.EvalContext
-import gwen.eval.GwenInterpreter
 import gwen.model._
 import gwen.model.gherkin.Spec
 

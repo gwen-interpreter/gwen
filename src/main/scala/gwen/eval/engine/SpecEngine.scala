@@ -75,11 +75,11 @@ trait SpecEngine[T <: EvalContext]
     */
   private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
     ctx.withEnv { env => 
-      env.topScope.pushObject(SpecType.toString, spec.specType)
+      val specType = spec.specType
+      env.topScope.pushObject(SpecType.toString, specType)
       try {
         ctx.lifecycle.beforeSpec(parent, spec, env.scopes)
         val started = new Date()
-        val specType = spec.specType
         (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
           logger.info("")
           logger.info(s"$action $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")

@@ -43,7 +43,7 @@ trait StepEngine[T <: EvalContext] {
     val start = System.nanoTime - step.evalStatus.nanos
     Try(stepFunction(step)) match {
       case Success(eStep) =>
-        val status = eStep.stepDef.map(_._1.evalStatus).getOrElse {
+        val status = eStep.stepDef map { case (sd, _) => sd.evalStatus }  getOrElse {
           eStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
             case _ => Passed(System.nanoTime - start)

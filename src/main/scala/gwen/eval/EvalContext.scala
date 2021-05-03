@@ -193,7 +193,7 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends Interp
     * @param step the step to bind attachments to
     * @return the step with accumulated attachments
     */
-  private[eval] def finaliseStep(step: Step): Step = {
+  def finaliseStep(step: Step): Step = {
     if (step.stepDef.isEmpty) {
       step.evalStatus match {
         case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>

@@ -13,67 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.sample.tables
+package gwen.sample.outlines
 
+import gwen.DefaultGwenInterpreter
 import gwen.GwenOptions
-import gwen.eval.EvalEngine
-import gwen.eval.EvalContext
-import gwen.eval.EvalEnvironment
-import gwen.eval.GwenInterpreter
 import gwen.eval.GwenLauncher
 import gwen.model.Failed
 import gwen.model.Passed
-
 import gwen.report.ReportFormat
 
 import org.scalatest.FlatSpec
 
 import java.io.File
 
-class TablesEvalContext
-  extends EvalContext(GwenOptions(), new EvalEnvironment()) {
-  override def dsl: List[String] = Nil
-}
+class OutlinesTest extends FlatSpec {
 
-trait TablesEvalEngine extends EvalEngine[TablesEvalContext] {
-  override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TablesEvalContext = new TablesEvalContext()
-}
-
-class TablesInterpreter
-  extends GwenInterpreter[TablesEvalContext]
-  with TablesEvalEngine
-
-class TablesInterpreterTest extends FlatSpec {
+  val launcher = new GwenLauncher(DefaultGwenInterpreter)
   
-  "Data tables" should "evaluate without error" in {
+  "Scenario outlines" should "evaluate without error" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables")),
+      reportDir = Some(new File("target/report/outlines")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables"), new File("features/sample/tables-foreach"))
+      features = List(new File("features/sample/outlines"))
     )
       
-    val launcher = new GwenLauncher(new TablesInterpreter())
-    launcher.run(options, None) match {
+    launcher.run(options) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
   }
   
-  "Data tables" should "pass --dry-run test" in {
+  "Scenario outlines" should "pass --dry-run test" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables-dry-run")),
+      reportDir = Some(new File("target/report/outlines-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables"), new File("features/sample/tables-foreach")),
+      features = List(new File("features/sample/outlines")),
       dryRun = true
     )
       
-    val launcher = new GwenLauncher(new TablesInterpreter())
-    launcher.run(options, None) match {
+    launcher.run(options) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")

@@ -30,6 +30,7 @@ import java.io.File
  * @param name the feature name
  * @param background optional background
  * @param scenarios list of scenarios
+ * @param rules list of rules
  * @param specFile optional source feature file
  * @param metaSpecs optional list of meta specs
  */
@@ -80,8 +81,7 @@ case class Spec(
   
   /** Returns the evaluation status of this feature spec. */
   override val evalStatus: EvalStatus = {
-    val ss = steps.map(_.evalStatus)
-    val specStatus = EvalStatus(ss)
+    val specStatus = EvalStatus(steps.map(_.evalStatus))
     metaSpecs match {
       case Nil => specStatus
       case _ =>
