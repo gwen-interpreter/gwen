@@ -35,7 +35,8 @@ import java.io.File
   * Feature unit evaluation engine
   */
 trait UnitEngine[T <: EvalContext]
-  extends SpecEngine[T] with GherkinParser with SpecNormaliser with LazyLogging {
+  extends SpecEngine[T] with BackgroundEngine[T] with RuleEngine[T] with ScenarioEngine[T] with ExamplesEngine[T] 
+  with StepDefEngine[T] with StepEngine[T] with GherkinParser with SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
     
   /**

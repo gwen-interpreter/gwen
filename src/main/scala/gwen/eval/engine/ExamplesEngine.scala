@@ -18,7 +18,7 @@ package gwen.eval.engine
 
 import gwen._
 import gwen.model._
-import gwen.model.gherkin.Background
+import gwen.model.gherkin.Examples
 import gwen.eval.EvalContext
 import gwen.eval.EvalEngine
 import gwen.eval.SpecNormaliser
@@ -26,20 +26,21 @@ import gwen.eval.SpecNormaliser
 import com.typesafe.scalalogging.LazyLogging
 
 /**
-  * Background evaluation engine.
+  * Examples evaluation engine.
   */
-trait BackgroundEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
+trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  /**
-    * Evaluates a given background.
-    */
-  def evaluateBackground(parent: Identifiable, background: Background, ctx: T): Background = ctx.withEnv { env =>
-    ctx.lifecycle.beforeBackground(parent, background, env.scopes)
-    logger.info(s"Evaluating ${background.keyword}: $background")
-    background.copy(withSteps = evaluateSteps(background, background.steps, ctx)) tap { bg =>
-      bg.logStatus()
-      ctx.lifecycle.afterBackground(bg, env.scopes)
+  def evaluateExamples(parent: Identifiable, examples: List[Examples], ctx: T): List[Examples] = ctx.withEnv { env => 
+    examples map { exs =>
+      ctx.lifecycle.beforeExamples(parent, exs, env.scopes)
+      exs.copy(
+        withScenarios = exs.scenarios map { scenario =>
+          evaluateScenario(exs, scenario, ctx)
+        }
+      ) tap { exs =>
+        ctx.lifecycle.afterExamples(exs, env.scopes)
+      }
     }
   }
 

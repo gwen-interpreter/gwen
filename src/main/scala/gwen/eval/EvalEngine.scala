@@ -58,7 +58,7 @@ trait EvalEngine[T <: EvalContext] extends UnitEngine[T] {
     * @param step the step to evaluate
     * @param ctx the evaluation context
     */
-  def evaluateComposite(parent: Identifiable, step: Step, ctx: T): Option[Step] = ctx.withEnv { env => 
+  override def evaluateComposite(parent: Identifiable, step: Step, ctx: T): Option[Step] = ctx.withEnv { env => 
         
     Option {
         
@@ -120,7 +120,7 @@ trait EvalEngine[T <: EvalContext] extends UnitEngine[T] {
     * @throws gwen.Errors.UndefinedStepException if the given step is undefined
     *         or unsupported
     */
-  def evaluate(step: Step, ctx: T): Unit = ctx.withEnv { env => 
+  override def evaluate(step: Step, ctx: T): Unit = ctx.withEnv { env => 
 
     step.expression match {
 

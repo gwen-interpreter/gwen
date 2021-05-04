@@ -31,8 +31,7 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Spec evaluation engine.
   */
-trait SpecEngine[T <: EvalContext] 
-  extends ScenarioEngine[T] with RuleEngine[T] with LazyLogging {
+trait SpecEngine[T <: EvalContext] extends LazyLogging {
     engine: EvalEngine[T] =>
 
   def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {

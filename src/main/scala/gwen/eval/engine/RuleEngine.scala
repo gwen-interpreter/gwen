@@ -28,7 +28,7 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Rule evaluation engine.
   */
-trait RuleEngine[T <: EvalContext] extends ScenarioEngine[T] with LazyLogging {
+trait RuleEngine[T <: EvalContext] extends LazyLogging {
   engine: EvalEngine[T] =>
   
   def evaluateRules(spec: Spec, rules: List[Rule], ctx: T): List[Rule] = {
