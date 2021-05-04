@@ -37,6 +37,7 @@ object Errors {
   }
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
   def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
+  def illegalStepError(msg: String) = throw new IllegalStepException(msg)
   def disabledStepError(step: Step) = throw new DisabledStepException(step)
   def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
   def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
@@ -96,6 +97,9 @@ object Errors {
 
   /** Thrown when an unsupported or undefined step is encountered. */
   class UndefinedStepException(step: Step) extends GwenException(s"Unsupported or undefined step: $step")
+
+  /** Thrown when an illegal step is detected. */
+  class IllegalStepException(msg: String) extends GwenException(msg)
 
   /** Thrown when a step is disabled. */
   class DisabledStepException(step: Step) extends GwenException(s"Disabled step: $step")
