@@ -34,6 +34,8 @@ import scala.jdk.CollectionConverters._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
+import gwen.model.gherkin.Background
+import gwen.eval.EvalEnvironment
 
 /**
   * Scenario evaluation engine.
@@ -45,113 +47,135 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     ctx.withEnv { env =>
       val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
       if (ctx.options.isParallelScenarios && SpecType.isFeature(env.specType) && StateLevel.scenario.equals(env.stateLevel)) {
-        val stepDefOutput = input.filter(_.isStepDef).foldLeft(List[Scenario]()) {
-          (acc: List[Scenario], scenario: Scenario) =>
-            evaluateScenario(parent, scenario, acc, ctx) :: acc
-        }
-        val executor = ParallelExecutors.scenarioInstance
-        implicit val ec = ExecutionContext.fromExecutorService(executor)
-        val acc = new CopyOnWriteArrayList[Scenario](stepDefOutput.asJavaCollection)
-        val outputFutures = input.filter(!_.isStepDef).to(LazyList).map { scenario =>
-          Future {
-            val envClone = ctx.withEnv(_.copy())
-            val parallelCtx = engine.init(ctx.options, Some(envClone))
-            try {
-              evaluateScenario(parent, scenario, acc.asScala.toList, parallelCtx) tap { s =>
-                acc.add(s)
-              }
-            } finally {
-              parallelCtx.close()
-            }
-          }
-        }
-        Await.result(
-          Future.sequence(outputFutures.force),
-          Duration.Inf
-        )
-        acc.asScala.toList.sortBy(_.sourceRef.map(_.pos.line).getOrElse(0))
+        evaluateParallelScenarios(parent, input, env, ctx)
       } else {
-        (input.foldLeft(List[Scenario]()) {
-          (acc: List[Scenario], scenario: Scenario) =>
-            evaluateScenario(parent, scenario, acc, ctx) :: acc
-        }).reverse
+        evaluateSequentialScenarios(parent, input, env, ctx)
       }
     }
   }
 
-  private def evaluateScenario(parent: Identifiable, scenario: Scenario, acc: List[Scenario], ctx: T): Scenario = {
-    ctx.withEnv { env =>
-      if (SpecType.isFeature(env.specType) && !scenario.isStepDef) {
-        if (StateLevel.scenario.equals(env.stateLevel)) {
-          ctx.reset(StateLevel.scenario)
-        }
-        env.topScope.set("gwen.scenario.name", scenario.name)
-      }
-      EvalStatus(acc.map(_.evalStatus)) match {
-        case status @ Failed(_, error) =>
-          val isAssertionError = status.isAssertionError
-          val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-          val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
-          val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-          if (failfast && !exitOnFail && !isSoftAssert) {
-            ctx.lifecycle.transitionScenario(parent, scenario, Skipped, env.scopes)
-          } else if (exitOnFail && !isSoftAssert) {
-            ctx.lifecycle.transitionScenario(parent, scenario, scenario.evalStatus, env.scopes)
-          } else {
-            evaluateScenario(parent, scenario, ctx)
+  private def evaluateSequentialScenarios(parent: Identifiable, scenarios: List[Scenario], env: EvalEnvironment, ctx: T): List[Scenario] = {
+    scenarios.foldLeft(List[Scenario]()) {
+      (acc: List[Scenario], scenario: Scenario) =>
+        evaluateOrTransitionScenario(parent, scenario, env, ctx, acc) :: acc
+    } reverse
+  }
+
+  private def evaluateParallelScenarios(parent: Identifiable, scenarios: List[Scenario], env: EvalEnvironment, ctx: T): List[Scenario] = {
+    val stepDefs = scenarios.filter(_.isStepDef).foldLeft(List[Scenario]()) {
+      (acc: List[Scenario], stepDef: Scenario) =>
+        evaluateOrTransitionScenario(parent, stepDef, env, ctx, acc) :: acc
+    }
+    val executor = ParallelExecutors.scenarioInstance
+    implicit val ec = ExecutionContext.fromExecutorService(executor)
+    val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
+    val futures = scenarios.filter(!_.isStepDef).to(LazyList).map { scenario =>
+      Future {
+        val envClone = ctx.withEnv(_.copy())
+        val ctxClone = engine.init(ctx.options, Some(envClone))
+        try {
+          evaluateOrTransitionScenario(parent, scenario, env, ctxClone, acc.asScala.toList) tap { s =>
+            acc.add(s)
           }
-        case _ =>
-          evaluateScenario(parent, scenario, ctx)
+        } finally {
+          ctxClone.close()
+        }
       }
+    }
+    Await.result(
+      Future.sequence(futures.force),
+      Duration.Inf
+    )
+    acc.asScala.toList.sortBy(_.sourceRef.map(_.pos.line).getOrElse(0))
+  }
+
+  private def evaluateOrTransitionScenario(parent: Identifiable, scenario: Scenario, env: EvalEnvironment, ctx: T, acc: List[Scenario]): Scenario = {
+    if (SpecType.isFeature(env.specType) && !scenario.isStepDef) {
+      if (StateLevel.scenario.equals(env.stateLevel)) {
+        ctx.reset(StateLevel.scenario)
+      }
+      env.topScope.set("gwen.scenario.name", scenario.name)
+    }
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        val isAssertionError = status.isAssertionError
+        val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
+        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+        if (failfast && !exitOnFail && !isSoftAssert) {
+          ctx.lifecycle.transitionScenario(parent, scenario, Skipped, env.scopes)
+        } else if (exitOnFail && !isSoftAssert) {
+          ctx.lifecycle.transitionScenario(parent, scenario, scenario.evalStatus, env.scopes)
+        } else {
+          evaluateScenario(parent, scenario, ctx)
+        }
+      case _ =>
+        evaluateScenario(parent, scenario, ctx)
     }
   }
 
    /**
     * Evaluates a given scenario.
     */
-  def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = ctx.withEnv { env =>
-    if (scenario.isStepDef || scenario.isDataTable) {
-      if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
-      loadStepDef(parent, scenario, ctx)
-    } else {
-      ctx.lifecycle.beforeScenario(parent, scenario, env.scopes)
-      logger.info(s"Evaluating ${scenario.keyword}: $scenario")
-      (if (!scenario.isOutline) {
-        scenario.background map (bg => evaluateBackground(scenario, bg, ctx)) match {
-          case None =>
-            scenario.copy(
-              withBackground = None,
-              withSteps = evaluateSteps(scenario, scenario.steps, ctx)
-            )
-          case Some(background) =>
-            val steps: List[Step] = background.evalStatus match {
-              case Passed(_) => evaluateSteps(scenario, scenario.steps, ctx)
-              case Skipped if background.steps.isEmpty => evaluateSteps(scenario, scenario.steps, ctx)
-              case _ => scenario.steps map { _.copy(withEvalStatus = Skipped) }
-            }
-            scenario.copy(
-              withBackground = Some(background),
-              withSteps = steps
-            )
-        }
+  def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = {
+    ctx.withEnv { env =>
+      if (scenario.isStepDef || scenario.isDataTable) {
+        if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
+        loadStepDef(parent, scenario, ctx)
       } else {
-        val isExpanded = scenario.isExpanded
-        scenario.copy(
-          withSteps = scenario.steps map { step =>
-            if (isExpanded) {
-              step.copy(withEvalStatus = Loaded)
-            } else {
-              ctx.lifecycle.transitionStep(scenario, step, Loaded, env.scopes)
-            }
-          },
-          withExamples = evaluateExamples(scenario, scenario.examples, ctx)
-        )
-      }) tap { scenario =>
-        ctx.lifecycle.afterScenario(scenario, env.scopes)
+        ctx.lifecycle.beforeScenario(parent, scenario, env.scopes)
+        logger.info(s"Evaluating ${scenario.keyword}: $scenario")
+        (if (scenario.isOutline) {
+          evaluateScenarioOutline(scenario, env, ctx)
+        } else {
+          scenario.background map  { background => 
+            evaluateScenarioWithBackground(scenario, background, ctx)
+          } getOrElse {
+            evaluateScenarioWithoutBackground(scenario, ctx)
+          }
+        }) tap { s =>
+          ctx.lifecycle.afterScenario(s, env.scopes)
+        }
+      } tap { s =>
+        s.logStatus()
       }
-    } tap { scenario =>
-      scenario.logStatus()
     }
+  }
+
+  private def evaluateScenarioWithBackground(scenario: Scenario, background: Background, ctx: T): Scenario = {
+    val bg = evaluateBackground(scenario, background, ctx)
+    val steps: List[Step] = bg.evalStatus match {
+      case Passed(_) => evaluateSteps(scenario, scenario.steps, ctx)
+      case Skipped if bg.steps.isEmpty => evaluateSteps(scenario, scenario.steps, ctx)
+      case _ => scenario.steps map { _.copy(withEvalStatus = Skipped) }
+    }
+    scenario.copy(
+      withBackground = Some(bg),
+      withSteps = steps
+    )
+  }
+
+  private def evaluateScenarioWithoutBackground(scenario: Scenario, ctx: T): Scenario = {
+    val steps = evaluateSteps(scenario, scenario.steps, ctx)
+    scenario.copy(
+      withBackground = None,
+      withSteps = steps
+    )
+  }
+
+  private def evaluateScenarioOutline(outline: Scenario, env: EvalEnvironment, ctx: T): Scenario = {
+    val steps = outline.steps map { step =>
+      if (outline.isExpanded) {
+        step.copy(withEvalStatus = Loaded)
+      } else {
+        ctx.lifecycle.transitionStep(outline, step, Loaded, env.scopes)
+      }
+    }
+    val examples = evaluateExamples(outline, outline.examples, ctx)
+    outline.copy(
+      withSteps = steps,
+      withExamples = examples
+    )
   }
 
 }

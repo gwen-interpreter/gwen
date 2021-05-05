@@ -95,11 +95,11 @@ trait EvalEngine[T <: EvalContext] extends UnitEngine[T] {
           val iStep = step.copy(withEvalStatus = Pending)
           val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
           val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil)
-          ctx.evaluate(evalStepDef(step, iStepDef, iStep, Nil, ctx)) {
+          ctx.evaluate(evaluateStepDef(step, iStepDef, iStep, Nil, ctx)) {
             val boolResult = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
             if (boolResult) {
               logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
-              evalStepDef(step, iStepDef, iStep, Nil, ctx)
+              evaluateStepDef(step, iStepDef, iStep, Nil, ctx)
             } else {
               logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
               step.copy(withEvalStatus = Passed(0))

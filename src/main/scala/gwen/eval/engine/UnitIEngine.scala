@@ -53,28 +53,15 @@ trait UnitEngine[T <: EvalContext]
     * Interprets a feature unit. Recursively loads all meta first followed by feature.
     *
     * @param unit the feature unit to process
-    * @param loadedMeta cumulative meta
+    * @param loadedMeta cumulative meta files
     * @param ctx the evaluation context
     */
-  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[SpecResult], ctx: T): Option[SpecResult] = {
+  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[SpecResult] = {
     Option(unit.featureFile).filter(_.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
           unit.tagFilter.filter(pspec) map { spec =>
-            ctx.withEnv { env =>
-              unit.dataRecord foreach { rec =>
-                env.topScope.set("data record number", rec.recordNo.toString)
-              }
-              val metaResults = loadMeta(unit, spec, loadedMeta, ctx)
-              if (spec.isMeta) {
-                evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
-              } else {
-                ctx.lifecycle.beforeUnit(unit, env.scopes)
-                evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
-                  ctx.lifecycle.afterUnit(FeatureUnit(unit.ancestor, unit, result), env.scopes)
-                }
-              }
-            }
+            evaluateSpec(unit, spec, loadedMeta, ctx)
           }
         case Failure(e) =>
           e match {
@@ -88,19 +75,36 @@ trait UnitEngine[T <: EvalContext]
     }
   }
 
-  private def loadMeta(unit: FeatureUnit, meta: Spec, loadedMeta: List[SpecResult], ctx: T): List[SpecResult] = {
-    val metaFiles = unit.metaFiles ++ findMetaImportFiles(meta, unit.featureFile)
-    metaFiles.foldLeft(loadedMeta) { (loaded, file) =>
-      if (!loadedMeta.flatMap(_.spec.specFile).contains(file)) {
-        val metaUnit = FeatureUnit(unit, file, Nil, None, unit.tagFilter)
-        loaded ++ evaluateUnit(metaUnit, loaded, ctx).toList
+  private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
+    ctx.withEnv { env =>
+      unit.dataRecord foreach { rec =>
+        env.topScope.set("data record number", rec.recordNo.toString)
+      }
+      val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
+      val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
+      val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)
+      val metaResults = unitMeta ++ importMeta
+      if (spec.isMeta) {
+        evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
       } else {
-        loaded
+        ctx.lifecycle.beforeUnit(unit, env.scopes)
+        evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
+          ctx.lifecycle.afterUnit(FeatureUnit(unit.ancestor, unit, result), env.scopes)
+        }
       }
     }
   }
 
-  private def findMetaImportFiles(spec: Spec, specFile: File): List[File] = {
+  private def loadMetaFiles(unit: FeatureUnit, metaFiles: List[File], loadedMeta: List[File], ctx: T): List[SpecResult] = {
+    metaFiles filter { file => 
+      !loadedMeta.contains(file)
+    } flatMap { file => 
+      val metaUnit = FeatureUnit(unit, file, Nil, None, unit.tagFilter)
+      evaluateUnit(metaUnit, loadedMeta, ctx)
+    }
+  }
+
+  private def metaImportFiles(spec: Spec, specFile: File): List[File] = {
     spec.feature.tags.flatMap { tag =>
       tag match {
         case Tag(_, name, Some(filepath)) =>

@@ -31,15 +31,17 @@ import com.typesafe.scalalogging.LazyLogging
 trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  def evaluateExamples(parent: Identifiable, examples: List[Examples], ctx: T): List[Examples] = ctx.withEnv { env => 
-    examples map { exs =>
-      ctx.lifecycle.beforeExamples(parent, exs, env.scopes)
-      exs.copy(
-        withScenarios = exs.scenarios map { scenario =>
-          evaluateScenario(exs, scenario, ctx)
+  def evaluateExamples(parent: Identifiable, examples: List[Examples], ctx: T): List[Examples] = {
+    ctx.withEnv { env => 
+      examples map { exs =>
+        ctx.lifecycle.beforeExamples(parent, exs, env.scopes)
+        exs.copy(
+          withScenarios = exs.scenarios map { scenario =>
+            evaluateScenario(exs, scenario, ctx)
+          }
+        ) tap { exs =>
+          ctx.lifecycle.afterExamples(exs, env.scopes)
         }
-      ) tap { exs =>
-        ctx.lifecycle.afterExamples(exs, env.scopes)
       }
     }
   }

@@ -19,6 +19,7 @@ package gwen.eval.engine
 import gwen._
 import gwen.eval.EvalContext
 import gwen.eval.EvalEngine
+import gwen.eval.EvalEnvironment
 import gwen.model._
 import gwen.model.gherkin.Dialect
 import gwen.model.gherkin.Spec
@@ -44,14 +45,16 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       env.topScope.set("gwen.feature.name", spec.feature.name)
       Dialect.withLanguage(spec.feature.language) {
         val nspec = normalise(spec, spec.specFile, dataRecord)
-        evaluateSpec(parent, nspec, metaResults, ctx)
+        evaluateSpec(parent, nspec, metaResults, env, ctx)
       }
     }
   }
 
   def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normalise(meta, meta.specFile, dataRecord)
-    val metaResult = evaluateSpec(parent, nmeta, metaResults, ctx)
+    val metaResult = ctx.withEnv { env => 
+      evaluateSpec(parent, nmeta, metaResults, env, ctx)
+    }
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
       case Passed(_) | Loaded =>
@@ -66,39 +69,37 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   /**
     * Evaluates a specification.
     */
-  private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
-    ctx.withEnv { env => 
-      val specType = spec.specType
-      env.topScope.pushObject(SpecType.toString, specType)
-      try {
-        ctx.lifecycle.beforeSpec(parent, spec, env.scopes)
-        val started = new Date()
-        (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
-          logger.info("")
-          logger.info(s"$action $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
+  private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], env: EvalEnvironment, ctx: T): SpecResult = {
+    val specType = spec.specType
+    env.topScope.pushObject(SpecType.toString, specType)
+    try {
+      ctx.lifecycle.beforeSpec(parent, spec, env.scopes)
+      val started = new Date()
+      (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
+        logger.info("")
+        logger.info(s"$action $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
+      }
+      val resultSpec = spec.copy(
+        withBackground = None,
+        withScenarios = evaluateScenarios(spec, spec.scenarios, ctx),
+        withRules = evaluateRules(spec, spec.rules, ctx),
+        withMetaSpecs = metaResults.map(_.spec)
+      )
+      resultSpec.specFile foreach { _ =>
+        logger.info(s"${if (resultSpec.isMeta) "Loaded" else "Evaluated"} $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
+      }
+      logger.debug(prettyPrint(resultSpec))
+      new SpecResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
+        if(!spec.isMeta) {
+          resultSpec.logStatus()
+        } else {
+          logger.info(result.toString)
         }
-        val resultSpec = spec.copy(
-          withBackground = None,
-          withScenarios = evaluateScenarios(spec, spec.scenarios, ctx),
-          withRules = evaluateRules(spec, spec.rules, ctx),
-          withMetaSpecs = metaResults.map(_.spec)
-        )
-        resultSpec.specFile foreach { _ =>
-          logger.info(s"${if (resultSpec.isMeta) "Loaded" else "Evaluated"} $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
-        }
-        logger.debug(prettyPrint(resultSpec))
-        new SpecResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
-          if(!spec.isMeta) {
-            resultSpec.logStatus()
-          } else {
-            logger.info(result.toString)
-          }
-          ctx.lifecycle.afterSpec(result, env.scopes)
-        }
-      } finally {
-        spec.specFile foreach { _ =>
-          env.topScope.popObject(SpecType.toString)
-        }
+        ctx.lifecycle.afterSpec(result, env.scopes)
+      }
+    } finally {
+      spec.specFile foreach { _ =>
+        env.topScope.popObject(SpecType.toString)
       }
     }
   }

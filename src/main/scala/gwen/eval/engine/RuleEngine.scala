@@ -34,23 +34,34 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
   def evaluateRules(spec: Spec, rules: List[Rule], ctx: T): List[Rule] = {
     rules.foldLeft(List[Rule]()) {
       (acc: List[Rule], rule: Rule) =>
-        evaluateRule(spec, rule, acc, ctx) :: acc
+        evaluateOrTransitionRule(spec, rule, ctx, acc) :: acc
     } reverse
   }
 
-  def evaluateRule(parent: Identifiable, rule: Rule, acc: List[Rule], ctx: T): Rule = ctx.withEnv { env =>
-    env.topScope.set("gwen.rule.name", rule.name)
-    EvalStatus(acc.map(_.evalStatus)) match {
-      case status @ Failed(_, error) =>
-        val isAssertionError = status.isAssertionError
-        val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
-        val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-        if (failfast && !exitOnFail && !isSoftAssert) {
-          ctx.lifecycle.transitionRule(parent, rule, Skipped, env.scopes)
-        } else if (exitOnFail && !isSoftAssert) {
-          ctx.lifecycle.transitionRule(parent, rule, rule.evalStatus, env.scopes)
-        } else {
+  private def evaluateOrTransitionRule(parent: Identifiable, rule: Rule, ctx: T, acc: List[Rule]): Rule = {
+    ctx.withEnv { env =>
+      env.topScope.set("gwen.rule.name", rule.name)
+      EvalStatus(acc.map(_.evalStatus)) match {
+        case status @ Failed(_, error) =>
+          val isAssertionError = status.isAssertionError
+          val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
+          val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+          val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+          if (failfast && !exitOnFail && !isSoftAssert) {
+            ctx.lifecycle.transitionRule(parent, rule, Skipped, env.scopes)
+          } else if (exitOnFail && !isSoftAssert) {
+            ctx.lifecycle.transitionRule(parent, rule, rule.evalStatus, env.scopes)
+          } else {
+            ctx.lifecycle.beforeRule(parent, rule, env.scopes)
+            logger.info(s"Evaluating ${rule.keyword}: $rule")
+            rule.copy(
+              withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
+            ) tap { r =>
+              r.logStatus()
+              ctx.lifecycle.afterRule(r, env.scopes)
+            }
+          }
+        case _ =>
           ctx.lifecycle.beforeRule(parent, rule, env.scopes)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
@@ -59,16 +70,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
             r.logStatus()
             ctx.lifecycle.afterRule(r, env.scopes)
           }
-        }
-      case _ =>
-        ctx.lifecycle.beforeRule(parent, rule, env.scopes)
-        logger.info(s"Evaluating ${rule.keyword}: $rule")
-        rule.copy(
-          withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
-        ) tap { r =>
-          r.logStatus()
-          ctx.lifecycle.afterRule(r, env.scopes)
-        }
+      }
     }
   }
 
