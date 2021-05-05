@@ -250,7 +250,6 @@ class GwenInterpreter0Test extends FlatSpec with Matchers with MockitoSugar with
     when(mockEnv.getStepDef("order is lost")).thenReturn(None)
     when(mockEnv.getStepDef("")).thenReturn(None)
     when(mockEnv.stepScope).thenReturn(paramScope)
-    when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockEnv.specType).thenReturn(SpecType.Feature)
     val step1 = Step(StepKeyword.Given.toString, "I am an observer")

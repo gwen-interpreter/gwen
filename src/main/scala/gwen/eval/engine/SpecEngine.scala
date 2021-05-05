@@ -36,7 +36,6 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
 
   def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     ctx.withEnv { env =>
-      env.loadedMeta = Nil
       spec.specFile foreach { file =>
         env.topScope.set("gwen.feature.file.name", file.getName)
         env.topScope.set("gwen.feature.file.path", file.getPath)
@@ -56,11 +55,6 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
       case Passed(_) | Loaded =>
-        metaSpec.specFile foreach { file => 
-          ctx.withEnv { env =>
-            env.loadedMeta = file :: env.loadedMeta
-          }
-        }
         metaResult
       case Failed(_, error) =>
         Errors.evaluationError(s"Failed to load meta: $metaSpec: ${error.getMessage}")

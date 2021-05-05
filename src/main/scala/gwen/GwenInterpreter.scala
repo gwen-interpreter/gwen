@@ -21,7 +21,9 @@ import gwen.eval.EvalEngine
 import gwen.eval.GwenLauncher
 import gwen.eval.GwenREPL
 
+import gwen.model.EvalStatus
 import gwen.model.FeatureUnit
+import gwen.model.Loaded
 import gwen.model.Root
 import gwen.model.SpecResult
 import gwen.model.SpecType
@@ -118,16 +120,14 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
   private[gwen] def run(options: GwenOptions, launcher: GwenLauncher[T] = new GwenLauncher(this)): Int = {
     val ctxOpt = if (options.batch) None else Some(init(options))
     try {
-      launcher.run(options, ctxOpt).exitCode tap { _ =>
-        ctxOpt foreach { ctx =>
-          ctx.withEnv { env =>
-            if (options.features.nonEmpty || env.loadedMeta.nonEmpty) {
-              printBanner("")
-            }
-          }
-          createRepl(ctx).run()
+      val evalStatus = launcher.run(options, ctxOpt)
+      ctxOpt foreach { ctx =>
+        if (EvalStatus.isEvaluated(evalStatus.status) || evalStatus == Loaded) {
+          printBanner("")
         }
+        createRepl(ctx).run()
       }
+      evalStatus.exitCode
     } finally {
       ctxOpt.foreach(_.close())
     }

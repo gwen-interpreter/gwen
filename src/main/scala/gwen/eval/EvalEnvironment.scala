@@ -38,7 +38,6 @@ class EvalEnvironment() extends LazyLogging {
   private var stepDefs = Map[String, Scenario]()
   private var state = new EnvState(new ScopedDataStack(), new LifecycleEventDispatcher())
 
-  var loadedMeta: List[File] = Nil
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
   def stepScope = scopes.stepScope
@@ -51,7 +50,6 @@ class EvalEnvironment() extends LazyLogging {
   /** Create a clone that preserves scoped data. */
   def copy(): EvalEnvironment = {
     new EvalEnvironment() tap { env =>
-      env.loadedMeta = loadedMeta
       env.stepDefs = stepDefs
       env.state = EnvState(topScope, state.lifecycle)
     }
@@ -69,7 +67,6 @@ class EvalEnvironment() extends LazyLogging {
     state = EnvState(topScope, state.lifecycle)
     if (StateLevel.feature.equals(level)) {
       stepDefs = Map[String, Scenario]()
-      loadedMeta = Nil
     }
   }
     
