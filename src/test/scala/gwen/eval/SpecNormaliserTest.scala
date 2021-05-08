@@ -48,7 +48,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
       None,
       Nil)
 
-    val result = normalise(feature, None, None)
+    val result = normaliseSpec(feature, None, None)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(Nil)
@@ -74,7 +74,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         None,
         Nil)
 
-    val result = normalise(feature, None, None)
+    val result = normaliseSpec(feature, None, None)
 
     result.background should be (None)
 
@@ -98,7 +98,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, None, Nil)
 
-    val result = normalise(meta, None, None)
+    val result = normaliseSpec(meta, None, None)
 
     val scenario = result.scenarios(0)
     scenario.tags.map(_.name) should be(List("StepDef"))
@@ -119,7 +119,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
           Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )), Nil, None, Nil)
 
-    val result = normalise(meta, None, None)
+    val result = normaliseSpec(meta, None, None)
     result.background should be (None)
 
     val scenario = result.scenarios(0)
@@ -145,7 +145,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, None, Nil)
-  normalise(meta, None, None)
+  normaliseSpec(meta, None, None)
   }
   
   "Meta with duplicate step def" should "error" in {
@@ -163,7 +163,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
       )), Nil, None, Nil)
       
   intercept[AmbiguousCaseException] {
-    normalise(meta, None, None)
+    normaliseSpec(meta, None, None)
     }
   }
   
@@ -182,7 +182,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
       )), Nil, None, Nil)
       
     intercept[AmbiguousCaseException] {
-      normalise(meta, None, None)
+      normaliseSpec(meta, None, None)
     }
   }
   
@@ -196,7 +196,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
       )), Nil, None, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord("AboutMe.csv", 1, data)
-    val result = normalise(feature, None, Some(dataRecord))
+    val result = normaliseSpec(feature, None, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1]")
     result.scenarios.length should be (1)
@@ -224,7 +224,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
       )), Nil, None, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord("AboutMe.csv", 1, data)
-    val result = normalise(feature, None, Some(dataRecord))
+    val result = normaliseSpec(feature, None, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1]")
     result.scenarios.length should be (1)
@@ -285,7 +285,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
 
     val feature = parse(featureString).get
 
-    val result = normalise(feature, None, None)
+    val result = normaliseSpec(feature, None, None)
     result.feature.sourceRef.get.pos should be (Position(2, 5, 0))
 
     result.background should be (None)

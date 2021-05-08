@@ -66,7 +66,7 @@ Background: The tester
     
     // setup
     
-    val featureSpec = normalise(parse(featureString).get, None, None)
+    val featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     // assert
     
@@ -88,7 +88,7 @@ Background: The tester
     
     // setup
     
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -128,7 +128,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
 
     featureSpec = Spec(
       featureSpec.feature,
@@ -168,7 +168,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
 
     featureSpec = Spec(
       featureSpec.feature,
@@ -208,7 +208,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
 
     var isSustained = false
 
@@ -259,7 +259,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -325,7 +325,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -391,7 +391,7 @@ Background: The tester
     // setup 
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -464,7 +464,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normalise(parse(featureString).get, None, None)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, None)
     
     featureSpec = Spec(
       featureSpec.feature,

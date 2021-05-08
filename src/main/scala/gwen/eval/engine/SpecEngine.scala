@@ -44,14 +44,14 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       }
       env.topScope.set("gwen.feature.name", spec.feature.name)
       Dialect.withLanguage(spec.feature.language) {
-        val nspec = normalise(spec, spec.specFile, dataRecord)
+        val nspec = normaliseSpec(spec, spec.specFile, dataRecord)
         evaluateSpec(parent, nspec, metaResults, env, ctx)
       }
     }
   }
 
   private [engine] def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    val nmeta = normalise(meta, meta.specFile, dataRecord)
+    val nmeta = normaliseSpec(meta, meta.specFile, dataRecord)
     val metaResult = ctx.withEnv { env => 
       evaluateSpec(parent, nmeta, metaResults, env, ctx)
     }
