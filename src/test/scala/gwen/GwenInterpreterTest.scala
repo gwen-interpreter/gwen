@@ -16,13 +16,12 @@
 
 package gwen
 
-import gwen.eval.EvalContext
-import gwen.eval.EvalEngine
-import gwen.eval.EvalEnvironment
-import gwen.eval.GwenLauncher
-import gwen.eval.GwenREPL
-import gwen.model.Passed
-import gwen.model.Skipped
+import gwen.core.GwenOptions
+import gwen.core.eval.EvalContext
+import gwen.core.eval.EvalEngine
+import gwen.core.eval.EvalEnvironment
+import gwen.core.model.Passed
+import gwen.core.model.Skipped
 
 import org.mockito.Mockito
 import org.mockito.Mockito.never
@@ -39,7 +38,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
   private def createApp(options: GwenOptions, engine: EvalEngine[EvalContext], repl: GwenREPL[EvalContext]) = {
     new GwenInterpreter(engine) {
-      override private[gwen] def createRepl(ctx: EvalContext): GwenREPL[EvalContext] = repl
+      override private [gwen] def createRepl(ctx: EvalContext): GwenREPL[EvalContext] = repl
     }
   }
   

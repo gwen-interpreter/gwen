@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 Branko Juric, Brady Wood
+ * Copyright 2014-2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 
 package gwen
 
-import gwen.eval.EvalContext
-import gwen.eval.EvalEngine
-import gwen.eval.GwenLauncher
-import gwen.eval.GwenREPL
+import gwen.core._
+import gwen.core.eval.EvalContext
+import gwen.core.eval.EvalEngine
 
-import gwen.model.EvalStatus
-import gwen.model.FeatureUnit
-import gwen.model.Loaded
-import gwen.model.Root
-import gwen.model.SpecResult
-import gwen.model.SpecType
-import gwen.model.gherkin.Step
+import gwen.core.model.EvalStatus
+import gwen.core.model.FeatureUnit
+import gwen.core.model.Loaded
+import gwen.core.model.Root
+import gwen.core.model.SpecResult
+import gwen.core.model.SpecType
+import gwen.core.model.gherkin.Step
 
 import scala.util.Try
 
@@ -39,7 +38,7 @@ import java.net.URL
 /**
   * Default Gwen interpreter application.
   */
-object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultEngine)
+object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultInstance)
 
 /**
   * Main Gwen application superclass.
@@ -81,6 +80,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
     }
   }
 
+  def lifecycle = engine.lifecycle
+
   /**
     * Interprets a single step expression.
     *
@@ -117,7 +118,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
     * @param launcher implicit Gwen launcher
     * @return 0 if successful; 1 otherwise
     */  
-  private[gwen] def run(options: GwenOptions, launcher: GwenLauncher[T] = new GwenLauncher(this)): Int = {
+  private [gwen] def run(options: GwenOptions, launcher: GwenLauncher[T] = new GwenLauncher(this)): Int = {
     val ctxOpt = if (options.batch) None else Some(init(options))
     try {
       val evalStatus = launcher.run(options, ctxOpt)
@@ -138,7 +139,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
     * 
     * @param ctx the evaluation context
     */
-  private[gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](this, ctx)
+  private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](this, ctx)
   
   private def printBanner(intro: String): Unit = {
     println(("""|                                   
