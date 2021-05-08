@@ -23,6 +23,7 @@ import gwen.eval.support.SQLSupport
 import gwen.model._
 import gwen.model.gherkin._
 
+import scala.concurrent.duration._
 import scala.sys.process.stringSeqToProcess
 import scala.sys.process.stringToProcess
 import scala.util.{Failure, Success, Try}
@@ -87,6 +88,31 @@ abstract class EvalEngine[T <: EvalContext] extends UnitEngine[T] with DSLTransl
 
         case r"""(.+?)$doStep if (.+?)$$$condition""" =>  Some { step => 
           evaluateIf(step, doStep, condition, env, ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some { step =>
+          evaluateRepeat(operation, parent, step, doStep, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" => Some { step =>
+          evaluateRepeat(operation, parent, step, doStep, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some { step =>
+          evaluateRepeat(operation, parent, step, doStep, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" => Some { step =>
+          val delayDuration = Duration(delayPeriod.toLong, delayUnit)
+          evaluateRepeat(operation, parent, step, doStep, condition, delayDuration, defaultRepeatTimeout(delayDuration), ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some { step =>
+          evaluateRepeat(operation, parent, step, doStep, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), ctx)
+        }
+
+        case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) => Some { step =>
+          evaluateRepeat(operation, parent, step, doStep, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), ctx)
         }
 
         case _ => None
@@ -340,5 +366,9 @@ abstract class EvalEngine[T <: EvalContext] extends UnitEngine[T] with DSLTransl
       
     }
   }
+
+  val DefaultRepeatDelay: Duration = Duration(1, SECONDS)
+  
+  private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
   
 }

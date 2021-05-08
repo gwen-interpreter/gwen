@@ -17,6 +17,8 @@
 package gwen.eval.engine
 
 import gwen._
+import gwen.Errors
+import gwen.Formatting.DurationFormatter
 import gwen.eval.EvalContext
 import gwen.eval.EvalEngine
 import gwen.eval.EvalEnvironment
@@ -28,6 +30,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 import gwen.eval.binding.JavaScriptBinding
+import scala.concurrent.duration.Duration
 
 /**
   * Step evaluation engine.
@@ -253,6 +256,127 @@ trait StepEngine[T <: EvalContext] {
       val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
       ctx.lifecycle.afterStepDef(foreachStepDef, env.scopes)
       step.copy(withStepDef = Some((foreachStepDef, Nil)))
+    }
+  }
+
+  /**
+    * Performs a repeat until or while operation 
+    */
+  def evaluateRepeat(operation: String, parent: Identifiable, step: Step, doStep: String, condition: String, delay: Duration, timeout: Duration, ctx: T): Step = {
+    ctx.withEnv { env =>
+      assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
+      assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
+      assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
+      val operationTag = Tag(if (operation == "until") ReservedTags.Until else ReservedTags.While)
+      val tags = List(Tag(ReservedTags.Synthetic), operationTag, Tag(ReservedTags.StepDef))
+      val preCondStepDef = Scenario(None, tags, operationTag.name, condition, Nil, None, Nil, Nil)
+      var condSteps: List[Step] = Nil
+      var evaluatedStep = step
+      val start = System.nanoTime()
+      ctx.perform {
+        var iteration = 0
+        try {
+          ctx.waitUntil(timeout.toSeconds, s"trying to repeat: ${step.name}") {
+            iteration = iteration + 1
+            env.topScope.set("iteration number", iteration.toString)
+            val preStep = step.copy(withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString, withName = doStep)
+            operation match {
+              case "until" =>
+                logger.info(s"repeat-until $condition: iteration $iteration")
+                if (condSteps.isEmpty) {
+                  ctx.lifecycle.beforeStepDef(step, preCondStepDef, env.scopes)
+                }
+                val iterationStep = evaluateStep(preCondStepDef, preStep, ctx)
+                condSteps = iterationStep :: condSteps
+                iterationStep.evalStatus match {
+                  case Failed(_, e) => throw e
+                  case _ =>
+                    val javascript = ctx.interpolate(env.scopes.get(JavaScriptBinding.key(condition)))
+                    ctx.evaluateJSPredicate(javascript) tap { result =>
+                      if (!result) {
+                        logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
+                        if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
+                      } else {
+                        logger.info(s"repeat-until $condition: completed")
+                      }
+                    }
+                }
+              case "while" =>
+                val javascript = ctx.interpolate(env.scopes.get(JavaScriptBinding.key(condition)))
+                val result = ctx.evaluateJSPredicate(javascript)
+                if (result) {
+                  logger.info(s"repeat-while $condition: iteration $iteration")
+                  if (condSteps.isEmpty) {
+                    ctx.lifecycle.beforeStepDef(step, preCondStepDef, env.scopes)
+                  }
+                  val iterationStep = evaluateStep(preCondStepDef, preStep, ctx)
+                  condSteps = iterationStep :: condSteps
+                  iterationStep.evalStatus match {
+                    case Failed(_, e) => throw e
+                    case _ =>
+                      logger.info(s"repeat-while $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
+                      if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
+                  }
+                } else {
+                  logger.info(s"repeat-while $condition: completed")
+                }
+                !result
+            }
+          }
+        } catch {
+          case e: Throwable =>
+            logger.error(e.getMessage)
+            val nanos = System.nanoTime() - start
+            val durationNanos = {
+              if (nanos > timeout.toNanos) timeout.toNanos
+              else nanos
+            }
+            evaluatedStep = step.copy(withEvalStatus = Failed(durationNanos, Errors.stepError(step, e)))
+        } finally {
+          env.topScope.set("iteration number", null)
+        }
+      } getOrElse {
+        try {
+          operation match {
+            case "until" =>
+              evaluatedStep = this.evaluateStep(step, step.copy(withName = doStep), ctx)
+              env.scopes.get(JavaScriptBinding.key(condition))
+            case _ =>
+              env.scopes.get(JavaScriptBinding.key(condition))
+              evaluatedStep = this.evaluateStep(step, step.copy(withName = doStep), ctx)
+          }
+        } catch {
+          case _: Throwable => 
+            // ignore in dry run mode
+        }
+      }
+      if (condSteps.nonEmpty) {
+        val steps = evaluatedStep.evalStatus match {
+          case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).status == StatusKeyword.Passed) => 
+            val preStep = condSteps.head.copy(withKeyword = StepKeyword.And.toString, withName = doStep)
+            ctx.lifecycle.beforeStep(preCondStepDef, preStep, env.scopes)
+            val fStep = ctx.finaliseStep(
+              preStep.copy(
+                withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
+                withStepDef = None
+              )
+            )
+            ctx.lifecycle.afterStep(fStep, env.scopes)
+            fStep :: condSteps
+          case _ => 
+            condSteps
+            
+        }
+        val condStepDef = preCondStepDef.copy(withSteps = steps.reverse)
+        ctx.lifecycle.afterStepDef(condStepDef, env.scopes)
+        evaluatedStep.copy(
+          withEvalStatus = condStepDef.evalStatus,
+          withStepDef = Some((condStepDef, Nil)),
+          withAttachments = condStepDef.attachments
+        )
+      } else {
+        evaluatedStep
+      }
     }
   }
   

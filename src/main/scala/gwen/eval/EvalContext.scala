@@ -38,6 +38,7 @@ import gwen.model.event.LifecycleEventListener
 import org.apache.log4j.PropertyConfigurator
 
 import java.net.URL
+import java.util.concurrent.Semaphore
 
 /**
   * Provides all evaluation capabilities.
@@ -240,6 +241,31 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends Interp
   def addErrorAttachments(failure: Failed): Unit = { 
     env.addAttachment("Error details", "txt", failure.error.writeStackTrace())
     env.addAttachment(s"Environment", "txt", env.scopes.visible.asString)
+  }
+
+  /**
+    * Waits until a given condition is ready for a given number of seconds.
+    * Errors on given timeout out seconds. Checks condition every 1 second.
+    *
+    * @param timeoutSecs the number of seconds to wait before timing out
+    * @param reason a description of what is being waited on
+    * @param condition the boolean condition to wait for (until true)
+    */
+  def waitUntil(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
+    val lock = new Semaphore(1)
+    lock.acquire()
+    val start = System.currentTimeMillis
+    while(lock.availablePermits < 1 && (System.currentTimeMillis - start) < timeoutSecs) { 
+      if (condition) lock.release()
+      lock.tryAcquire()
+    }
+    try {
+      if (lock.availablePermits < 1) {
+        Errors.waitTimeoutError(timeoutSecs, reason)
+      }
+    } finally {
+      lock.release()
+    }
   }
 
 }
