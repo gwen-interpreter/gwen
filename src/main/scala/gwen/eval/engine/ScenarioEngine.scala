@@ -43,7 +43,7 @@ import gwen.eval.EvalEnvironment
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private [engine] def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     ctx.withEnv { env =>
       val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
       if (ctx.options.isParallelScenarios && SpecType.isFeature(env.specType) && StateLevel.scenario.equals(env.stateLevel)) {
@@ -117,7 +117,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
    /**
     * Evaluates a given scenario.
     */
-  def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = {
+  private [engine] def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = {
     ctx.withEnv { env =>
       if (scenario.isStepDef || scenario.isDataTable) {
         if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")

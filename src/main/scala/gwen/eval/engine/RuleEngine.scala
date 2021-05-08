@@ -31,7 +31,7 @@ import com.typesafe.scalalogging.LazyLogging
 trait RuleEngine[T <: EvalContext] extends LazyLogging {
   engine: EvalEngine[T] =>
   
-  def evaluateRules(spec: Spec, rules: List[Rule], ctx: T): List[Rule] = {
+  private [engine] def evaluateRules(spec: Spec, rules: List[Rule], ctx: T): List[Rule] = {
     rules.foldLeft(List[Rule]()) {
       (acc: List[Rule], rule: Rule) =>
         evaluateOrTransitionRule(spec, rule, ctx, acc) :: acc

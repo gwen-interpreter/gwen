@@ -18,6 +18,7 @@ package gwen.eval.engine
 
 import gwen.eval.EvalContext
 import gwen.eval.EvalEngine
+import gwen.eval.EvalEnvironment
 import gwen.eval.SpecNormaliser
 import gwen.model._
 import gwen.model.gherkin.Scenario
@@ -28,7 +29,6 @@ import com.typesafe.scalalogging.LazyLogging
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
-import gwen.eval.EvalEnvironment
 
 /**
   * StepDef evaluation engine.
@@ -36,19 +36,19 @@ import gwen.eval.EvalEnvironment
 trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  // semaphores for managing synchronized StepDefs
-  val stepDefSemaphors: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
+  // Lock for managing synchronized StepDefs
+  private val stepDefLock: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
 
   /**
     * Loads a stepdef to memory.
     */
-  def loadStepDef(parent: Identifiable, stepDef: Scenario, ctx: T): Scenario = {
+  private [engine] def loadStepDef(parent: Identifiable, stepDef: Scenario, ctx: T): Scenario = {
     ctx.withEnv { env =>
       ctx.lifecycle.beforeStepDef(parent, stepDef, env.scopes)
       logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
       env.addStepDef(stepDef)
       if (ctx.options.parallel && stepDef.isSynchronized) {
-        stepDefSemaphors.putIfAbsent(stepDef.name, new Semaphore(1))
+        stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
       }
       val loadedSteps = ctx.lifecycle.transitionSteps(stepDef, stepDef.steps, Loaded, env.scopes)
       val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
@@ -78,20 +78,22 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
-    ctx.withEnv { env =>
-      val sdStep = step.copy(
-        withStepDef = Some((stepDef, params)),
-        withAttachments = stepDef.steps.flatMap(_.attachments)
-      )
-      logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
-      val eStep = withStep(step) { s =>
+
+  private [engine] def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
+    val lock = if (stepDefLock.containsKey(stepDef.name)) {
+      Some(stepDefLock.get(stepDef.name))
+    } else None
+    lock.foreach { l => 
+      l.acquire()
+      logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
+    }
+    try {
+      ctx.withEnv { env =>
+        val sdStep = step.copy(
+          withStepDef = Some((stepDef, params)),
+          withAttachments = stepDef.steps.flatMap(_.attachments)
+        )
         checkStepDefRules(sdStep, env)
-        step
-      }
-      if (eStep.evalStatus.status == StatusKeyword.Failed) {
-        eStep
-      } else {
         env.stepScope.push(stepDef.name, params)
         try {
           val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
@@ -109,11 +111,17 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           env.stepScope.pop
         }
       }
+    } finally {
+      lock.foreach { l => 
+        l.release()
+        logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
+      }
     }
   }
 
   private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], env: EvalEnvironment, ctx: T): Step = {
     ctx.lifecycle.beforeStepDef(parent, stepDef, env.scopes)
+    logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
       evaluateSteps(stepDef, stepDef.steps, ctx)
     } else {

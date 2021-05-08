@@ -25,21 +25,16 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.IOException
 
-class TestEvalContext() extends EvalContext(GwenOptions(), new EvalEnvironment())
-class TestEvalEngine extends EvalEngine[TestEvalContext] {
-  def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): TestEvalContext = new TestEvalContext()
-}
-
 class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestModel {
 
-  val engine = new TestEvalEngine
-  val ctx = engine.init(new GwenOptions())
+  val engine = EvalEngine.DefaultEngine
+  val ctx = engine.init(new GwenOptions(), None)
 
   val parent = mock[Identifiable]
   
   "Unsupported step" should "fail with UnsupportedStepException" in {
     intercept[Errors.UndefinedStepException] {
-      engine.evaluate(Step(StepKeyword.Given.toString, " I am unsupported"), ctx)
+      engine.evaluateStep(Root, Step(StepKeyword.Given.toString, " I am unsupported"), ctx)
     }
   }
   
@@ -65,7 +60,7 @@ class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestM
   }
   
   "Step that is a stepdef" should "be evaluated" in {
-    val ctx = engine.init(new GwenOptions())
+    val ctx = engine.init(new GwenOptions(), Some(new EvalEnvironment()))
     ctx.withEnv { env =>
       val stepDef = Scenario(List[Tag](Tag("@StepDef"), Tag("@Action")), "I assign x, y, and z", Nil, None, List(
           Step(StepKeyword.Given.toString, """x is "1""""),
@@ -87,24 +82,30 @@ class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestM
   }
 
   "Set attribute binding step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given.toString, """my name is "Gwen""""), ctx)
+    engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """my name is "Gwen""""), ctx)
     ctx.withEnv { env =>
       env.topScope.get("my name") should be ("Gwen")
     }
   }
   
   "Set global setting step" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given.toString, """my gwen.username setting is "Gwen""""), ctx)
+    engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """my gwen.username setting is "Gwen""""), ctx)
     Settings.get("gwen.username") should be ("Gwen")
   }
   
   "Execute system process 'hostname'" should "be successful" in {
-    engine.evaluate(Step(StepKeyword.Given.toString, """I execute system process "hostname""""), ctx)
+    engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """I execute system process "hostname""""), ctx)
   }
   
   "Execute system process 'undefined'" should "fail with IOException" in {
     intercept[IOException] {
-      engine.evaluate(Step(StepKeyword.Given.toString, """I execute system process "undefined""""), ctx)
+      val result = engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """I execute system process "undefined""""), ctx)
+      result.evalStatus match {
+        case Failed(_, e) if e.getCause != null => 
+          throw e.getCause
+        case _ => 
+          fail("expected IOException")
+      }
     }
   }
   

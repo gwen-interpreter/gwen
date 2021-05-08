@@ -24,6 +24,7 @@ import gwen.eval.GwenREPL
 import gwen.model.Passed
 import gwen.model.Skipped
 
+import org.mockito.Mockito
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -49,7 +50,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEnv = mock[EvalEnvironment]
     val mockCtx = spy(new EvalContext(options, mockEnv))
     val mockRepl = mock[GwenREPL[EvalContext]]
-    val mockEngine = mock[EvalEngine[EvalContext]]
+    val mockEngine = Mockito.mock(classOf[EvalEngine[EvalContext]], Mockito.CALLS_REAL_METHODS)
     val app = createApp(options, mockEngine, mockRepl)
 
     when(mockEngine.init(options, None)).thenReturn(mockCtx)

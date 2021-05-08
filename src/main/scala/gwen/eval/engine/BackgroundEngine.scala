@@ -34,7 +34,7 @@ trait BackgroundEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging
   /**
     * Evaluates a given background.
     */
-  def evaluateBackground(parent: Identifiable, background: Background, ctx: T): Background = {
+  private [engine] def evaluateBackground(parent: Identifiable, background: Background, ctx: T): Background = {
     ctx.withEnv { env =>
       ctx.lifecycle.beforeBackground(parent, background, env.scopes)
       logger.info(s"Evaluating ${background.keyword}: $background")

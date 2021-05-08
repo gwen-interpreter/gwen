@@ -19,37 +19,35 @@ package gwen.sample.math
 import gwen._
 import gwen.eval._
 import gwen.model.gherkin.Step
-import gwen.model.state.ScopedData
 
 import scala.io.Source
+import gwen.model.Identifiable
 
 class MathService {
   def plus(x: Int, y: Int): Int = x + y
 }
 
-class MathEnv extends EvalEnvironment {
-  def vars: ScopedData = addScope("vars")
-}
-
 class MathContext(options: GwenOptions, val mathService: MathService) 
-  extends EvalContext(options, new MathEnv()) {
+  extends EvalContext(options, new EvalEnvironment()) {
   override def dsl: List[String] = 
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 
-class MathEngine extends EvalEngine[MathContext] {
+class MathEngine extends MathDSLTranslator
+
+class MathDSLTranslator extends EvalEngine[MathContext] {
  
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): MathContext =
     new MathContext(options, new MathService())
  
-  override def evaluate(step: Step, ctx: MathContext): Unit = ctx.withEnv { env =>
-    val vars = env.asInstanceOf[MathEnv].vars
+  override def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: MathContext): Step => Unit = {
+    val vars = env.addScope("vars")
     step.expression match {
-      case r"""([a-z])$x = (\d+)$value""" =>
+      case r"""([a-z])$x = (\d+)$value""" => step =>
         vars.set(x, value)
-      case r"([a-z])$x = ([a-z])$y" =>
+      case r"([a-z])$x = ([a-z])$y" => step =>
         vars.set(x, vars.get(y))
-      case r"""z = ([a-z])$x \+ ([a-z])$y""" =>
+      case r"""z = ([a-z])$x \+ ([a-z])$y""" => step =>
         val xvalue = vars.get(x).toInt
         val yvalue = vars.get(y).toInt
         ctx.evaluate(vars.set("z", "0")) {
@@ -57,13 +55,14 @@ class MathEngine extends EvalEngine[MathContext] {
           val zresult = ctx.mathService.plus(xvalue, yvalue)
           vars.set("z", zresult.toString)
         }
-      case r"""([a-z])$x == (\d+)$value""" =>
+      case r"""([a-z])$x == (\d+)$value""" => step =>
         val xvalue = vars.get(x).toInt
         ctx.perform {
           assert (xvalue.toInt == value.toInt)
         }
       case _ =>
-        super.evaluate(step, ctx)
+        super.translate(parent, step, env, ctx)
     }
   }
+
 }

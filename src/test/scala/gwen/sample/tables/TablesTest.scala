@@ -37,7 +37,7 @@ class TablesTest extends FlatSpec {
       batch = true,
       reportDir = Some(new File("target/report/tables")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables"), new File("features/sample/tables-foreach"))
+      features = List(new File("features/sample/tables"))
     )
       
     launcher.run(options) match {
@@ -53,7 +53,7 @@ class TablesTest extends FlatSpec {
       batch = true,
       reportDir = Some(new File("target/report/tables-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables"), new File("features/sample/tables-foreach")),
+      features = List(new File("features/sample/tables")),
       dryRun = true
     )
       

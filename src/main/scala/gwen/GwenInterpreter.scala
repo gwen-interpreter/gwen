@@ -39,7 +39,7 @@ import java.net.URL
 /**
   * Default Gwen interpreter application.
   */
-object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.defaultEngine)
+object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultEngine)
 
 /**
   * Main Gwen application superclass.

@@ -182,6 +182,10 @@ class EvalEnvironment() extends LazyLogging {
     } else None
   }
 
+  def removeStepDef(stepDef: Scenario): Unit = {
+    stepDefs -= stepDef.name
+  }
+
   /** Adds current behavior. */
   def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value = 
     behavior tap { _ => state.addBehavior(behavior) }

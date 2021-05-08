@@ -19,6 +19,7 @@ package gwen.eval.engine
 import gwen._
 import gwen.eval.EvalContext
 import gwen.eval.EvalEngine
+import gwen.eval.EvalEnvironment
 import gwen.model._
 import gwen.model.gherkin.Scenario
 import gwen.model.gherkin.Step
@@ -26,6 +27,7 @@ import gwen.model.gherkin.Step
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import gwen.eval.binding.JavaScriptBinding
 
 /**
   * Step evaluation engine.
@@ -33,28 +35,10 @@ import scala.util.Try
 trait StepEngine[T <: EvalContext] {
   engine: EvalEngine[T] =>
 
-  /**
-    * Must be implemented to define the default composite steps supported by all engines.
-    *
-    * @param step the step to evaluate
-    * @param ctx the evaluation context
-    */
-  def evaluateComposite(parent: Identifiable, step: Step, ctx: T): Option[Step]
-
-  /**
-    * Must be implemented to define the default steps supported by all engines.
-    *
-    * @param step the step to evaluate
-    * @param ctx the evaluation context
-    * @throws gwen.Errors.UndefinedStepException if the given step is undefined
-    *         or unsupported
-    */
-  def evaluate(step: Step, ctx: T): Unit
-
     /**
     * Evaluates a list of steps.
     */
-  def evaluateSteps(parent: Identifiable, steps: List[Step], ctx: T): List[Step] = {
+  private [engine] def evaluateSteps(parent: Identifiable, steps: List[Step], ctx: T): List[Step] = {
     ctx.withEnv { env =>
       var behaviorCount = 0
       try {
@@ -64,19 +48,7 @@ trait StepEngine[T <: EvalContext] {
               env.addBehavior(BehaviorType.of(step.keyword))
               behaviorCount = behaviorCount + 1 
             }
-            (EvalStatus(acc.map(_.evalStatus)) match {
-              case status @ Failed(_, error) =>
-                ctx.evaluate(evaluateStep(parent, step, ctx)) {
-                  val isAssertionError = status.isAssertionError
-                  val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
-                  if (!isAssertionError || isHardAssert) {
-                    ctx.lifecycle.transitionStep(parent, step, Skipped, env.scopes)
-                  } else {
-                    evaluateStep(parent, step, ctx)
-                  }
-                }
-              case _ => evaluateStep(parent, step, ctx)
-            }) :: acc
+            evaluateOrTransitionStep(parent, step, acc, env, ctx) :: acc
         } reverse
       } finally {
         0 until behaviorCount foreach { _ =>
@@ -86,90 +58,82 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
+  private def evaluateOrTransitionStep(parent: Identifiable, step: Step, acc: List[Step], env: EvalEnvironment, ctx: T): Step = {
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        ctx.evaluate(evaluateStep(parent, step, ctx)) {
+          val isAssertionError = status.isAssertionError
+          val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
+          if (!isAssertionError || isHardAssert) {
+            ctx.lifecycle.transitionStep(parent, step, Skipped, env.scopes)
+          } else {
+            evaluateStep(parent, step, ctx)
+          }
+        }
+      case _ => evaluateStep(parent, step, ctx)
+    }
+  }
+
   /**
     * Evaluates a step.
     */
   def evaluateStep(parent: Identifiable, step: Step, ctx: T): Step = {
     ctx.withEnv { env =>
       val start = System.nanoTime - step.evalStatus.nanos
-      val ipStep = withStep(step) { ctx.interpolateParams }
-      val iStep = withStep(ipStep) { ctx.interpolate }
-      var cStep: Option[Step] = None
+      val pStep = withStep(step) { ctx.interpolateParams }
+      val iStep = withStep(pStep) { ctx.interpolate }
       logger.info(s"Evaluating Step: $iStep")
-      ctx.lifecycle.beforeStep(parent, iStep, env.scopes)
-      val hStep = if (step.index == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
-        Try(ctx.lifecycle.healthCheck(parent, iStep, env.scopes)) match {
-          case Success(_) => iStep
-          case Failure(e) => iStep.copy(withEvalStatus = Failed(System.nanoTime - start, e))
-        }
-      } else iStep
-      val eStep = if (hStep != iStep) {
-        hStep
-      } else {
-        withStep(iStep) { s =>
-          cStep = evaluateComposite(parent, s, ctx)
-          cStep.getOrElse(s)
-        }
-        val hasSynthetic = cStep.flatMap(s => s.stepDef map { case (sd, _) => sd.isSynthetic }).getOrElse(false)
-        cStep.filter(_.evalStatus.status != StatusKeyword.Failed || hasSynthetic).getOrElse {
-          if (iStep.evalStatus.status != StatusKeyword.Failed) {
-            Try(env.getStepDef(iStep.name)) match {
-              case Failure(error) =>
-                iStep.copy(withEvalStatus = Failed(System.nanoTime - start, new Errors.StepFailure(iStep, error)))
-              case Success(stepDefOpt) =>
-                (stepDefOpt match {
-                  case Some((stepDef, _)) if env.stepScope.containsScope(stepDef.name) => None
-                  case stepdef => stepdef
-                }) match {
-                  case None =>
-                    withStep(iStep) { step =>
-                      step tap { _ =>
-                        try {
-                          evaluate(step, ctx)
-                        } catch {
-                          case e: Errors.UndefinedStepException =>
-                            e.printStackTrace()
-                            stepDefOpt.fold(throw e) { case (stepDef, _) =>
-                              Errors.recursiveStepDefError(stepDef, step)
-                            }
-                        }
-                      }
-                    }
-                  case (Some((stepDef, params))) =>
-                    if (stepDefSemaphors.containsKey(stepDef.name)) {
-                      val semaphore = stepDefSemaphors.get(stepDef.name)
-                      semaphore.acquire()
-                      try {
-                        logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                        evaluateStepDef(iStep, stepDef.copy(), iStep, params, ctx)
-                      } finally {
-                        logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                        semaphore.release()
-                      }
+      ctx.lifecycle.beforeStep(parent, iStep.copy(withEvalStatus = Pending), env.scopes)
+      val hStep = healthCheck(parent, iStep, env, ctx, start)
+      val eStep = if (hStep == iStep) {
+        translateComposite(parent, iStep, env, ctx) map { function => 
+          withStep(iStep.copy(withEvalStatus = Pending)) { s =>
+            function(s)
+          }
+        } getOrElse {
+          Try(env.getStepDef(iStep.name)) match {
+            case Success(stepDefOpt) =>
+              stepDefOpt.filter { case (stepDef, _) => 
+                !env.stepScope.containsScope(stepDef.name)
+              } map { case (stepDef, params) =>
+                withStep(iStep) { s =>
+                  evaluateStepDef(s, stepDef.copy(), s, params, ctx)   
+                }
+              } getOrElse {
+                Try(translate(parent, iStep, env, ctx)) match {
+                  case Success(operation) => 
+                    if (iStep.evalStatus.status != StatusKeyword.Failed) {
+                      withStep(iStep) { s => s tap { _ => operation(s) } }
                     } else {
-                      evaluateStepDef(iStep, stepDef.copy(), iStep, params, ctx)
+                      iStep
+                    }
+                  case Failure(e) if e.isInstanceOf[Errors.UndefinedStepException] =>
+                    stepDefOpt.fold(throw e) { case (stepDef, _) =>
+                      Errors.recursiveStepDefError(stepDef, iStep)
                     }
                 }
-            }
-          } else {
-            iStep
+              }
+            case Failure(error) =>
+              withStep(iStep) { throw error }
           }
         }
+      } else {
+        hStep
       }
-      val fStep = eStep.evalStatus match {
-        case Failed(_, e: Errors.StepFailure) if e.getCause != null && e.getCause.isInstanceOf[Errors.UndefinedStepException] =>
-          cStep.getOrElse(eStep)
-        case _ =>
-          eStep.evalStatus match {
-            case Passed(_) => eStep
-            case _ => cStep.filter(s => EvalStatus.isEvaluated(s.evalStatus.status)).getOrElse(eStep)
-          }
-      }
-      ctx.finaliseStep(fStep) tap { step =>
-        step.logStatus()
-        ctx.lifecycle.afterStep(step, env.scopes)
+      ctx.finaliseStep(eStep) tap { fStep =>
+        fStep.logStatus()
+        ctx.lifecycle.afterStep(fStep, env.scopes)
       }
     }
+  }
+
+  private def healthCheck(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T, startNanos: Long): Step = {
+    if (step.index == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
+      Try(ctx.lifecycle.healthCheck(parent, step, env.scopes)) match {
+        case Success(_) => step
+        case Failure(e) => step.copy(withEvalStatus = Failed(System.nanoTime - startNanos, e))
+      }
+    } else step
   }
 
   /**
@@ -178,7 +142,7 @@ trait StepEngine[T <: EvalContext] {
     * @param step the step to evaluate
     * @param stepFunction the step evaluator function
     */
-  def withStep(step: Step)(stepFunction: Step => Step): Step = {
+  private def withStep(step: Step)(stepFunction: Step => Step): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     Try(stepFunction(step)) match {
       case Success(eStep) =>
@@ -195,10 +159,34 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
+  def evaluateIf(step: Step, conditionalStep: String, condition: String, env: EvalEnvironment, ctx: T): Step = {
+    if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
+        Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
+      }
+      val binding = new JavaScriptBinding(condition, ctx)
+      val javascript = binding.resolve()
+      env.getStepDef(conditionalStep) foreach { stepDef =>
+        checkStepDefRules(step.copy(withName = conditionalStep, withStepDef = Some(stepDef)), env)
+      }
+      val iStep = step.copy(withEvalStatus = Pending)
+      val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
+      val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = conditionalStep)), Nil)
+      ctx.evaluate(evaluateStepDef(step, iStepDef, iStep, Nil, ctx)) {
+        val satisfied = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
+        if (satisfied) {
+          logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $conditionalStep")
+          evaluateStepDef(step, iStepDef, iStep, Nil, ctx)
+        } else {
+          logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $conditionalStep")
+          step.copy(withEvalStatus = Passed(0))
+        }
+      }
+  }
+
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def foreach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
+  def evaluateForEach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
     ctx.withEnv { env =>
       val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
       val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 

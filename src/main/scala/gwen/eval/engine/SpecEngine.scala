@@ -35,7 +35,7 @@ import com.typesafe.scalalogging.LazyLogging
 trait SpecEngine[T <: EvalContext] extends LazyLogging {
     engine: EvalEngine[T] =>
 
-  def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+  private [engine] def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     ctx.withEnv { env =>
       spec.specFile foreach { file =>
         env.topScope.set("gwen.feature.file.name", file.getName)
@@ -50,7 +50,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     }
   }
 
-  def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+  private [engine] def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normalise(meta, meta.specFile, dataRecord)
     val metaResult = ctx.withEnv { env => 
       evaluateSpec(parent, nmeta, metaResults, env, ctx)
