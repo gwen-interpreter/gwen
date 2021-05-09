@@ -18,6 +18,8 @@ package gwen.core.sample.math
 
 import gwen.core._
 import gwen.core.eval._
+import gwen.core.eval.step.Bind
+import gwen.core.eval.step.UnitStep
 import gwen.core.model.gherkin.Step
 
 import scala.io.Source
@@ -33,33 +35,39 @@ class MathContext(options: GwenOptions, val mathService: MathService)
     Source.fromInputStream(getClass.getResourceAsStream("/math.dsl")).getLines().toList ++ super.dsl
 }
 
-class MathEngine extends MathDSLTranslator
+class Sum(x: Int, y: Int, engine: MathEngine, ctx: MathContext) extends UnitStep[MathContext](engine, ctx) {
+  override def apply(parent: Identifiable, step: Step): Unit = {
+    ctx.evaluate(env.scopes.set("z", "0")) {
+      logger.info(s"evaluating z = $x + $y")
+      val zresult = ctx.mathService.plus(x, y)
+      env.scopes.set("z", zresult.toString)
+    }
+  }
+}
 
-class MathDSLTranslator extends EvalEngine[MathContext] {
+class Compare(actual: Int, expected: Int, engine: MathEngine, ctx: MathContext) extends UnitStep[MathContext](engine, ctx) {
+  override def apply(parent: Identifiable, step: Step): Unit = {
+    ctx.perform {
+      assert (actual == expected)
+    }
+  }
+}
+
+class MathEngine extends EvalEngine[MathContext] {
  
   override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): MathContext =
     new MathContext(options, new MathService())
  
-  override def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: MathContext): Step => Unit = {
-    val vars = env.addScope("vars")
+  override def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: MathContext): UnitStep[MathContext] = {
     step.expression match {
-      case r"""([a-z])$x = (\d+)$value""" => step =>
-        vars.set(x, value)
-      case r"([a-z])$x = ([a-z])$y" => step =>
-        vars.set(x, vars.get(y))
-      case r"""z = ([a-z])$x \+ ([a-z])$y""" => step =>
-        val xvalue = vars.get(x).toInt
-        val yvalue = vars.get(y).toInt
-        ctx.evaluate(vars.set("z", "0")) {
-          logger.info(s"evaluating z = $xvalue + $yvalue")
-          val zresult = ctx.mathService.plus(xvalue, yvalue)
-          vars.set("z", zresult.toString)
-        }
-      case r"""([a-z])$x == (\d+)$value""" => step =>
-        val xvalue = vars.get(x).toInt
-        ctx.perform {
-          assert (xvalue.toInt == value.toInt)
-        }
+      case r"""([a-z])$x = (\d+)$value""" =>
+        new Bind(x, value, this, ctx)
+      case r"([a-z])$x = ([a-z])$y" =>
+        new Bind(x, env.scopes.get(y), this, ctx)
+      case r"""z = ([a-z])$x \+ ([a-z])$y""" =>
+        new Sum(env.scopes.get(x).toInt, env.scopes.get(y).toInt, this, ctx)
+      case r"""([a-z])$x == (\d+)$value""" =>
+        new Compare(env.scopes.get(x).toInt, value.toInt, this, ctx)
       case _ =>
         super.translate(parent, step, env, ctx)
     }

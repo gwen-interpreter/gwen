@@ -79,7 +79,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
 
-  private [engine] def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
+  def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))
     } else None

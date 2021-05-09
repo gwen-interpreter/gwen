@@ -16,6 +16,8 @@
 
 package gwen.core.eval
 
+import gwen.core.eval.step.UnitStep
+import gwen.core.eval.step.composite.CompositeStep
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
@@ -24,7 +26,7 @@ import gwen.core.model.gherkin.Step
   *
   * @author Branko Juric
   */
-trait DSLTranslator[T <: EvalContext] {
+trait StepTranslator[T <: EvalContext] {
   engine: EvalEngine[T] =>
 
   /**
@@ -36,7 +38,7 @@ trait DSLTranslator[T <: EvalContext] {
     * @param ctx the evaluation context
     * @param a function that performs the composite step operation and returns it in evaluated form
     */
-  def translateComposite(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): Option[Step => Step]
+  def translateComposite(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): Option[CompositeStep[T]]
 
   /**
     * Must be implemented to translate a DSL step into an executable operation.
@@ -47,6 +49,6 @@ trait DSLTranslator[T <: EvalContext] {
     * @param ctx the evaluation context
     * @return a step operation that throws an exception on failure
     */
-  def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): Step => Unit
+  def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): UnitStep[T]
   
 }

@@ -18,6 +18,7 @@ package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEnvironment
+import gwen.core.eval.support.XMLNodeType
 
 import scala.util.Try
 
@@ -47,7 +48,7 @@ class XPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
       resolveValue(targetKey) { target =>
         resolveRef(sourceKey) { source =>
           ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
-            ctx.evaluateXPath(xpath, source, ctx.XMLNodeType.withName(target))
+            ctx.evaluateXPath(xpath, source, XMLNodeType.withName(target))
           }
         }
       }

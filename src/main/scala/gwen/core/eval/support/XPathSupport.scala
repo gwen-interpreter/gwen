@@ -34,12 +34,12 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
+object XMLNodeType extends Enumeration {
+  val text, node, nodeset = Value
+}
+
 /** Can be mixed into evaluation contexts to provide XPath support. */
 trait XPathSupport {
-
-  object XMLNodeType extends Enumeration {
-    val text, node, nodeset = Value
-  }
   
   /**
     * Evaluates an xpath expression against an xml source string and returns 
