@@ -27,6 +27,8 @@ import java.util.regex.Pattern
   */
 object Sensitive {
 
+  private val ZeroChar = '‎' // zero width space char
+
   private sealed case class MaskedValue(name: String, plain: String) {
     val masked = s"$Mask${ZeroChar.toString * ZeroCounter.incrementAndGet()}"
     override final def toString = masked

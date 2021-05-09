@@ -118,7 +118,22 @@ abstract class EvalEngine[T <: EvalContext] extends UnitEngine[T] with DSLTransl
           evaluateRepeat(operation, parent, step, doStep, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), ctx)
         }
 
-        case _ => None
+        case _ => 
+          env.getStepDef(step.name) match {
+            case Some((stepDef, params)) if stepDef.isForEach && stepDef.isDataTable =>
+              stepDef.tags.find(_.name.startsWith("DataTable(")) map { 
+                tag => DataTable(tag, step) 
+              } filter { dataTable =>
+                dataTable.isInstanceOf[FlatTable]
+              } map { dataTable => 
+                dataTable.asInstanceOf[FlatTable]
+              } map { dataTable =>
+                step: Step => evaluateAnnotatedForEach(parent, stepDef, step, dataTable, env, ctx)
+              } orElse {
+                None
+              }
+            case _ => None
+          }
     }
   }
 

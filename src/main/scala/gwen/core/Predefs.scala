@@ -40,8 +40,6 @@ import java.{util => ju}
 
 package object core {
 
-  val ZeroChar = '‎' // zero width space char
-  
   /** Kestrel function for tapping in side effects. */
   implicit class Kestrel[A](val value: A) extends AnyVal { 
     def tap[B](f: A => B): A = { f(value); value }

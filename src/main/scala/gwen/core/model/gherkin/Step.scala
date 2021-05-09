@@ -16,7 +16,6 @@
 
 package gwen.core.model.gherkin
 
-import gwen.core._
 import gwen.core.model._
 
 import scala.jdk.CollectionConverters._
@@ -50,7 +49,6 @@ case class Step(
     override val evalStatus: EvalStatus) extends SpecNode {
 
   def nodeType: NodeType.Value = NodeType.Step
-  val isVirtual: Boolean = name.contains(s"$ZeroChar")
 
   def isExpanded(parent: Identifiable) = parent match {
     case scenario: Scenario => scenario.isExpanded

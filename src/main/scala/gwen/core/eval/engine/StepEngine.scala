@@ -186,6 +186,28 @@ trait StepEngine[T <: EvalContext] {
       }
   }
 
+  def evaluateAnnotatedForEach(parent: Identifiable, stepDef: Scenario, step: Step, dataTable: FlatTable, env: EvalEnvironment, ctx: T): Step = {
+    env.topScope.pushObject(DataTable.tableKey, dataTable)
+    val doStepDef = stepDef.copy(
+      withTags = stepDef.tags filter { tag => 
+        tag.name != ReservedTags.ForEach.toString &&
+        !tag.name.startsWith(ReservedTags.DataTable.toString)
+      }
+    )
+    env.removeStepDef(stepDef.name)
+    env.addStepDef(doStepDef)
+    try {
+      val records = () => {
+        dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+      }
+      evaluateForEach(records, DataTable.recordKey, parent, step, doStepDef.name, ctx)
+    } finally {
+      env.removeStepDef(doStepDef.name)
+      env.addStepDef(stepDef)
+      env.topScope.popObject(DataTable.tableKey)
+    }
+  }
+
   /**
     * Repeats a step for each element in list of elements of type U.
     */
@@ -194,7 +216,6 @@ trait StepEngine[T <: EvalContext] {
       val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
       val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
         step.copy(
-          withName = doStep.replaceAll(s"$ZeroChar", ""),
           withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
         )
       }

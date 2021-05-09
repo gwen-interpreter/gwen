@@ -16,7 +16,6 @@
 
 package gwen.core.model.gherkin
 
-import gwen.core._
 import gwen.core.model._
 
 import scala.jdk.CollectionConverters._
@@ -74,7 +73,6 @@ case class Scenario(
     name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString
   }
   def isSynthetic: Boolean = Tag.findByName(tags, ReservedTags.Synthetic.toString).nonEmpty
-  def isVirtual: Boolean = name.contains(s"$ZeroChar")
   
   def attachments: List[(String, File)] = {
     def attachments(step: Step): List[(String, File)] = {

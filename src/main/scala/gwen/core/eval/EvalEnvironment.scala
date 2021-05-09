@@ -34,21 +34,19 @@ import java.io.File
   */
 class EvalEnvironment() extends LazyLogging {
   
-  private var stepDefs = Map[String, Scenario]()
   private var state = new EnvState(new ScopedDataStack())
 
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
+  def stepDefs = state.getStepDefs
   def stepScope = scopes.stepScope
-
   def scopes = state.scopes
   def topScope: TopScope = scopes.topScope
 
-  /** Create a clone that preserves scoped data. */
+  /** Create a clone that preserves scoped data and step defs */
   def copy(): EvalEnvironment = {
     new EvalEnvironment() tap { env =>
-      env.stepDefs = stepDefs
-      env.state = EnvState(topScope)
+      env.state = EnvState(topScope, Some(stepDefs))
     }
   }
 
@@ -61,10 +59,12 @@ class EvalEnvironment() extends LazyLogging {
   /** Resets the current context but does not close it so it can be reused. */
   def reset(level: StateLevel.Value): Unit = {
     logger.info(s"Resetting environment context")
-    state = EnvState(topScope)
-    if (StateLevel.feature.equals(level)) {
-      stepDefs = Map[String, Scenario]()
+    state = if (StateLevel.feature.equals(level)) {
+      EnvState(topScope, None)
+    } else {
+      EnvState(topScope, Some(stepDefs))
     }
+    
   }
     
   def asString: String = scopes.asString
@@ -95,39 +95,28 @@ class EvalEnvironment() extends LazyLogging {
     * 
     * @param stepDef the step definition to add
     */
-  def addStepDef(stepDef: Scenario): Unit = {
-    StepKeyword.names foreach { keyword =>
-      if (stepDef.name.startsWith(keyword)) Errors.invalidStepDefError(stepDef, s"name cannot start with $keyword keyword")
-    }
-    val tags = stepDef.tags
-    val virtualStep = s"${stepDef.name}$ZeroChar"
-    if (stepDef.isForEach && stepDef.isDataTable) {
-      stepDefs += (virtualStep ->
-        stepDef.copy(
-          withTags = tags.filter(_.name != ReservedTags.ForEach.toString).filter(!_.name.startsWith(ReservedTags.DataTable.toString))
-        )
-      )
-      val keyword = Tag.findByName(stepDef.tags, ReservedTags.Context.toString) map { _ => 
-        StepKeyword.Given
-      } getOrElse {
-        Tag.findByName(stepDef.tags, ReservedTags.Assertion.toString) map { _ => 
-          StepKeyword.Then
-        } getOrElse {
-          StepKeyword.When
-        }
-      }
-      val step = Step(None, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
-      stepDefs += (stepDef.name ->
-        stepDef.copy(
-          withSourceRef = None,
-          withTags = List(Tag(ReservedTags.Synthetic)) ++ tags.filter(_.name != ReservedTags.ForEach.toString),
-          withName = s"$virtualStep for each data record",
-          withSteps = List(step)
-        )
-      )
-    } else {
-      stepDefs += (stepDef.name -> stepDef)
-    }
+  def addStepDef(stepDef: Scenario): Scenario = { 
+    state.addStepDef(stepDef)
+  }
+
+  /**
+    * Adds a step definition to the context.
+    * 
+    * @param name the name
+    * @param stepDef the step definition to add
+    */
+  def addStepDef(name: String, stepDef: Scenario): Scenario = {
+    state.addStepDef(name, stepDef)
+  }
+
+  /**
+    * Removes (unloads) the stepdef with the given name
+    *
+    * @param name the step def name
+    * @return the removed step def
+    */
+  def removeStepDef(name: String): Scenario = {
+    state.removeStepDef(name)
   }
   
   /**
@@ -137,11 +126,12 @@ class EvalEnvironment() extends LazyLogging {
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[(Scenario, List[(String, String)])] = 
+  def getStepDef(expression: String): Option[(Scenario, List[(String, String)])] = {
     stepDefs.get(expression) match {
       case None => getStepDefWithParams(expression)
       case Some(stepDef) => Some((stepDef, Nil))
     }
+  }
   
   /**
     * Gets the paraterised step definition for the given expression (if there is
@@ -177,10 +167,6 @@ class EvalEnvironment() extends LazyLogging {
         Errors.ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
       } else first
     } else None
-  }
-
-  def removeStepDef(stepDef: Scenario): Unit = {
-    stepDefs -= stepDef.name
   }
 
   /** Adds current behavior. */
