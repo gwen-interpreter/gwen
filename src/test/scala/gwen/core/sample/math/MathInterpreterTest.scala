@@ -76,17 +76,15 @@ class MathInterpreterTest extends FlatSpec with TestModel {
     val ctx = engine.init(options)
 
     ctx.withEnv { env =>
-
       env.scopes.addScope("vars").set("y", "1")
+    }
           
-      env.dsl map { dsl =>
-        dsl.replace("<integer>", "1")
-      } foreach { dsl => 
-        StepKeyword.values.map(_.toString) foreach { keyword =>
-          engine.evaluateStep(Root, Step(keyword, dsl), ctx)
-        }
+    ctx.dsl map { dsl =>
+      dsl.replace("<integer>", "1")
+    } foreach { dsl => 
+      StepKeyword.values.map(_.toString) foreach { keyword =>
+        engine.evaluateStep(Root, Step(keyword, dsl), ctx)
       }
-
     }
     
   }

@@ -123,8 +123,8 @@ trait StepEngine[T <: EvalContext] {
       } else {
         hStep
       }
-      ctx.finaliseStep(eStep) tap { fStep =>
-        fStep.logStatus()
+      finaliseStep(eStep, env, ctx) tap { fStep =>
+        logStatus(fStep)
         lifecycle.afterStep(fStep, env.scopes)
       }
     }
@@ -161,6 +161,52 @@ trait StepEngine[T <: EvalContext] {
         step.copy(withEvalStatus = failure)
     }
   }
+
+  /**
+    * Binds all accumulated attachments to the given step.
+    *
+    * @param step the step to bind attachments to
+    * @return the step with accumulated attachments
+    */
+  private def finaliseStep(step: Step, env: EvalEnvironment, ctx: T): Step = {
+    if (step.stepDef.isEmpty) {
+      step.evalStatus match {
+        case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
+          if (!failure.isDisabledError) {
+            if (ctx.options.batch) {
+              logger.error(env.scopes.visible.asString)
+            }
+            logger.error(failure.error.getMessage)
+            ctx.addErrorAttachments(failure)
+          }
+          logger.whenDebugEnabled {
+            logger.error(s"Exception: ", failure.error)
+          }
+        case _ => // noop
+      }
+    }
+    val fStep = if (env.hasAttachments) {
+      step.copy(
+        withEvalStatus = step.evalStatus, 
+        withAttachments = (step.attachments ++ env.popAttachments()).sortBy(_._2 .getName()))
+    } else {
+      
+      step
+    }
+    fStep.evalStatus match {
+      case status @ Failed(nanos, error) =>
+        if (status.isSustainedError) {
+          fStep.copy(withEvalStatus = Sustained(nanos, error))
+        } else if (status.isDisabledError) {
+          fStep.copy(withEvalStatus = Disabled)
+        } else {
+          fStep
+        }
+      case _ =>
+        fStep
+    }
+  }
+
 
   def evaluateIf(step: Step, conditionalStep: String, condition: String, env: EvalEnvironment, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
@@ -376,11 +422,13 @@ trait StepEngine[T <: EvalContext] {
           case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).status == StatusKeyword.Passed) => 
             val preStep = condSteps.head.copy(withKeyword = StepKeyword.And.toString, withName = doStep)
             lifecycle.beforeStep(preCondStepDef, preStep, env.scopes)
-            val fStep = ctx.finaliseStep(
+            val fStep = finaliseStep(
               preStep.copy(
                 withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
                 withStepDef = None
-              )
+              ),
+              env,
+              ctx
             )
             lifecycle.afterStep(fStep, env.scopes)
             fStep :: condSteps

@@ -68,9 +68,9 @@ object Settings {
 
     // mask any senstive ("*:masked") properties passed in the raw from the command line
     sys.props.toMap filter { case (key, value) => 
-      Sensitive.isMaskedName(key) 
+      SensitiveData.isMaskedName(key) 
     } foreach { case (key, value) =>
-      Sensitive.parse(key, value) foreach { case (mKey, mValue) => 
+      SensitiveData.parse(key, value) foreach { case (mKey, mValue) => 
         sys.props -= key
         sys.props += ((mKey, mValue))
       }
@@ -224,7 +224,7 @@ object Settings {
     * @param value the value to bind to the property
     */
   def set(name: String, value: String): Unit = {
-    sys.props += Sensitive.parse(name, value).getOrElse((name, value))
+    sys.props += SensitiveData.parse(name, value).getOrElse((name, value))
   }
 
   /**
@@ -245,7 +245,7 @@ object Settings {
   private [core] def add(name: String, value: String, overrideIfExists: Boolean): Unit = {
     if (overrideIfExists || !contains(name)) {
       if (overrideIfExists && localSettings.get.containsKey(name)) {
-        if (Sensitive.isMaskedName(name)) {
+        if (SensitiveData.isMaskedName(name)) {
           Errors.unsupportedMaskedPropertyError(s"Cannot mask $name: Masks can only be defined in proeprties files.")
         }
         localSettings.get.setProperty(name, value)
@@ -262,7 +262,7 @@ object Settings {
     */
   def setLocal(name: String, value: String): Unit = {
     if (!name.startsWith("gwen.")) Errors.unsupportedLocalSetting(name)
-    val (n, v) = Sensitive.parse(name, value).getOrElse((name, value))
+    val (n, v) = SensitiveData.parse(name, value).getOrElse((name, value))
     localSettings.get.setProperty(n, v)
   }
 

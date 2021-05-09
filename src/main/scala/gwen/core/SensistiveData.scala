@@ -22,10 +22,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 
 /**
-  * Object for dealing with sensitive values with overriden toString to
+  * Object for dealing with sensitive data with overriden toString to
   * prevent logging and reporting.
   */
-object Sensitive {
+object SensitiveData {
 
   private val ZeroChar = '‎' // zero width space char
 

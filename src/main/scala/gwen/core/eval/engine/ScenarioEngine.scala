@@ -137,7 +137,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           lifecycle.afterScenario(s, env.scopes)
         }
       } tap { s =>
-        s.logStatus()
+        logStatus(s)
       }
     }
   }

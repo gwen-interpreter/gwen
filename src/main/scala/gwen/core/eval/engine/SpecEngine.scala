@@ -91,7 +91,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       logger.debug(prettyPrint(resultSpec))
       new SpecResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
         if(!spec.isMeta) {
-          resultSpec.logStatus()
+          logStatus(resultSpec)
         } else {
           logger.info(result.toString)
         }

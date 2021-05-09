@@ -57,7 +57,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
             rule.copy(
               withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
             ) tap { r =>
-              r.logStatus()
+              logStatus(r)
               lifecycle.afterRule(r, env.scopes)
             }
           }
@@ -67,7 +67,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
           ) tap { r =>
-            r.logStatus()
+            logStatus(r)
             lifecycle.afterRule(r, env.scopes)
           }
       }

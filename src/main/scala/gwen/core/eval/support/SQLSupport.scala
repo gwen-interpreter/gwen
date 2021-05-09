@@ -17,7 +17,7 @@
 package gwen.core.eval.support
 
 import gwen.core._
-import gwen.core.Sensitive
+import gwen.core.SensitiveData
 
 import java.sql.DriverManager
 import java.sql.Connection
@@ -102,8 +102,8 @@ trait SQLSupport {
   }
 
   private def withDatabase[T](database: String)(apply: Connection => T): T = {
-    Sensitive.withValue(SQLSupport.getDriver(database)) { driver =>
-      Sensitive.withValue(SQLSupport.getUrl(database)) { url =>
+    SensitiveData.withValue(SQLSupport.getDriver(database)) { driver =>
+      SensitiveData.withValue(SQLSupport.getUrl(database)) { url =>
         Class.forName(driver)
         val connection = DriverManager.getConnection(url)
         try {

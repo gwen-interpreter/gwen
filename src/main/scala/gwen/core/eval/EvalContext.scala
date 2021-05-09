@@ -30,8 +30,6 @@ import scala.util.Try
 import java.io.File
 import java.io.FileNotFoundException
 import gwen.core.model.Failed
-import gwen.core.model.Sustained
-import gwen.core.model.Disabled
 import gwen.core.model.StateLevel
 
 import org.apache.log4j.PropertyConfigurator
@@ -65,7 +63,13 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends Interp
     env.reset(level)
   }
 
-  def dsl: List[String] = env.dsl
+  /**
+   * Gets the list of DSL steps supported by this context.  This implementation 
+   * returns all user defined stepdefs. Subclasses can override to return  
+   * addtional entries. The entries returned by this method are used for tab 
+   * completion in the REPL.
+   */
+  def dsl: List[String] = env.stepDefs.keys.toList
 
   /** 
    * Providesa a function with access to the environment context.
@@ -177,58 +181,12 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends Interp
   }
 
   /**
-    * Binds all accumulated attachments to the given step.
-    *
-    * @param step the step to bind attachments to
-    * @return the step with accumulated attachments
-    */
-  def finaliseStep(step: Step): Step = {
-    if (step.stepDef.isEmpty) {
-      step.evalStatus match {
-        case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
-          if (!failure.isDisabledError) {
-            if (options.batch) {
-              logger.error(env.scopes.visible.asString)
-            }
-            logger.error(failure.error.getMessage)
-            addErrorAttachments(failure)
-          }
-          logger.whenDebugEnabled {
-            logger.error(s"Exception: ", failure.error)
-          }
-        case _ => // noop
-      }
-    }
-    val fStep = if (env.hasAttachments) {
-      step.copy(
-        withEvalStatus = step.evalStatus, 
-        withAttachments = (step.attachments ++ env.popAttachments()).sortBy(_._2 .getName()))
-    } else {
-      
-      step
-    }
-    fStep.evalStatus match {
-      case status @ Failed(nanos, error) =>
-        if (status.isSustainedError) {
-          fStep.copy(withEvalStatus = Sustained(nanos, error))
-        } else if (status.isDisabledError) {
-          fStep.copy(withEvalStatus = Disabled)
-        } else {
-          fStep
-        }
-      case _ =>
-        fStep
-    }
-  }
-
-  /**
     * Adds error attachments to the current context. This includes the error trace and environment context.
     * 
     * @param failure the failed status
     */
   def addErrorAttachments(failure: Failed): Unit = { 
-    env.addAttachment("Error details", "txt", failure.error.writeStackTrace())
-    env.addAttachment(s"Environment", "txt", env.scopes.visible.asString)
+    env.addErrorAttachments(failure)
   }
 
   /**

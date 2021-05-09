@@ -16,23 +16,14 @@
 
 package gwen.core.model
 
-/**
-  * Base trait for all Gherkin specification nodes.  
-  */
-trait SpecNode extends Identifiable {
+import gwen.core.UUIDGenerator
 
-  /** The location in the Gherkin file or None if the node is synthetic or instantiated directly. */
-  val sourceRef: Option[SourceRef]
+trait Identifiable {
+  def nodeType: NodeType.Value
+  val uuid: String = UUIDGenerator.nextId
+}
 
-  /** The name of the node. */
-  val name: String
-
-  /** Returns the evaluation status of this node. */
-  val evalStatus: EvalStatus = Pending
-
-  /** Gets the index of the node relative to parent. */
-  def index = sourceRef.map(_.pos.index).getOrElse(0)
-
-  override def toString: String = name
-
+object Root extends Identifiable {
+  def nodeType: NodeType.Value = NodeType.Root
+  override val uuid: String = UUIDGenerator.baseId
 }

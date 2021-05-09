@@ -388,5 +388,16 @@ abstract class EvalEngine[T <: EvalContext] extends UnitEngine[T] with DSLTransl
   val DefaultRepeatDelay: Duration = Duration(1, SECONDS)
   
   private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
+
+  def logStatus(node: SpecNode): Unit = { 
+    val msg = s"${node.evalStatus} ${node.nodeType}: ${node.name}"
+    node.evalStatus match {
+      case Loaded => logger.debug(msg)
+      case Passed(_) => logger.info(msg)
+      case Failed(_, _) => logger.error(msg)
+      case Sustained(_, _) => logger.warn(msg)
+      case _ => logger.warn(msg)
+    }
+  }
   
 }

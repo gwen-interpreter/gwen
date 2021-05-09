@@ -181,14 +181,16 @@ class EvalEnvironment() extends LazyLogging {
 
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = stepScope.isEmpty
-  
+
   /**
-   * Gets the list of DSL steps supported by this context.  This implementation 
-   * returns all user defined stepdefs. Subclasses can override to return  
-   * addtional entries. The entries returned by this method are used for tab 
-   * completion in the REPL.
-   */
-  def dsl: List[String] = stepDefs.keys.toList
+    * Adds error attachments to the current context. This includes the error trace and environment context.
+    * 
+    * @param failure the failed status
+    */
+  def addErrorAttachments(failure: Failed): Unit = { 
+    addAttachment("Error details", "txt", failure.error.writeStackTrace())
+    addAttachment(s"Environment", "txt", scopes.visible.asString)
+  }
 
   def addAttachment(name: String, extension: String, content: String): (String, File) = { 
     state.addAttachment(name, extension, content)

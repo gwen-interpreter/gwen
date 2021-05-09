@@ -47,14 +47,14 @@ class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], ctx: T) {
   private var paste: Option[List[String]] = None
   private var pastingDocString = false
 
-  private lazy val reader = ctx.withEnv { env =>
+  private lazy val reader = {
     new ConsoleReader() tap { reader =>
       reader.setHistory(history)
       reader.setBellEnabled(false)
       reader.setExpandEvents(false)
       reader.setPrompt("gwen> ")
       reader.addCompleter(new StringsCompleter((StepKeyword.names ++ List("help", "env", "history", "exit")).asJava))
-      reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => env.dsl.distinct.map(y => s"$x $y")).asJava)))
+      reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => ctx.dsl.distinct.map(y => s"$x $y")).asJava)))
     }
   }
 

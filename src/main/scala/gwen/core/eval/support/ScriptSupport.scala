@@ -17,7 +17,7 @@
 package gwen.core.eval.support
 
 import gwen.core._
-import gwen.core.Sensitive
+import gwen.core.SensitiveData
 
 import javax.script.ScriptEngineManager
 
@@ -64,7 +64,7 @@ trait ScriptSupport {
     */
   private def evaluateScript[T](language: String, script: String, params: Any*): T = {
     try {
-      Sensitive.withValue(script) { js =>
+      SensitiveData.withValue(script) { js =>
         new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $js })()").asInstanceOf[T]
       }
     } catch {

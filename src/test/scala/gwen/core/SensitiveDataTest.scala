@@ -18,24 +18,24 @@
 
  import org.scalatest.Matchers
 
- class SensitiveTest extends BaseTest with Matchers {
+ class SensitiveDataTest extends BaseTest with Matchers {
 
   "isMaskedName" should "return true for masked proeprty names" in {
-    Sensitive.isMaskedName("""my:masked""") should be (true)
-    Sensitive.isMaskedName("""my.prop:masked""") should be (true)
-    Sensitive.isMaskedName("""my.prop.other:masked""") should be (true)
+    SensitiveData.isMaskedName("""my:masked""") should be (true)
+    SensitiveData.isMaskedName("""my.prop:masked""") should be (true)
+    SensitiveData.isMaskedName("""my.prop.other:masked""") should be (true)
   }
 
   "isMaskedName" should "return false for standard proeprty names" in {
-    Sensitive.isMaskedName("""my""") should be (false)
-    Sensitive.isMaskedName("""my.prop""") should be (false)
-    Sensitive.isMaskedName("""my.prop.other""") should be (false)
+    SensitiveData.isMaskedName("""my""") should be (false)
+    SensitiveData.isMaskedName("""my.prop""") should be (false)
+    SensitiveData.isMaskedName("""my.prop.other""") should be (false)
   }
 
   "parse" should "return masked value for masked property" in {
     val MaskChar = GwenSettings.`gwen.mask.char`
     val ZeroChar = '‎' // zero width space char
-    val parsed = Sensitive.parse("my.prop:masked", "howdydoo") 
+    val parsed = SensitiveData.parse("my.prop:masked", "howdydoo") 
     parsed should not be (None)
     parsed foreach { case (name, value) => 
       name should be ("my.prop")
@@ -47,7 +47,7 @@
   }
 
   "parse" should "return plain original value for non-masked property" in {
-    val parsed = Sensitive.parse("my.raw.prop", "howdydoo") 
+    val parsed = SensitiveData.parse("my.raw.prop", "howdydoo") 
     parsed should not be (None)
     parsed foreach { case (name, value) => 
       name should be ("my.raw.prop")
@@ -56,22 +56,22 @@
   }
 
   "parsing with same name and value" should "not create a duplicate" in {
-    val parsed1 = Sensitive.parse("my.prop.same:masked", "howdydoo") 
+    val parsed1 = SensitiveData.parse("my.prop.same:masked", "howdydoo") 
     parsed1 should not be (None)
-    val parsed2 = Sensitive.parse("my.prop.same:masked", "howdydoo") 
+    val parsed2 = SensitiveData.parse("my.prop.same:masked", "howdydoo") 
     parsed2 should be (parsed1)
   }
 
   "parsing with same name but different value" should "create separate entries" in {
-    val parsed1 = Sensitive.parse("my.prop.changing:masked", "howdy") 
+    val parsed1 = SensitiveData.parse("my.prop.changing:masked", "howdy") 
     parsed1 should not be (None)
-    val parsed2 = Sensitive.parse("my.prop.changing:masked", "howdydoo") 
+    val parsed2 = SensitiveData.parse("my.prop.changing:masked", "howdydoo") 
     parsed2 should not be (parsed1)
   }
 
   "withValue" should "pass in unmasked value" in {
     withSetting("my.prop:masked", "howdydoo") {
-      val unmasked = Sensitive.withValue(sys.props("my.prop")) { identity }
+      val unmasked = SensitiveData.withValue(sys.props("my.prop")) { identity }
       unmasked should be ("howdydoo")
     }
   }
@@ -80,13 +80,13 @@
     val MaskChar = GwenSettings.`gwen.mask.char`
     val ZeroChar = '‎' // zero width space char
     val unknown = s"${MaskChar.toString * 5}${ZeroChar.toString * 42}"
-    val unmasked = Sensitive.withValue(unknown) { identity }
+    val unmasked = SensitiveData.withValue(unknown) { identity }
     unmasked should be (unknown)
   }
 
   "withValue" should "unmask masked value" in {
     withSetting("my.prop:masked", "howdydoo") {
-      val unmasked = Sensitive.withValue(s"Well ${sys.props("my.prop")} partner!") { identity }
+      val unmasked = SensitiveData.withValue(s"Well ${sys.props("my.prop")} partner!") { identity }
       unmasked should be ("Well howdydoo partner!")
     }
   }
@@ -94,7 +94,7 @@
   "withValue" should "unmask multiple masked values" in {
     withSetting("my.prop.1:masked", "howdydoo") {
       withSetting("my.prop.2:masked", "partner") {
-        val unmasked = Sensitive.withValue(s"Well ${sys.props("my.prop.1")} ${sys.props("my.prop.2")}!") { identity }
+        val unmasked = SensitiveData.withValue(s"Well ${sys.props("my.prop.1")} ${sys.props("my.prop.2")}!") { identity }
         unmasked should be ("Well howdydoo partner!")
       }
     }
@@ -103,7 +103,7 @@
   "withValue" should "unmask multiple masked values in a multiline string" in {
     withSetting("my.prop.1:masked", "howdydoo") {
       withSetting("my.prop.2:masked", "partner") {
-        val unmasked = Sensitive.withValue(
+        val unmasked = SensitiveData.withValue(
           s"""|Well
               | ${sys.props("my.prop.1")}
               |  ${sys.props("my.prop.2")}!""".stripMargin) { identity }
