@@ -57,7 +57,7 @@ object Errors {
   def evaluationError(msg: String) = throw new EvaluationException(msg)
   def invocationError(msg: String) = throw new InvocationException(msg)
   def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
-  def recursiveStepDefError(stepDef: Scenario, step: Step) = throw new RecursiveStepDefException(stepDef, step)
+  def recursiveStepDefError(stepDef: Scenario) = throw new RecursiveStepDefException(stepDef)
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
   def missingOrInvalidImportFileError(importTag: Tag) = throw new MissingOrInvalidImportFileException(importTag)
@@ -152,7 +152,7 @@ object Errors {
   class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step${at(SourceRef.asString(step.sourceRef))}: $step: ${cause.getMessage}", cause)
   
   /** Signals an infinite recursive StepDef. */
-  class RecursiveStepDefException(stepDef: Scenario, step: Step) extends GwenException(s"StepDef ${stepDef.name} is infinitely recursive${at(SourceRef.asString(stepDef.sourceRef))}: $step")
+  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Infinite recursion detected in called StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
 
   /** Thrown when a decoding error occurs. */
   class DecodingException(msg: String) extends GwenException(msg)

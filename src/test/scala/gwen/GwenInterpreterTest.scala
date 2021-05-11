@@ -17,9 +17,9 @@
 package gwen
 
 import gwen.core.GwenOptions
-import gwen.core.eval.EvalContext
-import gwen.core.eval.EvalEngine
-import gwen.core.eval.EvalEnvironment
+import gwen.core.engine.EvalContext
+import gwen.core.engine.EvalEngine
+import gwen.core.engine.EvalEnvironment
 import gwen.core.model.Passed
 import gwen.core.model.Skipped
 

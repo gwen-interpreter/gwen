@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core.engine.binding
 
-import gwen.core.eval.EvalContext
-import gwen.core.eval.EvalEnvironment
-import gwen.core.eval.support.SQLSupport
+import gwen.core.engine.EvalContext
+import gwen.core.engine.EvalEnvironment
+import gwen.core.engine.support.SQLSupport
 
 import scala.util.Try
 

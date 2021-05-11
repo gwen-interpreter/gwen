@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core.engine.binding
 
-import gwen.core.eval.EvalContext
+import gwen.core.engine.EvalContext
 import gwen.core.model.DataTable
 import gwen.core.Errors
 

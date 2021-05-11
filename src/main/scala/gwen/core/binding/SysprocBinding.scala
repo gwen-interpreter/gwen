@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core.engine.binding
 
-import gwen.core.eval.EvalContext
-import gwen.core.eval.EvalEnvironment
+import gwen.core.engine.EvalContext
+import gwen.core.engine.EvalEnvironment
 
 import scala.sys.process._
 import scala.util.Try

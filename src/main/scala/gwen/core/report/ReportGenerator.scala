@@ -17,7 +17,7 @@
 package gwen.core.report
 
 import gwen.core._
-import gwen.core.eval.EvalContext
+import gwen.core.engine.EvalContext
 import gwen.core.model._
 import gwen.core.model.event.LifecycleEventDispatcher
 import gwen.core.model.gherkin.Spec

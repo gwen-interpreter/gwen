@@ -17,7 +17,7 @@
 package gwen
 
 import gwen.core._
-import gwen.core.eval.EvalContext
+import gwen.core.engine.EvalContext
 import gwen.core.model.ReservedKeyword
 import gwen.core.model.StepKeyword
 import gwen.core.model.StateLevel

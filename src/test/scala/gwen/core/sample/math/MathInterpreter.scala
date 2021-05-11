@@ -17,9 +17,9 @@
 package gwen.core.sample.math
 
 import gwen.core._
-import gwen.core.eval._
-import gwen.core.eval.step.Bind
-import gwen.core.eval.step.UnitStep
+import gwen.core.engine._
+import gwen.core.engine.lambda.UnitStep
+import gwen.core.engine.lambda.unit.BindAttribute
 import gwen.core.model.gherkin.Step
 
 import scala.io.Source
@@ -61,9 +61,9 @@ class MathEngine extends EvalEngine[MathContext] {
   override def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: MathContext): UnitStep[MathContext] = {
     step.expression match {
       case r"""([a-z])$x = (\d+)$value""" =>
-        new Bind(x, value, this, ctx)
+        new BindAttribute(x, value, this, ctx)
       case r"([a-z])$x = ([a-z])$y" =>
-        new Bind(x, env.scopes.get(y), this, ctx)
+        new BindAttribute(x, env.scopes.get(y), this, ctx)
       case r"""z = ([a-z])$x \+ ([a-z])$y""" =>
         new Sum(env.scopes.get(x).toInt, env.scopes.get(y).toInt, this, ctx)
       case r"""([a-z])$x == (\d+)$value""" =>

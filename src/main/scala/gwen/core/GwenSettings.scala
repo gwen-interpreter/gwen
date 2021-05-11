@@ -68,7 +68,7 @@ object GwenSettings {
    * to set the ramp up interval (in seconds) for staggering parallel feature executions  
    * (this setting is optional and only used in for parallel execution options).
    */
-  def `gwen.rampup.interval.seconds`: Option[Int] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toInt)
+  def `gwen.rampup.interval.seconds`: Option[Long] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toLong)
   
   /**
     * Provides access to the `gwen.report.suppress.meta` setting used to control whether 

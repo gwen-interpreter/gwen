@@ -18,7 +18,7 @@ package gwen.core.report.junit
 import gwen.core._
 import gwen.core.Formatting.escapeXml
 import gwen.core.Formatting.padWithZeroes
-import gwen.core.eval.SpecNormaliser
+import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
 import gwen.core.report.ReportFormatter
 

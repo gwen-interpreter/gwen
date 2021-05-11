@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core.engine.binding
 
 import gwen.core.Errors
-import gwen.core.eval.EvalContext
+import gwen.core.engine.EvalContext
 
 /** 
  * Defines a named binding and provides access to its evaluated value. 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core.engine.binding
 
-import gwen.core.eval.EvalContext
+import gwen.core.engine.EvalContext
 
 class SimpleBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 

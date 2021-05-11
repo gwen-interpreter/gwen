@@ -17,8 +17,8 @@
 package gwen
 
 import gwen.core._
-import gwen.core.eval.EvalContext
-import gwen.core.eval.EvalEngine
+import gwen.core.engine.EvalContext
+import gwen.core.engine.EvalEngine
 
 import gwen.core.model.EvalStatus
 import gwen.core.model.FeatureUnit
@@ -80,7 +80,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
     }
   }
 
-  def lifecycle = engine.lifecycle
+  def lifecycle = engine
 
   /**
     * Interprets a single step expression.

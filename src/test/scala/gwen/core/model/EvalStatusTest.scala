@@ -17,7 +17,7 @@
 package gwen.core.model
 
 import gwen.core.TestModel
-import gwen.core.eval.SpecNormaliser
+import gwen.core.engine.SpecNormaliser
 import gwen.core.model.gherkin.GherkinParser
 import gwen.core.model.gherkin.Spec
 
