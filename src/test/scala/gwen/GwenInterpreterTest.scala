@@ -23,6 +23,8 @@ import gwen.core.model.Skipped
 import gwen.core.model.Passed
 import gwen.core.model.state.EnvState
 
+import org.mockito.Matchers.any
+import org.mockito.Matchers.same
 import org.mockito.Mockito
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
@@ -51,12 +53,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEngine = Mockito.mock(classOf[EvalEngine[EvalContext]], Mockito.CALLS_REAL_METHODS)
     val app = createApp(options, mockEngine, mockRepl)
 
-    when(mockEngine.init(options, None)).thenReturn(mockCtx)
+    when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockLauncher.run(options, Some(mockCtx))).thenReturn(Skipped)
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine).init(options, None)
+    verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
     verify(mockRepl).run()
   }
@@ -73,7 +75,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine, never()).init(options, None)
+    verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()
   }
   
@@ -86,12 +88,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEngine = mock[EvalEngine[EvalContext]]
     val app = createApp(options, mockEngine, mockRepl)
 
-    when(mockEngine.init(options, None)).thenReturn(mockCtx)
+    when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockLauncher.run(options, Some(mockCtx))).thenReturn(Passed(1))
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine).init(options, None)
+    verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
     verify(mockRepl).run()
   }
@@ -105,12 +107,12 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     val mockEngine = mock[EvalEngine[EvalContext]]
     val app = createApp(options, mockEngine, mockRepl)
 
-    when(mockEngine.init(options, None)).thenReturn(mockCtx)
+    when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockLauncher.run(options, Some(mockCtx))).thenReturn(Passed(1))
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine).init(options, None)
+    verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
     verify(mockRepl).run()
   }
@@ -127,7 +129,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine, never()).init(options, None)
+    verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()
     
   }
@@ -144,7 +146,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     app.run(options, mockLauncher) should be (0)
     
-    verify(mockEngine, never()).init(options, None)
+    verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()
   }
   

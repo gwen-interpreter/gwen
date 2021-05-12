@@ -63,6 +63,8 @@ case class Step(
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 
+  def hasDualColumnTable: Boolean = table.nonEmpty && table.head._2.size == 2
+
   /** Returns a string representation of this step. */
   override def toString: String = s"$keyword ${expression}"
 

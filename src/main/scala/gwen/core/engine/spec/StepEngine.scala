@@ -85,18 +85,25 @@ trait StepEngine[T <: EvalContext] {
     val eStep = Try(healthCheck(parent, iStep, ctx)) match {
       case Failure(e) => withStep(iStep) { throw e }
       case _ =>
-        translateCompositeStep(parent, iStep) orElse {
+        translateCompositeStep(iStep) orElse {
           translateStepDef(iStep, ctx)
           } map { lambda => 
           withStep(iStep.copy(withEvalStatus = Pending)) { s =>
             lambda(parent, s, ctx)
           }
         } getOrElse {
-          Try(translateStep(parent, iStep)) match {
+          Try(translateStep(iStep)) match {
             case Success(lambda) if (iStep.evalStatus.status != StatusKeyword.Failed) => 
               withStep(iStep) { s => s tap { _ => lambda(parent, s, ctx) } }
             case Failure(e) => 
-              withStep(iStep) { throw e }
+              withStep(iStep) {
+                parent match {
+                  case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
+                    Errors.recursiveStepDefError(scenario)
+                  case _ =>
+                    throw e
+                }
+              }
             case _ =>
               iStep
           }

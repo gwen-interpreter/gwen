@@ -18,7 +18,6 @@ package gwen.core.engine
 
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.lambda.CompositeStep
-import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
 /**
@@ -32,19 +31,17 @@ trait StepTranslator[T <: EvalContext] {
   /**
     * Must be implemented to translate a composite DSL step into an executable operation.
     *
-    * @param parent the parent (calling node)
     * @param step the step to translate
     * @return a function that performs the composite step operation and returns it in evaluated form
     */
-  def translateCompositeStep(parent: Identifiable, step: Step): Option[CompositeStep[T]]
+  def translateCompositeStep(step: Step): Option[CompositeStep[T]]
 
   /**
     * Must be implemented to translate a DSL step into an executable operation.
     *
-    * @param parent the parent (calling node)
     * @param step the step to translate
     * @return a step operation that throws an exception on failure
     */
-  def translateStep(parent: Identifiable, step: Step): UnitStep[T]
+  def translateStep(step: Step): UnitStep[T]
   
 }

@@ -29,7 +29,7 @@ import java.io.IOException
 class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestModel {
 
   val engine = EvalEngine.DefaultInstance
-  val ctx = engine.init(new GwenOptions(), None)
+  val ctx = engine.init(new GwenOptions(), EnvState())
 
   val parent = mock[Identifiable]
   
@@ -57,7 +57,7 @@ class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestM
   }
   
   "Step that is a stepdef" should "be evaluated" in {
-    val ctx = engine.init(new GwenOptions(), Some(EnvState()))
+    val ctx = engine.init(new GwenOptions(), EnvState())
     val stepDef = Scenario(List[Tag](Tag("@StepDef"), Tag("@Action")), "I assign x, y, and z", Nil, None, List(
         Step(StepKeyword.Given.toString, """x is "1""""),
         Step(StepKeyword.And.toString, """y is "2""""),

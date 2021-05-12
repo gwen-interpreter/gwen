@@ -69,7 +69,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
     val futures = scenarios.filter(!_.isStepDef).to(LazyList).map { scenario =>
       Future {
-        val ctxClone = engine.init(ctx.options, Some(ctx.cloneState))
+        val ctxClone = engine.init(ctx.options, ctx.cloneState)
         try {
           evaluateOrTransitionScenario(parent, scenario, env, ctxClone, acc.asScala.toList) tap { s =>
             acc.add(s)

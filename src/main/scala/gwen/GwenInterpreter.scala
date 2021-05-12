@@ -27,6 +27,7 @@ import gwen.core.model.Root
 import gwen.core.model.SpecResult
 import gwen.core.model.SpecType
 import gwen.core.model.gherkin.Step
+import gwen.core.model.state.EnvState
 
 import scala.util.Try
 
@@ -75,7 +76,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
         PropertyConfigurator.configure(config); 
       }
     }
-    engine.init(options, None) tap { env =>
+    engine.init(options, EnvState()) tap { env =>
       logger.info(s"Evaluation context initialised")
     }
   }

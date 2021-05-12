@@ -32,7 +32,7 @@ import scala.concurrent.duration._
 
 object EvalEngine {
   val DefaultInstance = new EvalEngine[EvalContext]() {
-    override def init(options: GwenOptions, envOpt: Option[EnvState] = None): EvalContext = {
+    override def init(options: GwenOptions, envState: EnvState): EvalContext = {
       new EvalContext(options, EnvState())
     }
   }
@@ -49,47 +49,37 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
     * Initialises the engine and returns a new evaluation context.
     * 
     * @param options command line options
-    * @param envState optional environment context to use
+    * @param envState the initial environment state
     */
-  def init(options: GwenOptions, envState: Option[EnvState]): T
+  def init(options: GwenOptions, envState: EnvState): T
 
   /**
     * Translates a composite DSL step into an engine operation.
     *
-    * @param parent the parent (calling node)
     * @param step the step to translate
     * @return an optional function that performs the composite step operation and returns it in evaluated form
     */
-  override def translateCompositeStep(parent: Identifiable, step: Step): Option[CompositeStep[T]] = {
+  override def translateCompositeStep(step: Step): Option[CompositeStep[T]] = {
     step.expression match {
-      case r"""(.+?)$doStep for each data record""" => Some {
-        new ForEachTableRecord(doStep, this)
-      }
-      case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" =>  Some { 
-        new ForEachDelimited(doStep, entry, source, delimiter, this)
-      }
-      case r"""(.+?)$doStep if (.+?)$$$condition""" =>  Some {
-        new IfCondition(doStep, condition, this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" => Some {
-        new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" => Some {
+      case r"""(.+?)$doStep for each data record""" =>
+        Some(new ForEachTableRecord(doStep, this))
+      case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" =>
+        Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
+      case r"""(.+?)$doStep if (.+?)$$$condition""" =>
+        Some(new IfCondition(doStep, condition, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
+        Some(new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" =>
+        Some(new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
+        Some(new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" =>
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
-        new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this)
-      }
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) => Some {
-        new Repeat(doStep, operation, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), this)
-      }
+        Some(new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
+        Some(new Repeat(doStep, operation, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) =>
+        Some(new Repeat(doStep, operation, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), this))
       case _ =>
         None
     }
@@ -98,11 +88,10 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
   /**
     * Translates a DSL step into an engine operation.
     *
-    * @param parent the parent (calling node)
     * @param step the step to translate
     * @return a step operation that throws an exception on failure
     */
-  override def translateStep(parent: Identifiable, step: Step): UnitStep[T] = {
+  override def translateStep(step: Step): UnitStep[T] = {
     step.expression match {
       case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
         new SetProperty(name, value)
@@ -157,12 +146,7 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
       case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
         new AttachFile(name, filepath)
       case _ =>
-        parent match {
-          case scenario: Scenario if (scenario.isStepDef) =>
-            Errors.recursiveStepDefError(scenario)
-          case _ =>
-            Errors.undefinedStepError(step)
-        }
+        Errors.undefinedStepError(step)
         
     }
   }
