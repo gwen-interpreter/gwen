@@ -28,6 +28,10 @@ import gwen.core.model.gherkin.Step
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import gwen.core.engine.lambda.CompositeStep
+import gwen.core.engine.lambda.composite.ForEachTableRecord
+import gwen.core.engine.lambda.composite.ForEachTableRecordAnnotated
+import gwen.core.engine.lambda.composite.StepDefCall
 
 /**
   * Step evaluation engine.
@@ -85,14 +89,16 @@ trait StepEngine[T <: EvalContext] {
       val eStep = Try(healthCheck(parent, iStep, env)) match {
         case Failure(e) => withStep(iStep) { throw e }
         case _ =>
-          translateComposite(parent, iStep, env, ctx) map { lambda => 
+          translateCompositeStep(parent, iStep) orElse {
+            translateStepDef(iStep, env)
+           } map { lambda => 
             withStep(iStep.copy(withEvalStatus = Pending)) { s =>
-              lambda(parent, s)
+              lambda(parent, s, ctx)
             }
           } getOrElse {
-            Try(translate(parent, iStep, env, ctx)) match {
+            Try(translateStep(parent, iStep)) match {
               case Success(lambda) if (iStep.evalStatus.status != StatusKeyword.Failed) => 
-                withStep(iStep) { s => s tap { _ => lambda(parent, s) } }
+                withStep(iStep) { s => s tap { _ => lambda(parent, s, ctx) } }
               case Failure(e) => 
                 withStep(iStep) { throw e }
               case _ =>
@@ -138,6 +144,22 @@ trait StepEngine[T <: EvalContext] {
       case Failure(error) =>
         val failure = Failed(System.nanoTime - start, new Errors.StepFailure(step, error))
         step.copy(withEvalStatus = failure)
+    }
+  }
+
+  private def translateStepDef(step: Step, env: EvalEnvironment): Option[CompositeStep[T]] = {
+    env.getStepDef(step.name) match {
+      case Some((stepDef, _)) if stepDef.isForEach && stepDef.isDataTable =>
+        val dataTable = ForEachTableRecord.parseFlatTable {
+          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map { 
+            tag => DataTable(tag, step) 
+          }
+        }
+        Some(new ForEachTableRecordAnnotated(stepDef, step, dataTable, this))
+      case Some((stepDef, params)) if !env.stepScope.containsScope(stepDef.name) =>
+        Some(new StepDefCall(step, stepDef, params, this))
+      case _ => 
+        None
     }
   }
 

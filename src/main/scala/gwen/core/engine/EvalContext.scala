@@ -41,8 +41,9 @@ import java.util.concurrent.Semaphore
 /**
   * Provides all evaluation capabilities.
   */
-class EvalContext(val options: GwenOptions, env: EvalEnvironment) extends InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-  with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
+class EvalContext(val options: GwenOptions, env: EvalEnvironment)
+    extends InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
+    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with EvalRules {
 
   Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
     if (config.toLowerCase.trim startsWith "file:") {

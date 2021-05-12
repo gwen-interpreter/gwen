@@ -18,7 +18,6 @@ package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.ComparisonOperator
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
@@ -27,10 +26,12 @@ import gwen.core.model.gherkin.Step
 import scala.util.Failure
 import scala.util.Success
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Assertion, env)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Assertion, env)
+    }
     val binding = ctx.getBinding(source)
     val expected = ctx.parseExpression(operator, expression)
     val actualValue = binding.resolve()

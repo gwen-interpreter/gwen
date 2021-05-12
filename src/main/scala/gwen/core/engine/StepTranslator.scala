@@ -34,21 +34,17 @@ trait StepTranslator[T <: EvalContext] {
     *
     * @param parent the parent (calling node)
     * @param step the step to translate
-    * @param env the environment state
-    * @param ctx the evaluation context
-    * @param a function that performs the composite step operation and returns it in evaluated form
+    * @return a function that performs the composite step operation and returns it in evaluated form
     */
-  def translateComposite(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): Option[CompositeStep[T]]
+  def translateCompositeStep(parent: Identifiable, step: Step): Option[CompositeStep[T]]
 
   /**
     * Must be implemented to translate a DSL step into an executable operation.
     *
     * @param parent the parent (calling node)
     * @param step the step to translate
-    * @param env the environment state
-    * @param ctx the evaluation context
     * @return a step operation that throws an exception on failure
     */
-  def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): UnitStep[T]
+  def translateStep(parent: Identifiable, step: Step): UnitStep[T]
   
 }

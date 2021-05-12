@@ -25,27 +25,29 @@ import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 import gwen.core.model.gherkin.Scenario
 
-class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T], ctx: T) extends ForEach[T](engine, ctx) {
+class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step): Step = {
-    env.topScope.pushObject(DataTable.tableKey, dataTable)
-    val doStepDef = stepDef.copy(
-      withTags = stepDef.tags filter { tag => 
-        tag.name != ReservedTags.ForEach.toString &&
-        !tag.name.startsWith(ReservedTags.DataTable.toString)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    ctx.withEnv { env =>
+      env.topScope.pushObject(DataTable.tableKey, dataTable)
+      val doStepDef = stepDef.copy(
+        withTags = stepDef.tags filter { tag => 
+          tag.name != ReservedTags.ForEach.toString &&
+          !tag.name.startsWith(ReservedTags.DataTable.toString)
+        }
+      )
+      env.removeStepDef(stepDef.name)
+      env.addStepDef(doStepDef)
+      try {
+        val records = () => {
+          dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+        }
+        evaluateForEach(records, DataTable.recordKey, parent, step, doStepDef.name, env, ctx)
+      } finally {
+        env.removeStepDef(doStepDef.name)
+        env.addStepDef(stepDef)
+        env.topScope.popObject(DataTable.tableKey)
       }
-    )
-    env.removeStepDef(stepDef.name)
-    env.addStepDef(doStepDef)
-    try {
-      val records = () => {
-        dataTable.records.indices.map(idx => dataTable.recordScope(idx))
-      }
-      evaluateForEach(records, DataTable.recordKey, parent, step, doStepDef.name)
-    } finally {
-      env.removeStepDef(doStepDef.name)
-      env.addStepDef(stepDef)
-      env.topScope.popObject(DataTable.tableKey)
     }
   }
 

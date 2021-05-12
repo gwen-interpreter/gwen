@@ -18,24 +18,25 @@ package gwen.core.engine.lambda.unit
 
 import gwen.core._
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class CaptureByJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class CaptureByJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Action, env)
-    val sourceValue = ctx.getBoundReferenceValue(source)
-    val result = ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
-      ctx.evaluateJsonPath(jsonPath, sourceValue) tap { content =>
-        env.addAttachment(target, "txt", content)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Action, env)
+      val sourceValue = ctx.getBoundReferenceValue(source)
+      val result = ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
+        ctx.evaluateJsonPath(jsonPath, sourceValue) tap { content =>
+          env.addAttachment(target, "txt", content)
+        }
       }
+      env.topScope.set(target, result)
     }
-    env.topScope.set(target, result)
   }
 
 }

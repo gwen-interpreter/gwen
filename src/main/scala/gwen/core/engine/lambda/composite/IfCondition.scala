@@ -18,35 +18,37 @@ package gwen.core.engine.lambda.composite
 
 import gwen.core.Errors
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.binding.JavaScriptBinding
 import gwen.core.engine.lambda.CompositeStep
+import gwen.core.engine.spec.StepDefEngine
 import gwen.core.model._
 import gwen.core.model.gherkin.Scenario
 import gwen.core.model.gherkin.Step
 
 import gwen.core.model.Passed
 
-class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: EvalEngine[T], ctx: T) extends CompositeStep[T](engine, ctx) {
+class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: StepDefEngine[T]) extends CompositeStep[T] {
 
-  override def apply(parent: Identifiable, step: Step): Step = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
     val binding = new JavaScriptBinding(condition, ctx)
     val javascript = binding.resolve()
-    env.getStepDef(doStep) foreach { stepDef =>
-      engine.checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)
+    ctx.withEnv { env =>
+      env.getStepDef(doStep) foreach { stepDef =>
+        ctx.checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)
+      }
     }
     val iStep = step.copy(withEvalStatus = Pending)
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
     val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil)
-    val stepDefCall = new StepDefCall(step, iStepDef, Nil, engine, ctx)
-    ctx.evaluate(stepDefCall(step, iStep)) {
+    val sdCall = () => engine.callStepDef(step, iStepDef, iStep, Nil, ctx)
+    ctx.evaluate(sdCall()) {
       val satisfied = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
       if (satisfied) {
         logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
-        stepDefCall(step, iStep)
+        sdCall()
       } else {
         logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
         step.copy(withEvalStatus = Passed(0))

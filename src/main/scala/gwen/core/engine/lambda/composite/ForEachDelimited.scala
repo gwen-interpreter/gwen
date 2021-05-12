@@ -21,14 +21,16 @@ import gwen.core.engine.EvalEngine
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: String, delimiter: String, engine: EvalEngine[T], ctx: T) extends ForEach[T](engine, ctx) {
+class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: String, delimiter: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step): Step = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     val sourceValue = ctx.getBoundReferenceValue(source)
     val values = () => {
       sourceValue.split(delimiter).toSeq
     }
-    evaluateForEach(values, entry, parent, step, doStep)
+    ctx.withEnv { env =>
+      evaluateForEach(values, entry, parent, step, doStep, env, ctx)
+    }
   }
 
 }

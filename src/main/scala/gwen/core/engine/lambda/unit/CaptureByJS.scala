@@ -18,20 +18,21 @@ package gwen.core.engine.lambda.unit
 
 import gwen.core._
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class CaptureByJS[T <: EvalContext](target: String, javascript: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class CaptureByJS[T <: EvalContext](target: String, javascript: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Action, env)
-    val result = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
-    env.topScope.set(target, result tap { content =>
-      env.addAttachment(target, "txt", content)
-    })
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Action, env)
+      val result = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
+      env.topScope.set(target, result tap { content =>
+        env.addAttachment(target, "txt", content)
+      })
+    }
   }
 
 }

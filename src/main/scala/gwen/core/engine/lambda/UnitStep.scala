@@ -17,22 +17,8 @@
 package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
-import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
 
 /**
   * Base class for all unit step lambdas.
   */
-abstract class UnitStep[T <: EvalContext](engine: EvalEngine[T], ctx: T) extends StepLambda[T, Unit](engine, ctx) {
-
-  /**
-    * The operation to apply.
-    *
-    * @param parent the calling node
-    * @param step the step to apply the operation to
-    */
-  override def apply(parent: Identifiable, step: Step): Unit
-
-}
-
+abstract class UnitStep[T <: EvalContext] extends StepLambda[T, Unit]

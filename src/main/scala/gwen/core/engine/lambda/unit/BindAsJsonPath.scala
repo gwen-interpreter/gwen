@@ -17,18 +17,19 @@
 package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 import gwen.core.engine.binding.JsonPathBinding
 
-class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Context, env)
-    JsonPathBinding.bind(target, jsonPath, source, env)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Context, env)
+      JsonPathBinding.bind(target, jsonPath, source, env)
+    }
   }
 
 }

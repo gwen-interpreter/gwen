@@ -57,57 +57,39 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
     *
     * @param parent the parent (calling node)
     * @param step the step to translate
-    * @param env the environment state
-    * @param ctx the evaluation context
     * @return an optional function that performs the composite step operation and returns it in evaluated form
     */
-  override def translateComposite(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): Option[CompositeStep[T]] = {
+  override def translateCompositeStep(parent: Identifiable, step: Step): Option[CompositeStep[T]] = {
     step.expression match {
       case r"""(.+?)$doStep for each data record""" => Some {
-        new ForEachTableRecord(doStep, this, ctx)
+        new ForEachTableRecord(doStep, this)
       }
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" =>  Some { 
-        new ForEachDelimited(doStep, entry, source, delimiter, this, ctx)
+        new ForEachDelimited(doStep, entry, source, delimiter, this)
       }
       case r"""(.+?)$doStep if (.+?)$$$condition""" =>  Some {
-        new IfCondition(doStep, condition, this, ctx)
+        new IfCondition(doStep, condition, this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this, ctx)
+        new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" => Some {
-        new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), this, ctx)
+        new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this, ctx)
+        new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" => Some {
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
-        new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this, ctx)
+        new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" => Some {
-        new Repeat(doStep, operation, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this, ctx)
+        new Repeat(doStep, operation, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this)
       }
       case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) => Some {
-        new Repeat(doStep, operation, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), this, ctx)
+        new Repeat(doStep, operation, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), this)
       }
       case _ =>
-        translateStepDef(step, env, ctx)
-    }
-  }
-
-  private def translateStepDef(step: Step, env: EvalEnvironment, ctx: T): Option[CompositeStep[T]] = {
-    env.getStepDef(step.name) match {
-      case Some((stepDef, _)) if stepDef.isForEach && stepDef.isDataTable =>
-        val dataTable = ForEachTableRecord.parseFlatTable {
-          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map { 
-            tag => DataTable(tag, step) 
-          }
-        }
-        Some(new ForEachTableRecordAnnotated(stepDef, step, dataTable, this, ctx))
-      case Some((stepDef, params)) if !env.stepScope.containsScope(stepDef.name) =>
-        Some(new StepDefCall(step, stepDef, params, this, ctx))
-      case _ => 
         None
     }
   }
@@ -117,64 +99,62 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
     *
     * @param parent the parent (calling node)
     * @param step the step to translate
-    * @param env the environment state
-    * @param ctx the evaluation context
     * @return a step operation that throws an exception on failure
     */
-  override def translate(parent: Identifiable, step: Step, env: EvalEnvironment, ctx: T): UnitStep[T] = {
+  override def translateStep(parent: Identifiable, step: Step): UnitStep[T] = {
     step.expression match {
       case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
-        new SetProperty(name, value, this, ctx)
+        new SetProperty(name, value)
       case r"""I reset my (.+?)$name (?:property|setting)""" =>
-        new ClearProperty(name, this, ctx)
+        new ClearProperty(name)
       case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" =>
-        new BindAttribute(attribute, step.orDocString(value), this, ctx)
+        new BindAttribute(attribute, step.orDocString(value))
       case r"""I wait (\d+)$duration second(?:s?)""" =>
-        new Sleep(duration.toInt, this, ctx)
+        new Sleep(duration.toInt)
       case r"""I execute system process "(.+?)"$$$systemproc""" =>
-        new ExecuteSysProc(step.orDocString(systemproc), this, ctx)
+        new ExecuteSysProc(step.orDocString(systemproc))
       case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
-        new ExecuteSysProcUnix(step.orDocString(systemproc), this, ctx)
+        new ExecuteSysProcUnix(step.orDocString(systemproc))
       case r"""I execute (?:javascript|js) "(.+?)$javascript"""" =>
-        new ExecuteJS(step.orDocString(javascript), this, ctx)
+        new ExecuteJS(step.orDocString(javascript))
       case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$$$expression""" =>
-        new CaptureByJS(attribute, step.orDocString(expression), this, ctx)
+        new CaptureByJS(attribute, step.orDocString(expression))
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
-        new CaptureByXPath(name, expression, source, XMLNodeType.withName(targetType), this, ctx)
+        new CaptureByXPath(name, expression, source, XMLNodeType.withName(targetType))
       case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
-        new CaptureByRegex(name, expression, source, this, ctx)
+        new CaptureByRegex(name, expression, source)
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
-        new CaptureByJsonPath(name, expression, source, this, ctx)
+        new CaptureByJsonPath(name, expression, source)
       case r"""I capture (.+?)$source as (.+?)$$$attribute""" =>
-        new Capture(attribute, source, this, ctx)
+        new Capture(attribute, source)
       case r"""I capture (.+?)$$$attribute""" =>
-        new Capture(attribute, attribute, this, ctx)
+        new Capture(attribute, attribute)
       case r"""I base64 decode (.+?)$attribute as (.+?)$$$name""" =>
-        new CaptureBase64Decoded(name, attribute, this, ctx)
+        new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>
-        new CaptureBase64Decoded(attribute, attribute, this, ctx)
+        new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$$$expression""" =>
-        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), this, ctx)
+        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression))
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" =>
-        new BindAsXPath(attribute, step.orDocString(expression), targetType, source, this, ctx)
+        new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" =>
-        new BindAsRegex(attribute, step.orDocString(expression), source, this, ctx)
+        new BindAsRegex(attribute, step.orDocString(expression), source)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" =>
-        new BindAsJsonPath(attribute, step.orDocString(expression), source, this, ctx)
+        new BindAsJsonPath(attribute, step.orDocString(expression), source)
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
-        new BindAsSQL(attribute, dbName, selectStmt, this, ctx)
+        new BindAsSQL(attribute, dbName, selectStmt)
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" =>
-        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt), this, ctx)
+        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" =>
-        new UpdateBySQL(dbName, step.orDocString(updateStmt), this, ctx)
+        new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$$$expression""" =>
-        new CompareByPath(source, BindingType.withName(matcher), path, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined, this, ctx)
+        new CompareByPath(source, BindingType.withName(matcher), path, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined, this, ctx)
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined)
       case r"""(.+?)$attribute should be absent""" =>
-        new IsAbsent(attribute, this, ctx)  
+        new IsAbsent(attribute)  
       case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
-        new AttachFile(name, filepath, this, ctx)
+        new AttachFile(name, filepath)
       case _ =>
         parent match {
           case scenario: Scenario if (scenario.isStepDef) =>

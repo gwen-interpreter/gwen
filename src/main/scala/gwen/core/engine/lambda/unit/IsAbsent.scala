@@ -17,7 +17,6 @@
 package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
@@ -25,10 +24,12 @@ import gwen.core.model.gherkin.Step
 
 import scala.util.Try
 
-class IsAbsent[T <: EvalContext](source: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class IsAbsent[T <: EvalContext](source: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Assertion, env)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Assertion, env)
+    }
     ctx.perform {
       assert(Try(ctx.getBoundReferenceValue(source)).isFailure, s"Expected $source to be absent")
     }

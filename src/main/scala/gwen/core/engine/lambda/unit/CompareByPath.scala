@@ -18,7 +18,6 @@ package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.ComparisonOperator
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.support.XMLNodeType
@@ -29,31 +28,33 @@ import gwen.core.model.gherkin.Step
 import scala.util.Success
 import scala.util.Failure
 
-class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Value, path: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Value, path: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Assertion, env)
-    val expected = ctx.parseExpression(operator, expression)
-    ctx.perform {
-      val src = env.scopes.get(source)
-      val actual = pathType match {
-        case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
-        case BindingType.xpath => ctx.evaluateXPath(
-          path, src, XMLNodeType.text)
-      }
-      val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
-      val op = {
-        if (operator == ComparisonOperator.`match template file`) {
-          ComparisonOperator.`match template` 
-        } else {
-          operator
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Assertion, env)
+      val expected = ctx.parseExpression(operator, expression)
+      ctx.perform {
+        val src = env.scopes.get(source)
+        val actual = pathType match {
+          case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
+          case BindingType.xpath => ctx.evaluateXPath(
+            path, src, XMLNodeType.text)
         }
-      }
-      result match {
-        case Success(assertion) =>
-          assert(assertion, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
-        case Failure(error) =>
-          assert(assertion = false, error.getMessage)
+        val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
+        val op = {
+          if (operator == ComparisonOperator.`match template file`) {
+            ComparisonOperator.`match template` 
+          } else {
+            operator
+          }
+        }
+        result match {
+          case Success(assertion) =>
+            assert(assertion, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
+          case Failure(error) =>
+            assert(assertion = false, error.getMessage)
+        }
       }
     }
   }

@@ -17,22 +17,10 @@
 package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.StepLambda
-import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
 /**
   * Base class for compositie step lambdas.
   */
-abstract class CompositeStep[T <: EvalContext](engine: EvalEngine[T], ctx: T) extends StepLambda[T, Step](engine, ctx) {
-
-  /**
-    * The composite step operation to apply.
-    *
-    * @param parent the calling node
-    * @param step the composite step to apply to operation to
-    */
-  override def apply(parent: Identifiable, step: Step): Step
-
-}
+abstract class CompositeStep[T <: EvalContext] extends StepLambda[T, Step]

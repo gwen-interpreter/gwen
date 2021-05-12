@@ -17,15 +17,15 @@
 package gwen.core.engine.lambda.composite
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.CompositeStep
+import gwen.core.engine.spec.StepDefEngine
 import gwen.core.model._
 import gwen.core.model.gherkin.Scenario
 import gwen.core.model.gherkin.Step
 
-class StepDefCall[T <: EvalContext](caller: Identifiable, stepDef: Scenario, params: List[(String, String)], engine: EvalEngine[T], ctx: T) extends CompositeStep[T](engine, ctx) {
+class StepDefCall[T <: EvalContext](caller: Identifiable, stepDef: Scenario, params: List[(String, String)], engine: StepDefEngine[T]) extends CompositeStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Step = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     engine.callStepDef(caller, stepDef, step, params, ctx)
   }
 

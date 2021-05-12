@@ -28,9 +28,9 @@ import gwen.core.model.gherkin.Step
 
 import scala.concurrent.duration.Duration
 
-class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T], ctx: T) extends CompositeStep[T](engine, ctx) {
+class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T] {
 
-  override def apply(parent: Identifiable, step: Step): Step = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     ctx.withEnv { env =>
       assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
       assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")

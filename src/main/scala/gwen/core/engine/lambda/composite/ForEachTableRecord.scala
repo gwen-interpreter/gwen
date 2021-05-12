@@ -24,14 +24,16 @@ import gwen.core.model.FlatTable
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T], ctx: T) extends ForEach[T](engine, ctx) {
+class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step): Step = {
-    val dataTable = ForEachTableRecord.parseFlatTable(env.topScope.getObject(DataTable.tableKey))
-    val records = () => {
-      dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    ctx.withEnv { env =>
+      val dataTable = ForEachTableRecord.parseFlatTable(env.topScope.getObject(DataTable.tableKey))
+      val records = () => {
+        dataTable.records.indices.map(idx => dataTable.recordScope(idx))
+      }
+      evaluateForEach(records, DataTable.recordKey, parent, step, doStep, env, ctx)
     }
-    evaluateForEach(records, DataTable.recordKey, parent, step, doStep)
   }
 
 }

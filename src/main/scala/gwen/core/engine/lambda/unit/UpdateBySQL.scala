@@ -17,22 +17,23 @@
 package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.support.SQLSupport
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class UpdateBySQL[T <: EvalContext](dbName: String, updateStmt: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class UpdateBySQL[T <: EvalContext](dbName: String, updateStmt: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Action, env)
-    SQLSupport.checkDBSettings(dbName)
-    val rowsAffected = ctx.evaluate(0) {
-      ctx.executeSQLUpdate(updateStmt, dbName)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Action, env)
+      SQLSupport.checkDBSettings(dbName)
+      val rowsAffected = ctx.evaluate(0) {
+        ctx.executeSQLUpdate(updateStmt, dbName)
+      }
+      env.scopes.set(s"$dbName rows affected", rowsAffected.toString)
     }
-    env.scopes.set(s"$dbName rows affected", rowsAffected.toString)
   }
 
 }

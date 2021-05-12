@@ -17,16 +17,17 @@
 package gwen.core.engine.lambda.unit
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
-class Sleep[T <: EvalContext](secs: Long, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class Sleep[T <: EvalContext](secs: Long) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Action, env)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Action, env)
+    }
     ctx.perform {
       Thread.sleep(secs * 1000)
     }

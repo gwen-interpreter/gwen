@@ -19,7 +19,6 @@ package gwen.core.engine.lambda.unit
 import gwen.core.Errors
 
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
@@ -27,16 +26,18 @@ import gwen.core.model.gherkin.Step
 
 import java.io.File
 
-class AttachFile[T <: EvalContext](target: String, filepath: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class AttachFile[T <: EvalContext](target: String, filepath: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Action, env)
-    val file = new File(filepath)
-    if (!file.exists) { 
-      Errors.fileAttachError(file, "not found")
-    }
-    ctx.perform {
-      env.addAttachment(target, file)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Action, env)
+      val file = new File(filepath)
+      if (!file.exists) { 
+        Errors.fileAttachError(file, "not found")
+      }
+      ctx.perform {
+        env.addAttachment(target, file)
+      }
     }
   }
 

@@ -18,7 +18,6 @@ package gwen.core.engine.lambda.unit
 
 import gwen.core._
 import gwen.core.engine.EvalContext
-import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
@@ -28,15 +27,17 @@ import gwen.core.engine.binding.FileBinding
 import gwen.core.engine.binding.JavaScriptBinding
 import gwen.core.engine.binding.SysprocBinding
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType.Value, value: String, engine: EvalEngine[T], ctx: T) extends UnitStep[T](engine, ctx) {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType.Value, value: String) extends UnitStep[T] {
 
-  def apply(parent: Identifiable, step: Step): Unit = {
-    engine.checkStepRules(step, BehaviorType.Context, env)
-    bindingType match {
-      case BindingType.javascript => JavaScriptBinding.bind(target, value, env)
-      case BindingType.sysproc => SysprocBinding.bind(target, value, env)
-      case BindingType.file => FileBinding.bind(target, value, env)
-      case _ => env.topScope.set(target, Settings.get(value))
+  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+    ctx.withEnv { env =>
+      ctx.checkStepRules(step, BehaviorType.Context, env)
+      bindingType match {
+        case BindingType.javascript => JavaScriptBinding.bind(target, value, env)
+        case BindingType.sysproc => SysprocBinding.bind(target, value, env)
+        case BindingType.file => FileBinding.bind(target, value, env)
+        case _ => env.topScope.set(target, Settings.get(value))
+      }
     }
   }
 
