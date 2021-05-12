@@ -26,13 +26,11 @@ import gwen.core.model.gherkin.Step
 class Capture[T <: EvalContext](target: String, source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val result = ctx.getBoundReferenceValue(source)
-      env.topScope.set(target, result tap { content =>
-        env.addAttachment(target, "txt", content)
-      })
-    }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val result = ctx.getBoundReferenceValue(source)
+    ctx.topScope.set(target, result tap { content =>
+      ctx.addAttachment(target, "txt", content)
+    })
   }
 
 }

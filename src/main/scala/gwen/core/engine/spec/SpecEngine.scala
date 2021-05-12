@@ -19,7 +19,6 @@ package gwen.core.engine.spec
 import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.engine.EvalEnvironment
 import gwen.core.model._
 import gwen.core.model.gherkin.Dialect
 import gwen.core.model.gherkin.Spec
@@ -36,25 +35,21 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     engine: EvalEngine[T] =>
 
   private [spec] def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    ctx.withEnv { env =>
-      spec.specFile foreach { file =>
-        env.topScope.set("gwen.feature.file.name", file.getName)
-        env.topScope.set("gwen.feature.file.path", file.getPath)
-        env.topScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
-      }
-      env.topScope.set("gwen.feature.name", spec.feature.name)
-      Dialect.withLanguage(spec.feature.language) {
-        val nspec = normaliseSpec(spec, spec.specFile, dataRecord)
-        evaluateSpec(parent, nspec, metaResults, env, ctx)
-      }
+    spec.specFile foreach { file =>
+      ctx.topScope.set("gwen.feature.file.name", file.getName)
+      ctx.topScope.set("gwen.feature.file.path", file.getPath)
+      ctx.topScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
+    }
+    ctx.topScope.set("gwen.feature.name", spec.feature.name)
+    Dialect.withLanguage(spec.feature.language) {
+      val nspec = normaliseSpec(spec, spec.specFile, dataRecord)
+      evaluateSpec(parent, nspec, metaResults, ctx)
     }
   }
 
   private [spec] def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normaliseSpec(meta, meta.specFile, dataRecord)
-    val metaResult = ctx.withEnv { env => 
-      evaluateSpec(parent, nmeta, metaResults, env, ctx)
-    }
+    val metaResult = evaluateSpec(parent, nmeta, metaResults, ctx)
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
       case Passed(_) | Loaded =>
@@ -69,11 +64,11 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   /**
     * Evaluates a specification.
     */
-  private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], env: EvalEnvironment, ctx: T): SpecResult = {
+  private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
     val specType = spec.specType
-    env.topScope.pushObject(SpecType.toString, specType)
+    ctx.topScope.pushObject(SpecType.toString, specType)
     try {
-      beforeSpec(parent, spec, env.scopes)
+      beforeSpec(parent, spec, ctx.scopes)
       val started = new Date()
       (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
         logger.info("")
@@ -95,11 +90,11 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
         } else {
           logger.info(result.toString)
         }
-        afterSpec(result, env.scopes)
+        afterSpec(result, ctx.scopes)
       }
     } finally {
       spec.specFile foreach { _ =>
-        env.topScope.popObject(SpecType.toString)
+        ctx.topScope.popObject(SpecType.toString)
       }
     }
   }

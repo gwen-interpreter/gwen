@@ -20,6 +20,7 @@ import gwen.core.BaseTest
 import gwen.core.Errors._
 import gwen.core.TestModel
 import gwen.core.model._
+import gwen.core.model.state.EnvState
 
 import org.scalatest.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -538,7 +539,7 @@ class EnvContextTest extends BaseTest with Matchers with TestModel {
 
   }
   
-  private def newEnv: EvalEnvironment = new EvalEnvironment() { 
+  private def newEnv: EvalEnvironment = new EvalEnvironment(EnvState()) { 
     override def close(): Unit = {
       super.reset(StateLevel.feature)
     }

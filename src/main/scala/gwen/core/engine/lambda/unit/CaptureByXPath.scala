@@ -28,16 +28,14 @@ import gwen.core.model.gherkin.Step
 class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType.Value) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val sourceValue = ctx.getBoundReferenceValue(source)
-      val result = ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
-        ctx.evaluateXPath(xpath, sourceValue, nodeType) tap { content =>
-          env.addAttachment(target, "txt", content)
-        }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val sourceValue = ctx.getBoundReferenceValue(source)
+    val result = ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
+      ctx.evaluateXPath(xpath, sourceValue, nodeType) tap { content =>
+        ctx.addAttachment(target, "txt", content)
       }
-      env.topScope.set(target, result)
     }
+    ctx.topScope.set(target, result)
   }
 
 }

@@ -44,13 +44,11 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
   private [spec] def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
-    ctx.withEnv { env =>
-      val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
-      if (ctx.options.isParallelScenarios && SpecType.isFeature(env.specType) && StateLevel.scenario.equals(env.stateLevel)) {
-        evaluateParallelScenarios(parent, input, env, ctx)
-      } else {
-        evaluateSequentialScenarios(parent, input, env, ctx)
-      }
+    val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
+    if (ctx.options.isParallelScenarios && SpecType.isFeature(ctx.specType) && StateLevel.scenario.equals(ctx.stateLevel)) {
+      evaluateParallelScenarios(parent, input, ctx, ctx)
+    } else {
+      evaluateSequentialScenarios(parent, input, ctx, ctx)
     }
   }
 
@@ -71,8 +69,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
     val futures = scenarios.filter(!_.isStepDef).to(LazyList).map { scenario =>
       Future {
-        val envClone = ctx.withEnv(_.copy())
-        val ctxClone = engine.init(ctx.options, Some(envClone))
+        val ctxClone = engine.init(ctx.options, Some(ctx.cloneState))
         try {
           evaluateOrTransitionScenario(parent, scenario, env, ctxClone, acc.asScala.toList) tap { s =>
             acc.add(s)
@@ -118,27 +115,25 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     * Evaluates a given scenario.
     */
   private [spec] def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = {
-    ctx.withEnv { env =>
-      if (scenario.isStepDef || scenario.isDataTable) {
-        if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
-        loadStepDef(parent, scenario, ctx)
+    if (scenario.isStepDef || scenario.isDataTable) {
+      if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
+      loadStepDef(parent, scenario, ctx)
+    } else {
+      beforeScenario(parent, scenario, ctx.scopes)
+      logger.info(s"Evaluating ${scenario.keyword}: $scenario")
+      (if (scenario.isOutline) {
+        evaluateScenarioOutline(scenario, ctx)
       } else {
-        beforeScenario(parent, scenario, env.scopes)
-        logger.info(s"Evaluating ${scenario.keyword}: $scenario")
-        (if (scenario.isOutline) {
-          evaluateScenarioOutline(scenario, env, ctx)
-        } else {
-          scenario.background map  { background => 
-            evaluateScenarioWithBackground(scenario, background, ctx)
-          } getOrElse {
-            evaluateScenarioWithoutBackground(scenario, ctx)
-          }
-        }) tap { s =>
-          afterScenario(s, env.scopes)
+        scenario.background map  { background => 
+          evaluateScenarioWithBackground(scenario, background, ctx)
+        } getOrElse {
+          evaluateScenarioWithoutBackground(scenario, ctx)
         }
-      } tap { s =>
-        logStatus(s)
+      }) tap { s =>
+        afterScenario(s, ctx.scopes)
       }
+    } tap { s =>
+      logStatus(s)
     }
   }
 
@@ -163,12 +158,12 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     )
   }
 
-  private def evaluateScenarioOutline(outline: Scenario, env: EvalEnvironment, ctx: T): Scenario = {
+  private def evaluateScenarioOutline(outline: Scenario, ctx: T): Scenario = {
     val steps = outline.steps map { step =>
       if (outline.isExpanded) {
         step.copy(withEvalStatus = Loaded)
       } else {
-        transitionStep(outline, step, Loaded, env.scopes)
+        transitionStep(outline, step, Loaded, ctx.scopes)
       }
     }
     val examples = evaluateExamples(outline, outline.examples, ctx)

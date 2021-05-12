@@ -26,10 +26,8 @@ import gwen.core.engine.binding.RegexBinding
 class BindAsRegex[T <: EvalContext](target: String, regex: String, source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Context, env)
-      RegexBinding.bind(target, regex, source, env)
-    }
+    checkStepRules(step, BehaviorType.Context, ctx)
+    RegexBinding.bind(target, regex, source, ctx)
   }
 
 }

@@ -22,8 +22,8 @@ import gwen.core.Errors
 
 class DataTableBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 
-  override def resolve(): String = ctx.withEnv { env =>
-    env.topScope.getObject(DataTable.tableKey) match {
+  override def resolve(): String = {
+    ctx.topScope.getObject(DataTable.tableKey) match {
       case Some(table: DataTable) => table.tableScope.get(name)
       case _ => Errors.unboundAttributeError(name)
     }

@@ -21,6 +21,7 @@ import gwen.GwenLauncher
 import gwen.core._
 import gwen.core.model._
 import gwen.core.model.gherkin._
+import gwen.core.model.state.EnvState
 import gwen.core.report.ReportFormat
 
 import org.mockito.Mockito.never
@@ -62,8 +63,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir1), parallel = true)
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
@@ -85,8 +85,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir2))
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
@@ -109,8 +108,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir3), parallel = true)
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
@@ -134,8 +132,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir3), parallel = true, metas = List(metadir))
         
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
@@ -160,8 +157,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir31), parallel = true, metas=List(meta31, meta32))
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
@@ -184,8 +180,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(batch = false, features = List(dir4))
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
@@ -211,8 +206,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(batch = true, parallel = true, features = List(dir5))
         
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
@@ -238,8 +232,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir6, feature7a), parallel = true, reportDir = Some(reportDir), reportFormats = List(ReportFormat.html))
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     val feature6A = new Spec(
       Feature("test-feature-6a", Nil), 
@@ -300,8 +293,7 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val options = GwenOptions(features = List(dir8), parallel = true, tags = tagFilters)
     
     val mockInterpreter = mock[GwenInterpreter[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))

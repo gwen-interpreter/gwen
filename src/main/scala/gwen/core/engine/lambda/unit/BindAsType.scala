@@ -30,14 +30,12 @@ import gwen.core.engine.binding.SysprocBinding
 class BindAsType[T <: EvalContext](target: String, bindingType: BindingType.Value, value: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Context, env)
-      bindingType match {
-        case BindingType.javascript => JavaScriptBinding.bind(target, value, env)
-        case BindingType.sysproc => SysprocBinding.bind(target, value, env)
-        case BindingType.file => FileBinding.bind(target, value, env)
-        case _ => env.topScope.set(target, Settings.get(value))
-      }
+    checkStepRules(step, BehaviorType.Context, ctx)
+    bindingType match {
+      case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx)
+      case BindingType.sysproc => SysprocBinding.bind(target, value, ctx)
+      case BindingType.file => FileBinding.bind(target, value, ctx)
+      case _ => ctx.topScope.set(target, Settings.get(value))
     }
   }
 

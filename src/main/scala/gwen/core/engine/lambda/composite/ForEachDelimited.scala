@@ -28,9 +28,7 @@ class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: 
     val values = () => {
       sourceValue.split(delimiter).toSeq
     }
-    ctx.withEnv { env =>
-      evaluateForEach(values, entry, parent, step, doStep, env, ctx)
-    }
+    evaluateForEach(values, entry, parent, step, doStep, ctx)
   }
 
 }

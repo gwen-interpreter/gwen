@@ -17,6 +17,7 @@
 package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
+import gwen.core.engine.EvalRules
 import gwen.core.model.Identifiable
 import gwen.core.model.gherkin.Step
 
@@ -25,7 +26,7 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Base class for all step lambdas.
   */
-abstract class StepLambda[T <: EvalContext, U]() extends LazyLogging {
+abstract class StepLambda[T <: EvalContext, U]() extends EvalRules with LazyLogging {
 
   /**
     * The operation to apply.

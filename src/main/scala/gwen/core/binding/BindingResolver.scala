@@ -41,8 +41,8 @@ class BindingResolver[T <: EvalContext](ctx: T) {
     * @param name the bindnng name
     * @return a binding
     */
-  def getBinding(name: String): Binding[T, String] = ctx.withEnv { env =>
-    val visibleScopes = env.scopes.visible
+  def getBinding(name: String): Binding[T, String] = {
+    val visibleScopes = ctx.scopes.visible
     val attScopes = visibleScopes.filterAtts{case (n, _) => n.startsWith(name)}
     attScopes.findEntry { case (n, _) => 
       n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")
@@ -57,14 +57,14 @@ class BindingResolver[T <: EvalContext](ctx: T) {
       else if (n.startsWith(SQLBinding.baseKey(name))) new SQLBinding(name, ctx)
       else new  SimpleBinding(name, ctx)
     } getOrElse {
-      (env.topScope.getObject(DataTable.recordKey) match {
+      (ctx.topScope.getObject(DataTable.recordKey) match {
         case Some(record: ScopedData) => Some(new DataRecordBinding(name, ctx))
-        case _ => env.topScope.getObject(DataTable.tableKey) match {
+        case _ => ctx.topScope.getObject(DataTable.tableKey) match {
           case Some(table: DataTable) => Some(new DataTableBinding(name, ctx))
           case _ => None
         }
       }).getOrElse {
-        env.scopes.getOpt(name) map { _ => 
+        ctx.scopes.getOpt(name) map { _ => 
           new SimpleBinding(name, ctx)
         } getOrElse {
           Settings.getOpt(name) map { _ => 

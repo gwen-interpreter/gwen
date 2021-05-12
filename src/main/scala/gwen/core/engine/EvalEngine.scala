@@ -26,13 +26,14 @@ import gwen.core.engine.support.XMLNodeType
 import gwen.core.model._
 import gwen.core.model.event.LifecycleEventDispatcher
 import gwen.core.model.gherkin._
+import gwen.core.model.state.EnvState
 
 import scala.concurrent.duration._
 
 object EvalEngine {
   val DefaultInstance = new EvalEngine[EvalContext]() {
-    override def init(options: GwenOptions, envOpt: Option[EvalEnvironment] = None): EvalContext = {
-      new EvalContext(options, new EvalEnvironment())
+    override def init(options: GwenOptions, envOpt: Option[EnvState] = None): EvalContext = {
+      new EvalContext(options, EnvState())
     }
   }
 }
@@ -48,9 +49,9 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
     * Initialises the engine and returns a new evaluation context.
     * 
     * @param options command line options
-    * @param envOpt optional environment context to use
+    * @param envState optional environment context to use
     */
-  def init(options: GwenOptions, envOpt: Option[EvalEnvironment]): T
+  def init(options: GwenOptions, envState: Option[EnvState]): T
 
   /**
     * Translates a composite DSL step into an engine operation.

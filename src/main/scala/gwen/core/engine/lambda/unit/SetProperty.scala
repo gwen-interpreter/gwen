@@ -26,9 +26,7 @@ import gwen.core.model.gherkin.Step
 class SetProperty[T <: EvalContext](target: String, value: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Context, env)
-    }
+    checkStepRules(step, BehaviorType.Context, ctx)
     Settings.setLocal(target, value)
   }
 

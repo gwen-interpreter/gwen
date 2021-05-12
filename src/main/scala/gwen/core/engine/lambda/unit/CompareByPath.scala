@@ -31,30 +31,28 @@ import scala.util.Failure
 class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Value, path: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Assertion, env)
-      val expected = ctx.parseExpression(operator, expression)
-      ctx.perform {
-        val src = env.scopes.get(source)
-        val actual = pathType match {
-          case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
-          case BindingType.xpath => ctx.evaluateXPath(
-            path, src, XMLNodeType.text)
+    checkStepRules(step, BehaviorType.Assertion, ctx)
+    val expected = ctx.parseExpression(operator, expression)
+    ctx.perform {
+      val src = ctx.scopes.get(source)
+      val actual = pathType match {
+        case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
+        case BindingType.xpath => ctx.evaluateXPath(
+          path, src, XMLNodeType.text)
+      }
+      val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
+      val op = {
+        if (operator == ComparisonOperator.`match template file`) {
+          ComparisonOperator.`match template` 
+        } else {
+          operator
         }
-        val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
-        val op = {
-          if (operator == ComparisonOperator.`match template file`) {
-            ComparisonOperator.`match template` 
-          } else {
-            operator
-          }
-        }
-        result match {
-          case Success(assertion) =>
-            assert(assertion, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
-          case Failure(error) =>
-            assert(assertion = false, error.getMessage)
-        }
+      }
+      result match {
+        case Success(assertion) =>
+          assert(assertion, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
+        case Failure(error) =>
+          assert(assertion = false, error.getMessage)
       }
     }
   }

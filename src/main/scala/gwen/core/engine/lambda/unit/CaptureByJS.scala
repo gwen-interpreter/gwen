@@ -26,13 +26,11 @@ import gwen.core.model.gherkin.Step
 class CaptureByJS[T <: EvalContext](target: String, javascript: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val result = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
-      env.topScope.set(target, result tap { content =>
-        env.addAttachment(target, "txt", content)
-      })
-    }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val result = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
+    ctx.topScope.set(target, result tap { content =>
+      ctx.addAttachment(target, "txt", content)
+    })
   }
 
 }

@@ -22,6 +22,7 @@ import gwen.core.engine.binding.Binding
 import gwen.core.engine.binding.BindingResolver
 import gwen.core.engine.support._
 import gwen.core.model.gherkin.Step
+import gwen.core.model.state.EnvState
 
 import scala.io.Source
 import scala.util.Failure
@@ -30,8 +31,6 @@ import scala.util.Try
 
 import java.io.File
 import java.io.FileNotFoundException
-import gwen.core.model.Failed
-import gwen.core.model.StateLevel
 
 import org.apache.log4j.PropertyConfigurator
 
@@ -41,9 +40,9 @@ import java.util.concurrent.Semaphore
 /**
   * Provides all evaluation capabilities.
   */
-class EvalContext(val options: GwenOptions, env: EvalEnvironment)
-    extends InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with EvalRules {
+class EvalContext(val options: GwenOptions, envState: EnvState)
+    extends EvalEnvironment(envState) with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
+    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
 
   Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
     if (config.toLowerCase.trim startsWith "file:") {
@@ -56,27 +55,13 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment)
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
 
-  def close(): Unit = { 
-    env.close()
-  }
-
-  /** Resets the context for the given state level. */
-  def reset(level: StateLevel.Value): Unit = {
-    env.reset(level)
-  }
-
   /**
    * Gets the list of DSL steps supported by this context.  This implementation 
    * returns all user defined stepdefs. Subclasses can override to return  
    * addtional entries. The entries returned by this method are used for tab 
    * completion in the REPL.
    */
-  def dsl: List[String] = env.stepDefs.keys.toList
-
-  /** 
-   * Providesa a function with access to the environment context.
-   */
-  def withEnv[U](function: EvalEnvironment => U): U = function(env)
+  def dsl: List[String] = stepDefs.keys.toList
 
   /**
    * Evaluates an function or returns the given dry value depending on--dry-run mode.
@@ -126,7 +111,7 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment)
   def interpolate(step: Step): Step = interpolate(step, interpolateString)
 
   private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
-    val resolver: String => String = name => Try(env.stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
+    val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
     val iName = interpolator(step.name) { resolver }
     val iTable = step.table map { case (line, record) =>
       (line, record.map(cell => interpolator(cell) { resolver }))
@@ -155,7 +140,7 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment)
       case ComparisonOperator.`match xpath` => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case ComparisonOperator.`match json path` => !evaluateJsonPath(expected, actual).isEmpty
       case ComparisonOperator.`match template` | ComparisonOperator.`match template file` =>
-        matchTemplate(expected, actual, sourceName, env.topScope) match {
+        matchTemplate(expected, actual, sourceName, topScope) match {
           case Success(result) =>
             if (negate) Errors.templateMatchError(s"Expected $sourceName to not match template but it did") else result
           case Failure(failure) =>
@@ -176,19 +161,10 @@ class EvalContext(val options: GwenOptions, env: EvalEnvironment)
     }) tap { expr =>
       if (options.dryRun && operator.toString.startsWith("match template")) {
         """@\{.*?\}""".r.findAllIn(expr).toList foreach { name =>
-          env.topScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
+          topScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
         }
       }
     }
-  }
-
-  /**
-    * Adds error attachments to the current context. This includes the error trace and environment context.
-    * 
-    * @param failure the failed status
-    */
-  def addErrorAttachments(failure: Failed): Unit = { 
-    env.addErrorAttachments(failure)
   }
 
   /**

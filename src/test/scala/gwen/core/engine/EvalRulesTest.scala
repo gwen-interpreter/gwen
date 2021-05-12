@@ -21,6 +21,7 @@ import gwen.core.Errors._
 import gwen.core.TestModel
 import gwen.core.model._
 import gwen.core.model.gherkin._
+import gwen.core.model.state.EnvState
 
 import org.scalatest.Matchers
 
@@ -46,7 +47,7 @@ class EvalRulesTest extends BaseTest with Matchers with GherkinParser with EvalR
 
     private def createStep(step: String): Step = parseStep(step).get
 
-    val env = new EvalEnvironment() {
+    val env = new EvalEnvironment(EnvState()) {
         topScope.pushObject("spec.file", featureFile)
     }
 

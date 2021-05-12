@@ -28,9 +28,7 @@ import scala.sys.process.stringToProcess
 class ExecuteSysProc[T <: EvalContext](systemproc: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-    }
+    checkStepRules(step, BehaviorType.Action, ctx)
     ctx.perform {
       systemproc.! match {
         case 0 =>

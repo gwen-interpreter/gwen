@@ -177,22 +177,20 @@ class GwenLauncher[T <: EvalContext](interpreter: GwenInterpreter[T]) extends La
   private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
     Settings.clearLocal()
     val ctx = ctxOpt.getOrElse(interpreter.init(options))
-    ctx.withEnv { env =>
-      try {
-        ctxOpt.foreach(_.reset(StateLevel.feature))
-        unit.dataRecord foreach { record =>
-          record.data foreach { case (name, value) =>
-            env.topScope.set(name, value)
-          }
+    try {
+      ctxOpt.foreach(_.reset(StateLevel.feature))
+      unit.dataRecord foreach { record =>
+        record.data foreach { case (name, value) =>
+          ctx.topScope.set(name, value)
         }
-        f(interpreter.interpretUnit(unit, ctx) map { res =>
-          new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
-        })
-      } finally {
-        if (ctxOpt.isEmpty) { 
-          ctx.close() 
-          logger.info("Evaluation context closed")
-        }
+      }
+      f(interpreter.interpretUnit(unit, ctx) map { res =>
+        new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
+      })
+    } finally {
+      if (ctxOpt.isEmpty) { 
+        ctx.close() 
+        logger.info("Evaluation context closed")
       }
     }
   }

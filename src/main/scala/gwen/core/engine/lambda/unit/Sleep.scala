@@ -25,9 +25,7 @@ import gwen.core.model.gherkin.Step
 class Sleep[T <: EvalContext](secs: Long) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-    }
+    checkStepRules(step, BehaviorType.Action, ctx)
     ctx.perform {
       Thread.sleep(secs * 1000)
     }

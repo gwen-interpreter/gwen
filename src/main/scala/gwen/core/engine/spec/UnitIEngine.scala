@@ -76,21 +76,19 @@ trait UnitEngine[T <: EvalContext]
   }
 
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
-    ctx.withEnv { env =>
-      unit.dataRecord foreach { rec =>
-        env.topScope.set("data record number", rec.recordNo.toString)
-      }
-      val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
-      val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
-      val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)
-      val metaResults = unitMeta ++ importMeta
-      if (spec.isMeta) {
-        evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
-      } else {
-        beforeUnit(unit, env.scopes)
-        evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
-          afterUnit(FeatureUnit(unit.ancestor, unit, result), env.scopes)
-        }
+    unit.dataRecord foreach { rec =>
+      ctx.topScope.set("data record number", rec.recordNo.toString)
+    }
+    val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
+    val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
+    val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)
+    val metaResults = unitMeta ++ importMeta
+    if (spec.isMeta) {
+      evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
+    } else {
+      beforeUnit(unit, ctx.scopes)
+      evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
+        afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx.scopes)
       }
     }
   }

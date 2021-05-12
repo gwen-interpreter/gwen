@@ -36,16 +36,14 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
   def evaluateExamples(parent: Identifiable, examples: List[Examples], ctx: T): List[Examples] = {
-    ctx.withEnv { env => 
-      examples map { exs =>
-        beforeExamples(parent, exs, env.scopes)
-        exs.copy(
-          withScenarios = exs.scenarios map { scenario =>
-            evaluateScenario(exs, scenario, ctx)
-          }
-        ) tap { exs =>
-          afterExamples(exs, env.scopes)
+    examples map { exs =>
+      beforeExamples(parent, exs, ctx.scopes)
+      exs.copy(
+        withScenarios = exs.scenarios map { scenario =>
+          evaluateScenario(exs, scenario, ctx)
         }
+      ) tap { exs =>
+        afterExamples(exs, ctx.scopes)
       }
     }
   }

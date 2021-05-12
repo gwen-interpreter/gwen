@@ -18,7 +18,6 @@ package gwen.core.engine.spec
 
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.engine.EvalEnvironment
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
 import gwen.core.model.gherkin.Scenario
@@ -43,38 +42,36 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     * Loads a stepdef to memory.
     */
   private [spec] def loadStepDef(parent: Identifiable, stepDef: Scenario, ctx: T): Scenario = {
-    ctx.withEnv { env =>
-      beforeStepDef(parent, stepDef, env.scopes)
-      logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
-      env.addStepDef(stepDef)
-      if (ctx.options.parallel && stepDef.isSynchronized) {
-        stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
+    beforeStepDef(parent, stepDef, ctx.scopes)
+    logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
+    ctx.addStepDef(stepDef)
+    if (ctx.options.parallel && stepDef.isSynchronized) {
+      stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
+    }
+    val loadedSteps = transitionSteps(stepDef, stepDef.steps, Loaded, ctx.scopes)
+    val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
+    val examples = if (stepDef.isOutline) {
+      stepDef.examples map { exs =>
+        exs.copy(
+          withScenarios = exs.scenarios map { s =>
+            s.copy(
+              withBackground = s.background map { b =>
+                b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
+              },
+              withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
+            )
+          }
+        )
       }
-      val loadedSteps = transitionSteps(stepDef, stepDef.steps, Loaded, env.scopes)
-      val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
-      val examples = if (stepDef.isOutline) {
-        stepDef.examples map { exs =>
-          exs.copy(
-            withScenarios = exs.scenarios map { s =>
-              s.copy(
-                withBackground = s.background map { b =>
-                  b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
-                },
-                withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
-              )
-            }
-          )
-        }
-      } else  {
-        stepDef.examples
-      }
-      stepDef.copy(
-        withBackground = None,
-        withSteps = steps,
-        withExamples = examples
-      ) tap { s => 
-        afterStepDef(s, env.scopes)
-      }
+    } else  {
+      stepDef.examples
+    }
+    stepDef.copy(
+      withBackground = None,
+      withSteps = steps,
+      withExamples = examples
+    ) tap { s => 
+      afterStepDef(s, ctx.scopes)
     }
   }
 
@@ -87,28 +84,26 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
     }
     try {
-      ctx.withEnv { env =>
-        val sdStep = step.copy(
-          withStepDef = Some((stepDef, params)),
-          withAttachments = stepDef.steps.flatMap(_.attachments)
-        )
-        checkStepDefRules(sdStep, env)
-        env.stepScope.push(stepDef.name, params)
-        try {
-          val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
-          dataTableOpt foreach { table =>
-            env.topScope.pushObject(DataTable.tableKey, table)
-          }
-          try {
-            evaluateStepDef(parent, stepDef, step, params, env, ctx)
-          } finally {
-            dataTableOpt foreach { _ =>
-              env.topScope.popObject(DataTable.tableKey)
-            }
-          }
-        } finally {
-          env.stepScope.pop
+      val sdStep = step.copy(
+        withStepDef = Some((stepDef, params)),
+        withAttachments = stepDef.steps.flatMap(_.attachments)
+      )
+      checkStepDefRules(sdStep, ctx)
+      ctx.stepScope.push(stepDef.name, params)
+      try {
+        val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
+        dataTableOpt foreach { table =>
+          ctx.topScope.pushObject(DataTable.tableKey, table)
         }
+        try {
+          evaluateStepDef(parent, stepDef, step, params, ctx)
+        } finally {
+          dataTableOpt foreach { _ =>
+            ctx.topScope.popObject(DataTable.tableKey)
+          }
+        }
+      } finally {
+        ctx.stepScope.pop
       }
     } finally {
       lock.foreach { l => 
@@ -118,8 +113,8 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], env: EvalEnvironment, ctx: T): Step = {
-    beforeStepDef(parent, stepDef, env.scopes)
+  private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
+    beforeStepDef(parent, stepDef, ctx.scopes)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
       evaluateSteps(stepDef, stepDef.steps, ctx)
@@ -128,7 +123,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         if (stepDef.isExpanded) {
           step.copy(withEvalStatus = Loaded)
         } else {
-          transitionStep(stepDef, step, Loaded, env.scopes)
+          transitionStep(stepDef, step, Loaded, ctx.scopes)
         }
       }
     }
@@ -142,7 +137,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withSteps = steps,
       withExamples = examples)
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
-    afterStepDef(eStepDef, env.scopes) 
+    afterStepDef(eStepDef, ctx.scopes) 
     step.copy(
       withStepDef = Some((eStepDef, params)),
       withAttachments = eStepDef.attachments,

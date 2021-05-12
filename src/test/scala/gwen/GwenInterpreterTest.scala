@@ -19,9 +19,9 @@ package gwen
 import gwen.core.GwenOptions
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.engine.EvalEnvironment
-import gwen.core.model.Passed
 import gwen.core.model.Skipped
+import gwen.core.model.Passed
+import gwen.core.model.state.EnvState
 
 import org.mockito.Mockito
 import org.mockito.Mockito.never
@@ -46,8 +46,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
     
     val options = GwenOptions()
     val mockLauncher = mock[GwenLauncher[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     val mockRepl = mock[GwenREPL[EvalContext]]
     val mockEngine = Mockito.mock(classOf[EvalEngine[EvalContext]], Mockito.CALLS_REAL_METHODS)
     val app = createApp(options, mockEngine, mockRepl)
@@ -82,8 +81,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
     val options = GwenOptions(metas = List(new File("file.meta")))
     val mockLauncher = mock[GwenLauncher[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     val mockRepl = mock[GwenREPL[EvalContext]]
     val mockEngine = mock[EvalEngine[EvalContext]]
     val app = createApp(options, mockEngine, mockRepl)
@@ -102,8 +100,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
 
     val options = GwenOptions(features = List(new File("file.feature")))
     val mockLauncher = mock[GwenLauncher[EvalContext]]
-    val mockEnv = mock[EvalEnvironment]
-    val mockCtx = spy(new EvalContext(options, mockEnv))
+    val mockCtx = spy(new EvalContext(options, EnvState()))
     val mockRepl = mock[GwenREPL[EvalContext]]
     val mockEngine = mock[EvalEngine[EvalContext]]
     val app = createApp(options, mockEngine, mockRepl)

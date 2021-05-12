@@ -26,16 +26,14 @@ import gwen.core.model.gherkin.Step
 class CaptureBase64Decoded[T <: EvalContext](target: String, source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val sourceValue = ctx.getBoundReferenceValue(source)
-      val result = ctx.evaluate("$[dryRun:decodeBase64]") {
-        ctx.decodeBase64(sourceValue) tap { content =>
-          env.addAttachment(target, "txt", content)
-        }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val sourceValue = ctx.getBoundReferenceValue(source)
+    val result = ctx.evaluate("$[dryRun:decodeBase64]") {
+      ctx.decodeBase64(sourceValue) tap { content =>
+        ctx.addAttachment(target, "txt", content)
       }
-      env.topScope.set(target, result)
     }
+    ctx.topScope.set(target, result)
   }
 
 }

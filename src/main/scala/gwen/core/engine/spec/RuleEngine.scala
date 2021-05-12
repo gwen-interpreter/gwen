@@ -39,38 +39,36 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
   }
 
   private def evaluateOrTransitionRule(parent: Identifiable, rule: Rule, ctx: T, acc: List[Rule]): Rule = {
-    ctx.withEnv { env =>
-      env.topScope.set("gwen.rule.name", rule.name)
-      EvalStatus(acc.map(_.evalStatus)) match {
-        case status @ Failed(_, error) =>
-          val isAssertionError = status.isAssertionError
-          val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-          val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
-          val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-          if (failfast && !exitOnFail && !isSoftAssert) {
-            transitionRule(parent, rule, Skipped, env.scopes)
-          } else if (exitOnFail && !isSoftAssert) {
-            transitionRule(parent, rule, rule.evalStatus, env.scopes)
-          } else {
-            beforeRule(parent, rule, env.scopes)
-            logger.info(s"Evaluating ${rule.keyword}: $rule")
-            rule.copy(
-              withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
-            ) tap { r =>
-              logStatus(r)
-              afterRule(r, env.scopes)
-            }
-          }
-        case _ =>
-          beforeRule(parent, rule, env.scopes)
+    ctx.topScope.set("gwen.rule.name", rule.name)
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        val isAssertionError = status.isAssertionError
+        val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
+        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+        if (failfast && !exitOnFail && !isSoftAssert) {
+          transitionRule(parent, rule, Skipped, ctx.scopes)
+        } else if (exitOnFail && !isSoftAssert) {
+          transitionRule(parent, rule, rule.evalStatus, ctx.scopes)
+        } else {
+          beforeRule(parent, rule, ctx.scopes)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
           ) tap { r =>
             logStatus(r)
-            afterRule(r, env.scopes)
+            afterRule(r, ctx.scopes)
           }
-      }
+        }
+      case _ =>
+        beforeRule(parent, rule, ctx.scopes)
+        logger.info(s"Evaluating ${rule.keyword}: $rule")
+        rule.copy(
+          withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
+        ) tap { r =>
+          logStatus(r)
+          afterRule(r, ctx.scopes)
+        }
     }
   }
 

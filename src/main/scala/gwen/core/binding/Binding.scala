@@ -70,8 +70,8 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     * @param key the bound value key
     * @return the resolved and interpolated value
     */
-  private def resolve(key: String)(resolver: String => U): U = ctx.withEnv { env => 
-    env.scopes.getOpt(key) map { value => 
+  private def resolve(key: String)(resolver: String => U): U = { 
+    ctx.scopes.getOpt(key) map { value => 
       resolver(value)
     } getOrElse {
       Errors.unboundAttributeError(name)

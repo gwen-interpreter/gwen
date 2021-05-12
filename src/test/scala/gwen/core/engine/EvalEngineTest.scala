@@ -18,6 +18,7 @@ package gwen.core.engine
 
 import gwen.core._
 import gwen.core.model._
+import gwen.core.model.state.EnvState
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -39,64 +40,45 @@ class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestM
   }
   
   "Step that fails interpolation" should "not be evaluated" in {
-    ctx.withEnv { env =>
-      var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
-      step = engine.evaluateStep(parent, step, ctx)
-      step.evalStatus.status should be (StatusKeyword.Failed)
-      env.scopes.getOpt("x") should be (None)
-      step.stepDef should be (None)
-    }
+    var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
+    step = engine.evaluateStep(parent, step, ctx)
+    step.evalStatus.status should be (StatusKeyword.Failed)
+    ctx.scopes.getOpt("x") should be (None)
+    step.stepDef should be (None)
   }
   
   "Step that passes interpolation" should "should be evaluated" in {
-    ctx.withEnv { env =>
-      env.scopes.set("y", "1")
-      var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
-      step = engine.evaluateStep(parent, step, ctx)
-      step.evalStatus.status should be (StatusKeyword.Passed)
-      env.scopes.get("x") should be ("1")
-      step.stepDef should be (None)
-    }
+    ctx.scopes.set("y", "1")
+    var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
+    step = engine.evaluateStep(parent, step, ctx)
+    step.evalStatus.status should be (StatusKeyword.Passed)
+    ctx.scopes.get("x") should be ("1")
+    step.stepDef should be (None)
   }
   
   "Step that is a stepdef" should "be evaluated" in {
-    val ctx = engine.init(new GwenOptions(), Some(new EvalEnvironment()))
-    ctx.withEnv { env =>
-      val stepDef = Scenario(List[Tag](Tag("@StepDef"), Tag("@Action")), "I assign x, y, and z", Nil, None, List(
-          Step(StepKeyword.Given.toString, """x is "1""""),
-          Step(StepKeyword.And.toString, """y is "2""""),
-          Step(StepKeyword.And.toString, """z is "3""""),
-          Step(StepKeyword.When.toString, """I capture x as a"""),
-          Step(StepKeyword.Then.toString, """a should be "1"""")))
-      env.addStepDef(stepDef)
-      env.scopes.set("y", "1")
-      var step = Step(StepKeyword.When.toString, "I assign x, y, and z")
-      step = engine.evaluateStep(parent, step, ctx)
-      step.evalStatus.status should be (StatusKeyword.Passed)
-      env.scopes.get("x") should be ("1")
-      env.scopes.get("y") should be ("2")
-      env.scopes.get("z") should be ("3")
-      env.scopes.get("a") should be ("1")
-      step.stepDef should not be (None)
-      // val lambda = engine.translateComposite(parent, step, env, ctx)
-      // lambda.map(_.apply(parent, step)) match {
-      //   case Some(step) =>
-      //     step.evalStatus.status should be (StatusKeyword.Passed)
-      //     env.scopes.get("x") should be ("1")
-      //     env.scopes.get("y") should be ("2")
-      //     env.scopes.get("z") should be ("3")
-      //     env.scopes.get("a") should be ("1")
-      //     step.stepDef should not be (None)
-      //   case None => fail("StepDef was not evaluated")
-      // }
-    }
+    val ctx = engine.init(new GwenOptions(), Some(EnvState()))
+    val stepDef = Scenario(List[Tag](Tag("@StepDef"), Tag("@Action")), "I assign x, y, and z", Nil, None, List(
+        Step(StepKeyword.Given.toString, """x is "1""""),
+        Step(StepKeyword.And.toString, """y is "2""""),
+        Step(StepKeyword.And.toString, """z is "3""""),
+        Step(StepKeyword.When.toString, """I capture x as a"""),
+        Step(StepKeyword.Then.toString, """a should be "1"""")))
+    ctx.addStepDef(stepDef)
+    ctx.scopes.set("y", "1")
+    var step = Step(StepKeyword.When.toString, "I assign x, y, and z")
+    step = engine.evaluateStep(parent, step, ctx)
+    step.evalStatus.status should be (StatusKeyword.Passed)
+    ctx.scopes.get("x") should be ("1")
+    ctx.scopes.get("y") should be ("2")
+    ctx.scopes.get("z") should be ("3")
+    ctx.scopes.get("a") should be ("1")
+    step.stepDef should not be (None)
   }
 
   "Set attribute binding step" should "be successful" in {
     engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """my name is "Gwen""""), ctx)
-    ctx.withEnv { env =>
-      env.topScope.get("my name") should be ("Gwen")
-    }
+    ctx.topScope.get("my name") should be ("Gwen")
   }
   
   "Set global setting step" should "be successful" in {

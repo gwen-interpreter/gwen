@@ -23,8 +23,8 @@ import gwen.core.model.state.ScopedData
 
 class DataRecordBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 
-  override def resolve(): String = ctx.withEnv { env =>
-    env.topScope.getObject(DataTable.recordKey) match {
+  override def resolve(): String = {
+    ctx.topScope.getObject(DataTable.recordKey) match {
       case Some(record: ScopedData) => record.get(name)
       case _ => Errors.unboundAttributeError(name)
     }

@@ -70,25 +70,25 @@ class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], ctx: T) {
     * @param input an input step or command
     * @return optional result of the command as a string
     */
-  private def eval(input: String): Option[String] = ctx.withEnv { env =>
+  private def eval(input: String): Option[String] = {
     Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
       case "" if paste.isEmpty =>
         Some("[noop]")
       case "help" if paste.isEmpty =>
         Some(helpText())
       case r"""env(.+?)?$$$options""" if paste.isEmpty => Option(options) match {
-        case None => Some(env.visibleScopes.asString)
+        case None => Some(ctx.visibleScopes.asString)
         case _ => options.trim match {
           case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
-            case "-f" => Some(ScopedDataStack(env.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
-            case "-a" => Some(env.filterAtts(GwenREPL.attrFilter(filter)).asString)
+            case "-f" => Some(ScopedDataStack(ctx.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
+            case "-a" => Some(ctx.filterAtts(GwenREPL.attrFilter(filter)).asString)
           }
           case r"""(-f|-a)$$$switch""" => switch match {
-            case "-f" => Some(env.topScope.asString())
-            case "-a" => Some(env.asString)
+            case "-f" => Some(ctx.topScope.asString())
+            case "-a" => Some(ctx.asString)
           }
           case r""""(.+?)"$$$filter""" =>
-            Some(env.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString)
+            Some(ctx.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString)
           case _ =>
             Some("""Try again using: env [-a|-f] ["filter"]""")
         }
@@ -149,22 +149,22 @@ class GwenREPL[T <: EvalContext](val interpreter: GwenInterpreter[T], ctx: T) {
     }
   }
 
-  private def evaluateInput(input: String): String = ctx.withEnv { env =>
+  private def evaluateInput(input: String): String = {
     input.trim match {
       case r"^Feature:(.*)$$$name" =>
-        env.topScope.set("gwen.feature.name", name.trim)
+        ctx.topScope.set("gwen.feature.name", name.trim)
         s"[gwen.feature.name = ${name.trim}]"
       case r"^Rule:(.*)$$$name" =>
-        env.topScope.set("gwen.rule.name", name.trim)
+        ctx.topScope.set("gwen.rule.name", name.trim)
         s"[gwen.rule.name = ${name.trim}]"
       case r"^(Scenario|Example):(.*)$$$name" =>
-        if (StateLevel.scenario.equals(env.stateLevel)) {
+        if (StateLevel.scenario.equals(ctx.stateLevel)) {
           ctx.reset(StateLevel.scenario)
         }
-        env.topScope.set("gwen.scenario.name", name.trim)
+        ctx.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
-        env.topScope.set("gwen.scenario.name", name.trim)
+        ctx.topScope.set("gwen.scenario.name", name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case r"""^#\s*language:\s*(\S+)$$$language""" =>
         Dialect.setLanguage(language)

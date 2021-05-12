@@ -27,16 +27,14 @@ import gwen.core.model.gherkin.Step
 class CaptureByJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val sourceValue = ctx.getBoundReferenceValue(source)
-      val result = ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
-        ctx.evaluateJsonPath(jsonPath, sourceValue) tap { content =>
-          env.addAttachment(target, "txt", content)
-        }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val sourceValue = ctx.getBoundReferenceValue(source)
+    val result = ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
+      ctx.evaluateJsonPath(jsonPath, sourceValue) tap { content =>
+        ctx.addAttachment(target, "txt", content)
       }
-      env.topScope.set(target, result)
     }
+    ctx.topScope.set(target, result)
   }
 
 }

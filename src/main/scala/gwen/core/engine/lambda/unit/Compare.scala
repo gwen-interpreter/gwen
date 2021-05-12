@@ -29,9 +29,7 @@ import scala.util.Success
 class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Assertion, env)
-    }
+    checkStepRules(step, BehaviorType.Assertion, ctx)
     val binding = ctx.getBinding(source)
     val expected = ctx.parseExpression(operator, expression)
     val actualValue = binding.resolve()

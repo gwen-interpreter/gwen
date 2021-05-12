@@ -27,9 +27,7 @@ import scala.util.Try
 class IsAbsent[T <: EvalContext](source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Assertion, env)
-    }
+    checkStepRules(step, BehaviorType.Assertion, ctx)
     ctx.perform {
       assert(Try(ctx.getBoundReferenceValue(source)).isFailure, s"Expected $source to be absent")
     }

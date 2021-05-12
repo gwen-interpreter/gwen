@@ -20,7 +20,6 @@ import gwen.core._
 import gwen.core.Errors
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.engine.EvalEnvironment
 import gwen.core.model._
 import gwen.core.model.gherkin.Scenario
 import gwen.core.model.gherkin.Step
@@ -43,33 +42,31 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a list of steps.
     */
   def evaluateSteps(parent: Identifiable, steps: List[Step], ctx: T): List[Step] = {
-    ctx.withEnv { env =>
-      var behaviorCount = 0
-      try {
-        steps.foldLeft(List[Step]()) {
-          (acc: List[Step], step: Step) => 
-            if (!StepKeyword.isAnd(step.keyword)) {
-              env.addBehavior(BehaviorType.of(step.keyword))
-              behaviorCount = behaviorCount + 1 
-            }
-            evaluateOrTransitionStep(parent, step, acc, env, ctx) :: acc
-        } reverse
-      } finally {
-        0 until behaviorCount foreach { _ =>
-          env.popBehavior()
-        }
+    var behaviorCount = 0
+    try {
+      steps.foldLeft(List[Step]()) {
+        (acc: List[Step], step: Step) => 
+          if (!StepKeyword.isAnd(step.keyword)) {
+            ctx.addBehavior(BehaviorType.of(step.keyword))
+            behaviorCount = behaviorCount + 1 
+          }
+          evaluateOrTransitionStep(parent, step, acc, ctx) :: acc
+      } reverse
+    } finally {
+      0 until behaviorCount foreach { _ =>
+        ctx.popBehavior()
       }
     }
   }
 
-  private def evaluateOrTransitionStep(parent: Identifiable, step: Step, acc: List[Step], env: EvalEnvironment, ctx: T): Step = {
+  private def evaluateOrTransitionStep(parent: Identifiable, step: Step, acc: List[Step], ctx: T): Step = {
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         ctx.evaluate(evaluateStep(parent, step, ctx)) {
           val isAssertionError = status.isAssertionError
           val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
           if (!isAssertionError || isHardAssert) {
-            transitionStep(parent, step, Skipped, env.scopes)
+            transitionStep(parent, step, Skipped, ctx.scopes)
           } else {
             evaluateStep(parent, step, ctx)
           }
@@ -82,34 +79,32 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: Identifiable, step: Step, ctx: T): Step = {
-    ctx.withEnv { env =>
-      val iStep = interpolateStep(step, ctx)
-      logger.info(s"Evaluating Step: $iStep")
-      beforeStep(parent, iStep.copy(withEvalStatus = Pending), env.scopes)
-      val eStep = Try(healthCheck(parent, iStep, env)) match {
-        case Failure(e) => withStep(iStep) { throw e }
-        case _ =>
-          translateCompositeStep(parent, iStep) orElse {
-            translateStepDef(iStep, env)
-           } map { lambda => 
-            withStep(iStep.copy(withEvalStatus = Pending)) { s =>
-              lambda(parent, s, ctx)
-            }
-          } getOrElse {
-            Try(translateStep(parent, iStep)) match {
-              case Success(lambda) if (iStep.evalStatus.status != StatusKeyword.Failed) => 
-                withStep(iStep) { s => s tap { _ => lambda(parent, s, ctx) } }
-              case Failure(e) => 
-                withStep(iStep) { throw e }
-              case _ =>
-                iStep
-            }
+    val iStep = interpolateStep(step, ctx)
+    logger.info(s"Evaluating Step: $iStep")
+    beforeStep(parent, iStep.copy(withEvalStatus = Pending), ctx.scopes)
+    val eStep = Try(healthCheck(parent, iStep, ctx)) match {
+      case Failure(e) => withStep(iStep) { throw e }
+      case _ =>
+        translateCompositeStep(parent, iStep) orElse {
+          translateStepDef(iStep, ctx)
+          } map { lambda => 
+          withStep(iStep.copy(withEvalStatus = Pending)) { s =>
+            lambda(parent, s, ctx)
           }
-      }
-      finaliseStep(eStep, env, ctx) tap { fStep =>
-        logStatus(fStep)
-        afterStep(fStep, env.scopes)
-      }
+        } getOrElse {
+          Try(translateStep(parent, iStep)) match {
+            case Success(lambda) if (iStep.evalStatus.status != StatusKeyword.Failed) => 
+              withStep(iStep) { s => s tap { _ => lambda(parent, s, ctx) } }
+            case Failure(e) => 
+              withStep(iStep) { throw e }
+            case _ =>
+              iStep
+          }
+        }
+    }
+    finaliseStep(eStep, ctx) tap { fStep =>
+      logStatus(fStep)
+      afterStep(fStep, ctx.scopes)
     }
   }
 
@@ -118,9 +113,9 @@ trait StepEngine[T <: EvalContext] {
     withStep(pStep) { ctx.interpolate }
   }
 
-  private def healthCheck(parent: Identifiable, step: Step, env: EvalEnvironment): Unit = {
+  private def healthCheck(parent: Identifiable, step: Step, ctx: T): Unit = {
     if (step.index == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
-      healthCheck(parent, step, env.scopes)
+      healthCheck(parent, step, ctx.scopes)
     }
   }
 
@@ -147,8 +142,8 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
-  private def translateStepDef(step: Step, env: EvalEnvironment): Option[CompositeStep[T]] = {
-    env.getStepDef(step.name) match {
+  private def translateStepDef(step: Step, ctx: T): Option[CompositeStep[T]] = {
+    ctx.getStepDef(step.name) match {
       case Some((stepDef, _)) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
           stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map { 
@@ -156,7 +151,7 @@ trait StepEngine[T <: EvalContext] {
           }
         }
         Some(new ForEachTableRecordAnnotated(stepDef, step, dataTable, this))
-      case Some((stepDef, params)) if !env.stepScope.containsScope(stepDef.name) =>
+      case Some((stepDef, params)) if !ctx.stepScope.containsScope(stepDef.name) =>
         Some(new StepDefCall(step, stepDef, params, this))
       case _ => 
         None
@@ -169,13 +164,13 @@ trait StepEngine[T <: EvalContext] {
     * @param step the step to bind attachments to
     * @return the step with accumulated attachments
     */
-  def finaliseStep(step: Step, env: EvalEnvironment, ctx: T): Step = {
+  def finaliseStep(step: Step, ctx: T): Step = {
     if (step.stepDef.isEmpty) {
       step.evalStatus match {
         case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
           if (!failure.isDisabledError) {
             if (ctx.options.batch) {
-              logger.error(env.scopes.visible.asString)
+              logger.error(ctx.scopes.visible.asString)
             }
             logger.error(failure.error.getMessage)
             ctx.addErrorAttachments(failure)
@@ -186,10 +181,10 @@ trait StepEngine[T <: EvalContext] {
         case _ => // noop
       }
     }
-    val fStep = if (env.hasAttachments) {
+    val fStep = if (ctx.hasAttachments) {
       step.copy(
         withEvalStatus = step.evalStatus, 
-        withAttachments = (step.attachments ++ env.popAttachments()).sortBy(_._2 .getName()))
+        withAttachments = (step.attachments ++ ctx.popAttachments()).sortBy(_._2 .getName()))
     } else {
       
       step

@@ -21,6 +21,7 @@ import gwen.core.GwenOptions
 import gwen.core.Errors._
 import gwen.core.TestModel
 import gwen.core.model._
+import gwen.core.model.state.EnvState
 import gwen.core.model.state.ScopedData
 
 import org.scalatest.Matchers
@@ -45,64 +46,52 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
     val table2 = new FlatTable(List(List("2")), List("token"))
 
     val ctx = newCtx
-    ctx.withEnv { env =>
-      env.topScope.pushObject(DataTable.tableKey, table1)
-      ctx.getBoundReferenceValue("data[1][token]") should be ("1")
-      env.topScope.pushObject(DataTable.tableKey, table2)
-      ctx.getBoundReferenceValue("data[1][token]") should be ("2")
-      env.topScope.pushObject(DataTable.recordKey, new ScopedData(DataTable.recordKey).set("data[token]", "0"))
-      ctx.getBoundReferenceValue("data[token]") should be ("0")
-      env.topScope.popObject(DataTable.recordKey).isDefined should be (true)
-      ctx.getBoundReferenceValue("data[1][token]") should be ("2")
-      env.topScope.popObject(DataTable.tableKey).isDefined should be (true)
-      ctx.getBoundReferenceValue("data[1][token]") should be ("1")
-      env.topScope.popObject(DataTable.tableKey).isDefined should be (true)
-      intercept[UnboundAttributeException] {
-        ctx.getBoundReferenceValue("data[1][token]")
-      }
+    ctx.topScope.pushObject(DataTable.tableKey, table1)
+    ctx.getBoundReferenceValue("data[1][token]") should be ("1")
+    ctx.topScope.pushObject(DataTable.tableKey, table2)
+    ctx.getBoundReferenceValue("data[1][token]") should be ("2")
+    ctx.topScope.pushObject(DataTable.recordKey, new ScopedData(DataTable.recordKey).set("data[token]", "0"))
+    ctx.getBoundReferenceValue("data[token]") should be ("0")
+    ctx.topScope.popObject(DataTable.recordKey).isDefined should be (true)
+    ctx.getBoundReferenceValue("data[1][token]") should be ("2")
+    ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
+    ctx.getBoundReferenceValue("data[1][token]") should be ("1")
+    ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
+    intercept[UnboundAttributeException] {
+      ctx.getBoundReferenceValue("data[1][token]")
     }
   }
 
   "scope with a blank attribute" should """yield blank for getBoundReferenceValue call""" in {
     val ctx = newCtx
-    ctx.withEnv { env =>
-      env.topScope.set("x", "")
-      env.topScope.set("x", "1")
-      env.topScope.set("x", "")
-      ctx.getBoundReferenceValue("x") should be ("")
-    }
+    ctx.topScope.set("x", "")
+    ctx.topScope.set("x", "1")
+    ctx.topScope.set("x", "")
+    ctx.getBoundReferenceValue("x") should be ("")
   }
 
   "scope with a null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
     val ctx = newCtx
-    ctx.withEnv { env =>
-      env.topScope.set("x", null)
-      intercept[UnboundAttributeException] {
-        ctx.getBoundReferenceValue("x")
-      }
+    ctx.topScope.set("x", null)
+    intercept[UnboundAttributeException] {
+      ctx.getBoundReferenceValue("x")
     }
   }
 
   "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
     val ctx = newCtx
-    ctx.withEnv { env =>
-      env.topScope.set("x", "1")
-      ctx.getBoundReferenceValue("x") should be ("1")
-      env.topScope.set("x", null)
-      intercept[UnboundAttributeException] {
-        ctx.getBoundReferenceValue("x")
-      }
+    ctx.topScope.set("x", "1")
+    ctx.getBoundReferenceValue("x") should be ("1")
+    ctx.topScope.set("x", null)
+    intercept[UnboundAttributeException] {
+      ctx.getBoundReferenceValue("x")
     }
   }
   
-  private def newCtx: EvalContext = new EvalContext(GwenOptions(), newEnv)
+  private def newCtx: EvalContext = newCtx(GwenOptions())
   
   private def newCtx(options: GwenOptions): EvalContext = {
-    new EvalContext(options, newEnv)
-  }
-
-  private def newEnv: EvalEnvironment = {
-    new EvalEnvironment() { 
+    new EvalContext(options, EnvState()) {
       override def close(): Unit = {
         super.reset(StateLevel.feature)
       }

@@ -26,10 +26,8 @@ import gwen.core.engine.binding.JsonPathBinding
 class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Context, env)
-      JsonPathBinding.bind(target, jsonPath, source, env)
-    }
+    checkStepRules(step, BehaviorType.Context, ctx)
+    JsonPathBinding.bind(target, jsonPath, source, ctx)
   }
 
 }

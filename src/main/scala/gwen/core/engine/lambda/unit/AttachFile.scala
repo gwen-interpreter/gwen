@@ -29,15 +29,13 @@ import java.io.File
 class AttachFile[T <: EvalContext](target: String, filepath: String) extends UnitStep[T] {
 
   override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    ctx.withEnv { env =>
-      ctx.checkStepRules(step, BehaviorType.Action, env)
-      val file = new File(filepath)
-      if (!file.exists) { 
-        Errors.fileAttachError(file, "not found")
-      }
-      ctx.perform {
-        env.addAttachment(target, file)
-      }
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val file = new File(filepath)
+    if (!file.exists) { 
+      Errors.fileAttachError(file, "not found")
+    }
+    ctx.perform {
+      ctx.addAttachment(target, file)
     }
   }
 

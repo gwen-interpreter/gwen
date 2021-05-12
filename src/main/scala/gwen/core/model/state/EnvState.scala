@@ -153,6 +153,9 @@ class EnvState(val scopes: ScopedDataStack) {
 }
 
 object EnvState {
+  def apply(): EnvState = {
+    new EnvState(new ScopedDataStack())
+  }
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]]): EnvState = {
     new EnvState(new ScopedDataStack()) tap { newState => 
       topScope.implicitAtts foreach { case (n, v) => 

@@ -20,7 +20,6 @@ import gwen.core.GwenSettings
 import gwen.core.Errors
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.engine.EvalEnvironment
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.model._
 import gwen.core.model.gherkin.Scenario
@@ -33,7 +32,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def evaluateForEach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, env: EvalEnvironment, ctx: T): Step = {
+  def evaluateForEach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
     val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
       step.copy(
@@ -42,7 +41,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
     val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, None, foreachSteps, Nil)
-    engine.beforeStepDef(step, preForeachStepDef, env.scopes)
+    engine.beforeStepDef(step, preForeachStepDef, ctx.scopes)
     val steps =
       elements() match {
         case Nil =>
@@ -59,15 +58,15 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
               val elementNumber = index + 1
               currentElement match {
                 case stringValue: String =>
-                  env.topScope.set(element, stringValue)
+                  ctx.topScope.set(element, stringValue)
                   if (ctx.options.dryRun) {
-                    env.topScope.pushObject(element, currentElement)
+                    ctx.topScope.pushObject(element, currentElement)
                   }
                 case _ =>
-                  env.topScope.pushObject(element, currentElement)
+                  ctx.topScope.pushObject(element, currentElement)
               }
-              env.topScope.set(s"$element index", index.toString)
-              env.topScope.set(s"$element number", elementNumber.toString)
+              ctx.topScope.set(s"$element index", index.toString)
+              ctx.topScope.set(s"$element number", elementNumber.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -76,7 +75,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
                       logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                      engine.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, env.scopes)
+                      engine.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, ctx.scopes)
                     } else {
                       logger.info(s"Processing [$element] $elementNumber of $noOfElements")
                       engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), ctx)
@@ -86,17 +85,17 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), ctx)
                 }
               } finally {
-                env.topScope.popObject(element)
+                ctx.topScope.popObject(element)
               }) :: acc
             } reverse
           } finally {
-            env.topScope.set(element, null)
-            env.topScope.set(s"$element index", null)
-            env.topScope.set(s"$element number", null)
+            ctx.topScope.set(element, null)
+            ctx.topScope.set(s"$element index", null)
+            ctx.topScope.set(s"$element number", null)
           }
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
-    engine.afterStepDef(foreachStepDef, env.scopes)
+    engine.afterStepDef(foreachStepDef, ctx.scopes)
     step.copy(withStepDef = Some((foreachStepDef, Nil)))
   }
 

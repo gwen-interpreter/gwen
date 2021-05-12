@@ -32,9 +32,9 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class EvalEnvironment() extends LazyLogging {
+abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
   
-  private var state = new EnvState(new ScopedDataStack())
+  private var state = initialState
 
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
@@ -43,12 +43,8 @@ class EvalEnvironment() extends LazyLogging {
   def scopes = state.scopes
   def topScope: TopScope = scopes.topScope
 
-  /** Create a clone that preserves scoped data and step defs */
-  def copy(): EvalEnvironment = {
-    new EvalEnvironment() tap { env =>
-      env.state = EnvState(topScope, Some(stepDefs))
-    }
-  }
+  /** Create a clone of the current environment state */
+  def cloneState: EnvState = EnvState(topScope, Some(stepDefs))
 
   /**
     * Closes any resources associated with the evaluation context. This implementation
