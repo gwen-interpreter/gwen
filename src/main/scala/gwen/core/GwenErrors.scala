@@ -152,7 +152,7 @@ object Errors {
   class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step${at(SourceRef.asString(step.sourceRef))}: $step: ${cause.getMessage}", cause)
   
   /** Signals an infinite recursive StepDef. */
-  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Infinite recursion detected in StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
+  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Illegal recursive call to StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
 
   /** Thrown when a decoding error occurs. */
   class DecodingException(msg: String) extends GwenException(msg)

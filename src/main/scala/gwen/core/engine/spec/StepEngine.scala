@@ -99,7 +99,11 @@ trait StepEngine[T <: EvalContext] {
               withStep(iStep) {
                 parent match {
                   case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
-                    Errors.recursiveStepDefError(scenario)
+                    step => iStep.copy(
+                      withEvalStatus = 
+                        Failed(iStep.evalStatus.duration.toNanos, 
+                          new Errors.RecursiveStepDefException(ctx.getStepDef(iStep.name).get._1))
+                    )
                   case _ =>
                     throw e
                 }
