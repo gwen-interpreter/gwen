@@ -87,7 +87,7 @@ trait StepEngine[T <: EvalContext] {
       case _ =>
         translateCompositeStep(iStep) orElse {
           translateStepDef(iStep, ctx)
-          } map { lambda => 
+        } map { lambda => 
           withStep(iStep.copy(withEvalStatus = Pending)) { s =>
             lambda(parent, s, ctx)
           }

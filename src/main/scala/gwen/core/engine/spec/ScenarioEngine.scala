@@ -35,7 +35,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
 import gwen.core.model.gherkin.Background
-import gwen.core.engine.EvalEnvironment
 
 /**
   * Scenario evaluation engine.
@@ -46,23 +45,23 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   private [spec] def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
     if (ctx.options.isParallelScenarios && SpecType.isFeature(ctx.specType) && StateLevel.scenario.equals(ctx.stateLevel)) {
-      evaluateParallelScenarios(parent, input, ctx, ctx)
+      evaluateParallelScenarios(parent, input, ctx)
     } else {
-      evaluateSequentialScenarios(parent, input, ctx, ctx)
+      evaluateSequentialScenarios(parent, input, ctx)
     }
   }
 
-  private def evaluateSequentialScenarios(parent: Identifiable, scenarios: List[Scenario], env: EvalEnvironment, ctx: T): List[Scenario] = {
+  private def evaluateSequentialScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     scenarios.foldLeft(List[Scenario]()) {
       (acc: List[Scenario], scenario: Scenario) =>
-        evaluateOrTransitionScenario(parent, scenario, env, ctx, acc) :: acc
+        evaluateOrTransitionScenario(parent, scenario, ctx, acc) :: acc
     } reverse
   }
 
-  private def evaluateParallelScenarios(parent: Identifiable, scenarios: List[Scenario], env: EvalEnvironment, ctx: T): List[Scenario] = {
+  private def evaluateParallelScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val stepDefs = scenarios.filter(_.isStepDef).foldLeft(List[Scenario]()) {
       (acc: List[Scenario], stepDef: Scenario) =>
-        evaluateOrTransitionScenario(parent, stepDef, env, ctx, acc) :: acc
+        evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
     }
     val executor = ParallelExecutors.scenarioInstance
     implicit val ec = ExecutionContext.fromExecutorService(executor)
@@ -71,7 +70,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       Future {
         val ctxClone = engine.init(ctx.options, ctx.cloneState)
         try {
-          evaluateOrTransitionScenario(parent, scenario, env, ctxClone, acc.asScala.toList) tap { s =>
+          evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
             acc.add(s)
           }
         } finally {
@@ -86,12 +85,12 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     acc.asScala.toList.sortBy(_.sourceRef.map(_.pos.line).getOrElse(0))
   }
 
-  private def evaluateOrTransitionScenario(parent: Identifiable, scenario: Scenario, env: EvalEnvironment, ctx: T, acc: List[Scenario]): Scenario = {
-    if (SpecType.isFeature(env.specType) && !scenario.isStepDef) {
-      if (StateLevel.scenario.equals(env.stateLevel)) {
+  private def evaluateOrTransitionScenario(parent: Identifiable, scenario: Scenario, ctx: T, acc: List[Scenario]): Scenario = {
+    if (SpecType.isFeature(ctx.specType) && !scenario.isStepDef) {
+      if (StateLevel.scenario.equals(ctx.stateLevel)) {
         ctx.reset(StateLevel.scenario)
       }
-      env.topScope.set("gwen.scenario.name", scenario.name)
+      ctx.topScope.set("gwen.scenario.name", scenario.name)
     }
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
@@ -100,9 +99,9 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
-          transitionScenario(parent, scenario, Skipped, env.scopes)
+          transitionScenario(parent, scenario, Skipped, ctx.scopes)
         } else if (exitOnFail && !isSoftAssert) {
-          transitionScenario(parent, scenario, scenario.evalStatus, env.scopes)
+          transitionScenario(parent, scenario, scenario.evalStatus, ctx.scopes)
         } else {
           evaluateScenario(parent, scenario, ctx)
         }
