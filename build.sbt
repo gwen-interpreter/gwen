@@ -41,6 +41,7 @@ lazy val mainDependencies = {
   val scalaCSV = "1.3.6"
   val jsonPath = "2.4.0"
   val jodaTime = "2.10.6"
+  val scalaTags = "0.9.4"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -52,7 +53,8 @@ lazy val mainDependencies = {
     "org.apache.commons" % "commons-text" % commonsText,
     "com.github.tototoshi" %% "scala-csv" % scalaCSV,
     "com.jayway.jsonpath" % "json-path" % jsonPath,
-    "joda-time" % "joda-time" % jodaTime
+    "joda-time" % "joda-time" % jodaTime,
+    "com.lihaoyi" %% "scalatags" % scalaTags
   )
 }
 

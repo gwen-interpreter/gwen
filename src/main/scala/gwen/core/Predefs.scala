@@ -31,10 +31,16 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.PrintWriter
+import java.io.StringReader
 import java.io.StringWriter
 import java.nio.file.{Files, Paths}
 import java.text.DecimalFormat
-import java.{util => ju}
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stream.StreamSource
+import javax.xml.transform.OutputKeys
 
 /** Predefs and implicits avaiable wherever this page is imported. */
 
@@ -251,6 +257,19 @@ package object core {
             |${"\"\"\""}""".stripMargin
     }
     def splitLines(blob: String): List[String] = blob.split("\\r?\\n").toList
+
+    def prettyPrintXML(xml: String, cDataElements: Option[String]): String = {
+      val transformer = TransformerFactory.newInstance().newTransformer()
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+      cDataElements foreach { cDataElems =>
+        transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, cDataElems)
+      }
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+      val result = new StreamResult(new StringWriter())
+      val source = new StreamSource(new StringReader(xml))
+      transformer.transform(source, result)
+      result.getWriter().toString
+    }
   }
   
   object DurationOps {
@@ -278,8 +297,8 @@ package object core {
   }
 
   object UUIDGenerator {
-    val baseId = ju.UUID.randomUUID.toString
-    private val counter = new ju.concurrent.atomic.AtomicInteger(0)
+    val baseId = UUID.randomUUID.toString
+    private val counter = new AtomicInteger(0)
     private val lastUuid = ThreadLocal.withInitial[String] { () => baseId }
     def nextId: String = s"$baseId-${counter.incrementAndGet()}" tap { uuid => 
       lastUuid.set(uuid)

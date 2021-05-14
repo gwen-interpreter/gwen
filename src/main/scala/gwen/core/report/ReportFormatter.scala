@@ -36,7 +36,7 @@ trait ReportFormatter {
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String]
+  def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = None
   
   /**
     * Formats the feature summary report.
@@ -45,7 +45,7 @@ trait ReportFormatter {
     * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String]
+  def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
   
   private [report] def relativePath(reportFile: File, reportDir: File) = 
     reportFile.getPath.substring(reportDir.getPath.length + 1)

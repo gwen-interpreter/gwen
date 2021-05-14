@@ -16,10 +16,10 @@
 package gwen.core.report.junit
 
 import gwen.core._
-import gwen.core.Formatting.escapeXml
 import gwen.core.Formatting.padWithZeroes
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
+import gwen.core.model.gherkin.Scenario
 import gwen.core.report.ReportFormatter
 
 import scala.sys.process._
@@ -27,9 +27,11 @@ import scala.util.Try
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
+import scalatags.Text.all._
 
 import java.io.File
 import java.net.InetAddress
+
 
 /** Formats the feature summary and detail reports in JUnit xml. */
 trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
@@ -46,58 +48,81 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
-    val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
+    val hostname = Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim)
+    val packageName = result.spec.specFile.map(f => f.getPath).getOrElse("")
+    val name = s"$packageName.Feature: ${result.spec.feature.name}"
+    val pkg = result.spec.specFile.map(_ => packageName)
+    val scenarios = findScenarios(result)
+    val scenarioCount = scenarios.length
+    val evalStatuses = scenarios.map(_.evalStatus)
+    val failureCount = evalStatuses.filter(_.isAssertionError).size
+    val errorCount = evalStatuses.filter(status => EvalStatus.isError(status.status) && !status.isAssertionError).size
+    val skippedCount = evalStatuses.filter(status => status == Skipped || status == Pending).size
+    val time = result.elapsedTime.toNanos.toDouble / 1000000000d
+    val timestamp = new DateTime(result.finished).withZone(DateTimeZone.UTC).toString
+    
+    val testsuiteTag = {
+      tag("testsuite")(
+        (attr("hostname") := hostname),
+        (attr("name") := name),
+        for (pckgName <- pkg) yield (attr("package") := pckgName),
+        (attr("tests") := scenarioCount),
+        (attr("errors") := errorCount),
+        (attr("failures") := failureCount),
+        (attr("skipped") := skippedCount),
+        (attr("time") := time),
+        (attr("timestamp") := timestamp),
+        tag("properties")(
+          for ((n, v) <- Settings.entries.toList) yield tag("property")(
+            (attr("name") := n),
+            (attr("value") := v)
+          )
+        ),
+        for {
+          (scenario, idx) <- scenarios.zipWithIndex
+          name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.name}"
+          time = scenario.evalStatus.nanos.toDouble / 1000000000d
+          status = scenario.evalStatus.status.toString
+        } yield tag("testcase")(
+          (attr("name") := name),
+          (attr("time") := time),
+          (attr("status") := status),
+          scenario.evalStatus match {
+            case status @ Failed(_, error) => 
+              tag(if (status.isAssertionError) "failure" else "error")(
+                (attr("type") := error.getClass.getName),
+                (attr("message") := error.getMessage)
+              )
+            case Skipped | Pending => 
+              tag("skipped")
+            case _ =>
+          },
+          scenario.evalStatus match {
+            case status @ Failed(_, error) if !status.isAssertionError => 
+              tag("system-err")(error.writeStackTrace())
+            case _ =>
+          }
+        )
+      )
+    }
+    
+    val junitXML = s"""<?xml version="1.0" encoding="UTF-8" ?>""" + testsuiteTag.render
+    Some(Formatting.prettyPrintXML(junitXML, Some("system-err")))
+    
+  }
+
+  private def findScenarios(result: SpecResult): List[Scenario] = {
+    result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
         val s = if (EvalStatus.isEvaluated(scenario.evalStatus.status)) {
           scenario
         } else {
           normaliseScenarioOutline(scenario, scenario.background)
         }
-        s.examples.flatMap(_.scenarios).map((_, true))
+        s.examples.flatMap(_.scenarios)
       }
-      else List((scenario, false))
+      else List(scenario)
     }
-
-    val hostname = s""" hostname="${escapeXml(Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim))}""""
-    val packageName = result.spec.specFile.map(f => escapeXml(f.getPath)).getOrElse("")
-    val name = s""" name="$packageName.Feature: ${escapeXml(result.spec.feature.name)}""""
-    val pkg = result.spec.specFile.map(_ => s""" package="$packageName"""").getOrElse("")
-    val scenarioCount = scenarios.length
-    val tests = s""" tests="$scenarioCount""""
-    val counts = result.summary.scenarioCounts
-    val errorCount = counts.getOrElse(StatusKeyword.Failed, 0)
-    val errors = s""" errors="$errorCount""""
-    val skipped = s""" skipped="${counts.getOrElse(StatusKeyword.Skipped, 0) + counts.getOrElse(StatusKeyword.Pending, 0)}""""
-    val time = s""" time="${result.elapsedTime.toNanos.toDouble / 1000000000d}""""
-    val timestamp = s""" timestamp="${new DateTime(result.finished).withZone(DateTimeZone.UTC)}""""
-    
-    Some(s"""<?xml version="1.0" encoding="UTF-8" ?>
-<testsuite$hostname$name$pkg$tests$errors$skipped$time$timestamp>
-    <properties>${Settings.entries.map { case (n, v) => s"""
-        <property name="${escapeXml(n)}" value="${escapeXml(v)}"/>"""}.mkString}
-    </properties>${scenarios.zipWithIndex.map{case ((scenario, isExpanded), idx) => s"""
-    <testcase name="Scenario ${padWithZeroes(idx + 1)}${if (isExpanded) " Outline" else ""}: ${escapeXml(scenario.name)}" time="${scenario.evalStatus.nanos.toDouble / 1000000000d}" status="${escapeXml(scenario.evalStatus.status.toString)}"${scenario.evalStatus match {
-    case Failed(_, error) => 
-      s""">
-        <error type="${escapeXml(error.getClass.getName)}" message="${escapeXml(error.writeStackTrace())}"/>
-    </testcase>"""
-    case Skipped | Pending => 
-      s""">
-        <skipped/>
-    </testcase>"""
-    case _ => "/>"
-  }}"""}.mkString}
-</testsuite>
-""")
   }
-  
-  /**
-    * Formats the feature summary report as HTML.
-    * 
-    * @param options gwen command line options
-    * @param info the gwen implementation info
-    * @param summary the accumulated feature results summary
-    */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
   
 }
