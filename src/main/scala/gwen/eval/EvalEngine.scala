@@ -283,8 +283,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
 
   def evalStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
     val sdStep = step.copy(
-      withStepDef = Some((stepDef, params)),
-      withAttachments = stepDef.steps.flatMap(_.attachments)
+      withStepDef = Some((stepDef, params))
     )
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val eStep = doEvaluate(step, env) { s =>
@@ -327,7 +326,6 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           lifecycle.afterStepDef(eStepDef, env.scopes) 
           step.copy(
             withStepDef = Some((eStepDef, params)),
-            withAttachments = eStepDef.attachments,
             withEvalStatus = eStepDef.evalStatus
           )
         } finally {

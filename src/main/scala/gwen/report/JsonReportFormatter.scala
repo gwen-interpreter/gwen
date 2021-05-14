@@ -145,7 +145,7 @@ trait JsonReportFormatter extends ReportFormatter {
   }
 
   private def renderSteps(steps: List[Step], parentId: String) = steps.map { step =>
-    val screenshots = step.attachments.filter(_._1 == "Screenshot").map(_._2)
+    val screenshots = step.deepAttachments.filter(_._1 == "Screenshot").map(_._2)
     s"""
           {
             "keyword": "${step.keyword} ",

@@ -230,8 +230,15 @@ class RPReporter(rpClient: RPClient)
     if (SendStepDefs.isNone && !SendFailedStepDefs.isNone && EvalStatus.isError(evalStatus.status)) {
       injectErrorTrail(endTime, step, parentUuid, callTrail, scopes)
     }
+    logNonErrorAttachments(step)
     if (isLeafNode(step)) {
-      logStepResult(parentUuid, step, callTrail)
+      if (EvalStatus.isError(step.evalStatus.status)) {
+        step.errorTrails foreach { errorTrail =>
+          logFailedStepResult(callTrail, errorTrail)
+        }
+      } else { 
+        logNonErrorMessage(step)
+      }
     }
     val desc = formatDescriptionWithError(step, callTrail)
     rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
@@ -240,6 +247,80 @@ class RPReporter(rpClient: RPClient)
   override def healthCheck(event: LifecycleEvent[Step]): Unit = { 
     if (RPSettings.`gwen.rp.heartbeat`) {
       rpClient.healthCheck(RPSettings.`gwen.rp.heartbeat.timeoutSecs`)
+    }
+  }
+
+  private def isLeafNode(node: SpecNode): Boolean = {
+    (SendStepDefs.isNone && SendFailedStepDefs.isNone) || (node match {
+      case step: Step => step.stepDef.isEmpty
+      case _ => false
+    })
+  }
+
+  private def logNonErrorAttachments(step: Step): Unit = {
+    val steps = {
+      if (SendStepDefs.isNone && (SendFailedStepDefs.isNone || !EvalStatus.isError(step.evalStatus.status))) {
+        step.deepSteps
+      } else {
+        List(step)
+      }
+    }
+    steps filter { 
+      s => !EvalStatus.isError(s.evalStatus.status)
+    } foreach { s => 
+      rpClient.sendAttachmentLogs(s.evalStatus, s.attachments)
+    }
+  }
+
+  private def logNonErrorMessage(step: Step): Unit = {
+    val evalStatus = step.evalStatus
+    val message = {
+      if (evalStatus == Disabled) Some(Disabled.status.toString)
+      else if (evalStatus.cause.nonEmpty) Some(evalStatus.message)
+      else None
+    }
+    message foreach { msg => 
+      rpClient.sendItemLog(evalStatus, msg, None) 
+    }
+  }
+
+  private def logFailedStepResult(callTrail: List[Step], errorTrail: List[Step]): Unit = {
+    val failedStep = errorTrail.last
+    val evalStatus = failedStep.evalStatus
+    val attachments = failedStep.attachments
+    val screenshotAttachment = attachments find { case (name, _) => name == "Screenshot" }
+    val errorAttachment = attachments find { case (name, _) => name == "Error details" }
+    val envAttachment = attachments find { case (name, _) => name == "Environment" }
+    val message = if (SendErrorTrace.isInlined || SendEnvTrace.isInlined) {
+      val errorTrace = if (SendErrorTrace.isInlined) {
+        errorAttachment map { case (name, file) =>
+          s"\r\n\r\n$name:\r\n\r\n${Source.fromFile(file).mkString}"
+        } getOrElse ""
+      } else ""
+      val envTrace = if (SendEnvTrace.isInlined) { 
+        envAttachment map { case (name, file) =>
+          s"\r\n\r\n$name:\r\n\r\n${Source.fromFile(file).mkString}"
+        } getOrElse ""
+      } else ""
+      s"${errorMessage(callTrail, errorTrail)}$errorTrace$envTrace"
+    } else {
+      errorMessage(callTrail, errorTrail)
+    }
+    rpClient.sendItemLog(evalStatus, message, screenshotAttachment map { case (_, file) => file } )
+    if (SendHierarchy.isAttached) {
+      errorHierarchy(callTrail, errorTrail).foreach { hierarchy =>
+        val file = File.createTempFile(s"Hierarchy-", ".txt")
+        file.deleteOnExit()
+        file.writeText(hierarchy)
+        val attachment = ("Hierarchy", file)
+        rpClient.sendAttachmentLog(evalStatus, attachment)
+      }
+    }
+    if (SendErrorTrace.isAttached) {
+      rpClient.sendAttachmentLogs(evalStatus, errorAttachment.toList)
+    }
+    if (SendEnvTrace.isAttached) {
+      rpClient.sendAttachmentLogs(evalStatus, envAttachment.toList)
     }
   }
 
@@ -287,13 +368,6 @@ class RPReporter(rpClient: RPClient)
 
   }
 
-  private def isLeafNode(node: SpecNode): Boolean = {
-    (SendStepDefs.isNone && SendFailedStepDefs.isNone) || (node match {
-      case step: Step => step.stepDef.isEmpty
-      case _ => false
-    })
-  }
-
   private def isInlined(node: SpecNode, callTrail: List[Step]): Boolean = { 
     SendStepDefs.isInlined && callTrail.size > (if (node.isInstanceOf[Step]) 1 else 0)
   }
@@ -336,54 +410,6 @@ class RPReporter(rpClient: RPClient)
           case table => s"<pre>${Formatting.formatTable(table)}</pre>"
         }
       case _ => ""
-    }
-  }
-
-  private def logStepResult(parentuuid: String, step: Step, callTrail: List[Step]): Unit = {
-    if (EvalStatus.isError(step.evalStatus.status)) {
-      step.errorTrails foreach { errorTrail =>
-        val evalStatus = errorTrail.last.evalStatus
-        val attachments = errorTrail.last.attachments
-        val screenshot = attachments find { case (name, _) => name == "Screenshot" }
-        val error = attachments find { case (name, _) => name == "Error details" }
-        val env = attachments find { case (name, _) => name == "Environment" }
-        val message = if (SendErrorTrace.isInlined || SendEnvTrace.isInlined) {
-          val errorTrace = if (SendErrorTrace.isInlined) {
-            error map { case (name, file) =>
-              s"\r\n\r\n$name:\r\n\r\n${Source.fromFile(file).mkString}"
-            } getOrElse ""
-          } else ""
-          val envTrace = if (SendEnvTrace.isInlined) { 
-            env map { case (name, file) =>
-              s"\r\n\r\n$name:\r\n\r\n${Source.fromFile(file).mkString}"
-            } getOrElse ""
-          } else ""
-          s"${errorMessage(callTrail, errorTrail)}$errorTrace$envTrace"
-        } else {
-          errorMessage(callTrail, errorTrail)
-        }
-        rpClient.sendItemLog(evalStatus, message, screenshot map { case (_, file) => file } )
-        if (SendHierarchy.isAttached) {
-          errorHierarchy(callTrail, errorTrail).foreach { hierarchy =>
-            val file = File.createTempFile(s"Hierarchy-", ".txt")
-            file.deleteOnExit()
-            file.writeText(hierarchy)
-            rpClient.sendItemLog(evalStatus, s"Hierarchy (attachment)", Some(file))
-          }
-        }
-        rpClient.sendItemLogAttachments(evalStatus, attachments)
-      }
-    } else { 
-      val evalStatus = step.evalStatus
-      val message = {
-        if (evalStatus == Disabled) Some(Disabled.status.toString)
-        else if (evalStatus.cause.nonEmpty) Some(evalStatus.message)
-        else None
-      }
-      message foreach { msg => 
-        rpClient.sendItemLog(evalStatus, msg, None) 
-      }
-      rpClient.sendItemLogAttachments(evalStatus, step.attachments)
     }
   }
 

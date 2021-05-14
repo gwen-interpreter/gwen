@@ -96,7 +96,7 @@ case class FeatureSpec(
   def evalScenarios = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
 
   /** Gets all attachments. */
-  def attachments: List[(String, File)] = steps.flatMap(_.attachments)
+  def attachments: List[(String, File)] = steps.flatMap(_.deepAttachments)
 
   /** Gets the number of sustained errors. */
   def sustainedCount: Int = {
@@ -347,12 +347,7 @@ case class Scenario(
   def isVirtual: Boolean = name.contains(s"$ZeroChar")
   
   def attachments: List[(String, File)] = {
-    def attachments(step: Step): List[(String, File)] = {
-      step.attachments ++ (step.stepDef.map { case (stepDef, _) => 
-        stepDef.attachments
-      }).getOrElse(Nil)
-    }
-    allSteps.flatMap(step => attachments(step)).distinct
+    allSteps.flatMap(step => step.deepAttachments)
   }
   
   /** Returns the evaluation status of this scenario. */
@@ -584,6 +579,16 @@ case class Step(
 
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
+
+  def deepSteps: List[Step] = {
+    List(this) ++ (stepDef map { case (stepDef, _) => 
+      stepDef.steps.flatMap(_.deepSteps)
+    } getOrElse Nil)
+  }
+
+  def deepAttachments: List[(String, File)] = {
+    deepSteps.flatMap(_.attachments)
+  }
 
   /** Returns a string representation of this step. */
   override def toString: String = s"$keyword ${expression}"

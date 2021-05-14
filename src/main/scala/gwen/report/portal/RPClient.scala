@@ -20,7 +20,6 @@ import gwen._
 import gwen.dsl._
 import gwen.Errors._
 import gwen.eval.GwenOptions
-import RPConfig._
 
 import scala.concurrent.duration.Duration
 import scala.io.Source
@@ -222,6 +221,18 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       ju.Calendar.getInstance.getTime)
   }
 
+  def sendAttachmentLogs(evalStatus: EvalStatus, attachments: List[(String, File)]): Unit = {
+    attachments foreach { attachment =>
+      sendAttachmentLog(evalStatus, attachment)
+    }
+  }
+
+  def sendAttachmentLog(evalStatus: EvalStatus, attachment: (String, File)): Unit = {
+    val level = mapLevel(evalStatus)
+    val (name, file) = attachment
+    sendItemLog(level, s"$name (attachment)", Some(file))
+  }
+
   def sendItemLog(level: LogLevel, msg: String): Unit = {
     sendItemLog(level, msg, None)
   }
@@ -240,17 +251,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
         ReportPortal.emitLog(rpMessage, level.name, ju.Calendar.getInstance.getTime)
       case None => 
         ReportPortal.emitLog(msg, level.name, ju.Calendar.getInstance.getTime)
-    }
-  }
-
-  def sendItemLogAttachments(evalStatus: EvalStatus, attachments: List[(String, File)]): Unit = {
-    attachments.filter { case (name, _) => 
-      if (name == "Screenshot") false
-      else if (name == "Error details") SendErrorTrace.isAttached
-      else if (name == "Environment") SendEnvTrace.isAttached
-      else true
-    } foreach { case (name, file) =>
-      sendItemLog(evalStatus, s"$name (attachment)", Some(file))
     }
   }
 
