@@ -27,6 +27,8 @@ import HtmlReportFormatter._
 
 import scala.io.Source
 import scala.util.Try
+import scalatags.Text.all._
+import scalatags.Text.TypedTag
 
 import java.io.File
 import java.text.DecimalFormat
@@ -61,8 +63,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       s"""<!DOCTYPE html>
 <html lang="en">
   <head>
-    ${formatHtmlHead(s"$title - $featureName", rootPath)}
-    ${formatJsHeader(rootPath)}
+    ${formatHtmlHead(s"$title - $featureName", rootPath).render}
   </head>
   <body>
     ${formatReportHeader(info, title, featureName, rootPath)}
@@ -359,7 +360,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>
-    ${formatHtmlHead(title, "")}
+    ${formatHtmlHead(title, "").render}
   </head>
   <body>
     ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)) else "", "")}
@@ -425,15 +426,7 @@ trait HtmlReportFormatter extends ReportFormatter {
 </html>
     """)
   }
-  
-  private def formatHtmlHead(title: String, rootPath: String) = s"""
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>$title</title>
-    <link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
-    
+
   private def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): String = { 
     val total = counts.values.sum
     if (total > 0) {s"""
@@ -529,10 +522,6 @@ trait HtmlReportFormatter extends ReportFormatter {
                     </a>"""} else ""}"""
 
   private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
-
-  private def formatJsHeader(rootPath: String) = s""" 
-    <script src="${rootPath}resources/js/jquery.min.js"></script>
-    <script src="${rootPath}resources/js/bootstrap.min.js"></script>"""
       
   private def percentageRounded(percentage: Double): String = percentFormatter.format(percentage)
   private def calcPercentage(count: Int, total: Int): Double = 100 * count.toDouble / total.toDouble
@@ -565,6 +554,19 @@ object HtmlReportFormatter {
     StatusKeyword.Loaded -> "#3c763d",
     StatusKeyword.Disabled -> "grey"
   )
+
+  private [report] def formatHtmlHead(pageTitle: String, rootPath: String): TypedTag[String] = {
+    head(
+      meta(charset := "utf-8"),
+      meta(httpEquiv := "X-UA-Compatible", content := "IE=edge"),
+      meta(name := "viewport", content := "width=device-width, initial-scale=1"),
+      title := pageTitle,
+      link(href := s"${rootPath}resources/css/bootstrap.min.css", rel := "stylesheet"),
+      link(href := s"${rootPath}resources/css/gwen.css", rel := "stylesheet"),
+      script(src := s"${rootPath}resources/js/jquery.min.js"),
+      script(src := s"${rootPath}resources/js/bootstrap.min.js")
+    )
+  }
   
   private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
     <table width="100%" cellpadding="5">

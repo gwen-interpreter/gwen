@@ -63,19 +63,19 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     
     val testsuiteTag = {
       tag("testsuite")(
-        (attr("hostname") := hostname),
-        (attr("name") := name),
-        for (pckgName <- pkg) yield (attr("package") := pckgName),
-        (attr("tests") := scenarioCount),
-        (attr("errors") := errorCount),
-        (attr("failures") := failureCount),
-        (attr("skipped") := skippedCount),
-        (attr("time") := time),
-        (attr("timestamp") := timestamp),
+        attr("hostname") := hostname,
+        attr("name") := name,
+        for (pckgName <- pkg) yield attr("package") := pckgName,
+        attr("tests") := scenarioCount,
+        attr("errors") := errorCount,
+        attr("failures") := failureCount,
+        attr("skipped") := skippedCount,
+        attr("time") := time,
+        attr("timestamp") := timestamp,
         tag("properties")(
           for ((n, v) <- Settings.entries.toList) yield tag("property")(
-            (attr("name") := n),
-            (attr("value") := v)
+            attr("name") := n,
+            attr("value") := v
           )
         ),
         for {
@@ -84,24 +84,24 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
           time = scenario.evalStatus.nanos.toDouble / 1000000000d
           status = scenario.evalStatus.status.toString
         } yield tag("testcase")(
-          (attr("name") := name),
-          (attr("time") := time),
-          (attr("status") := status),
-          scenario.evalStatus match {
-            case status @ Failed(_, error) => 
-              tag(if (status.isAssertionError) "failure" else "error")(
-                (attr("type") := error.getClass.getName),
-                (attr("message") := error.getMessage)
-              )
-            case Skipped | Pending => 
-              tag("skipped")
-            case _ =>
-          },
-          scenario.evalStatus match {
-            case status @ Failed(_, error) if !status.isAssertionError => 
-              tag("system-err")(error.writeStackTrace())
-            case _ =>
-          }
+            attr("name") := name,
+            attr("time") := time,
+            attr("status") := status,
+            scenario.evalStatus match {
+              case status @ Failed(_, error) => 
+                tag(if (status.isAssertionError) "failure" else "error")(
+                  attr("type") := error.getClass.getName,
+                  attr("message") := error.getMessage
+                )
+              case Skipped | Pending => 
+                tag("skipped")
+              case _ =>
+            },
+            scenario.evalStatus match {
+              case status @ Failed(_, error) if !status.isAssertionError => 
+                tag("system-err")(error.writeStackTrace())
+              case _ =>
+            }
         )
       )
     }

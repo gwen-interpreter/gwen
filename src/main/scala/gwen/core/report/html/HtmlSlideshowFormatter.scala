@@ -51,8 +51,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
       Some(s"""<!DOCTYPE html>
 <html lang="en">
   <head>
-    ${formatHtmlHead(s"Slideshow - $featureName", rootPath)}
-    ${formatJsHeader(rootPath)}
+    ${HtmlReportFormatter.formatHtmlHead(s"Slideshow - $featureName", rootPath).render}
   </head>
   <body>
     ${HtmlReportFormatter.formatReportHeader(info, "Feature Slideshow", featureName, rootPath)}
@@ -71,19 +70,7 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     * @param summary the accumulated feature results summary
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
-  
-  private def formatJsHeader(rootPath: String) = s""" 
-    <script src="${rootPath}resources/js/jquery.min.js"></script>
-    <script src="${rootPath}resources/js/bootstrap.min.js"></script>"""
-    
-  private def formatHtmlHead(title: String, rootPath: String) = s"""
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>$title</title>
-    <link href="${rootPath}resources/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="${rootPath}resources/css/gwen.css" rel="stylesheet" />"""
-  
+
 }
 
 object HtmlSlideshowFormatter {
