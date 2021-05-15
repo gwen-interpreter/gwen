@@ -262,6 +262,8 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     
     when(mockInterpreter.implName).thenReturn("gwen")
     when(mockInterpreter.implVersion).thenReturn("-SNAPSHOT")
+    when(mockInterpreter.gwenHome).thenReturn(s"https://github.com/gwen-interpreter")
+    when(mockInterpreter.implHome).thenReturn(s"https://github.com/gwen-interpreter/gwen")
     when(mockInterpreter.releaseNotesUrl).thenReturn(None)
     when(mockInterpreter.init(options)).thenReturn(mockCtx)
     when(mockInterpreter.interpretUnit(any[FeatureUnit], any[EvalContext])).thenReturn(
