@@ -23,6 +23,8 @@ import scala.io.Source
 import scala.util.matching.Regex
 
 import org.apache.commons.text.StringEscapeUtils
+import org.htmlcleaner.HtmlCleaner
+import org.htmlcleaner.PrettyHtmlSerializer
 
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -270,6 +272,16 @@ package object core {
       transformer.transform(source, result)
       result.getWriter().toString
     }
+
+    def prettyPrintHTML(html: String): String = {
+      val cleaner = new HtmlCleaner()
+      val props = cleaner.getProperties
+      props.setOmitXmlDeclaration(true)
+      val cleanHtml = cleaner.clean(html)
+      val pretty = new PrettyHtmlSerializer(props, "  ")
+      pretty.getAsString(cleanHtml)
+    }
+
   }
   
   object DurationOps {

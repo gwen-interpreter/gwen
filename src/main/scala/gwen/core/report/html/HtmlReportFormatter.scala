@@ -64,9 +64,7 @@ trait HtmlReportFormatter extends ReportFormatter {
     Some(
       s"""<!DOCTYPE html>
 <html lang="en">
-  <head>
-    ${formatHtmlHead(s"$title - $featureName", rootPath).render}
-  </head>
+  ${formatHtmlHead(s"$title - $featureName", rootPath).render}
   <body>
     ${formatReportHeader(info, title, featureName, rootPath).render}
     ${formatDetailStatusHeader(unit, result, rootPath, breadcrumbs, screenshots, true).render}
@@ -79,13 +77,13 @@ trait HtmlReportFormatter extends ReportFormatter {
         <span class="grayed"><p><small># language: $language</small></p></span>
         """ else ""}
         <span class="label label-black">${result.spec.specType}</span>
-        ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None)}
+        ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None).render}
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.overhead)}</small></span>
           <table width="100%" cellpadding="5">
-            ${formatProgressBar(NodeType.Rule, summary.ruleCounts)}
-            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts)}
-            ${formatProgressBar(NodeType.Step, summary.stepCounts)}
+            ${formatProgressBar(NodeType.Rule, summary.ruleCounts).render}
+            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts).render}
+            ${formatProgressBar(NodeType.Step, summary.stepCounts).render}
           </table>
         </div>
       </div>
@@ -125,18 +123,24 @@ trait HtmlReportFormatter extends ReportFormatter {
 """)
   }
 
-  private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]) = {
+  private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]): Option[Seq[TypedTag[String]]] = {
     val bgClass = status.map(cssStatus).getOrElse("default")
-    if (description.nonEmpty)
-      s"""
-        <p></p>
-        <ul class="list-group bg-$bgClass">${
-          (description map { line =>
-            s"""<li class="list-group-item bg-$bgClass">${escapeHtml(line)}</li>"""
-          }).mkString
-        }
-        </ul>"""
-    else ""
+    if (description.nonEmpty) {
+      Some(
+        Seq(
+          p,
+          ul(`class` := s"list-group bg-$bgClass",
+            for (line <- description)
+            yield
+            li(`class` := s"list-group-item bg-$bgClass",
+              line
+            )
+          )
+        )
+      )
+    } else {
+      None
+    }
   }
 
   private def formatScenario(scenario: Scenario, scenarioId: String): String = {
@@ -161,7 +165,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
     }
-          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
+          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status)).render}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
         </li>
       </ul>
       <div class="panel-body">${
@@ -175,7 +179,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
               <span class="label label-${cssStatus(status)}">${background.keyword}</span>
               <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
-              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status))}
+              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status)).render}
             </li>
           </ul>
           <div class="panel-body">
@@ -215,7 +219,7 @@ trait HtmlReportFormatter extends ReportFormatter {
            <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
              <span class="label label-${cssStatus(status)}">${exs.keyword}</span>
              <span class="pull-right"><small>${durationOrStatus(exs.evalStatus)}</small></span>
-             ${escapeHtml(exs.name)}${formatDescriptionLines(exs.description, Some(status))}
+             ${escapeHtml(exs.name)}${formatDescriptionLines(exs.description, Some(status)).render}
            </li>
          </ul>
         <div class="panel-body">
@@ -306,7 +310,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="pull-right"><small>${durationOrStatus(rule.evalStatus)}</small></span>""" else ""
       }
-          ${escapeHtml(rule.name)}${formatDescriptionLines(rule.description, Some(status))}
+          ${escapeHtml(rule.name)}${formatDescriptionLines(rule.description, Some(status)).render}
         </li>
       </ul>
       <div class="panel-body">${
@@ -319,7 +323,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
               <span class="label label-${cssStatus(status)}">${background.keyword}</span>
               <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
-              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status))}
+              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status)).render}
             </li>
           </ul>
           <div class="panel-body">
@@ -359,9 +363,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   
     Some(s"""<!DOCTYPE html>
 <html lang="en">
-  <head>
-    ${formatHtmlHead(title, "").render}
-  </head>
+  ${formatHtmlHead(title, "").render}
   <body>
     ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)).render else "", "")}
     ${formatSummaryStatusHeader(summary).render}
@@ -371,10 +373,10 @@ trait HtmlReportFormatter extends ReportFormatter {
         <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
           <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.overhead)}</small></span>
           <table width="100%" cellpadding="5">
-            ${formatProgressBar(NodeType.Feature, summary.featureCounts)}
-            ${formatProgressBar(NodeType.Rule, summary.ruleCounts)}
-            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts)}
-            ${formatProgressBar(NodeType.Step, summary.stepCounts)}
+            ${formatProgressBar(NodeType.Feature, summary.featureCounts).render}
+            ${formatProgressBar(NodeType.Rule, summary.ruleCounts).render}
+            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts).render}
+            ${formatProgressBar(NodeType.Step, summary.stepCounts).render}
           </table>
         </div>
       </div>
@@ -411,24 +413,30 @@ trait HtmlReportFormatter extends ReportFormatter {
     """)
   }
 
-  private def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): String = { 
-    val total = counts.values.sum
-    if (total > 0) {s"""
-            <tr>
-              <td align="right">
-                <span style="white-space: nowrap;">$total $nodeType${if (total > 1) "s" else ""}</span>
-              </td>
-              <td width="99%">
-                <div class="progress">${(StatusKeyword.reportables map { status =>
-                val count = counts.getOrElse(status, 0)
-                val percentage = calcPercentage(count, total)
-                s"""
-                <div class="progress-bar progress-bar-${cssStatus(status)}" style="width: $percentage%">
-                  <span>$count $status - ${percentageRounded(percentage)}%</span>
-                </div>"""}).mkString}
-              </div>
-              </td>
-            </tr>"""} else ""
+  private def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): Option[TypedTag[String]] = { 
+    for (total <- Some(counts.values.sum).filter(_ > 0))
+    yield
+    tr(
+      td(attr("align") := "right",
+        span(style := "white-space: nowrap;",
+          s"$total $nodeType${if (total > 1) "s" else ""}"
+        )
+      ),
+      td(width := "99%",
+        div(`class` := "progress",
+          for { 
+            status <- StatusKeyword.reportables
+            count = counts.getOrElse(status, 0)
+            percentage = calcPercentage(count, total)
+          } yield
+          div(`class` := s"progress-bar progress-bar-${cssStatus(status)}", style := s"width: $percentage%;",
+            span(
+              s"$count $status - ${percentageRounded(percentage)}%"
+            )
+          )
+        )
+      )
+    )
   }
   
   private def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
@@ -695,14 +703,15 @@ object HtmlReportFormatter {
         |});""".stripMargin
   }
 
-  private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String) = s"""
+  private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String) = {
+    s"""
   <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
   <div class="modal-dialog" style="width: 60%;">
   <div class="modal-content">
     <div class="modal-body">
     <a href="${HtmlSlideshowConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowConfig.fileExtension.get}" id="full-screen">Full Screen</a>
     <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
-    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
+    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath).render}
    </div>
   </div>
   </div>
@@ -718,6 +727,7 @@ object HtmlReportFormatter {
     $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
   </script>
   """
+  }
 
   private def noOfKeywordPixels(steps: List[Step]): Int = steps match {
     case Nil => 9
