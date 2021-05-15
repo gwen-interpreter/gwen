@@ -54,8 +54,8 @@ trait HtmlSlideshowFormatter extends ReportFormatter {
     ${HtmlReportFormatter.formatHtmlHead(s"Slideshow - $featureName", rootPath).render}
   </head>
   <body>
-    ${HtmlReportFormatter.formatReportHeader(info, "Feature Slideshow", featureName, rootPath)}
-    ${HtmlReportFormatter.formatStatusHeader(unit, result, rootPath, List(summaryCrumb, featureCrumb), Nil)}
+    ${HtmlReportFormatter.formatReportHeader(info, "Feature Slideshow", featureName, rootPath).render}
+    ${HtmlReportFormatter.formatDetailStatusHeader(unit, result, rootPath, List(summaryCrumb, featureCrumb), Nil, false).render}
     ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)}
   </body>
 </html>""")

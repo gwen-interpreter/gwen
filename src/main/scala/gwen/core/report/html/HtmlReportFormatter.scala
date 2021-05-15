@@ -32,6 +32,8 @@ import scalatags.Text.TypedTag
 
 import java.io.File
 import java.text.DecimalFormat
+import scala.concurrent.duration.Duration
+import java.util.Date
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter {
@@ -66,8 +68,8 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatHtmlHead(s"$title - $featureName", rootPath).render}
   </head>
   <body>
-    ${formatReportHeader(info, title, featureName, rootPath)}
-    ${formatStatusHeader(unit, result, rootPath, breadcrumbs, screenshots)}
+    ${formatReportHeader(info, title, featureName, rootPath).render}
+    ${formatDetailStatusHeader(unit, result, rootPath, breadcrumbs, screenshots, true).render}
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${
         if (result.spec.feature.tags.nonEmpty)
@@ -354,8 +356,6 @@ trait HtmlReportFormatter extends ReportFormatter {
     
     val reportDir = HtmlReportConfig.reportDir(options).get
     val title = "Feature Summary"
-    val status = summary.evalStatus.status
-    val sustainedCount = summary.sustainedCount
   
     Some(s"""<!DOCTYPE html>
 <html lang="en">
@@ -363,24 +363,8 @@ trait HtmlReportFormatter extends ReportFormatter {
     ${formatHtmlHead(title, "").render}
   </head>
   <body>
-    ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)) else "", "")}
-    
-    <ol class="breadcrumb" style="padding-right: 20px;">
-      <li style="color: gray">
-        <span class="caret-left" style="color: #f5f5f5;"></span> Summary
-      </li>
-      <li>
-        <span class="badge badge-${cssStatus(status)}">$status</span>
-        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</span>""" else ""}
-      </li>
-      <li>
-        <small><span class="grayed">Started: </span>${escapeHtml(summary.started.toString)}</small>
-      </li>
-      <li>
-        <small><span class="grayed">Finished: </span>${escapeHtml(summary.finished.toString)}</small>
-      </li>
-      <span class="pull-right"><small>${formatDuration(summary.elapsedTime)}</small></span>
-    </ol>
+    ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)).render else "", "")}
+    ${formatSummaryStatusHeader(summary).render}
     <div class="panel panel-default">
       <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
         <span class="label label-black">Results</span>
@@ -568,52 +552,147 @@ object HtmlReportFormatter {
     )
   }
   
-  private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String) = s"""
-    <table width="100%" cellpadding="5">
-      <tr>
-        <td width="100px">
-          <a href="${info.gwenHome}"><img src="${rootPath}resources/img/gwen-logo.png" border="0" width="82px"></img></a>
-        </td>
-        <td>
-          <h3>${escapeHtml(heading)}</h3>
-          ${escapeHtml(path)}
-        </td>
-        <td align="right">
-          <h3>&nbsp;</h3>
-          <a href="${info.implHome}"><span class="badge" style="background-color: #1f23ae;">${escapeHtml(info.implName)}</span></a>
-          <p><small style="white-space: nowrap; color: #1f23ae; padding-right: 7px;">${info.releaseNotesUrl.map(url => s"""<a href="$url">""").getOrElse("")}v${escapeHtml(info.implVersion)}${info.releaseNotesUrl.map(_ => "</a>").getOrElse("")}</small>
-          </p>
-        </td>
-      </tr>
-    </table>"""
+  private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String): TypedTag[String] = {
+    val implVersion = s"v${info.implVersion}"
+    table(width := "100%", attr("cellpadding") := "5",
+      tr(
+        td(width := "100px",
+          a(href := info.gwenHome,
+            img(src := s"${rootPath}resources/img/gwen-logo.png", border := "0", width := "82px")
+          )
+        ),
+        td(
+          h3(heading),
+          path
+        ),
+        td(attr("align") := "right",
+          h3(raw("&nbsp;")),
+          a(href := info.implHome,
+            span(`class` := "badge", style := "background-color: #1f23ae;", 
+              info.implName
+            )
+          ),
+          p(
+            small(style := "white-space: nowrap; color: #1f23ae; padding-right: 7px;",
+              info.releaseNotesUrl map { url => a(href := url, implVersion) } getOrElse implVersion
+            )
+          )
+        )
+      )
+    )
+  }
          
-  private [report] def formatStatusHeader(unit: FeatureUnit, result: SpecResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File]) = {
+  private [report] def formatSummaryStatusHeader(summary: ResultsSummary): TypedTag[String] = {
+    
+    val status = summary.evalStatus.status
+    val sustainedCount = summary.sustainedCount
+
+    ol(`class` := "breadcrumb", style := "padding-right: 20px;",
+      li(style := "color: gray",
+        span(`class` := "caret-left", style := "color: #f5f5f5;"),
+        " Summary"
+      ),
+      formatBadgeStatus(status, false, sustainedCount),
+      formatDateStatus("Started", summary.started),
+      formatDateStatus("Finished", summary.finished),
+      formatElapsedStatus(summary.elapsedTime)
+    )
+  }
+
+  private [report] def formatDetailStatusHeader(unit: FeatureUnit, result: SpecResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File], linkToError: Boolean): TypedTag[String] = {
+    
     val status = result.evalStatus.status
-    val renderStatusLink = status != StatusKeyword.Passed && status != StatusKeyword.Loaded
     val sustainedCount = result.sustainedCount
-    s"""
-    <ol class="breadcrumb" style="padding-right: 20px;">${(breadcrumbs map { case (text, reportFile) => s"""
-      <li>
-        <span class="caret-left"></span> <a href="${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}">${escapeHtml(text)}</a>
-      </li>"""}).mkString}
-      <li>
-        <span class="badge badge-${cssStatus(status)}">${if (renderStatusLink) s"""<a id="failed-link" href="#" style="color:white;">""" else ""}${status}${if (renderStatusLink) """</a><script>$(document).ready(function(){$('#failed-link').click(function(e){e.preventDefault();$('html, body').animate({scrollTop:$('.badge-failed-issue').closest('.panel').offset().top},500);});});</script>""" else ""}</span>
-        ${if (sustainedCount > 0) s""" <small><span class="grayed">with</span></small> <span class="badge badge-danger"><a id="sustained-link" href="#" style="color:white;">${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}</a><script>$$(document).ready(function(){$$('#sustained-link').click(function(e){e.preventDefault();$$('html, body').animate({scrollTop:$$('.badge-sustained-issue').closest('.panel').offset().top},500);});});</script></span>""" else ""}
-      </li>
-      <li>
-        <small><span class="grayed">Started: </span>${escapeHtml(result.started.toString)}</small>
-      </li>
-      <li>
-        <small><span class="grayed">Finished: </span>${escapeHtml(result.finished.toString)}</small>
-      </li>
-        ${ if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) { s"""
-             <li>
-               ${formatSlideshow(screenshots, result.spec, unit, rootPath)} 
-             </li>"""
-           } else ""
-         }
-      <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span>
-    </ol>"""
+    val renderErrorLink = linkToError && (status == StatusKeyword.Failed || sustainedCount > 0)
+
+    ol(`class` := "breadcrumb", style := "padding-right: 20px;",
+      for ((text, reportFile) <- breadcrumbs) 
+      yield
+      li(
+        span(`class` := "caret-left"),
+        raw("&nbsp;"),
+        a(href := s"${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}",
+          text
+        )
+      ),
+      formatBadgeStatus(status, renderErrorLink, sustainedCount),
+      formatDateStatus("Started", result.started),
+      formatDateStatus("Finished", result.finished),
+      if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) {
+        li(
+          raw(formatSlideshow(screenshots, result.spec, unit, rootPath))
+        )
+      },
+      formatElapsedStatus(result.elapsedTime)
+    )
+
+  }
+
+  private def formatBadgeStatus(status: StatusKeyword.Value, renderErrorLink: Boolean, sustainedCount: Int): TypedTag[String] = {
+    val sustainedError = s"${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}"
+    li(
+      span(`class` := s"badge badge-${cssStatus(status)}",
+        if (renderErrorLink && status == StatusKeyword.Failed) {
+          Seq(
+            a(id := "failed-link", href := "#", style := "color:white;",
+              status.toString
+            ),
+            script(
+              formatFailedLinkScript("failed")
+            )
+          )
+        } else {
+          status.toString
+        }
+      ),
+      if (sustainedCount > 0) {
+        small(
+          span(`class` := "grayed", 
+            " with "
+          ),
+          span(`class` := "badge badge-danger",
+            if (renderErrorLink) {
+              Seq(
+                a(id := "sustained-link", href := "#", style := "color:white;",
+                  sustainedError
+                ),
+                script(
+                  formatFailedLinkScript("sustained")
+                )
+              )
+            } else {
+              sustainedError
+            }
+          )
+        )
+      }
+    )
+  }
+
+  private def formatDateStatus(label: String, date: Date): TypedTag[String] = {
+    li(
+      small(
+        span(`class` := "grayed", s"$label: "),
+        date.toString
+      )
+    )
+  }
+
+  private def formatElapsedStatus(elapsedTime: Duration): TypedTag[String] = {
+    span(`class` := "pull-right",
+      small(formatDuration(elapsedTime))
+    )
+  }
+
+  private def formatFailedLinkScript(statusType: String): String = {
+    s"""|$$(document).ready(function() {
+        |  $$('#${statusType}-link').click(
+        |    function(e) {
+        |      e.preventDefault();
+        |      $$('html, body').animate({scrollTop:$$('.badge-${statusType}-issue').closest('.panel').offset().top}, 500);
+        |    }
+        |  );
+        |});""".stripMargin
   }
 
   private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String) = s"""
