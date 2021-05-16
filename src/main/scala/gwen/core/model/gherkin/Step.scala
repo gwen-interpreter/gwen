@@ -60,6 +60,16 @@ case class Step(
     s"""$name "${lines(0)}${if (lines.length > 1) "..." else ""}""""
   } getOrElse(name)
 
+  def deepSteps: List[Step] = {
+    List(this) ++ (stepDef map { case (stepDef, _) => 
+      stepDef.steps.flatMap(_.deepSteps)
+    } getOrElse Nil)
+  }
+
+  def deepAttachments: List[(String, File)] = {
+    deepSteps.flatMap(_.attachments)
+  }
+
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 

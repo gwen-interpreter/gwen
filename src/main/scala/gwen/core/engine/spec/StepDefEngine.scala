@@ -85,8 +85,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
     try {
       val sdStep = step.copy(
-        withStepDef = Some((stepDef, params)),
-        withAttachments = stepDef.steps.flatMap(_.attachments)
+        withStepDef = Some((stepDef, params))
       )
       checkStepDefRules(sdStep, ctx)
       ctx.stepScope.push(stepDef.name, params)
@@ -140,7 +139,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     afterStepDef(eStepDef, ctx.scopes) 
     step.copy(
       withStepDef = Some((eStepDef, params)),
-      withAttachments = eStepDef.attachments,
       withEvalStatus = eStepDef.evalStatus
     )
   }

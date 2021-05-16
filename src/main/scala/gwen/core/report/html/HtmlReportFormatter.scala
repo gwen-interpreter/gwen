@@ -466,7 +466,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
                   <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.attachments, status)} ${stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
+                  ${formatAttachments(step.deepAttachments, status)} ${stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
                 </div>
                 ${if (EvalStatus.isError(status) && stepDef.isEmpty) s"""
                 <ul>

@@ -75,12 +75,7 @@ case class Scenario(
   def isSynthetic: Boolean = Tag.findByName(tags, ReservedTags.Synthetic.toString).nonEmpty
   
   def attachments: List[(String, File)] = {
-    def attachments(step: Step): List[(String, File)] = {
-      step.attachments ++ (step.stepDef.map { case (stepDef, _) => 
-        stepDef.attachments
-      }).getOrElse(Nil)
-    }
-    allSteps.flatMap(step => attachments(step)).distinct
+    allSteps.flatMap(step => step.deepAttachments)
   }
   
   /** Returns the evaluation status of this scenario. */

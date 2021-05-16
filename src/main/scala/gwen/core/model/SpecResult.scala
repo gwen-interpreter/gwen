@@ -44,7 +44,7 @@ class SpecResult(
   val nodeType: NodeType.Value = NodeType.Result
 
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
-  lazy val screenshots: List[File] = spec.steps.flatMap(_.attachments).filter(_._1 == "Screenshot").map(_._2)
+  lazy val screenshots: List[File] = spec.attachments.filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta: Boolean = spec.specFile.exists(_.getName.endsWith(".meta"))
   lazy val summary = ResultsSummary(this)
   lazy val evalStatus: EvalStatus = spec.evalStatus

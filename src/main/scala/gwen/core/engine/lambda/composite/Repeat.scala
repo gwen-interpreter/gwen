@@ -140,7 +140,6 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
       evaluatedStep.copy(
         withEvalStatus = condStepDef.evalStatus,
         withStepDef = Some((condStepDef, Nil)),
-        withAttachments = condStepDef.attachments
       )
     } else {
       evaluatedStep
