@@ -37,7 +37,8 @@ case class FeatureUnit(
     dataRecord: Option[DataRecord], 
     result: Option[FeatureResult] = None) extends Identifiable {
 
-  val nodeType: NodeType.Value = NodeType.Unit
+  override def nodeType: NodeType.Value = NodeType.Unit
+
   def ancestor: Identifiable = parent match {
     case parentUnit @ FeatureUnit(grandparent, _, _, _, _) => 
       if (grandparent == Root) parent

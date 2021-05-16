@@ -156,11 +156,11 @@ trait JsonReportFormatter extends ReportFormatter {
                 "mime_type": "${escapeJson(file.mimeType)}",
                 "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map { case (stepDef, _) =>
-              if (stepDef.sourceRef.nonEmpty) {
+            ],""" else ""}${step.stepDef.map { sd =>
+              if (sd.sourceRef.nonEmpty) {
                 s"""
             "match": {
-                "location": "${escapeJson(stepDef.sourceRef.get.toString)}"
+                "location": "${escapeJson(sd.sourceRef.get.toString)}"
             },"""} else ""}.getOrElse("")}${step.docString.map{ case (line, content, contentType) => s"""
             "doc_string": {
               "content_type": "${contentType.map(c => escapeJson(c)).getOrElse("")}",

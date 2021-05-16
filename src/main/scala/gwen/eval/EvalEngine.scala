@@ -101,12 +101,12 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       val examples = if (scenario.isOutline) {
         scenario.examples map { exs =>
           exs.copy(
-            withScenarios = exs.scenarios map { s =>
-              s.copy(
-                withBackground = s.background map { b =>
-                  b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
+            withScenarios = exs.scenarios map { scn =>
+              scn.copy(
+                withBackground = scn.background map { bg =>
+                  bg.copy(withSteps = bg.steps map { _.copy(withEvalStatus = Loaded) })
                 },
-                withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
+                withSteps = scn.steps map { _.copy(withEvalStatus = Loaded) }
               )
             }
           )
@@ -197,7 +197,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
         pStep = evaluatePriority(parent, s, env)
         pStep.getOrElse(s)
       }
-      val hasSynthetic = pStep.flatMap(s => s.stepDef map { case (sd, _) => sd.isSynthetic }).getOrElse(false)
+      val hasSynthetic = pStep.flatMap(s => s.stepDef.map(_.isSynthetic)).getOrElse(false)
       pStep.filter(_.evalStatus.status != StatusKeyword.Failed || hasSynthetic).getOrElse {
         if (iStep.evalStatus.status != StatusKeyword.Failed) {
           Try(env.getStepDef(iStep.name)) match {
@@ -205,7 +205,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
               iStep.copy(withEvalStatus = Failed(System.nanoTime - start, new Errors.StepFailure(iStep, error)))
             case Success(stepDefOpt) =>
               (stepDefOpt match {
-                case Some((stepDef, _)) if env.stepScope.containsScope(stepDef.name) => None
+                case Some(stepDef) if env.stepScope.containsScope(stepDef.name) => None
                 case stepdef => stepdef
               }) match {
                 case None =>
@@ -215,25 +215,25 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                         evaluate(step, env)
                       } catch {
                         case e: Errors.UndefinedStepException =>
-                          stepDefOpt.fold(throw e) { case (stepDef, _) =>
+                          stepDefOpt.fold(throw e) { stepDef =>
                             Errors.recursiveStepDefError(stepDef, step)
                           }
                       }
                     }
                   }
-                case (Some((stepDef, params))) =>
+                case (Some(stepDef)) =>
                   if (stepDefSemaphors.containsKey(stepDef.name)) {
                     val semaphore = stepDefSemaphors.get(stepDef.name)
                     semaphore.acquire()
                     try {
                       logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                      evalStepDef(iStep, stepDef.copy(), iStep, params, env)
+                      evalStepDef(iStep, stepDef.copy(), iStep, env)
                     } finally {
                       logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
                       semaphore.release()
                     }
                   } else {
-                    evalStepDef(iStep, stepDef.copy(), iStep, params, env)
+                    evalStepDef(iStep, stepDef.copy(), iStep, env)
                   }
               }
           }
@@ -268,7 +268,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     val start = System.nanoTime - step.evalStatus.nanos
     Try(evalFunction(step)) match {
       case Success(evaluatedStep) =>
-        val status = evaluatedStep.stepDef.map(_._1.evalStatus).getOrElse {
+        val status = evaluatedStep.stepDef.map(_.evalStatus).getOrElse {
           evaluatedStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
             case _ => Passed(System.nanoTime - start)
@@ -281,9 +281,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     }
   }
 
-  def evalStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], env: T): Step = {
+  def evalStepDef(parent: Identifiable, stepDef: Scenario, step: Step, env: T): Step = {
     val sdStep = step.copy(
-      withStepDef = Some((stepDef, params))
+      withStepDef = Some(stepDef)
     )
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val eStep = doEvaluate(step, env) { s =>
@@ -293,7 +293,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     if (eStep.evalStatus.status == StatusKeyword.Failed) {
       eStep
     } else {
-      env.stepScope.push(stepDef.name, params)
+      env.stepScope.push(stepDef.name, stepDef.params)
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
         dataTableOpt foreach { table =>
@@ -325,7 +325,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
           logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
           lifecycle.afterStepDef(eStepDef, env.scopes) 
           step.copy(
-            withStepDef = Some((eStepDef, params)),
+            withStepDef = Some(eStepDef),
             withEvalStatus = eStepDef.evalStatus
           )
         } finally {
@@ -343,8 +343,13 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     examples map { exs =>
       lifecycle.beforeExamples(parent, exs, env.scopes)
       exs.copy(
-        withScenarios = exs.scenarios map { scenario =>
-          evaluateScenario(exs, scenario, env)
+        withScenarios = exs.scenarios.zipWithIndex map { case (scenario, index) =>
+          env.stepScope.push(scenario.name, scenario.params)
+          try {
+            (evaluateScenario(exs, scenario, env))
+          } finally {
+            env.stepScope.pop
+          }
         }
       ) tap { exs =>
         lifecycle.afterExamples(exs, env.scopes)
@@ -398,7 +403,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, None, foreachSteps, Nil)
+    val preForeachStepDef = Scenario(step.sourceRef, tags, keyword, element, Nil, None, foreachSteps, Nil, Nil)
     lifecycle.beforeStepDef(step, preForeachStepDef, env.scopes)
     val steps =
       elements() match {
@@ -454,7 +459,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
     lifecycle.afterStepDef(foreachStepDef, env.scopes)
-    step.copy(withStepDef = Some((foreachStepDef, Nil)))
+    step.copy(withStepDef = Some(foreachStepDef))
   }
   
   /**
@@ -464,7 +469,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     * @return the logged status message
     */
   private[eval] def logStatus(spec: FeatureSpec): Unit = {
-    logStatus(spec.nodeType, spec.feature.name, spec.evalStatus)
+    logStatus(spec.nodeType, spec.name, spec.evalStatus)
   }
 
   /**

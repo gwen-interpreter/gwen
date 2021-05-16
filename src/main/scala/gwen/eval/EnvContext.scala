@@ -145,10 +145,10 @@ class EnvContext(options: GwenOptions) extends Evaluatable
           StepKeyword.When
         }
       }
-      val step = Step(None, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
+      val step = Step(stepDef.sourceRef, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending)
       stepDefs += (stepDef.name ->
         stepDef.copy(
-          withSourceRef = None,
+          withSourceRef = stepDef.sourceRef,
           withTags = List(Tag(ReservedTags.Synthetic)) ++ tags.filter(_.name != ReservedTags.ForEach.toString),
           withName = s"$virtualStep for each data record",
           withSteps = List(step)
@@ -166,11 +166,9 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[(Scenario, List[(String, String)])] = 
-    stepDefs.get(expression) match {
-      case None => getStepDefWithParams(expression)
-      case Some(stepDef) => Some((stepDef, Nil))
-    }
+  def getStepDef(expression: String): Option[Scenario] = {
+    stepDefs.get(expression).orElse(getStepDefWithParams(expression))
+  }
   
   /**
     * Gets the paraterised step definition for the given expression (if there is
@@ -180,19 +178,21 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * @return the step definition and its parameters (name value tuples) if a 
     *         match is found; false otherwise
     */
-  private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
+  private def getStepDefWithParams(expression: String): Option[Scenario] = {
     val matches = stepDefs.values.view.flatMap { stepDef =>
       val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
       if (expression.matches(pattern)) {
-        val names = "<.+?>".r.findAllIn(stepDef.name).toList
+        val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name => 
+          name.substring(1, name.length - 1)
+        }
         names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
           Errors.ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
         }
         val values = pattern.r.unapplySeq(expression).get
         val params = names zip values
-        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
+        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(s"<${param._1}>", param._2) }
         if (expression == resolved) {
-          Some((stepDef, params))
+          Some(stepDef.copy(withParams = params))
         } else None
       } else {
         None
@@ -203,7 +203,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       val first = Some(iter.next())
       if (iter.hasNext) {
         val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
-        Errors.ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
+        Errors.ambiguousCaseError(s"$msg: ${matches.map(_.name).mkString(",")}")
       } else first
     } else None
   }

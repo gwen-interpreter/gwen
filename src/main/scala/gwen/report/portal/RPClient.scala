@@ -45,6 +45,7 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.{util => ju}
+import com.epam.ta.reportportal.ws.model.ParameterResource
 
 /**
   * Connects to report portal and performs all reporting operations.
@@ -140,38 +141,21 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all"
     }
   }
-
-  def startItem(
-      startTime: ju.Date,
-      nodeType: NodeType.Value,
-      inlined: Boolean,
-      name: String, 
-      desc: String, 
-      tags: List[Tag], 
-      atts: Map[String, String],
-      sourceRef: Option[SourceRef], 
-      uuid: String, 
-      parentUuid: String): Unit = {
-    startItem(
-      startTime, nodeType, inlined, name, desc, tags, atts, sourceRef, uuid, Some(parentUuid)
-    )
-  }
   
   def startItem(
       startTime: ju.Date,
-      nodeType: NodeType.Value,
-      inlined: Boolean,
+      parent: Option[Identifiable],
+      node: Identifiable,
       name: String, 
       desc: String, 
       tags: List[Tag], 
       atts: Map[String, String],
-      sourceRef: Option[SourceRef], 
-      uuid: String, 
-      parentUuid: Option[String]): Unit = {
+      params: List[(String, String)],
+      inlined: Boolean): Unit = {
 
     val rq = new StartTestItemRQ()
     rq.setStartTime(startTime)
-    rq.setType(mapItemType(nodeType).name)
+    rq.setType(mapItemType(node).name)
     rq.setHasStats(!inlined)
     val truncatedName = truncate(name)
     rq.setName(encode(truncatedName.getOrElse(name), inlined))
@@ -179,38 +163,50 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     val attributes = new ju.HashSet[ItemAttributesRQ]()
     attributes.addAll(tags.map(tag => new ItemAttributesRQ(null, tag.toString)).toSet.asJava)
     Tag.findTagValue(tags, "TestCaseId") orElse {
-      parentUuid.flatMap(puid => Option(tcids.get(puid)))
+      parent.flatMap(p => Option(tcids.get(p.uuid)))
     } foreach { tcid => 
       rq.setTestCaseId(tcid)
-      tcids.put(uuid, tcid)
+      println("@@@@@@ " + tcid)
+      tcids.put(node.uuid, tcid)
+    }
+    val sourceRef = node match {
+      case specNode : SpecNode => specNode.sourceRef
+      case _ => None
     }
     sourceRef foreach { srcRef => 
       val codeRef = srcRef.toString
       rq.setCodeRef(codeRef)
       attributes.add(new ItemAttributesRQ("sourceRef", codeRef))
     }
+    val rpParams = params map { case (name, value) =>
+      new ParameterResource() tap { param =>
+        param.setKey(name)
+        param.setValue(value)
+      }
+    }
+    rq.setParameters(rpParams.asJava)
     attributes.addAll((atts.map { case (key, value) => new ItemAttributesRQ(key, value) }).toSet.asJava)
     if (attributes.size > 0) rq.setAttributes(attributes)
-    val rpid = parentUuid map { puuid => 
-      session.startTestItem(rpids.get(puuid), rq) // child
+    val rpid = parent map { p => 
+      session.startTestItem(rpids.get(p.uuid), rq) // child
     } getOrElse {
       session.startTestItem(rq) // root
     }
-    rpids.put(uuid, rpid)
+    rpids.put(node.uuid, rpid)
     truncatedName foreach { _ =>
       sendItemLog(LogLevel.INFO, name)
     }
 
   }
 
-  def finishItem(endTime: ju.Date, desc: String, uuid: String, evalStatus: EvalStatus): Unit = {
+  def finishItem(endTime: ju.Date, desc: String, parent: Identifiable, evalStatus: EvalStatus): Unit = {
     session.getStepReporter.finishPreviousStep()
     val status = mapStatus(evalStatus)
     val rq = new FinishTestItemRQ()
     rq.setEndTime(endTime)
     rq.setStatus(status.name)
     if (desc.length > 0) rq.setDescription(desc)
-    session.finishTestItem(rpids.get(uuid), rq)
+    session.finishTestItem(rpids.get(parent.uuid), rq)
   }
 
   def sendLaunchLog(level: LogLevel, msg: String): Unit = {
@@ -254,12 +250,15 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     }
   }
 
-  private def mapItemType(nodeType: NodeType.Value): ItemType = {
-    nodeType match {
-      case NodeType.Unit => ItemType.SUITE
-      case NodeType.Feature | NodeType.Meta => ItemType.STORY
-      case NodeType.Step => ItemType.STEP
-      case _ => ItemType.SCENARIO
+  private def mapItemType(node: Identifiable): ItemType = {
+    node match {
+      case specNode: SpecNode => 
+        specNode.nodeType match {
+          case NodeType.Feature | NodeType.Meta => ItemType.STORY
+          case NodeType.Step => ItemType.STEP
+          case _ => ItemType.SCENARIO
+        }
+      case _ => ItemType.SUITE
     }
   }
 

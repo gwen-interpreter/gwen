@@ -87,7 +87,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val step1 = Step(StepKeyword.Given.toString, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given.toString, "I am a valid stepdef")
     val stepdef = Scenario(List[Tag](Tag("@StepDef")), "I am a valid stepdef", Nil, None, List(step1))
-    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
+    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.interpolateParams(any[Step])).thenReturn(step1)
     when(mockEnv.interpolate(any[Step])).thenReturn(step1)
@@ -116,7 +116,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
       case TrySuccess(_) =>
         fail("expected failure")
       case TryFailure(err) =>
-        err.getMessage should be ("Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+        err.getMessage should be ("Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
     }
   }
   
@@ -210,7 +210,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.getStepDef("I observe something")).thenReturn(None)
     when(mockEnv.getStepDef("it will become real")).thenReturn(None)
     when(mockEnv.getStepDef("there is order")).thenReturn(None)
-    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
+    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)

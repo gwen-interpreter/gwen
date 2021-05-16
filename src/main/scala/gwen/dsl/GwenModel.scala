@@ -25,13 +25,13 @@ import io.cucumber.messages.{Messages => Cucumber }
 import java.io.File
 
 trait Identifiable {
-  def nodeType: NodeType.Value
   val uuid: String = UUIDGenerator.nextId
+  def nodeType: NodeType.Value
 }
 
 object Root extends Identifiable {
-  def nodeType: NodeType.Value = NodeType.Root
   override val uuid: String = UUIDGenerator.baseId
+  override def nodeType: NodeType.Value = NodeType.Root
 }
 
 /**
@@ -48,7 +48,23 @@ trait SpecNode extends Identifiable {
 
   /** Returns the evaluation status of this node. */
   val evalStatus: EvalStatus = Pending
+
+  def occurrenceIn(parent: Identifiable): Int = 0
   
+  /**
+    * Gets the identical occurence number of the current node in given nodes.
+    * 
+    * @param nodes the nodes to check in
+    * @return 1 if the node only appears once, or the number of times it appears
+    */
+  private [dsl] def occurrenceIn(nodes: List[SpecNode]): Int = {
+    (nodes filter { that => 
+      that.name == this.name
+    } zipWithIndex).collectFirst { 
+      case (that, idx) if that.sourceRef == this.sourceRef => idx + 1 
+    } getOrElse 0
+  }
+
   override def toString: String = name
 
 }
@@ -74,10 +90,14 @@ case class FeatureSpec(
     scenarios: List[Scenario],
     rules: List[Rule],
     featureFile: Option[File],
-    metaSpecs: List[FeatureSpec]) extends Identifiable {
+    metaSpecs: List[FeatureSpec]) extends SpecNode {
+
+  override val name: String = feature.name
+  override val sourceRef: Option[SourceRef] = feature.sourceRef
   
   def specType: SpecType.Value = feature.specType
-  def nodeType: NodeType.Value = NodeType.withName(specType.toString)
+
+  override def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
   def isMeta: Boolean = SpecType.isMeta(specType)
 
@@ -93,7 +113,7 @@ case class FeatureSpec(
     */
   def steps: List[Step] = rules.flatMap(_.allSteps) ++ scenarios.flatMap(_.allSteps)
 
-  def evalScenarios = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
+  def evalScenarios: List[Scenario] = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
 
   /** Gets all attachments. */
   def attachments: List[(String, File)] = steps.flatMap(_.deepAttachments)
@@ -101,16 +121,18 @@ case class FeatureSpec(
   /** Gets the number of sustained errors. */
   def sustainedCount: Int = {
     steps.flatMap { s1 =>
-      s1.stepDef.map { case (s2, _) =>
+      s1.stepDef.map { s2 =>
         s2.allSteps.flatMap { s3 =>
-          s3.stepDef map { case (s4, _) => s4.allSteps } getOrElse List(s3)
+          s3.stepDef map { s4 => 
+            s4.allSteps 
+          } getOrElse List(s3)
         }
       } getOrElse List(s1)
     } count(_.evalStatus.status == StatusKeyword.Sustained)
   }
   
   /** Returns the evaluation status of this feature spec. */
-  lazy val evalStatus: EvalStatus = {
+  override val evalStatus: EvalStatus = {
     val ss = steps.map(_.evalStatus)
     val specStatus = EvalStatus(ss)
     metaSpecs match {
@@ -165,7 +187,8 @@ case class Feature(
     description: List[String]) extends SpecNode {
 
   def specType = if (sourceRef.map(_.uri.contains(".meta")).getOrElse(false)) SpecType.Meta else SpecType.Feature
-  def nodeType: NodeType.Value = NodeType.Feature
+
+  override def nodeType: NodeType.Value = NodeType.Feature
 
   def copy(
       withLanguage: String = language, 
@@ -208,7 +231,8 @@ case class Background(
     description: List[String], 
     steps: List[Step]) extends SpecNode {
 
-  def nodeType: NodeType.Value = NodeType.Background
+  override def nodeType: NodeType.Value = NodeType.Background
+
   def gwtOrder: List[String] = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k))
 
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
@@ -254,7 +278,7 @@ case class Rule(
     background: Option[Background],
     scenarios: List[Scenario]) extends SpecNode {
   
-  def nodeType: NodeType.Value = NodeType.Rule
+  override def nodeType: NodeType.Value = NodeType.Rule
 
   /**
     * Gets the list of all steps contained in the rule. The list includes
@@ -278,6 +302,15 @@ case class Rule(
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios): Rule = {
     Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
+  }
+
+  override def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case spec: FeatureSpec =>
+        occurrenceIn(spec.rules)
+      case _ => 
+        super.occurrenceIn(parent)
+    }
   }
 
 }
@@ -306,6 +339,7 @@ object Rule {
   * @param background optional background
   * @param steps list of scenario steps
   * @param examples optional list of examples (scenario outline entries)
+  * @param params parameters (stepdef params or outline example row data)
   */
 case class Scenario(
     sourceRef: Option[SourceRef],
@@ -315,9 +349,10 @@ case class Scenario(
     description: List[String],
     background: Option[Background],
     steps: List[Step],
-    examples: List[Examples]) extends SpecNode {
+    examples: List[Examples],
+    params: List[(String, String)]) extends SpecNode {
 
-  def nodeType: NodeType.Value = {
+  override def nodeType: NodeType.Value = {
     if (isStepDef) {
       NodeType.StepDef
     } else {
@@ -365,8 +400,20 @@ case class Scenario(
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
-      withExamples: List[Examples] = examples): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples)
+      withExamples: List[Examples] = examples,
+      withParams: List[(String, String)] = params): Scenario = {
+    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
+  }
+
+  override def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case spec: FeatureSpec =>
+        occurrenceIn(spec.scenarios)
+      case rule: Rule =>
+        occurrenceIn(rule.scenarios)
+      case _ => 
+        super.occurrenceIn(parent)
+    }
   }
   
 }
@@ -382,7 +429,8 @@ object Scenario {
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(uri, s)),
-      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) }
+      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) },
+      Nil
     )
   }
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
@@ -435,6 +483,15 @@ case class Examples(
       withTable: List[(Int, List[String])] = table, 
       withScenarios: List[Scenario] = scenarios): Examples = {
     Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withScenarios)
+  }
+
+  override def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case scenario: Scenario =>
+        occurrenceIn(scenario.examples)
+      case _ => 
+        super.occurrenceIn(parent)
+    }
   }
 
 }
@@ -564,7 +621,7 @@ case class Step(
     keyword: String,
     name: String,
     attachments: List[(String, File)],
-    stepDef: Option[(Scenario, List[(String, String)])],
+    stepDef: Option[Scenario],
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus) extends SpecNode {
@@ -581,8 +638,8 @@ case class Step(
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 
   def deepSteps: List[Step] = {
-    List(this) ++ (stepDef map { case (stepDef, _) => 
-      stepDef.steps.flatMap(_.deepSteps)
+    List(this) ++ (stepDef map { sd => 
+      sd.steps.flatMap(_.deepSteps)
     } getOrElse Nil)
   }
 
@@ -598,16 +655,25 @@ case class Step(
       withKeyword: String = keyword,
       withName: String = name,
       withAttachments: List[(String, File)] = attachments,
-      withStepDef: Option[(Scenario, List[(String, String)])] = stepDef,
+      withStepDef: Option[Scenario] = stepDef,
       withTable: List[(Int, List[String])] = table,
       withDocString: Option[(Int, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus): Step = {
     Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus)
   }
 
+  override def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case scenario: Scenario =>
+        occurrenceIn(scenario.steps)
+      case _ => 
+        super.occurrenceIn(parent)
+    }
+  }
+
   lazy val errorTrails: List[List[Step]] = {
     if (EvalStatus.isError(evalStatus.status)) {
-      stepDef map { case (sd, _) => 
+      stepDef map { sd => 
         sd.allSteps.filter(step => EvalStatus.isError(step.evalStatus.status)).flatMap { step => 
           step.errorTrails map { trace => 
             this :: trace

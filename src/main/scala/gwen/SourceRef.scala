@@ -22,14 +22,14 @@ import java.io.File
 
 /** Line and column number coordinates (base is 1). */
 case class Position(line: Int, column: Int) {
-  override def toString: String = Position.asString(Some(line), Some(column))
+  override def toString: String = Position.asString(Some(line), None)
 }
 object Position {
   def asString(line: Option[Int], column: Option[Int]): String = {
     (line, column) match {
       case ((Some(l), (Some(c)))) => s"$l:$c"
-      case ((Some(l), None)) => s"line $l"
-      case ((None, Some(c))) => s"column $c"
+      case ((Some(l), None)) => s":$l"
+      case ((None, Some(c))) => s":_:$c"
       case _ => ""
     }
   }
@@ -39,7 +39,7 @@ object Position {
 case class SourceRef(uri: String, pos: Position) {
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
-  override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column))
+  override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), None)
 }
 object SourceRef {
   private val lineOffset = new ThreadLocal[Int]() {
@@ -58,7 +58,7 @@ object SourceRef {
     SourceRef.asString(
       file.map(_.getPath).orElse(sourceRef.map(_.uri)), 
       sourceRef.map(_.pos.line), 
-      sourceRef.map(_.pos.column))
+      None)
   }
   def asString(uri: Option[String], line: Option[Int], column: Option[Int]): String = {
     s"${uri.filter(_.length > 0).map(u => s"$u:").getOrElse("")}${Position.asString(line, column)}"

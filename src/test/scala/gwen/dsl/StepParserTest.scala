@@ -47,27 +47,27 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
     
     StepKeyword.values.map(_.toString) foreach { keyword =>
       
-      assertFail(s"$keyword",   "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword ",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\t", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\n", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword",   "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword ",  "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\t", "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\n", "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
       
-      assertFail(s"I do not start with the $keyword clause", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"I do not start with the $keyword clause", "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
     }
     
   }
   
   "invalid keywords" should "not parse" in {
     
-    assertFail("?",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^C",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^Q",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("{)()ASD}", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail(";",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("\\s",      "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("/n",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("(?:.+)?",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("''",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("?",        "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^C",       "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^Q",       "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("{)()ASD}", "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail(";",        "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("\\s",      "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("/n",       "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("(?:.+)?",  "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("''",       "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
   }
 
   "Step with valid data table " should "parse" in {
@@ -104,7 +104,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
         |       | three | 3 |
       """.stripMargin
 
-    assertFail(stepString, "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
+    assertFail(stepString, "Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
 
   }
 
@@ -114,7 +114,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
       s"""
         |Given the following lines
         |  ${"\"\"\""}
-        |  Line 1
+        |  :1
         |  Line 2
         |  Line 3
         |  ${"\"\"\""}""".stripMargin
@@ -128,7 +128,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
     step.docString.foreach { case (line, content, contentType) =>
       line > 0 should be (true)
       content should be (
-        """Line 1
+        """:1
           |Line 2
           |Line 3""".stripMargin)
       contentType should be (None)
@@ -142,7 +142,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
         |Given the following lines
         |  ${"\"\"\""}xml
         |  <lines>
-        |    <line>Line 1</line>
+        |    <line>:1</line>
         |    <line>Line 2</line>
         |    <line>Line 3</line>
         |  </lines>
@@ -158,7 +158,7 @@ class StepParserTest extends FlatSpec with Matchers with GherkinParser with Gwen
       line > 0 should be (true)
       content should be (
         """<lines>
-          |  <line>Line 1</line>
+          |  <line>:1</line>
           |  <line>Line 2</line>
           |  <line>Line 3</line>
           |</lines>""".stripMargin)

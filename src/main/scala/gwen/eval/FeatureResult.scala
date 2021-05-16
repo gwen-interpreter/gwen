@@ -41,7 +41,7 @@ class FeatureResult(
   val started: Date,
   val finished: Date) extends Identifiable {
   
-  val nodeType: NodeType.Value = NodeType.Result
+  override def nodeType: NodeType.Value = NodeType.Result
 
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots: List[File] = spec.attachments.filter(_._1 == "Screenshot").map(_._2)

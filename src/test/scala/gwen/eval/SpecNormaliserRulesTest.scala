@@ -387,5 +387,89 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenarios(3) should be(scenario4)
     scenarios(4) should be(scenario5)
   }
+
+  "Rule with identically named scenarios" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically named scenarios
+          |
+          |     Rule: rule 1
+          |
+          | Scenario: scenario 1
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 3
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 4
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 7
+          |     Given step 1
+          |      Then step 2
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normalise(feature, None, None)
+    val rule = result.rules(0)
+
+    rule.scenarios(0).occurrenceIn(rule) should be (1)
+    rule.scenarios(1).occurrenceIn(rule) should be (1)
+    rule.scenarios(2).occurrenceIn(rule) should be (1)
+    rule.scenarios(3).occurrenceIn(rule) should be (2)
+    rule.scenarios(4).occurrenceIn(rule) should be (1)
+    rule.scenarios(5).occurrenceIn(rule) should be (3)
+    rule.scenarios(6).occurrenceIn(rule) should be (1)
+  }
+
+  "Feature with identically named rules" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically named rules
+          |
+          |     Rule: rule 1
+          | Scenario: scenario 1
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 2
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 3
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: rule 4
+          | Scenario: scenario 4
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 5
+          |     Given step 1
+          |      Then step 2
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normalise(feature, None, None)
+
+    result.rules(0).occurrenceIn(result) should be (1)
+    result.rules(1).occurrenceIn(result) should be (1)
+    result.rules(2).occurrenceIn(result) should be (2)
+    result.rules(3).occurrenceIn(result) should be (1)
+    result.rules(4).occurrenceIn(result) should be (3)
+  }
   
 }

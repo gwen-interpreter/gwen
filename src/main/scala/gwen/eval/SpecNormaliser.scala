@@ -146,7 +146,8 @@ trait SpecNormaliser extends EvalRules {
                   withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
                   withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) })
               },
-              Nil
+              Nil,
+              params
             )
           }
         )

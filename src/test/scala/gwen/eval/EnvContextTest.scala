@@ -41,7 +41,10 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
+    val result = env.getStepDef("""I search for "gwen"""").get
+    result.name should be (stepdef.name)
+    result.params should be (Nil)
+
     env.getStepDef("I am not defined") should be (None)
     
   }
@@ -57,7 +60,10 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
+    val result = env.getStepDef("""I search for "gwen"""").get
+    result.name should be (stepdef.name)
+    result.params should be (Nil)
+
     env.reset(StateLevel.feature)
     env.getStepDef("""I search for "gwen"""") should be (None)
     
@@ -74,10 +80,14 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
+    val result1 = env.getStepDef("""I search for "gwen"""").get
+    result1.name should be (stepdef.name)
+    result1.params should be (Nil)
+
     env.reset(StateLevel.scenario)
-    env.getStepDef("""I search for "gwen"""") should be (Some((stepdef, Nil)))
-    
+    val result2 = env.getStepDef("""I search for "gwen"""").get
+    result2.name should be (stepdef.name)
+    result2.params should be (Nil)
   }
   
   "StepDef with params" should "resolve" in {
@@ -95,11 +105,25 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
     
-    env.getStepDef("""I enter "gwen" in the search field""") should be (Some((stepdef1, List(("<searchTerm>", "gwen")))))
-    env.getStepDef("""I enter "gwen" in the search field again""") should be (Some((stepdef2, List(("<search term>", "gwen")))))
-    env.getStepDef("z = 2 + 1") should be (Some((stepdef3, List(("<x>", "2")))))
-    env.getStepDef("z = 1 + 3") should be (Some((stepdef4, List(("<x>", "3")))))
-    env.getStepDef("z = 2 - 2") should be (Some((stepdef5, List(("<x>", "2"), ("<y>", "2")))))
+    var result = env.getStepDef("""I enter "gwen" in the search field""").get
+    result.name should be (stepdef1.name)
+    result.params should be (List(("searchTerm", "gwen")))
+
+    result = env.getStepDef("""I enter "gwen" in the search field again""").get
+    result.name should be (stepdef2.name)
+    result.params should be (List(("search term", "gwen")))
+
+    result = env.getStepDef("z = 2 + 1").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("x", "2")))
+
+    result = env.getStepDef("z = 1 + 3").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("x", "3")))
+
+    result = env.getStepDef("z = 2 - 2").get
+    result.name should be (stepdef5.name)
+    result.params should be (List(("x", "2"), ("y", "2")))
 
     val stepdef6 = Scenario(List(Tag("@StepDef")), "z = <x> * <x>", Nil, None, Nil)
     env.addStepDef(stepdef6)
@@ -120,12 +144,29 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef2)
     env.addStepDef(stepdef3)
     
-    env.getStepDef("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
-    env.getStepDef("z = 2 + 2") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "2")))))
-    env.getStepDef("z = 3 + 2") should be (Some((stepdef3, List(("<x>", "3"), ("<y>", "2")))))
-    env.getStepDef("z = 2 + 3") should be (Some((stepdef3, List(("<x>", "2"), ("<y>", "3")))))
-    env.getStepDef("z = 5 + y") should be (Some((stepdef3, List(("<x>", "5"), ("<y>", "y")))))
-    env.getStepDef("c = a + y") should be (Some((stepdef2, List(("<b>", "y")))))
+    var result = env.getStepDef("z = 2 + 3").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("x", "2"), ("y", "3")))
+
+    result = env.getStepDef("z = 2 + 2").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("x", "2"), ("y", "2")))
+
+    result = env.getStepDef("z = 3 + 2").get
+     result.name should be (stepdef3.name)
+    result.params should be (List(("x", "3"), ("y", "2")))
+
+    result = env.getStepDef("z = 2 + 3").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("x", "2"), ("y", "3")))
+
+    result = env.getStepDef("z = 5 + y").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("x", "5"), ("y", "y")))
+
+    result = env.getStepDef("c = a + y").get
+    result.name should be (stepdef2.name)
+    result.params should be (List(("b", "y")))
     
   }
   
@@ -472,97 +513,121 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
 
-    env.getStepDef("""I type name """"") should be (
-      Some((stepdef1, List(("<name>", ""))))
-    )
+    var result = env.getStepDef("""I type name """"").get
+    result.name should be (stepdef1.name)
+    result.params should be (List(("name", "")))
 
-    env.getStepDef("""I enter name "", age """"") should be (
-      Some((stepdef2, List(("<name>", ""), ("<age>", ""))))
-    )
-    env.getStepDef("""I enter name "gwen", age """"") should be (
-      Some((stepdef2, List(("<name>", "gwen"), ("<age>", ""))))
-    )
-    env.getStepDef("""I enter name "", age "24"""") should be (
-      Some((stepdef2, List(("<name>", ""), ("<age>", "24"))))
-    )
+    result = env.getStepDef("""I enter name "", age """"").get
+    result.name should be (stepdef2.name)
+    result.params should be (List(("name", ""), ("age", "")))
+    
+    result = env.getStepDef("""I enter name "gwen", age """"").get
+    result.name should be (stepdef2.name)
+    result.params should be (List(("name", "gwen"), ("age", "")))
+    
+    result = env.getStepDef("""I enter name "", age "24"""").get
+    result.name should be (stepdef2.name)
+    result.params should be (List(("name", ""), ("age", "24")))
 
-    env.getStepDef("""I provide name "", age "" and gender """"") should be (
-      Some((stepdef3, List(("<name>", ""), ("<age>", ""), ("<gender>", ""))))
-    )
-    env.getStepDef("""I provide name "gwen", age "" and gender """"") should be (
-      Some((stepdef3, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""))))
-    )
-    env.getStepDef("""I provide name "", age "24" and gender """"") should be (
-      Some((stepdef3, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""))))
-    )
-    env.getStepDef("""I provide name "", age "" and gender "female"""") should be (
-      Some((stepdef3, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"))))
-    )
-    env.getStepDef("""I provide name "gwen", age "24" and gender """"") should be (
-      Some((stepdef3, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""))))
-    )
-    env.getStepDef("""I provide name "", age "24" and gender "female"""") should be (
-      Some((stepdef3, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"))))
-    )
-    env.getStepDef("""I provide name "gwen", age "" and gender "female"""") should be (
-      Some((stepdef3, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"))))
-    )
+    result = env.getStepDef("""I provide name "", age "" and gender """"").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", "")))
+    
+    result = env.getStepDef("""I provide name "gwen", age "" and gender """"").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "")))
+    
+    result = env.getStepDef("""I provide name "", age "24" and gender """"").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", "")))
+    
+    result = env.getStepDef("""I provide name "", age "" and gender "female"""").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", "female")))
+    
+    result = env.getStepDef("""I provide name "gwen", age "24" and gender """"").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", "")))
+    
+    result = env.getStepDef("""I provide name "", age "24" and gender "female"""").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", "female")))
+    
+    result = env.getStepDef("""I provide name "gwen", age "" and gender "female"""").get
+    result.name should be (stepdef3.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female")))
 
-    env.getStepDef("""I give name "", age "", gender "" and title """"") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", ""), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "gwen", age "", gender "" and title """"") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "", age "24", gender "" and title """"") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "", age "", gender "female" and title """"") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "", age "", gender "" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", ""), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "gwen", age "24", gender "" and title """"") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "gwen", age "", gender "female" and title """"") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "gwen", age "", gender "" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", ""), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "", age "24", gender "female" and title """"") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "", age "24", gender "" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", ""), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "", age "", gender "female" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", ""), ("<gender>", "female"), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "gwen", age "24", gender "female" and title """"") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", "female"), ("<title>", ""))))
-    )
-    env.getStepDef("""I give name "gwen", age "24", gender "" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", "24"), ("<gender>", ""), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "gwen", age "", gender "female" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", "gwen"), ("<age>", ""), ("<gender>", "female"), ("<title>", "miss"))))
-    )
-    env.getStepDef("""I give name "", age "24", gender "female" and title "miss"""") should be (
-      Some((stepdef4, List(("<name>", ""), ("<age>", "24"), ("<gender>", "female"), ("<title>", "miss"))))
-    )
+    result = env.getStepDef("""I give name "", age "", gender "" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", ""), ("title", "")))
+    
+    result = env.getStepDef("""I give name "gwen", age "", gender "" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", ""), ("title", "")))
+    
+    result = env.getStepDef("""I give name "", age "24", gender "" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", ""), ("title", "")))
+    
+    result = env.getStepDef("""I give name "", age "", gender "female" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", "female"), ("title", "")))
+    
+    result = env.getStepDef("""I give name "", age "", gender "" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", ""), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", ""), ("title", "")))
+    
+    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female"), ("title", "")))
+    
+    result = env.getStepDef("""I give name "gwen", age "", gender "" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", ""), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "", age "24", gender "female" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", "female"), ("title", "")))
+    
+    result = env.getStepDef("""I give name "", age "24", gender "" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", ""), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "", age "", gender "female" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", ""), ("gender", "female"), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "gwen", age "24", gender "female" and title """"").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", "female"), ("title", "")))
+    
+    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", ""), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female"), ("title", "miss")))
+    
+    result = env.getStepDef("""I give name "", age "24", gender "female" and title "miss"""").get
+    result.name should be (stepdef4.name)
+    result.params should be (List(("name", ""), ("age", "24"), ("gender", "female"), ("title", "miss")))
 
-    env.getStepDef("""I test "" """"") should be (
-      Some((stepdef5, List(("<param1>", ""), ("<param2>", ""))))
-    )
-    env.getStepDef("""I test "1" """"") should be (
-      Some((stepdef5, List(("<param1>", "1"), ("<param2>", ""))))
-    )
-    env.getStepDef("""I test "" "1"""") should be (
-      Some((stepdef5, List(("<param1>", ""), ("<param2>", "1"))))
-    )
+    result = env.getStepDef("""I test "" """"").get
+    result.name should be (stepdef5.name)
+    result.params should be (List(("param1", ""), ("param2", "")))
+    
+    result = env.getStepDef("""I test "1" """"").get
+    result.name should be (stepdef5.name)
+    result.params should be (List(("param1", "1"), ("param2", "")))
+    
+    result = env.getStepDef("""I test "" "1"""").get
+    result.name should be (stepdef5.name)
+    result.params should be (List(("param1", ""), ("param2", "1")))
 
   }
 

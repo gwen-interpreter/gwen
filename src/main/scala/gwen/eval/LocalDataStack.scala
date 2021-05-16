@@ -34,6 +34,15 @@ class LocalDataStack {
   private val localData = mutable.Stack[ScopedData]()
   
   /**
+    * Gets the parameters at the top of the stack (current scope).
+    *
+    * @return
+    */
+  def params: List[(String, String)] = {
+    localData.headOption.map(_.findEntries(_ => true).toList).getOrElse(Nil)
+  }
+
+  /**
     * Adds the given parameters (name-value pairs) to a new scope 
     * and pushes it onto the stack
     * 

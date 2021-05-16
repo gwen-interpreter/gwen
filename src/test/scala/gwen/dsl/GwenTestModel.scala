@@ -35,9 +35,9 @@ trait GwenTestModel {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil, Nil)
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples, Nil)
   }
 
   object Step {
@@ -57,7 +57,7 @@ trait GwenTestModel {
       new Step(step.sourceRef, keyword, name, step.attachments, step.stepDef, step.table, step.docString, evalStatus)
     }
     def apply(step: Step, stepDef: Scenario, attachments: List[(String, File)]): Step = {
-      new Step(step.sourceRef, step.keyword, step.name, attachments, Some((stepDef, Nil)), step.table, step.docString, stepDef.evalStatus)
+      new Step(step.sourceRef, step.keyword, step.name, attachments, Some(stepDef), step.table, step.docString, stepDef.evalStatus)
     }
     def apply(step: Step, evalStatus: EvalStatus): Step = {
       new Step(step.sourceRef, step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, evalStatus)

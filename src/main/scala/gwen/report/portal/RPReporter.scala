@@ -41,49 +41,43 @@ class RPReporter(rpClient: RPClient)
 
   override def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { 
     val unit = event.source
-    val nodeType = unit.nodeType
     val name = unit.featureFile.getPath
-    rpClient.startItem(
-      event.time, nodeType, false, name, "", Nil, Map(), None, unit.uuid, None
-    )
+    val params = event.scopes.stepScope.params
+    rpClient.startItem(event.time, None, unit, name, "", Nil, Map(), params, false)
   } 
 
   override def afterUnit(event: LifecycleEvent[FeatureUnit]): Unit = {
     val unit = event.source
     val evalStatus = unit.result.map(_.spec.evalStatus).getOrElse(Skipped)
-    rpClient.finishItem(event.time, "", event.parentUuid, evalStatus)
+    rpClient.finishItem(event.time, "", event.parent, evalStatus)
   }
     
   override def beforeFeature(event: LifecycleEvent[FeatureSpec]): Unit = {
     val spec = event.source
     val feature = spec.feature
-    val nodeType = feature.nodeType
     val name = s"${spec.specType}: ${feature.name}"
     val desc = formatDescription(feature)
     val tags = parseTags(feature.tags)
-    val sourceRef = feature.sourceRef
-    val breadcrumbs = breadcrumbAtts(sourceRef, event.callTrail, event.scopes)
+    val params = event.scopes.stepScope.params
+    val breadcrumbs = breadcrumbAtts(feature.sourceRef, event.callTrail, event.scopes)
     val atts = Map("language" -> feature.language) ++ breadcrumbs
-    rpClient.startItem(
-      event.time, nodeType, false, name, desc, tags, atts, sourceRef, spec.uuid, event.parentUuid
-    )
+    rpClient.startItem(event.time, Some(event.parent), spec, name, desc, tags, atts, params, false)
   }
 
   override def afterFeature(event: LifecycleEvent[FeatureResult]): Unit = {
     val result = event.source
     val evalStatus = result.spec.evalStatus
-    rpClient.finishItem(event.time, "", event.parentUuid, evalStatus)
+    rpClient.finishItem(event.time, "", event.parent, evalStatus)
   }
 
   override def beforeBackground(event: LifecycleEvent[Background]): Unit = {
     val background = event.source
-    val nodeType = background.nodeType
     val name = s"${background.keyword}: ${background.name}"
     val desc = formatDescription(background)
-    val sourceRef = background.sourceRef
+    val params = event.scopes.stepScope.params
     val inlined = isInlined(background, event.callTrail)
     rpClient.startItem(
-      event.time, nodeType, inlined, name, desc, Nil, Map(), sourceRef, background.uuid, event.parentUuid
+      event.time, Some(event.parent), background, name, desc, Nil, Map(), params, inlined
     )
   }
 
@@ -91,128 +85,113 @@ class RPReporter(rpClient: RPClient)
     val background = event.source
     val evalStatus = background.evalStatus
     val desc = formatDescriptionWithError(background, event.callTrail)
-    rpClient.finishItem(event.time, desc, event.parentUuid, evalStatus)
+    rpClient.finishItem(event.time, desc, event.parent, evalStatus)
   }
 
   override def beforeScenario(event: LifecycleEvent[Scenario]): Unit = {
     val scenario = event.source
     val inlined = isInlined(scenario, event.callTrail)
-    beforeScenario(event.time, scenario, event.parentUuid, event.callTrail, event.scopes, inlined)
+    beforeScenario(event.time, scenario, event.parent, event.callTrail, event.scopes, inlined)
   }
 
-  private def beforeScenario(startTime: ju.Date, scenario: Scenario, parentUuid: String, callTrail: List[Step], scopes: ScopedDataStack, inlined: Boolean): Unit = {
-    val nodeType = scenario.nodeType
+  private def beforeScenario(startTime: ju.Date, scenario: Scenario, parent: Identifiable, callTrail: List[Step], scopes: ScopedDataStack, inlined: Boolean): Unit = {
     val name = s"${scenario.keyword}: ${scenario.name}"
     val desc = formatDescription(scenario)
     val tags = parseTags(scenario.tags)
-    val sourceRef = scenario.sourceRef
-    val atts = breadcrumbAtts(sourceRef, callTrail, scopes)
-    rpClient.startItem(
-      startTime, nodeType, inlined, name, desc, tags, atts, sourceRef, scenario.uuid, parentUuid
-    )
+    val params = scopes.stepScope.params
+    val atts = breadcrumbAtts(scenario.sourceRef, callTrail, scopes)
+    rpClient.startItem(startTime, Some(parent), scenario, name, desc, tags, atts, params, inlined)
   }
 
   override def afterScenario(event: LifecycleEvent[Scenario]): Unit = {
-    afterScenario(event.time, event.source, event.parentUuid, event.callTrail)
+    afterScenario(event.time, event.source, event.parent, event.callTrail)
   }
 
-  private def afterScenario(endTime: ju.Date, scenario: Scenario, parentUuid: String, callTrail: List[Step]): Unit = {
+  private def afterScenario(endTime: ju.Date, scenario: Scenario, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = scenario.evalStatus
     val desc = formatDescriptionWithError(scenario, callTrail)
-    rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
+    rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
   override def beforeExamples(event: LifecycleEvent[Examples]): Unit = {
     val examples = event.source
     val inlined = isInlined(examples, event.callTrail)
-    beforeExamples(event.time, examples, event.parentUuid, event.callTrail, inlined)
+    beforeExamples(event.time, examples, event.parent, event.callTrail, inlined, event.scopes)
   }
 
-  private def beforeExamples(startTime: ju.Date, examples: Examples, parentUuid: String, callTrail: List[Step], inlined: Boolean) = {
-    val nodeType = examples.nodeType
+  private def beforeExamples(startTime: ju.Date, examples: Examples, parent: Identifiable, callTrail: List[Step], inlined: Boolean, scopes: ScopedDataStack) = {
     val name = s"${examples.keyword}: ${examples.name}"
     val desc = formatDescription(examples)
     val tags = parseTags(examples.tags)
-    val sourceRef = examples.sourceRef
-    rpClient.startItem(
-      startTime, nodeType, inlined, name, desc, tags, Map(), sourceRef, examples.uuid, parentUuid
-    )
+    val params = scopes.stepScope.params
+    rpClient.startItem(startTime, Some(parent), examples, name, desc, tags, Map(), params, inlined)
     if (examples.table.nonEmpty) {
       rpClient.sendItemLog(LogLevel.INFO, Formatting.formatTable(examples.table))
     }
   }
 
   override def afterExamples(event: LifecycleEvent[Examples]): Unit = {
-    afterExamples(event.time, event.source, event.parentUuid, event.callTrail)
+    afterExamples(event.time, event.source, event.parent, event.callTrail)
   }
 
-  private def afterExamples(endTime: ju.Date, examples: Examples, parentUuid: String, callTrail: List[Step]): Unit = {
+  private def afterExamples(endTime: ju.Date, examples: Examples, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = examples.evalStatus
     val desc = formatDescriptionWithError(examples, callTrail)
-    rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
+    rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
   override def beforeRule(event: LifecycleEvent[Rule]): Unit = {
     val rule = event.source
-    val nodeType = rule.nodeType
     val name = s"${rule.keyword}: ${rule.name}"
     val desc = formatDescription(rule)
-    val sourceRef = rule.sourceRef
-    val atts = breadcrumbAtts(sourceRef, event.callTrail, event.scopes)
-    rpClient.startItem(
-      event.time, nodeType, false, name, desc, Nil, atts, sourceRef, rule.uuid, event.parentUuid
-    )
+    val params = event.scopes.stepScope.params
+    val atts = breadcrumbAtts(rule.sourceRef, event.callTrail, event.scopes)
+    rpClient.startItem(event.time, Some(event.parent), rule, name, desc, Nil, atts, params, false)
   }
 
   override def afterRule(event: LifecycleEvent[Rule]): Unit = {
     val rule = event.source
     val evalStatus = rule.evalStatus
-    rpClient.finishItem(event.time, "", event.parentUuid, evalStatus)
+    rpClient.finishItem(event.time, "", event.parent, evalStatus)
   }
 
   override def beforeStepDef(event: LifecycleEvent[Scenario]): Unit = {
     val stepDef = event.source
     val inlined = isInlined(stepDef, event.callTrail)
-    beforeStepDef(event.time, stepDef, event.parentUuid, inlined)
+    beforeStepDef(event.time, stepDef, event.parent, inlined, event.scopes)
   }
 
-  private def beforeStepDef(startTime: ju.Date, stepDef: Scenario, parentUuid: String, inlined: Boolean): Unit = {
-    val nodeType = stepDef.nodeType
+  private def beforeStepDef(startTime: ju.Date, stepDef: Scenario, parent: Identifiable, inlined: Boolean, scopes: ScopedDataStack): Unit = {
     val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.name}"
     val desc = formatDescription(stepDef)
     val tags = parseTags(stepDef.tags)
-    val sourceRef = stepDef.sourceRef
-    rpClient.startItem(
-      startTime, nodeType, inlined, name, desc, tags, Map(), sourceRef, stepDef.uuid, parentUuid
-    )
+    val params = scopes.stepScope.params
+    rpClient.startItem(startTime, Some(parent), stepDef, name, desc, tags, Map(), params, inlined)
   }
 
   override def afterStepDef(event: LifecycleEvent[Scenario]): Unit = {
-    afterStepDef(event.time, event.source, event.parentUuid, event.callTrail)
+    afterStepDef(event.time, event.source, event.parent, event.callTrail)
   }
 
-  private def afterStepDef(endTime: ju.Date, stepDef: Scenario, parentUuid: String, callTrail: List[Step]): Unit = {
+  private def afterStepDef(endTime: ju.Date, stepDef: Scenario, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = stepDef.evalStatus
     val desc = formatDescriptionWithError(stepDef, callTrail)
-    rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
+    rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
   override def beforeStep(event: LifecycleEvent[Step]): Unit = {
     val step = event.source
     val inlined = isInlined(step, event.callTrail)
-    beforeStep(event.time, step, event.parentUuid, event.callTrail, event.scopes, inlined)
+    beforeStep(event.time, step, event.parent, event.callTrail, event.scopes, inlined)
   }
 
-  private def beforeStep(startTime: ju.Date, step: Step, parentUuid: String, callTrail: List[Step], scopes: ScopedDataStack, inlined: Boolean) = {
-    val nodeType = step.nodeType
+  private def beforeStep(startTime: ju.Date, step: Step, parent: Identifiable, callTrail: List[Step], scopes: ScopedDataStack, inlined: Boolean) = {
     val name = s"${step.keyword} ${step.name}"
     val desc = formatDescription(step)
-    val sourceRef = step.sourceRef
-    val breadcrumbs = breadcrumbAtts(sourceRef, callTrail, scopes)
+    val params = scopes.stepScope.params
+    val breadcrumbs = breadcrumbAtts(step.sourceRef, callTrail, scopes)
     val atts = if (breadcrumbs.nonEmpty) { breadcrumbs ++ Map("step" -> step.name) } else breadcrumbs
-    rpClient.startItem(
-      startTime, nodeType, inlined, name, desc, Nil, atts, sourceRef, step.uuid, parentUuid
-    )
+    rpClient.startItem(startTime, Some(parent), step, name, desc, Nil, atts, params, inlined)
     step.docString foreach { docString =>
       rpClient.sendItemLog(LogLevel.INFO, Formatting.formatDocString(docString))
     }
@@ -222,13 +201,13 @@ class RPReporter(rpClient: RPClient)
   }
 
   override def afterStep(event: LifecycleEvent[Step]): Unit = {
-    afterStep(event.time, event.source, event.parentUuid, event.callTrail, event.scopes)
+    afterStep(event.time, event.source, event.parent, event.callTrail, event.scopes)
   }
 
-  private def afterStep(endTime: ju.Date, step: Step, parentUuid: String, callTrail: List[Step], scopes: ScopedDataStack): Unit = {
+  private def afterStep(endTime: ju.Date, step: Step, parent: Identifiable, callTrail: List[Step], scopes: ScopedDataStack): Unit = {
     val evalStatus = step.evalStatus
     if (SendStepDefs.isNone && !SendFailedStepDefs.isNone && EvalStatus.isError(evalStatus.status)) {
-      injectErrorTrail(endTime, step, parentUuid, callTrail, scopes)
+      injectErrorTrail(endTime, step, parent, callTrail, scopes)
     }
     logNonErrorAttachments(step)
     if (isLeafNode(step)) {
@@ -241,7 +220,7 @@ class RPReporter(rpClient: RPClient)
       }
     }
     val desc = formatDescriptionWithError(step, callTrail)
-    rpClient.finishItem(endTime, desc, parentUuid, evalStatus)
+    rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
   override def healthCheck(event: LifecycleEvent[Step]): Unit = { 
@@ -324,34 +303,40 @@ class RPReporter(rpClient: RPClient)
     }
   }
 
-  def injectErrorTrail(endTime: ju.Date, step: Step, parentUuid: String, callTrail: List[Step], scopes: ScopedDataStack): Unit = {
+  def injectErrorTrail(endTime: ju.Date, step: Step, parent: Identifiable, callTrail: List[Step], scopes: ScopedDataStack): Unit = {
 
-    def inject(startTime: ju.Date, scenario: Scenario, parentUuid: String, callTrail: List[Step]): ju.Date = {
+    def inject(startTime: ju.Date, scenario: Scenario, parent: Identifiable, callTrail: List[Step]): ju.Date = {
       var time = startTime
       if (scenario.isStepDef) {
-        beforeStepDef(time, scenario, parentUuid, SendFailedStepDefs.isInlined)
+        beforeStepDef(time, scenario, parent, SendFailedStepDefs.isInlined, scopes)
       } else {
-        beforeScenario(time, scenario, parentUuid, callTrail, scopes, SendFailedStepDefs.isInlined)
+        beforeScenario(time, scenario, parent, callTrail, scopes, SendFailedStepDefs.isInlined)
       }
       scenario.steps foreach { step => 
         val sCallTrail = if (callTrail.lastOption.map(_.name != step.name).getOrElse(true)) callTrail ++ List(step) else callTrail
-        beforeStep(time, step, scenario.uuid, sCallTrail, scopes, SendFailedStepDefs.isInlined)
+        beforeStep(time, step, scenario, sCallTrail, scopes, SendFailedStepDefs.isInlined)
         time = new ju.Date(time.getTime + durationMsecs(step.evalStatus.duration))
-        afterStep(time, step, step.uuid, sCallTrail, scopes)
+        afterStep(time, step, step, sCallTrail, scopes)
         
       }
       scenario.examples foreach { examples => 
-        beforeExamples(time, examples, scenario.uuid, callTrail, SendFailedStepDefs.isInlined)
+        beforeExamples(time, examples, scenario, callTrail, SendFailedStepDefs.isInlined, scopes)
         examples.scenarios foreach { scenario => 
-          time = inject(time, scenario, examples.uuid, callTrail)
+          val params = scenario.params
+          if (params.nonEmpty) scopes.stepScope.push(scenario.name, params)
+          try {
+            time = inject(time, scenario, examples, callTrail)
+          } finally {
+            if (params.nonEmpty) scopes.stepScope.pop
+          }
         }
         time = new ju.Date(time.getTime + durationMsecs(examples.evalStatus.duration))
-        afterExamples(time, examples, examples.uuid, callTrail)
+        afterExamples(time, examples, examples, callTrail)
       }
       if (scenario.isStepDef) {
-        afterStepDef(time, scenario, scenario.uuid, callTrail)
+        afterStepDef(time, scenario, scenario, callTrail)
       } else {
-        afterScenario(time, scenario, scenario.uuid, callTrail)
+        afterScenario(time, scenario, scenario, callTrail)
       }
       time
     }
@@ -361,9 +346,15 @@ class RPReporter(rpClient: RPClient)
       if (msecs < 1) 1L else msecs
     }
 
-    step.stepDef foreach { case (stepDef, _) => 
+    step.stepDef foreach { stepDef => 
       val startTime = new ju.Date(endTime.getTime - stepDef.steps.map(_.evalStatus.duration.toMillis).sum)
-      inject(startTime, stepDef, parentUuid, callTrail)
+      val params = stepDef.params
+      if (params.nonEmpty) scopes.stepScope.push(stepDef.name, params)
+      try {
+        inject(startTime, stepDef, parent, callTrail)
+      } finally {
+        if (params.nonEmpty) scopes.stepScope.pop
+      }
     }
 
   }

@@ -28,7 +28,9 @@ import org.scalatestplus.mockito.MockitoSugar
 
 class LifecycleEventsTest extends FlatSpec with Matchers with MockitoSugar {
 
-  private def parent(): Identifiable = new Identifiable() { val nodeType: NodeType.Value = NodeType.Root }
+  private def parent(): Identifiable = new Identifiable() { 
+    override def nodeType: NodeType.Value = NodeType.Root 
+  }
 
   "When pause is not set at disptatcher level then all events" should "be dispatched" in {
       
