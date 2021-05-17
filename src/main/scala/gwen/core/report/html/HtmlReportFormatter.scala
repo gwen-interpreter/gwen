@@ -15,6 +15,8 @@
  */
 package gwen.core.report.html
 
+import HtmlReportFormatter._
+
 import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.GwenOptions
@@ -23,8 +25,7 @@ import gwen.core.model.gherkin._
 import gwen.core.report.ReportFormat
 import gwen.core.report.ReportFormatter
 
-import HtmlReportFormatter._
-
+import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.Try
 import scalatags.Text.all._
@@ -32,7 +33,6 @@ import scalatags.Text.TypedTag
 
 import java.io.File
 import java.text.DecimalFormat
-import scala.concurrent.duration.Duration
 import java.util.Date
 
 /** Formats the feature summary and detail reports in HTML. */
@@ -53,74 +53,104 @@ trait HtmlReportFormatter extends ReportFormatter {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val reportDir = HtmlReportConfig.reportDir(options).get
-    val metaResults = result.metaResults
     val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
     val title = s"${result.spec.specType} Detail"
-    val summary = result.summary
-    val screenshots = result.screenshots
     val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
-    val language = result.spec.feature.language
 
-    Some(
-      s"""<!DOCTYPE html>
-<html lang="en">
-  ${formatHtmlHead(s"$title - $featureName", rootPath).render}
-  <body>
-    ${formatReportHeader(info, title, featureName, rootPath).render}
-    ${formatDetailStatusHeader(unit, result, rootPath, breadcrumbs, screenshots, true).render}
-    <div class="panel panel-default">
-      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">${
-        if (result.spec.feature.tags.nonEmpty)
-          s"""
-        <span class="grayed"><p><small>${result.spec.feature.tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
-      }${ if (language != "en") s"""
-        <span class="grayed"><p><small># language: $language</small></p></span>
-        """ else ""}
-        <span class="label label-black">${result.spec.specType}</span>
-        ${escapeHtml(result.spec.feature.name)}${formatDescriptionLines(result.spec.feature.description, None).render}
-        <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(result.overhead)}</small></span>
-          <table width="100%" cellpadding="5">
-            ${formatProgressBar(NodeType.Rule, summary.ruleCounts).render}
-            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts).render}
-            ${formatProgressBar(NodeType.Step, summary.stepCounts).render}
-          </table>
-        </div>
-      </div>
-    </div>${
-        if (metaResults.nonEmpty) {
-          val count = metaResults.size
-          val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
-          val status = metaStatus.status
-          s"""
-    <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-      <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
-          <span class="label label-${cssStatus(status)}">Meta</span>
-          <a class="text-${cssStatus(status)}" role="button" data-toggle="collapse" href="#meta" aria-expanded="true" aria-controls="meta">
-            $count meta feature${if (count > 1) "s" else ""}
-          </a>
-          <span class="pull-right"><small>${formatDuration(DurationOps.sum(metaResults.map(_.elapsedTime)))}</small></span>
-        </li>
-      </ul>  
-      <div id="meta" class="panel-collapse collapse">
-        <div class="panel-body">
-          <ul class="list-group">
-            <li class="list-group-item list-group-item-${cssStatus(status)}">
-              <div class="container-fluid" style="padding: 0px 0px">
-                ${(metaResults.zipWithIndex map { case (res, rowIndex) => formatSummaryLine(res, if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}"), None, rowIndex) }).mkString}
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>"""
-        } else ""
-      }${(result.spec.scenarios.zipWithIndex map { case (s, idx) => formatScenario(s, s"$idx") }).mkString}
-       ${(result.spec.rules.zipWithIndex map { case (s, idx) => formatRule(s, s"$idx") }).mkString}
-  </body>
-</html>
-""")
+    val htmlPage = 
+      html(lang := "en",
+        formatHtmlHead(s"$title - $featureName", rootPath),
+        body(
+          formatReportHeader(info, title, featureName, rootPath),
+          formatDetailStatusHeader(unit, result, rootPath, breadcrumbs, result.screenshots, true),
+          formatDetailHeader(result, result.summary),
+          formatMetaResults(result.metaResults, reportFiles),
+          for (scenario <- result.spec.scenarios) yield formatScenario(scenario),
+          for (rule <- result.spec.rules) yield formatRule(rule)
+        )
+      )
+    Some(Formatting.prettyPrintHTML("<!DOCTYPE html>" + htmlPage.render))
+
+  }
+
+  private def formatDetailHeader(result: SpecResult, summary: ResultsSummary): TypedTag[String] = {
+    val language = result.spec.feature.language
+    val tags = result.spec.feature.tags
+    div(`class` := "panel panel-default",
+      div(`class` := "panel-heading", style := "padding-right: 20px; padding-bottom: 0px; border-style: none;",
+        formatTags(tags),
+        if (language != "en") {
+          span(`class` := "grayed",
+            p(
+              small(
+                s"# language: $language"
+              )
+            )
+          )
+        },
+        span(`class` := "label label-black",
+          result.spec.specType.toString
+        ),
+        raw(escapeHtml(result.spec.feature.name)),
+        formatDescriptionLines(result.spec.feature.description, None),
+        div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
+          span(`class` := "pull-right grayed", style := "padding-right: 10px;",
+            small(
+              s"Overhead: ${formatDuration(result.overhead)}"
+            )
+          ),
+          table(width := "100%", attr("cellpadding") := "5",
+            formatProgressBar(NodeType.Rule, summary.ruleCounts),
+            formatProgressBar(NodeType.Scenario, summary.scenarioCounts),
+            formatProgressBar(NodeType.Step, summary.stepCounts)
+          )
+        )
+      )
+    )
+  }
+
+  private def formatMetaResults(metaResults: List[SpecResult], reportFiles: List[File]): Option[TypedTag[String]] = {
+    if (metaResults.nonEmpty) {
+      val count = metaResults.size
+      val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
+      val status = metaStatus.status
+      Some(
+        div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+          ul(`class` := "list-group",
+            li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+              span(`class` := s"label label-${cssStatus(status)}",
+                "Meta"
+              ),
+              a(`class` := s"text-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := "#meta", attr("aria-expanded") := "true", attr("aria-controls") := "meta",
+                s"$count meta feature${if (count > 1) "s" else ""}"
+              ),
+              span(`class` := "pull-right",
+                small(
+                  formatDuration(DurationOps.sum(metaResults.map(_.elapsedTime)))
+                )
+              )
+            )
+          ),
+          div(id := "meta", `class` :="panel-collapse collapse",
+            div(`class` := "panel-body",
+              ul(`class` := "list-group",
+                li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
+                  div(`class` := "container-fluid", style := "padding: 0px 0px",
+                    for {
+                      (res, rowIndex) <- metaResults.zipWithIndex
+                      reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
+                    } yield
+                    formatSummaryLine(res, reportPath, None, rowIndex)
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    } else {
+      None
+    }
   }
 
   private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]): Option[Seq[TypedTag[String]]] = {
@@ -133,7 +163,7 @@ trait HtmlReportFormatter extends ReportFormatter {
             for (line <- description)
             yield
             li(`class` := s"list-group-item bg-$bgClass",
-              line
+              raw(escapeHtml(line))
             )
           )
         )
@@ -143,210 +173,304 @@ trait HtmlReportFormatter extends ReportFormatter {
     }
   }
 
-  private def formatScenario(scenario: Scenario, scenarioId: String): String = {
+  private def formatScenario(scenario: Scenario): TypedTag[String] = {
     val status = scenario.evalStatus.status
     val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
-    val tags = scenario.tags
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
-    s"""
-    <a name="scenario-$scenarioId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-      <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">${  
-      if (scenario.isStepDef)
-        s"""
-          <span class="grayed"><p><small>${scenario.sourceRef.map(ref => escapeHtml(ref.toString)).mkString("<br>")}</small></p></span>""" else ""
-    }${  
-      if (tags.nonEmpty)
-        s"""
-          <span class="grayed"><p><small>${tags.map(t => escapeHtml(t.toString)).mkString("<br>")}</small></p></span>""" else ""
-    }
-          <span class="label label-${cssStatus(status)}">${if (scenario.isForEach) "ForEach" else scenario.keyword}</span>${
-      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1 && !scenario.isForEach)
-        s"""
-          <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
-    }
-          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status)).render}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
-        </li>
-      </ul>
-      <div class="panel-body">${
-      (scenario.background map { background =>
-        val status = background.evalStatus.status
-        val backgroundId = s"$scenarioId-background"
-        val keywordPixels = noOfKeywordPixels(background.steps)
-        s"""
-        <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-          <ul class="list-group">
-            <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
-              <span class="label label-${cssStatus(status)}">${background.keyword}</span>
-              <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
-              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status)).render}
-            </li>
-          </ul>
-          <div class="panel-body">
-            <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-          (background.steps.zipWithIndex map { case (step, index) =>
-            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.uuid}-${index + 1}", keywordPixels)
-          }).mkString
-        }
-            </ul>
-          </div>
-        </div>"""
-      }).getOrElse("")
-    }
-        <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
-          <ul class="list-group">${
-          (scenario.steps.zipWithIndex flatMap { case (step, index) =>
-            if (!scenario.isOutline) {
-              Some(formatStepLine(step, step.evalStatus.status, s"$scenarioId-${step.uuid}-${index + 1}", scenarioKeywordPixels))
-            } else if (!scenario.isExpanded) {
-              Some(formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels))
-            } else None
-          }).mkString}
-          </ul>
-        ${if (scenario.isOutline) formatExamples(scenario.examples, scenarioId, scenarioKeywordPixels) else ""}
-        </div>
-      </div>
-    </div>"""
-  }
-
-  private def formatExamples(examples: List[Examples], outlineId: String, keywordPixels: Int): String = (examples.zipWithIndex map { case (exs, index) =>
-    val exampleId = s"$outlineId-examples-${index}"
-    val status = exs.evalStatus.status
-    s"""
-       <p></p>
-       <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-         <ul class="list-group">
-           <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
-             <span class="label label-${cssStatus(status)}">${exs.keyword}</span>
-             <span class="pull-right"><small>${durationOrStatus(exs.evalStatus)}</small></span>
-             ${escapeHtml(exs.name)}${formatDescriptionLines(exs.description, Some(status)).render}
-           </li>
-         </ul>
-        <div class="panel-body">
-          <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-            formatExampleHeader(exs.evalStatus, exs.table, keywordPixels)}${
-            (exs.scenarios.zipWithIndex map { case (scenario, subindex) =>
-              formatExampleRow(scenario, exs.table, subindex + 1, s"$exampleId-${subindex}", keywordPixels)
-            }).mkString
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      ul(`class` := "list-group",
+        formatScenarioHeader(scenario)
+      ),
+      div(`class` := "panel-body",
+        for {
+          background <- scenario.background
+        } yield
+        formatBackground(background),
+        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
+          ul(`class` := "list-group",
+            for {
+              step <- scenario.steps
+            } yield
+            Seq(
+              if (!scenario.isOutline) {
+                Some(formatStepLine(step, step.evalStatus.status, scenarioKeywordPixels))
+              } else if (!scenario.isExpanded) {
+                Some(formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels))
+              } else {
+                None
+              }
+            ).flatten
+          ),
+          if (scenario.isOutline) {
+            formatExamples(scenario.examples, scenarioKeywordPixels)
           }
-          </ul>
-        </div>
-      </div>"""
-  }).mkString
-
-  private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Int, List[String])], keywordPixels: Int): String = {
-              val status = evalStatus.status
-              val line = table.head._1
-              s"""
-                <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
-                <div class="bg-${cssStatus(status)}">
-                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"> </div>${formatDataRow(table, 0, status)}
-                </div>
-              </li>"""
-  }
-  private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, exampleId: String, keywordPixels: Int): String = {
-              val line = table(rowIndex)._1
-              val status = scenario.evalStatus.status
-              val rowHtml = formatDataRow(table, rowIndex, status)
-              s"""
-                <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
-                <div class="bg-${cssStatus(status)}">
-                  <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>
-                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"> </div>${if (status != StatusKeyword.Failed) formatExampleLink(rowHtml, status, s"$exampleId") else rowHtml }
-                  ${formatAttachments(scenario.attachments, status)} ${formatExampleDiv(scenario, status, exampleId)}
-                </div>
-              </li>"""
+        )
+      )
+    )
   }
 
-  private def formatExampleLink(rowHtml: String, status: StatusKeyword.Value, exampleId: String): String =
-                  s"""<a class="inverted inverted-${cssStatus(status)}" role="button" data-toggle="collapse" href="#$exampleId" aria-expanded="true" aria-controls="$exampleId">${rowHtml}</a>"""
-
-  private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value, exampleId: String): String = s"""
-                  <div id="$exampleId" class="panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}" role="tabpanel">
-                  ${formatScenario(scenario, exampleId)}
-                  </div>"""
-
-  private def formatStepDataTable(step: Step, keywordPixels: Int): String = {
-      val status = step.evalStatus.status
-              s"""
-              ${step.table.indices map { rowIndex =>
-                val line = step.table(rowIndex)._1
-              s"""
-                <div class="bg-${cssStatus(status)}">
-                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"> </div>${formatDataRow(step.table, rowIndex, status)}
-                </div>"""} mkString}"""
+  private def formatScenarioHeader(scenario: Scenario): TypedTag[String] = {
+    val status = scenario.evalStatus.status
+    val tags = scenario.tags
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+      if (scenario.isStepDef) {
+        span(`class` := "grayed",
+          p(
+            small(
+              raw(
+                scenario.sourceRef map { sref => s"${escapeHtml(sref.toString)}<br>" } mkString
+              )
+            )
+          )
+        )
+      },
+      formatTags(tags),
+      span(`class` := s"label label-${cssStatus(status)}",
+        if (scenario.isForEach) "ForEach" else scenario.keyword
+      ),
+      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1 && !scenario.isForEach) {
+        span(`class` := "pull-right",
+          small(
+            durationOrStatus(scenario.evalStatus).toString
+          )
+        )
+      },
+      raw(escapeHtml(scenario.name)),
+      if (!scenario.isForEach) {
+        formatDescriptionLines(scenario.description, Some(status))
+      } else if (scenario.steps.isEmpty) {
+        span(`class` := "grayed",
+          small(
+            "-- none found --"
+          )
+        )
+      }
+    )
   }
 
-  private def formatStepDocString(step: Step, keywordPixels: Int): String = {
-      val status = step.evalStatus.status
-      val docString = step.docString.get
-      val contentType = docString._3
-      s"""
-              ${formatDocString(docString, false).split("""\r?\n""").zipWithIndex  map { case (contentLine, index) =>
-                val line = docString._1 + index
-              s"""
-                <div class="bg-${cssStatus(status)}">
-                  <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"> </div><code class="bg-${cssStatus(status)} doc-string">${escapeHtml(contentLine)}</code>${if (index == 0) contentType.map(cType => s"""<code class="bg-${cssStatus(status)} doc-string-type">${escapeHtml(cType)}</code>""").getOrElse("") else ""}
-                </div>"""} mkString}"""
+  private def formatTags(tags: List[model.Tag]): Option[TypedTag[String]] = {
+    if (tags.nonEmpty) {
+      Some(
+        span(`class` := "grayed",
+          p(
+            small(
+              raw(
+                tags map { tag => s"${escapeHtml(tag.toString)}<br>" } mkString
+              )
+            )
+          )
+        )
+      )
+    } else {
+      None
+    }
   }
 
-  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): String = {
-    s"""<code class="bg-${cssStatus(status)} data-table">${escapeHtml(Formatting.formatTableRow(table, rowIndex))}</code>"""
+  private def formatBackground(background: Background): TypedTag[String] = {
+    val status = background.evalStatus.status
+    val keywordPixels = noOfKeywordPixels(background.steps)
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      ul(`class` := "list-group",
+        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px;",
+          span(`class` := s"label label-${cssStatus(status)}",
+            background.keyword
+          ),
+          span(`class` := "pull-right",
+            small(
+              durationOrStatus(background.evalStatus).toString
+            )
+          ),
+          raw(escapeHtml(background.name)),
+          formatDescriptionLines(background.description, Some(status))
+        )
+      ),
+      div(`class` := "panel-body",
+        ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
+        for (step <- background.steps)
+        yield
+        formatStepLine(step, step.evalStatus.status, keywordPixels)
+        )
+      )
+    )
   }
 
-  private def formatRule(rule: Rule, ruleId: String): String = {
+  private def formatExamples(examples: List[Examples], keywordPixels: Int): Seq[TypedTag[String]] = {
+    for {
+      (exs, index) <- examples.zipWithIndex
+      status = exs.evalStatus.status
+    } yield
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      ul(`class` := "list-group",
+        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+          span(`class` := s"label label-${cssStatus(status)}",
+            exs.keyword
+          ),
+          span(`class` := "pull-right",
+            small(
+              durationOrStatus(exs.evalStatus).toString
+            )
+          ),
+          raw(escapeHtml(exs.name)),
+          formatDescriptionLines(exs.description, Some(status))
+        )
+      ),
+      div(`class` := "panel-body",
+        ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
+          formatExampleHeader(exs.evalStatus, exs.table, keywordPixels),
+          for ((scenario, subindex) <- exs.scenarios.zipWithIndex)
+          yield
+          formatExampleRow(scenario, exs.table, subindex + 1, keywordPixels)
+        )
+      )
+    )
+  }
+
+  private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Int, List[String])], keywordPixels: Int): TypedTag[String] = {
+    val status = evalStatus.status
+    val line = table.head._1
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+      div(`class` := s"bg-${cssStatus(status)}",
+        div(`class` := "line-no",
+          small(
+            if (line > 0) line.toString else ""
+          )
+        ),
+        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+          " ",
+        ),
+        formatDataRow(table, 0, status)
+      )
+    )
+  }
+
+  private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
+    val line = table(rowIndex)._1
+    val status = scenario.evalStatus.status
+    val rowHtml = formatDataRow(table, rowIndex, status).render
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+      div(`class` := s"bg-${cssStatus(status)}",
+        span(`class` := "pull-right",
+          small(
+            durationOrStatus(scenario.evalStatus).toString
+          )
+        ),
+        div(`class` := "line-no",
+          small(
+            if (line > 0) line.toString else ""
+          )
+        ),
+        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+          " ",
+        ),
+        if (status != StatusKeyword.Failed) formatExampleLink(scenario, rowHtml, status) else raw(escapeHtml(rowHtml)),
+        " ",
+        formatAttachments(scenario.attachments, status),
+        formatExampleDiv(scenario, status)
+      )
+    )
+  }
+
+  private def formatExampleLink(scenario: Scenario, rowHtml: String, status: StatusKeyword.Value): TypedTag[String] = {
+    a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
+      raw(escapeHtml(rowHtml))
+    )
+  }
+
+  private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value): TypedTag[String] = {
+    div(id := scenario.uuid, `class` := s"panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}", role := "tabpanel",
+      formatScenario(scenario)
+    )
+  }
+
+  private def formatStepDataTable(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
+    val status = step.evalStatus.status
+    for {
+      rowIndex <- step.table.indices
+      line = step.table(rowIndex)._1
+    } yield
+    div(`class` := s"bg-${cssStatus(status)}",
+      div(`class` := "line-no",
+        small(
+          if (line > 0) line.toString else ""
+        )
+      ),
+      div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+        " "
+      ),
+      formatDataRow(step.table, rowIndex, status)
+    )
+  }
+
+  private def formatStepDocString(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
+    val status = step.evalStatus.status
+    val docString = step.docString.get
+    val contentType = docString._3
+    for {
+      (contentLine, index) <- formatDocString(docString, false).split("""\r?\n""").toList.zipWithIndex
+      line = docString._1 + index
+    } yield
+    div(`class` := s"bg-${cssStatus(status)}",
+      div(`class` := "line-no",
+        small(
+          if (line > 0) line.toString else ""
+        )
+      ),
+      div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+        " "
+      ),
+      code(`class` := s"bg-${cssStatus(status)} doc-string",
+        raw(escapeHtml(contentLine))
+      ),
+      for {
+        cType <- contentType
+        if (index == 0)
+      } yield
+      code(`class` := s"bg-${cssStatus(status)} doc-string-type",
+        cType
+      )
+    )
+  }
+
+  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): TypedTag[String] = {
+    code(`class` := s"bg-${cssStatus(status)} data-table",
+      raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
+    )
+  }
+
+  private def formatRule(rule: Rule): TypedTag[String] = {
     val status = rule.evalStatus.status
     val conflict = rule.scenarios.map(_.evalStatus.status).exists(_ != status)
-    s"""
-    <a name="rule-$ruleId"></a><div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-      <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
-          <span class="label label-${cssStatus(status)}">${rule.keyword}</span>${
-      if (rule.evalScenarios.size > 1)
-        s"""
-          <span class="pull-right"><small>${durationOrStatus(rule.evalStatus)}</small></span>""" else ""
-      }
-          ${escapeHtml(rule.name)}${formatDescriptionLines(rule.description, Some(status)).render}
-        </li>
-      </ul>
-      <div class="panel-body">${
-      (rule.background map { background =>
-        val status = background.evalStatus.status
-        val backgroundId = s"$ruleId-background"
-        s"""
-        <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-          <ul class="list-group">
-            <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px;">
-              <span class="label label-${cssStatus(status)}">${background.keyword}</span>
-              <span class="pull-right"><small>${durationOrStatus(background.evalStatus)}</span></small>
-              ${escapeHtml(background.name)}${formatDescriptionLines(background.description, Some(status)).render}
-            </li>
-          </ul>
-          <div class="panel-body">
-            <ul class="list-group" style="margin-right: -10px; margin-left: -10px">${
-          val keywordPixels = noOfKeywordPixels(background.steps)
-          (background.steps.zipWithIndex map { case (step, index) =>
-            formatStepLine(step, step.evalStatus.status, s"$backgroundId-${step.uuid}-${index + 1}", keywordPixels)
-          }).mkString
-        }
-            </ul>
-          </div>
-        </div>"""
-      }).getOrElse("")
-    }
-        <div class="panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}" style="margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}">
-          <ul class="list-group">${
-          (rule.scenarios.zipWithIndex map { case (scenario, index) =>
-            formatScenario(scenario, s"$ruleId-scenario-${scenario.uuid}-${index + 1}")
-          }).mkString}
-          </ul>
-        </div>
-      </div>
-    </div>"""
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      ul(`class` := "list-group",
+        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+          span(`class` := s"label label-${cssStatus(status)}",
+            rule.keyword
+          ),
+          if (rule.evalScenarios.size > 1) {
+            span(`class` := "pull-right",
+              small(
+                durationOrStatus(rule.evalStatus).toString
+              )
+            )
+          },
+          raw(escapeHtml(rule.name)),
+          formatDescriptionLines(rule.description, Some(status))
+        )
+      ),
+      div(`class` := "panel-body",
+        for {
+          background <- rule.background
+        } yield
+        formatBackground(background),
+        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
+          ul(`class` := "list-group",
+            for (scenario <- rule.scenarios)
+            yield
+            formatScenario(scenario)
+          )
+        )
+      )
+    )
   }
   
   /**
@@ -357,60 +481,84 @@ trait HtmlReportFormatter extends ReportFormatter {
     * @param summary the accumulated feature results summary
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = {
-    
-    val reportDir = HtmlReportConfig.reportDir(options).get
     val title = "Feature Summary"
-  
-    Some(s"""<!DOCTYPE html>
-<html lang="en">
-  ${formatHtmlHead(title, "").render}
-  <body>
-    ${formatReportHeader(info, title, if (options.args.isDefined) escapeHtml(options.commandString(info)).render else "", "")}
-    ${formatSummaryStatusHeader(summary).render}
-    <div class="panel panel-default">
-      <div class="panel-heading" style="padding-right: 20px; padding-bottom: 0px; border-style: none;">
-        <span class="label label-black">Results</span>
-        <div class="panel-body" style="padding-left: 0px; padding-right: 0px; margin-right: -10px;">
-          <span class="pull-right grayed" style="padding-right: 10px;"><small>Overhead: ${formatDuration(summary.overhead)}</small></span>
-          <table width="100%" cellpadding="5">
-            ${formatProgressBar(NodeType.Feature, summary.featureCounts).render}
-            ${formatProgressBar(NodeType.Rule, summary.ruleCounts).render}
-            ${formatProgressBar(NodeType.Scenario, summary.scenarioCounts).render}
-            ${formatProgressBar(NodeType.Step, summary.stepCounts).render}
-          </table>
-        </div>
-      </div>
-    </div>${(StatusKeyword.reportables.reverse map { status => 
-    summary.results.zipWithIndex.filter { _._1.evalStatus.status == status } match {
-      case Nil => ""
-      case results => s"""
-    <div class="panel panel-${cssStatus(status)} bg-${cssStatus(status)}">
-      <ul class="list-group">
-        <li class="list-group-item list-group-item-${cssStatus(status)}" style="padding: 10px 10px; margin-right: 10px;">
-          <span class="label label-${cssStatus(status)}">$status</span>${
-          val count = results.size
-          val total = summary.results.size
-          val countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
-          s"""$countOfTotal${if (count > 1) s"""
-          <span class="pull-right"><small>${formatDuration(DurationOps.sum(results.map(_._1.elapsedTime)))}</small></span>""" else ""}"""}
-        </li>
-      </ul>
-      <div class="panel-body">
-        <ul class="list-group">
-          <li class="list-group-item list-group-item-${cssStatus(status)}">
-            <div class="container-fluid" style="padding: 0px 0px">${
-                (results.zipWithIndex map { case ((result, resultIndex), rowIndex) => 
-                  val reportFile = result.reports.get(ReportFormat.html).head
-                  formatSummaryLine(result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
-                }).mkString}
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>"""}}).mkString}
-  </body>
-</html>
-    """)
+    val path = if (options.args.isDefined) escapeHtml(options.commandString(info)) else ""
+    val htmlPage = 
+      html(lang := "en",
+        formatHtmlHead(title, "")
+        ,body(
+          formatReportHeader(info, title, path, ""),
+          formatSummaryStatusHeader(summary),
+          formatSummaryHeader(summary),
+          formatSummaryResults(options, summary)
+        )
+      )
+    Some(Formatting.prettyPrintHTML("<!DOCTYPE html>" + htmlPage.render))
+  }
+
+  private def formatSummaryHeader(summary: ResultsSummary): TypedTag[String] = {
+    div(`class` := "panel panel-default",
+      div(`class` := "panel-heading", style := "padding-right: 20px; padding-bottom: 0px; border-style: none;",
+        span(`class` := "label label-black",
+          "Results"
+        ),
+        div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
+          span(`class` := "pull-right grayed", style := "padding-right: 10px;",
+            small(
+              s"Overhead: ${formatDuration(summary.overhead)}"
+            )
+          ),
+          table(width := "100%", attr("cellpadding") := "5",
+            formatProgressBar(NodeType.Feature, summary.featureCounts),
+            formatProgressBar(NodeType.Rule, summary.ruleCounts),
+            formatProgressBar(NodeType.Scenario, summary.scenarioCounts),
+            formatProgressBar(NodeType.Step, summary.stepCounts)
+          )
+        )
+      )
+    )
+  }
+
+  private def formatSummaryResults(options: GwenOptions, summary: ResultsSummary): Seq[TypedTag[String]] = {
+    val reportDir = HtmlReportConfig.reportDir(options).get
+    for {
+      status <- StatusKeyword.reportables.reverse
+      results = summary.results.zipWithIndex.filter { _._1.evalStatus.status == status }
+      (result, index) <- results
+      count = results.size
+      total = summary.results.size
+      countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
+    } yield
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      ul(`class` := "list-group",
+        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style :="padding: 10px 10px; margin-right: 10px;",
+          span(`class` := s"label label-${cssStatus(status)}",
+            status.toString
+          ),
+          countOfTotal,
+          if (count > 1) {
+            span(`class` := "pull-right",
+              small(
+                formatDuration(DurationOps.sum(results.map(_._1.elapsedTime)))
+              )
+            )
+          }
+        )
+      ),
+      div(`class` := "panel-body",
+        ul(`class` := "list-group",
+          li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
+            div(`class` := "container-fluid", style := "padding: 0px 0px",
+             for {
+               ((result, resultIndex), rowIndex) <- results.zipWithIndex
+               reportFile = result.reports.get(ReportFormat.html).head
+             } yield
+             formatSummaryLine(result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
+            )
+          )
+        )
+      )
+    )
   }
 
   private def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): Option[TypedTag[String]] = { 
@@ -439,79 +587,173 @@ trait HtmlReportFormatter extends ReportFormatter {
     )
   }
   
-  private def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): String = {
+  private def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
       case Passed(nanos) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
-    s"""
-                <div class="row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }">
-                  <div class="col-md-3" style="padding-left: 0px">${sequenceNo.map(seq => s"""
-                    <div class="line-no"><small>$seq</small></div>""").getOrElse("")}
-                    <span style="padding-left: 15px; white-space: nowrap;"><small>${escapeHtml(result.finished.toString)}</small></span>
-                  </div>
-                  <div class="col-md-4">${reportPath.fold(s"${escapeHtml(featureName)}") { rpath =>
-                    s"""<a class="text-${cssStatus(reportingStatus.status)}" style="color: ${linkColor(reportingStatus.status)};" href="$rpath"><span class="text-${cssStatus(reportingStatus.status)}">${escapeHtml(featureName)}</span></a>"""}}
-                  </div>
-                  <div class="col-md-5">
-                    <span class="pull-right"><small>${formatDuration(result.elapsedTime)}</small></span> ${result.spec.specFile.map(_.getPath()).getOrElse("")}
-                  </div>
-                </div>"""
+    div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }",
+      div(`class` := "col-md-3", style := "padding-left: 0px",
+        for (seq <- sequenceNo)
+        yield
+        div(`class` := "line-no",
+          small(
+            seq.toString
+          )
+        ),
+        span(style := "padding-left: 15px; white-space: nowrap;",
+          small(
+            result.finished.toString
+          )
+        )
+      ),
+      div(`class` := "col-md-4",
+        reportPath match {
+          case Some(rpath) =>
+            a(`class` := s"text-${cssStatus(reportingStatus.status)}", style := s"color: ${linkColor(reportingStatus.status)};", href := rpath,
+              span(`class` := s"text-${cssStatus(reportingStatus.status)}",
+                raw(escapeHtml(featureName))
+              )
+            )
+          case None =>
+            raw(escapeHtml(featureName))
+        }
+      ),
+      div(`class` := "col-md-5",
+        span(`class` := "pull-right",
+          small(
+            formatDuration(result.elapsedTime)
+          )
+        ),
+        result.spec.specFile.map(_.getPath()).getOrElse("").toString
+      )
+    )
   }
-  private def formatStepLine(step: Step, status: StatusKeyword.Value, stepId: String, keywordPixels: Int): String = {
-    val stepDef = step.stepDef
-    s"""<li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}">
-                <div class="bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}">
-                  <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
-                  <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.deepAttachments, status)} ${stepDef.map{ case (stepDef, _) => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(stepDef, status, s"$stepId-stepDef") } else ""}.getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
-                </div>
-                ${if (EvalStatus.isError(status) && stepDef.isEmpty) s"""
-                <ul>
-                  <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
-                    <div class="bg-${cssStatus(status)}">
-                      <span class="badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}">$status</span> <span class="text-${cssStatus(status)}"><small>${escapeHtml(step.evalStatus.timestamp.toString)} - ${escapeHtml(step.evalStatus.message)}</small></span>
-                    </div>
-                  </li>
-                </ul>""" else ""}
-              </li>"""
-    }
-
-  private def formatRawStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): String = s"""
-              <li class="list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}">
-                <div class="bg-${cssStatus(status)}">
-                  <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
-                  <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${escapeHtml(step.name)}
-                </div>
-              </li>"""
   
-  private def formatStepDefLink(step: Step, status: StatusKeyword.Value, stepDefId: String): String = 
-    s"""<a class="inverted inverted-${cssStatus(step.evalStatus.status)}" role="button" data-toggle="collapse" href="#$stepDefId" aria-expanded="true" aria-controls="$stepDefId">${escapeHtml(step.name)}</a>"""
+  private def formatStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): TypedTag[String] = {
+    val stepDef = step.stepDef
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}",
+      div(`class` := s"bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}",
+        span(`class` := "pull-right",
+          small(
+            durationOrStatus(step.evalStatus).toString
+          )
+        ),
+        div(`class` := "line-no",
+          small(
+            step.sourceRef.map(_.pos.line).getOrElse("").toString
+          )
+        ),
+        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+          strong(
+            step.keyword
+          )
+        ),
+        " ",
+        if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
+        " ",
+        formatAttachments(step.deepAttachments, status),
+        for {
+          (sd, _) <- stepDef
+          if (EvalStatus.isEvaluated(status))  
+        } yield
+        formatStepDefDiv(sd, status),
+        for (docString <- step.docString)
+        yield
+        formatStepDocString(step, keywordPixels),
+        formatStepDataTable(step, keywordPixels)
+      ),
+      if (EvalStatus.isError(status) && stepDef.isEmpty) {
+        ul(
+          li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+            div(`class` := s"bg-${cssStatus(status)}",
+              span(`class` := s"badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}",
+                status.toString
+              ),
+              span(`class` := s"text-${cssStatus(status)}",
+                small(
+                  s" ${step.evalStatus.timestamp.toString} - ${step.evalStatus.message}"
+                )
+              )
+            )
+          )
+        )
+      } 
+    )
+  }
+
+  private def formatRawStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): TypedTag[String] = {
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+      div(`class` := s"bg-${cssStatus(status)}",
+        div(`class` := "line-no",
+          small(
+            step.sourceRef.map(_.pos.line).getOrElse("").toString
+          )
+        ),
+        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+          strong(
+            step.keyword
+          ),
+          raw(escapeHtml(step.name))
+        )
+      )
+    ) 
+  }
+  
+  private def formatStepDefLink(step: Step, status: StatusKeyword.Value): TypedTag[String] = {
+    val stepDef = step.stepDef.get._1
+    a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
+      raw(escapeHtml(step.name))
+    )
+  }
                   
-  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value, stepDefId: String): String = s"""
-                  <div id="$stepDefId" class="panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}" role="tabpanel">
-                  ${formatScenario(stepDef, stepDefId)}
-                  </div>"""
+  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value): TypedTag[String] = {
+    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
+      formatScenario(stepDef)
+    )
+  }
     
-  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value) = s"""
-                  &nbsp; ${if (attachments.size > 1) s"""
-                  <div class="dropdown bg-${cssStatus(status)}">
-                    <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" style="vertical-align: text-top">
-                      <strong>attachments</strong>
-                      <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu pull-right" role="menu" style="padding-left:0;">${(attachments.zipWithIndex map { case ((name, file), index) =>
-                    s"""
-                      <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="${attachmentHref(file)}" target="_blank"><span class="line-no" style="width: 0px;">${index + 1}. &nbsp; </span>${escapeHtml(name)}<span class="line-no" style="width: 0px;"> &nbsp; </span></a></li>"""}).mkString }
-                    </ul>
-                  </div>""" else if (attachments.size == 1) {
-                    val (name, file) = attachments(0)
-                    s"""
-                    <a href="${attachmentHref(file)}" target="_blank" style="color: ${linkColor(status)};">
-                      <strong style="font-size: 12px;">$name</strong>
-                    </a>"""} else ""}"""
+  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value): Option[TypedTag[String]] = {
+    if (attachments.size > 1) {
+      Some(
+        div(`class` := s"dropdown bg-${cssStatus(status)}",
+          button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
+            strong(
+              "attachments "
+            ),
+            span(`class` :="caret")
+          ),
+          ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0;",
+            for (((name, file), index) <- attachments.zipWithIndex)
+            yield
+            li(role := "presentation", `class` := s"text-${cssStatus(status)}",
+              a(role := "menuitem", tabindex := "-1", href := s"${attachmentHref(file)}", target := "_blank",
+                span(`class` := "line-no", style := "width: 0px;",
+                  raw(s"${index + 1}. &nbsp; ")
+                ),
+                name,
+                span(`class` := "line-no", style := "width: 0px;",
+                  raw(" &nbsp; ")
+                )
+              )
+            )
+          )
+        )
+      )
+    } else if (attachments.size == 1)  {
+      val (name, file) = attachments(0)
+      Some(
+        a(href := s"${attachmentHref(file)}", target := "_blank", style := s"color: ${linkColor(status)};",
+          strong(style := "font-size: 12px;",
+            name
+          )
+        )
+      )
+    } else {
+      None
+    }
+  }
 
   private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
       
@@ -570,11 +812,13 @@ object HtmlReportFormatter {
           )
         ),
         td(
-          h3(heading),
+          h3(
+            raw(escapeHtml(heading))
+          ),
           path
         ),
         td(attr("align") := "right",
-          h3(raw("&nbsp;")),
+          h3(" "),
           a(href := info.implHome,
             span(`class` := "badge", style := "background-color: #1f23ae;", 
               info.implName
@@ -618,7 +862,7 @@ object HtmlReportFormatter {
       yield
       li(
         span(`class` := "caret-left"),
-        raw("&nbsp;"),
+        " ",
         a(href := s"${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}",
           text
         )
@@ -628,7 +872,7 @@ object HtmlReportFormatter {
       formatDateStatus("Finished", result.finished),
       if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) {
         li(
-          raw(formatSlideshow(screenshots, result.spec, unit, rootPath))
+          formatSlideshow(screenshots, result.spec, unit, rootPath)
         )
       },
       formatElapsedStatus(result.elapsedTime)
@@ -703,35 +947,46 @@ object HtmlReportFormatter {
         |});""".stripMargin
   }
 
-  private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String) = {
-    s"""
-  <div class="modal fade" id="slideshow" tabindex="-1" role="dialog" aria-labelledby="slideshowLabel" aria-hidden="true">
-  <div class="modal-dialog" style="width: 60%;">
-  <div class="modal-content">
-    <div class="modal-body">
-    <a href="${HtmlSlideshowConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowConfig.fileExtension.get}" id="full-screen">Full Screen</a>
-    <a href="#" title="Close"><span id="close-btn" class="pull-right glyphicon glyphicon-remove-circle" aria-hidden="true"></span></a>
-    ${HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath).render}
-   </div>
-  </div>
-  </div>
-  </div>
-  <button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#slideshow">
-    Slideshow
-  </button>
-  <script>
-    $$('#close-btn').click(function(e) { e.preventDefault(); $$('#slideshow').modal('hide'); });
-    $$('#full-screen').click(function(e) { $$('#close-btn').click(); });
-    $$('#slideshow').on('show.bs.modal', function (e) { $$('#slides').reel('frame', 1); stop(); });
-    $$('#slideshow').on('hide.bs.modal', function (e) { $$('#slides').trigger('stop') });
-    $$('#slideshow').on('hidden.bs.modal', function (e) { $$('#slides').trigger('stop') });
-  </script>
-  """
+  private def formatSlideshow(screenshots: List[File], spec: Spec, unit: FeatureUnit, rootPath: String): Seq[TypedTag[String]] = {
+    Seq(
+      div(`class` := "modal fade", id := "slideshow", tabindex := "-1", role := "dialog", attr("aria-labelledby") := "slideshowLabel", attr("aria-hidden") := "true",
+        div(`class` := "modal-dialog", style := "width: 60%;",
+          div(`class` := "modal-content",
+            div(`class` := "modal-body",
+              a(href := s"${HtmlSlideshowConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowConfig.fileExtension.get}", id := "full-screen",
+                "Full Screen"
+              ),
+              a(href := "#", title := "Close",
+                span(id :="close-btn", `class` := "pull-right glyphicon glyphicon-remove-circle", attr("aria-hidden") := "true")
+              ),
+              HtmlSlideshowFormatter.formatSlideshow(screenshots, rootPath)
+            )
+          )
+        )
+      ),
+      button(attr("type") := "button", `class` := "btn btn-default btn-lg", attr("data-toggle") := "modal", attr("data-target") := "#slideshow",
+        "Slideshow"
+      ),
+      script(
+        raw(
+          """|
+             |          $('#close-btn').click(function(e) { e.preventDefault(); $('#slideshow').modal('hide'); });
+             |          $('#full-screen').click(function(e) { $('#close-btn').click(); });
+             |          $('#slideshow').on('show.bs.modal', function (e) { $('#slides').reel('frame', 1); stop(); });
+             |          $('#slideshow').on('hide.bs.modal', function (e) { $('#slides').trigger('stop') });
+             |          $('#slideshow').on('hidden.bs.modal', function (e) { $('#slides').trigger('stop') });
+             |""".stripMargin
+        )
+      )
+    )
   }
 
   private def noOfKeywordPixels(steps: List[Step]): Int = steps match {
     case Nil => 9
-    case _ => steps.map(_.keyword.length).max * 9
+    case _ => 
+      val max = steps.map(_.keyword.length).max
+      val factor = if (max < 4) 10 else 9
+      max * factor
   }
           
 }
