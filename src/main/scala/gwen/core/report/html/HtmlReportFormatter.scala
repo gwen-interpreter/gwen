@@ -346,7 +346,7 @@ trait HtmlReportFormatter extends ReportFormatter {
   private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
     val line = table(rowIndex)._1
     val status = scenario.evalStatus.status
-    val rowHtml = formatDataRow(table, rowIndex, status).render
+    val rowHtml = formatDataRow(table, rowIndex, status)
     li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
       div(`class` := s"bg-${cssStatus(status)}",
         span(`class` := "pull-right",
@@ -362,17 +362,15 @@ trait HtmlReportFormatter extends ReportFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " ",
         ),
-        if (status != StatusKeyword.Failed) formatExampleLink(scenario, rowHtml, status) else raw(escapeHtml(rowHtml)),
+        if (status != StatusKeyword.Failed) {
+          a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
+            rowHtml
+          )
+        } else rowHtml,
         " ",
         formatAttachments(scenario.attachments, status),
         formatExampleDiv(scenario, status)
       )
-    )
-  }
-
-  private def formatExampleLink(scenario: Scenario, rowHtml: String, status: StatusKeyword.Value): TypedTag[String] = {
-    a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
-      raw(escapeHtml(rowHtml))
     )
   }
 
