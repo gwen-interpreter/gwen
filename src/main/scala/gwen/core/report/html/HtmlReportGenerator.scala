@@ -18,6 +18,7 @@ package gwen.core.report.html
 
 import gwen.core._
 import gwen.core.report.ReportGenerator
+import gwen.core.report.html.format.HtmlReportFormatter
 
 import java.io.File
 

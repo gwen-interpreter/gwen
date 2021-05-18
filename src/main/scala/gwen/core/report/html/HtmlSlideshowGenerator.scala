@@ -18,6 +18,7 @@ package gwen.core.report.html
 
 import gwen.core._
 import gwen.core.report.ReportGenerator
+import gwen.core.report.html.format.SlideshowFormatter
 
 import java.io.File
 
@@ -26,7 +27,7 @@ import java.io.File
   * 
   * @author Branko Juric
   */
-class HtmlSlideshowGenerator(options: GwenOptions) extends ReportGenerator(HtmlSlideshowConfig, options) with HtmlSlideshowFormatter {
+class HtmlSlideshowGenerator(options: GwenOptions) extends ReportGenerator(HtmlSlideshowConfig, options) with SlideshowFormatter {
 
   reportDir foreach { rdir =>
 

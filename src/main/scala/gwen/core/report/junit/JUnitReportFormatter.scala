@@ -65,7 +65,11 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
       tag("testsuite")(
         attr("hostname") := hostname,
         attr("name") := name,
-        for (pckgName <- pkg) yield attr("package") := pckgName,
+        for {
+          pckgName <- pkg
+        } yield {
+          attr("package") := pckgName
+        },
         attr("tests") := scenarioCount,
         attr("errors") := errorCount,
         attr("failures") := failureCount,
@@ -73,17 +77,22 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
         attr("time") := time,
         attr("timestamp") := timestamp,
         tag("properties")(
-          for ((n, v) <- Settings.entries.toList) yield tag("property")(
-            attr("name") := n,
-            attr("value") := v
-          )
+          for {
+            (n, v) <- Settings.entries.toList
+          } yield {
+            tag("property")(
+              attr("name") := n,
+              attr("value") := v
+            )
+          }
         ),
         for {
           (scenario, idx) <- scenarios.zipWithIndex
           name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.name}"
           time = scenario.evalStatus.nanos.toDouble / 1000000000d
           status = scenario.evalStatus.status.toString
-        } yield tag("testcase")(
+        } yield {
+          tag("testcase")(
             attr("name") := name,
             attr("time") := time,
             attr("status") := status,
@@ -102,7 +111,8 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
                 tag("system-err")(error.writeStackTrace())
               case _ =>
             }
-        )
+          )
+        }
       )
     }
     
