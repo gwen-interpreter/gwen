@@ -16,7 +16,6 @@
 
 package gwen.core.engine.lambda.unit
 
-import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
@@ -25,15 +24,14 @@ import gwen.core.model.gherkin.Step
 
 class CaptureBase64Decoded[T <: EvalContext](target: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
-    val result = ctx.evaluate("$[dryRun:decodeBase64]") {
-      ctx.decodeBase64(sourceValue) tap { content =>
-        ctx.addAttachment(target, "txt", content)
-      }
+    val content = ctx.evaluate("$[dryRun:decodeBase64]") {
+      ctx.decodeBase64(sourceValue)
     }
-    ctx.topScope.set(target, result)
+    ctx.topScope.set(target, content)
+    step.addAttachment(target, "txt", content)
   }
 
 }

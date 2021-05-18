@@ -25,9 +25,11 @@ import gwen.core.Settings
 
 class ClearProperty[T <: EvalContext](target: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Context, ctx)
-    Settings.clearLocal(target)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Context, ctx)
+      Settings.clearLocal(target)
+    }
   }
 
 }

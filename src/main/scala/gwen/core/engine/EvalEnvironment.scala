@@ -24,7 +24,6 @@ import gwen.core.model.state._
 import scala.util.matching.Regex
 
 import com.typesafe.scalalogging.LazyLogging
-
 import java.io.File
 
 /**
@@ -56,6 +55,7 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
   def reset(level: StateLevel.Value): Unit = {
     logger.info(s"Resetting environment context")
     state = if (StateLevel.feature.equals(level)) {
+      EnvState.resetAttachmentNo()
       EnvState(topScope, None)
     } else {
       EnvState(topScope, Some(stepDefs))
@@ -178,26 +178,10 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = stepScope.isEmpty
 
-  /**
-    * Adds error attachments to the current context. This includes the error trace and environment context.
-    * 
-    * @param failure the failed status
-    */
-  def addErrorAttachments(failure: Failed): Unit = { 
-    addAttachment("Error details", "txt", failure.error.writeStackTrace())
-    addAttachment(s"Environment", "txt", scopes.visible.asString)
-  }
-
-  def addAttachment(name: String, extension: String, content: String): (String, File) = { 
-    state.addAttachment(name, extension, content)
-  }
-
-  def addAttachment(name: String, file: File): (String, File) = { 
+  def addAttachment(name: String, file: File): Unit = { 
     state.addAttachment(name, file)
   }
 
-  def popAttachments(): List[(String, File)] = state.popAttachments()
-
-  def hasAttachments: Boolean = state.hasAttachments
+  def popAttachments(): List[(Int, String, File)] = state.popAttachments()
   
 }

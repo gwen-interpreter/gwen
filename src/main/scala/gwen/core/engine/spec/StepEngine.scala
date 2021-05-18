@@ -82,36 +82,11 @@ trait StepEngine[T <: EvalContext] {
     val iStep = interpolateStep(step, ctx)
     logger.info(s"Evaluating Step: $iStep")
     beforeStep(parent, iStep.copy(withEvalStatus = Pending), ctx.scopes)
-    val eStep = Try(healthCheck(parent, iStep, ctx)) match {
-      case Failure(e) => withStep(iStep) { throw e }
-      case _ =>
-        translateCompositeStep(iStep) orElse {
-          translateStepDef(iStep, ctx)
-        } map { lambda => 
-          withStep(iStep.copy(withEvalStatus = Pending)) { s =>
-            lambda(parent, s, ctx)
-          }
-        } getOrElse {
-          Try(translateStep(iStep)) match {
-            case Success(lambda) if (iStep.evalStatus.status != StatusKeyword.Failed) => 
-              withStep(iStep) { s => s tap { _ => lambda(parent, s, ctx) } }
-            case Failure(e) => 
-              withStep(iStep) {
-                parent match {
-                  case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
-                    step => iStep.copy(
-                      withEvalStatus = 
-                        Failed(iStep.evalStatus.duration.toNanos, 
-                          new Errors.RecursiveStepDefException(ctx.getStepDef(iStep.name).get._1))
-                    )
-                  case _ =>
-                    throw e
-                }
-              }
-            case _ =>
-              iStep
-          }
-        }
+    val eStep = ctx.withStep(iStep) { s =>
+      Try(healthCheck(parent, s, ctx)) match {
+        case Failure(e) => throw e
+        case _ => translateAndEvaluate(parent, s, ctx)
+      }
     }
     finaliseStep(eStep, ctx) tap { fStep =>
       logStatus(fStep)
@@ -119,37 +94,40 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
+  private def translateAndEvaluate(parent: Identifiable, step: Step, ctx: T): Step = {
+    translateCompositeStep(step) orElse {
+      translateStepDef(step, ctx)
+    } map { lambda => 
+      lambda(parent, step.copy(withEvalStatus = Pending), ctx)
+    } getOrElse {
+      Try(translateStep(step)) match {
+        case Success(lambda) if (step.evalStatus.status != StatusKeyword.Failed) => 
+          lambda(parent, step, ctx) 
+        case Failure(e) => 
+          parent match {
+            case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
+              step.copy(
+                withEvalStatus = 
+                  Failed(step.evalStatus.duration.toNanos, 
+                    new Errors.RecursiveStepDefException(ctx.getStepDef(step.name).get._1))
+              )
+            case _ =>
+              throw e
+          }
+        case _ =>
+          step
+      }
+    }
+  }
+
   private def interpolateStep(step: Step, ctx: T): Step = {
-    val pStep = withStep(step) { ctx.interpolateParams }
-    withStep(pStep) { ctx.interpolate }
+    val pStep = ctx.withStep(step) { ctx.interpolateParams }
+    ctx.withStep(pStep) { ctx.interpolate }
   }
 
   private def healthCheck(parent: Identifiable, step: Step, ctx: T): Unit = {
     if (step.index == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
       healthCheck(parent, step, ctx.scopes)
-    }
-  }
-
-  /**
-    * Evaluates a step and captures the result.
-    * 
-    * @param step the step to evaluate
-    * @param stepFunction the step evaluator function
-    */
-  private def withStep(step: Step)(stepFunction: Step => Step): Step = {
-    val start = System.nanoTime - step.evalStatus.nanos
-    Try(stepFunction(step)) match {
-      case Success(eStep) =>
-        val status = eStep.stepDef map { case (sd, _) => sd.evalStatus }  getOrElse {
-          eStep.evalStatus match {
-            case Failed(_, error) => Failed(System.nanoTime - start, error)
-            case _ => Passed(System.nanoTime - start)
-          }
-        }
-        eStep.copy(withEvalStatus = status)
-      case Failure(error) =>
-        val failure = Failed(System.nanoTime - start, new Errors.StepFailure(step, error))
-        step.copy(withEvalStatus = failure)
     }
   }
 
@@ -176,29 +154,35 @@ trait StepEngine[T <: EvalContext] {
     * @return the step with accumulated attachments
     */
   def finaliseStep(step: Step, ctx: T): Step = {
-    if (step.stepDef.isEmpty) {
-      step.evalStatus match {
-        case failure @ Failed(_, _) if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
-          if (!failure.isDisabledError) {
-            if (ctx.options.batch) {
-              logger.error(ctx.scopes.visible.asString)
+    val eStep = {
+      if (step.stepDef.isEmpty) {
+        step.evalStatus match {
+          case failure: Failed if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
+            (if (!failure.isDisabledError) {
+              if (ctx.options.batch) {
+                logger.error(ctx.scopes.visible.asString)
+              }
+              logger.error(failure.error.getMessage)
+              ctx.addErrorAttachments(step, failure)
+            } else {
+              step
+            }) tap { _ =>
+              logger.whenDebugEnabled {
+                logger.error("Exception: ", failure.error)
+              }
             }
-            logger.error(failure.error.getMessage)
-            ctx.addErrorAttachments(failure)
-          }
-          logger.whenDebugEnabled {
-            logger.error(s"Exception: ", failure.error)
-          }
-        case _ => // noop
+          case _ => step
+        }
+      } else {
+        step
       }
     }
-    val fStep = if (ctx.hasAttachments) {
-      step.copy(
-        withEvalStatus = step.evalStatus, 
-        withAttachments = (step.attachments ++ ctx.popAttachments()).sortBy(_._2 .getName()))
-    } else {
-      
-      step
+    val fStep = ctx.popAttachments() match {
+      case Nil => eStep
+      case attachments => 
+        attachments.foldLeft(eStep) { case (accStep, (attachmentNo, name, file)) => 
+          accStep.addAttachment(attachmentNo, name, file)
+        }
     }
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
@@ -212,6 +196,7 @@ trait StepEngine[T <: EvalContext] {
       case _ =>
         fStep
     }
+
   }
   
 }

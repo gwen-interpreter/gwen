@@ -25,9 +25,11 @@ import gwen.core.engine.binding.SQLBinding
 
 class BindAsSQL[T <: EvalContext](target: String, dbName: String, selectStmt: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Context, ctx)
-    SQLBinding.bind(target, dbName, selectStmt, ctx)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Context, ctx)
+      SQLBinding.bind(target, dbName, selectStmt, ctx)
+    }
   }
 
 }

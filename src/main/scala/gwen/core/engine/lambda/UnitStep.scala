@@ -17,8 +17,9 @@
 package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
+import gwen.core.model.gherkin.Step
 
 /**
   * Base class for all unit step lambdas.
   */
-abstract class UnitStep[T <: EvalContext] extends StepLambda[T, Unit]
+abstract class UnitStep[T <: EvalContext] extends StepLambda[T, Step]

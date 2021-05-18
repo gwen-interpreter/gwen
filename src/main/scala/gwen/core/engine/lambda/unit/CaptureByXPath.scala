@@ -16,7 +16,6 @@
 
 package gwen.core.engine.lambda.unit
 
-import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
@@ -27,15 +26,14 @@ import gwen.core.model.gherkin.Step
 
 class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType.Value) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
-    val result = ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
-      ctx.evaluateXPath(xpath, sourceValue, nodeType) tap { content =>
-        ctx.addAttachment(target, "txt", content)
-      }
+    val content = ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
+      ctx.evaluateXPath(xpath, sourceValue, nodeType)
     }
-    ctx.topScope.set(target, result)
+    ctx.topScope.set(target, content)
+    step.addAttachment(target, "txt", content)
   }
 
 }

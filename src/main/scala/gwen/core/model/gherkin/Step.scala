@@ -16,6 +16,7 @@
 
 package gwen.core.model.gherkin
 
+import gwen.core._
 import gwen.core.model._
 
 import scala.jdk.CollectionConverters._
@@ -23,6 +24,9 @@ import scala.jdk.CollectionConverters._
 import io.cucumber.messages.{ Messages => Cucumber }
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import gwen.core.model.state.EnvState
 
 /**
   * Captures a gherkin step.
@@ -88,6 +92,62 @@ case class Step(
       withDocString: Option[(Int, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus): Step = {
     Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus)
+  }
+
+  /**
+   * Add an attachment.
+   * 
+   * @param name the attachment name
+   * @param extension the filename extension
+   * @param content the content to write to the file
+   */
+  def addAttachment(name: String, extension: String, content: String): Step = { 
+    val file = File.createTempFile(s"${attachmentPrefix(EnvState.nextAttachmentNo())}-", s".$extension")
+    file.deleteOnExit()
+    Option(content) foreach { file.writeText }
+    addAttachment((name, file))
+  }
+
+  /**
+   * Add a file attachment.
+   * 
+   * @param name the attachment name
+   * @param file the file to attach
+   */
+  def addAttachment(name: String, file: File): Step = { 
+    addAttachment(EnvState.nextAttachmentNo(), name, file)
+  }
+
+  /**
+   * Add a file attachment.
+   * 
+   * @param attachmentNo the attachment number
+   * @param name the attachment name
+   * @param file the file to attach
+   */
+  def addAttachment(attachmentNo: Int, name: String, file: File): Step = { 
+    val fileCopy = Files.copy(
+      file.toPath, 
+      File.createTempFile(s"${attachmentPrefix(attachmentNo)}-${file.simpleName}-", s".${file.extension}").toPath,
+      StandardCopyOption.REPLACE_EXISTING
+    ).toFile
+    fileCopy.deleteOnExit()
+    addAttachment((name, fileCopy))
+  }
+
+  /**
+    * Adds an attachment
+    * 
+    * @param attachment the attachment (name-file pair) to add
+    */
+  private def addAttachment(attachment: (String, File)): Step = {
+    this.copy(
+      withAttachments = (attachment :: this.attachments) sortBy { case (_, file) => file.getName }
+    )
+  }
+
+  private def attachmentPrefix(attachmentNo: Int): String = {
+    Formatting.padWithZeroes(attachmentNo)
   }
 
   lazy val errorTrails: List[List[Step]] = {

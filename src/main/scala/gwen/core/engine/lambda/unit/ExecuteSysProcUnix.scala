@@ -27,12 +27,14 @@ import scala.sys.process.stringSeqToProcess
 
 class ExecuteSysProcUnix[T <: EvalContext](systemproc: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Action, ctx)
-    ctx.perform {
-      Seq("/bin/sh", "-c", systemproc).! match {
-        case 0 =>
-        case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Action, ctx)
+      ctx.perform {
+        Seq("/bin/sh", "-c", systemproc).! match {
+          case 0 =>
+          case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
+        }
       }
     }
   }

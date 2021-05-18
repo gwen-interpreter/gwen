@@ -24,9 +24,11 @@ import gwen.core.model.gherkin.Step
 
 class ExecuteJS[T <: EvalContext](javascript: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Action, ctx)
-    ctx.evaluateJS(javascript)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Action, ctx)
+      ctx.evaluateJS(javascript)
+    }
   }
 
 }

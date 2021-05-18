@@ -16,6 +16,7 @@
 
 package gwen.core.engine.lambda.unit
 
+import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
@@ -25,9 +26,11 @@ import gwen.core.engine.binding.JsonPathBinding
 
 class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Context, ctx)
-    JsonPathBinding.bind(target, jsonPath, source, ctx)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Context, ctx)
+      JsonPathBinding.bind(target, jsonPath, source, ctx)
+    }
   }
 
 }

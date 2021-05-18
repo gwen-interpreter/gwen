@@ -28,25 +28,27 @@ import scala.util.Success
 
 class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Assertion, ctx)
-    val binding = ctx.getBinding(source)
-    val expected = ctx.parseExpression(operator, expression)
-    val actualValue = binding.resolve()
-    ctx.perform {
-      val result = ctx.compare(source, expected, actualValue, operator, negate)
-      val op = {
-        if (operator == ComparisonOperator.`match template file`) {
-          ComparisonOperator.`match template` 
-        } else {
-          operator
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Assertion, ctx)
+      val binding = ctx.getBinding(source)
+      val expected = ctx.parseExpression(operator, expression)
+      val actualValue = binding.resolve()
+      ctx.perform {
+        val result = ctx.compare(source, expected, actualValue, operator, negate)
+        val op = {
+          if (operator == ComparisonOperator.`match template file`) {
+            ComparisonOperator.`match template` 
+          } else {
+            operator
+          }
         }
-      }
-      result match {
-        case Success(assertion) =>
-          assert(assertion, s"Expected $binding to ${if(negate) "not " else ""}$op '$expected' but got '$actualValue'")
-        case Failure(error) =>
-          assert(assertion = false, error.getMessage)
+        result match {
+          case Success(assertion) =>
+            assert(assertion, s"Expected $binding to ${if(negate) "not " else ""}$op '$expected' but got '$actualValue'")
+          case Failure(error) =>
+            assert(assertion = false, error.getMessage)
+        }
       }
     }
   }

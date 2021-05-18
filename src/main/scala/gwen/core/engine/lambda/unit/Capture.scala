@@ -16,7 +16,6 @@
 
 package gwen.core.engine.lambda.unit
 
-import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
@@ -25,12 +24,11 @@ import gwen.core.model.gherkin.Step
 
 class Capture[T <: EvalContext](target: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val result = ctx.getBoundReferenceValue(source)
-    ctx.topScope.set(target, result tap { content =>
-      ctx.addAttachment(target, "txt", content)
-    })
+    val content = ctx.getBoundReferenceValue(source)
+    ctx.topScope.set(target, content)
+    step.addAttachment(target, "txt", content)
   }
 
 }

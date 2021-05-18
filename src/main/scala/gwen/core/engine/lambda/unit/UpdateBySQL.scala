@@ -25,13 +25,15 @@ import gwen.core.model.gherkin.Step
 
 class UpdateBySQL[T <: EvalContext](dbName: String, updateStmt: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Action, ctx)
-    SQLSupport.checkDBSettings(dbName)
-    val rowsAffected = ctx.evaluate(0) {
-      ctx.executeSQLUpdate(updateStmt, dbName)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Action, ctx)
+      SQLSupport.checkDBSettings(dbName)
+      val rowsAffected = ctx.evaluate(0) {
+        ctx.executeSQLUpdate(updateStmt, dbName)
+      }
+      ctx.scopes.set(s"$dbName rows affected", rowsAffected.toString)
     }
-    ctx.scopes.set(s"$dbName rows affected", rowsAffected.toString)
   }
 
 }

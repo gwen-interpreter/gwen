@@ -24,9 +24,11 @@ import gwen.core.model.gherkin.Step
 
 class BindAttribute[T <: EvalContext](target: String, value: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Context, ctx)
-    ctx.topScope.set(target, value)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Context, ctx)
+      ctx.topScope.set(target, value)
+    }
   }
 
 }

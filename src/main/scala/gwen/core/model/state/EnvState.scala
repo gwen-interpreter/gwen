@@ -21,18 +21,16 @@ import gwen.core.model.BehaviorType
 import gwen.core.model.StepKeyword
 import gwen.core.model.gherkin.Scenario
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 
 class EnvState(val scopes: ScopedDataStack) {
 
   /** Loaded step defs. */
   private var stepDefs = Map[String, Scenario]()
 
-  /** List of current attachments (name-file pairs). */
-  private var attachments: List[(String, File)] = Nil
-  private var attachmentPrefix = Formatting.padWithZeroes(1)
+   /** List of temporarily cached attachments (number-name-file tripples). */
+  private var attachments: List[(Int, String, File)] = Nil
 
   /** Stack of behaviors. */
   private var behaviors = List[BehaviorType.Value]()
@@ -76,42 +74,9 @@ class EnvState(val scopes: ScopedDataStack) {
     }
   }
 
-  /** Checks if attachments exist. */
-  def hasAttachments: Boolean = attachments.nonEmpty
-
   /** Returns current attachments before clearing them. */
-  def popAttachments(): List[(String, File)] = attachments tap { _ =>
+  def popAttachments(): List[(Int, String, File)] = attachments tap { _ =>
     attachments = Nil
-  }
-
-  /**
-   * Add an attachment.
-   * 
-   * @param name the attachment name
-   * @param extension the filename extension
-   * @param content the content to write to the file
-   */
-  def addAttachment(name: String, extension: String, content: String): (String, File) = { 
-    val file = File.createTempFile(s"$attachmentPrefix-", s".$extension")
-    file.deleteOnExit()
-    Option(content) foreach { file.writeText }
-    addAttachment((name, file))
-  }
-
-  /**
-   * Add a file attachment.
-   * 
-   * @param name the attachment name
-   * @param file the file to attach
-   */
-  def addAttachment(name: String, file: File): (String, File) = { 
-    val fileCopy = Files.copy(
-      file.toPath, 
-      File.createTempFile(s"$attachmentPrefix-${file.simpleName}-", s".${file.extension}").toPath,
-      StandardCopyOption.REPLACE_EXISTING
-    ).toFile
-    fileCopy.deleteOnExit()
-    addAttachment((name, fileCopy))
   }
 
   /**
@@ -119,43 +84,37 @@ class EnvState(val scopes: ScopedDataStack) {
     * 
     * @param attachment the attachment (name-file pair) to add
     */
-    private def addAttachment(attachment: (String, File)): (String, File) = 
-    (attachment match {
-      case (name, file) => 
-        if (file.getName.startsWith(s"$attachmentPrefix-")) attachment
-        else {
-          val prefixedFilename = s"$attachmentPrefix-${file.getName}"
-          val prefixedFile = if (file.getParentFile != null) new File(file.getParentFile, prefixedFilename) else new File(prefixedFilename)
-          if (file.renameTo(prefixedFile)) (name, prefixedFile)
-          else attachment
-        }
-    }) tap { att =>
-      attachments = att :: attachments
-      attachmentPrefix = Formatting.padWithZeroes(attachmentPrefix.toInt + 1)
-    }
+  def addAttachment(name: String, file: File): Unit = { 
+    attachments = (EnvState.nextAttachmentNo(), name, file) :: attachments
+  }
 
-    /** Adds the given behavior to the top of the stack. */
-    def addBehavior(behavior: BehaviorType.Value): Unit = {
-      behaviors = behavior :: behaviors
-    }
+  /** Adds the given behavior to the top of the stack. */
+  def addBehavior(behavior: BehaviorType.Value): Unit = {
+    behaviors = behavior :: behaviors
+  }
 
-    /** Removes the behavior at the top of the stack. */
-    def popBehavior(): Option[BehaviorType.Value] = behaviors match {
-      case head::tail => 
-        behaviors = tail
-        Some(head)
-      case _ =>
-        None
-    }
+  /** Removes the behavior at the top of the stack. */
+  def popBehavior(): Option[BehaviorType.Value] = behaviors match {
+    case head::tail => 
+      behaviors = tail
+      Some(head)
+    case _ =>
+      None
+  }
 
-    /** Gets the behavior at the top of the stack. */
-    def currentBehavior: Option[BehaviorType.Value] = behaviors.headOption
+  /** Gets the behavior at the top of the stack. */
+  def currentBehavior: Option[BehaviorType.Value] = behaviors.headOption
+
 }
 
 object EnvState {
+
+  private var attachmentCounter = new AtomicInteger(0)
+
   def apply(): EnvState = {
     new EnvState(new ScopedDataStack())
   }
+  
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]]): EnvState = {
     new EnvState(new ScopedDataStack()) tap { newState => 
       topScope.implicitAtts foreach { case (n, v) => 
@@ -166,4 +125,13 @@ object EnvState {
       }
     }
   }
+
+  /** Gets the next attachment number. */
+  def nextAttachmentNo() = attachmentCounter.incrementAndGet()
+
+  /** Resets the attachment number to zero. */
+  def resetAttachmentNo(): Unit = {
+    attachmentCounter = new AtomicInteger(0)
+  }
+
 }

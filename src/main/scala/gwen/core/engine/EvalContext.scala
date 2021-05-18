@@ -21,6 +21,8 @@ import gwen.core.engine.ComparisonOperator
 import gwen.core.engine.binding.Binding
 import gwen.core.engine.binding.BindingResolver
 import gwen.core.engine.support._
+import gwen.core.model.Failed
+import gwen.core.model.Passed
 import gwen.core.model.gherkin.Step
 import gwen.core.model.state.EnvState
 
@@ -190,6 +192,41 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     } finally {
       lock.release()
     }
+  }
+
+  /**
+    * Applies a function to a step and captures the result.
+    * 
+    * @param step the step to evaluate
+    * @param stepFunction the step evaluator function
+    */
+  def withStep(step: Step)(stepFunction: Step => Step): Step = {
+    val start = System.nanoTime - step.evalStatus.nanos
+    Try(stepFunction(step)) match {
+      case Success(eStep) =>
+        val status = eStep.stepDef map { case (sd, _) => sd.evalStatus }  getOrElse {
+          eStep.evalStatus match {
+            case Failed(_, error) => Failed(System.nanoTime - start, error)
+            case _ => Passed(System.nanoTime - start)
+          }
+        }
+        eStep.copy(withEvalStatus = status)
+      case Failure(error) =>
+        val failure = Failed(System.nanoTime - start, new Errors.StepFailure(step, error))
+        step.copy(withEvalStatus = failure)
+    }
+  }
+
+  /**
+    * Adds error attachments to the given step. 
+    * This includes the error trace and environment context.
+    * 
+    * @param failure the failed status
+    */
+  def addErrorAttachments(step: Step, failure: Failed): Step = { 
+    step
+      .addAttachment("Error details", "txt", failure.error.writeStackTrace())
+      .addAttachment(s"Environment", "txt", scopes.visible.asString)
   }
 
 }

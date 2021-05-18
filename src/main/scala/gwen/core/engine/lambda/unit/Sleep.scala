@@ -24,10 +24,12 @@ import gwen.core.model.gherkin.Step
 
 class Sleep[T <: EvalContext](secs: Long) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Action, ctx)
-    ctx.perform {
-      Thread.sleep(secs * 1000)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Action, ctx)
+      ctx.perform {
+        Thread.sleep(secs * 1000)
+      }
     }
   }
 

@@ -25,9 +25,11 @@ import gwen.core.engine.binding.XPathBinding
 
 class BindAsXPath[T <: EvalContext](target: String, xpath: String, targetType: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Unit = {
-    checkStepRules(step, BehaviorType.Context, ctx)
-    XPathBinding.bind(target, xpath, targetType, source, ctx)
+  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+    step tap { _ =>
+      checkStepRules(step, BehaviorType.Context, ctx)
+      XPathBinding.bind(target, xpath, targetType, source, ctx)
+    }
   }
 
 }

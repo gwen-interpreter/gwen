@@ -339,7 +339,7 @@ trait DetaiFormatter {
             rowHtml
           )
         } else rowHtml,
-        " ",
+        raw(" &nbsp; "),
         formatAttachments(scenario.attachments, status),
         formatExampleDiv(scenario, status)
       )
@@ -412,7 +412,7 @@ trait DetaiFormatter {
         ),
         " ",
         if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
-        " ",
+        raw(" &nbsp; "),
         formatAttachments(step.deepAttachments, status),
         for {
           (sd, _) <- stepDef
