@@ -415,5 +415,115 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     scenarios(3) should be(scenario4)
     scenarios(4) should be(scenario5)
   }
+
+  "Scenario with identically named steps" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing scenario with identically named steps
+          |
+          | Scenario: scenario with identical steps
+          |     Given step 1
+          |      When identical
+          |      Then step 3
+          |       And identical
+          |       And step 5
+          |       And step 6
+          |       And identical
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normaliseSpec(feature, None, None)
+    val scenario = result.scenarios(0)
+
+    scenario.steps(0).occurrenceIn(scenario) should be (1)
+    scenario.steps(1).occurrenceIn(scenario) should be (1)
+    scenario.steps(2).occurrenceIn(scenario) should be (1)
+    scenario.steps(3).occurrenceIn(scenario) should be (2)
+    scenario.steps(4).occurrenceIn(scenario) should be (1)
+    scenario.steps(5).occurrenceIn(scenario) should be (1)
+    scenario.steps(6).occurrenceIn(scenario) should be (3)
+  }
+
+  "Feature with identically named scenarios" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically named scenarios
+          |
+          | Scenario: scenario 1
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 3
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 4
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 7
+          |     Given step 1
+          |      Then step 2
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normaliseSpec(feature, None, None)
+
+    result.scenarios(0).occurrenceIn(feature) should be (1)
+    result.scenarios(1).occurrenceIn(feature) should be (1)
+    result.scenarios(2).occurrenceIn(feature) should be (1)
+    result.scenarios(3).occurrenceIn(feature) should be (1)
+    result.scenarios(4).occurrenceIn(feature) should be (2)
+    result.scenarios(5).occurrenceIn(feature) should be (3)
+    result.scenarios(6).occurrenceIn(feature) should be (1)
+  }
+
+  "Feature with identically named outline examples" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically outline examples
+          |
+          | Scenario Outline: outline 1
+          |     Given step using <name 1>
+          |      Then step using <name 2>
+          | Examples: identical
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          | Examples: examples 2
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          | Examples: identical
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          | Examples: identical
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          | Examples: identical
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          | Examples: examples 6
+          |      | name 1 | name 2 |
+          |      | data 1 | data 2 |
+          |  
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normaliseSpec(feature, None, None)
+    val outline = result.scenarios(0)
+
+    outline.examples(0).occurrenceIn(outline) should be (1)
+    outline.examples(1).occurrenceIn(outline) should be (1)
+    outline.examples(2).occurrenceIn(outline) should be (2)
+    outline.examples(3).occurrenceIn(outline) should be (3)
+    outline.examples(4).occurrenceIn(outline) should be (4)
+    outline.examples(5).occurrenceIn(outline) should be (1)
+  }
+  
   
 }

@@ -66,6 +66,14 @@ case class Rule(
     Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
   }
 
+  def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case spec: Spec =>
+        occurrenceIn(spec.rules)
+      case _ => 0
+    }
+  }
+
 }
 
 object Rule {

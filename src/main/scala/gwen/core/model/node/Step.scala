@@ -161,6 +161,15 @@ case class Step(
       } getOrElse List(List(this))
     } else Nil
   }
+
+  def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case scenario: Scenario =>
+        occurrenceIn(scenario.steps)
+      case _ => 0
+    }
+  }
+
 }
 
 object Step {

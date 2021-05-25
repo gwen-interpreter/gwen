@@ -67,6 +67,14 @@ case class Examples(
     Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withScenarios)
   }
 
+  def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case scenario: Scenario =>
+        occurrenceIn(scenario.examples)
+      case _ => 0
+    }
+  }
+
 }
 
 object Examples {

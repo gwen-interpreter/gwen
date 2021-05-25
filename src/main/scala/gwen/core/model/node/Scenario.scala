@@ -99,6 +99,16 @@ case class Scenario(
       withExamples: List[Examples] = examples): Scenario = {
     Scenario(withSourceRef, withTags, withKeyword, withName, withParams, withDescription, withBackground, withSteps, withExamples)
   }
+
+  def occurrenceIn(parent: Identifiable): Int = {
+    parent match {
+      case spec: Spec =>
+        occurrenceIn(spec.scenarios)
+      case rule: Rule =>
+        occurrenceIn(rule.scenarios)
+      case _ => 0
+    }
+  }
   
 }
 
