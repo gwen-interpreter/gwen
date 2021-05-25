@@ -331,7 +331,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     scenario1.steps(3) should be(Step(Position(18, 6, 3), StepKeyword.Then.toString, """the result should be "basketball""""))
 
     val scenario2 = example1.scenarios(1)
-    scenario2.sourceRef.get.pos should be (Position(8, 5, List(1, 0)))
+    scenario2.sourceRef.get.pos should be (Position(8, 5, List(0, 1)))
     scenario2.tags.map(_.name) should be (List("UnitTest"))
     scenario2.tags(0).sourceRef.get.pos should be (Position(7, 5, 0))
     scenario2.name should be("Joining any and thing should yield anything -- Example 1.2 Compound words")
@@ -357,7 +357,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     example2.scenarios.size should be(2)
 
     val scenario3 = example2.scenarios(0)
-    scenario3.sourceRef.get.pos should be (Position(8, 5, List(0, 1)))
+    scenario3.sourceRef.get.pos should be (Position(8, 5, List(1, 0)))
     scenario3.tags.map(_.name) should be (List("UnitTest"))
     scenario3.tags(0).sourceRef.get.pos should be (Position(7, 5, 0))
     scenario3.name should be("Joining howdy and doo should yield howdydoo -- Example 2.1 Nonsensical compound words")
@@ -394,7 +394,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     example3.scenarios.size should be(1)
 
     val scenario5 = example3.scenarios(0)
-    scenario5.sourceRef.get.pos should be (Position(8, 5, List(0, 2)))
+    scenario5.sourceRef.get.pos should be (Position(8, 5, List(2, 0)))
     scenario5.tags.map(_.name) should be (List("UnitTest"))
     scenario5.tags(0).sourceRef.get.pos should be (Position(7, 5, 0))
     scenario5.name should be("Joining ding and dong should yield dingdong -- Example 3.1 ")

@@ -25,20 +25,24 @@ class SourceRefTest extends FlatSpec with Matchers {
   "toString" should "yield correct string value" in {
     SourceRef("path/to/file.feature", Position(1, 2, Nil)).toString() should be ("path/to/file.feature:1:2")
     SourceRef("path/to/file.feature", Position(1, 2, List(0))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef("path/to/file.feature", Position(1, 2, List(1, 0))).toString() should be ("path/to/file.feature:1:2[1][2]")
+    SourceRef("path/to/file.feature", Position(1, 2, List(0, 1))).toString() should be ("path/to/file.feature:1:2[1][2]")
   }
 
   "asString on SourceRef with file and ref" should "yield correct string value" in {
     val file = new File("path/to/file.feature")
     SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, Nil)))).toString() should be ("path/to/file.feature:1:2")
     SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, List(0))))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, List(1, 0))))).toString() should be ("path/to/file.feature:1:2[1][2]")
+    SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, List(0, 1))))).toString() should be ("path/to/file.feature:1:2[1][2]")
   }
 
   "asString on SourceRef with no file and ref" should "yield correct string value" in {
     SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, Nil)))).toString() should be ("path/to/file.feature:1:2")
     SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, List(0))))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, List(1, 0))))).toString() should be ("path/to/file.feature:1:2[1][2]")
+    SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, List(0, 1))))).toString() should be ("path/to/file.feature:1:2[1][2]")
+  }
+
+  "asString on SourceRef with no file and no ref" should "yield blank" in {
+    SourceRef.asString(None, None).toString() should be ("")
   }
 
   "asString on SourceRef with file and no ref" should "yield correct string value" in {

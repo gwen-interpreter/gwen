@@ -21,12 +21,12 @@ package gwen.core.model
  * 
  * @param line line number in souce (1st is 1)
  * @param column column number in souce (1st is 1)
- * @param indexes indexes(0) = index of node relative to parent or row in examples table, indexes(1) = index of examples node/table in outline node
+ * @param indexes List of table and row/node indexes or a single node index
  * 
  */
 case class Position(line: Int, column: Int, indexes: List[Int]) {
-  val index: Int = if (indexes.nonEmpty) indexes(0) else 0
-  val tableNo: Option[Int] = if (indexes.size > 1) Some(indexes(1) + 1) else None
+  val index: Int = if (indexes.nonEmpty) indexes(indexes.size - 1) else 0
+  val tableNo: Option[Int] = if (indexes.size > 1) Some(indexes(0) + 1) else None
   val rowNo: Int = index + 1
   
   override def toString: String = Position.asString(Some(line), Some(column), tableNo.map(t => Some((t, rowNo))).getOrElse(None))

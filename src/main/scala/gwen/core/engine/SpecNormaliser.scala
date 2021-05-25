@@ -137,7 +137,7 @@ trait SpecNormaliser extends EvalRules {
             new Scenario(
               outline.sourceRef map { sref => 
                 val pos = sref.pos
-                SourceRef(sref.uri, Position(pos.line, pos.column, List(rowIndex, tableIndex)))
+                SourceRef(sref.uri, Position(pos.line, pos.column, List(tableIndex, rowIndex)))
               },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
