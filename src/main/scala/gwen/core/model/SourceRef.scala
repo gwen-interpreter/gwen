@@ -24,7 +24,9 @@ import java.io.File
 case class SourceRef(uri: String, pos: Position) {
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
-  override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column))
+  override def toString: String = {
+    SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column), pos.tableNo.map(tableNo => (tableNo, pos.rowNo)))
+  }
 }
 object SourceRef {
   private val lineOffset = new ThreadLocal[Int]() {
@@ -43,10 +45,11 @@ object SourceRef {
     SourceRef.asString(
       file.map(_.getPath).orElse(sourceRef.map(_.uri)), 
       sourceRef.map(_.pos.line), 
-      sourceRef.map(_.pos.column))
+      sourceRef.map(_.pos.column),
+      sourceRef.flatMap(sr => sr.pos.tableNo.map(tableNo => (tableNo, sr.pos.rowNo))))
   }
-  def asString(uri: Option[String], line: Option[Int], column: Option[Int]): String = {
-    s"${uri.filter(_.length > 0).map(u => s"$u:").getOrElse("")}${Position.asString(line, column)}"
+  def asString(uri: Option[String], line: Option[Int], column: Option[Int], tableRow: Option[(Int, Int)]): String = {
+    s"${uri.filter(_.length > 0).map(identity).getOrElse("")}${Position.asString(line, column, tableRow)}"
   }
   
 }

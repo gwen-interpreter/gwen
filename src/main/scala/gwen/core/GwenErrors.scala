@@ -95,7 +95,7 @@ object Errors {
   class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step${at(SourceRef.asString(step.sourceRef))}: $step: ${cause.getMessage}", cause)
 
   /** Thrown when a Gherkin parsing error occurs. */
-  class GherkinSyntaxError(msg: String, uri: Option[String], line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${at(SourceRef.asString(uri, line, col))}: $msg")
+  class GherkinSyntaxError(msg: String, uri: Option[String], line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${at(SourceRef.asString(uri, line, col, None))}: $msg")
 
   /** Thrown when an ambiguous condition is detected. */
   class AmbiguousCaseException(msg: String) extends GwenException(msg)

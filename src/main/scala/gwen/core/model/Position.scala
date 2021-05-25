@@ -25,21 +25,25 @@ package gwen.core.model
  * 
  */
 case class Position(line: Int, column: Int, indexes: List[Int]) {
-  val index: Int = indexes(0)
+  val index: Int = if (indexes.nonEmpty) indexes(0) else 0
   val tableNo: Option[Int] = if (indexes.size > 1) Some(indexes(1) + 1) else None
   val rowNo: Int = index + 1
   
-  override def toString: String = Position.asString(Some(line), Some(column))
+  override def toString: String = Position.asString(Some(line), Some(column), tableNo.map(t => Some((t, rowNo))).getOrElse(None))
 }
 object Position {
   def apply(line: Int, column: Int, index: Int): Position = {
     Position(line, column, List(index))
   }
-  def asString(line: Option[Int], column: Option[Int]): String = {
-    (line, column) match {
-      case ((Some(l), (Some(c)))) => s"$l:$c"
-      case ((Some(l), None)) => s"line $l"
-      case ((None, Some(c))) => s"column $c"
+  def asString(line: Option[Int], column: Option[Int], tableRow: Option[(Int, Int)]): String = {
+    (line, column, tableRow) match {
+      case (Some(l), Some(c), Some((t, r))) => s":$l:$c[$t][$r]"
+      case (Some(l), Some(c), None) => s":$l:$c"
+      case (Some(l), None, Some((t, r))) => s":$l[$t][$r]"
+      case (Some(l), None, None) => s":$l"
+      case (None, Some(c), Some((t, r))) => s":_:$c[$t][$r]"
+      case (None, Some(c), None) => s":_:$c"
+      case (None, None, Some((t, r))) => s":_:_[$t][$r]"
       case _ => ""
     }
   }
