@@ -16,11 +16,25 @@
 
 package gwen.core.model
 
-/** Line and column number coordinates (base is 1). */
-case class Position(line: Int, column: Int, index: Int) {
+/** 
+ * Line and column number coordinates (base is 1).
+ * 
+ * @param line line number in souce (1st is 1)
+ * @param column column number in souce (1st is 1)
+ * @param indexes indexes(0) = index of node relative to parent or row in examples table, indexes(1) = index of examples node/table in outline node
+ * 
+ */
+case class Position(line: Int, column: Int, indexes: List[Int]) {
+  val index: Int = indexes(0)
+  val tableNo: Option[Int] = if (indexes.size > 1) Some(indexes(1) + 1) else None
+  val rowNo: Int = index + 1
+  
   override def toString: String = Position.asString(Some(line), Some(column))
 }
 object Position {
+  def apply(line: Int, column: Int, index: Int): Position = {
+    Position(line, column, List(index))
+  }
   def asString(line: Option[Int], column: Option[Int]): String = {
     (line, column) match {
       case ((Some(l), (Some(c)))) => s"$l:$c"

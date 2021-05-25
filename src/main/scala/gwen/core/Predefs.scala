@@ -297,13 +297,13 @@ package object core {
     def lastPositionIn(source: String): Position = {
       Source.fromString(s"$source ").getLines().toList match {
         case Nil =>
-          Position(1, 1, 0)
+          Position(1, 1, List(0))
         case lines =>
           val lastLength = lines.last.length - 1
           Position(
             if (lines.size > 0) lines.size else 1, 
             if (lastLength > 0) lastLength else 1,
-            0
+            List(0)
           )
       }
     }
