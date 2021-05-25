@@ -38,7 +38,7 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
 
   def stepDefs = state.getStepDefs
-  def stepScope = scopes.stepScope
+  def paramScope = scopes.paramScope
   def scopes = state.scopes
   def topScope: TopScope = scopes.topScope
 
@@ -122,10 +122,9 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
-  def getStepDef(expression: String): Option[(Scenario, List[(String, String)])] = {
-    stepDefs.get(expression) match {
-      case None => getStepDefWithParams(expression)
-      case Some(stepDef) => Some((stepDef, Nil))
+  def getStepDef(expression: String): Option[Scenario] = {
+    stepDefs.get(expression) orElse {
+      getStepDefWithParams(expression)
     }
   }
   
@@ -137,19 +136,21 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
     * @return the step definition and its parameters (name value tuples) if a 
     *         match is found; false otherwise
     */
-  private def getStepDefWithParams(expression: String): Option[(Scenario, List[(String, String)])] = {
+  private def getStepDefWithParams(expression: String): Option[Scenario] = {
     val matches = stepDefs.values.view.flatMap { stepDef =>
       val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
       if (expression.matches(pattern)) {
-        val names = "<.+?>".r.findAllIn(stepDef.name).toList
+        val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name => 
+          name.substring(1, name.length - 1)
+        }
         names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
           Errors.ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
         }
         val values = pattern.r.unapplySeq(expression).get
         val params = names zip values
-        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(param._1, param._2) }
+        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(s"<${param._1}>", param._2) }
         if (expression == resolved) {
-          Some((stepDef, params))
+          Some(stepDef.copy(withParams = params))
         } else None
       } else {
         None
@@ -160,7 +161,7 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
       val first = Some(iter.next())
       if (iter.hasNext) {
         val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
-        Errors.ambiguousCaseError(s"$msg: ${matches.map { case (stepDef, _) => stepDef.name }.mkString(",")}")
+        Errors.ambiguousCaseError(s"$msg: ${matches.map { stepDef => stepDef.name }.mkString(",")}")
       } else first
     } else None
   }
@@ -176,7 +177,7 @@ abstract class EvalEnvironment(initialState: EnvState) extends LazyLogging {
   def currentBehavior: Option[BehaviorType.Value] = state.currentBehavior
 
   /** Checks if a top level step is currently being evaluated). */
-  def isEvaluatingTopLevelStep: Boolean = stepScope.isEmpty
+  def isEvaluatingTopLevelStep: Boolean = paramScope.isEmpty
 
   def addAttachment(name: String, file: File): Unit = { 
     state.addAttachment(name, file)

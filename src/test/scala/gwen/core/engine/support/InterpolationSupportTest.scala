@@ -92,32 +92,32 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   
   """interpolate nested using stepdef param syntax: $<param1-$<param0>>"""" should "resolve" in {
     interpolateString("""Hey you $<param-$<id>> thing!""") {
-      case "<id>" => "0"
-      case "<param-0>" => "good"
+      case "id" => "0"
+      case "param-0" => "good"
       case _ => "undefined"
     } should be ("""Hey you good thing!""")
   }
   
   """interpolate stepdef with adjacent params: $<param-0> $<param-1>"""" should "resolve" in {
     interpolateString("""Hey you $<param-0> $<param-1> thing!""") {
-      case "<param-0>" => "really"
-      case "<param-1>" => "good"
+      case "param-0" => "really"
+      case "param-1" => "good"
       case _ => "undefined"
     } should be ("""Hey you really good thing!""")
   }
   
   """interpolate stepdef with adjacent params (no space): $<param-0>$<param-1>"""" should "resolve" in {
     interpolateString("""Hey you $<param-0>$<param-1> thing!""") {
-      case "<param-0>" => "go"
-      case "<param-1>" => "od"
+      case "param-0" => "go"
+      case "param-1" => "od"
       case _ => "undefined"
     } should be ("""Hey you good thing!""")
   }
   
   """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "decorate parameters" in {
     interpolateString("""Hey you $<param-0>$<param-1> thing!""") {
-      case "<param-0>" => "$<param-0>"
-      case "<param-1>" => "$<param-1>"
+      case "param-0" => "$<param-0>"
+      case "param-1" => "$<param-1>"
       case _ => "undefined"
     } should be ("""Hey you $[param:param-0]$[param:param-1] thing!""")
   }
@@ -202,7 +202,7 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
 
   """Nested parameter in property: ${property-$<param>}"""" should "resolve" in {
     interpolateString("""Hey you ${property-$<id>} thing!""") {
-      case "<id>" => "0"
+      case "id" => "0"
       case "property-0" => "good"
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
@@ -210,7 +210,7 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
 
   """Nested parameter in env var: ${env.var_$<param>}"""" should "resolve" in {
     interpolateString("""Hey you ${env.var_$<id>} thing!""") {
-      case "<id>" => "0"
+      case "id" => "0"
       case "env.var_0" => "good"
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
@@ -219,7 +219,7 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   """Nested property in parameter: $<property-${param}>"""" should "resolve" in {
     interpolateString("""Hey you $<property-${id}> thing!""") {
       case "id" => "0"
-      case "<property-0>" => "good"
+      case "property-0" => "good"
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
   }
@@ -227,38 +227,38 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   """Nested env var in parameter: $<property-${env.var}>"""" should "resolve" in {
     interpolateString("""Hey you $<property-${env.var}> thing!""") {
       case "env.var" => "0"
-      case "<property-0>" => "good"
+      case "property-0" => "good"
       case x => s"undefined($x)"
     } should be ("""Hey you good thing!""")
   }
 
   """Interpolation of Params""" should "resolve 1 available param" in {
     interpolateParams("""Hey you ${env.var0} $<param> thing!""") {
-      case "<param>" => "good"
+      case "param" => "good"
       case x => Errors.unboundAttributeError(x, "local")
     } should be ("""Hey you ${env.var0} good thing!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params" in {
     interpolateParams("""Hey you $<param1> ${env.var0} thing $<param2>!""") {
-      case "<param1>" => "good"
-      case "<param2>" => "you"
+      case "param1" => "good"
+      case "param2" => "you"
       case x => Errors.unboundAttributeError(x, "local")
     } should be ("""Hey you good ${env.var0} thing you!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params and skip missing param" in {
     interpolateParams("""Hey you $<param1> $<param2> thing $<param3>!""") {
-      case "<param1>" => "good"
-      case "<param3>" => "you"
+      case "param1" => "good"
+      case "param3" => "you"
       case x => Errors.unboundAttributeError(x, "local")
     } should be ("""Hey you good $<param2> thing you!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params and skip composite param" in {
     interpolateParams("""Hey you $<param1> $<${env.var0}> thing $<param2>!""") {
-      case "<param1>" => "good"
-      case "<param2>" => "you"
+      case "param1" => "good"
+      case "param2" => "you"
       case x => Errors.unboundAttributeError(x, "local")
     } should be ("""Hey you good $<${env.var0}> thing you!""")
   }

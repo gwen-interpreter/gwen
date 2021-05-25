@@ -113,7 +113,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def interpolate(step: Step): Step = interpolate(step, interpolateString)
 
   private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
-    val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
+    val resolver: String => String = name => Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))
     val iName = interpolator(step.name) { resolver }
     val iTable = step.table map { case (line, record) =>
       (line, record.map(cell => interpolator(cell) { resolver }))
@@ -204,7 +204,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     val start = System.nanoTime - step.evalStatus.nanos
     Try(stepFunction(step)) match {
       case Success(eStep) =>
-        val status = eStep.stepDef map { case (sd, _) => sd.evalStatus }  getOrElse {
+        val status = eStep.stepDef map { sd => sd.evalStatus }  getOrElse {
           eStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
             case _ => Passed(System.nanoTime - start)

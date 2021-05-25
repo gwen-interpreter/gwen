@@ -71,9 +71,9 @@ case class Spec(
   /** Gets the number of sustained errors. */
   def sustainedCount: Int = {
     steps.flatMap { s1 =>
-      s1.stepDef.map { case (s2, _) =>
+      s1.stepDef.map { s2 =>
         s2.allSteps.flatMap { s3 =>
-          s3.stepDef map { case (s4, _) => s4.allSteps } getOrElse List(s3)
+          s3.stepDef map { s4 => s4.allSteps } getOrElse List(s3)
         }
       } getOrElse List(s1)
     } count(_.evalStatus.status == StatusKeyword.Sustained)

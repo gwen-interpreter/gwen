@@ -47,7 +47,7 @@ case class Step(
     keyword: String,
     name: String,
     attachments: List[(String, File)],
-    stepDef: Option[(Scenario, List[(String, String)])],
+    stepDef: Option[Scenario],
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus) extends SpecNode {
@@ -65,8 +65,8 @@ case class Step(
   } getOrElse(name)
 
   def deepSteps: List[Step] = {
-    List(this) ++ (stepDef map { case (stepDef, _) => 
-      stepDef.steps.flatMap(_.deepSteps)
+    List(this) ++ (stepDef map { sd => 
+      sd.steps.flatMap(_.deepSteps)
     } getOrElse Nil)
   }
 
@@ -87,7 +87,7 @@ case class Step(
       withKeyword: String = keyword,
       withName: String = name,
       withAttachments: List[(String, File)] = attachments,
-      withStepDef: Option[(Scenario, List[(String, String)])] = stepDef,
+      withStepDef: Option[Scenario] = stepDef,
       withTable: List[(Int, List[String])] = table,
       withDocString: Option[(Int, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus): Step = {
@@ -152,7 +152,7 @@ case class Step(
 
   lazy val errorTrails: List[List[Step]] = {
     if (EvalStatus.isError(evalStatus.status)) {
-      stepDef map { case (sd, _) => 
+      stepDef map { sd => 
         sd.allSteps.filter(step => EvalStatus.isError(step.evalStatus.status)).flatMap { step => 
           step.errorTrails map { trace => 
             this :: trace

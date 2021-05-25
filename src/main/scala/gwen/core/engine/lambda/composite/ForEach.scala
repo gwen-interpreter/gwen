@@ -16,8 +16,7 @@
 
 package gwen.core.engine.lambda.composite
 
-import gwen.core.GwenSettings
-import gwen.core.Errors
+import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.CompositeStep
@@ -26,6 +25,7 @@ import gwen.core.model.gherkin.Scenario
 import gwen.core.model.gherkin.Step
 
 import scala.util.Try
+import gwen.core.model.state.ScopedData
 
 abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends CompositeStep[T] {
 
@@ -40,7 +40,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, None, foreachSteps, Nil)
+    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, Nil, None, foreachSteps, Nil)
     engine.beforeStepDef(step, preForeachStepDef, ctx.scopes)
     val steps =
       elements() match {
@@ -56,17 +56,31 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
             }
             elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
               val elementNumber = index + 1
-              currentElement match {
-                case stringValue: String =>
-                  ctx.topScope.set(element, stringValue)
+              ctx.topScope.set(s"$element index", index.toString)
+              ctx.topScope.set(s"$element number", elementNumber.toString)
+              val params: List[(String, String)] = currentElement match {
+                case data: ScopedData => 
+                  ctx.topScope.pushObject(element, data)
+                  (data.findEntries { case (n, _) => 
+                    n.startsWith("data[")
+                  }).toList flatMap { case (data, value) => 
+                    data match {
+                      case r"""data\[(.+?)$name\]""" =>
+                        Some((name, value))
+                      case _ => None
+                    }
+                  }
+                case value: String => 
+                  ctx.topScope.set(element, value)
                   if (ctx.options.dryRun) {
                     ctx.topScope.pushObject(element, currentElement)
                   }
+                  List((element, value))
                 case _ =>
                   ctx.topScope.pushObject(element, currentElement)
+                  Nil
               }
-              ctx.topScope.set(s"$element index", index.toString)
-              ctx.topScope.set(s"$element number", elementNumber.toString)
+              ctx.paramScope.push(s"$doStep[$elementNumber]", params)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -85,6 +99,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), ctx)
                 }
               } finally {
+                ctx.paramScope.pop()
                 ctx.topScope.popObject(element)
               }) :: acc
             } reverse
@@ -96,7 +111,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
     engine.afterStepDef(foreachStepDef, ctx.scopes)
-    step.copy(withStepDef = Some((foreachStepDef, Nil)))
+    step.copy(withStepDef = Some(foreachStepDef))
   }
 
 }

@@ -31,6 +31,7 @@ import java.io.File
   * @param tags list of tags
   * @param keyword the Gherkin keyword
   * @param name the scenario name
+  * @param params the step parameters
   * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
@@ -41,6 +42,7 @@ case class Scenario(
     tags: List[Tag],
     keyword: String,
     name: String,
+    params: List[(String, String)],
     description: List[String],
     background: Option[Background],
     steps: List[Step],
@@ -90,11 +92,12 @@ case class Scenario(
       withTags: List[Tag] = tags,
       withKeyword: String = keyword,
       withName: String = name,
+      withParams: List[(String, String)] = params,
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples)
+    Scenario(withSourceRef, withTags, withKeyword, withName, withParams, withDescription, withBackground, withSteps, withExamples)
   }
   
 }
@@ -109,6 +112,7 @@ object Scenario {
       tags,
       keywordFor(tags, scenario.getKeyword),
       scenario.getName,
+      Nil,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (s, i) => Step(uri, s, i) },

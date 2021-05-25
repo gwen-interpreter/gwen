@@ -415,7 +415,7 @@ trait DetaiFormatter {
         raw(" &nbsp; "),
         formatAttachments(step.deepAttachments, status),
         for {
-          (sd, _) <- stepDef
+          sd <- stepDef
           if (EvalStatus.isEvaluated(status))  
         } yield {
           formatStepDefDiv(sd, status)
@@ -465,7 +465,7 @@ trait DetaiFormatter {
   }
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value): TypedTag[String] = {
-    val stepDef = step.stepDef.get._1
+    val stepDef = step.stepDef.get
     a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
       raw(escapeHtml(step.name))
     )

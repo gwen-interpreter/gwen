@@ -70,11 +70,9 @@ class ScopedDataStack() {
   private val scopes = mutable.Stack[ScopedData]() tap { _ push new TopScope() }
   
   /** 
-    *  Provides access to the local step scope (StepDef parameters
-    *  and data tables are pushed and poped in and out of this scope as StepDef calls
-    *  are made). 
+    *  Provides access to the parameter scope.
     */
-  val stepScope = new LocalDataStack()
+  val paramScope = new ParameterStack()
     
   /**
     * Provides access to the top level scope (which is always at the

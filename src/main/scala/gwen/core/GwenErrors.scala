@@ -204,7 +204,7 @@ object Errors {
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) 
-    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_._1.behaviorTag.flatMap(_.sourceRef))))})")
+    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef))))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 

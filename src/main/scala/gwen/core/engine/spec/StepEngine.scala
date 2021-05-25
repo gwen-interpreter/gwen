@@ -109,7 +109,7 @@ trait StepEngine[T <: EvalContext] {
               step.copy(
                 withEvalStatus = 
                   Failed(step.evalStatus.duration.toNanos, 
-                    new Errors.RecursiveStepDefException(ctx.getStepDef(step.name).get._1))
+                    new Errors.RecursiveStepDefException(ctx.getStepDef(step.name).get))
               )
             case _ =>
               throw e
@@ -133,15 +133,15 @@ trait StepEngine[T <: EvalContext] {
 
   private def translateStepDef(step: Step, ctx: T): Option[CompositeStep[T]] = {
     ctx.getStepDef(step.name) match {
-      case Some((stepDef, _)) if stepDef.isForEach && stepDef.isDataTable =>
+      case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
           stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map { 
             tag => DataTable(tag, step) 
           }
         }
         Some(new ForEachTableRecordAnnotated(stepDef, step, dataTable, this))
-      case Some((stepDef, params)) if !ctx.stepScope.containsScope(stepDef.name) =>
-        Some(new StepDefCall(step, stepDef, params, this))
+      case Some(stepDef) if !ctx.paramScope.containsScope(stepDef.name) =>
+        Some(new StepDefCall(step, stepDef, this))
       case _ => 
         None
     }

@@ -21,17 +21,16 @@ import gwen.core._
 import scala.collection.mutable
 
 /**
-  * Manages and maintains an in memory stack of [[ScopedData]] objects
-  * for storing locally scoped StepDef parameters.
+  * Manages and maintains an in memory stack of parameters.
   * 
   * @author Branko Juric  
   */
-class LocalDataStack {
+class ParameterStack {
 
   /**
-    * The locally scoped data stack.
+    * The parameters stack.
     */
-  private val localData = mutable.Stack[ScopedData]()
+  private val paramStack = mutable.Stack[ScopedData]()
   
   /**
     * Adds the given parameters (name-value pairs) to a new scope 
@@ -46,60 +45,61 @@ class LocalDataStack {
       params foreach { case (name, value) =>
         data.set(name, value)
       }
-      localData.push(data)
+      paramStack.push(data)
     }
   }
   
-  /** Pops the current data object off the stack. */
-  def pop: ScopedData = localData.pop()
+  /** Pops the current parameters off the stack. */
+  def pop(): ScopedData = paramStack.pop()
   
   /**
-    * Finds and retrieves an attribute bound in the local stack.
-    * Only the top of the stack is searched.
+    * Gets the parameters bound to the current stack.
     *
-    * @param name the name of the attribute to find
+    * @return the list of parameters or Nil if empty
+    */
+  def getAll(): List[(String, String)] =
+    paramStack.headOption.map(_.findEntries(_ => true).toList).getOrElse(Nil)
+
+  /**
+    * Finds and retrieves parameter bound in the current stack.
+    *
+    * @param name the name of the parameter to find
     * @return the value if it is found (or throws error)
     */
   def get(name: String): String =
     getOpt(name).getOrElse(Errors.unboundAttributeError(name, "local"))
 
   /**
-    * Finds and retrieves an optional attribute bound in the local stack.
-    * Only the top of the stack is searched.
+    * Finds and retrieves an optional parameter bound in the current stack.
     *
-    * @param name the name of the attribute to find
+    * @param name the name of the parameter to find
     * @return Some(value) if a value is found or None otherwise
     */
   def getOpt(name: String): Option[String] =
-    localData.headOption.flatMap(_.getOpt(name)).headOption
+    paramStack.headOption.flatMap(_.getOpt(name)).headOption
     
   /**
-    * Checks whether or not this local stack contains the 
+    * Checks whether or not the parameter stack contains the 
     * given scope.
     * 
     * @param scope the scope name to check
     * @return true if the scope is found; false otherwise 
     */
-  def containsScope(scope: String): Boolean = localData.exists(_.scope == scope)
+  def containsScope(scope: String): Boolean = paramStack.exists(_.scope == scope)
   
   /** Checks whether or not the local stack is empty. */
-  def isEmpty = localData.isEmpty
+  def isEmpty = paramStack.isEmpty
 
   /**
-    * Returns a string representation of the entire attribute stack
+    * Returns a string representation of parameters in the current stack
     */
-  def asString: String = {
-    val scopes = localData.reverse
-    s"""localScope : {${
-      scopes.toList match {
-        case Nil => "| "
-        case _ => scopes map {
-          scope =>
-            s"""|  ${scope.asString()}
-                |"""".stripMargin
-        }
-      }}
-    |}""".stripMargin
+  override def toString: String = {
+    paramStack.headOption.map(scope => (scope.scope, scope.findEntries(_ => true).toList)) match {
+      case Some((scope, entries)) if entries.nonEmpty =>
+        s"params : { scope: $scope, entries : [ ${entries map { case (n, v) => s"{ $n: $v }" } mkString ", "} ] }"
+      case _ => 
+        "params : { }"
+    }
   }
   
 }

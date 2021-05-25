@@ -67,7 +67,7 @@ trait EvalRules {
   def checkStepDefRules(step: Step, env: EvalEnvironment): Unit = {
     if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
       if (BehaviorRules.isStrict) {
-        step.stepDef foreach { case (stepDef, _) =>
+        step.stepDef foreach { stepDef =>
           if (!stepDef.isSynthetic) {
             stepDef.behaviorTag match {
               case Some(behaviorTag) =>

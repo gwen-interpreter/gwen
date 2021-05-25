@@ -75,7 +75,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  def callStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
+  def callStepDef(parent: Identifiable, stepDef: Scenario, step: Step, ctx: T): Step = {
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))
     } else None
@@ -85,24 +85,24 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
     try {
       val sdStep = step.copy(
-        withStepDef = Some((stepDef, params))
+        withStepDef = Some(stepDef)
       )
       checkStepDefRules(sdStep, ctx)
-      ctx.stepScope.push(stepDef.name, params)
+      ctx.paramScope.push(stepDef.name, stepDef.params)
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
         dataTableOpt foreach { table =>
           ctx.topScope.pushObject(DataTable.tableKey, table)
         }
         try {
-          evaluateStepDef(parent, stepDef, step, params, ctx)
+          evaluateStepDef(parent, stepDef, step, ctx)
         } finally {
           dataTableOpt foreach { _ =>
             ctx.topScope.popObject(DataTable.tableKey)
           }
         }
       } finally {
-        ctx.stepScope.pop
+        ctx.paramScope.pop()
       }
     } finally {
       lock.foreach { l => 
@@ -112,7 +112,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, params: List[(String, String)], ctx: T): Step = {
+  private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, ctx: T): Step = {
     beforeStepDef(parent, stepDef, ctx.scopes)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
@@ -138,7 +138,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
     afterStepDef(eStepDef, ctx.scopes) 
     step.copy(
-      withStepDef = Some((eStepDef, params)),
+      withStepDef = Some(eStepDef),
       withEvalStatus = eStepDef.evalStatus
     )
   }
