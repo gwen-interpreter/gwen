@@ -20,7 +20,7 @@ import gwen.core.BaseTest
 import gwen.core.Errors._
 import gwen.core.TestModel
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 import gwen.core.model.state.EnvState
 
 import org.scalatest.Matchers

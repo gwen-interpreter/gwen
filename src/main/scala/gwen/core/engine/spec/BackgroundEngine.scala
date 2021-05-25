@@ -18,7 +18,7 @@ package gwen.core.engine.spec
 
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.gherkin.Background
+import gwen.core.model.node.Background
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser

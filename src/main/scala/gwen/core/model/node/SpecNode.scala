@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-package gwen.core.model
+package gwen.core.model.node
+
+import gwen.core.model.EvalStatus
+import gwen.core.model.Identifiable
+import gwen.core.model.Pending
+import gwen.core.model.SourceRef
 
 /**
   * Base trait for all Gherkin specification nodes.  
@@ -31,7 +36,7 @@ trait SpecNode extends Identifiable {
   val evalStatus: EvalStatus = Pending
 
   /** Gets the index of the node relative to parent. */
-  def index = sourceRef.map(_.pos.index).getOrElse(0)
+  def index: Int = sourceRef.map(_.pos.index).getOrElse(0)
 
   override def toString: String = name
 

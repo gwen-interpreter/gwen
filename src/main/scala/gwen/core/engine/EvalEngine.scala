@@ -25,7 +25,7 @@ import gwen.core.engine.lambda.unit._
 import gwen.core.engine.support.XMLNodeType
 import gwen.core.model._
 import gwen.core.model.event.LifecycleEventDispatcher
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 import gwen.core.model.state.EnvState
 
 import scala.concurrent.duration._

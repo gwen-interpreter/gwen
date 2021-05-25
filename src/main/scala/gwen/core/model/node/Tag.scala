@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.model
+package gwen.core.model.node
 
 import gwen.core._
 import gwen.core.model._

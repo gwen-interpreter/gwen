@@ -16,8 +16,8 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.Tag
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
+import gwen.core.model.node.Tag
 import gwen.core.model.state.ScopedData
 
 /**

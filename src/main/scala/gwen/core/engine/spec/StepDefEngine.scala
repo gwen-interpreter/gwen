@@ -20,8 +20,8 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.gherkin.Scenario
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Scenario
+import gwen.core.model.node.Step
 
 import com.typesafe.scalalogging.LazyLogging
 

@@ -21,7 +21,7 @@
 package gwen.core
 
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 
 import io.cucumber.gherkin.ParserException
 

@@ -16,7 +16,7 @@
 
 package gwen.core.model
 
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 
 /**
   * Walks the nodes of a specification and accumuates a result of type T.

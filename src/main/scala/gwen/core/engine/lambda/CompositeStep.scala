@@ -18,7 +18,7 @@ package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.StepLambda
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 /**
   * Base class for compositie step lambdas.

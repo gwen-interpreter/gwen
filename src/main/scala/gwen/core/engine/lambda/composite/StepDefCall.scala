@@ -20,8 +20,8 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.engine.spec.StepDefEngine
 import gwen.core.model._
-import gwen.core.model.gherkin.Scenario
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Scenario
+import gwen.core.model.node.Step
 
 class StepDefCall[T <: EvalContext](caller: Identifiable, stepDef: Scenario, engine: StepDefEngine[T]) extends CompositeStep[T] {
 

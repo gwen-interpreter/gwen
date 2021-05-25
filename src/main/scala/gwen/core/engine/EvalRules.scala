@@ -18,7 +18,7 @@ package gwen.core.engine
 
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 
  /**
   * Enfores certain rules depending on `gwen.feature.mode` and `gwen.behavior.rules` settings.

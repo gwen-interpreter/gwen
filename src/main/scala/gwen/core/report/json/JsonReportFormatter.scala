@@ -20,7 +20,7 @@ import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.Formatting.escapeJson
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 import gwen.core.report.ReportFormatter
 
 import scala.util.Properties

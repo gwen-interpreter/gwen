@@ -22,7 +22,7 @@ import gwen.core.engine.EvalEngine
 import gwen.core.model.DataTable
 import gwen.core.model.FlatTable
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 

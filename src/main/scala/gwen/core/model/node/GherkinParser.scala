@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package gwen.core.model.gherkin
+package gwen.core.model.node
 
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.gherkin.Dialect
-import gwen.core.model.gherkin.Spec
-import gwen.core.model.gherkin.Step
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}

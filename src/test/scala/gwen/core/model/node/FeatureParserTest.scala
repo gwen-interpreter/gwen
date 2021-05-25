@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package gwen.core.model.gherkin
+package gwen.core.model.node
 
 import gwen.core.TestModel
 import gwen.core.model.StepKeyword
-import gwen.core.model.gherkin.GherkinParser
+import gwen.core.model.node.GherkinParser
 
 import scala.util.Success
 

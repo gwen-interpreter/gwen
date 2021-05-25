@@ -23,8 +23,9 @@ import gwen.core.engine.EvalEngine
 import gwen.core.engine.binding.JavaScriptBinding
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.model._
-import gwen.core.model.gherkin.Scenario
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Scenario
+import gwen.core.model.node.Step
+import gwen.core.model.node.Tag
 
 import scala.concurrent.duration.Duration
 

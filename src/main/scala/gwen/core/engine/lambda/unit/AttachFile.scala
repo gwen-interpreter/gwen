@@ -22,7 +22,7 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 import java.io.File
 

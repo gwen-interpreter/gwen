@@ -18,7 +18,7 @@ package gwen.core.engine
 
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.lambda.CompositeStep
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 /**
   * Base trait for DSL step tranlsators.

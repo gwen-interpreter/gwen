@@ -20,7 +20,7 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.model._
 import gwen.core.model.event.LifecycleEventDispatcher
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Spec
 
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlSlideshowConfig

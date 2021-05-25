@@ -20,7 +20,7 @@ import gwen.core.GwenInfo
 import gwen.core.GwenSettings
 import gwen.core.GwenOptions
 import gwen.core.model._
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Spec
 import gwen.core.report.ReportFormatter
 import gwen.core.report.html.HtmlSlideshowConfig
 import gwen.core.report.html.HtmlReportConfig

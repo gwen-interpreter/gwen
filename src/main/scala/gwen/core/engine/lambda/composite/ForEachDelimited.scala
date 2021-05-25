@@ -19,7 +19,7 @@ package gwen.core.engine.lambda.composite
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: String, delimiter: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 

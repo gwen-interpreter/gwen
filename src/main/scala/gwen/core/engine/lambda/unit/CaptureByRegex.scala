@@ -21,7 +21,7 @@ import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 class CaptureByRegex[T <: EvalContext](target: String, regex: String, source: String) extends UnitStep[T] {
 

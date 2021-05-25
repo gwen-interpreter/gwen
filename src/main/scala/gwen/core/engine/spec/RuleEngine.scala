@@ -20,8 +20,8 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model._
-import gwen.core.model.gherkin.Rule
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Rule
+import gwen.core.model.node.Spec
 
 import com.typesafe.scalalogging.LazyLogging
 

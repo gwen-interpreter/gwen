@@ -19,7 +19,7 @@ package gwen.core.engine.lambda
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalRules
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 import com.typesafe.scalalogging.LazyLogging
 

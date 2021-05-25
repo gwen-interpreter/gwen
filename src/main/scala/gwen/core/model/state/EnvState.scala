@@ -19,7 +19,7 @@
 import gwen.core._
 import gwen.core.model.BehaviorType
 import gwen.core.model.StepKeyword
-import gwen.core.model.gherkin.Scenario
+import gwen.core.model.node.Scenario
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File

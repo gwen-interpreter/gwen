@@ -16,7 +16,7 @@
 
 package gwen.core.model
 
-import gwen.core.model.gherkin.GherkinParser
+import gwen.core.model.node.GherkinParser
 import gwen.core.engine.SpecNormaliser
 
 import org.scalatest.FlatSpec

@@ -20,8 +20,8 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model._
-import gwen.core.model.gherkin.Dialect
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Dialect
+import gwen.core.model.node.Spec
 import gwen.core.model.prettyPrint
 
 import java.util.Date

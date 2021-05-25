@@ -18,7 +18,7 @@ package gwen.core.model.event
 
 import gwen.core.UUIDGenerator
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 import gwen.core.model.state.ScopedDataStack
 
 import org.mockito.ArgumentCaptor

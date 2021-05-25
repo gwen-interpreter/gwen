@@ -19,7 +19,7 @@ package gwen.core.report
 import gwen.core.FileIO
 import gwen.core.GwenOptions
 import gwen.core.model.DataRecord
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Spec
 
 import java.io.File
 

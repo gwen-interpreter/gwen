@@ -16,8 +16,8 @@
 
 package gwen.core.model
 
-import gwen.core.model.Tag
-import gwen.core.model.gherkin.GherkinParser
+import gwen.core.model.node.GherkinParser
+import gwen.core.model.node.Tag
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers

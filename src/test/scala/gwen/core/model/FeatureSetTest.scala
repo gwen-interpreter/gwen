@@ -18,7 +18,7 @@ package gwen.core.model
 
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model.Root
-import gwen.core.model.gherkin.GherkinParser
+import gwen.core.model.node.GherkinParser
 
 import scala.io.Source
 import scala.util.Success

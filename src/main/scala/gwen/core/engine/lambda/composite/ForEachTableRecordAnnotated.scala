@@ -22,8 +22,8 @@ import gwen.core.model.DataTable
 import gwen.core.model.FlatTable
 import gwen.core.model.ReservedTags
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
-import gwen.core.model.gherkin.Scenario
+import gwen.core.model.node.Step
+import gwen.core.model.node.Scenario
 
 class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T]) extends ForEach[T](engine) {
 

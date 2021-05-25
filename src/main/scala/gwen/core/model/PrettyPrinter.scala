@@ -17,7 +17,7 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 
 import java.io.PrintWriter
 import java.io.StringWriter

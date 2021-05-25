@@ -16,8 +16,9 @@
 
 package gwen.core.model
 
-import gwen.core.model.gherkin.Spec
-import gwen.core.model.gherkin.Scenario
+import gwen.core.model.node.Spec
+import gwen.core.model.node.Scenario
+import gwen.core.model.node.Tag
 
 import com.typesafe.scalalogging.LazyLogging
 

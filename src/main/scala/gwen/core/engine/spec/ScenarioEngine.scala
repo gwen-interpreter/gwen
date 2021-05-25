@@ -22,8 +22,8 @@ import gwen.core.engine.EvalEngine
 import gwen.core.engine.ParallelExecutors
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.gherkin.Scenario
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Scenario
+import gwen.core.model.node.Step
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -34,7 +34,7 @@ import scala.jdk.CollectionConverters._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
-import gwen.core.model.gherkin.Background
+import gwen.core.model.node.Background
 
 /**
   * Scenario evaluation engine.

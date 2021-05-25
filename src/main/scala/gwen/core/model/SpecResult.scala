@@ -17,7 +17,7 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.gherkin.Spec
+import gwen.core.model.node.Spec
 import gwen.core.report.ReportFormat
 
 import scala.concurrent.duration._

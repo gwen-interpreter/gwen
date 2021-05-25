@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package gwen.core.model.gherkin
+package gwen.core.model.node
 
 import gwen.core.model._
-import gwen.core.model.SpecNode
 
 import scala.jdk.CollectionConverters._
 

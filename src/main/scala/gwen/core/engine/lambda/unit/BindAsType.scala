@@ -21,7 +21,7 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 import gwen.core.engine.binding.BindingType
 import gwen.core.engine.binding.FileBinding
 import gwen.core.engine.binding.JavaScriptBinding

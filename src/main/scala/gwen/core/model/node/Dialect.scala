@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.model.gherkin
+package gwen.core.model.node
 
 import gwen.core._
 

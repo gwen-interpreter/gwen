@@ -22,7 +22,7 @@ import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.support.XMLNodeType
 import gwen.core.model.BehaviorType
 import gwen.core.model.Identifiable
-import gwen.core.model.gherkin.Step
+import gwen.core.model.node.Step
 
 class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType.Value) extends UnitStep[T] {
 

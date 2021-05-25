@@ -21,7 +21,7 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 
 import scala.util.Success
 import scala.util.Failure

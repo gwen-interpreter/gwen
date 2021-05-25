@@ -20,7 +20,7 @@ import gwen.GwenInterpreter
 import gwen.GwenLauncher
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.gherkin._
+import gwen.core.model.node._
 import gwen.core.model.state.EnvState
 import gwen.core.report.ReportFormat
 
