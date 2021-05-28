@@ -1,0 +1,11 @@
+@StepDef
+Scenario: I have Google in my browser
+
+          Gwen will match the name of this step def to the first step
+          in the feature above and evaluate the steps that follow. These
+          steps are matched against predefined steps in the Gwen Web DSL
+          to perform browser operations for you at runtime.
+
+    Given I start a new browser
+     When I navigate to "http://www.google.com"
+     Then the page title should be "Google"
