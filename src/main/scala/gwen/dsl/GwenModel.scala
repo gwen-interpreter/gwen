@@ -48,8 +48,6 @@ trait SpecNode extends Identifiable {
 
   /** Returns the evaluation status of this node. */
   val evalStatus: EvalStatus = Pending
-
-  def occurrenceIn(parent: Identifiable): Int = 0
   
   /**
     * Gets the identical occurence number of the current node in given nodes.
@@ -59,9 +57,11 @@ trait SpecNode extends Identifiable {
     */
   private [dsl] def occurrenceIn(nodes: List[SpecNode]): Int = {
     (nodes filter { that => 
-      that.name == this.name
-    } zipWithIndex).collectFirst { 
-      case (that, idx) if that.sourceRef == this.sourceRef => idx + 1 
+      that.name.size > 0 && that.name == this.name
+    } zipWithIndex).collectFirst {
+      case (that, idx) 
+        if that.sourceRef.map(_.toString).getOrElse("") == 
+          this.sourceRef.map(_.toString).getOrElse("") => idx + 1 
     } getOrElse 0
   }
 
@@ -94,11 +94,9 @@ case class FeatureSpec(
 
   override val name: String = feature.name
   override val sourceRef: Option[SourceRef] = feature.sourceRef
-  
-  def specType: SpecType.Value = feature.specType
-
   override def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
+  def specType: SpecType.Value = feature.specType
   def isMeta: Boolean = SpecType.isMeta(specType)
 
   /** Resource id */
@@ -155,6 +153,20 @@ case class FeatureSpec(
       withMetaSpecs: List[FeatureSpec] = metaSpecs): FeatureSpec = {
     FeatureSpec(withFeature, withBackground, withScenarios, withRules, withFeatureFile, withMetaSpecs)
   }
+
+  def withNodePath(path: String): FeatureSpec = {
+    val featurePath = SourceRef.nodePath(s"$path/${feature.name}", 1)
+    copy(
+      withFeature = feature.withNodePath(featurePath),
+      withBackground = background.map(bg => bg.withNodePath(SourceRef.nodePath(s"$featurePath/${bg.name}", 1))),
+      withScenarios = scenarios map { s =>
+        s.withNodePath(SourceRef.nodePath(s"$featurePath/${s.name}", s.occurrenceIn(scenarios)))
+      },
+      withRules = rules map { r =>
+        r.withNodePath(SourceRef.nodePath(s"$featurePath/${r.name}", r.occurrenceIn(rules)))
+      }
+    )
+  }
   
 }
 
@@ -198,6 +210,12 @@ case class Feature(
       withName: String = name, 
       withDescription: List[String] = description): Feature = {
     Feature(withLanguage, withSourceRef, withTags, withKeyword, withName, withDescription)
+  }
+
+  def withNodePath(path: String): Feature = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path))
+    )
   }
 
 }
@@ -244,6 +262,15 @@ case class Background(
       withDescription: List[String] = description, 
       withSteps: List[Step] = steps): Background = {
     Background(withSourceRef, withKeyword, withName, withDescription, withSteps)
+  }
+
+  def withNodePath(path: String): Background = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path)),
+      withSteps = steps map { s =>
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(steps)))
+      }
+    )
   }
   
 }
@@ -304,13 +331,22 @@ case class Rule(
     Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
   }
 
-  override def occurrenceIn(parent: Identifiable): Int = {
+  def occurrenceIn(parent: Identifiable): Int = {
     parent match {
       case spec: FeatureSpec =>
         occurrenceIn(spec.rules)
-      case _ => 
-        super.occurrenceIn(parent)
+      case _ => 0
     }
+  }
+
+  def withNodePath(path: String): Rule = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path)),
+      withBackground = background.map(bg => bg.withNodePath(SourceRef.nodePath(s"$path/${bg.name}", 1))),
+      withScenarios = scenarios map { s => 
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(this)))
+      }
+    )
   }
 
 }
@@ -405,15 +441,27 @@ case class Scenario(
     Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
   }
 
-  override def occurrenceIn(parent: Identifiable): Int = {
+  def occurrenceIn(parent: Identifiable): Int = {
     parent match {
       case spec: FeatureSpec =>
         occurrenceIn(spec.scenarios)
       case rule: Rule =>
         occurrenceIn(rule.scenarios)
-      case _ => 
-        super.occurrenceIn(parent)
+      case _ => 0
     }
+  }
+
+  def withNodePath(path: String): Scenario = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path)),
+      withBackground = background.map(bg => bg.withNodePath(SourceRef.nodePath(s"$path/${bg.name}", 1))),
+      withSteps = steps map { s => 
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(this)))
+      },
+      withExamples = examples map { e => 
+        e.withNodePath(SourceRef.nodePath(s"$path/${e.name}", 1))
+      }
+    )
   }
   
 }
@@ -436,7 +484,7 @@ object Scenario {
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
   def keywordFor(tags: List[Tag], keyword: String): String = {
     tags.map(_.name) find { name =>
-      name == ReservedTags.StepDef.toString || name == ReservedTags.ForEach.toString || name == ReservedTags.If.toString || name == ReservedTags.RepeatUntil.toString || name == ReservedTags.RepeatWhile.toString
+      name == ReservedTags.StepDef.toString || name == ReservedTags.ForEach.toString || name == ReservedTags.If.toString || name == ReservedTags.Until.toString || name == ReservedTags.While.toString
     } getOrElse {
       keyword.trim
     }
@@ -485,13 +533,21 @@ case class Examples(
     Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withScenarios)
   }
 
-  override def occurrenceIn(parent: Identifiable): Int = {
+  def occurrenceIn(parent: Identifiable): Int = {
     parent match {
       case scenario: Scenario =>
         occurrenceIn(scenario.examples)
-      case _ => 
-        super.occurrenceIn(parent)
+      case _ => 0
     }
+  }
+
+  def withNodePath(path: String): Examples = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path)),
+      withScenarios = scenarios map { s => 
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", 1))
+      }
+    )
   }
 
 }
@@ -538,6 +594,8 @@ object Examples {
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends SpecNode {
   
   def nodeType: NodeType.Value = NodeType.Tag
+  def isAnnotation = value.nonEmpty || ReservedTags.values.filter(_ != ReservedTags.Ignore).exists(_.toString == name)
+  def isMarker = value.isEmpty && !isAnnotation
 
   if (name.matches("""\s""")) {
     Errors.invalidTagError(s"Whitespace not allowed in tag name '$name'")
@@ -662,13 +720,21 @@ case class Step(
     Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus)
   }
 
-  override def occurrenceIn(parent: Identifiable): Int = {
+  def occurrenceIn(parent: Identifiable): Int = {
     parent match {
       case scenario: Scenario =>
         occurrenceIn(scenario.steps)
-      case _ => 
-        super.occurrenceIn(parent)
+      case _ => 0
     }
+  }
+
+  def withNodePath(path: String): Step = {
+    copy(
+      withSourceRef = sourceRef.map(_.withNodePath(path)),
+      withStepDef = stepDef.map { sd =>
+        sd.withNodePath(SourceRef.nodePath(s"$path/${sd.name}", 1))
+      }
+    )
   }
 
   lazy val errorTrails: List[List[Step]] = {

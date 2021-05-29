@@ -36,20 +36,27 @@ object Position {
 }
 
 /** Reperesents a location in source. */
-case class SourceRef(uri: String, pos: Position) {
+case class SourceRef(uri: String, pos: Position, nodePath: Option[String]) {
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
+  def withNodePath(path: String): SourceRef = {
+    SourceRef(uri, pos, Some(path))
+  }
   override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), None)
 }
+
 object SourceRef {
   private val lineOffset = new ThreadLocal[Int]() {
     override protected def initialValue: Int = 0
   }
+  def apply(uri: String, location: Cucumber.Location): SourceRef = {
+    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn), None)
+  }
   def setLineOffset(offset: Int): Unit = {
     lineOffset.set(offset)
   }
-  def apply(uri: String, location: Cucumber.Location): SourceRef = {
-    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn))
+  def nodePath(path: String, occurence: Int): String = {
+    s"$path${if (!path.endsWith("/") && occurence > 0) s"[$occurence]" else ""}"
   }
   def asString(sourceRef: Option[SourceRef]): String = {
     SourceRef.asString(None, sourceRef)
@@ -61,7 +68,7 @@ object SourceRef {
       None)
   }
   def asString(uri: Option[String], line: Option[Int], column: Option[Int]): String = {
-    s"${uri.filter(_.length > 0).map(u => s"$u:").getOrElse("")}${Position.asString(line, column)}"
+    s"${uri.filter(_.length > 0).getOrElse("")}${Position.asString(line, column)}"
   }
   
 }

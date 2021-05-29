@@ -68,7 +68,8 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
         }
         val iStep = step.copy(withEvalStatus = Pending)
         val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
-        val iStepDef = Scenario(step.sourceRef, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil, Nil)
+        val sdPath = SourceRef.nodePath(s"${iStep.sourceRef.flatMap(_.nodePath).getOrElse("/")}/If $condition", 1)
+        val iStepDef = Scenario(iStep.sourceRef, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil, Nil).withNodePath(sdPath)
         env.evaluate(evalStepDef(step, iStepDef, iStep, env)) {
           if (env.evaluateJSPredicate(env.interpolate(javascript)(env.getBoundReferenceValue))) {
             logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")

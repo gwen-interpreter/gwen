@@ -71,6 +71,18 @@ object RPConfig {
     def none = RPSettings.`gwen.rp.send.failed.errorBlocks` == ErrorBlocks.none
   }
 
+  object TestCaseIdKeys extends Enumeration {
+    type TestCaseIdKeys = Value
+    val auto = Value
+    val `sourceref+params` = Value("sourceref+params")
+    val `nodepath+params` = Value("nodepath+params")
+  }
+
+  object SendTags extends Enumeration {
+    type SendTags = Value
+    val markers, annotations, all, none = Value
+  }
+
   def bypassNodeTypes: Set[NodeType.Value] = {
     Set(
       (NodeType.Meta, !RPSettings.`gwen.rp.send.meta`), 

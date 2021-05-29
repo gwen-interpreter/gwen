@@ -41,7 +41,7 @@ class RPReporter(rpClient: RPClient)
 
   override def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { 
     val unit = event.source
-    val name = unit.featureFile.getPath
+    val name = unit.name
     val params = event.scopes.stepScope.params
     rpClient.startItem(event.time, None, unit, name, "", Nil, Map(), params, false)
   } 
@@ -57,7 +57,7 @@ class RPReporter(rpClient: RPClient)
     val feature = spec.feature
     val name = s"${spec.specType}: ${feature.name}"
     val desc = formatDescription(feature)
-    val tags = parseTags(feature.tags)
+    val tags = filterTags(feature.tags)
     val params = event.scopes.stepScope.params
     val breadcrumbs = breadcrumbAtts(feature.sourceRef, event.callTrail, event.scopes)
     val atts = Map("language" -> feature.language) ++ breadcrumbs
@@ -97,7 +97,7 @@ class RPReporter(rpClient: RPClient)
   private def beforeScenario(startTime: ju.Date, scenario: Scenario, parent: Identifiable, callTrail: List[Step], scopes: ScopedDataStack, inlined: Boolean): Unit = {
     val name = s"${scenario.keyword}: ${scenario.name}"
     val desc = formatDescription(scenario)
-    val tags = parseTags(scenario.tags)
+    val tags = filterTags(scenario.tags)
     val params = scopes.stepScope.params
     val atts = breadcrumbAtts(scenario.sourceRef, callTrail, scopes)
     rpClient.startItem(startTime, Some(parent), scenario, name, desc, tags, atts, params, inlined)
@@ -122,7 +122,7 @@ class RPReporter(rpClient: RPClient)
   private def beforeExamples(startTime: ju.Date, examples: Examples, parent: Identifiable, callTrail: List[Step], inlined: Boolean, scopes: ScopedDataStack) = {
     val name = s"${examples.keyword}: ${examples.name}"
     val desc = formatDescription(examples)
-    val tags = parseTags(examples.tags)
+    val tags = filterTags(examples.tags)
     val params = scopes.stepScope.params
     rpClient.startItem(startTime, Some(parent), examples, name, desc, tags, Map(), params, inlined)
     if (examples.table.nonEmpty) {
@@ -164,7 +164,7 @@ class RPReporter(rpClient: RPClient)
   private def beforeStepDef(startTime: ju.Date, stepDef: Scenario, parent: Identifiable, inlined: Boolean, scopes: ScopedDataStack): Unit = {
     val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.name}"
     val desc = formatDescription(stepDef)
-    val tags = parseTags(stepDef.tags)
+    val tags = filterTags(stepDef.tags)
     val params = scopes.stepScope.params
     rpClient.startItem(startTime, Some(parent), stepDef, name, desc, tags, Map(), params, inlined)
   }
@@ -370,8 +370,8 @@ class RPReporter(rpClient: RPClient)
       val errors = {
         if (AppendErrorBlocks.all || (AppendErrorBlocks.leaf && isLeafNode(node))) {
           errorMessages(callTrail, Step.errorTrails(node)) match {
-            case Nil => s"```error\r\n${evalStatus.message}\r\n```"
-            case msgs => msgs.map(msg => s"```error\r\n$msg\r\n```").mkString("\r\n") 
+            case Nil => s"```error\r\n${Formatting.escapeHtml(evalStatus.message)}\r\n```"
+            case msgs => msgs.map(msg => s"```error\r\n${Formatting.escapeHtml(msg)}\r\n```").mkString("\r\n") 
           }
         } else {
           ""
@@ -382,26 +382,36 @@ class RPReporter(rpClient: RPClient)
   }
 
   private def formatDescription(node: SpecNode): String = {
-    node match {
-      case f: Feature => f.description.mkString(" ")
-      case b: Background => b.description.mkString(" ")
-      case r: Rule => r.description.mkString(" ")
-      case s: Scenario => s.description.mkString(" ")
+    val desc = node match {
+      case f: Feature => Formatting.escapeHtml(f.description.mkString(" "))
+      case b: Background => Formatting.escapeHtml(b.description.mkString(" "))
+      case r: Rule => Formatting.escapeHtml(r.description.mkString(" "))
+      case s: Scenario => Formatting.escapeHtml(s.description.mkString(" "))
       case e: Examples => 
-        val examplesDesc = Option(e.description.mkString(" "))
+        val examplesDesc = Option(Formatting.escapeHtml(e.description.mkString(" ")))
         val tableDesc = e.table match {
           case Nil => None
-          case table => Some(s"<pre>${Formatting.formatTable(table)}</pre>")
+          case table => Some(s"<pre>${Formatting.escapeHtml(Formatting.formatTable(table))}</pre>")
         }
         (examplesDesc ++ tableDesc).mkString("<br><br>")
       case s: Step => 
         s.table match {
           case Nil => 
-            s.docString.map(ds => s"<pre>${Formatting.formatDocString(ds)}</pre>").getOrElse("")
-          case table => s"<pre>${Formatting.formatTable(table)}</pre>"
+            s.docString.map(ds => s"<pre>${Formatting.escapeHtml(Formatting.formatDocString(ds))}</pre>").getOrElse("")
+          case table => s"<pre>${Formatting.escapeHtml(Formatting.formatTable(table))}</pre>"
         }
       case _ => ""
     }
+    desc + (node.sourceRef map { sref =>
+      s"""|${if (desc.size >0) "<br>" else ""}
+          |sourceRef: ${Formatting.escapeHtml(sref.toString)}${
+              sref.nodePath map { nodePath => 
+                s"""|<br>
+                    |nodePath: ${Formatting.escapeHtml(nodePath)}""".stripMargin
+              } getOrElse "" 
+            }
+          |""".stripMargin
+    } getOrElse "")
   }
 
   private def errorMessages(callTrail: List[Step], errorTrails: List[List[Step]]): List[String] = {
@@ -442,8 +452,15 @@ class RPReporter(rpClient: RPClient)
     }
   }
 
-  private def parseTags(tags: List[Tag]): List[Tag] = {
-    if (RPSettings.`gwen.rp.send.tags`) tags else Nil
+  private def filterTags(tags: List[Tag]): List[Tag] = {
+    tags filter { tag => 
+      RPSettings.`gwen.rp.send.tags` match {
+        case SendTags.all => true
+        case SendTags.markers => tag.isMarker
+        case SendTags.annotations => tag.isAnnotation
+        case _ => false
+      }
+    }
   }
 
   def close(evalStatus: EvalStatus): Unit = {

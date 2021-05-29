@@ -16,8 +16,11 @@
 
 package gwen.report.portal
 
-import gwen._
 import RPConfig._
+
+import gwen._
+
+import scala.util.Try
 
 import java.io.File
 
@@ -29,11 +32,26 @@ object RPSettings {
 
   def init(): Unit = {
 
-    // load mandatory properties (will error if not found)
+    // load all properties (will error if not mandatories not found or any are invalid)
     `rp.endpoint`
     `rp.launch`
     `rp.project`
     `rp.key`
+    `rp.rerun`
+    `rp.rerun.of`
+    `gwen.rp.send.meta`
+    `gwen.rp.send.stepDefs`
+    `gwen.rp.send.failed.stepDefs`
+    `gwen.rp.send.failed.errorTrace`
+    `gwen.rp.send.failed.envTrace`
+    `gwen.rp.send.failed.hierarchy`
+    `gwen.rp.send.failed.errorBlocks`
+    `gwen.rp.send.breadcrumbs`
+    `gwen.rp.send.tags`
+    `gwen.rp.send.markdownBlocks`
+    `gwen.rp.heartbeat`
+    `gwen.rp.heartbeat.timeoutSecs`
+    `gwen.rp.testCaseId.keys`
 
     // load rerun settings
     if (rerun && rerunOf.isEmpty && rerunFile.exists()) {
@@ -70,7 +88,13 @@ object RPSettings {
   def `rp.key`: String = Settings.getOpt("rp.api.key").getOrElse(Settings.get("rp.uuid"))
 
   /* Provides access to the optional `rp.rerun` report portal setting. */
-  def `rp.rerun`: Boolean = Settings.getOpt("rp.rerun").map(_.toBoolean).getOrElse(false)
+  def `rp.rerun`: Boolean = {
+    Try {
+      Settings.getOpt("rp.rerun").map(_.toBoolean).getOrElse(false)
+    } getOrElse {
+      Errors.illegalSettingError("rp.rerun", Settings.getOpt("rp.rerun").getOrElse(""), Set(true, false))
+    }
+  }
 
   /* Provides access to the optional `rp.rerun.of` report portal setting. */
   def `rp.rerun.of`: Option[String] = Settings.getOpt("rp.rerun.of")
@@ -79,13 +103,25 @@ object RPSettings {
    * Provides access to the `gwen.rp.send.meta` property setting used to 
    * determine whether or not Meta specs are sent to the Report Portal (default value is `false`). 
    */
-  def `gwen.rp.send.meta`: Boolean = Settings.getOpt("gwen.rp.send.meta").map(_.toBoolean).getOrElse(false)
+  def `gwen.rp.send.meta`: Boolean = {
+    Try {
+      Settings.getOpt("gwen.rp.send.meta").map(_.toBoolean).getOrElse(false)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.meta", Settings.getOpt("gwen.rp.send.meta").getOrElse(""), Set(true, false))
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.stepDefs` property setting used to 
    * determine how step defs are reported. Options include: inlined, nested, or none (default is `none`). 
    */
-  def `gwen.rp.send.stepDefs`: StepDefFormat.Value = Settings.getOpt("gwen.rp.send.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.none)
+  def `gwen.rp.send.stepDefs`: StepDefFormat.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.none)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.stepDefs", Settings.getOpt("gwen.rp.send.stepDefs").getOrElse(""), StepDefFormat.values.toSet)
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.failed.StepDefs` property setting used to 
@@ -94,65 +130,139 @@ object RPSettings {
    * same value as `gwen.rp.send.StepDefs`.
    */
   def `gwen.rp.send.failed.stepDefs`: StepDefFormat.Value = {
-    Settings.getOpt("gwen.rp.send.failed.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.inlined)
+    Try {
+      Settings.getOpt("gwen.rp.send.failed.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.inlined)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.failed.stepDefs", Settings.getOpt("gwen.rp.send.failed.stepDefs").getOrElse(""), StepDefFormat.values.toSet)
+    }
   }
 
   /**
    * Provides access to the `gwen.rp.send.failed.errorTrace` property setting used to 
    * determine how error traces are reported. Options include: inlined, attached, or none (default value is `none`). 
    */
-  def `gwen.rp.send.failed.errorTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.errorTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+  def `gwen.rp.send.failed.errorTrace`: ErrorReportingMode.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.failed.errorTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.failed.errorTrace", Settings.getOpt("gwen.rp.send.failed.errorTrace").getOrElse(""), ErrorReportingMode.values.toSet)
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.failed.envTrace` property setting used to 
    * determine how environment traces are reported. Options include: inlined, attached, or none (default value is `none`). 
    */
-  def `gwen.rp.send.failed.envTrace`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.envTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+  def `gwen.rp.send.failed.envTrace`: ErrorReportingMode.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.failed.envTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.failed.envTrace", Settings.getOpt("gwen.rp.send.failed.envTrace").getOrElse(""), ErrorReportingMode.values.toSet)
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.failed.hierarchy` property setting used to 
    * determine how failed step hierarchies are reported. Options include: inlined, attached, or none (default value is `inlined`). 
    */
-  def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.inlined)
+  def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.inlined)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.failed.hierarchy", Settings.getOpt("gwen.rp.send.failed.hierarchy").getOrElse(""), ErrorReportingMode.values.toSet)
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.failed.errorBlocks` property setting used to 
    * determine which step nodes in a failed call chain will have the error message appended 
    * to their descriptions. Options include: all, leaf, or none (default is none).
    */
-  def `gwen.rp.send.failed.errorBlocks`: ErrorBlocks.Value = Settings.getOpt("gwen.rp.send.failed.errorBlocks").map(_.toLowerCase).map(ErrorBlocks.withName).getOrElse(ErrorBlocks.none)
+  def `gwen.rp.send.failed.errorBlocks`: ErrorBlocks.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.failed.errorBlocks").map(_.toLowerCase).map(ErrorBlocks.withName).getOrElse(ErrorBlocks.none)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.failed.errorBlocks", Settings.getOpt("gwen.rp.send.failed.errorBlocks").getOrElse(""), ErrorBlocks.values.toSet)
+    }
+  }
   
   /**
    * Provides access to the `gwen.rp.send.breadcrumbs` property setting used to 
    * determine whether to send breadcrumb (feature, rule, scenario, step names) attributes to 
    * report portal. Default is false.
    */
-  def `gwen.rp.send.breadcrumbs`: Boolean = Settings.getOpt("gwen.rp.send.breadcrumbs").map(_.toBoolean).getOrElse(false)
+  def `gwen.rp.send.breadcrumbs`: Boolean = {
+    Try { 
+      Settings.getOpt("gwen.rp.send.breadcrumbs").map(_.toBoolean).getOrElse(false)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.breadcrumbs", Settings.getOpt("gwen.rp.send.breadcrumbs").getOrElse(""), Set(true, false))
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.tags` property setting used to 
-   * determine whether to send tags in feature files to report portal. Default is false.
+   * control what tags in feature files to send to report portal. 
+   * Valid values are `markers` (default), `annotations`, `all`, or `none`.
    */
-  def `gwen.rp.send.tags`: Boolean = Settings.getOpt("gwen.rp.send.tags").map(_.toBoolean).getOrElse(false)
+  def `gwen.rp.send.tags`: SendTags.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.send.tags").map(_.toLowerCase).map(SendTags.withName).getOrElse(SendTags.markers)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.tags", Settings.getOpt("gwen.rp.send.tags").getOrElse(""), SendTags.values.toSet)
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.send.markdownBlocks` property setting used to 
    * determine whether or not to surround all markdown content with triple back ticks
    * so that it renedrs verbatim in markdown view. Default is true.
    */
-  def `gwen.rp.send.markdownBlocks`: Boolean = Settings.getOpt("gwen.rp.send.markdownBlocks").map(_.toBoolean).getOrElse(true)
+  def `gwen.rp.send.markdownBlocks`: Boolean = {
+    Try {
+      Settings.getOpt("gwen.rp.send.markdownBlocks").map(_.toBoolean).getOrElse(true)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.markdownBlocks", Settings.getOpt("gwen.rp.send.markdownBlocks").getOrElse(""), Set(true, false))
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.heartbeat` property setting used to determine whether 
    * or not to check report portal connection before the first step of each scenario 
    * executes and fail fast when it goes offline. Default is true (enabled).
    */
-  def `gwen.rp.heartbeat`: Boolean = Settings.getOpt("gwen.rp.heartbeat").map(_.toBoolean).getOrElse(true)
+  def `gwen.rp.heartbeat`: Boolean = {
+    Try {
+      Settings.getOpt("gwen.rp.heartbeat").map(_.toBoolean).getOrElse(true)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.heartbeat", Settings.getOpt("gwen.rp.heartbeat").getOrElse(""), Set(true, false))
+    }
+  }
 
   /**
    * Provides access to the `gwen.rp.heartbeat.timeoutSecs` property setting used to timeout 
    * hearbeat requests. Default is 3 seconds. Only honoured if `gwen.rp.heartbeat` is `true`.
    */
-  def `gwen.rp.heartbeat.timeoutSecs`: Int = Settings.getOpt("gwen.rp.heartbeat.timeoutSecs").map(_.toInt).getOrElse(3)
+  def `gwen.rp.heartbeat.timeoutSecs`: Int = {
+    Try {
+      Settings.getOpt("gwen.rp.heartbeat.timeoutSecs").map(_.toInt).getOrElse(3)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.heartbeat.timeoutSecs", Settings.getOpt("gwen.rp.heartbeat.timeoutSecs").getOrElse(""), Set("positive integers"))
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.rp.testCaseId.keys` property setting used to control how
+    * test case IDs are generated in report portal. Valid values include `nodePath+params` (default)
+    * and `sourceRef+params`, or `auto`.
+    *
+    * @return
+    */
+  def `gwen.rp.testCaseId.keys`: TestCaseIdKeys.Value = {
+    Try {
+      Settings.getOpt("gwen.rp.testCaseId.keys").map(_.toLowerCase).map(TestCaseIdKeys.withName).getOrElse(TestCaseIdKeys.`nodepath+params`)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.testCaseId.keys", Settings.getOpt("gwen.rp.testCaseId.keys").getOrElse(""), TestCaseIdKeys.values.toSet)
+    }
+  }
 
 }

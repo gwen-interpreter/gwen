@@ -39,13 +39,15 @@ case class FeatureUnit(
 
   override def nodeType: NodeType.Value = NodeType.Unit
 
+  val uri: String = featureFile.getPath
+  val name: String = s"$uri${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
+  
   def ancestor: Identifiable = parent match {
     case parentUnit @ FeatureUnit(grandparent, _, _, _, _) => 
       if (grandparent == Root) parent
       else parentUnit.ancestor
     case _ => this
   }
-  val uri: String = s"${featureFile.getPath}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
 }
 
 object FeatureUnit {

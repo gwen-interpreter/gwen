@@ -48,7 +48,7 @@ trait GwenTestModel {
       new Step(None, keyword, name, Nil, None, Nil, None, evalStatus)
     }
     def apply(pos: Position, keyword: String, name: String): Step = {
-      new Step(Some(SourceRef("", pos)), keyword, name, Nil, None, Nil, None, Pending)
+      new Step(Some(SourceRef("", pos, None)), keyword, name, Nil, None, Nil, None, Pending)
     }
     def apply(step: Step, sourceRef: SourceRef): Step = {
       new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending)

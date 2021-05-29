@@ -58,7 +58,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   
   private val startTime = ju.Calendar.getInstance.getTime
   private val rpids = new ju.concurrent.ConcurrentHashMap[String, Maybe[String]]()
-  private val tcids = new ju.concurrent.ConcurrentHashMap[String, String]()
   private val launchLock = new ju.concurrent.Semaphore(1)
   private var launchUuid: Option[String] = None
   private val maxChars = 1024
@@ -153,31 +152,67 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       params: List[(String, String)],
       inlined: Boolean): Unit = {
 
-    val rq = new StartTestItemRQ()
-    rq.setStartTime(startTime)
-    rq.setType(mapItemType(node).name)
-    rq.setHasStats(!inlined)
-    val truncatedName = truncate(name)
-    rq.setName(encode(truncatedName.getOrElse(name), inlined))
-    if (desc.size > 0) rq.setDescription(desc)
-    val attributes = new ju.HashSet[ItemAttributesRQ]()
-    attributes.addAll(tags.map(tag => new ItemAttributesRQ(null, tag.toString)).toSet.asJava)
-    Tag.findTagValue(tags, "TestCaseId") orElse {
-      parent.flatMap(p => Option(tcids.get(p.uuid)))
-    } foreach { tcid => 
-      rq.setTestCaseId(tcid)
-      println("@@@@@@ " + tcid)
-      tcids.put(node.uuid, tcid)
+    val rq = createStartRequest(startTime, node, name, desc, tags, atts, params, inlined)
+    val rpid = parent map { p => 
+      session.startTestItem(rpids.get(p.uuid), rq) // child
+    } getOrElse {
+      session.startTestItem(rq) // root
     }
+    rpids.put(node.uuid, rpid)
+    truncate(name) foreach { _ =>
+      sendItemLog(LogLevel.INFO, name)
+    }
+
+  }
+
+  private def createStartRequest(
+      startTime: ju.Date,
+      node: Identifiable,
+      name: String, 
+      desc: String, 
+      tags: List[Tag], 
+      atts: Map[String, String],
+      params: List[(String, String)],
+      inlined: Boolean): StartTestItemRQ = {
+
     val sourceRef = node match {
       case specNode : SpecNode => specNode.sourceRef
       case _ => None
     }
-    sourceRef foreach { srcRef => 
-      val codeRef = srcRef.toString
-      rq.setCodeRef(codeRef)
-      attributes.add(new ItemAttributesRQ("sourceRef", codeRef))
+    new StartTestItemRQ() tap { rq =>
+      rq.setStartTime(startTime)
+      rq.setType(mapItemType(node).name)
+      rq.setHasStats(!inlined)
+      if (desc.size > 0) rq.setDescription(desc)
+      sourceRef foreach { sref =>
+        rq.setCodeRef(sref.toString)
+      }
+      addAtts(rq, tags, atts)
+      addName(rq, name, inlined) 
+      addParams(rq, params)
+      addTestCaseId(rq, sourceRef, params)
     }
+    
+  }
+
+  private def addAtts(rq: StartTestItemRQ, tags: List[Tag], atts: Map[String, String]): Unit = {
+    val attributes = new ju.HashSet[ItemAttributesRQ]()
+    attributes.addAll(
+      (tags map { tag => 
+        new ItemAttributesRQ(null, tag.toString)
+      }).toSet.asJava
+    )
+    attributes.addAll((atts.map { case (key, value) => new ItemAttributesRQ(key, value) }).toSet.asJava)
+    if (attributes.size > 0) rq.setAttributes(attributes)
+  }
+
+  private def addName(rq: StartTestItemRQ, name: String, inlined: Boolean): Unit = {
+    val truncatedName = truncate(name).getOrElse(name)
+    val encodedName = encode(truncatedName, inlined)
+    rq.setName(encodedName)
+  }
+
+  private def addParams(rq: StartTestItemRQ, params: List[(String, String)]): Unit = {
     val rpParams = params map { case (name, value) =>
       new ParameterResource() tap { param =>
         param.setKey(name)
@@ -185,18 +220,24 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       }
     }
     rq.setParameters(rpParams.asJava)
-    attributes.addAll((atts.map { case (key, value) => new ItemAttributesRQ(key, value) }).toSet.asJava)
-    if (attributes.size > 0) rq.setAttributes(attributes)
-    val rpid = parent map { p => 
-      session.startTestItem(rpids.get(p.uuid), rq) // child
-    } getOrElse {
-      session.startTestItem(rq) // root
-    }
-    rpids.put(node.uuid, rpid)
-    truncatedName foreach { _ =>
-      sendItemLog(LogLevel.INFO, name)
-    }
+  }
 
+  private def addTestCaseId(rq: StartTestItemRQ, sourceRef: Option[SourceRef], params: List[(String, String)]): Unit = {
+    sourceRef foreach { srcRef => 
+      RPSettings.`gwen.rp.testCaseId.keys` match {
+        case RPConfig.TestCaseIdKeys.`nodepath+params` if srcRef.nodePath.nonEmpty =>
+          srcRef.nodePath foreach { nodePath => 
+            val paramValues = params map { case (_, v) => v } mkString ""
+            rq.setTestCaseId(Formatting.sha256Hash(nodePath + paramValues))
+          }
+        case RPConfig.TestCaseIdKeys.`sourceref+params` =>
+          val codeRef = srcRef.toString
+          val paramValues = params map { case (_, v) => v } mkString ""
+          rq.setTestCaseId(Formatting.sha256Hash(codeRef + paramValues))
+        case _ =>  
+          // test case ID auto generated by client-java lib
+      }
+    }
   }
 
   def finishItem(endTime: ju.Date, desc: String, parent: Identifiable, evalStatus: EvalStatus): Unit = {

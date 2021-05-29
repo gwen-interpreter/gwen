@@ -43,6 +43,7 @@ object Errors {
   def missingPropertyError(name: String) = throw new MissingPropertyException(name)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
+  def illegalSettingError(name: String, value: String, supportedValues: Set[Any]) = throw new IllegalSettingException(name, value, supportedValues)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
@@ -115,6 +116,9 @@ object Errors {
   
   /** Thrown when a property file setting is invalid. */
   class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
+
+  /** Thrown when a property file setting contains an invalid or unspported value. */
+  class IllegalSettingException(name: String, value: String, supportedValues: Set[Any]) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: ${supportedValues.mkString(", ")})")
 
   /** Thrown when a property setting fails to load. */
   class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)

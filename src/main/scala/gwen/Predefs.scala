@@ -18,6 +18,7 @@ import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.matching.Regex
 
+import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.text.StringEscapeUtils
 
 import java.io.BufferedInputStream
@@ -225,6 +226,7 @@ package object gwen {
     def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
     def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
     def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
+    def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
 
     def resolveParams(source: String, params: List[(String, String)]): String = {
       params match {

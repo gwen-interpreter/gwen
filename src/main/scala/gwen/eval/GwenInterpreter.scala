@@ -373,13 +373,14 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     csvExamples match {
       case Nil => outline
       case _ =>
+        val outLinePath = outline.sourceRef.flatMap(_.nodePath).getOrElse("/")
         val examples = expandScenarioOutline(
             outline.copy(withExamples = csvExamples),
             outline.background
           ).examples
         outline.copy(
           withExamples = outline.examples ++ examples
-        )
+        ).withNodePath(outLinePath)
     }
   }
   

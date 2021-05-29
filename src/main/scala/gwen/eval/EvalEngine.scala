@@ -180,7 +180,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
   def evaluateStep(parent: Identifiable, step: Step, stepIndex: Int, env: T): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
     val ipStep = doEvaluate(step, env) { env.interpolateParams }
-    val iStep = doEvaluate(ipStep, env) { env.interpolate }
+    val isStep = doEvaluate(ipStep, env) { env.interpolate }
+    val iStep = isStep.withNodePath(deriveNodePath(parent, step, isStep.name, env))
     var pStep: Option[Step] = None
     logger.info(s"Evaluating Step: $iStep")
     lifecycle.beforeStep(parent, iStep, env.scopes)
@@ -222,18 +223,20 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     }
                   }
                 case (Some(stepDef)) =>
+                  val sdPath = SourceRef.nodePath(s"${iStep.sourceRef.flatMap(_.nodePath).getOrElse("/")}/${stepDef.name}", 1)
+                  val sdef = stepDef.withNodePath(sdPath)
                   if (stepDefSemaphors.containsKey(stepDef.name)) {
                     val semaphore = stepDefSemaphors.get(stepDef.name)
                     semaphore.acquire()
                     try {
-                      logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
-                      evalStepDef(iStep, stepDef.copy(), iStep, env)
+                      logger.info(s"Synchronized StepDef execution started [StepDef: ${sdef.name}] [thread: ${Thread.currentThread().getName}]")
+                      evalStepDef(iStep, sdef, iStep, env)
                     } finally {
-                      logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
+                      logger.info(s"Synchronized StepDef execution finished [StepDef: ${sdef.name}] [thread: ${Thread.currentThread().getName}]")
                       semaphore.release()
                     }
                   } else {
-                    evalStepDef(iStep, stepDef.copy(), iStep, env)
+                    evalStepDef(iStep, sdef, iStep, env)
                   }
               }
           }
@@ -254,6 +257,29 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     env.finaliseStep(fStep) tap { step =>
       logStatus(step)
       lifecycle.afterStep(step, env.scopes)
+    }
+  }
+
+  private def deriveNodePath(parent: Identifiable, step: Step, name: String, env: T): String = {
+    val parentPath = env.topScope.getOpt("gwen.override.parent.nodePath") match {
+      case Some(path) =>
+        env.topScope.set("gwen.override.parent.nodePath", null)
+        path
+      case None =>
+        parent match {
+          case node: SpecNode => 
+            node.sourceRef.flatMap(_.nodePath).getOrElse("/")
+          case _ => ""
+        }
+    }
+    env.topScope.getOpt("gwen.override.node.occurrence").map(_.toInt) match {
+      case Some(occurence) =>
+        env.topScope.set("gwen.override.node.occurrence", null)
+        SourceRef.nodePath(SourceRef.nodePath(s"$parentPath/$name", 1), occurence)
+      case None => 
+        val occurrence = step.occurrenceIn(parent)
+        SourceRef.nodePath(s"$parentPath/$name", if (occurrence > 0) occurrence else 1)
+        
     }
   }
   
@@ -394,42 +420,47 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def foreach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, env: T): Step = {
+  def foreach[U](elements: ()=>Seq[U], name: String, parent: Identifiable, step: Step, doStep: String, env: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
-    val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
+    val elementItems = elements()
+    val foreachSteps = elementItems.toList.zipWithIndex map { case (_, index) => 
       step.copy(
         withName = doStep.replaceAll(s"$ZeroChar", ""),
         withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(step.sourceRef, tags, keyword, element, Nil, None, foreachSteps, Nil, Nil)
+    val forEachPath = SourceRef.nodePath(s"${step.sourceRef.flatMap(_.nodePath).getOrElse("/")}/ForEach $name", 1)
+    val forEachSourceRef = step.sourceRef.map(_.withNodePath(forEachPath))
+    val preForeachStepDef = Scenario(forEachSourceRef, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil)
     lifecycle.beforeStepDef(step, preForeachStepDef, env.scopes)
     val steps =
-      elements() match {
+      elementItems match {
         case Nil =>
-          logger.info(s"For-each[$element]: none found")
+          logger.info(s"For-each[$name]: none found")
           Nil
         case elems =>
-          val noOfElements = elems.size
-          logger.info(s"For-each[$element]: $noOfElements found")
+          val noOfElems = elems.size
+          logger.info(s"For-each[$name]: $noOfElems found")
           try {
-            if(Try(env.getBoundReferenceValue(element)).isSuccess) {
-              Errors.ambiguousCaseError(s"For-each element name '$element' already bound (use a free name instead)")
+            if(Try(env.getBoundReferenceValue(name)).isSuccess) {
+              Errors.ambiguousCaseError(s"For-each element name '$name' already bound (use a free name instead)")
             }
-            elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
-              val elementNumber = index + 1
-              currentElement match {
+            elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (elem, index)) =>
+              val elemNo = index + 1
+              elem match {
                 case stringValue: String =>
-                  env.topScope.set(element, stringValue)
+                  env.topScope.set(name, stringValue)
                   if (env.isDryRun) {
-                    env.topScope.pushObject(element, currentElement)
+                    env.topScope.pushObject(name, elem)
                   }
                 case _ =>
-                  env.topScope.pushObject(element, currentElement)
+                  env.topScope.pushObject(name, elem)
               }
-              env.topScope.set(s"$element index", index.toString)
-              env.topScope.set(s"$element number", elementNumber.toString)
+              env.topScope.set(s"$name index", index.toString)
+              env.topScope.set(s"$name number", elemNo.toString)
+              env.topScope.set("gwen.override.parent.nodePath", forEachPath)
+              env.topScope.set("gwen.override.node.occurrence", elemNo.toString)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -437,24 +468,26 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     val isSoftAssert = env.evaluate(false) { isAssertionError && AssertionMode.isSoft }
                     val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
-                      logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
+                      logger.info(s"Skipping [$name] $elemNo of $noOfElems")
                       lifecycle.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, env.scopes)
                     } else {
-                      logger.info(s"Processing [$element] $elementNumber of $noOfElements")
+                      logger.info(s"Processing [$name] $elemNo of $noOfElems")
                       evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), index, env)
                     }
                   case _ =>
-                    logger.info(s"Processing [$element] $elementNumber of $noOfElements")
+                    logger.info(s"Processing [$name] $elemNo of $noOfElems")
                     evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), index, env)
                 }
               } finally {
-                env.topScope.popObject(element)
+                env.topScope.popObject(name)
               }) :: acc
             } reverse
           } finally {
-            env.topScope.set(element, null)
-            env.topScope.set(s"$element index", null)
-            env.topScope.set(s"$element number", null)
+            env.topScope.set("gwen.override.node.occurrence", null)
+            env.topScope.set("gwen.override.parent.nodePath", null)
+            env.topScope.set(name, null)
+            env.topScope.set(s"$name index", null)
+            env.topScope.set(s"$name number", null)
           }
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
