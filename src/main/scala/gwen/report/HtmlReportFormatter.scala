@@ -157,7 +157,7 @@ trait HtmlReportFormatter extends ReportFormatter {
         s"""
           <span class="pull-right"><small>${durationOrStatus(scenario.evalStatus)}</small></span>""" else ""
     }
-          ${escapeHtml(scenario.name)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
+          ${escapeHtml(scenario.name)}${formatParams(scenario.params, status)}${if (!scenario.isForEach) s"${formatDescriptionLines(scenario.description, Some(status))}" else { if(scenario.steps.isEmpty) """ <span class="grayed"><small>-- none found --</small></span>""" else ""}}
         </li>
       </ul>
       <div class="panel-body">${
@@ -480,7 +480,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                   <span class="pull-right"><small>${durationOrStatus(step.evalStatus)}</small></span>
                   <div class="line-no"><small>${step.sourceRef.map(_.pos.line).getOrElse("")}</small></div>
                   <div class="keyword-right" style="width:${keywordPixels}px"><strong>${step.keyword}</strong></div> ${if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status, s"$stepId-stepDef") else s"${escapeHtml(step.name)}"}
-                  ${formatAttachments(step.deepAttachments, status)} ${stepDef map { sd => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(sd, status, s"$stepId-stepDef") } else ""} getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
+                  ${formatParams(step.params, status)} ${formatAttachments(step.deepAttachments, status)} ${stepDef map { sd => if (EvalStatus.isEvaluated(status)) { formatStepDefDiv(sd, status, s"$stepId-stepDef") } else ""} getOrElse("")}${if (step.docString.nonEmpty) formatStepDocString(step, keywordPixels) else if (step.table.nonEmpty) formatStepDataTable(step, keywordPixels) else ""}
                 </div>
                 ${if (EvalStatus.isError(status) && stepDef.isEmpty) s"""
                 <ul>
@@ -516,7 +516,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                       <strong>attachments</strong>
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu pull-right" role="menu" style="padding-left:0;">${(attachments.zipWithIndex map { case ((name, file), index) =>
+                    <ul class="dropdown-menu pull-right" role="menu" style="padding-left:0; max-width: 500px; width: max-content !important;">${(attachments.zipWithIndex map { case ((name, file), index) =>
                     s"""
                       <li role="presentation" class="text-${cssStatus(status)}"><a role="menuitem" tabindex="-1" href="${attachmentHref(file)}" target="_blank"><span class="line-no" style="width: 0px;">${index + 1}. &nbsp; </span>${escapeHtml(name)}<span class="line-no" style="width: 0px;"> &nbsp; </span></a></li>"""}).mkString }
                     </ul>
@@ -526,6 +526,31 @@ trait HtmlReportFormatter extends ReportFormatter {
                     <a href="${attachmentHref(file)}" target="_blank" style="color: ${linkColor(status)};">
                       <strong style="font-size: 12px;">$name</strong>
                     </a>"""} else ""}"""
+
+  def formatParams(params: List[(String, String)], status: StatusKeyword.Value) = s"""
+                  &nbsp; ${if (params.size > 0) s"""
+                  <div class="dropdown bg-${cssStatus(status)}">
+                    <button class="btn btn-${cssStatus(status)} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" style="vertical-align: text-top">
+                      <strong>parameters</strong>
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu" style="padding-left:0; max-width: 500px; width: max-content !important;">
+                      <li role="presentation" class="text-${cssStatus(status)}">
+                        <table width="100%">
+                          <tbody class="data-table">${(params map { case (name, value) => s"""
+                            <tr>
+                              <td style="padding: 3px; white-space: nowrap;" align="right">
+                                <span class="line-no">$name :</span>
+                              </td>
+                              <td style="padding: 3px">
+                                $value
+                              </td>
+                            <tr>"""}).mkString }
+                          </tbody>
+                        </table>
+                      </li>
+                    </ul>
+                  </div>""" else ""}"""
 
   private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
 

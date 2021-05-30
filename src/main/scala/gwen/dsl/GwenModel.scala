@@ -672,7 +672,7 @@ object Tag {
   * @param table data table (List of tuples of line position and rows of data)
   * @param docString optional tuple of line, content, and content type
   * @param evalStatus the evaluation status of the step
-  * @param ancestor the top most calling step
+  * @param params optional step parameters
   */
 case class Step(
     sourceRef: Option[SourceRef],
@@ -682,7 +682,8 @@ case class Step(
     stepDef: Option[Scenario],
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
-    override val evalStatus: EvalStatus) extends SpecNode {
+    override val evalStatus: EvalStatus,
+    params: List[(String, String)]) extends SpecNode {
 
   def nodeType: NodeType.Value = NodeType.Step
   val isVirtual: Boolean = name.contains(s"$ZeroChar")
@@ -716,8 +717,9 @@ case class Step(
       withStepDef: Option[Scenario] = stepDef,
       withTable: List[(Int, List[String])] = table,
       withDocString: Option[(Int, String, Option[String])] = docString,
-      withEvalStatus: EvalStatus = evalStatus): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus)
+      withEvalStatus: EvalStatus = evalStatus,
+      withParams: List[(String, String)] = params): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams)
   }
 
   def occurrenceIn(parent: Identifiable): Int = {
@@ -768,7 +770,8 @@ object Step {
       None, 
       dataTable, 
       docString, 
-      Pending)
+      Pending,
+      Nil)
   }
   def errorTrails(node: SpecNode): List[List[Step]] = node match {
     case b: Background => b.steps.flatMap(_.errorTrails)

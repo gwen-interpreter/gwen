@@ -228,13 +228,17 @@ package object gwen {
     def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
     def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
 
-    def resolveParams(source: String, params: List[(String, String)]): String = {
-      params match {
-        case Nil => source
-        case head :: tail =>
-          val (name, value) = head
-          resolveParams(source.replaceAll(s"<$name>", value), tail)
+    def resolveParams(source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
+      def resolveParams(acc: List[(String, String)], source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
+        params match {
+          case Nil => (source, acc)
+          case head :: tail =>
+            val (name, value) = head
+            val param = if (source.contains(s"<$name>")) List(head) else Nil
+            resolveParams(param ++ acc, source.replaceAll(s"<$name>", value), tail)
+        }
       }
+      resolveParams(Nil, source, params)
     }
     def formatTable(table: List[(Int, List[String])]): String = {
       (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")

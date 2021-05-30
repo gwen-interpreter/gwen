@@ -73,7 +73,7 @@ trait SpecNormaliser extends EvalRules {
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, List((name, value)))
     }
     val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
     val dataBackground = background match {
@@ -139,15 +139,17 @@ trait SpecNormaliser extends EvalRules {
               },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${Formatting.resolveParams(outline.name, params)} -- Example ${tableIndex + 1}.${rowIndex + 1}${if (exs.name.size > 0) s" ${exs.name}" else ""}",
-              outline.description.map(line => Formatting.resolveParams(line, params)),
+              s"${Formatting.resolveParams(outline.name, params)._1} -- Example ${tableIndex + 1}.${rowIndex + 1}${if (exs.name.size > 0) s" ${exs.name}" else ""}",
+              outline.description.map(line => Formatting.resolveParams(line, params)._1),
               if (outline.isStepDef) None 
               else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))), 
               outline.steps.map { s =>
+                val (name, resolvedPams) = Formatting.resolveParams(s.name, params)
                 s.copy(
-                  withName = Formatting.resolveParams(s.name, params),
-                  withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
-                  withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) })
+                  withName = name,
+                  withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params)._1)) },
+                  withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params)._1, contentType) },
+                  withParams = resolvedPams)
               },
               Nil,
               params

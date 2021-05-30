@@ -370,12 +370,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       lifecycle.beforeExamples(parent, exs, env.scopes)
       exs.copy(
         withScenarios = exs.scenarios.zipWithIndex map { case (scenario, index) =>
-          env.stepScope.push(scenario.name, scenario.params)
-          try {
-            (evaluateScenario(exs, scenario, env))
-          } finally {
-            env.stepScope.pop
-          }
+          evaluateScenario(exs, scenario, env)
         }
       ) tap { exs =>
         lifecycle.afterExamples(exs, env.scopes)
@@ -448,14 +443,19 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
             }
             elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (elem, index)) =>
               val elemNo = index + 1
-              elem match {
+              val params = elem match {
                 case stringValue: String =>
                   env.topScope.set(name, stringValue)
                   if (env.isDryRun) {
                     env.topScope.pushObject(name, elem)
                   }
+                  List((name, stringValue))
+                case data: ScopedData =>
+                  env.topScope.pushObject(name, elem)
+                  data.findEntries(_ => true).toList
                 case _ =>
                   env.topScope.pushObject(name, elem)
+                  List((name, s"$name $elemNo"))
               }
               env.topScope.set(s"$name index", index.toString)
               env.topScope.set(s"$name number", elemNo.toString)
@@ -469,14 +469,14 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                     val failfast = env.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
                       logger.info(s"Skipping [$name] $elemNo of $noOfElems")
-                      lifecycle.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, env.scopes)
+                      lifecycle.transitionStep(preForeachStepDef, foreachSteps(index).copy(withParams = params), Skipped, env.scopes)
                     } else {
                       logger.info(s"Processing [$name] $elemNo of $noOfElems")
-                      evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), index, env)
+                      evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), index, env)
                     }
                   case _ =>
                     logger.info(s"Processing [$name] $elemNo of $noOfElems")
-                    evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), index, env)
+                    evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), index, env)
                 }
               } finally {
                 env.topScope.popObject(name)

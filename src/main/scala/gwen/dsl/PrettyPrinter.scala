@@ -57,7 +57,7 @@ object prettyPrint {
       s"\n\n      $keyword: $name${formatTextLines(description)}" +
         background.map(apply).getOrElse("") + 
         printAll(scenarios.map(apply), "", "")
-    case Step(_, keyword, name, _, _, table, docString, evalStatus) =>
+    case Step(_, keyword, name, _, _, table, docString, evalStatus, _) =>
       rightJustify(keyword.toString) + s"$keyword $name${formatStatus(evalStatus)}" + s"${if (table.nonEmpty)
         formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })
       else if (docString.nonEmpty)
