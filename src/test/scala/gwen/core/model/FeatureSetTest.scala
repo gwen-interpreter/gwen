@@ -20,7 +20,6 @@ import gwen.core.engine.SpecNormaliser
 import gwen.core.model.Root
 import gwen.core.model.node.GherkinParser
 
-import scala.io.Source
 import scala.util.Success
 import scala.util.Failure
 
@@ -38,8 +37,8 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next()
-    val feature1 = parseSpec(Source.fromFile(unit1.featureFile).mkString) match {
-      case Success(spec) => normaliseSpec(spec, Some(unit1.featureFile), unit1.dataRecord)
+    val feature1 = parseSpec(unit1.featureFile) match {
+      case Success(spec) => normaliseSpec(spec, unit1.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
     feature1.feature.name should be ("About me [1]")
@@ -56,8 +55,8 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     
     featureSet.hasNext should be (true)
     val unit2 = featureSet.next()
-    val feature2 = parseSpec(Source.fromFile(unit2.featureFile).mkString) match {
-      case Success(spec) => normaliseSpec(spec, Some(unit2.featureFile), unit2.dataRecord)
+    val feature2 = parseSpec(unit2.featureFile) match {
+      case Success(spec) => normaliseSpec(spec, unit2.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
     feature2.feature.name should be ("About me [2]")
@@ -74,8 +73,8 @@ class FeatureSetTest extends FlatSpec with Matchers with GherkinParser with Spec
     
     featureSet.hasNext should be (true)
     val unit3 = featureSet.next()
-    val feature3 = parseSpec(Source.fromFile(unit3.featureFile).mkString) match {
-      case Success(spec) => normaliseSpec(spec, Some(unit3.featureFile), unit3.dataRecord)
+    val feature3 = parseSpec(unit3.featureFile) match {
+      case Success(spec) => normaliseSpec(spec, unit3.dataRecord)
       case Failure(e) => sys.error(e.toString)
     }
     feature3.feature.name should be ("About me [3]")

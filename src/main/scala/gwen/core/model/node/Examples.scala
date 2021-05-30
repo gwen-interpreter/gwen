@@ -23,6 +23,8 @@ import scala.jdk.CollectionConverters._
 
 import io.cucumber.messages.{ Messages => Cucumber }
 
+import java.io.File
+
 /**
   * Captures a gherkin scenario outline example group.
   *
@@ -78,12 +80,12 @@ case class Examples(
 }
 
 object Examples {
-  def apply(uri: String, examples: Cucumber.GherkinDocument.Feature.Scenario.Examples, index: Int): Examples = {
+  def apply(file: Option[File], examples: Cucumber.GherkinDocument.Feature.Scenario.Examples): Examples = {
     val header = examples.getTableHeader
     if (header == null) {
       Errors.syntaxError(
         s"Failed to read table body. Possible syntax error or missing column delimiter in table",
-        uri,
+        file,
         examples.getLocation.getLine,
         examples.getLocation.getColumn)
     }
@@ -91,15 +93,13 @@ object Examples {
     if (body == null) {
       Errors.syntaxError(
         s"Failed to read table header. Possible syntax error or missing column delimiter in table",
-        uri,
+        file,
         examples.getLocation.getLine,
         examples.getLocation.getColumn)
     }
     Examples(
-      Option(examples.getLocation).map(loc => SourceRef(uri, loc, index)),
-      Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (t, i) => 
-        Tag(uri, t, i) 
-      },
+      Option(examples.getLocation).map(loc => SourceRef(file, loc)),
+      Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t) },
       examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),

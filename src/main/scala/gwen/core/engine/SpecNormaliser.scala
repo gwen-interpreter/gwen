@@ -38,11 +38,10 @@ trait SpecNormaliser extends EvalRules {
     * Normalises a parsed feature.
     * 
     * @param spec the feature spec
-    * @param specFile optional source feature file
     * @param dataRecord optional feature level data record
     */
-  def normaliseSpec(spec: Spec, specFile: Option[File], dataRecord: Option[DataRecord]): Spec = {
-    val scenarios = noDuplicateStepDefs(spec.scenarios, specFile)
+  def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord]): Spec = {
+    val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
     Spec(
       dataRecord map { record =>
@@ -57,7 +56,6 @@ trait SpecNormaliser extends EvalRules {
           withBackground = None,
           withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background)))
       },
-      specFile,
       Nil
     )
   }
@@ -132,16 +130,15 @@ trait SpecNormaliser extends EvalRules {
       withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
         exs.copy(
-          withScenarios = exs.table.tail.zipWithIndex.map { case ((_, values), rowIndex) =>
+          withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), rowIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
               outline.sourceRef map { sref => 
-                val pos = sref.pos
-                SourceRef(sref.uri, Position(pos.line, pos.column, List(tableIndex, rowIndex)))
+                SourceRef(sref.file, rowLineNo)
               },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${Formatting.resolveParams(outline.name, params)} -- Example ${tableIndex + 1}.${rowIndex + 1} ${exs.name}",
+              s"${Formatting.resolveParams(outline.name, params)} -- Example ${tableIndex + 1}.${rowIndex + 1}${if (exs.name.length > 0) s" ${exs.name}" else ""}",
               params,
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None 

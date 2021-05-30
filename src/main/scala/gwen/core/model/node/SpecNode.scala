@@ -35,15 +35,18 @@ trait SpecNode extends Identifiable {
   /** Returns the evaluation status of this node. */
   val evalStatus: EvalStatus = Pending
 
-  /** Gets the index of the node relative to parent. */
-  def index: Int = sourceRef.map(_.pos.index).getOrElse(0)
-
   private [node] def occurrenceIn(nodes: List[SpecNode]): Int = {
-    (nodes filter { that => 
-      that.name == this.name
-    } zipWithIndex).collectFirst { 
-      case (that, idx) if that.sourceRef == this.sourceRef => idx + 1 
-    } getOrElse 0
+    1 + indexIn(
+      nodes filter { that => 
+        that.name.size > 0 && that.name == this.name
+      }
+    )
+  }
+
+  private [node] def indexIn(nodes: List[SpecNode]): Int = {
+    nodes.zipWithIndex.collectFirst {
+      case (that, idx) if that.sourceRef == this.sourceRef => idx
+    } getOrElse -1
   }
 
   override def toString: String = name

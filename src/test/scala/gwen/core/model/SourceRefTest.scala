@@ -22,88 +22,50 @@ import java.io.File
 
 class SourceRefTest extends FlatSpec with Matchers {
 
+  val file = new File("path/to/file.feature")
+
   "toString" should "yield correct string value" in {
-    SourceRef("path/to/file.feature", Position(1, 2, Nil)).toString() should be ("path/to/file.feature:1:2")
-    SourceRef("path/to/file.feature", Position(1, 2, List(0))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef("path/to/file.feature", Position(1, 2, List(0, 1))).toString() should be ("path/to/file.feature:1:2[1][2]")
+    SourceRef(Some(file), 1).toString should be ("path/to/file.feature:1")
+    SourceRef(Some(file), 2).toString should be ("path/to/file.feature:2")
   }
 
-  "asString on SourceRef with file and ref" should "yield correct string value" in {
-    val file = new File("path/to/file.feature")
-    SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, Nil)))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, List(0))))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(Some(file), Some(SourceRef("", Position(1, 2, List(0, 1))))).toString() should be ("path/to/file.feature:1:2[1][2]")
+  "toString on SourceRef with file, line, and column" should "yield correct string value" in {
+    SourceRef.toString(Some(file), Some(1), Some(2)) should be ("path/to/file.feature:1:2")
+    SourceRef.toString(Some(file), Some(2), Some(2)) should be ("path/to/file.feature:2:2")
   }
 
-  "asString on SourceRef with no file and ref" should "yield correct string value" in {
-    SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, Nil)))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, List(0))))).toString() should be ("path/to/file.feature:1:2")
-    SourceRef.asString(None, Some(SourceRef("path/to/file.feature", Position(1, 2, List(0, 1))))).toString() should be ("path/to/file.feature:1:2[1][2]")
+  "toString on SourceRef with file and line" should "yield correct string value" in {
+    SourceRef.toString(Some(file), Some(1), None) should be ("path/to/file.feature:1")
+    SourceRef.toString(Some(file), Some(2), None) should be ("path/to/file.feature:2")
   }
 
-  "asString on SourceRef with no file and no ref" should "yield blank" in {
-    SourceRef.asString(None, None).toString() should be ("")
+  "toString on SourceRef with file and column" should "yield correct string value" in {
+    SourceRef.toString(Some(file), None, Some(1)) should be ("path/to/file.feature::1")
+    SourceRef.toString(Some(file), None, Some(2)) should be ("path/to/file.feature::2")
   }
 
-  "asString on SourceRef with file and no ref" should "yield correct string value" in {
-    val file = new File("path/to/file.feature")
-    SourceRef.asString(Some(file), None).toString() should be ("path/to/file.feature")
+  "toString on SourceRef with file" should "yield correct string value" in {
+    SourceRef.toString(Some(file), None, None) should be ("path/to/file.feature")
+    SourceRef.toString(Some(file), None, None) should be ("path/to/file.feature")
   }
 
-  "asString on uri, line, column and table row" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), Some(1), Some(2), Some((1, 2))).toString() should be ("path/to/file.feature:1:2[1][2]")
+  "toString on SourceRef line, and column" should "yield correct string value" in {
+    SourceRef.toString(None, Some(1), Some(2)) should be ("line 1 column 2")
+    SourceRef.toString(None, Some(2), Some(2)) should be ("line 2 column 2")
   }
 
-  "asString on uri, line and column" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), Some(1), Some(2), None).toString() should be ("path/to/file.feature:1:2")
+  "toString on SourceRef with line" should "yield correct string value" in {
+    SourceRef.toString(None, Some(1), None) should be ("line 1")
+    SourceRef.toString(None, Some(2), None) should be ("line 2")
   }
 
-  "asString on uri, line and table row" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), Some(1), None, Some((1, 2))).toString() should be ("path/to/file.feature:1[1][2]")
+  "toString on SourceRef with column" should "yield correct string value" in {
+    SourceRef.toString(None, None, Some(1)) should be ("column 1")
+    SourceRef.toString(None, None, Some(2)) should be ("column 2")
   }
 
-  "asString on uri and line" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), Some(1), None, None).toString() should be ("path/to/file.feature:1")
-  }
-
-  "asString on uri, column and table row" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), None, Some(2), Some((1, 2))).toString() should be ("path/to/file.feature:_:2[1][2]")
-  }
-
-  "asString on uri and column" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), None, Some(2), None).toString() should be ("path/to/file.feature:_:2")
-  }
-
-  "asString on uri" should "yield correct string value" in {
-    SourceRef.asString(Some("path/to/file.feature"), None, None, None).toString() should be ("path/to/file.feature")
-  }
-
-  "asString on line, column and table row" should "yield correct string value" in {
-    SourceRef.asString(None, Some(1), Some(2), Some((1, 2))).toString() should be (":1:2[1][2]")
-  }
-
-  "asString on line and column" should "yield correct string value" in {
-    SourceRef.asString(None, Some(1), Some(2), None).toString() should be (":1:2")
-  }
-
-  "asString on line and table row" should "yield correct string value" in {
-    SourceRef.asString(None, Some(1), None, Some((1, 2))).toString() should be (":1[1][2]")
-  }
-
-  "asString on line" should "yield correct string value" in {
-    SourceRef.asString(None, Some(1), None, None).toString() should be (":1")
-  }
-
-  "asString on column and table row" should "yield correct string value" in {
-    SourceRef.asString(None, None, Some(2), Some((1, 2))).toString() should be (":_:2[1][2]")
-  }
-
-  "asString on column" should "yield correct string value" in {
-    SourceRef.asString(None, None, Some(2), None).toString() should be (":_:2")
-  }
-
-  "asString on nothing" should "yield blank" in {
-    SourceRef.asString(None, None, None, None).toString() should be ("")
-  }
-  
+  "toString on nothing" should "yield blacnk" in {
+    SourceRef.toString(None, None, None) should be ("")
+    SourceRef.toString(None, None, None) should be ("")
+  }  
 }

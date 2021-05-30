@@ -42,11 +42,10 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
   val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
   
   val feature = new Spec(
-      Feature("test-feature", Nil), 
+      Feature(None, "test-feature", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test", Passed(10))))),
       Nil,
-      None,
       Nil
   )
   val result = new SpecResult(feature, None, Nil, new ju.Date(), new ju.Date())
@@ -235,28 +234,25 @@ class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with Tes
     val mockCtx = spy(new EvalContext(options, EnvState()))
     
     val feature6A = new Spec(
-      Feature("test-feature-6a", Nil), 
+      Feature(Some(feature6a), "test-feature-6a", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6A", Passed(1000))))),
       Nil,
-      Some(feature6a),
       Nil
     )
     val feature6B = new Spec(
-      Feature("test-feature-6b", Nil), 
+      Feature(Some(feature6b), "test-feature-6b", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6B", Passed(2000))))),
       Nil,
-      Some(feature6b),
       Nil
     )
     
     val feature7A = new Spec(
-      Feature("test-feature-7a", Nil), 
+      Feature(Some(feature7a), "test-feature-7a", Nil), 
       None, 
       List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 7A", Passed(3000))))),
       Nil,
-      Some(feature7a),
       Nil
     )
     

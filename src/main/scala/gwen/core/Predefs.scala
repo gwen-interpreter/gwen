@@ -16,8 +16,6 @@
 
 package gwen
 
-import gwen.core.model.Position
-
 import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.matching.Regex
@@ -294,17 +292,13 @@ package object core {
   }
 
   object StringOps {
-    def lastPositionIn(source: String): Position = {
+    def lastPositionIn(source: String): (Int, Int) = {
       Source.fromString(s"$source ").getLines().toList match {
         case Nil =>
-          Position(1, 1, List(0))
+          ((1, 1))
         case lines =>
           val lastLength = lines.last.length - 1
-          Position(
-            if (lines.size > 0) lines.size else 1, 
-            if (lastLength > 0) lastLength else 1,
-            List(0)
-          )
+          ((if (lines.size > 0) lines.size else 1, if (lastLength > 0) lastLength else 1))
       }
     }
   }

@@ -70,10 +70,10 @@ trait TemplateSupport {
           topScope.set(n.substring(2, n.length-1), v) }
       } else {
         val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
-        val diffPos = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
+        val (line, column) = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
         val diffChar = source.charAt(commonPrefix.length)
         val diffLine = s"${Source.fromString(commonPrefix).getLines().toList.last}[$diffChar].."
-        Errors.templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line ${diffPos.line} position ${diffPos.column} in $sourceName: '$diffLine'")
+        Errors.templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line $line position $column in $sourceName: '$diffLine'")
       }
     }
   }

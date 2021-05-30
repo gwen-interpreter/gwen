@@ -31,11 +31,11 @@ object Errors {
 
   def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None, None)
   def syntaxError(msg: String, line: Int) = throw new GherkinSyntaxError(msg, None, Some(line), None)
-  def syntaxError(msg: String, uri: String, line: Int, col: Int) = throw new GherkinSyntaxError(msg, Some(uri), Some(line), Some(col))
-  def syntaxError(uri: String, cause: ParserException) = Option(cause.location) match {
+  def syntaxError(msg: String, file: Option[File], line: Int, col: Int) = throw new GherkinSyntaxError(msg, file, Some(line), Some(col))
+  def syntaxError(file: File, cause: ParserException) = Option(cause.location) match {
     case Some(loc) =>
-      throw new GherkinSyntaxError(cause.getMessage, Some(uri), Some(loc.getLine), Some(loc.getColumn))
-    case _ => throw new GherkinSyntaxError(cause.getMessage, Some(uri), None, None)
+      throw new GherkinSyntaxError(cause.getMessage, Some(file), Some(loc.getLine), Some(loc.getColumn))
+    case _ => throw new GherkinSyntaxError(cause.getMessage, Some(file), None, None)
   }
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
   def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
@@ -83,19 +83,18 @@ object Errors {
   def stepError(step: Step, cause: Throwable) = throw new StepFailure(step, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
 
-  private def at(sourceRef: String): String = {
-    if (sourceRef.length > 0) s" [at $sourceRef]"
-    else ""
-  }
+  private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
+  private def at(file: Option[File], line: Option[Int], column: Option[Int]): String = at(SourceRef.toString(file, line, column))
+  private def at(location: String): String = if (location.length > 0) s" [at $location]" else ""
   
   /** Base exception\. */
   class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
 
   /** Signals a step that failed to execute. */
-  class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step${at(SourceRef.asString(step.sourceRef))}: $step: ${cause.getMessage}", cause)
+  class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step${at(step.sourceRef)}: $step: ${cause.getMessage}", cause)
 
   /** Thrown when a Gherkin parsing error occurs. */
-  class GherkinSyntaxError(msg: String, uri: Option[String], line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${at(SourceRef.asString(uri, line, col, None))}: $msg")
+  class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
 
   /** Thrown when an ambiguous condition is detected. */
   class AmbiguousCaseException(msg: String) extends GwenException(msg)
@@ -149,10 +148,10 @@ object Errors {
   class InvocationException(msg: String) extends GwenException(msg)
   
   /** Signals a step that failed to evaluate. */
-  class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step${at(SourceRef.asString(step.sourceRef))}: $step: ${cause.getMessage}", cause)
+  class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step${at(step.sourceRef)}: $step: ${cause.getMessage}", cause)
   
   /** Signals an infinite recursive StepDef. */
-  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Illegal recursive call to StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
+  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Illegal recursive call to StepDef${at(stepDef.sourceRef)}")
 
   /** Thrown when a decoding error occurs. */
   class DecodingException(msg: String) extends GwenException(msg)
@@ -161,16 +160,16 @@ object Errors {
   class InvalidStepDefException(stepDef: Scenario, msg: String) extends GwenException(s"Invalid StepDef: $stepDef: $msg")
   
   /** Thrown when an import file is not found. */
-  class MissingOrInvalidImportFileException(importTag: Tag) extends GwenException(s"Missing or invalid file detected in $importTag${at(SourceRef.asString(importTag.sourceRef))}")
+  class MissingOrInvalidImportFileException(importTag: Tag) extends GwenException(s"Missing or invalid file detected in $importTag${at(importTag.sourceRef)}")
 
   /** Thrown when an unsupported import file is detected. */
-  class UnsupportedImportException(importTag: Tag) extends GwenException(s"Unsupported file type detected in $importTag${at(SourceRef.asString(importTag.sourceRef))} (only .meta files can be imported)")
+  class UnsupportedImportException(importTag: Tag) extends GwenException(s"Unsupported file type detected in $importTag${at(importTag.sourceRef)} (only .meta files can be imported)")
 
   /** Thrown when an unsupported data table file is detected. */
-  class UnsupportedDataFileException(dataTag: Tag) extends GwenException(s"Unsupported file type detected in $dataTag${at(SourceRef.asString(dataTag.sourceRef))}: only .csv data files supported")
+  class UnsupportedDataFileException(dataTag: Tag) extends GwenException(s"Unsupported file type detected in $dataTag${at(dataTag.sourceRef)}: only .csv data files supported")
   
   /** Thrown when a recursive import is detected. */
-  class RecursiveImportException(importTag: Tag) extends GwenException(s"Recursive (cyclic) $importTag detected${at(SourceRef.asString(importTag.sourceRef))}") {
+  class RecursiveImportException(importTag: Tag) extends GwenException(s"Recursive (cyclic) $importTag detected${at(importTag.sourceRef)}") {
     override def fillInStackTrace(): RecursiveImportException = this
   }
   
@@ -193,22 +192,22 @@ object Errors {
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature${at(SourceRef.asString(step.sourceRef))} (move it to meta): $step")
+  class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature${at(step.sourceRef)} (move it to meta): $step")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(SourceRef.asString(stepDef.sourceRef))} (move it to meta)")
+  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(stepDef.sourceRef)} (move it to meta)")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: SpecNode) 
-    extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(SourceRef.asString(node.sourceRef))}")
+    extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) 
-    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef))))})")
+    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends GwenException(s"Missing @Context, @Action, or @Assertion behavior tag on StepDef${at(SourceRef.asString(stepDef.sourceRef))}")
+    extends GwenException(s"Missing @Context, @Action, or @Assertion behavior tag on StepDef${at(stepDef.sourceRef)}")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

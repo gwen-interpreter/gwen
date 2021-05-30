@@ -402,7 +402,7 @@ trait DetaiFormatter {
         ),
         div(`class` := "line-no",
           small(
-            step.sourceRef.map(_.pos.line).getOrElse("").toString
+            step.sourceRef.map(_.line).getOrElse("").toString
           )
         ),
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
@@ -451,7 +451,7 @@ trait DetaiFormatter {
       div(`class` := s"bg-${cssStatus(status)}",
         div(`class` := "line-no",
           small(
-            step.sourceRef.map(_.pos.line).getOrElse("").toString
+            step.sourceRef.map(_.line).getOrElse("").toString
           )
         ),
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",

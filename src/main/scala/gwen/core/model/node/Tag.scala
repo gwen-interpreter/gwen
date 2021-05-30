@@ -21,6 +21,8 @@ import gwen.core.model._
 
 import io.cucumber.messages.{ Messages => Cucumber }
 
+import java.io.File
+
 /**
   * Captures a gherkin tag.
   *
@@ -54,8 +56,8 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
 
 object Tag {
 
-  def apply(uri: String, tag: Cucumber.GherkinDocument.Feature.Tag, index: Int): Tag = {
-    val pos = Option(tag.getLocation).map(loc => SourceRef(uri, loc, index))
+  def apply(file: Option[File], tag: Cucumber.GherkinDocument.Feature.Tag): Tag = {
+    val pos = Option(tag.getLocation).map(loc => SourceRef(file, loc))
     Tag(pos, tag.getName) tap { t =>
       if (t.name == ReservedTags.DataTable.toString) {
         DataTable.checkTagSyntax(t)

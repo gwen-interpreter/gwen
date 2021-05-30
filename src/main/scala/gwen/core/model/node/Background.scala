@@ -22,6 +22,8 @@ import scala.jdk.CollectionConverters._
 
 import io.cucumber.messages.{ Messages => Cucumber }
 
+import java.io.File
+
 /**
   * Captures a gherkin background node.
   *
@@ -55,13 +57,13 @@ case class Background(
 }
 
 object Background {
-  def apply(uri: String, background: Cucumber.GherkinDocument.Feature.Background, index: Int): Background = {
+  def apply(file: Option[File], background: Cucumber.GherkinDocument.Feature.Background): Background = {
     Background(
-      Option(background.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(background.getLocation).map(loc => SourceRef(file, loc)),
       background.getKeyword,
       background.getName,
       Option(background.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (s, i) => Step(uri, s, i) }
+      Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) }
     )
   }
 }

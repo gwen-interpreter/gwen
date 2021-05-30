@@ -20,36 +20,47 @@ import io.cucumber.messages.{ Messages => Cucumber }
 
 import java.io.File
 
-/** Reperesents a location in source. */
-case class SourceRef(uri: String, pos: Position) {
+/** 
+ * Reperesents a location in source. 
+ * 
+ * @param file the source file
+ * @param line the line number in the source (base 1)
+ */
+case class SourceRef(file: Option[File], line: Int) {
+  
+  def uri = file.map(_.getPath).getOrElse("")
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
-  override def toString: String = {
-    SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column), pos.tableNo.map(tableNo => (tableNo, pos.rowNo)))
+
+  def copy(withFile: Option[File] = file, withLine: Int = line): SourceRef = {
+    SourceRef(withFile, withLine)
   }
+  
+  override def toString: String = s"$uri:$line"
+
 }
+
 object SourceRef {
   private val lineOffset = new ThreadLocal[Int]() {
     override protected def initialValue: Int = 0
   }
+  def apply(file: Option[File], location: Cucumber.Location): SourceRef = {
+    SourceRef(file, location.getLine + lineOffset.get)
+  }
   def setLineOffset(offset: Int): Unit = {
     lineOffset.set(offset)
   }
-  def apply(uri: String, location: Cucumber.Location, index: Int): SourceRef = {
-    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn, index))
-  }
-  def asString(sourceRef: Option[SourceRef]): String = {
-    SourceRef.asString(None, sourceRef)
-  }
-  def asString(file: Option[File], sourceRef: Option[SourceRef]): String = {
-    SourceRef.asString(
-      file.map(_.getPath).orElse(sourceRef.map(_.uri)), 
-      sourceRef.map(_.pos.line), 
-      sourceRef.map(_.pos.column),
-      sourceRef.flatMap(sr => sr.pos.tableNo.map(tableNo => (tableNo, sr.pos.rowNo))))
-  }
-  def asString(uri: Option[String], line: Option[Int], column: Option[Int], tableRow: Option[(Int, Int)]): String = {
-    s"${uri.filter(_.length > 0).map(identity).getOrElse("")}${Position.asString(line, column, tableRow)}"
+  def toString(file: Option[File], line: Option[Int], column: Option[Int]): String = {
+    (file, line, column) match {
+      case (Some(f), Some(l), Some(c)) => s"${f.getPath}:$l:$c"
+      case (Some(f), Some(l), None) => s"${f.getPath}:$l"
+      case (Some(f), None, Some(c)) => s"${f.getPath}::$c"
+      case (Some(f), None, None) => f.getPath
+      case (None, Some(l), Some(c)) => s"line $l column $c"
+      case (None, Some(l), None) => s"line $l"
+      case (None, None, Some(c)) => s"column $c"
+      case _ => ""
+    }
   }
   
 }

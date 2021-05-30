@@ -17,7 +17,6 @@
 package gwen.core.model.node
 
 import gwen.core.TestModel
-import gwen.core.model.Position
 import gwen.core.model.StepKeyword
 import gwen.core.model.node.GherkinParser
 import gwen.core.model.node.Tag
@@ -86,7 +85,7 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with T
             withSteps = s.steps.map(_.copy(withSourceRef = None))
           )
         }
-        feature should be (Feature("Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
+        feature should be (Feature(None, "Gwen", List("As a tester", "I want to automate tests", "So that gwen can run them")))
         background.get should be {
           Background("The butterfly effect", List("Sensitivity to initial conditions"), 
             List(
@@ -127,26 +126,26 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with T
             )
           )
         }
-        fspec.feature.sourceRef.get.pos should be (Position(3, 6, 0))
-        fspec.background.get.sourceRef.get.pos should be (Position(8, 3, 0))
-        fspec.scenarios(0).sourceRef.get.pos should be (Position(16, 5, 0))
-        fspec.scenarios(0).steps(0).sourceRef.get.pos should be (Position(17, 9, 0))
-        fspec.scenarios(0).steps(1).sourceRef.get.pos should be (Position(18, 10, 1))
-        fspec.scenarios(0).steps(2).sourceRef.get.pos should be (Position(19, 10, 2))
-        fspec.scenarios(1).sourceRef.get.pos should be (Position(21, 5, 1))
-        fspec.scenarios(1).steps(0).sourceRef.get.pos should be (Position(22, 9, 0))
-        fspec.scenarios(1).steps(1).sourceRef.get.pos should be (Position(23, 11, 1))
-        fspec.scenarios(1).steps(2).sourceRef.get.pos should be (Position(24, 10, 2))
-        fspec.scenarios(1).steps(3).sourceRef.get.pos should be (Position(25, 10, 3))
-        fspec.scenarios(1).steps(4).sourceRef.get.pos should be (Position(26, 11, 4))
-        fspec.scenarios(1).steps(5).sourceRef.get.pos should be (Position(27, 11, 5))
-        fspec.scenarios(2).sourceRef.get.pos should be (Position(29, 5, 2))
-        fspec.scenarios(2).steps(0).sourceRef.get.pos should be (Position(30, 9, 0))
-        fspec.scenarios(2).steps(1).sourceRef.get.pos should be (Position(31, 11, 1))
-        fspec.scenarios(2).steps(2).sourceRef.get.pos should be (Position(32, 10, 2))
-        fspec.scenarios(2).steps(3).sourceRef.get.pos should be (Position(33, 10, 3))
-        fspec.scenarios(2).steps(4).sourceRef.get.pos should be (Position(34, 11, 4))
-        fspec.scenarios(2).steps(5).sourceRef.get.pos should be (Position(35, 11, 5))
+        fspec.feature.sourceRef.get.line should be (3)
+        fspec.background.get.sourceRef.get.line should be (8)
+        fspec.scenarios(0).sourceRef.get.line should be (16)
+        fspec.scenarios(0).steps(0).sourceRef.get.line should be (17)
+        fspec.scenarios(0).steps(1).sourceRef.get.line should be (18)
+        fspec.scenarios(0).steps(2).sourceRef.get.line should be (19)
+        fspec.scenarios(1).sourceRef.get.line should be (21)
+        fspec.scenarios(1).steps(0).sourceRef.get.line should be (22)
+        fspec.scenarios(1).steps(1).sourceRef.get.line should be (23)
+        fspec.scenarios(1).steps(2).sourceRef.get.line should be (24)
+        fspec.scenarios(1).steps(3).sourceRef.get.line should be (25)
+        fspec.scenarios(1).steps(4).sourceRef.get.line should be (26)
+        fspec.scenarios(1).steps(5).sourceRef.get.line should be (27)
+        fspec.scenarios(2).sourceRef.get.line should be (29)
+        fspec.scenarios(2).steps(0).sourceRef.get.line should be (30)
+        fspec.scenarios(2).steps(1).sourceRef.get.line should be (31)
+        fspec.scenarios(2).steps(2).sourceRef.get.line should be (32)
+        fspec.scenarios(2).steps(3).sourceRef.get.line should be (33)
+        fspec.scenarios(2).steps(4).sourceRef.get.line should be (34)
+        fspec.scenarios(2).steps(5).sourceRef.get.line should be (35)
       case e => fail(e.toString)
     }
   }
@@ -178,27 +177,27 @@ class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with T
 
     featureSpec.feature.tags.size should be (1)
     featureSpec.feature.tags(0).name should be ("wip")
-    featureSpec.feature.tags(0).sourceRef.get.pos should be (Position(3, 8, 0))
+    featureSpec.feature.tags(0).sourceRef.get.line should be (3)
 
     featureSpec.scenarios(0).tags.size should be (0)
 
     featureSpec.scenarios(1).tags.size should be (2)
     featureSpec.scenarios(1).tags(0).name should be ("work")
     featureSpec.scenarios(1).tags(1).name should be ("work")
-    featureSpec.scenarios(1).tags(0).sourceRef.get.pos should be (Position(9, 7, 0))
-    featureSpec.scenarios(1).tags(1).sourceRef.get.pos should be (Position(9, 13, 1))
+    featureSpec.scenarios(1).tags(0).sourceRef.get.line should be (9)
+    featureSpec.scenarios(1).tags(1).sourceRef.get.line should be (9)
 
     featureSpec.scenarios(2).tags.size should be (2)
     featureSpec.scenarios(2).tags(0).name should be ("work")
     featureSpec.scenarios(2).tags(1).name should be ("play")
-    featureSpec.scenarios(2).tags(0).sourceRef.get.pos should be (Position(13, 7, 0))
-    featureSpec.scenarios(2).tags(1).sourceRef.get.pos should be (Position(14, 7, 1))
+    featureSpec.scenarios(2).tags(0).sourceRef.get.line should be (13)
+    featureSpec.scenarios(2).tags(1).sourceRef.get.line should be (14)
     
     featureSpec.scenarios(3).tags.size should be (2)
     featureSpec.scenarios(3).tags(0).name should be ("wip")
     featureSpec.scenarios(3).tags(1).name should be ("play")
-    featureSpec.scenarios(3).tags(0).sourceRef.get.pos should be (Position(18, 7, 0))
-    featureSpec.scenarios(3).tags(1).sourceRef.get.pos should be (Position(18, 12, 1))
+    featureSpec.scenarios(3).tags(0).sourceRef.get.line should be (18)
+    featureSpec.scenarios(3).tags(1).sourceRef.get.line should be (18)
   }
   
   "Scenario level tags" should "parse" in {

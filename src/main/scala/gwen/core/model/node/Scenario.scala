@@ -113,20 +113,18 @@ case class Scenario(
 }
 
 object Scenario {
-  def apply(uri: String, scenario: Cucumber.GherkinDocument.Feature.Scenario, index: Int): Scenario = {
-    def tags = Option(scenario.getTagsList).map(_.asScala.toList).getOrElse(Nil).distinct.zipWithIndex map { case (t, i) => 
-      Tag(uri, t, i)
-    }
+  def apply(file: Option[File], scenario: Cucumber.GherkinDocument.Feature.Scenario): Scenario = {
+    def tags = Option(scenario.getTagsList).map(_.asScala.toList).getOrElse(Nil).distinct map { t => Tag(file, t) }
     Scenario(
-      Option(scenario.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(scenario.getLocation).map(loc => SourceRef(file, loc)),
       tags,
       keywordFor(tags, scenario.getKeyword),
       scenario.getName,
       Nil,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
-      Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (s, i) => Step(uri, s, i) },
-      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) }
+      Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },
+      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) }
     )
   }
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)

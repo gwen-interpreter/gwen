@@ -22,6 +22,8 @@ import scala.jdk.CollectionConverters._
 
 import io.cucumber.messages.{ Messages => Cucumber }
 
+import java.io.File
+
 
 /**
   * Captures a gherkin feature node.
@@ -57,13 +59,11 @@ case class Feature(
 }
 
 object Feature {
-  def apply(uri: String, feature: Cucumber.GherkinDocument.Feature, index: Int): Feature = {
+  def apply(file: Option[File], feature: Cucumber.GherkinDocument.Feature): Feature = {
     Feature(
       feature.getLanguage,  
-      Option(feature.getLocation).map(loc => SourceRef(uri, loc, index)),
-      Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil).zipWithIndex.map { case (t, i) => 
-        Tag(uri, t, i)
-      }, 
+      Option(feature.getLocation).map(loc => SourceRef(file, loc)),
+      Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t)  },
       feature.getKeyword,
       feature.getName, 
       Option(feature.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct

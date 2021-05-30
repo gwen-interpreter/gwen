@@ -22,6 +22,8 @@ import scala.jdk.CollectionConverters._
 
 import io.cucumber.messages.{ Messages => Cucumber }
 
+import java.io.File
+
 /**
   * Captures a gherkin rule.
   * 
@@ -77,14 +79,14 @@ case class Rule(
 }
 
 object Rule {
-  def apply(uri: String, rule: Cucumber.GherkinDocument.Feature.FeatureChild.Rule, index: Int): Rule = {
+  def apply(file: Option[File], rule: Cucumber.GherkinDocument.Feature.FeatureChild.Rule): Rule = {
     Rule(
-      Option(rule.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(rule.getLocation).map(loc => SourceRef(file, loc)),
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground, 0)),
-      rule.getChildrenList.asScala.toList.filter(_.hasScenario).zipWithIndex.map { case (x, i) => Scenario(uri, x.getScenario, i) }
+      rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(file, x.getBackground)),
+      rule.getChildrenList.asScala.toList.filter(_.hasScenario).map { case x => Scenario(file, x.getScenario) }
     )
   }
 }

@@ -67,7 +67,7 @@ trait GherkinParser {
   
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
   def parseSpec(feature: String, specFile: Option[File] = None): Try[Spec] = Try {
-    Spec(specFile.map(_.getPath).getOrElse(""), parseDocument(feature), specFile)
+    Spec(specFile, parseDocument(feature))
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
@@ -86,7 +86,7 @@ trait GherkinParser {
             .filter(!_.isEmpty)
             .map(_.get(0).getScenario.getStepsList)
             .filter(!_.isEmpty)
-            .map(steps => Step("", steps.get(0), 0))
+            .map(steps => Step(None, steps.get(0)))
             .map(_.copy(withSourceRef = None))
             .getOrElse(Errors.syntaxError(s"'${StepKeyword.names.mkString("|")} <expression>' expected", 1))
           case Failure(e) =>

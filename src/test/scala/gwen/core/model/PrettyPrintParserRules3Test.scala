@@ -102,7 +102,7 @@ Background: A butterfly might impact a tornado
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
-    val specFeature = normaliseSpec(parse(featureString).get, None, None)
+    val specFeature = normaliseSpec(parse(featureString).get, None)
     prettyPrint(specFeature).replace("\r", "") should be (s"""   @wip
    Feature: Gwen
         As a tester

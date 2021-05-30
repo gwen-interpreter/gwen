@@ -170,10 +170,18 @@ case class Step(
     }
   }
 
+  def indexIn(parent: Identifiable): Int = {
+    parent match {
+      case scenario: Scenario =>
+        indexIn(scenario.steps)
+      case _ => -1
+    }
+  }
+
 }
 
 object Step {
-  def apply(uri: String, step: Cucumber.GherkinDocument.Feature.Step, index: Int): Step = {
+  def apply(file: Option[File], step: Cucumber.GherkinDocument.Feature.Step): Step = {
     val dataTable = Option(step.getDataTable).map { dt =>
       dt.getRowsList.asScala.toList map { row =>
         (row.getLocation.getLine, row.getCellsList.asScala.toList.map(_.getValue))
@@ -183,7 +191,7 @@ object Step {
       (ds.getLocation.getLine, ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
     Step(
-      Option(step.getLocation).map(loc => SourceRef(uri, loc, index)),
+      Option(step.getLocation).map(loc => SourceRef(file, loc)),
       step.getKeyword.trim, 
       step.getText, 
       Nil, 

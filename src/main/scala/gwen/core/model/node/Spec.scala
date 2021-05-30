@@ -27,12 +27,11 @@ import java.io.File
 /**
  * A Gherkin feature specification.
  *
- * @param name the feature name
+ * @param feature the feature node
  * @param background optional background
  * @param scenarios list of scenarios
  * @param rules list of rules
- * @param specFile optional source feature file
- * @param metaSpecs optional list of meta specs
+ * @param metaSpecs list of meta specs
  */
 
 case class Spec(
@@ -40,12 +39,12 @@ case class Spec(
     background: Option[Background], 
     scenarios: List[Scenario],
     rules: List[Rule],
-    specFile: Option[File],
     metaSpecs: List[Spec]) extends SpecNode {
 
-  val name = feature.name
-  val sourceRef = feature.sourceRef
+  override val name = feature.name
+  override val sourceRef = feature.sourceRef
 
+  def specFile: Option[File] = sourceRef.flatMap(_.file)
   def specType: SpecType.Value = feature.specType
   def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
@@ -98,19 +97,18 @@ case class Spec(
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios,
       withRules: List[Rule] = rules,
-      withSpecFile: Option[File] = specFile,
       withMetaSpecs: List[Spec] = metaSpecs): Spec = {
-    Spec(withFeature, withBackground, withScenarios, withRules, withSpecFile, withMetaSpecs)
+    Spec(withFeature, withBackground, withScenarios, withRules, withMetaSpecs)
   }
   
 }
 
 object Spec {
-  def apply(uri: String, spec: Cucumber.GherkinDocument, specFile: Option[File]): Spec = {
-    val feature = Feature(uri, spec.getFeature, 0)
-    val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(uri, x.getBackground, 0))
-    val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).zipWithIndex.map { case (x, i) => Scenario(uri, x.getScenario, i) }
-    val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).zipWithIndex.map { case (x, i) => Rule(uri, x.getRule, i) }
-    Spec(feature, background, scenarios, rules, specFile, Nil)
+  def apply(file: Option[File], spec: Cucumber.GherkinDocument): Spec = {
+    val feature = Feature(file, spec.getFeature)
+    val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(file, x.getBackground))
+    val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).map { x => Scenario(file, x.getScenario) }
+    val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).map { case x => Rule(file, x.getRule) }
+    Spec(feature, background, scenarios, rules, Nil)
   }
 }

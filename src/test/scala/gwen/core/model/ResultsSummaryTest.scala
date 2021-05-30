@@ -60,7 +60,7 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 1 meta
     val meta1 = Spec(
-      Feature("meta1", Nil), None, List(
+      Feature(None, "meta1", Nil), None, List(
         Scenario(List[Tag](), "metaScenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "meta step 1", Passed2),
           Step(StepKeyword.When.toString, "meta step 2", Passed1),
@@ -70,11 +70,11 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.Given.toString, "step 1", Loaded),
           Step(StepKeyword.When.toString, "step 2", Loaded),
           Step(StepKeyword.Then.toString, "step 3", Loaded))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
         
     // add 1 passed scenario
     val feature1 = Spec(
-      Feature("feature1", Nil), None, List(
+      Feature(None, "feature1", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
@@ -86,7 +86,6 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.Then.toString, "step 3", Loaded))
         )),
       Nil,
-      None,
       List(meta1))
         
     val metaResult = new SpecResult(meta1, None, Nil, new Date(), new Date())
@@ -108,12 +107,12 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 1 failed scenario
     val feature2 = Spec(
-      Feature("feature2", Nil), None, List(
+      Feature(None, "feature2", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Failed3),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
     featureResult = new SpecResult(feature2, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -132,7 +131,7 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 2 passed scenarios
     val feature3 = Spec(
-      Feature("feature3", Nil), None, List(
+      Feature(None, "feature3", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
@@ -142,7 +141,7 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
           Step(StepKeyword.Then.toString, "step 3", Passed2))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
     featureResult = new SpecResult(feature3, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -161,12 +160,12 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 1 skipped scenario
     val feature4 = Spec(
-      Feature("feature4", Nil), None, List(
+      Feature(None, "feature4", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Skipped),
           Step(StepKeyword.When.toString, "step 2", Skipped),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
     featureResult = new SpecResult(feature4, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -185,11 +184,11 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 1 pending scenario
     val feature5 = Spec(
-      Feature("feature5", Nil), None, List(
+      Feature(None, "feature5", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Pending),
           Step(StepKeyword.When.toString, "step 2", Pending))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
     featureResult = new SpecResult(feature5, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)
@@ -208,7 +207,7 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
     
     // add 4 passed and 1 failed scenario
     val feature6 = Spec(
-      Feature("feature6", Nil), None, List(
+      Feature(None, "feature6", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
@@ -232,7 +231,7 @@ class ResultsSummaryTest extends FlatSpec with Matchers with TestModel {
           Step(StepKeyword.When.toString, "step 2", Failed4),
           Step(StepKeyword.Then.toString, "step 3", Skipped),
           Step(StepKeyword.And.toString, "step 3", Skipped))
-        )), Nil, None, Nil)
+        )), Nil, Nil)
     featureResult = new SpecResult(feature6, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).status should be (StatusKeyword.Failed)

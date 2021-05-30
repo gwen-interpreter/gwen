@@ -63,13 +63,13 @@ trait JsonReportFormatter extends ReportFormatter {
     "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
-    "line": ${loc.pos.line}""" } getOrElse("")},
+    "line": ${loc.line}""" } getOrElse("")},
     "name": "${escapeJson(name)}",
     "description": "${escapeJson(description)}"${if(feature.tags.nonEmpty) s""",
     "tags": [${feature.tags.filter(_.value.isEmpty).map { tag => s"""
       {
         "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
-        "line": ${loc.pos.line}""" } getOrElse("")},
+        "line": ${loc.line}""" } getOrElse("")},
       }"""}.mkString(",")}
     ]""" else ""}${if(scenarios.nonEmpty) s""",
     "elements": [${scenarios.zipWithIndex.map { case ((scenario, isExpanded), idx) =>
@@ -88,7 +88,7 @@ trait JsonReportFormatter extends ReportFormatter {
       {
         "keyword": "${background.keyword}",
         "id": "${escapeJson(id)}"${background.sourceRef.map { loc => s""",
-        "line": ${loc.pos.line}""" } getOrElse("")},
+        "line": ${loc.line}""" } getOrElse("")},
         "name": "${escapeJson(background.name)}",
         "description": "${escapeJson(description)}",
         "type": "${background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
@@ -105,13 +105,13 @@ trait JsonReportFormatter extends ReportFormatter {
       {
         "keyword": "$keyword",
         "id": "${escapeJson(scenarioId)}"${scenario.sourceRef map { loc => s""",
-        "line": ${loc.pos.line}""" } getOrElse("")},
+        "line": ${loc.line}""" } getOrElse("")},
         "name": "${escapeJson(scenario.name)}",
         "description": "${escapeJson(description)}"${if(scenario.tags.nonEmpty) s""",
         "tags": [${scenario.tags.map { case tag => s"""
           {
             "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
-            "line": ${loc.pos.line}""" } getOrElse("")},
+            "line": ${loc.line}""" } getOrElse("")},
           }"""}.mkString(",")}
         ]""" else ""},
         "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
@@ -124,7 +124,7 @@ trait JsonReportFormatter extends ReportFormatter {
            {
              "keyword": "${examples.keyword}",
              "name": "${escapeJson(examples.name)}"${examples.sourceRef map { loc => s""",
-             "line": ${loc.pos.line}"""} getOrElse("")},
+             "line": ${loc.line}"""} getOrElse("")},
              "description": "${escapeJson(examplesDescription)}",
              "id": "${escapeJson(examplesId)}",
              "rows": [${examples.table.zipWithIndex.map { case ((line, table), rIndex) =>
@@ -149,7 +149,7 @@ trait JsonReportFormatter extends ReportFormatter {
           {
             "keyword": "${step.keyword} ",
             "name": "${escapeJson(step.name)}"${step.sourceRef.map { loc => s""",
-            "line": ${loc.pos.line}"""} getOrElse("")},${if (screenshots.nonEmpty) s"""
+            "line": ${loc.line}"""} getOrElse("")},${if (screenshots.nonEmpty) s"""
             "embeddings": [${screenshots.map{ file => s"""
               {
                 "mime_type": "${escapeJson(file.mimeType)}",

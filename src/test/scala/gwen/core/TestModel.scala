@@ -24,8 +24,8 @@ import java.io.File
 trait TestModel {
 
   object Feature {
-    def apply(name: String, description: List[String]): Feature = 
-      new Feature("en", None, Nil, FeatureKeyword.Feature.toString, name, description)
+    def apply(file: Option[File], name: String, description: List[String]): Feature = 
+      new Feature("en", file.map(f => SourceRef(file, 1)), Nil, FeatureKeyword.Feature.toString, name, description)
   }
 
   object Background {
@@ -47,8 +47,8 @@ trait TestModel {
     def apply(keyword: String, name: String, evalStatus: EvalStatus): Step = {
       new Step(None, keyword, name, Nil, None, Nil, None, evalStatus)
     }
-    def apply(pos: Position, keyword: String, name: String): Step = {
-      new Step(Some(SourceRef("", pos)), keyword, name, Nil, None, Nil, None, Pending)
+    def apply(line: Int, keyword: String, name: String): Step = {
+      new Step(Some(SourceRef(None, line)), keyword, name, Nil, None, Nil, None, Pending)
     }
     def apply(step: Step, sourceRef: SourceRef): Step = {
       new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending)

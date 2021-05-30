@@ -126,7 +126,7 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def healthCheck(parent: Identifiable, step: Step, ctx: T): Unit = {
-    if (step.index == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
+    if (step.indexIn(parent) == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
       healthCheck(parent, step, ctx.scopes)
     }
   }

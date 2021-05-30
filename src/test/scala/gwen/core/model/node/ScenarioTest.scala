@@ -17,7 +17,6 @@
 package gwen.core.model.node
 
 import gwen.core.TestModel
-import gwen.core.model.Position
 import gwen.core.model.StepKeyword
 import gwen.core.model.node.GherkinParser
 import gwen.core.model.node.Tag
@@ -134,23 +133,31 @@ class ScenarioTest extends FlatSpec with Matchers with GherkinParser with TestMo
 
     val outline = parse(feature, clearPos=false).get
 
-    outline.sourceRef.get.pos should be (Position(4, 5, 0))
+    outline.sourceRef.get.line should be (4)
 
     outline.tags.map(_.name) should be (List("UnitTest"))
-    outline.tags(0).sourceRef.get.pos should be (Position(3, 5, 0))
+    outline.tags(0).sourceRef.get.line should be (3)
     outline.name should be ("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be (None)
     outline.description should be (List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
-    outline.steps(0) should be (Step(Position(11, 5, 0), StepKeyword.Given.toString, """string 1 is "<string 1>""""))
-    outline.steps(1) should be (Step(Position(12, 7, 1), StepKeyword.And.toString, """string 2 is "<string 2>""""))
-    outline.steps(2) should be (Step(Position(13, 6, 2), StepKeyword.When.toString, "I join the two strings"))
-    outline.steps(3) should be (Step(Position(14, 6, 3), StepKeyword.Then.toString, """the result should be "<result>""""))
+    outline.steps(0).sourceRef.get.line should be (11)
+    outline.steps(0).keyword should be (StepKeyword.Given.toString)
+    outline.steps(0).name should be ("""string 1 is "<string 1>"""")
+    outline.steps(1).sourceRef.get.line should be (12)
+    outline.steps(1).keyword should be (StepKeyword.And.toString)
+    outline.steps(1).name should be ("""string 2 is "<string 2>"""")
+    outline.steps(2).sourceRef.get.line should be (13)
+    outline.steps(2).keyword should be (StepKeyword.When.toString)
+    outline.steps(2).name should be ("I join the two strings")
+    outline.steps(3).sourceRef.get.line should be (14)
+    outline.steps(3).keyword should be (StepKeyword.Then.toString)
+    outline.steps(3).name should be ("""the result should be "<result>"""")
 
     val examples = outline.examples
     examples.size should be (3)
 
     val example1 = examples(0)
-    example1.sourceRef.get.pos should be (Position(16, 5, 0))
+    example1.sourceRef.get.line should be (16)
     example1.name should be ("Compound words")
     example1.description should be (Nil)
     example1.table.size should be (3)
@@ -160,7 +167,7 @@ class ScenarioTest extends FlatSpec with Matchers with GherkinParser with TestMo
     example1.scenarios.size should be (0)
 
     val example2 = examples(1)
-    example2.sourceRef.get.pos should be (Position(22, 5, 1))
+    example2.sourceRef.get.line should be (22)
     example2.name should be ("Nonsensical compound words")
     example2.description.size should be (2)
     example2.description(0) should be ("Words that don't make any sense at all")
@@ -172,7 +179,7 @@ class ScenarioTest extends FlatSpec with Matchers with GherkinParser with TestMo
     example2.scenarios.size should be (0)
 
     val example3 = examples(2)
-    example3.sourceRef.get.pos should be (Position(31, 5, 2))
+    example3.sourceRef.get.line should be (31)
     example3.name should be ("")
     example3.description should be (Nil)
     example3.table.size should be (2)

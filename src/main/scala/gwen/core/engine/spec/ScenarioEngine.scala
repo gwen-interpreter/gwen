@@ -82,7 +82,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       Future.sequence(futures.force),
       Duration.Inf
     )
-    acc.asScala.toList.sortBy(_.sourceRef.map(_.pos.line).getOrElse(0))
+    acc.asScala.toList.sortBy(_.sourceRef.map(_.line).getOrElse(0))
   }
 
   private def evaluateOrTransitionScenario(parent: Identifiable, scenario: Scenario, ctx: T, acc: List[Scenario]): Scenario = {
