@@ -41,7 +41,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: S
     }
     val iStep = step.copy(withEvalStatus = Pending)
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
-    val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, Nil, None, List(step.copy(withName = doStep)), Nil)
+    val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {
       val satisfied = ctx.evaluateJSPredicate(ctx.interpolate(javascript))

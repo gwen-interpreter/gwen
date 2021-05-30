@@ -41,7 +41,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, Nil, None, foreachSteps, Nil)
+    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, None, foreachSteps, Nil, Nil)
     engine.beforeStepDef(step, preForeachStepDef, ctx.scopes)
     val steps =
       elements() match {

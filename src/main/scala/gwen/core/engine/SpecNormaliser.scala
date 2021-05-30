@@ -139,7 +139,6 @@ trait SpecNormaliser extends EvalRules {
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
               s"${Formatting.resolveParams(outline.name, params)} -- Example ${tableIndex + 1}.${rowIndex + 1}${if (exs.name.length > 0) s" ${exs.name}" else ""}",
-              params,
               outline.description.map(line => Formatting.resolveParams(line, params)),
               if (outline.isStepDef) None 
               else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))), 
@@ -149,7 +148,8 @@ trait SpecNormaliser extends EvalRules {
                   withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
                   withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) })
               },
-              Nil
+              Nil,
+              params
             )
           }
         )

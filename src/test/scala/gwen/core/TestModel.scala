@@ -35,9 +35,9 @@ trait TestModel {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, Nil, description, background, steps, Nil)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil, Nil)
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, Nil, description, background, steps, examples)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples, Nil)
   }
 
   object Step {

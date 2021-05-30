@@ -31,22 +31,22 @@ import java.io.File
   * @param tags list of tags
   * @param keyword the Gherkin keyword
   * @param name the scenario name
-  * @param params the step parameters
   * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
   * @param examples optional list of examples (scenario outline entries)
+  * @param params the step parameters
   */
 case class Scenario(
     sourceRef: Option[SourceRef],
     tags: List[Tag],
     keyword: String,
     name: String,
-    params: List[(String, String)],
     description: List[String],
     background: Option[Background],
     steps: List[Step],
-    examples: List[Examples]) extends SpecNode {
+    examples: List[Examples],
+    params: List[(String, String)]) extends SpecNode {
 
   def nodeType: NodeType.Value = {
     if (isStepDef) {
@@ -92,12 +92,12 @@ case class Scenario(
       withTags: List[Tag] = tags,
       withKeyword: String = keyword,
       withName: String = name,
-      withParams: List[(String, String)] = params,
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
-      withExamples: List[Examples] = examples): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withParams, withDescription, withBackground, withSteps, withExamples)
+      withExamples: List[Examples] = examples,
+      withParams: List[(String, String)] = params): Scenario = {
+    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
   }
 
   def occurrenceIn(parent: Identifiable): Int = {
@@ -120,11 +120,11 @@ object Scenario {
       tags,
       keywordFor(tags, scenario.getKeyword),
       scenario.getName,
-      Nil,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },
-      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) }
+      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) },
+      Nil
     )
   }
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)

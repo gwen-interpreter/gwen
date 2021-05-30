@@ -221,6 +221,8 @@ trait DetaiFormatter {
         )
       },
       raw(escapeHtml(scenario.name)),
+      raw(" &nbsp; "),
+      formatParams(scenario.params, status),
       if (!scenario.isForEach) {
         formatDescriptionLines(scenario.description, Some(status))
       } else if (scenario.steps.isEmpty) {
@@ -570,6 +572,45 @@ trait DetaiFormatter {
         a(href := s"${attachmentHref(file)}", target := "_blank", style := s"color: ${linkColor(status)};",
           strong(style := "font-size: 12px;",
             name
+          )
+        )
+      )
+    } else {
+      None
+    }
+  }
+
+  def formatParams(params: List[(String, String)], status: StatusKeyword.Value): Option[TypedTag[String]] = {
+    if (params.size > 0) {
+      Some(
+        div(`class` := s"dropdown bg-${cssStatus(status)}",
+          button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
+            strong(
+              "parameters "
+            ),
+            span(`class` :="caret")
+          ),
+          ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
+            li(role := "presentation", `class` := s"text-${cssStatus(status)}",
+              table(width := "100%",
+                tbody(`class` := "data-table",
+                  for {
+                    (name, value) <- params
+                  } yield {
+                    tr(
+                      td(style := "padding: 3px; white-space: nowrap;", attr("align") := "right", 
+                        span(`class` := "line-no",
+                          s"$name :"
+                        )
+                      ),
+                      td(style := "padding: 3px", 
+                        value
+                      )
+                    )
+                  }
+                )
+              )
+            )
           )
         )
       )
