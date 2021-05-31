@@ -437,12 +437,8 @@ class RPReporter(rpClient: RPClient)
 
   private def filterTags(tags: List[Tag]): List[Tag] = {
     tags filter { tag => 
-      RPSettings.`gwen.rp.send.tags` match {
-        case SendTags.all => true
-        case SendTags.markers => tag.isMarker
-        case SendTags.annotations => tag.isAnnotation
-        case _ => false
-      }
+      (RPSettings.`gwen.rp.send.tags` && tag.isMarker) ||
+      (RPSettings.`gwen.rp.send.annotations` && tag.isAnnotation)
     }
   }
 

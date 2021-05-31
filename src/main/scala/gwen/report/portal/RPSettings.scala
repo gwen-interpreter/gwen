@@ -48,6 +48,7 @@ object RPSettings {
     `gwen.rp.send.failed.errorBlocks`
     `gwen.rp.send.breadcrumbs`
     `gwen.rp.send.tags`
+    `gwen.rp.send.annotations`
     `gwen.rp.send.markdownBlocks`
     `gwen.rp.heartbeat`
     `gwen.rp.heartbeat.timeoutSecs`
@@ -201,14 +202,27 @@ object RPSettings {
 
   /**
    * Provides access to the `gwen.rp.send.tags` property setting used to 
-   * control what tags in feature files to send to report portal. 
-   * Valid values are `markers` (default), `annotations`, `all`, or `none`.
+   * control whether or not to send tags in feature files to report portal. 
+   * Default is `true`.
    */
-  def `gwen.rp.send.tags`: SendTags.Value = {
+  def `gwen.rp.send.tags`: Boolean = {
     Try {
-      Settings.getOpt("gwen.rp.send.tags").map(_.toLowerCase).map(SendTags.withName).getOrElse(SendTags.markers)
+      Settings.getOpt("gwen.rp.send.tags").map(_.toBoolean).getOrElse(true)
     } getOrElse {
-      Errors.illegalSettingError("gwen.rp.send.tags", Settings.getOpt("gwen.rp.send.tags").getOrElse(""), SendTags.values.toSet)
+      Errors.illegalSettingError("gwen.rp.send.tags", Settings.getOpt("gwen.rp.send.tags").getOrElse(""), Set(true, false))
+    }
+  }
+
+  /**
+   * Provides access to the `gwen.rp.send.annotations` property setting used to 
+   * control whether or not to send annotations in feature files to send to report portal. 
+   * Default is `false`.
+   */
+  def `gwen.rp.send.annotations`: Boolean = {
+    Try {
+      Settings.getOpt("gwen.rp.send.annotations").map(_.toBoolean).getOrElse(true)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.annotations", Settings.getOpt("gwen.rp.send.annotations").getOrElse(""), Set(true, false))
     }
   }
 
