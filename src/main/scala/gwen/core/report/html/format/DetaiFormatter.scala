@@ -415,6 +415,8 @@ trait DetaiFormatter {
         " ",
         if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" &nbsp; "),
+        formatParams(step.params, status),
+        raw(" &nbsp; "),
         formatAttachments(step.deepAttachments, status),
         for {
           sd <- stepDef
@@ -547,7 +549,7 @@ trait DetaiFormatter {
             ),
             span(`class` :="caret")
           ),
-          ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0;",
+          ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
             for {
               ((name, file), index) <- attachments.zipWithIndex
             } yield {

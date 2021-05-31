@@ -235,14 +235,6 @@ package object core {
     def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
     def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
 
-    def resolveParams(source: String, params: List[(String, String)]): String = {
-      params match {
-        case Nil => source
-        case head :: tail =>
-          val (name, value) = head
-          resolveParams(source.replaceAll(s"<$name>", value), tail)
-      }
-    }
     def formatTable(table: List[(Int, List[String])]): String = {
       val lines = table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }
       lines.mkString("\r\n")

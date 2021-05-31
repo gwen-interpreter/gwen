@@ -33,55 +33,47 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def evaluateForEach[U](elements: ()=>Seq[U], element: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
+  def evaluateForEach[U](elements: ()=>Seq[U], name: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
-    val foreachSteps = elements().toList.zipWithIndex map { case (_, index) => 
+    val items = elements()
+    val foreachSteps = items.toList.zipWithIndex map { case (_, index) => 
       step.copy(
         withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(None, tags, keyword, element, Nil, None, foreachSteps, Nil, Nil)
+    val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil)
     engine.beforeStepDef(step, preForeachStepDef, ctx.scopes)
     val steps =
-      elements() match {
+      items match {
         case Nil =>
-          logger.info(s"For-each[$element]: none found")
+          logger.info(s"For-each[$name]: none found")
           Nil
         case elems =>
           val noOfElements = elems.size
-          logger.info(s"For-each[$element]: $noOfElements found")
+          logger.info(s"For-each[$name]: $noOfElements found")
           try {
-            if(Try(ctx.getBoundReferenceValue(element)).isSuccess) {
-              Errors.ambiguousCaseError(s"For-each element name '$element' already bound (use a free name instead)")
+            if(Try(ctx.getBoundReferenceValue(name)).isSuccess) {
+              Errors.ambiguousCaseError(s"For-each element name '$name' already bound (use a free name instead)")
             }
             elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
-              val elementNumber = index + 1
-              ctx.topScope.set(s"$element index", index.toString)
-              ctx.topScope.set(s"$element number", elementNumber.toString)
+              val elemNo = index + 1
+              ctx.topScope.set(s"$name index", index.toString)
+              ctx.topScope.set(s"$name number", elemNo.toString)
               val params: List[(String, String)] = currentElement match {
                 case data: ScopedData => 
-                  ctx.topScope.pushObject(element, data)
-                  (data.findEntries { case (n, _) => 
-                    n.startsWith("data[")
-                  }).toList flatMap { case (data, value) => 
-                    data match {
-                      case r"""data\[(.+?)$name\]""" =>
-                        Some((name, value))
-                      case _ => None
-                    }
-                  }
+                  ctx.topScope.pushObject(name, data)
+                  data.findEntries { _ => true } toList
                 case value: String => 
-                  ctx.topScope.set(element, value)
+                  ctx.topScope.set(name, value)
                   if (ctx.options.dryRun) {
-                    ctx.topScope.pushObject(element, currentElement)
+                    ctx.topScope.pushObject(name, currentElement)
                   }
-                  List((element, value))
+                  List((name, value))
                 case _ =>
-                  ctx.topScope.pushObject(element, currentElement)
-                  Nil
+                  ctx.topScope.pushObject(name, currentElement)
+                  List((name, s"$name $elemNo"))
               }
-              ctx.paramScope.push(s"$doStep[$elementNumber]", params)
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -89,25 +81,24 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
                     val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
-                      logger.info(s"Skipping [$element] $elementNumber of $noOfElements")
-                      engine.transitionStep(preForeachStepDef, foreachSteps(index), Skipped, ctx.scopes)
+                      logger.info(s"Skipping [$name] $elemNo of $noOfElements")
+                      engine.transitionStep(preForeachStepDef, foreachSteps(index).copy(withParams = params), Skipped, ctx.scopes)
                     } else {
-                      logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), ctx)
+                      logger.info(s"Processing [$name] $elemNo of $noOfElements")
+                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
                     }
                   case _ =>
-                    logger.info(s"Processing [$element] $elementNumber of $noOfElements")
-                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending), ctx)
+                    logger.info(s"Processing [$name] $elemNo of $noOfElements")
+                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
                 }
               } finally {
-                ctx.paramScope.pop()
-                ctx.topScope.popObject(element)
+                ctx.topScope.popObject(name)
               }) :: acc
             } reverse
           } finally {
-            ctx.topScope.set(element, null)
-            ctx.topScope.set(s"$element index", null)
-            ctx.topScope.set(s"$element number", null)
+            ctx.topScope.set(name, null)
+            ctx.topScope.set(s"$name index", null)
+            ctx.topScope.set(s"$name number", null)
           }
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
