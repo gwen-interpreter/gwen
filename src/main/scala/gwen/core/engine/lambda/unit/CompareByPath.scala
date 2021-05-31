@@ -22,15 +22,15 @@ import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.engine.support.XMLNodeType
 import gwen.core.model.BehaviorType
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 import scala.util.Success
 import scala.util.Failure
 
 class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Value, path: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       val expected = ctx.parseExpression(operator, expression)

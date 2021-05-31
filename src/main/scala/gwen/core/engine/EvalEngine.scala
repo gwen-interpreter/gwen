@@ -24,9 +24,9 @@ import gwen.core.engine.lambda.composite._
 import gwen.core.engine.lambda.unit._
 import gwen.core.engine.support.XMLNodeType
 import gwen.core.model._
-import gwen.core.model.event.LifecycleEventDispatcher
-import gwen.core.model.node._
 import gwen.core.model.state.EnvState
+import gwen.core.node.event.NodeEventDispatcher
+import gwen.core.node.gherkin._
 
 import scala.concurrent.duration._
 
@@ -43,7 +43,7 @@ object EvalEngine {
   *
   * @author Branko Juric
   */
-abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher with UnitEngine[T] with StepTranslator[T] {
+abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with UnitEngine[T] with StepTranslator[T] {
 
   /**
     * Initialises the engine and returns a new evaluation context.
@@ -155,7 +155,7 @@ abstract class EvalEngine[T <: EvalContext] extends LifecycleEventDispatcher wit
   
   private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
 
-  def logStatus(node: SpecNode): Unit = { 
+  def logStatus(node: GherkinNode): Unit = { 
     val msg = s"${node.evalStatus} ${node.nodeType}: ${node.name}"
     node.evalStatus match {
       case Loaded => logger.debug(msg)

@@ -20,8 +20,9 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model._
-import gwen.core.model.node.Rule
-import gwen.core.model.node.Spec
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Rule
+import gwen.core.node.gherkin.Spec
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -38,7 +39,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
     } reverse
   }
 
-  private def evaluateOrTransitionRule(parent: Identifiable, rule: Rule, ctx: T, acc: List[Rule]): Rule = {
+  private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, ctx: T, acc: List[Rule]): Rule = {
     ctx.topScope.set("gwen.rule.name", rule.name)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>

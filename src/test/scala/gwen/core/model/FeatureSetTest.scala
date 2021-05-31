@@ -17,8 +17,9 @@
 package gwen.core.model
 
 import gwen.core.engine.SpecNormaliser
-import gwen.core.model.Root
-import gwen.core.model.node.GherkinParser
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
+import gwen.core.node.gherkin.GherkinParser
 
 import scala.util.Success
 import scala.util.Failure

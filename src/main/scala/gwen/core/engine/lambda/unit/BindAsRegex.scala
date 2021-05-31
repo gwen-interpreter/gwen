@@ -19,13 +19,13 @@ package gwen.core.engine.lambda.unit
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 import gwen.core.engine.binding.RegexBinding
 
 class BindAsRegex[T <: EvalContext](target: String, regex: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       RegexBinding.bind(target, regex, source, ctx)

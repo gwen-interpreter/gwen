@@ -16,7 +16,7 @@
 
 package gwen.core.report.html
 
-import gwen.core.model.node.Spec
+import gwen.core.node.gherkin.Spec
 import gwen.core.report.ReportConfig
 import gwen.core.report.ReportFormat
 

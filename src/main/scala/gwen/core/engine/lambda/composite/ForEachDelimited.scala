@@ -18,12 +18,12 @@ package gwen.core.engine.lambda.composite
 
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: String, delimiter: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     val sourceValue = ctx.getBoundReferenceValue(source)
     val values = () => {
       sourceValue.split(delimiter).toSeq

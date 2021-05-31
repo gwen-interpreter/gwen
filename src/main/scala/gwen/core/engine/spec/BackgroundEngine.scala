@@ -17,11 +17,11 @@
 package gwen.core.engine.spec
 
 import gwen.core._
-import gwen.core.model._
-import gwen.core.model.node.Background
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Background
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -34,7 +34,7 @@ trait BackgroundEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging
   /**
     * Evaluates a given background.
     */
-  private [spec] def evaluateBackground(parent: Identifiable, background: Background, ctx: T): Background = {
+  private [spec] def evaluateBackground(parent: GwenNode, background: Background, ctx: T): Background = {
     beforeBackground(parent, background, ctx.scopes)
     logger.info(s"Evaluating ${background.keyword}: $background")
     background.copy(withSteps = evaluateSteps(background, background.steps, ctx)) tap { bg =>

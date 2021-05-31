@@ -20,9 +20,9 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model._
-import gwen.core.model.node.Dialect
-import gwen.core.model.node.Spec
+import gwen.core.node.GwenNode
 import gwen.core.model.prettyPrint
+import gwen.core.node.gherkin.Spec
 
 import java.util.Date
 
@@ -34,7 +34,7 @@ import com.typesafe.scalalogging.LazyLogging
 trait SpecEngine[T <: EvalContext] extends LazyLogging {
     engine: EvalEngine[T] =>
 
-  private [spec] def evaluateFeature(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+  private [spec] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     spec.specFile foreach { file =>
       ctx.topScope.set("gwen.feature.file.name", file.getName)
       ctx.topScope.set("gwen.feature.file.path", file.getPath)
@@ -47,7 +47,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     }
   }
 
-  private [spec] def evaluateMeta(parent: Identifiable, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+  private [spec] def evaluateMeta(parent: GwenNode, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normaliseSpec(meta, dataRecord)
     val metaResult = evaluateSpec(parent, nmeta, metaResults, ctx)
     val metaSpec = metaResult.spec
@@ -64,7 +64,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   /**
     * Evaluates a specification.
     */
-  private def evaluateSpec(parent: Identifiable, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
+  private def evaluateSpec(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
     val specType = spec.specType
     ctx.topScope.pushObject(SpecType.toString, specType)
     try {

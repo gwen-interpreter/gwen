@@ -18,7 +18,7 @@ package gwen.core
 
 import gwen.core.model.StateLevel
 import gwen.core.model.TagFilter
-import gwen.core.model.node.Tag
+import gwen.core.node.gherkin.Tag
 import gwen.core.report.ReportFormat
 
 import scopt.OptionParser

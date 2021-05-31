@@ -17,7 +17,7 @@
 package gwen.core
 
 import gwen.core._
-import gwen.core.model.node.Tag
+import gwen.core.node.gherkin.Tag
 import gwen.core.report.ReportFormat
 
 import scala.util.Failure

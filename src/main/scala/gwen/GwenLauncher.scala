@@ -20,6 +20,8 @@ import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.engine.ParallelExecutors
 import gwen.core.model._
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
 import gwen.core.report.ReportGenerator
 
 import scala.concurrent._

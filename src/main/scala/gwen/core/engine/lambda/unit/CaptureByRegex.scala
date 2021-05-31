@@ -20,12 +20,12 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.binding.BindingType
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 class CaptureByRegex[T <: EvalContext](target: String, regex: String, source: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
     val content = ctx.evaluate(s"$$[dryRun:${BindingType.regex}]") {

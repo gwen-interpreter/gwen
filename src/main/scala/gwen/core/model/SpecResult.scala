@@ -17,7 +17,8 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.node.Spec
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Spec
 import gwen.core.report.ReportFormat
 
 import scala.concurrent.duration._
@@ -39,7 +40,7 @@ class SpecResult(
   val reports: Option[Map[ReportFormat.Value, List[File]]], 
   val metaResults: List[SpecResult],
   val started: Date,
-  val finished: Date) extends Identifiable {
+  val finished: Date) extends GwenNode {
   
   val nodeType: NodeType.Value = NodeType.Result
 

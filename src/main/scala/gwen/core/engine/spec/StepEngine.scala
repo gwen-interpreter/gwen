@@ -20,17 +20,18 @@ import gwen.core._
 import gwen.core.Errors
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
-import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
-
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.engine.lambda.composite.ForEachTableRecord
 import gwen.core.engine.lambda.composite.ForEachTableRecordAnnotated
 import gwen.core.engine.lambda.composite.StepDefCall
+import gwen.core.model._
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
+
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 /**
   * Step evaluation engine.
@@ -41,7 +42,7 @@ trait StepEngine[T <: EvalContext] {
     /**
     * Evaluates a list of steps.
     */
-  def evaluateSteps(parent: Identifiable, steps: List[Step], ctx: T): List[Step] = {
+  def evaluateSteps(parent: GwenNode, steps: List[Step], ctx: T): List[Step] = {
     var behaviorCount = 0
     try {
       steps.foldLeft(List[Step]()) {
@@ -59,7 +60,7 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
-  private def evaluateOrTransitionStep(parent: Identifiable, step: Step, acc: List[Step], ctx: T): Step = {
+  private def evaluateOrTransitionStep(parent: GwenNode, step: Step, acc: List[Step], ctx: T): Step = {
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         ctx.evaluate(evaluateStep(parent, step, ctx)) {
@@ -78,7 +79,7 @@ trait StepEngine[T <: EvalContext] {
   /**
     * Evaluates a step.
     */
-  def evaluateStep(parent: Identifiable, step: Step, ctx: T): Step = {
+  def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     val iStep = interpolateStep(step, ctx)
     logger.info(s"Evaluating Step: $iStep")
     beforeStep(parent, iStep.copy(withEvalStatus = Pending), ctx.scopes)
@@ -94,7 +95,7 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
-  private def translateAndEvaluate(parent: Identifiable, step: Step, ctx: T): Step = {
+  private def translateAndEvaluate(parent: GwenNode, step: Step, ctx: T): Step = {
     translateCompositeStep(step) orElse {
       translateStepDef(step, ctx)
     } map { lambda => 
@@ -125,7 +126,7 @@ trait StepEngine[T <: EvalContext] {
     ctx.withStep(pStep) { ctx.interpolate }
   }
 
-  private def healthCheck(parent: Identifiable, step: Step, ctx: T): Unit = {
+  private def healthCheck(parent: GwenNode, step: Step, ctx: T): Unit = {
     if (step.indexIn(parent) == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
       healthCheck(parent, step, ctx.scopes)
     }

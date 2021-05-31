@@ -19,7 +19,8 @@ import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.GwenOptions
 import gwen.core.model._
-import gwen.core.model.node._
+import gwen.core.node._
+import gwen.core.node.gherkin._
 import gwen.core.report.html.HtmlReportConfig
 
 import scala.io.Source
@@ -623,7 +624,7 @@ trait DetaiFormatter {
 
   private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
       
-  private def formatTags(tags: List[node.Tag]): Option[TypedTag[String]] = {
+  private def formatTags(tags: List[gwen.core.node.gherkin.Tag]): Option[TypedTag[String]] = {
     if (tags.nonEmpty) {
       Some(
         span(`class` := "grayed",

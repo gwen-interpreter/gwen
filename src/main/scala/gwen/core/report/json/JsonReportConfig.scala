@@ -19,7 +19,7 @@ package gwen.core.report.json
 import gwen.core.FileIO
 import gwen.core.GwenOptions
 import gwen.core.model.DataRecord
-import gwen.core.model.node.Spec
+import gwen.core.node.gherkin.Spec
 import gwen.core.report.ReportConfig
 import gwen.core.report.ReportFormat
 import gwen.core.report.ReportGenerator

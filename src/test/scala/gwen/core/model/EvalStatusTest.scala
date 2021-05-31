@@ -18,8 +18,8 @@ package gwen.core.model
 
 import gwen.core.TestModel
 import gwen.core.engine.SpecNormaliser
-import gwen.core.model.node.GherkinParser
-import gwen.core.model.node.Spec
+import gwen.core.node.gherkin.GherkinParser
+import gwen.core.node.gherkin.Spec
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers

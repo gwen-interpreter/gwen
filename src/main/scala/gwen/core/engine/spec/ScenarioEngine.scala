@@ -22,8 +22,10 @@ import gwen.core.engine.EvalEngine
 import gwen.core.engine.ParallelExecutors
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Background
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -34,7 +36,6 @@ import scala.jdk.CollectionConverters._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
-import gwen.core.model.node.Background
 
 /**
   * Scenario evaluation engine.
@@ -42,7 +43,7 @@ import gwen.core.model.node.Background
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  private [spec] def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private [spec] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
     if (ctx.options.isParallelScenarios && SpecType.isFeature(ctx.specType) && StateLevel.scenario.equals(ctx.stateLevel)) {
       evaluateParallelScenarios(parent, input, ctx)
@@ -51,14 +52,14 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  private def evaluateSequentialScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private def evaluateSequentialScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     scenarios.foldLeft(List[Scenario]()) {
       (acc: List[Scenario], scenario: Scenario) =>
         evaluateOrTransitionScenario(parent, scenario, ctx, acc) :: acc
     } reverse
   }
 
-  private def evaluateParallelScenarios(parent: Identifiable, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private def evaluateParallelScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val stepDefs = scenarios.filter(_.isStepDef).foldLeft(List[Scenario]()) {
       (acc: List[Scenario], stepDef: Scenario) =>
         evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
@@ -85,7 +86,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     acc.asScala.toList.sortBy(_.sourceRef.map(_.line).getOrElse(0))
   }
 
-  private def evaluateOrTransitionScenario(parent: Identifiable, scenario: Scenario, ctx: T, acc: List[Scenario]): Scenario = {
+  private def evaluateOrTransitionScenario(parent: GwenNode, scenario: Scenario, ctx: T, acc: List[Scenario]): Scenario = {
     if (SpecType.isFeature(ctx.specType) && !scenario.isStepDef) {
       if (StateLevel.scenario.equals(ctx.stateLevel)) {
         ctx.reset(StateLevel.scenario)
@@ -113,7 +114,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
    /**
     * Evaluates a given scenario.
     */
-  private [spec] def evaluateScenario(parent: Identifiable, scenario: Scenario, ctx: T): Scenario = {
+  private [spec] def evaluateScenario(parent: GwenNode, scenario: Scenario, ctx: T): Scenario = {
     if (scenario.isStepDef || scenario.isDataTable) {
       if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)

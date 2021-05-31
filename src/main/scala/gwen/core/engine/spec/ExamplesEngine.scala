@@ -17,13 +17,14 @@
 package gwen.core.engine.spec
 
 import gwen.core._
-import gwen.core.model._
-import gwen.core.model.node.Examples
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Tag
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser
+import gwen.core.model._
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Examples
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Tag
 
 import com.github.tototoshi.csv.CSVReader
 import com.typesafe.scalalogging.LazyLogging
@@ -36,7 +37,7 @@ import java.io.File
 trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     engine: EvalEngine[T] =>
 
-  def evaluateExamples(parent: Identifiable, examples: List[Examples], ctx: T): List[Examples] = {
+  def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {
     examples map { exs =>
       beforeExamples(parent, exs, ctx.scopes)
       exs.copy(

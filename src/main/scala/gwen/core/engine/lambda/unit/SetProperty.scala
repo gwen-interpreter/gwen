@@ -20,12 +20,12 @@ import gwen.core.Settings
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 class SetProperty[T <: EvalContext](target: String, value: String) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       Settings.setLocal(target, value)

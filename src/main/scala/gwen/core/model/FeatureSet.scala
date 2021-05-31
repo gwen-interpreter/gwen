@@ -16,7 +16,8 @@
 
 package gwen.core.model
 
-import gwen.core.model.Root
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
 
 import com.github.tototoshi.csv.CSVReader
 import com.typesafe.scalalogging.LazyLogging

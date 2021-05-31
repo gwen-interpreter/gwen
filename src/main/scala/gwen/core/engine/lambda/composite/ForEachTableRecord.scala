@@ -21,12 +21,12 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.model.DataTable
 import gwen.core.model.FlatTable
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     val dataTable = ForEachTableRecord.parseFlatTable(ctx.topScope.getObject(DataTable.tableKey))
     val records = () => {
       dataTable.records.indices.map(idx => dataTable.recordScope(idx))

@@ -16,8 +16,8 @@
 package gwen.core.model
 
 import gwen.core.Errors.{DataTableException, InvalidTagException}
-import gwen.core.model.node.GherkinParser
-import gwen.core.model.node.Tag
+import gwen.core.node.gherkin.GherkinParser
+import gwen.core.node.gherkin.Tag
 
 import org.scalatest.{FlatSpec, Matchers}
 

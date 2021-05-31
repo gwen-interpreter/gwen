@@ -18,10 +18,10 @@ package gwen
 
 import gwen.core._
 import gwen.core.engine.EvalContext
+import gwen.core.model.Dialect
 import gwen.core.model.ReservedKeyword
-import gwen.core.model.StepKeyword
 import gwen.core.model.StateLevel
-import gwen.core.model.node.Dialect
+import gwen.core.model.StepKeyword
 import gwen.core.model.state.ScopedDataStack
 
 import scala.jdk.CollectionConverters._

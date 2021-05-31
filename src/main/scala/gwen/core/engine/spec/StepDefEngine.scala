@@ -20,8 +20,9 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -41,7 +42,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   /**
     * Loads a stepdef to memory.
     */
-  private [spec] def loadStepDef(parent: Identifiable, stepDef: Scenario, ctx: T): Scenario = {
+  private [spec] def loadStepDef(parent: GwenNode, stepDef: Scenario, ctx: T): Scenario = {
     beforeStepDef(parent, stepDef, ctx.scopes)
     logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
     ctx.addStepDef(stepDef)
@@ -75,7 +76,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  def callStepDef(parent: Identifiable, stepDef: Scenario, step: Step, ctx: T): Step = {
+  def callStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))
     } else None
@@ -112,7 +113,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  private def evaluateStepDef(parent: Identifiable, stepDef: Scenario, step: Step, ctx: T): Step = {
+  private def evaluateStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
     beforeStepDef(parent, stepDef, ctx.scopes)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {

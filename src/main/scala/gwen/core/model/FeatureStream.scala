@@ -18,8 +18,8 @@ package gwen.core.model
 
 import gwen.core._
 import gwen.core.model.FeatureSet
-import gwen.core.model.FeatureUnit
-import gwen.core.model.Root
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
 
 import scala.annotation.tailrec
 

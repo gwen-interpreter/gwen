@@ -18,8 +18,8 @@ package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalRules
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -35,7 +35,7 @@ abstract class StepLambda[T <: EvalContext, U]() extends EvalRules with LazyLogg
     * @param step the step to apply the operation to
     * @param ctx the evaluation context
     */
-  def apply(parent: Identifiable, step: Step, ctx: T): U
+  def apply(parent: GwenNode, step: Step, ctx: T): U
 
 }
 

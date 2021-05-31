@@ -20,8 +20,9 @@ import gwen.GwenInterpreter
 import gwen.GwenLauncher
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.node._
 import gwen.core.model.state.EnvState
+import gwen.core.node._
+import gwen.core.node.gherkin._
 import gwen.core.report.ReportFormat
 
 import org.mockito.Mockito.never

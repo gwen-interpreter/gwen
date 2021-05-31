@@ -17,7 +17,7 @@
 package gwen.core.engine.lambda
 
 import gwen.core.engine.EvalContext
-import gwen.core.model.node.Step
+import gwen.core.node.gherkin.Step
 
 /**
   * Base class for all unit step lambdas.

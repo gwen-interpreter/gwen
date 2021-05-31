@@ -18,7 +18,7 @@ package gwen.core.engine
 
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.node._
+import gwen.core.node.gherkin._
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers

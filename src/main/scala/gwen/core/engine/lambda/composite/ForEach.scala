@@ -21,9 +21,10 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
-import gwen.core.model.node.Tag
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.Tag
 
 import scala.util.Try
 import gwen.core.model.state.ScopedData
@@ -33,7 +34,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
   /**
     * Repeats a step for each element in list of elements of type U.
     */
-  def evaluateForEach[U](elements: ()=>Seq[U], name: String, parent: Identifiable, step: Step, doStep: String, ctx: T): Step = {
+  def evaluateForEach[U](elements: ()=>Seq[U], name: String, parent: GwenNode, step: Step, doStep: String, ctx: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
     val items = elements()
     val foreachSteps = items.toList.zipWithIndex map { case (_, index) => 

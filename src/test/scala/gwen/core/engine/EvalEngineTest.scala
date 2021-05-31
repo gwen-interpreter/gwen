@@ -18,7 +18,9 @@ package gwen.core.engine
 
 import gwen.core._
 import gwen.core.model._
-import gwen.core.model.node.Tag
+import gwen.core.node.GwenNode
+import gwen.core.node.Root
+import gwen.core.node.gherkin.Tag
 import gwen.core.model.state.EnvState
 
 import org.scalatest.FlatSpec
@@ -32,7 +34,7 @@ class EvalEngineTest extends FlatSpec with Matchers with MockitoSugar with TestM
   val engine = EvalEngine.DefaultInstance
   val ctx = engine.init(new GwenOptions(), EnvState())
 
-  val parent = mock[Identifiable]
+  val parent = mock[GwenNode]
   
   "Unsupported step" should "fail with UnsupportedStepException" in {
     intercept[Errors.UndefinedStepException] {

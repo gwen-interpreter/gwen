@@ -23,8 +23,8 @@ import gwen.core.engine.binding.BindingResolver
 import gwen.core.engine.support._
 import gwen.core.model.Failed
 import gwen.core.model.Passed
-import gwen.core.model.node.Step
 import gwen.core.model.state.EnvState
+import gwen.core.node.gherkin.Step
 
 import scala.io.Source
 import scala.util.Failure

@@ -19,7 +19,8 @@ package gwen.core.engine
 import gwen.core._
 import gwen.core.engine.EvalRules
 import gwen.core.model._
-import gwen.core.model.node._
+import gwen.core.node.SourceRef
+import gwen.core.node.gherkin._
 
 import java.io.File
 

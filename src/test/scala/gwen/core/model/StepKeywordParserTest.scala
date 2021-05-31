@@ -16,7 +16,7 @@
 
 package gwen.core.model
 
-import gwen.core.model.node.GherkinParser
+import gwen.core.node.gherkin.GherkinParser
 
 import scala.util.Success
 

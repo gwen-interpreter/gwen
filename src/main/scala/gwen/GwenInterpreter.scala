@@ -21,12 +21,12 @@ import gwen.core.engine.EvalContext
 import gwen.core.engine.EvalEngine
 
 import gwen.core.model.EvalStatus
-import gwen.core.model.FeatureUnit
 import gwen.core.model.Loaded
-import gwen.core.model.Root
 import gwen.core.model.SpecResult
 import gwen.core.model.SpecType
-import gwen.core.model.node.Step
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
+import gwen.core.node.gherkin.Step
 import gwen.core.model.state.EnvState
 
 import scala.util.Try
@@ -35,6 +35,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.log4j.PropertyConfigurator
 
 import java.net.URL
+import gwen.core.node.event.NodeEventDispatcher
 
 /**
   * Default Gwen interpreter application.
@@ -81,7 +82,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends App with 
     }
   }
 
-  def lifecycle = engine
+  def lifecycle: NodeEventDispatcher = engine
 
   /**
     * Interprets a single step expression.

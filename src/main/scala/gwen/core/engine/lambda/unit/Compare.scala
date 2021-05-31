@@ -20,15 +20,15 @@ import gwen.core.engine.ComparisonOperator
 import gwen.core.engine.EvalContext
 import gwen.core.engine.lambda.UnitStep
 import gwen.core.model.BehaviorType
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
 
 import scala.util.Failure
 import scala.util.Success
 
 class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       val binding = ctx.getBinding(source)

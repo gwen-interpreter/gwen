@@ -22,15 +22,16 @@ import gwen.core.engine.binding.JavaScriptBinding
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.engine.spec.StepDefEngine
 import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
-import gwen.core.model.node.Tag
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.Tag
 
 import gwen.core.model.Passed
 
 class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: StepDefEngine[T]) extends CompositeStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }

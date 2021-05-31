@@ -19,8 +19,9 @@ package gwen.core.report
 import gwen.core._
 import gwen.core.engine.EvalContext
 import gwen.core.model._
-import gwen.core.model.event.LifecycleEventDispatcher
-import gwen.core.model.node.Spec
+import gwen.core.node.FeatureUnit
+import gwen.core.node.gherkin.Spec
+import gwen.core.node.event.NodeEventDispatcher
 
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlSlideshowConfig
@@ -64,8 +65,8 @@ class ReportGenerator (
 
   val format: ReportFormat.Value = config.format
     
-  def init[T <: EvalContext](lifecycle: LifecycleEventDispatcher): Unit = { }
-  def close[T <: EvalContext](lifecycle: LifecycleEventDispatcher, evalStatus: EvalStatus): Unit = { }
+  def init[T <: EvalContext](lifecycle: NodeEventDispatcher): Unit = { }
+  def close[T <: EvalContext](lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
 
   /**
     * Generate and return a detail feature report.

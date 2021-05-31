@@ -21,7 +21,8 @@
 package gwen.core
 
 import gwen.core.model._
-import gwen.core.model.node._
+import gwen.core.node.SourceRef
+import gwen.core.node.gherkin._
 
 import io.cucumber.gherkin.ParserException
 
@@ -73,7 +74,7 @@ object Errors {
   def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
   def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
   def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
-  def improperBehaviorError(node: SpecNode) = throw new ImproperBehaviorException(node)
+  def improperBehaviorError(node: GherkinNode) = throw new ImproperBehaviorException(node)
   def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) = throw new UnexpectedBehaviorException(step, expected, actual)
   def undefinedStepDefBehaviorError(stepDef: Scenario) = throw new UndefinedStepDefBehaviorException(stepDef)
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
@@ -198,7 +199,7 @@ object Errors {
   class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(stepDef.sourceRef)} (move it to meta)")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
-  class ImproperBehaviorException(node: SpecNode) 
+  class ImproperBehaviorException(node: GherkinNode) 
     extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */

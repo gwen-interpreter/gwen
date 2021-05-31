@@ -17,7 +17,8 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.node._
+import gwen.core.node._
+import gwen.core.node.gherkin._
 
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -43,7 +44,7 @@ object prettyPrint {
 
 class PrettyPrinter extends SpecWalker[PrintWriter] {
 
-  override def onFeature(parent: Identifiable, feature: Feature, out: PrintWriter): PrintWriter = { 
+  override def onFeature(parent: GwenNode, feature: Feature, out: PrintWriter): PrintWriter = { 
     val language = feature.language
     if (language != "en") {
       out.println(s"# language: $language")
@@ -56,7 +57,7 @@ class PrettyPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onBackground(parent: Identifiable, background: Background, out: PrintWriter): PrintWriter = { 
+  override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"${background.keyword}: ${background.name}")
     printDescription(background.description, out)
@@ -65,7 +66,7 @@ class PrettyPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onScenario(parent: Identifiable, scenario: Scenario, out: PrintWriter): PrintWriter = { 
+  override def onScenario(parent: GwenNode, scenario: Scenario, out: PrintWriter): PrintWriter = { 
     if (!scenario.isExpanded) {
       val keyword = scenario.keyword
       out.println()
@@ -79,7 +80,7 @@ class PrettyPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onStep(parent: Identifiable, step: Step, out: PrintWriter): PrintWriter = { 
+  override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = { 
     if (!step.isExpanded(parent)) {
       val keyword = step.keyword
       out.print("  ")
@@ -98,7 +99,7 @@ class PrettyPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onRule(parent: Identifiable, rule: Rule, out: PrintWriter): PrintWriter = { 
+  override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = { 
     out.println()
     out.print(s"      ${rule.keyword}: ${rule.name}")
     printDescription(rule.description, out)
@@ -106,7 +107,7 @@ class PrettyPrinter extends SpecWalker[PrintWriter] {
     out
   }
   
-  override def onExamples(parent: Identifiable, examples: Examples, out: PrintWriter): PrintWriter = { 
+  override def onExamples(parent: GwenNode, examples: Examples, out: PrintWriter): PrintWriter = { 
     if (!examples.isExpanded) {
       printTags("  ", examples.tags, out)
       out.print(s"  ${examples.keyword}: ${examples.name}")

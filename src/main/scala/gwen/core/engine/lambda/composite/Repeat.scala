@@ -23,15 +23,16 @@ import gwen.core.engine.EvalEngine
 import gwen.core.engine.binding.JavaScriptBinding
 import gwen.core.engine.lambda.CompositeStep
 import gwen.core.model._
-import gwen.core.model.node.Scenario
-import gwen.core.model.node.Step
-import gwen.core.model.node.Tag
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.Tag
 
 import scala.concurrent.duration.Duration
 
 class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T] {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
     assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
     assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")

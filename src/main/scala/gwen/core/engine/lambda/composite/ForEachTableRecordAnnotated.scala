@@ -21,13 +21,13 @@ import gwen.core.engine.EvalEngine
 import gwen.core.model.DataTable
 import gwen.core.model.FlatTable
 import gwen.core.model.ReservedTags
-import gwen.core.model.Identifiable
-import gwen.core.model.node.Step
-import gwen.core.model.node.Scenario
+import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.Scenario
 
 class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T]) extends ForEach[T](engine) {
 
-  override def apply(parent: Identifiable, step: Step, ctx: T): Step = {
+  override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     ctx.topScope.pushObject(DataTable.tableKey, dataTable)
     val doStepDef = stepDef.copy(
       withTags = stepDef.tags filter { tag => 

@@ -19,7 +19,8 @@ import gwen.core._
 import gwen.core.Formatting.padWithZeroes
 import gwen.core.engine.SpecNormaliser
 import gwen.core.model._
-import gwen.core.model.node.Scenario
+import gwen.core.node.FeatureUnit
+import gwen.core.node.gherkin.Scenario
 import gwen.core.report.ReportFormatter
 
 import scala.sys.process._

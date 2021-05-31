@@ -17,7 +17,6 @@
 package gwen.core.model
 
 import gwen.core._
-import gwen.core.model.node.Dialect
 
 import scala.jdk.CollectionConverters._
 import scala.util.Try

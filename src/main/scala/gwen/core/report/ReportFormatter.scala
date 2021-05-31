@@ -18,7 +18,7 @@ package gwen.core.report
 import gwen.core.GwenOptions
 import gwen.core.model.SpecResult
 import gwen.core.model.ResultsSummary
-import gwen.core.model.FeatureUnit
+import gwen.core.node.FeatureUnit
 import gwen.core.GwenInfo
 
 import java.io.File
