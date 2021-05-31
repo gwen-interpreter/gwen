@@ -162,11 +162,11 @@ class LifecycleEventDispatcher extends LazyLogging {
       scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
     listeners foreach { listener => 
-      listener.pushUuid(source.uuid)
+      listener.pushParent(source)
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
-        listener.pause(source.uuid)
+        listener.pause(source)
       } else {
-        dispatchEvent(listener, LifecyclePhase.before, parent.uuid, source, scopes) { dispatch }
+        dispatchEvent(listener, LifecyclePhase.before, parent, source, scopes) { dispatch }
       }
     }
   }
@@ -174,9 +174,9 @@ class LifecycleEventDispatcher extends LazyLogging {
   private def dispatchAfterEvent[T <: Identifiable](source: T, scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
     listeners foreach { listener => 
-      val parentUuid = listener.popUuid()
-      dispatchEvent(listener, LifecyclePhase.after, parentUuid, source, scopes) { dispatch } tap { _ =>
-        if (listener.isPausedOn(parentUuid)) { 
+      val parent = listener.popParent()
+      dispatchEvent(listener, LifecyclePhase.after, parent, source, scopes) { dispatch } tap { _ =>
+        if (listener.isPausedOn(parent)) { 
           listener.resume()
         }
       }
@@ -186,21 +186,20 @@ class LifecycleEventDispatcher extends LazyLogging {
   private def dispatchHealthCheckEvent[T <: Identifiable](parent: Identifiable, source: T, scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Unit = {
     listeners foreach { listener => 
-      val parentUuid = parent.uuid
-      dispatchEvent(listener, LifecyclePhase.healthCheck, parentUuid, source, scopes) { dispatch }
+      dispatchEvent(listener, LifecyclePhase.healthCheck, parent, source, scopes) { dispatch }
     }
   }
 
   private def dispatchEvent[T <: Identifiable](
       listener: LifecycleEventListener,
       phase: LifecyclePhase.Value, 
-      parentUuid: String,
+      parent: Identifiable,
       source: T,
       scopes: ScopedDataStack)
       (dispatch: (LifecycleEventListener, LifecycleEvent[T]) => Unit): Option[LifecycleEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = LifecycleEvent(phase, parentUuid, source, callTrail.get.toList, scopes)
+      val event = LifecycleEvent(phase, parent, source, callTrail.get.toList, scopes)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

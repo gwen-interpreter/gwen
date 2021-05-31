@@ -30,14 +30,14 @@ import scala.collection.mutable
 class LifecycleEventListener(val name: String, val bypass: Set[NodeType.Value] = Set[NodeType.Value]()) {
   
   private val paused = ThreadLocal.withInitial[Option[String]] { () => None }
-  private val parentUuids = ThreadLocal.withInitial[mutable.Queue[String]] { () => mutable.Queue[String]() }
+  private val parents = ThreadLocal.withInitial[mutable.Queue[Identifiable]] { () => mutable.Queue[Identifiable]() }
 
   private [event] def isPaused: Boolean = paused.get.nonEmpty
-  private [event] def isPausedOn(uuid: String): Boolean = paused.get.contains(uuid)
-  private [event] def pause(uuid: String): Unit = { paused.set(Some(uuid)) }
+  private [event] def isPausedOn(parent: Identifiable): Boolean = paused.get.contains(parent.uuid)
+  private [event] def pause(parent: Identifiable): Unit = { paused.set(Some(parent.uuid)) }
   private [event] def resume(): Unit = { paused.set(None) }
-  private [event] def pushUuid(uuid: String): Unit = { parentUuids.get += uuid }
-  private [event] def popUuid(): String = parentUuids.get.removeLast()
+  private [event] def pushParent(parent: Identifiable): Unit = { parents.get += parent }
+  private [event] def popParent(): Identifiable = parents.get.removeLast()
   
   def beforeUnit(event: LifecycleEvent[FeatureUnit]): Unit = { }
   def afterUnit(event: LifecycleEvent[FeatureUnit]): Unit = { }

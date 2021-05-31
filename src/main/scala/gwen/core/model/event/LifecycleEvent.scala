@@ -22,8 +22,8 @@ import gwen.core.model.state.ScopedDataStack
 
 import java.{util => ju}
 
-case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parentUuid: String, source: T, callTrail: List[Step], scopes: ScopedDataStack) {
+case class LifecycleEvent[T <: Identifiable](phase: LifecyclePhase.Value, parent: Identifiable, source: T, callTrail: List[Step], scopes: ScopedDataStack) {
   val time: ju.Date = ju.Calendar.getInstance.getTime
   override def toString: String = 
-    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,$parentUuid,${source.uuid})"
+    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,${parent.uuid},${source.uuid})"
 }
