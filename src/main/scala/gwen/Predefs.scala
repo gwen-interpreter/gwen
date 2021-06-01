@@ -19,6 +19,7 @@ import scala.io.Source
 import scala.util.matching.Regex
 
 import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
 
 import java.io.BufferedInputStream
@@ -128,11 +129,24 @@ package object gwen {
 
     def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
+    def uri: String = FileIO.encodeUri(file.getPath)
+
   }
   
   object FileIO {
     def encodeDir(dirpath: String): String = 
       if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
+    def encodeUri(path: String): String = {
+      if (path != null) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+          path.replaceAll("\\\\", "/")
+        } else {
+          path
+        }
+      } else {
+        ""
+      }
+    }
     def isDirectory(location: File): Boolean = location != null && location.isDirectory
     def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
     def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)

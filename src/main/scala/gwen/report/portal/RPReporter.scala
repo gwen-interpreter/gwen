@@ -81,7 +81,7 @@ class RPReporter(rpClient: RPClient)
   override def afterBackground(event: LifecycleEvent[Background]): Unit = {
     val background = event.source
     val evalStatus = background.evalStatus
-    val desc = formatDescriptionWithError(background, event.callTrail)
+    val desc = formatDescriptionAndMore(background, event.callTrail)
     rpClient.finishItem(event.time, desc, event.parent, evalStatus)
   }
 
@@ -106,7 +106,7 @@ class RPReporter(rpClient: RPClient)
 
   private def afterScenario(endTime: ju.Date, scenario: Scenario, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = scenario.evalStatus
-    val desc = formatDescriptionWithError(scenario, callTrail)
+    val desc = formatDescriptionAndMore(scenario, callTrail)
     rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
@@ -132,7 +132,7 @@ class RPReporter(rpClient: RPClient)
 
   private def afterExamples(endTime: ju.Date, examples: Examples, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = examples.evalStatus
-    val desc = formatDescriptionWithError(examples, callTrail)
+    val desc = formatDescriptionAndMore(examples, callTrail)
     rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
@@ -170,7 +170,7 @@ class RPReporter(rpClient: RPClient)
 
   private def afterStepDef(endTime: ju.Date, stepDef: Scenario, parent: Identifiable, callTrail: List[Step]): Unit = {
     val evalStatus = stepDef.evalStatus
-    val desc = formatDescriptionWithError(stepDef, callTrail)
+    val desc = formatDescriptionAndMore(stepDef, callTrail)
     rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
@@ -214,7 +214,7 @@ class RPReporter(rpClient: RPClient)
         logNonErrorMessage(step)
       }
     }
-    val desc = formatDescriptionWithError(step, callTrail)
+    val desc = formatDescriptionAndMore(step, callTrail)
     rpClient.finishItem(endTime, desc, parent, evalStatus)
   }
 
@@ -346,10 +346,10 @@ class RPReporter(rpClient: RPClient)
     SendStepDefs.isInlined && callTrail.size > (if (node.isInstanceOf[Step]) 1 else 0)
   }
 
-  private def formatDescriptionWithError(node: SpecNode, callTrail: List[Step]): String = {
+  private def formatDescriptionAndMore(node: SpecNode, callTrail: List[Step]): String = {
     val desc = formatDescription(node)
     val evalStatus = node.evalStatus
-      if (EvalStatus.isError(evalStatus.status) && callTrail.size > 0) {
+    val descWithError = if (EvalStatus.isError(evalStatus.status) && callTrail.size > 0) {
       val errors = {
         if (AppendErrorBlocks.all || (AppendErrorBlocks.leaf && isLeafNode(node))) {
           errorMessages(callTrail, Step.errorTrails(node)) match {
@@ -362,6 +362,7 @@ class RPReporter(rpClient: RPClient)
       }
       s"${if (desc.size > 0) s"$desc\r\n\r\n" else ""}$errors"
     } else desc
+    descriptionWithNodePath(descWithError, node)
   }
 
   private def formatDescription(node: SpecNode): String = {
@@ -385,16 +386,28 @@ class RPReporter(rpClient: RPClient)
         }
       case _ => ""
     }
-    desc + (node.sourceRef map { sref =>
-      s"""|${if (desc.size >0) "<br>" else ""}
-          |sourceRef: ${Formatting.escapeHtml(sref.toString)}${
-              sref.nodePath map { nodePath => 
-                s"""|<br>
-                    |nodePath: ${Formatting.escapeHtml(nodePath)}""".stripMargin
-              } getOrElse "" 
-            }
-          |""".stripMargin
-    } getOrElse "")
+    desc + (
+      node.sourceRef filter { sref => 
+        sref.toString.length > RPConfig.attributeMaxChars
+      } map { sref => 
+        s"""|${if (desc.size > 0) "<br>" else ""}
+            |sourceRef: ${Formatting.escapeHtml(sref.toString)}""".stripMargin
+      } getOrElse ""
+    )
+
+  }
+
+  private def descriptionWithNodePath(desc: String, node: SpecNode): String = {
+    desc + (
+      node.sourceRef filter { _ => 
+        RPSettings.`gwen.rp.send.nodePath` && isLeafNode(node)
+      } flatMap { sref => 
+        sref.nodePath map { nodePath =>
+          s"""|${if (desc.size > 0) "<br>" else ""}
+              |nodePath: ${Formatting.escapeHtml(nodePath)}""".stripMargin
+        }
+      } getOrElse ""
+    )
   }
 
   private def errorMessages(callTrail: List[Step], errorTrails: List[List[Step]]): List[String] = {

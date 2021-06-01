@@ -41,9 +41,8 @@ trait SpecNormaliser extends EvalRules {
     */
   def normalise(spec: FeatureSpec, specFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, specFile)
-    val featurePath = s"/${specFile.map(_.getPath).getOrElse("")}"
     validate(spec.background, scenarios, spec.specType)
-    FeatureSpec(
+    val nspec = FeatureSpec(
       dataRecord map { record =>
         spec.feature.copy(
           withName = s"${spec.feature.name} [${record.recordNo}]")
@@ -58,7 +57,8 @@ trait SpecNormaliser extends EvalRules {
       },
       specFile,
       Nil
-    ).withNodePath(featurePath)
+    )
+    nspec.withNodePath(s"/${specFile.map(_.uri).getOrElse("")}")
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType.Value): Unit = {

@@ -53,6 +53,7 @@ object RPSettings {
     `gwen.rp.heartbeat`
     `gwen.rp.heartbeat.timeoutSecs`
     `gwen.rp.testCaseId.keys`
+    `gwen.rp.send.nodePath`
 
     // load rerun settings
     if (rerun && rerunOf.isEmpty && rerunFile.exists()) {
@@ -118,7 +119,7 @@ object RPSettings {
    */
   def `gwen.rp.send.stepDefs`: StepDefFormat.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.none)
+      Settings.getOpt("gwen.rp.send.stepDefs").map(StepDefFormat.withName).getOrElse(StepDefFormat.none)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.stepDefs", Settings.getOpt("gwen.rp.send.stepDefs").getOrElse(""), StepDefFormat.values.toSet)
     }
@@ -132,7 +133,7 @@ object RPSettings {
    */
   def `gwen.rp.send.failed.stepDefs`: StepDefFormat.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.failed.stepDefs").map(_.toLowerCase).map(StepDefFormat.withName).getOrElse(StepDefFormat.inlined)
+      Settings.getOpt("gwen.rp.send.failed.stepDefs").map(StepDefFormat.withName).getOrElse(StepDefFormat.inlined)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.failed.stepDefs", Settings.getOpt("gwen.rp.send.failed.stepDefs").getOrElse(""), StepDefFormat.values.toSet)
     }
@@ -140,11 +141,12 @@ object RPSettings {
 
   /**
    * Provides access to the `gwen.rp.send.failed.errorTrace` property setting used to 
-   * determine how error traces are reported. Options include: inlined, attached, or none (default value is `none`). 
+   * determine how error traces are reported. 
+   * Options include: inlined, attached, or none (default value is `none`). 
    */
   def `gwen.rp.send.failed.errorTrace`: ErrorReportingMode.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.failed.errorTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+      Settings.getOpt("gwen.rp.send.failed.errorTrace").map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.failed.errorTrace", Settings.getOpt("gwen.rp.send.failed.errorTrace").getOrElse(""), ErrorReportingMode.values.toSet)
     }
@@ -152,11 +154,12 @@ object RPSettings {
 
   /**
    * Provides access to the `gwen.rp.send.failed.envTrace` property setting used to 
-   * determine how environment traces are reported. Options include: inlined, attached, or none (default value is `none`). 
+   * determine how environment traces are reported. 
+   * Options include: inlined, attached, or none (default value is `none`). 
    */
   def `gwen.rp.send.failed.envTrace`: ErrorReportingMode.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.failed.envTrace").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
+      Settings.getOpt("gwen.rp.send.failed.envTrace").map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.none)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.failed.envTrace", Settings.getOpt("gwen.rp.send.failed.envTrace").getOrElse(""), ErrorReportingMode.values.toSet)
     }
@@ -164,11 +167,12 @@ object RPSettings {
 
   /**
    * Provides access to the `gwen.rp.send.failed.hierarchy` property setting used to 
-   * determine how failed step hierarchies are reported. Options include: inlined, attached, or none (default value is `inlined`). 
+   * determine how failed step hierarchies are reported. 
+   * Options include: inlined, attached, or none (default value is `inlined`). 
    */
   def `gwen.rp.send.failed.hierarchy`: ErrorReportingMode.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.failed.hierarchy").map(_.toLowerCase).map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.inlined)
+      Settings.getOpt("gwen.rp.send.failed.hierarchy").map(ErrorReportingMode.withName).getOrElse(ErrorReportingMode.inlined)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.failed.hierarchy", Settings.getOpt("gwen.rp.send.failed.hierarchy").getOrElse(""), ErrorReportingMode.values.toSet)
     }
@@ -181,7 +185,7 @@ object RPSettings {
    */
   def `gwen.rp.send.failed.errorBlocks`: ErrorBlocks.Value = {
     Try {
-      Settings.getOpt("gwen.rp.send.failed.errorBlocks").map(_.toLowerCase).map(ErrorBlocks.withName).getOrElse(ErrorBlocks.none)
+      Settings.getOpt("gwen.rp.send.failed.errorBlocks").map(ErrorBlocks.withName).getOrElse(ErrorBlocks.none)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.failed.errorBlocks", Settings.getOpt("gwen.rp.send.failed.errorBlocks").getOrElse(""), ErrorBlocks.values.toSet)
     }
@@ -273,9 +277,22 @@ object RPSettings {
     */
   def `gwen.rp.testCaseId.keys`: TestCaseIdKeys.Value = {
     Try {
-      Settings.getOpt("gwen.rp.testCaseId.keys").map(_.toLowerCase).map(TestCaseIdKeys.withName).getOrElse(TestCaseIdKeys.`nodepath+params`)
+      Settings.getOpt("gwen.rp.testCaseId.keys").map(TestCaseIdKeys.withName).getOrElse(TestCaseIdKeys.`nodePath+params`)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.testCaseId.keys", Settings.getOpt("gwen.rp.testCaseId.keys").getOrElse(""), TestCaseIdKeys.values.toSet)
+    }
+  }
+
+   /**
+   * Provides access to the `gwen.rp.send.nodePath` property setting used to 
+   * control whether or not to send nodepaths to the description of leaf nodes.
+   * Default is false (don't send). 
+   */
+  def `gwen.rp.send.nodePath`: Boolean = {
+    Try { 
+      Settings.getOpt("gwen.rp.send.nodePath").map(_.toBoolean).getOrElse(false)
+    } getOrElse {
+      Errors.illegalSettingError("gwen.rp.send.nodePath", Settings.getOpt("gwen.rp.send.nodePath").getOrElse(""), Set(true, false))
     }
   }
 

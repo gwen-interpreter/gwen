@@ -63,7 +63,7 @@ object SourceRef {
   }
   def asString(file: Option[File], sourceRef: Option[SourceRef]): String = {
     SourceRef.asString(
-      file.map(_.getPath).orElse(sourceRef.map(_.uri)), 
+      file.map(_.uri).orElse(sourceRef.map(_.uri)), 
       sourceRef.map(_.pos.line), 
       None)
   }

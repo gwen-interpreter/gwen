@@ -16,6 +16,7 @@
 
 package gwen.eval
 
+import gwen._
 import gwen.dsl.Identifiable
 import gwen.dsl.NodeType
 
@@ -39,7 +40,7 @@ case class FeatureUnit(
 
   override def nodeType: NodeType.Value = NodeType.Unit
 
-  val uri: String = featureFile.getPath
+  val uri: String = featureFile.uri
   val name: String = s"$uri${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
   
   def ancestor: Identifiable = parent match {

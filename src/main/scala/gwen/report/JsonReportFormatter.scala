@@ -61,7 +61,7 @@ trait JsonReportFormatter extends ReportFormatter {
     
     Some(s"""[
   {${spec.featureFile.map(file => s"""
-    "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
+    "uri": "${escapeJson(file.uri)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
     "line": ${loc.pos.line}""" } getOrElse("")},

@@ -20,6 +20,9 @@ import gwen.dsl.NodeType
 
 object RPConfig {
 
+  val nameMaxChars = 1024
+  val attributeMaxChars = 128
+
   object StepDefFormat extends Enumeration {
     type StepDefFormat = Value
     val inlined, nested, none = Value
@@ -74,8 +77,8 @@ object RPConfig {
   object TestCaseIdKeys extends Enumeration {
     type TestCaseIdKeys = Value
     val auto = Value
-    val `sourceref+params` = Value("sourceref+params")
-    val `nodepath+params` = Value("nodepath+params")
+    val `sourceRef+params` = Value("sourceRef+params")
+    val `nodePath+params` = Value("nodePath+params")
   }
 
   def bypassNodeTypes: Set[NodeType.Value] = {

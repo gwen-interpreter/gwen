@@ -60,7 +60,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private val rpids = new ju.concurrent.ConcurrentHashMap[String, Maybe[String]]()
   private val launchLock = new ju.concurrent.Semaphore(1)
   private var launchUuid: Option[String] = None
-  private val maxChars = 1024
 
   private lazy val session: Launch = init()
 
@@ -187,7 +186,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       sourceRef foreach { sref =>
         rq.setCodeRef(sref.toString)
       }
-      addAtts(rq, tags, atts)
+      addAtts(rq, tags, atts, sourceRef)
       addName(rq, name, inlined) 
       addParams(rq, params)
       addTestCaseId(rq, sourceRef, params)
@@ -195,7 +194,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     
   }
 
-  private def addAtts(rq: StartTestItemRQ, tags: List[Tag], atts: Map[String, String]): Unit = {
+  private def addAtts(rq: StartTestItemRQ, tags: List[Tag], atts: Map[String, String], sourceRef: Option[SourceRef]): Unit = {
     val attributes = new ju.HashSet[ItemAttributesRQ]()
     attributes.addAll(
       (tags map { tag => 
@@ -203,6 +202,9 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       }).toSet.asJava
     )
     attributes.addAll((atts.map { case (key, value) => new ItemAttributesRQ(key, value) }).toSet.asJava)
+    sourceRef.filter(_.toString.length <= RPConfig.attributeMaxChars) foreach { sref =>
+      attributes.add(new ItemAttributesRQ("sourceRef", sref.toString))
+    }
     if (attributes.size > 0) rq.setAttributes(attributes)
   }
 
@@ -225,12 +227,12 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private def addTestCaseId(rq: StartTestItemRQ, sourceRef: Option[SourceRef], params: List[(String, String)]): Unit = {
     sourceRef foreach { srcRef => 
       RPSettings.`gwen.rp.testCaseId.keys` match {
-        case RPConfig.TestCaseIdKeys.`nodepath+params` if srcRef.nodePath.nonEmpty =>
+        case RPConfig.TestCaseIdKeys.`nodePath+params` if srcRef.nodePath.nonEmpty =>
           srcRef.nodePath foreach { nodePath => 
             val paramValues = params map { case (_, v) => v } mkString ""
             rq.setTestCaseId(Formatting.sha256Hash(nodePath + paramValues))
           }
-        case RPConfig.TestCaseIdKeys.`sourceref+params` =>
+        case RPConfig.TestCaseIdKeys.`sourceRef+params` =>
           val codeRef = srcRef.toString
           val paramValues = params map { case (_, v) => v } mkString ""
           rq.setTestCaseId(Formatting.sha256Hash(codeRef + paramValues))
@@ -330,7 +332,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   }
 
   private def truncate(text: String): Option[String] = {
-    val max = if (RPSettings.`gwen.rp.send.markdownBlocks`) maxChars - 10 else maxChars
+    val max = if (RPSettings.`gwen.rp.send.markdownBlocks`) RPConfig.nameMaxChars - 10 else RPConfig.nameMaxChars
     if (text.length > max) Some(s"${text.substring(0, max - 4)}... ")
     else None
   }

@@ -298,7 +298,9 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolateParams(step: Step): Step = interpolate(step, interpolateParams)
+  def interpolateParams(step: Step): Step = {
+    interpolate(step, interpolateParams)
+  }
 
   /**
     * Interpolate all references in the given step before it is evaluated.
@@ -306,7 +308,9 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolate(step: Step): Step = interpolate(step, interpolate)
+  def interpolate(step: Step): Step = {
+    interpolate(step, interpolate)
+  }
 
   private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
     val resolver: String => String = name => Try(stepScope.get(name)).getOrElse(getBoundReferenceValue(name))
