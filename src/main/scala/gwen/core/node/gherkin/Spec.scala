@@ -16,6 +16,7 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core._
 import gwen.core.node.NodeType
 import gwen.core.status._
 
@@ -52,7 +53,7 @@ case class Spec(
   def isMeta: Boolean = SpecType.isMeta(specType)
 
   /** Resource id */
-  def uri = specFile.map(_.getPath).getOrElse(uuid)
+  def uri = specFile.map(_.uri).getOrElse(uuid)
 
   /**
     * Gets the list of all steps contained in the feature spec. The list includes

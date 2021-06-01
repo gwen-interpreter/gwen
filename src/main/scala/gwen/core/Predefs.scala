@@ -41,6 +41,7 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
 import javax.xml.transform.OutputKeys
+import org.apache.commons.lang3.SystemUtils
 
 /** Predefs and implicits avaiable wherever this page is imported. */
 
@@ -135,11 +136,24 @@ package object core {
 
     def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
+    def uri: String = FileIO.encodeUri(file.getPath)
+
   }
   
   object FileIO {
     def encodeDir(dirpath: String): String = 
       if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
+    def encodeUri(path: String): String = {
+      if (path != null) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+          path.replaceAll("\\\\", "/")
+        } else {
+          path
+        }
+      } else {
+        ""
+      }
+    }
     def isDirectory(location: File): Boolean = location != null && location.isDirectory
     def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
     def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)

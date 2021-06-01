@@ -16,6 +16,8 @@
 
 package gwen.core.node
 
+import gwen.core._
+
 import io.cucumber.messages.{ Messages => Cucumber }
 
 import java.io.File
@@ -28,7 +30,7 @@ import java.io.File
  */
 case class SourceRef(file: Option[File], line: Int) {
   
-  def uri = file.map(_.getPath).getOrElse("")
+  def uri = file.map(_.uri).getOrElse("")
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
 
@@ -52,10 +54,10 @@ object SourceRef {
   }
   def toString(file: Option[File], line: Option[Int], column: Option[Int]): String = {
     (file, line, column) match {
-      case (Some(f), Some(l), Some(c)) => s"${f.getPath}:$l:$c"
-      case (Some(f), Some(l), None) => s"${f.getPath}:$l"
-      case (Some(f), None, Some(c)) => s"${f.getPath}::$c"
-      case (Some(f), None, None) => f.getPath
+      case (Some(f), Some(l), Some(c)) => s"${f.uri}:$l:$c"
+      case (Some(f), Some(l), None) => s"${f.uri}:$l"
+      case (Some(f), None, Some(c)) => s"${f.uri}::$c"
+      case (Some(f), None, None) => f.uri
       case (None, Some(l), Some(c)) => s"line $l column $c"
       case (None, Some(l), None) => s"line $l"
       case (None, None, Some(c)) => s"column $c"

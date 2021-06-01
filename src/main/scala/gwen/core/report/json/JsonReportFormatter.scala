@@ -58,12 +58,12 @@ trait JsonReportFormatter extends ReportFormatter {
     val feature = spec.feature
 
     val id = s"${result.spec.specFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
-    val name = s"${result.spec.specFile.map(f => s"${f.getPath}: ").getOrElse("")}${feature.name}"
+    val name = s"${result.spec.specFile.map(f => s"${f.uri}: ").getOrElse("")}${feature.name}"
     val description = s"${feature.description.mkString(Properties.lineSeparator)}"
     
     Some(s"""[
   {${spec.specFile.map(file => s"""
-    "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
+    "uri": "${escapeJson(file.uri)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
     "line": ${loc.line}""" } getOrElse("")},

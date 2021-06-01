@@ -51,7 +51,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val hostname = Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim)
-    val packageName = result.spec.specFile.map(f => f.getPath).getOrElse("")
+    val packageName = result.spec.specFile.map(f => f.uri).getOrElse("")
     val name = s"$packageName.Feature: ${result.spec.feature.name}"
     val pkg = result.spec.specFile.map(_ => packageName)
     val scenarios = findScenarios(result)

@@ -16,6 +16,7 @@
 
 package gwen.core.node
 
+import gwen.core._
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.result.SpecResult
 import gwen.core.state.DataRecord
@@ -46,7 +47,7 @@ case class FeatureUnit(
       else parentUnit.ancestor
     case _ => this
   }
-  val uri: String = s"${featureFile.getPath}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
+  val uri: String = s"${featureFile.uri}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
 }
 
 object FeatureUnit {
