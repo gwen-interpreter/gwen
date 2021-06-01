@@ -19,9 +19,10 @@ import HtmlReportFormatter._
 
 import gwen.core._
 import gwen.core.Formatting._
-import gwen.core.model._
-
+import gwen.core.node._
 import gwen.core.report.ReportFormatter
+import gwen.core.status._
+import gwen.core.result.SpecResult
 
 import scala.concurrent.duration.Duration
 import scala.util.Try
@@ -71,7 +72,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       case Passed(nanos) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
-    div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.status)}" else "" }",
+    div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
       div(`class` := "col-md-3", style := "padding-left: 0px",
         for {
           seq <- sequenceNo
@@ -91,8 +92,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       div(`class` := "col-md-4",
         reportPath match {
           case Some(rpath) =>
-            a(`class` := s"text-${cssStatus(reportingStatus.status)}", style := s"color: ${linkColor(reportingStatus.status)};", href := rpath,
-              span(`class` := s"text-${cssStatus(reportingStatus.status)}",
+            a(`class` := s"text-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
+              span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
                 raw(escapeHtml(featureName))
               )
             )
@@ -142,7 +143,7 @@ object HtmlReportFormatter {
     StatusKeyword.Disabled -> "grey"
   )
 
-  private [report] def formatHtmlHead(pageTitle: String, rootPath: String): TypedTag[String] = {
+  private [format] def formatHtmlHead(pageTitle: String, rootPath: String): TypedTag[String] = {
     head(
       meta(charset := "utf-8"),
       meta(httpEquiv := "X-UA-Compatible", content := "IE=edge"),
@@ -155,7 +156,7 @@ object HtmlReportFormatter {
     )
   }
   
-  private [report] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String): TypedTag[String] = {
+  private [format] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String): TypedTag[String] = {
     val implVersion = s"v${info.implVersion}"
     table(width := "100%", attr("cellpadding") := "5",
       tr(

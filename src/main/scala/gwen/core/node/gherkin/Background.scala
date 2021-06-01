@@ -16,8 +16,9 @@
 
 package gwen.core.node.gherkin
 
-import gwen.core.model._
+import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
+import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
 

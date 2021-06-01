@@ -17,16 +17,20 @@
 package gwen.core.report
 
 import gwen.core._
-import gwen.core.engine.EvalContext
-import gwen.core.model._
+import gwen.core.eval.EvalContext
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
+import gwen.core.node.gherkin.SpecType
 import gwen.core.node.event.NodeEventDispatcher
+import gwen.core.state.DataRecord
+import gwen.core.status._
 
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlSlideshowConfig
 import gwen.core.report.json.JsonReportConfig
 import gwen.core.report.junit.JUnitReportConfig
+import gwen.core.result.ResultsSummary
+import gwen.core.result.SpecResult
 
 import scala.io.Source
 

@@ -18,8 +18,8 @@ package gwen.core.report
 
 import gwen.core.FileIO
 import gwen.core.GwenOptions
-import gwen.core.model.DataRecord
 import gwen.core.node.gherkin.Spec
+import gwen.core.state.DataRecord
 
 import java.io.File
 

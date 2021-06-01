@@ -23,7 +23,6 @@ package gwen.core.report
   */
 object ReportFormat extends Enumeration {
 
-  type ReportFormat = Value
   val html, slideshow, junit, json = Value
   
 }

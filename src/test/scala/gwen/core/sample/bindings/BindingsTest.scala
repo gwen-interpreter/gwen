@@ -16,12 +16,10 @@
 package gwen.core.sample.bindings
 
 import gwen.DefaultGwenInterpreter
-import gwen.GwenLauncher
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
-import gwen.core.model.Failed
-import gwen.core.model.Passed
 import gwen.core.report.ReportFormat
+import gwen.core.status._
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
@@ -29,7 +27,7 @@ import java.io.File
 
 class BindingsTest extends BaseTest {
 
-  val launcher = new GwenLauncher(DefaultGwenInterpreter)
+  val interpreter = DefaultGwenInterpreter
 
   forAll (levels) { level =>
     s"binding features using $level level state" should "evaluate without error" in {
@@ -42,7 +40,7 @@ class BindingsTest extends BaseTest {
           properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
         )
           
-        launcher.run(options) match {
+        interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
@@ -63,7 +61,7 @@ class BindingsTest extends BaseTest {
           properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
         )
           
-        launcher.run(options) match {
+        interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")

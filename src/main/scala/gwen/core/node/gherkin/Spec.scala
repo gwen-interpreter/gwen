@@ -16,7 +16,8 @@
 
 package gwen.core.node.gherkin
 
-import gwen.core.model._
+import gwen.core.node.NodeType
+import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
 
@@ -75,7 +76,7 @@ case class Spec(
           s3.stepDef map { s4 => s4.allSteps } getOrElse List(s3)
         }
       } getOrElse List(s1)
-    } count(_.evalStatus.status == StatusKeyword.Sustained)
+    } count(_.evalStatus.isSustained)
   }
   
   /** Returns the evaluation status of this feature spec. */

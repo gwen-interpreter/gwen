@@ -17,7 +17,6 @@
 package gwen.core.node.gherkin
 
 import gwen.core.TestModel
-import gwen.core.model.StepKeyword
 
 import scala.util.Success
 

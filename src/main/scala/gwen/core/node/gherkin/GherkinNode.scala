@@ -16,10 +16,9 @@
 
 package gwen.core.node.gherkin
 
-import gwen.core.model.EvalStatus
-import gwen.core.model.Pending
 import gwen.core.node.GwenNode
 import gwen.core.node.SourceRef
+import gwen.core.status._
 
 /**
   * Base trait for all Gherkin nodes.  

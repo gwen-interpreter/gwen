@@ -16,10 +16,11 @@
 
 package gwen.core.node.gherkin
 
-import gwen.core._
-import gwen.core.model._
+import gwen.core.Errors
 import gwen.core.node.GwenNode
+import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
+import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
 

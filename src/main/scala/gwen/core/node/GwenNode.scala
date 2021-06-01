@@ -17,7 +17,7 @@
 package gwen.core.node
 
 import gwen.core.UUIDGenerator
-import gwen.core.model.NodeType
+import gwen.core.node.NodeType
 
 trait GwenNode {
   def nodeType: NodeType.Value

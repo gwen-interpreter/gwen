@@ -17,11 +17,17 @@ package gwen.core.report.html.format
 
 import gwen.core._
 import gwen.core.Formatting._
-import gwen.core.GwenOptions
-import gwen.core.model._
-import gwen.core.node._
-import gwen.core.node.gherkin._
+import gwen.core.node.FeatureUnit
+import gwen.core.node.NodeType
+import gwen.core.node.gherkin.Background
+import gwen.core.node.gherkin.Examples
+import gwen.core.node.gherkin.Rule
+import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.Step
 import gwen.core.report.html.HtmlReportConfig
+import gwen.core.result.ResultsSummary
+import gwen.core.result.SpecResult
+import gwen.core.status._
 
 import scala.io.Source
 import scalatags.Text.all._
@@ -116,7 +122,7 @@ trait DetaiFormatter {
     if (metaResults.nonEmpty) {
       val count = metaResults.size
       val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
-      val status = metaStatus.status
+      val status = metaStatus.keyword
       Some(
         div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
           ul(`class` := "list-group",
@@ -158,8 +164,8 @@ trait DetaiFormatter {
   }
 
   private def formatScenario(scenario: Scenario): TypedTag[String] = {
-    val status = scenario.evalStatus.status
-    val conflict = scenario.steps.map(_.evalStatus.status).exists(_ != status)
+    val status = scenario.evalStatus.keyword
+    val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
       ul(`class` := "list-group",
@@ -178,9 +184,9 @@ trait DetaiFormatter {
             } yield {
               Seq(
                 if (!scenario.isOutline) {
-                  Some(formatStepLine(step, step.evalStatus.status, scenarioKeywordPixels))
+                  Some(formatStepLine(step, step.evalStatus, scenarioKeywordPixels))
                 } else if (!scenario.isExpanded) {
-                  Some(formatRawStepLine(step, scenario.evalStatus.status, scenarioKeywordPixels))
+                  Some(formatRawStepLine(step, scenario.evalStatus, scenarioKeywordPixels))
                 } else {
                   None
                 }
@@ -196,7 +202,7 @@ trait DetaiFormatter {
   }
 
   private def formatScenarioHeader(scenario: Scenario): TypedTag[String] = {
-    val status = scenario.evalStatus.status
+    val status = scenario.evalStatus.keyword
     val tags = scenario.tags
     li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
       if (scenario.isStepDef) {
@@ -237,7 +243,7 @@ trait DetaiFormatter {
   }
 
   private def formatBackground(background: Background): TypedTag[String] = {
-    val status = background.evalStatus.status
+    val status = background.evalStatus.keyword
     val keywordPixels = noOfKeywordPixels(background.steps)
     div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
       ul(`class` := "list-group",
@@ -259,7 +265,7 @@ trait DetaiFormatter {
           for {
             step <- background.steps
           } yield {
-            formatStepLine(step, step.evalStatus.status, keywordPixels)
+            formatStepLine(step, step.evalStatus, keywordPixels)
           }
         )
       )
@@ -269,7 +275,7 @@ trait DetaiFormatter {
   private def formatExamples(examples: List[Examples], keywordPixels: Int): Seq[TypedTag[String]] = {
     for {
       (exs, index) <- examples.zipWithIndex
-      status = exs.evalStatus.status
+      status = exs.evalStatus.keyword
     } yield {
       div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
         ul(`class` := "list-group",
@@ -301,9 +307,9 @@ trait DetaiFormatter {
   }
 
   private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Int, List[String])], keywordPixels: Int): TypedTag[String] = {
-    val status = evalStatus.status
+    val status = evalStatus.keyword
     val line = table.head._1
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
       div(`class` := s"bg-${cssStatus(status)}",
         div(`class` := "line-no",
           small(
@@ -320,9 +326,9 @@ trait DetaiFormatter {
 
   private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
     val line = table(rowIndex)._1
-    val status = scenario.evalStatus.status
+    val status = scenario.evalStatus.keyword
     val rowHtml = formatDataRow(table, rowIndex, status)
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (scenario.evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
       div(`class` := s"bg-${cssStatus(status)}",
         span(`class` := "pull-right",
           small(
@@ -337,7 +343,7 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " ",
         ),
-        if (status != StatusKeyword.Failed) {
+        if (!scenario.evalStatus.isFailed) {
           a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
             rowHtml
           )
@@ -356,8 +362,8 @@ trait DetaiFormatter {
   }
 
   private def formatRule(rule: Rule): TypedTag[String] = {
-    val status = rule.evalStatus.status
-    val conflict = rule.scenarios.map(_.evalStatus.status).exists(_ != status)
+    val status = rule.evalStatus.keyword
+    val conflict = rule.scenarios.map(_.evalStatus.keyword).exists(_ != status)
     div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
       ul(`class` := "list-group",
         li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
@@ -394,10 +400,11 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): TypedTag[String] = {
+  private def formatStepLine(step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
+    val status = evalStatus.keyword
     val stepDef = step.stepDef
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status) || EvalStatus.isDisabled(status)) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)} ${if (EvalStatus.isDisabled(status)) "text-muted" else ""}",
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${cssStatus(status)}" else ""}",
+      div(`class` := s"bg-${cssStatus(status)} ${if (evalStatus.isDisabled) "text-muted" else ""}",
         span(`class` := "pull-right",
           small(
             durationOrStatus(step.evalStatus).toString
@@ -421,7 +428,7 @@ trait DetaiFormatter {
         formatAttachments(step.deepAttachments, status),
         for {
           sd <- stepDef
-          if (EvalStatus.isEvaluated(status))  
+          if (evalStatus.isEvaluated)  
         } yield {
           formatStepDefDiv(sd, status)
         },
@@ -432,9 +439,9 @@ trait DetaiFormatter {
         },
         formatStepDataTable(step, keywordPixels)
       ),
-      if (EvalStatus.isError(status) && stepDef.isEmpty) {
+      if (evalStatus.isError && stepDef.isEmpty) {
         ul(
-          li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+          li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
             div(`class` := s"bg-${cssStatus(status)}",
               span(`class` := s"badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}",
                 status.toString
@@ -451,8 +458,9 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatRawStepLine(step: Step, status: StatusKeyword.Value, keywordPixels: Int): TypedTag[String] = {
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (EvalStatus.isError(status)) s"bg-${cssStatus(status)}" else ""}",
+  private def formatRawStepLine(step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
+    val status = evalStatus.keyword
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
       div(`class` := s"bg-${cssStatus(status)}",
         div(`class` := "line-no",
           small(
@@ -471,7 +479,7 @@ trait DetaiFormatter {
   
   private def formatStepDefLink(step: Step, status: StatusKeyword.Value): TypedTag[String] = {
     val stepDef = step.stepDef.get
-    a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
+    a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
       raw(escapeHtml(step.name))
     )
   }
@@ -483,7 +491,7 @@ trait DetaiFormatter {
   }
 
   private def formatStepDataTable(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
-    val status = step.evalStatus.status
+    val status = step.evalStatus.keyword
     for {
       rowIndex <- step.table.indices
       line = step.table(rowIndex)._1
@@ -503,7 +511,7 @@ trait DetaiFormatter {
   }
 
   private def formatStepDocString(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
-    val status = step.evalStatus.status
+    val status = step.evalStatus.keyword
     val docString = step.docString.get
     val contentType = docString._3
     for {
@@ -665,10 +673,10 @@ trait DetaiFormatter {
   }
   
   private def durationOrStatus(evalStatus: EvalStatus) =
-    if (EvalStatus.isEvaluated(evalStatus.status) && !EvalStatus.isDisabled(evalStatus.status))  {
+    if (evalStatus.isEvaluated && !evalStatus.isDisabled)  {
       formatDuration(evalStatus.duration)
     } else {
-      evalStatus.status
+      evalStatus.keyword
     }
   
   private def noOfKeywordPixels(steps: List[Step]): Int = steps match {
@@ -685,9 +693,9 @@ object DetailFormatter {
 
   import HtmlReportFormatter._
 
-  private [report] def formatDetailStatusBar(unit: FeatureUnit, result: SpecResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File], linkToError: Boolean): TypedTag[String] = {
+  private [format] def formatDetailStatusBar(unit: FeatureUnit, result: SpecResult, rootPath: String, breadcrumbs: List[(String, File)], screenshots: List[File], linkToError: Boolean): TypedTag[String] = {
     
-    val status = result.evalStatus.status
+    val status = result.evalStatus.keyword
     val sustainedCount = result.sustainedCount
     val renderErrorLink = linkToError && (status == StatusKeyword.Failed || sustainedCount > 0)
 

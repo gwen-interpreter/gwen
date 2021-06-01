@@ -16,11 +16,9 @@
 package gwen.core.sample.xml
 
 import gwen.DefaultGwenInterpreter
-import gwen.GwenLauncher
 import gwen.core.GwenOptions
-import gwen.core.model.Failed
-import gwen.core.model.Passed
 import gwen.core.report.ReportFormat
+import gwen.core.status._
 
 import org.scalatest.FlatSpec
 
@@ -28,7 +26,7 @@ import java.io.File
 
 class XmlTest extends FlatSpec {
 
-  val launcher = new GwenLauncher(DefaultGwenInterpreter)
+  val interpreter = DefaultGwenInterpreter
   
   "XML tests" should "pass" in {
     
@@ -39,7 +37,7 @@ class XmlTest extends FlatSpec {
       features = List(new File("features/sample/xml"))
     )
       
-    launcher.run(options) match {
+    interpreter.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
@@ -56,7 +54,7 @@ class XmlTest extends FlatSpec {
       dryRun = true
     )
       
-    launcher.run(options) match {
+    interpreter.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")

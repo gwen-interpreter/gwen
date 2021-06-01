@@ -16,9 +16,9 @@
 
 package gwen.core
 
-import gwen.core.model._
-import gwen.core.node.SourceRef
+import gwen.core.node._
 import gwen.core.node.gherkin._
+import gwen.core.status._
 
 import java.io.File
 

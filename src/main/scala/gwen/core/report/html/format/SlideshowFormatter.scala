@@ -19,12 +19,14 @@ import gwen.core.Formatting
 import gwen.core.GwenInfo
 import gwen.core.GwenSettings
 import gwen.core.GwenOptions
-import gwen.core.model._
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
+import gwen.core.node.gherkin.SpecType
 import gwen.core.report.ReportFormatter
 import gwen.core.report.html.HtmlSlideshowConfig
 import gwen.core.report.html.HtmlReportConfig
+import gwen.core.result.ResultsSummary
+import gwen.core.result.SpecResult
 
 import scalatags.Text.all._
 import scalatags.Text.TypedTag

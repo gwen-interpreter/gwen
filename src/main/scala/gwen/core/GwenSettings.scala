@@ -16,11 +16,9 @@
 
 package gwen.core
 
-import gwen.core.model.AssertionMode
-import gwen.core.model.BehaviorRules
-import gwen.core.model.FeatureMode
-import gwen.core.model.StateLevel
-import gwen.core.Errors._
+import gwen.core.behavior.BehaviorMode
+import gwen.core.behavior.FeatureMode
+import gwen.core.state.StateLevel
 
 /**
   * Provides access to gwen settings defined through system properties loaded 
@@ -147,8 +145,8 @@ object GwenSettings {
     * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is 
     * an alias for this setting.
     */
-    def `gwen.behavior.rules`: BehaviorRules.Value = 
-      Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorRules.withName).getOrElse(BehaviorRules.lenient)
+    def `gwen.behavior.rules`: BehaviorMode.Value = 
+      Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorMode.withName).getOrElse(BehaviorMode.lenient)
 
   /**
     * Provides access to the `gwen.feature.dialect` property setting used to set the default 
@@ -165,7 +163,7 @@ object GwenSettings {
     def `gwen.parallel.maxThreads`: Int = {
       Settings.getOpt("gwen.parallel.maxThreads").map(_.toInt).map { maxThreads =>
         if (maxThreads < 1) {
-          propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
+          Errors.propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
         } else if (maxThreads > availableProcessors) {
           availableProcessors
         } else {

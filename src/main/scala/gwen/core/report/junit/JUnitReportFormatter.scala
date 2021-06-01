@@ -17,11 +17,12 @@ package gwen.core.report.junit
 
 import gwen.core._
 import gwen.core.Formatting.padWithZeroes
-import gwen.core.engine.SpecNormaliser
-import gwen.core.model._
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.report.ReportFormatter
+import gwen.core.status._
+import gwen.core.result.SpecResult
 
 import scala.sys.process._
 import scala.util.Try
@@ -57,8 +58,8 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     val scenarioCount = scenarios.length
     val evalStatuses = scenarios.map(_.evalStatus)
     val failureCount = evalStatuses.filter(_.isAssertionError).size
-    val errorCount = evalStatuses.filter(status => EvalStatus.isError(status.status) && !status.isAssertionError).size
-    val skippedCount = evalStatuses.filter(status => status == Skipped || status == Pending).size
+    val errorCount = evalStatuses.filter(status => status.isError && !status.isAssertionError).size
+    val skippedCount = evalStatuses.filter(status => status.isSkipped || status.isPending).size
     val time = result.elapsedTime.toNanos.toDouble / 1000000000d
     val timestamp = new DateTime(result.finished).withZone(DateTimeZone.UTC).toString
     
@@ -91,7 +92,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
           (scenario, idx) <- scenarios.zipWithIndex
           name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.name}"
           time = scenario.evalStatus.nanos.toDouble / 1000000000d
-          status = scenario.evalStatus.status.toString
+          status = scenario.evalStatus.keyword.toString
         } yield {
           tag("testcase")(
             attr("name") := name,
@@ -125,7 +126,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
   private def findScenarios(result: SpecResult): List[Scenario] = {
     result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
-        val s = if (EvalStatus.isEvaluated(scenario.evalStatus.status)) {
+        val s = if (scenario.evalStatus.isEvaluated) {
           scenario
         } else {
           normaliseScenarioOutline(scenario, scenario.background)

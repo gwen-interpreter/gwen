@@ -17,9 +17,10 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
-import gwen.core.model._
 import gwen.core.node.GwenNode
+import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
+import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
 
@@ -28,7 +29,7 @@ import io.cucumber.messages.{ Messages => Cucumber }
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import gwen.core.model.state.EnvState
+import gwen.core.state.EnvState
 
 /**
   * Captures a gherkin step.
@@ -155,9 +156,9 @@ case class Step(
   }
 
   lazy val errorTrails: List[List[Step]] = {
-    if (EvalStatus.isError(evalStatus.status)) {
+    if (evalStatus.isError) {
       stepDef map { sd => 
-        sd.allSteps.filter(step => EvalStatus.isError(step.evalStatus.status)).flatMap { step => 
+        sd.allSteps.filter(step => step.evalStatus.isError).flatMap { step => 
           step.errorTrails map { trace => 
             this :: trace
           }

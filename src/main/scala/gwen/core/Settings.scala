@@ -17,6 +17,7 @@
 package gwen.core
 
 import gwen.core.Errors.GwenException
+import gwen.core.state.SensitiveData
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._

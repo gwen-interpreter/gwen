@@ -16,12 +16,10 @@
 package gwen.core.sample.templates
 
 import gwen.DefaultGwenInterpreter
-import gwen.GwenLauncher
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
-import gwen.core.model.Failed
-import gwen.core.model.Passed
 import gwen.core.report.ReportFormat
+import gwen.core.status._
 
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
@@ -29,7 +27,7 @@ import java.io.File
 
 class TemplatesTest extends BaseTest {
 
-  val launcher = new GwenLauncher(DefaultGwenInterpreter)
+  val interpreter = DefaultGwenInterpreter
   
   forAll (levels) { level =>
     s"Templates using $level level state" should "evaluate without error" in {  
@@ -41,7 +39,7 @@ class TemplatesTest extends BaseTest {
           features = List(new File("features/sample/templates"))
         )
           
-        launcher.run(options) match {
+        interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
@@ -61,7 +59,7 @@ class TemplatesTest extends BaseTest {
           dryRun = true
         )
           
-        launcher.run(options) match {
+        interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")

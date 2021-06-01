@@ -18,9 +18,11 @@ package gwen.core.report.html.format
 import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.GwenOptions
-import gwen.core.model._
+import gwen.core.node._
 import gwen.core.report.ReportFormat
 import gwen.core.report.html.HtmlReportConfig
+import gwen.core.status._
+import gwen.core.result.ResultsSummary
 
 import scalatags.Text.all._
 import scalatags.Text.TypedTag
@@ -58,7 +60,7 @@ trait SummaryFormatter {
 
   private def formatSummaryStatusBar(summary: ResultsSummary): TypedTag[String] = {
     
-    val status = summary.evalStatus.status
+    val status = summary.evalStatus.keyword
     val sustainedCount = summary.sustainedCount
 
     div(
@@ -102,7 +104,7 @@ trait SummaryFormatter {
     val reportDir = HtmlReportConfig.reportDir(options).get
     for {
       status <- StatusKeyword.reportables.reverse
-      results = summary.results.zipWithIndex.filter { _._1.evalStatus.status == status }
+      results = summary.results.zipWithIndex.filter { _._1.evalStatus.keyword == status }
       (result, index) <- results
       count = results.size
       total = summary.results.size

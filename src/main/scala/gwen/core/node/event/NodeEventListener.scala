@@ -16,9 +16,9 @@
 
 package gwen.core.node.event
 
-import gwen.core.model._
 import gwen.core.node._
 import gwen.core.node.gherkin._
+import gwen.core.result.SpecResult
 
 import scala.collection.mutable
 

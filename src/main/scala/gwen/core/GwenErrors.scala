@@ -20,7 +20,7 @@
  */
 package gwen.core
 
-import gwen.core.model._
+import gwen.core.behavior.BehaviorType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin._
 

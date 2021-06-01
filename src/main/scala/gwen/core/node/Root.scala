@@ -17,7 +17,6 @@
 package gwen.core.node
 
 import gwen.core.UUIDGenerator
-import gwen.core.model.NodeType
 
 object Root extends GwenNode {
   def nodeType: NodeType.Value = NodeType.Root

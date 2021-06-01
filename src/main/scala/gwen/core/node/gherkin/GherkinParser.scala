@@ -17,7 +17,6 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
-import gwen.core.model._
 import gwen.core.node.SourceRef
 
 import scala.io.Source

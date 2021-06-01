@@ -17,10 +17,11 @@
 package gwen.core.node.event
 
 import gwen.core._
-import gwen.core.model._
 import gwen.core.node._
 import gwen.core.node.gherkin._
-import gwen.core.model.state.ScopedDataStack
+import gwen.core.result.SpecResult
+import gwen.core.state.ScopedDataStack
+import gwen.core.status.EvalStatus
 
 import scala.collection.mutable
 

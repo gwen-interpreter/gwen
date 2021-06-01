@@ -17,11 +17,13 @@
 package gwen.core.node.event
 
 import gwen.core.UUIDGenerator
-import gwen.core.model._
 import gwen.core.node.FeatureUnit
 import gwen.core.node.GwenNode
+import gwen.core.node.NodeType
 import gwen.core.node.gherkin._
-import gwen.core.model.state.ScopedDataStack
+import gwen.core.result.SpecResult
+import gwen.core.state.ScopedDataStack
+import gwen.core.status._
 
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any

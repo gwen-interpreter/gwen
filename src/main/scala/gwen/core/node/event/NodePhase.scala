@@ -17,6 +17,5 @@
 package gwen.core.node.event
 
 object NodePhase extends Enumeration {
-  type NodePhase = Value
   val before, after, healthCheck = Value
 }

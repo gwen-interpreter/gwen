@@ -19,10 +19,12 @@ import gwen.core.FileIO
 import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.Formatting.escapeJson
-import gwen.core.model._
 import gwen.core.node._
 import gwen.core.node.gherkin._
 import gwen.core.report.ReportFormatter
+import gwen.core.status._
+import gwen.core.result.ResultsSummary
+import gwen.core.result.SpecResult
 
 import scala.util.Properties
 
@@ -47,7 +49,7 @@ trait JsonReportFormatter extends ReportFormatter {
 
     val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
-        if (EvalStatus.isEvaluated(scenario.evalStatus.status)) scenario.examples.flatMap(_.scenarios).map((_, true))
+        if (scenario.evalStatus.isEvaluated) scenario.examples.flatMap(_.scenarios).map((_, true))
         else List((scenario, false))
       }
       else List((scenario, false))
@@ -179,7 +181,7 @@ trait JsonReportFormatter extends ReportFormatter {
               }"""}.mkString(",")}
             ],""" else ""}
             "result": {
-              "status": "${step.evalStatus.status.toString.toLowerCase}",${if(step.evalStatus.isInstanceOf[Failed]) s"""
+              "status": "${step.evalStatus.keyword.toString.toLowerCase}",${if(step.evalStatus.isInstanceOf[Failed]) s"""
               "error_message": "${escapeJson(step.evalStatus.asInstanceOf[Failed].error.getMessage)}",""" else ""}
               "duration": ${step.evalStatus.nanos}
             }

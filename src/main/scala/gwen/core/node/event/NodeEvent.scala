@@ -18,7 +18,7 @@ package gwen.core.node.event
 
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.model.state.ScopedDataStack
+import gwen.core.state.ScopedDataStack
 
 import java.{util => ju}
 
