@@ -42,13 +42,12 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     * Formats the feature detail report as HTML.
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     
     val hostname = Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim)
     val packageName = result.spec.specFile.map(f => f.uri).getOrElse("")

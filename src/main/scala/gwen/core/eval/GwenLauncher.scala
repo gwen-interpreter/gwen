@@ -16,7 +16,6 @@
 
 package gwen.core.eval
 
-import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.GwenSettings
 import gwen.core.FileIO
@@ -50,7 +49,7 @@ import gwen.core.node.gherkin.SpecType
   * 
   * @param engine the engine to launch
   */
-class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging with GwenInfo {
+class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging {
   
   Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
     if (config.toLowerCase.trim startsWith "file:") {
@@ -86,7 +85,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
   def run(options: GwenOptions, ctxOpt: Option[T] = None): EvalStatus = {
     Settings.loadAll(options.properties)
     if (options.args.isDefined) {
-      logger.info(options.commandString(this))
+      logger.info(options.commandString)
     }
     val startNanos = System.nanoTime
     try {
@@ -185,7 +184,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     )
     results.flatten.sortBy(_.finished).foldLeft(ResultsSummary())(_ + _) tap { summary =>
       reportGenerators foreach {
-        _.reportSummary(this, summary)
+        _.reportSummary(summary)
       }
     }
   }
@@ -202,7 +201,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
             case _ =>
               (summary + result.map(bindReportFiles(reportGenerators, unit, _)).get) tap { accSummary =>
                 reportGenerators foreach {
-                  _.reportSummary(this, accSummary)
+                  _.reportSummary(accSummary)
                 }
               }
           }) tap { _ => result.foreach(logSpecStatus) }
@@ -243,7 +242,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     
   private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: SpecResult): SpecResult = {
     val reportFiles = reportGenerators.map { generator => 
-      (generator.format, generator.reportDetail(this, unit, result)) 
+      (generator.format, generator.reportDetail(unit, result)) 
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty) 
       new SpecResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)

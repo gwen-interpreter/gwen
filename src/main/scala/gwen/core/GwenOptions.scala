@@ -53,7 +53,7 @@ case class GwenOptions(
     dataFile: Option[File] = None,
     metas: List[File] = Nil, 
     features: List[File] = Nil,
-    args: Option[Array[String]] = None) {
+    args: Option[Array[String]] = None) extends GwenInfo {
   
   val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
   
@@ -61,11 +61,9 @@ case class GwenOptions(
 
   /**
     * Gets the command string used to invoke gwen.
-    * 
-    *  @param info the gwen implementation info
     */
-  def commandString(info: GwenInfo): String = args match {
-    case (Some(params)) => s"${info.implName}.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${params.mkString(" ")}"
+  def commandString: String = args match {
+    case (Some(params)) => s"$implName.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${params.mkString(" ")}"
     case _ => ""
   }
   

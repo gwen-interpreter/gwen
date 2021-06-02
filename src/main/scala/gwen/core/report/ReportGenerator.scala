@@ -17,7 +17,6 @@
 package gwen.core.report
 
 import gwen.core._
-import gwen.core.eval.EvalContext
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecType
@@ -69,18 +68,17 @@ class ReportGenerator (
 
   val format: ReportFormat.Value = config.format
     
-  def init[T <: EvalContext](lifecycle: NodeEventDispatcher): Unit = { }
-  def close[T <: EvalContext](lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
+  def init(lifecycle: NodeEventDispatcher): Unit = { }
+  def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
 
   /**
     * Generate and return a detail feature report.
     * 
-    * @param info the gwen implementation info
     * @param unit the feature unit
     * @param result the evaluated feature result
     * @return the list of report files (head = feature report, tail = meta reports)
     */
-  final def reportDetail(info: GwenInfo, unit: FeatureUnit, result: SpecResult): List[File] = {
+  final def reportDetail(unit: FeatureUnit, result: SpecResult): List[File] = {
     val featureSpec = result.spec
     val dataRecord = unit.dataRecord
     val featureReportFile = config.createReportDir(options, featureSpec, dataRecord) flatMap { dir => 
@@ -94,10 +92,10 @@ class ReportGenerator (
       }
     }
     val reportFiles = featureReportFile.map(_ :: metaReportFiles).getOrElse(Nil)
-    reportFeatureDetail(info, unit, result, reportFiles).map(file => file :: reportMetaDetail(info, unit, result.metaResults, reportFiles)).getOrElse(Nil)
+    reportFeatureDetail(unit, result, reportFiles).map(file => file :: reportMetaDetail(unit, result.metaResults, reportFiles)).getOrElse(Nil)
   }
   
-  private [report] def reportMetaDetail(info: GwenInfo, unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = {
+  private [report] def reportMetaDetail(unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = {
     if (GwenSettings.`gwen.report.suppress.meta`) {
       Nil
     } else {
@@ -105,7 +103,7 @@ class ReportGenerator (
         val featureCrumb = (SpecType.Feature.toString, reportFiles.head)
         val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
         val reportFile = reportFiles.tail(idx)
-        formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
+        formatDetail(options, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
           reportFile tap { file =>
             file.writeText(content) 
             logger.info(s"${config.name} meta detail report generated: ${file.getAbsolutePath}")
@@ -115,9 +113,9 @@ class ReportGenerator (
     }
   }
   
-  private final def reportFeatureDetail(info: GwenInfo, unit: FeatureUnit, result: SpecResult, reportFiles: List[File]): Option[File] = {
+  private final def reportFeatureDetail(unit: FeatureUnit, result: SpecResult, reportFiles: List[File]): Option[File] = {
     reportFiles.headOption flatMap { reportFile =>
-      formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
+      formatDetail(options, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
         reportFile tap { file =>
           file.writeText(content)
           reportAttachments(result.spec, file)
@@ -137,14 +135,13 @@ class ReportGenerator (
   /**
     * Must be implemented to generate and return a summary report file.
     * 
-    * @param info the gwen info
     * @param summary the feature summary to report
     */
-  final def reportSummary(info: GwenInfo, summary: ResultsSummary): Option[File] =
+  final def reportSummary(summary: ResultsSummary): Option[File] =
     if (summary.results.nonEmpty) {
       summaryReportFile tap { reportFile =>
         reportFile foreach { file =>
-          formatSummary(options, info, summary) foreach { content =>
+          formatSummary(options, summary) foreach { content =>
             file.writeText(content)
             logger.info(s"${config.name} feature summary report generated: ${file.getAbsolutePath}")
           }

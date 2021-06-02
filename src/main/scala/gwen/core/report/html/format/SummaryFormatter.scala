@@ -39,17 +39,16 @@ trait SummaryFormatter {
     * Formats the feature summary report as HTML.
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = {
+  override def formatSummary(options: GwenOptions, summary: ResultsSummary): Option[String] = {
     val title = "Feature Summary"
-    val path = if (options.args.isDefined) options.commandString(info) else ""
+    val path = if (options.args.isDefined) options.commandString else ""
     val htmlPage = 
       html(lang := "en",
         formatHtmlHead(title, "")
         ,body(
-          formatReportHeader(info, title, path, ""),
+          formatReportHeader(title, path, "", this),
           formatSummaryStatusBar(summary),
           formatSummaryMetrics(summary),
           formatSummaryResults(options, summary)

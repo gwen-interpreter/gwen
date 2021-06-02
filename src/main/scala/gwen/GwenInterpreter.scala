@@ -35,7 +35,7 @@ object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultInstance
   * 
   * @param engine the evaluation engine
   */
-class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with App with LazyLogging {
+class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with App with GwenInfo with LazyLogging {
 
   printBanner("Welcome to ")
   println()

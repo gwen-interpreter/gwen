@@ -15,38 +15,35 @@
  */
 package gwen.core.report
 
+import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.node.FeatureUnit
 import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
-import gwen.core.GwenInfo
-
 import java.io.File
 
 /** Trait for formatting the feature summary and detail reports. */
-trait ReportFormatter {
+trait ReportFormatter extends GwenInfo {
 
   /**
     * Formats the feature detail report.
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param unit the feature input
     * @param result the feature result
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = None
+  def formatDetail(options: GwenOptions, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = None
   
   /**
     * Formats the feature summary report.
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
+  def formatSummary(options: GwenOptions, summary: ResultsSummary): Option[String] = None
   
   private [report] def relativePath(reportFile: File, reportDir: File) = 
     reportFile.getPath.substring(reportDir.getPath.length + 1)

@@ -156,8 +156,8 @@ object HtmlReportFormatter {
     )
   }
   
-  private [format] def formatReportHeader(info: GwenInfo, heading: String, path: String, rootPath: String): TypedTag[String] = {
-    val implVersion = s"v${info.implVersion}"
+  private [format] def formatReportHeader(heading: String, path: String, rootPath: String, info: GwenInfo): TypedTag[String] = {
+    val version = s"v${info.implVersion}"
     table(width := "100%", attr("cellpadding") := "5",
       tr(
         td(width := "100px",
@@ -180,7 +180,7 @@ object HtmlReportFormatter {
           ),
           p(
             small(style := "white-space: nowrap; color: #1f23ae;",
-              info.releaseNotesUrl map { url => a(href := url, implVersion) } getOrElse implVersion
+              info.releaseNotesUrl map { url => a(href := url, version) } getOrElse version
             )
           )
         )

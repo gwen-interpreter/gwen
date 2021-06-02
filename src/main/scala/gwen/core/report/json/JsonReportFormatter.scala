@@ -16,7 +16,6 @@
 package gwen.core.report.json
 
 import gwen.core.FileIO
-import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.Formatting.escapeJson
 import gwen.core.node._
@@ -39,13 +38,12 @@ trait JsonReportFormatter extends ReportFormatter {
     * Formats the feature detail report as JSON.
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param unit the feature input
     * @param result the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val scenarios = result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
@@ -191,9 +189,8 @@ trait JsonReportFormatter extends ReportFormatter {
     * Formats the feature summary report as JSON (this implementation does nothing).
     * 
     * @param options gwen command line options
-    * @param info the gwen implementation info
     * @param summary the accumulated feature results summary
     */
-  override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = None
+  override def formatSummary(options: GwenOptions, summary: ResultsSummary): Option[String] = None
   
 }
