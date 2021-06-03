@@ -19,6 +19,9 @@ package gwen.core.node
 import gwen.core.UUIDGenerator
 
 object Root extends GwenNode {
-  def nodeType: NodeType.Value = NodeType.Root
   override val uuid: String = UUIDGenerator.baseId
+  override val sourceRef: Option[SourceRef] = None
+  override val nodeType: NodeType.Value = NodeType.Root
+  override val name: String = ""
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
 }

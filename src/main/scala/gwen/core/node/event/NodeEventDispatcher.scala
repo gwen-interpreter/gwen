@@ -33,16 +33,7 @@ import scala.util.Failure
 class NodeEventDispatcher extends LazyLogging {
 
   private val listeners = new mutable.Queue[NodeEventListener]()
-  private val callTrail = ThreadLocal.withInitial[mutable.Queue[Step]] { () => mutable.Queue[Step]() }
-
-  private def pushCallTrail(step: Step): List[Step] = { 
-    callTrail.get += step 
-    callTrail.get.toList
-  }
-
-  private def popCallTrail(): Option[Step] = { 
-    callTrail.get.removeLastOption(false)
-  }
+  private val callChain = ThreadLocal.withInitial[NodeChain] { () => new NodeChain() }
 
   def addListener(listener: NodeEventListener): Unit = { 
     listeners += listener
@@ -61,7 +52,7 @@ class NodeEventDispatcher extends LazyLogging {
   def beforeSpec(parent: GwenNode, spec: Spec, scopes: ScopedDataStack): Unit =
     dispatchBeforeEvent(parent, spec, scopes) { (listener, event) => listener.beforeSpec(event) }
   def afterSpec(result: SpecResult, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(result,scopes) { (listener, event) => listener.afterSpec(event) }
+    dispatchAfterEvent(result, scopes) { (listener, event) => listener.afterSpec(event) }
   def beforeBackground(parent: GwenNode, background: Background, scopes: ScopedDataStack): Unit =
     dispatchBeforeEvent(parent, background, scopes) { (listener, event) => listener.beforeBackground(event) }
   def afterBackground(background: Background, scopes: ScopedDataStack): Unit =
@@ -82,17 +73,14 @@ class NodeEventDispatcher extends LazyLogging {
     dispatchBeforeEvent(parent, stepDef, scopes) { (listener, event) => listener.beforeStepDef(event) }
   def afterStepDef(stepDef: Scenario, scopes: ScopedDataStack): Unit = 
     dispatchAfterEvent(stepDef, scopes) { (listener, event) => listener.afterStepDef(event) }
-  def beforeStep(parent: GwenNode, step: Step, scopes: ScopedDataStack): Unit = {
-    pushCallTrail(step)
+  def beforeStep(parent: GwenNode, step: Step, scopes: ScopedDataStack): Unit =
     dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
-  }
   def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
     // to gurantee at least 1 millisecond delay for durations less than 1 msec
     if (step.evalStatus.duration.toMillis < 1) {
       Thread.sleep(1)
     }
     dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
-    popCallTrail()
   }
   def healthCheck(parent: GwenNode, step: Step, scopes: ScopedDataStack): Unit = { 
     dispatchHealthCheckEvent(parent, step, scopes) { (listener, event) => 
@@ -163,6 +151,7 @@ class NodeEventDispatcher extends LazyLogging {
       source: T,
       scopes: ScopedDataStack)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
+    callChain.get.push(source)
     listeners foreach { listener => 
       listener.pushParent(source)
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
@@ -183,6 +172,7 @@ class NodeEventDispatcher extends LazyLogging {
         }
       }
     }
+    callChain.get.pop()
   }
 
   private def dispatchHealthCheckEvent[T <: GwenNode](parent: GwenNode, source: T, scopes: ScopedDataStack)
@@ -201,7 +191,7 @@ class NodeEventDispatcher extends LazyLogging {
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Option[NodeEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = NodeEvent(phase, parent, source, callTrail.get.toList, scopes)
+      val event = NodeEvent(phase, parent, source, callChain.get, scopes)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

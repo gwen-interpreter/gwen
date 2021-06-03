@@ -19,6 +19,7 @@ package gwen.core.result
 import gwen.core._
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.SourceRef
 import gwen.core.node.gherkin.Spec
 import gwen.core.report.ReportFormat
 import gwen.core.status._
@@ -43,14 +44,17 @@ class SpecResult(
   val metaResults: List[SpecResult],
   val started: Date,
   val finished: Date) extends GwenNode {
-  
-  val nodeType: NodeType.Value = NodeType.Result
+
+  override val sourceRef: Option[SourceRef] = spec.sourceRef
+  override val name:String = spec.name
+  override val nodeType: NodeType.Value = NodeType.Result
+  override val evalStatus: EvalStatus = spec.evalStatus
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
 
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots: List[File] = spec.attachments.filter(_._1 == "Screenshot").map(_._2)
   lazy val isMeta: Boolean = spec.specFile.exists(_.getName.endsWith(".meta"))
   lazy val summary = ResultsSummary(this)
-  lazy val evalStatus: EvalStatus = spec.evalStatus
   lazy val duration: Duration = evalStatus.duration
   lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   lazy val sustainedCount: Int = spec.sustainedCount

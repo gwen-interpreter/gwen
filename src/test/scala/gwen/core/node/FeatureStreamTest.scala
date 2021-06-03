@@ -87,7 +87,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
-        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -104,7 +104,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -121,7 +121,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -138,7 +138,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile1, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -168,7 +168,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -188,7 +188,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile2, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile2, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -208,7 +208,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil => 
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile1, new File(unit.dataRecord.get.dataFilePath))
+        assertFile(dataFile1, unit.dataRecord.get.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")

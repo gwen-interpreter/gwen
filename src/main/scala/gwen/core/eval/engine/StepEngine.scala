@@ -145,8 +145,12 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def healthCheck(parent: GwenNode, step: Step, ctx: T): Unit = {
-    if (step.indexIn(parent) == 0 && (parent.isInstanceOf[Scenario] && !parent.asInstanceOf[Scenario].isStepDef)) {
-      healthCheck(parent, step, ctx.scopes)
+    if (step.indexIn(parent).map(_ == 0).getOrElse(false)) {
+      parent match {
+        case scenario: Scenario if !scenario.isStepDef =>
+          healthCheck(parent, step, ctx.scopes)
+        case _ => // noop
+      }
     }
   }
 

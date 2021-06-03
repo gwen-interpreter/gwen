@@ -75,7 +75,7 @@ trait SpecNormaliser extends BehaviorRules {
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, List((name, value)))
     }
-    val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
+    val description = s"""@Data(file="${dataRecord.dataFile.getPath}", record=${dataRecord.recordNo})"""
     val dataBackground = background match {
       case Some(bg) =>
         val bgSteps = bg.steps match {

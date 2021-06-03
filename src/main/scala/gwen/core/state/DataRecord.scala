@@ -16,13 +16,15 @@
 
 package gwen.core.state
 
+import java.io.File
+
 /**
   * Captures a data record used to initialise feature level data bindings
   * 
-  *  @param dataFilePath the path to the source data file
+  *  @param dataFile the source data file
   *  @param recordNo the current data record number
   *  @param data the current data  
   */
-class DataRecord(val dataFilePath: String, val recordNo: Int, val data: List[(String, String)]) {
-  override def toString = s"DataRecord($dataFilePath[$recordNo])"
+class DataRecord(val dataFile: File, val recordNo: Int, val data: List[(String, String)]) {
+  override def toString = s"DataRecord(${dataFile.getPath}[$recordNo])"
 }

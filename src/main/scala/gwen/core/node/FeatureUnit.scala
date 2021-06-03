@@ -40,14 +40,20 @@ case class FeatureUnit(
     tagFilter: TagFilter,
     result: Option[SpecResult] = None) extends GwenNode {
 
-  val nodeType: NodeType.Value = NodeType.Unit
-  def ancestor: GwenNode = parent match {
-    case parentUnit: FeatureUnit => 
-      if (parentUnit.parent == Root) parent
-      else parentUnit.ancestor
-    case _ => this
+  override val sourceRef: Option[SourceRef] = None
+  override val name: String = featureFile.uri
+  override val nodeType: NodeType.Value = NodeType.Unit
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
+
+  def ancestor: GwenNode = {
+    parent match {
+      case parentUnit: FeatureUnit => 
+        if (parentUnit.parent == Root) parent
+        else parentUnit.ancestor
+      case _ => this
+    }
   }
-  val uri: String = s"${featureFile.uri}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
+
 }
 
 object FeatureUnit {

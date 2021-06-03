@@ -16,6 +16,7 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 
@@ -44,8 +45,16 @@ case class Feature(
     name: String, 
     description: List[String]) extends GherkinNode {
 
+  override val nodeType: NodeType.Value = NodeType.Feature
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case spec: Spec => List(spec.feature)
+      case _ => Nil
+    }
+  }
+  
   def specType = if (sourceRef.map(_.uri.contains(".meta")).getOrElse(false)) SpecType.Meta else SpecType.Feature
-  def nodeType: NodeType.Value = NodeType.Feature
 
   def copy(
       withLanguage: String = language, 

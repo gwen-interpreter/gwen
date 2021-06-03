@@ -195,7 +195,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord("AboutMe.csv", 1, data)
+    val dataRecord = new DataRecord(new File("AboutMe.csv"), 1, data)
     val result = normaliseSpec(feature, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1]")
@@ -223,7 +223,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord("AboutMe.csv", 1, data)
+    val dataRecord = new DataRecord(new File("AboutMe.csv"), 1, data)
     val result = normaliseSpec(feature, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1]")
@@ -576,7 +576,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     scenarios(4) should be(scenario5)
   }
 
-  "Scenario with identically named steps" should "return correct occurence number" in {
+  "Scenario with identically named steps" should "return correct indexes and occurence numbers" in {
 
     val spec = 
       s"""|  Feature: feature containing scenario with identically named steps
@@ -595,16 +595,24 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     val result = normaliseSpec(feature, None)
     val scenario = result.scenarios(0)
 
-    scenario.steps(0).occurrenceIn(scenario) should be (1)
-    scenario.steps(1).occurrenceIn(scenario) should be (1)
-    scenario.steps(2).occurrenceIn(scenario) should be (1)
-    scenario.steps(3).occurrenceIn(scenario) should be (2)
-    scenario.steps(4).occurrenceIn(scenario) should be (1)
-    scenario.steps(5).occurrenceIn(scenario) should be (1)
-    scenario.steps(6).occurrenceIn(scenario) should be (3)
+    scenario.steps(0).indexIn(scenario).get should be (0)
+    scenario.steps(1).indexIn(scenario).get should be (1)
+    scenario.steps(2).indexIn(scenario).get should be (2)
+    scenario.steps(3).indexIn(scenario).get should be (3)
+    scenario.steps(4).indexIn(scenario).get should be (4)
+    scenario.steps(5).indexIn(scenario).get should be (5)
+    scenario.steps(6).indexIn(scenario).get should be (6)
+
+    scenario.steps(0).occurrenceIn(scenario).get should be (1)
+    scenario.steps(1).occurrenceIn(scenario).get should be (1)
+    scenario.steps(2).occurrenceIn(scenario).get should be (1)
+    scenario.steps(3).occurrenceIn(scenario).get should be (2)
+    scenario.steps(4).occurrenceIn(scenario).get should be (1)
+    scenario.steps(5).occurrenceIn(scenario).get should be (1)
+    scenario.steps(6).occurrenceIn(scenario).get should be (3)
   }
 
-  "Feature with identically named scenarios" should "return correct occurence number" in {
+  "Feature with identically named scenarios" should "return correct indexes and occurence numbers" in {
 
     val spec = 
       s"""|  Feature: feature containing identically named scenarios
@@ -635,16 +643,24 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     val feature = parse(spec).get
     val result = normaliseSpec(feature, None)
 
-    result.scenarios(0).occurrenceIn(result) should be (1)
-    result.scenarios(1).occurrenceIn(result) should be (1)
-    result.scenarios(2).occurrenceIn(result) should be (1)
-    result.scenarios(3).occurrenceIn(result) should be (1)
-    result.scenarios(4).occurrenceIn(result) should be (2)
-    result.scenarios(5).occurrenceIn(result) should be (3)
-    result.scenarios(6).occurrenceIn(result) should be (1)
+    result.scenarios(0).indexIn(result).get should be (0)
+    result.scenarios(1).indexIn(result).get should be (1)
+    result.scenarios(2).indexIn(result).get should be (2)
+    result.scenarios(3).indexIn(result).get should be (3)
+    result.scenarios(4).indexIn(result).get should be (4)
+    result.scenarios(5).indexIn(result).get should be (5)
+    result.scenarios(6).indexIn(result).get should be (6)
+
+    result.scenarios(0).occurrenceIn(result).get should be (1)
+    result.scenarios(1).occurrenceIn(result).get should be (1)
+    result.scenarios(2).occurrenceIn(result).get should be (1)
+    result.scenarios(3).occurrenceIn(result).get should be (1)
+    result.scenarios(4).occurrenceIn(result).get should be (2)
+    result.scenarios(5).occurrenceIn(result).get should be (3)
+    result.scenarios(6).occurrenceIn(result).get should be (1)
   }
 
-  "Feature with identically named outline examples" should "return correct occurence number" in {
+  "Feature with identically named outline examples" should "return correct indexes and occurence numbers" in {
 
     val spec = 
       s"""|  Feature: feature containing identically outline examples
@@ -677,12 +693,19 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     val result = normaliseSpec(feature, None)
     val outline = result.scenarios(0)
 
-    outline.examples(0).occurrenceIn(outline) should be (1)
-    outline.examples(1).occurrenceIn(outline) should be (1)
-    outline.examples(2).occurrenceIn(outline) should be (2)
-    outline.examples(3).occurrenceIn(outline) should be (3)
-    outline.examples(4).occurrenceIn(outline) should be (4)
-    outline.examples(5).occurrenceIn(outline) should be (1)
+    outline.examples(0).indexIn(outline).get should be (0)
+    outline.examples(1).indexIn(outline).get should be (1)
+    outline.examples(2).indexIn(outline).get should be (2)
+    outline.examples(3).indexIn(outline).get should be (3)
+    outline.examples(4).indexIn(outline).get should be (4)
+    outline.examples(5).indexIn(outline).get should be (5)
+
+    outline.examples(0).occurrenceIn(outline).get should be (1)
+    outline.examples(1).occurrenceIn(outline).get should be (1)
+    outline.examples(2).occurrenceIn(outline).get should be (2)
+    outline.examples(3).occurrenceIn(outline).get should be (3)
+    outline.examples(4).occurrenceIn(outline).get should be (4)
+    outline.examples(5).occurrenceIn(outline).get should be (1)
   }
   
 }

@@ -17,6 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
+import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin.table.DataTable
@@ -33,7 +34,16 @@ import java.io.File
   */
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends GherkinNode {
   
-  def nodeType: NodeType.Value = NodeType.Tag
+  override val nodeType: NodeType.Value = NodeType.Tag
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match { 
+      case feature: Feature => feature.tags
+      case scenario: Scenario => scenario.tags
+      case examples: Examples => examples.tags
+      case _ => Nil
+    }
+  }
 
   if (name.matches("""\s""")) {
     Errors.invalidTagError(s"Whitespace not allowed in tag name '$name'")

@@ -18,8 +18,36 @@ package gwen.core.node
 
 import gwen.core.UUIDGenerator
 import gwen.core.node.NodeType
+import gwen.core.status.EvalStatus
+import gwen.core.status.Pending
 
 trait GwenNode {
-  def nodeType: NodeType.Value
+
   val uuid: String = UUIDGenerator.nextId
+  val sourceRef: Option[SourceRef]
+  val name: String
+  val evalStatus: EvalStatus = Pending
+  val nodeType: NodeType.Value
+
+  def siblingsIn(parent: GwenNode): List[GwenNode]
+
+  final def indexIn(parent: GwenNode): Option[Int] = {
+    indexIn(siblingsIn(parent))
+  }
+  
+  final def occurrenceIn(parent: GwenNode): Option[Int] = { 
+    indexIn(
+      siblingsIn(parent) filter { that => 
+        that.name.size > 0 && that.name == this.name
+      }
+    ) map (_ + 1)
+  }
+
+  private def indexIn(nodes: List[GwenNode]): Option[Int] = {
+    nodes.zipWithIndex.collectFirst {
+      case (that, idx) if that.sourceRef == this.sourceRef => Some(idx)
+    } getOrElse None
+  }
+
+  override def toString: String = name
 }

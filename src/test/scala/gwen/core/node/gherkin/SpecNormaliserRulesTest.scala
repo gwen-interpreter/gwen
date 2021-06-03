@@ -25,6 +25,8 @@ import gwen.core.status._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
+import java.io.File
+
 class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
@@ -194,7 +196,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord("AboutMe.csv", 1, data)
+    val dataRecord = new DataRecord(new File("AboutMe.csv"), 1, data)
     val result = normaliseSpec(feature, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1]")
@@ -446,7 +448,7 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenarios(4) should be(scenario5)
   }
 
-  "Rule with identically named scenarios" should "return correct occurence number" in {
+  "Rule with identically named scenarios" should "return correct indexes and occurence numbers" in {
 
     val spec = 
       s"""|  Feature: feature containing identically named scenarios
@@ -480,16 +482,24 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val result = normaliseSpec(feature, None)
     val rule = result.rules(0)
 
-    rule.scenarios(0).occurrenceIn(rule) should be (1)
-    rule.scenarios(1).occurrenceIn(rule) should be (1)
-    rule.scenarios(2).occurrenceIn(rule) should be (1)
-    rule.scenarios(3).occurrenceIn(rule) should be (2)
-    rule.scenarios(4).occurrenceIn(rule) should be (1)
-    rule.scenarios(5).occurrenceIn(rule) should be (3)
-    rule.scenarios(6).occurrenceIn(rule) should be (1)
+    rule.scenarios(0).indexIn(rule).get should be (0)
+    rule.scenarios(1).indexIn(rule).get should be (1)
+    rule.scenarios(2).indexIn(rule).get should be (2)
+    rule.scenarios(3).indexIn(rule).get should be (3)
+    rule.scenarios(4).indexIn(rule).get should be (4)
+    rule.scenarios(5).indexIn(rule).get should be (5)
+    rule.scenarios(6).indexIn(rule).get should be (6)
+
+    rule.scenarios(0).occurrenceIn(rule).get should be (1)
+    rule.scenarios(1).occurrenceIn(rule).get should be (1)
+    rule.scenarios(2).occurrenceIn(rule).get should be (1)
+    rule.scenarios(3).occurrenceIn(rule).get should be (2)
+    rule.scenarios(4).occurrenceIn(rule).get should be (1)
+    rule.scenarios(5).occurrenceIn(rule).get should be (3)
+    rule.scenarios(6).occurrenceIn(rule).get should be (1)
   }
 
-  "Feature with identically named rules" should "return correct occurence number" in {
+  "Feature with identically named rules" should "return correct indexes and occurence numbers" in {
 
     val spec = 
       s"""|  Feature: feature containing identically named rules
@@ -523,11 +533,17 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     val feature = parse(spec).get
     val result = normaliseSpec(feature, None)
 
-    result.rules(0).occurrenceIn(result) should be (1)
-    result.rules(1).occurrenceIn(result) should be (1)
-    result.rules(2).occurrenceIn(result) should be (2)
-    result.rules(3).occurrenceIn(result) should be (1)
-    result.rules(4).occurrenceIn(result) should be (3)
+    result.rules(0).indexIn(result).get should be (0)
+    result.rules(1).indexIn(result).get should be (1)
+    result.rules(2).indexIn(result).get should be (2)
+    result.rules(3).indexIn(result).get should be (3)
+    result.rules(4).indexIn(result).get should be (4)
+
+    result.rules(0).occurrenceIn(result).get should be (1)
+    result.rules(1).occurrenceIn(result).get should be (1)
+    result.rules(2).occurrenceIn(result).get should be (2)
+    result.rules(3).occurrenceIn(result).get should be (1)
+    result.rules(4).occurrenceIn(result).get should be (3)
   }
   
 }

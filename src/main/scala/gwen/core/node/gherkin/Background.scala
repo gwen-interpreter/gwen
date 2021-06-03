@@ -16,6 +16,7 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.status.EvalStatus
@@ -42,10 +43,19 @@ case class Background(
     description: List[String], 
     steps: List[Step]) extends GherkinNode {
 
-  def nodeType: NodeType.Value = NodeType.Background
-  def gwtOrder: List[String] = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k))
-
+  override val nodeType: NodeType.Value = NodeType.Background
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case spec: Spec => spec.background.toList
+      case scenario: Scenario => scenario.background.toList
+      case rule: Rule => rule.background.toList
+      case _ => Nil
+    }
+  }
+
+  def gwtOrder: List[String] = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k))
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,

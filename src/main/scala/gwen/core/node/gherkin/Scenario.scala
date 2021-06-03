@@ -52,23 +52,45 @@ case class Scenario(
     examples: List[Examples],
     params: List[(String, String)]) extends GherkinNode {
 
-  def nodeType: NodeType.Value = {
+  override val nodeType: NodeType.Value = {
     if (isStepDef) {
       NodeType.StepDef
     } else {
       NodeType.Scenario
     }
   }
+
+  override val evalStatus: EvalStatus = {
+    if (isOutline && examples.flatMap(_.scenarios).isEmpty) {
+      Pending
+    } else {
+      EvalStatus(allSteps.map(_.evalStatus), ignoreSustained = !isStepDef)
+    }
+  }
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case spec: Spec => spec.scenarios
+      case rule: Rule => rule.scenarios
+      case examples: Examples => examples.scenarios
+      case _ => Nil
+    }
+  }
   
   /**
     * Returns a list containing all steps.
     */
-  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ (if (!isOutline) steps else examples.flatMap(_.allSteps))
+  def allSteps: List[Step] = { 
+    background.map(_.steps).getOrElse(Nil) ++ (
+      if (!isOutline) steps else examples.flatMap(_.allSteps)
+    )
+  }
   
-  def evalScenarios: List[Scenario] = 
+  def evalScenarios: List[Scenario] = {
     if (isStepDef) Nil
     else if(isOutline) examples.flatMap(_.scenarios)
     else List(this)
+  }
   
   def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == ReservedTags.Examples.toString)
   def isExpanded: Boolean = examples.flatMap(_.scenarios).nonEmpty 
@@ -84,12 +106,9 @@ case class Scenario(
     allSteps.flatMap(step => step.deepAttachments)
   }
   
-  /** Returns the evaluation status of this scenario. */
-  override val evalStatus: EvalStatus =
-    if (isOutline && examples.flatMap(_.scenarios).isEmpty) Pending
-     else EvalStatus(allSteps.map(_.evalStatus), ignoreSustained = !isStepDef)
-
-  def behaviorTag: Option[Tag] = tags.find(tag => BehaviorType.values.exists(_.toString == tag.name))
+  def behaviorTag: Option[Tag] = {
+    tags.find(tag => BehaviorType.values.exists(_.toString == tag.name))
+  }
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,
@@ -104,16 +123,6 @@ case class Scenario(
     Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
   }
 
-  def occurrenceIn(parent: GwenNode): Int = {
-    parent match {
-      case spec: Spec =>
-        occurrenceIn(spec.scenarios)
-      case rule: Rule =>
-        occurrenceIn(rule.scenarios)
-      case _ => 0
-    }
-  }
-  
 }
 
 object Scenario {

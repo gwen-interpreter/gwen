@@ -17,37 +17,8 @@
 package gwen.core.node.gherkin
 
 import gwen.core.node.GwenNode
-import gwen.core.node.SourceRef
-import gwen.core.status._
 
 /**
   * Base trait for all Gherkin nodes.  
   */
-trait GherkinNode extends GwenNode {
-
-  /** The location in the Gherkin file or None if the node is synthetic or instantiated directly. */
-  val sourceRef: Option[SourceRef]
-
-  /** The name of the node. */
-  val name: String
-
-  /** Returns the evaluation status of this node. */
-  val evalStatus: EvalStatus = Pending
-
-  private [gherkin] def occurrenceIn(nodes: List[GherkinNode]): Int = {
-    1 + indexIn(
-      nodes filter { that => 
-        that.name.size > 0 && that.name == this.name
-      }
-    )
-  }
-
-  private [gherkin] def indexIn(nodes: List[GherkinNode]): Int = {
-    nodes.zipWithIndex.collectFirst {
-      case (that, idx) if that.sourceRef == this.sourceRef => idx
-    } getOrElse -1
-  }
-
-  override def toString: String = name
-
-}
+trait GherkinNode extends GwenNode

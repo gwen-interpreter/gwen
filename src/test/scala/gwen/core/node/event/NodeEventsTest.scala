@@ -20,6 +20,7 @@ import gwen.core.UUIDGenerator
 import gwen.core.node.FeatureUnit
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.Root
 import gwen.core.node.gherkin._
 import gwen.core.result.SpecResult
 import gwen.core.state.ScopedDataStack
@@ -34,7 +35,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 class NodeEventsTest extends FlatSpec with Matchers with MockitoSugar {
 
-  private def parent(): GwenNode = new GwenNode() { val nodeType: NodeType.Value = NodeType.Root }
+  private def parent(): GwenNode = Root
 
   "When pause is not set at disptatcher level then all events" should "be dispatched" in {
       

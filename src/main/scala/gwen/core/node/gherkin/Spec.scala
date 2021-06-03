@@ -17,6 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
+import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.status._
 
@@ -25,6 +26,7 @@ import scala.jdk.CollectionConverters._
 import io.cucumber.messages.{ Messages => Cucumber }
 
 import java.io.File
+import gwen.core.node.FeatureUnit
 
 /**
  * A Gherkin feature specification.
@@ -45,10 +47,16 @@ case class Spec(
 
   override val name = feature.name
   override val sourceRef = feature.sourceRef
+  override val nodeType: NodeType.Value = NodeType.withName(specType.toString)
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case _: FeatureUnit => List(feature)
+      case _ => Nil
+    }
+  }
 
   def specFile: Option[File] = sourceRef.flatMap(_.file)
   def specType: SpecType.Value = feature.specType
-  def nodeType: NodeType.Value = NodeType.withName(specType.toString)
 
   def isMeta: Boolean = SpecType.isMeta(specType)
 

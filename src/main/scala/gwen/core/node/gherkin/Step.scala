@@ -56,7 +56,15 @@ case class Step(
     override val evalStatus: EvalStatus,
     params: List[(String, String)]) extends GherkinNode {
 
-  def nodeType: NodeType.Value = NodeType.Step
+  override val nodeType: NodeType.Value = NodeType.Step
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case background: Background => background.steps
+      case scenario: Scenario => scenario.steps
+      case _ => Nil
+    }
+  }
 
   def isExpanded(parent: GwenNode) = parent match {
     case scenario: Scenario => scenario.isExpanded
@@ -165,22 +173,6 @@ case class Step(
         }
       } getOrElse List(List(this))
     } else Nil
-  }
-
-  def occurrenceIn(parent: GwenNode): Int = {
-    parent match {
-      case scenario: Scenario =>
-        occurrenceIn(scenario.steps)
-      case _ => 0
-    }
-  }
-
-  def indexIn(parent: GwenNode): Int = {
-    parent match {
-      case scenario: Scenario =>
-        indexIn(scenario.steps)
-      case _ => -1
-    }
   }
 
 }

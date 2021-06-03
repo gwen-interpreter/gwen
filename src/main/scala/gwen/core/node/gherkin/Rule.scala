@@ -45,7 +45,14 @@ case class Rule(
     background: Option[Background],
     scenarios: List[Scenario]) extends GherkinNode {
   
-  def nodeType: NodeType.Value = NodeType.Rule
+  override val nodeType: NodeType.Value = NodeType.Rule
+
+  override def siblingsIn(parent: GwenNode): List[GwenNode] = {
+    parent match {
+      case spec: Spec => spec.rules
+      case _ => Nil
+    }
+  }
 
   /**
     * Gets the list of all steps contained in the rule. The list includes
@@ -69,14 +76,6 @@ case class Rule(
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios): Rule = {
     Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
-  }
-
-  def occurrenceIn(parent: GwenNode): Int = {
-    parent match {
-      case spec: Spec =>
-        occurrenceIn(spec.rules)
-      case _ => 0
-    }
   }
 
 }
