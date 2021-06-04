@@ -45,29 +45,27 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   }
   
   """interpolate nested using property syntax: ${property1-${property0}}"""" should "resolve" in {
-    interpolateString("""Hey you ${property-${id}} thing!""") {
+    interpolateString("""Go you ${property-${id}} thing!""") {
       case "id" => "0"
       case "property-0" => "good"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
   
   """interpolate adjacent values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
-    interpolateString("""Hey you ${property-0} ${property-1} thing!""") {
-      case "id" => "0"
+    interpolateString("""Go you ${property-0} ${property-1} thing!""") {
       case "property-0" => "really"
       case "property-1" => "good"
       case _ => "undefined"
-    } should be ("""Hey you really good thing!""")
+    } should be ("""Go you really good thing!""")
   }
   
   """interpolate adjacent values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
-    interpolateString("""Hey you ${property-0}${property-1} thing!""") {
-      case "id" => "0"
+    interpolateString("""Go you ${property-0}${property-1} thing!""") {
       case "property-0" => "go"
       case "property-1" => "od"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
   
   """interpolate using stepdef param syntax: prefix "$<param>"""" should "resolve" in {
@@ -91,35 +89,35 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   }
   
   """interpolate nested using stepdef param syntax: $<param1-$<param0>>"""" should "resolve" in {
-    interpolateString("""Hey you $<param-$<id>> thing!""") {
-      case "id" => "0"
-      case "param-0" => "good"
+    interpolateString("""Go you $<param-$<id>> thing!""") {
+      case "<id>" => "0"
+      case "<param-0>" => "good"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
   
   """interpolate stepdef with adjacent params: $<param-0> $<param-1>"""" should "resolve" in {
-    interpolateString("""Hey you $<param-0> $<param-1> thing!""") {
-      case "param-0" => "really"
-      case "param-1" => "good"
+    interpolateString("""Go you $<param-0> $<param-1> thing!""") {
+      case "<param-0>" => "really"
+      case "<param-1>" => "good"
       case _ => "undefined"
-    } should be ("""Hey you really good thing!""")
+    } should be ("""Go you really good thing!""")
   }
   
   """interpolate stepdef with adjacent params (no space): $<param-0>$<param-1>"""" should "resolve" in {
-    interpolateString("""Hey you $<param-0>$<param-1> thing!""") {
-      case "param-0" => "go"
-      case "param-1" => "od"
+    interpolateString("""Go you $<param-0>$<param-1> thing!""") {
+      case "<param-0>" => "go"
+      case "<param-1>" => "od"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
   
   """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "decorate parameters" in {
-    interpolateString("""Hey you $<param-0>$<param-1> thing!""") {
-      case "param-0" => "$<param-0>"
-      case "param-1" => "$<param-1>"
+    interpolateString("""Go you $<param-0>$<param-1> thing!""") {
+      case "<param-0>" => "$<param-0>"
+      case "<param-1>" => "$<param-1>"
       case _ => "undefined"
-    } should be ("""Hey you $[param:param-0]$[param:param-1] thing!""")
+    } should be ("""Go you $[param:param-0]$[param:param-1] thing!""")
   }
   
   """interpolate using concatentation syntax: prefix "" + binding + " suffix""" should "resolve" in {
@@ -157,27 +155,27 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   }
   
   """interpolate nested env var using property syntax: ${property1-${property0}}"""" should "resolve" in {
-    interpolateString("""Hey you ${env.var-${env.id}} thing!""") {
+    interpolateString("""Go you ${env.var-${env.id}} thing!""") {
       case "env.id" => "0"
       case "env.var-0" => "good"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
   
   """interpolate adjacent env var values using property syntax: ${property-0} ${property-1}"""" should "resolve" in {
-    interpolateString("""Hey you ${env.var0} ${env.var1} thing!""") {
+    interpolateString("""Go you ${env.var0} ${env.var1} thing!""") {
       case "env.var0" => "really"
       case "env.var1" => "good"
       case _ => "undefined"
-    } should be ("""Hey you really good thing!""")
+    } should be ("""Go you really good thing!""")
   }
   
   """interpolate adjacent env var values using property syntax (no space): ${property-0}${property-1}"""" should "resolve" in {
-    interpolateString("""Hey you ${env.var0}${env.var1} thing!""") {
+    interpolateString("""Go you ${env.var0}${env.var1} thing!""") {
       case "env.var0" => "go"
       case "env.var1" => "od"
       case _ => "undefined"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
 
   """multi line string with properties""" should "resolve" in {
@@ -201,66 +199,98 @@ class InterpolationSupportTest extends FlatSpec with Matchers with Interpolation
   }
 
   """Nested parameter in property: ${property-$<param>}"""" should "resolve" in {
-    interpolateString("""Hey you ${property-$<id>} thing!""") {
-      case "id" => "0"
+    interpolateString("""Go you ${property-$<id>} thing!""") {
+      case "<id>" => "0"
       case "property-0" => "good"
       case x => s"undefined($x)"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
 
   """Nested parameter in env var: ${env.var_$<param>}"""" should "resolve" in {
-    interpolateString("""Hey you ${env.var_$<id>} thing!""") {
-      case "id" => "0"
+    interpolateString("""Go you ${env.var_$<id>} thing!""") {
+      case "<id>" => "0"
       case "env.var_0" => "good"
       case x => s"undefined($x)"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
 
-  """Nested property in parameter: $<property-${param}>"""" should "resolve" in {
-    interpolateString("""Hey you $<property-${id}> thing!""") {
+  """Nested property in parameter: $<param-${property}>"""" should "resolve" in {
+    interpolateString("""Go you $<param-${id}> thing!""") {
       case "id" => "0"
-      case "property-0" => "good"
+      case "<param-0>" => "good"
       case x => s"undefined($x)"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
 
-  """Nested env var in parameter: $<property-${env.var}>"""" should "resolve" in {
-    interpolateString("""Hey you $<property-${env.var}> thing!""") {
+  """Nested env var in parameter: $<param-${env.var}>"""" should "resolve" in {
+    interpolateString("""Go you $<param-${env.var}> thing!""") {
       case "env.var" => "0"
-      case "property-0" => "good"
+      case "<param-0>" => "good"
       case x => s"undefined($x)"
-    } should be ("""Hey you good thing!""")
+    } should be ("""Go you good thing!""")
   }
 
   """Interpolation of Params""" should "resolve 1 available param" in {
-    interpolateParams("""Hey you ${env.var0} $<param> thing!""") {
-      case "param" => "good"
+    interpolateParams("""Go you ${env.var0} $<param> thing!""") {
+      case "<param>" => "good"
       case x => Errors.unboundAttributeError(x, "local")
-    } should be ("""Hey you ${env.var0} good thing!""")
+    } should be ("""Go you ${env.var0} good thing!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params" in {
-    interpolateParams("""Hey you $<param1> ${env.var0} thing $<param2>!""") {
-      case "param1" => "good"
-      case "param2" => "you"
+    interpolateParams("""Go you $<param1> ${env.var0} thing $<param2>!""") {
+      case "<param1>" => "good"
+      case "<param2>" => "you"
       case x => Errors.unboundAttributeError(x, "local")
-    } should be ("""Hey you good ${env.var0} thing you!""")
+    } should be ("""Go you good ${env.var0} thing you!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params and skip missing param" in {
-    interpolateParams("""Hey you $<param1> $<param2> thing $<param3>!""") {
-      case "param1" => "good"
-      case "param3" => "you"
+    interpolateParams("""Go you $<param1> $<param2> thing $<param3>!""") {
+      case "<param1>" => "good"
+      case "<param3>" => "you"
       case x => Errors.unboundAttributeError(x, "local")
-    } should be ("""Hey you good $<param2> thing you!""")
+    } should be ("""Go you good $<param2> thing you!""")
   }
 
   """Interpolation of Params""" should "resolve 2 available params and skip composite param" in {
-    interpolateParams("""Hey you $<param1> $<${env.var0}> thing $<param2>!""") {
-      case "param1" => "good"
-      case "param2" => "you"
+    interpolateParams("""Go you $<param1> $<${env.var0}> thing $<param2>!""") {
+      case "<param1>" => "good"
+      case "<param2>" => "you"
       case x => Errors.unboundAttributeError(x, "local")
-    } should be ("""Hey you good $<${env.var0}> thing you!""")
+    } should be ("""Go you good $<${env.var0}> thing you!""")
+  }
+
+  """Same named property and parameter: $<name> ${name}"""" should "resolve" in {
+    interpolateString("""Go you $<name> ${name}!""") {
+      case "name" => "thing"
+      case "<name>" => "good"
+      case x => s"undefined($x)"
+    } should be ("""Go you good thing!""")
+  }
+
+  """Same named parameter and property: ${name} $<name>"""" should "resolve" in {
+    interpolateString("""Go you ${name} $<name>!""") {
+      case "name" => "good"
+      case "<name>" => "thing"
+      case x => s"undefined($x)"
+    } should be ("""Go you good thing!""")
+  }
+
+  """Nested parameter that resolves to same named property: $<${name}>"""" should "resolve" in {
+    interpolateString("""Go you $<${name}>!""") {
+      case "name" => "name"
+      case "<name>" => "good thing"
+      case x => s"undefined($x)"
+    } should be ("""Go you good thing!""")
+  }
+
+  """Nested property that resolves to same named parameter: ${$<name>}"""" should "resolve" in {
+    interpolateString("""Go you ${$<name>}!""") {
+      case "name" => "good thing"
+      case "<name>" => "name"
+      case x => s"undefined($x)"
+    } should be ("""Go you good thing!""")
   }
 
 }

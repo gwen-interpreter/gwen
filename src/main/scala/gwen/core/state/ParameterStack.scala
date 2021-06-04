@@ -43,7 +43,7 @@ class ParameterStack {
   def push(scope: String, params: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { data =>
       params foreach { case (name, value) =>
-        data.set(name, value)
+        data.set(s"<$name>", value)
       }
       paramStack.push(data)
     }
@@ -51,14 +51,6 @@ class ParameterStack {
   
   /** Pops the current parameters off the stack. */
   def pop(): ScopedData = paramStack.pop()
-  
-  /**
-    * Gets the parameters bound to the current stack.
-    *
-    * @return the list of parameters or Nil if empty
-    */
-  def getAll(): List[(String, String)] =
-    paramStack.headOption.map(_.findEntries(_ => true).toList).getOrElse(Nil)
 
   /**
     * Finds and retrieves parameter bound in the current stack.
@@ -96,7 +88,10 @@ class ParameterStack {
   override def toString: String = {
     paramStack.headOption.map(scope => (scope.scope, scope.findEntries(_ => true).toList)) match {
       case Some((scope, entries)) if entries.nonEmpty =>
-        s"params : { scope: $scope, entries : [ ${entries map { case (n, v) => s"{ $n: $v }" } mkString ", "} ] }"
+        s"params : { scope: $scope, entries : [ ${entries map { case (n, v) => 
+          val name = n.substring(1, n.length - 1)
+          s"{ $name: $v }" 
+        } mkString ", "} ] }"
       case _ => 
         "params : { }"
     }

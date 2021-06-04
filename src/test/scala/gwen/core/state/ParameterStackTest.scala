@@ -28,10 +28,10 @@ class ParameterStackTest extends FlatSpec with Matchers {
     val params = new ParameterStack()
     params.toString should be ("params : { }")
     
-    intercept[UnboundAttributeException] { params.get("username") }
-    intercept[UnboundAttributeException] { params.get("password") }
-    intercept[UnboundAttributeException] { params.get("firstName") }
-    intercept[UnboundAttributeException] { params.get("lastName") }
+    intercept[UnboundAttributeException] { params.get("<username>") }
+    intercept[UnboundAttributeException] { params.get("<password>") }
+    intercept[UnboundAttributeException] { params.get("<firstName>") }
+    intercept[UnboundAttributeException] { params.get("<lastName>") }
     
   }
   
@@ -46,16 +46,16 @@ class ParameterStackTest extends FlatSpec with Matchers {
     params.toString should be ("params : { scope: register, entries : [ { password: secret } ] }")
     
     intercept[UnboundAttributeException] {
-      params.get("username")  should be ("gwen")
+      params.get("<username>")  should be ("gwen")
     }
     
-    params.get("password")   should be ("secret")
+    params.get("<password>")   should be ("secret")
 
     params.pop()
     println("params : { }")
 
-    params.get("username")  should be ("gwen")
-    params.get("password")   should be ("pwd")
+    params.get("<username>")  should be ("gwen")
+    params.get("<password>")   should be ("pwd")
     
   }
   
@@ -66,34 +66,34 @@ class ParameterStackTest extends FlatSpec with Matchers {
     params.push("stepdef1", Nil)
     params.toString should be ("params : { }")
     intercept[UnboundAttributeException] {
-      params.get("username")  should be ("gwen")
+      params.get("<username>")  should be ("gwen")
     }
     
     params.push("stepdef2", List(("username", "gwen")))
     params.toString should be ("params : { scope: stepdef2, entries : [ { username: gwen } ] }")
 
-    params.get("username")  should be ("gwen")
+    params.get("<username>")  should be ("gwen")
     
     params.push("stepdef3", Nil)
     params.toString should be ("params : { }")
     intercept[UnboundAttributeException] {
-      params.get("username")  should be ("gwen")
+      params.get("<username>")  should be ("gwen")
     }
 
     params.pop()
     params.toString should be ("params : { scope: stepdef2, entries : [ { username: gwen } ] }")
-    params.get("username")  should be ("gwen")
+    params.get("<username>")  should be ("gwen")
     
     params.pop()
     params.toString should be ("params : { }")
     intercept[UnboundAttributeException] {
-      params.get("username")  should be ("gwen")
+      params.get("<username>")  should be ("gwen")
     }
     
     params.pop()
     params.toString should be ("params : { }")
     intercept[UnboundAttributeException] {
-      params.get("username")  should be ("gwen")
+      params.get("<username>")  should be ("gwen")
     }
 
     intercept[NoSuchElementException] {
