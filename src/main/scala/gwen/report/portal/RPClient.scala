@@ -19,6 +19,7 @@ package gwen.report.portal
 import gwen._
 import gwen.dsl._
 import gwen.Errors._
+import gwen.eval.FeatureUnit
 import gwen.eval.GwenOptions
 
 import scala.concurrent.duration.Duration
@@ -35,6 +36,7 @@ import com.epam.ta.reportportal.ws.model.attribute.ItemAttributesRQ
 import com.epam.ta.reportportal.ws.model.launch.StartLaunchRQ
 import com.epam.ta.reportportal.ws.model.FinishExecutionRQ
 import com.epam.ta.reportportal.ws.model.FinishTestItemRQ
+import com.epam.ta.reportportal.ws.model.ParameterResource
 import com.epam.ta.reportportal.ws.model.StartTestItemRQ
 import com.typesafe.scalalogging.LazyLogging
 import io.reactivex.Maybe
@@ -45,7 +47,6 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.{util => ju}
-import com.epam.ta.reportportal.ws.model.ParameterResource
 
 /**
   * Connects to report portal and performs all reporting operations.
@@ -151,7 +152,11 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       params: List[(String, String)],
       inlined: Boolean): Unit = {
 
-    val rq = createStartRequest(startTime, node, name, desc, tags, atts, params, inlined)
+    val sourceRef = node match {
+      case specNode : SpecNode => specNode.sourceRef
+      case _ => None
+    }
+    val rq = createStartRequest(startTime, node, sourceRef, name, desc, tags, atts, params, inlined)
     val rpid = parent map { p => 
       session.startTestItem(rpids.get(p.uuid), rq) // child
     } getOrElse {
@@ -161,12 +166,22 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     truncate(name) foreach { _ =>
       sendItemLog(LogLevel.INFO, name)
     }
+    if (RPSettings.`gwen.rp.debug.nodePath`) {
+      val nodePath = node match {
+        case unit: FeatureUnit => Some(s"/${unit.uri}")
+        case _ => sourceRef.flatMap(_.nodePath)
+      }
+      nodePath foreach { nodePath => 
+        sendItemLog(LogLevel.DEBUG, encode(s"nodePath:\n\n$nodePath", true))
+      }
+    }
 
   }
 
   private def createStartRequest(
       startTime: ju.Date,
       node: Identifiable,
+      sourceRef: Option[SourceRef],
       name: String, 
       desc: String, 
       tags: List[Tag], 
@@ -174,10 +189,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       params: List[(String, String)],
       inlined: Boolean): StartTestItemRQ = {
 
-    val sourceRef = node match {
-      case specNode : SpecNode => specNode.sourceRef
-      case _ => None
-    }
     new StartTestItemRQ() tap { rq =>
       rq.setStartTime(startTime)
       rq.setType(mapItemType(node).name)

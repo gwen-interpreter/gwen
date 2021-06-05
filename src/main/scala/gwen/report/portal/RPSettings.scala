@@ -53,7 +53,7 @@ object RPSettings {
     `gwen.rp.heartbeat`
     `gwen.rp.heartbeat.timeoutSecs`
     `gwen.rp.testCaseId.keys`
-    `gwen.rp.send.nodePath`
+    `gwen.rp.debug.nodePath`
 
     // load rerun settings
     if (rerun && rerunOf.isEmpty && rerunFile.exists()) {
@@ -284,15 +284,15 @@ object RPSettings {
   }
 
    /**
-   * Provides access to the `gwen.rp.send.nodePath` property setting used to 
-   * control whether or not to send nodepaths to the description of leaf nodes.
+   * Provides access to the `gwen.rp.debug.nodePath` property setting used to 
+   * control whether or not to send nodepaths to the debug level log in report portal.
    * Default is false (don't send). 
    */
-  def `gwen.rp.send.nodePath`: Boolean = {
+  def `gwen.rp.debug.nodePath`: Boolean = {
     Try { 
-      Settings.getOpt("gwen.rp.send.nodePath").map(_.toBoolean).getOrElse(false)
+      Settings.getOpt("gwen.rp.debug.nodePath").map(_.toBoolean).getOrElse(false)
     } getOrElse {
-      Errors.illegalSettingError("gwen.rp.send.nodePath", Settings.getOpt("gwen.rp.send.nodePath").getOrElse(""), Set(true, false))
+      Errors.illegalSettingError("gwen.rp.debug.nodePath", Settings.getOpt("gwen.rp.debug.nodePath").getOrElse(""), Set(true, false))
     }
   }
 

@@ -349,7 +349,7 @@ class RPReporter(rpClient: RPClient)
   private def formatDescriptionAndMore(node: SpecNode, callTrail: List[Step]): String = {
     val desc = formatDescription(node)
     val evalStatus = node.evalStatus
-    val descWithError = if (EvalStatus.isError(evalStatus.status) && callTrail.size > 0) {
+    if (EvalStatus.isError(evalStatus.status) && callTrail.size > 0) {
       val errors = {
         if (AppendErrorBlocks.all || (AppendErrorBlocks.leaf && isLeafNode(node))) {
           errorMessages(callTrail, Step.errorTrails(node)) match {
@@ -362,7 +362,6 @@ class RPReporter(rpClient: RPClient)
       }
       s"${if (desc.size > 0) s"$desc\r\n\r\n" else ""}$errors"
     } else desc
-    descriptionWithNodePath(descWithError, node)
   }
 
   private def formatDescription(node: SpecNode): String = {
@@ -395,19 +394,6 @@ class RPReporter(rpClient: RPClient)
       } getOrElse ""
     )
 
-  }
-
-  private def descriptionWithNodePath(desc: String, node: SpecNode): String = {
-    desc + (
-      node.sourceRef filter { _ => 
-        RPSettings.`gwen.rp.send.nodePath` && isLeafNode(node)
-      } flatMap { sref => 
-        sref.nodePath map { nodePath =>
-          s"""|${if (desc.size > 0) "<br>" else ""}
-              |nodePath: ${Formatting.escapeHtml(nodePath)}""".stripMargin
-        }
-      } getOrElse ""
-    )
   }
 
   private def errorMessages(callTrail: List[Step], errorTrails: List[List[Step]]): List[String] = {
