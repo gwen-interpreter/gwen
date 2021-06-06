@@ -181,9 +181,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     val lock = new Semaphore(1)
     lock.acquire()
     val start = System.currentTimeMillis
-    while(lock.availablePermits < 1 && (System.currentTimeMillis - start) < timeoutSecs) { 
+    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) { 
       if (condition) lock.release()
-      lock.tryAcquire()
     }
     try {
       if (lock.availablePermits < 1) {

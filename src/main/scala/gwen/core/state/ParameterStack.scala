@@ -17,6 +17,7 @@
 package gwen.core.state
 
 import gwen.core._
+import gwen.core.node.gherkin.ReservedTags
 
 import scala.collection.mutable
 
@@ -26,6 +27,12 @@ import scala.collection.mutable
   * @author Branko Juric  
   */
 class ParameterStack {
+
+  object ForEachParam {
+    val itemName: String = s"${ReservedTags.ForEach}.itemName"
+    val itemIndex: String = s"${ReservedTags.ForEach}.itemIndex"
+    val itemNumber: String = s"${ReservedTags.ForEach}.itemNumber"
+  } 
 
   /**
     * The parameters stack.

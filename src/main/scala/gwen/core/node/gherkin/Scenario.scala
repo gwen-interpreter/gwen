@@ -96,6 +96,9 @@ case class Scenario(
   def isExpanded: Boolean = examples.flatMap(_.scenarios).nonEmpty 
   def isStepDef: Boolean = tags.exists(_.name == ReservedTags.StepDef.toString)
   def isForEach: Boolean = tags.exists(_.name == ReservedTags.ForEach.toString)
+  def isIfCondition: Boolean = tags.exists(_.name == ReservedTags.If.toString)
+  def isWhileCondition: Boolean = tags.exists(_.name == ReservedTags.While.toString)
+  def isUntilCondition: Boolean = tags.exists(_.name == ReservedTags.Until.toString)
   def isDataTable: Boolean = tags.exists(_.name.startsWith(ReservedTags.DataTable.toString))
   def isSynchronized: Boolean = tags.map(_.name).exists { 
     name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString

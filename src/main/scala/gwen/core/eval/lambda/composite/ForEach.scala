@@ -22,19 +22,20 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin._
+import gwen.core.state.ReservedParam
+import gwen.core.state.ScopedData
 import gwen.core.status._
 
 import scala.util.Try
-import gwen.core.state.ScopedData
 
 abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends CompositeStep[T] {
 
   /**
-    * Repeats a step for each element in list of elements of type U.
+    * Repeats a step for each item in list of items of type U.
     */
-  def evaluateForEach[U](elements: ()=>Seq[U], name: String, parent: GwenNode, step: Step, doStep: String, ctx: T): Step = {
+  def evaluateForEach[U](itemList: ()=>Seq[U], name: String, parent: GwenNode, step: Step, doStep: String, ctx: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
-    val items = elements()
+    val items = itemList()
     val foreachSteps = items.toList.zipWithIndex map { case (_, index) => 
       step.copy(
         withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
@@ -48,18 +49,23 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
         case Nil =>
           logger.info(s"For-each[$name]: none found")
           Nil
-        case elems =>
-          val noOfElements = elems.size
+        case _ =>
+          val noOfElements = items.size
           logger.info(s"For-each[$name]: $noOfElements found")
           try {
             if(Try(ctx.getBoundReferenceValue(name)).isSuccess) {
               Errors.ambiguousCaseError(s"For-each element name '$name' already bound (use a free name instead)")
             }
-            elems.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
-              val elemNo = index + 1
+            items.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
+              val itemNo = index + 1
               ctx.topScope.set(s"$name index", index.toString)
-              ctx.topScope.set(s"$name number", elemNo.toString)
-              val params: List[(String, String)] = currentElement match {
+              ctx.topScope.set(s"$name number", itemNo.toString)
+              val forParams = List(
+                (ReservedParam.`ForEach.name`.toString, name),
+                (ReservedParam.`ForEach.index`.toString, index.toString),
+                (ReservedParam.`ForEach.iteration`.toString, itemNo.toString)
+              )
+              val params: List[(String, String)] = forParams ++ (currentElement match {
                 case data: ScopedData => 
                   ctx.topScope.pushObject(name, data)
                   data.findEntries { _ => true } toList
@@ -71,8 +77,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                   List((name, value))
                 case _ =>
                   ctx.topScope.pushObject(name, currentElement)
-                  List((name, s"$name $elemNo"))
-              }
+                  List((name, s"$name $itemNo"))
+              })
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -80,14 +86,14 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
                     val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
-                      logger.info(s"Skipping [$name] $elemNo of $noOfElements")
+                      logger.info(s"Skipping [$name] $itemNo of $noOfElements")
                       engine.transitionStep(preForeachStepDef, foreachSteps(index).copy(withParams = params), Skipped, ctx.scopes)
                     } else {
-                      logger.info(s"Processing [$name] $elemNo of $noOfElements")
+                      logger.info(s"Processing [$name] $itemNo of $noOfElements")
                       engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
                     }
                   case _ =>
-                    logger.info(s"Processing [$name] $elemNo of $noOfElements")
+                    logger.info(s"Processing [$name] $itemNo of $noOfElements")
                     engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
                 }
               } finally {

@@ -17,6 +17,8 @@ package gwen.core.node
 
 import scala.collection.mutable
 import gwen.core.node.gherkin.GherkinNode
+import gwen.core.node.gherkin.Step
+import gwen.core.state.ReservedParam
 
 class NodeChain {
 
@@ -41,15 +43,37 @@ class NodeChain {
         (nodes zip tail).foldLeft("") { (path: String, pair: (GwenNode, GwenNode)) =>
           val (parent, node) = pair
           val name = node.name
-          val occurrence = node match {
-            case _: GherkinNode =>  
-              node.occurrenceIn(parent).map(n => s"[$n]").getOrElse("")
-            case _ => ""
-          }
-          s"$path/$name$occurrence"
+          val occurrenceNo = occurrence(parent, node)
+          val iterationNo = iteration(node)
+          s"$path/$name$occurrenceNo$iterationNo"
         }
       case _ => 
         ""
+    }
+  }
+
+  private def occurrence(parent: GwenNode, node: GwenNode): String = {
+    node match {
+      case _: GherkinNode =>  
+        node.occurrenceIn(parent) orElse {
+          parent match {
+            case step: Step if step.stepDef.map(_ == node).getOrElse(false) => Some(1)
+            case _ => None
+          }
+        } map { occurrence => 
+          s"[$occurrence]"
+        } getOrElse ""
+      case _ => ""
+    }
+  }
+
+  private def iteration(node: GwenNode): String = {
+    node match {
+      case step: Step =>
+        step.params collectFirst { 
+          case (name, value) if ReservedParam.iterations.contains(name) => s"[$value]"
+        } getOrElse ""
+      case _ => ""
     }
   }
 
