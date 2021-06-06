@@ -386,7 +386,8 @@ case class Scenario(
     background: Option[Background],
     steps: List[Step],
     examples: List[Examples],
-    params: List[(String, String)]) extends SpecNode {
+    params: List[(String, String)],
+    callerParams: List[(String, String)]) extends SpecNode {
 
   override def nodeType: NodeType.Value = {
     if (isStepDef) {
@@ -437,8 +438,9 @@ case class Scenario(
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples,
-      withParams: List[(String, String)] = params): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
+      withParams: List[(String, String)] = params,
+      withCallerParams: List[(String, String)] = callerParams): Scenario = {
+    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams, withCallerParams)
   }
 
   def occurrenceIn(parent: Identifiable): Int = {
@@ -447,6 +449,8 @@ case class Scenario(
         occurrenceIn(spec.scenarios)
       case rule: Rule =>
         occurrenceIn(rule.scenarios)
+      case examples: Examples =>
+        occurrenceIn(examples.scenarios)
       case _ => 0
     }
   }
@@ -460,6 +464,29 @@ case class Scenario(
       },
       withExamples = examples map { e => 
         e.withNodePath(SourceRef.nodePath(s"$path/${e.name}", 1))
+      }
+    )
+  }
+
+  def withCallerParams(caller: Identifiable): Scenario = {
+    val names = callerParams map { case (n, _) => n }
+    caller match {
+      case step: Step => 
+        step.cumulativeParams filter { case (name, _) => 
+          !names.contains(name)
+        } match {
+          case Nil => this
+          case sParams => copy(withCallerParams = callerParams ++ sParams)
+        }
+      case _ => this
+    }
+  }
+
+  def cumulativeParams: List[(String, String)] = {
+    val names = params map { case (n, _) => n }
+    params ++ (
+      callerParams filter { case (name, _) => 
+        !names.contains(name)
       }
     )
   }
@@ -478,6 +505,7 @@ object Scenario {
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map(s => Step(uri, s)),
       scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(uri, examples, index) },
+      Nil,
       Nil
     )
   }
@@ -545,7 +573,7 @@ case class Examples(
     copy(
       withSourceRef = sourceRef.map(_.withNodePath(path)),
       withScenarios = scenarios map { s => 
-        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", 1))
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(this)))
       }
     )
   }
@@ -683,7 +711,8 @@ case class Step(
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus,
-    params: List[(String, String)]) extends SpecNode {
+    params: List[(String, String)],
+    callerParams: List[(String, String)]) extends SpecNode {
 
   def nodeType: NodeType.Value = NodeType.Step
   val isVirtual: Boolean = name.contains(s"$ZeroChar")
@@ -718,12 +747,15 @@ case class Step(
       withTable: List[(Int, List[String])] = table,
       withDocString: Option[(Int, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus,
-      withParams: List[(String, String)] = params): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams)
+      withParams: List[(String, String)] = params,
+      withCallerParams: List[(String, String)] = callerParams): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams)
   }
 
   def occurrenceIn(parent: Identifiable): Int = {
     parent match {
+      case background: Background =>
+        occurrenceIn(background.steps)
       case scenario: Scenario =>
         occurrenceIn(scenario.steps)
       case _ => 0
@@ -735,6 +767,29 @@ case class Step(
       withSourceRef = sourceRef.map(_.withNodePath(path)),
       withStepDef = stepDef.map { sd =>
         sd.withNodePath(SourceRef.nodePath(s"$path/${sd.name}", 1))
+      }
+    )
+  }
+
+  def withCallerParams(caller: Identifiable): Step = {
+    val names = callerParams map { case (n, _) => n }
+    caller match {
+      case scenario: Scenario => 
+        scenario.cumulativeParams filter { case (name, _) => 
+          !names.contains(name)
+        } match {
+          case Nil => this
+          case sParams => copy(withCallerParams = callerParams ++ sParams)
+        }
+      case _ => this
+    }
+  }
+
+  def cumulativeParams: List[(String, String)] = {
+    val names = params map { case (n, _) => n }
+    params ++ (
+      callerParams filter { case (name, _) => 
+        !names.contains(name)
       }
     )
   }
@@ -771,6 +826,7 @@ object Step {
       dataTable, 
       docString, 
       Pending,
+      Nil,
       Nil)
   }
   def errorTrails(node: SpecNode): List[List[Step]] = node match {

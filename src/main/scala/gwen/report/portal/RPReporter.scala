@@ -95,7 +95,7 @@ class RPReporter(rpClient: RPClient)
     val name = s"${scenario.keyword}: ${scenario.name}"
     val desc = formatDescription(scenario)
     val tags = filterTags(scenario.tags)
-    val params = scenario.params
+    val params = scenario.cumulativeParams
     val atts = breadcrumbAtts(scenario.sourceRef, callTrail, scopes)
     rpClient.startItem(startTime, Some(parent), scenario, name, desc, tags, atts, params, inlined)
   }
@@ -160,7 +160,7 @@ class RPReporter(rpClient: RPClient)
     val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.name}"
     val desc = formatDescription(stepDef)
     val tags = filterTags(stepDef.tags)
-    val params = stepDef.params
+    val params = stepDef.cumulativeParams
     rpClient.startItem(startTime, Some(parent), stepDef, name, desc, tags, Map(), params, inlined)
   }
 
@@ -185,7 +185,7 @@ class RPReporter(rpClient: RPClient)
     val desc = formatDescription(step)
     val breadcrumbs = breadcrumbAtts(step.sourceRef, callTrail, scopes)
     val atts = if (breadcrumbs.nonEmpty) { breadcrumbs ++ Map("step" -> step.name) } else breadcrumbs
-    val params = step.params
+    val params = step.cumulativeParams
     rpClient.startItem(startTime, Some(parent), step, name, desc, Nil, atts, params, inlined)
     step.docString foreach { docString =>
       rpClient.sendItemLog(LogLevel.INFO, Formatting.formatDocString(docString))

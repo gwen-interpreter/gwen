@@ -254,6 +254,7 @@ package object gwen {
       }
       resolveParams(Nil, source, params)
     }
+
     def formatTable(table: List[(Int, List[String])]): String = {
       (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
     }
@@ -266,6 +267,13 @@ package object gwen {
         s"""|${"\"\"\""}${if(includeType) contentType.getOrElse("") else ""}
             |$content
             |${"\"\"\""}""".stripMargin
+    }
+    def formatParams(params: List[(String, String)]): String = {
+      if (params.length > 0) {
+        s"{ ${params map { case (n, v) => s"$n : $v" } mkString ", "} }"
+      } else {
+        ""
+      }
     }
   }
   

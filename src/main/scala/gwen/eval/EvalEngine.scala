@@ -179,7 +179,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     */
   def evaluateStep(parent: Identifiable, step: Step, stepIndex: Int, env: T): Step = {
     val start = System.nanoTime - step.evalStatus.nanos
-    val ipStep = doEvaluate(step, env) { env.interpolateParams }
+    val ipStep = doEvaluate(step.withCallerParams(parent), env) { env.interpolateParams }
     val isStep = doEvaluate(ipStep, env) { env.interpolate }
     val iStep = isStep.withNodePath(deriveNodePath(parent, step, isStep.name, env))
     var pStep: Option[Step] = None
@@ -275,7 +275,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     env.topScope.getOpt("gwen.override.node.occurrence").map(_.toInt) match {
       case Some(occurence) =>
         env.topScope.set("gwen.override.node.occurrence", null)
-        SourceRef.nodePath(SourceRef.nodePath(s"$parentPath/$name", 1), occurence)
+        SourceRef.nodePath(s"$parentPath/$name", occurence)
       case None => 
         val occurrence = step.occurrenceIn(parent)
         SourceRef.nodePath(s"$parentPath/$name", if (occurrence > 0) occurrence else 1)
@@ -307,7 +307,8 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     }
   }
 
-  def evalStepDef(parent: Identifiable, stepDef: Scenario, step: Step, env: T): Step = {
+  def evalStepDef(parent: Identifiable, iStepDef: Scenario, step: Step, env: T): Step = {
+    val stepDef = iStepDef.withCallerParams(step)
     val sdStep = step.copy(
       withStepDef = Some(stepDef)
     )
@@ -319,7 +320,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
     if (eStep.evalStatus.status == StatusKeyword.Failed) {
       eStep
     } else {
-      env.stepScope.push(stepDef.name, stepDef.params)
+      env.stepScope.push(stepDef.name, iStepDef.params)
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith("DataTable(")) map { tag => DataTable(tag, step) }
         dataTableOpt foreach { table =>
@@ -425,9 +426,9 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val forEachPath = SourceRef.nodePath(s"${step.sourceRef.flatMap(_.nodePath).getOrElse("/")}/ForEach $name", 1)
+    val forEachPath = SourceRef.nodePath(s"${step.sourceRef.flatMap(_.nodePath).getOrElse("/")}/$name", 1)
     val forEachSourceRef = step.sourceRef.map(_.withNodePath(forEachPath))
-    val preForeachStepDef = Scenario(forEachSourceRef, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil)
+    val preForeachStepDef = Scenario(forEachSourceRef, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
     lifecycle.beforeStepDef(step, preForeachStepDef, env.scopes)
     val steps =
       elementItems match {
@@ -472,11 +473,11 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
                       lifecycle.transitionStep(preForeachStepDef, foreachSteps(index).copy(withParams = params), Skipped, env.scopes)
                     } else {
                       logger.info(s"Processing [$name] $elemNo of $noOfElems")
-                      evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), index, env)
+                      evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil), index, env)
                     }
                   case _ =>
                     logger.info(s"Processing [$name] $elemNo of $noOfElems")
-                    evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), index, env)
+                    evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil), index, env)
                 }
               } finally {
                 env.topScope.popObject(name)

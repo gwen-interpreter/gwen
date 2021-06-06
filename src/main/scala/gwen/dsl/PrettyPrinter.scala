@@ -49,7 +49,7 @@ object prettyPrint {
       s"${if (language != "en") s"# language: $language\n\n" else ""}${formatTags("   ", tags)}   $keyword: $name${formatTextLines(description)}"
     case background @ Background(_, keyword, name, description, steps) =>
       s"\n\n$keyword: $name${formatTextLines(description)}${formatStatus(background.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")
-    case scenario @ Scenario(_, tags, keyword, name, description, background, steps, examples, _) =>
+    case scenario @ Scenario(_, tags, keyword, name, description, background, steps, examples, _, _) =>
       background.map(apply).getOrElse("") +
         (if (scenario.isOutline && scenario.examples.flatMap(_.scenarios).nonEmpty) "" else s"\n\n${formatTags(paddingFor(keyword), tags)}${paddingFor(keyword)}${scenario.keyword}: $name${formatTextLines(description)}${formatStatus(scenario.evalStatus)}\n" + printAll(steps.map(apply), "  ", "\n")) +
         printAll(examples.map(apply), "", "\n")
@@ -57,7 +57,7 @@ object prettyPrint {
       s"\n\n      $keyword: $name${formatTextLines(description)}" +
         background.map(apply).getOrElse("") + 
         printAll(scenarios.map(apply), "", "")
-    case Step(_, keyword, name, _, _, table, docString, evalStatus, _) =>
+    case Step(_, keyword, name, _, _, table, docString, evalStatus, _, _) =>
       rightJustify(keyword.toString) + s"$keyword $name${formatStatus(evalStatus)}" + s"${if (table.nonEmpty)
         formatTextLines(table.indices.toList.map { rowIndex => Formatting.formatTableRow(table, rowIndex) })
       else if (docString.nonEmpty)

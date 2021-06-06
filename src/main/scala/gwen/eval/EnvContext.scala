@@ -145,7 +145,7 @@ class EnvContext(options: GwenOptions) extends Evaluatable
           StepKeyword.When
         }
       }
-      val step = Step(stepDef.sourceRef, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending, Nil)
+      val step = Step(stepDef.sourceRef, keyword.toString, s"$virtualStep for each data record", Nil, None, Nil, None, Pending, Nil, Nil)
       stepDefs += (stepDef.name ->
         stepDef.copy(
           withSourceRef = stepDef.sourceRef,

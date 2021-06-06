@@ -125,7 +125,7 @@ Background: The butterfly effect
        Then a large change will eventually result
 
   @Outline
-  Scenario: Join two strings together -- Example 1.1 Basic string concatenation
+  Scenario: Join two strings together -- Basic string concatenation
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "howdy"
         And string 2 is "doo"
@@ -139,7 +139,7 @@ Background: The butterfly effect
        Then a large change will eventually result
 
   @Outline
-  Scenario: Join two strings together -- Example 1.2 Basic string concatenation
+  Scenario: Join two strings together -- Basic string concatenation
             This scenario is evaluated at the point where the outline is declared
       Given string 1 is "any"
         And string 2 is "thing"
