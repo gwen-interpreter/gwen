@@ -139,7 +139,7 @@ trait SpecNormaliser extends BehaviorRules {
               },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${resolveParams(outline.name, params)._1} -- Example ${tableIndex + 1}.${rowIndex + 1}${if (exs.name.length > 0) s" ${exs.name}" else ""}",
+              s"${resolveParams(outline.name, params)._1}${if (exs.name.length > 0) s" -- ${exs.name}" else ""}",
               outline.description.map(line => resolveParams(line, params)._1),
               if (outline.isStepDef) None 
               else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))), 

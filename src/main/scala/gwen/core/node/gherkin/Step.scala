@@ -54,7 +54,7 @@ case class Step(
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus,
-    params: List[(String, String)]) extends GherkinNode {
+    override val params: List[(String, String)]) extends GherkinNode {
 
   override val nodeType: NodeType.Value = NodeType.Step
 

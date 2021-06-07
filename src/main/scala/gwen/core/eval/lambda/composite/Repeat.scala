@@ -40,7 +40,6 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
     assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
     assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
     val operationTag = Tag(if (operation == "until") ReservedTags.Until else ReservedTags.While)
-    val iterationParam = if (operation == "until") ReservedParam.`Until.iteration` else ReservedParam.`While.iteration`
     val tags = List(Tag(ReservedTags.Synthetic), operationTag, Tag(ReservedTags.StepDef))
     val preCondStepDef = Scenario(None, tags, operationTag.name, condition, Nil, None, Nil, Nil, Nil)
     var condSteps: List[Step] = Nil
@@ -51,11 +50,10 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
       try {
         ctx.waitUntil(timeout.toSeconds.toInt, s"trying to repeat: ${step.name}") {
           iteration = iteration + 1
-          ctx.topScope.set("iteration number", iteration.toString)
           val preStep = step.copy(
             withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString, 
             withName = doStep,
-            withParams = List((iterationParam.toString, iteration.toString)) ++ step.params
+            withParams = List((ReservedParam.`iteration.number`.toString, iteration.toString)) ++ step.params
           )
           operation match {
             case "until" =>
@@ -111,8 +109,6 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
           evaluatedStep = step.copy(
             withEvalStatus = Failed(durationNanos, Errors.stepError(step, e))
           )
-      } finally {
-        ctx.topScope.set("iteration number", null)
       }
     } getOrElse {
       try {
@@ -135,7 +131,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
           val preStep = condSteps.head.copy(
             withKeyword = StepKeyword.And.toString, 
             withName = doStep,
-            withParams = List((iterationParam.toString, (iteration + 1).toString)) ++ step.params
+            withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
           )
           engine.beforeStep(preCondStepDef, preStep, ctx.scopes)
           val fStep = engine.finaliseStep(

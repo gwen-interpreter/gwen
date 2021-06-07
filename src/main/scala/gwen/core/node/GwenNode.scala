@@ -26,8 +26,9 @@ trait GwenNode {
   val uuid: String = UUIDGenerator.nextId
   val sourceRef: Option[SourceRef]
   val name: String
-  val evalStatus: EvalStatus = Pending
   val nodeType: NodeType.Value
+  val evalStatus: EvalStatus = Pending
+  val params: List[(String, String)] = Nil
 
   def siblingsIn(parent: GwenNode): List[GwenNode]
 

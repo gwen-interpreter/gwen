@@ -44,8 +44,7 @@ class NodeChain {
           val (parent, node) = pair
           val name = node.name
           val occurrenceNo = occurrence(parent, node)
-          val iterationNo = iteration(node)
-          s"$path/$name$occurrenceNo$iterationNo"
+          s"$path/$name$occurrenceNo"
         }
       case _ => 
         ""
@@ -55,23 +54,17 @@ class NodeChain {
   private def occurrence(parent: GwenNode, node: GwenNode): String = {
     node match {
       case _: GherkinNode =>  
-        node.occurrenceIn(parent) orElse {
-          parent match {
-            case step: Step if step.stepDef.map(_ == node).getOrElse(false) => Some(1)
-            case _ => None
+        node.params collectFirst { case (name, value) 
+          if name == ReservedParam.`iteration.number`.toString => value
+        } orElse {
+          node.occurrenceIn(parent) orElse {
+            parent match {
+              case step: Step if step.stepDef.map(_ == node).getOrElse(false) => Some(1)
+              case _ => None
+            }
           }
         } map { occurrence => 
           s"[$occurrence]"
-        } getOrElse ""
-      case _ => ""
-    }
-  }
-
-  private def iteration(node: GwenNode): String = {
-    node match {
-      case step: Step =>
-        step.params collectFirst { 
-          case (name, value) if ReservedParam.iterations.contains(name) => s"[$value]"
         } getOrElse ""
       case _ => ""
     }

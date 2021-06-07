@@ -20,14 +20,6 @@ import gwen.core.node.gherkin.ReservedTags
 
 object ReservedParam extends Enumeration {
 
-  val `ForEach.name` = Value(s"${ReservedTags.ForEach}.name")
-  val `ForEach.index` = Value(s"${ReservedTags.ForEach}.index")
-  val `ForEach.iteration` = Value(s"${ReservedTags.ForEach}.iteration")
-  val `While.iteration` = Value(s"${ReservedTags.While}.iteration")
-  val `Until.iteration` = Value(s"${ReservedTags.Until}.iteration")
-
-  val names: List[String] = values.toList.filter(_.toString.endsWith(".name")).map(_.toString)
-  val indexes: List[String] = values.toList.filter(_.toString.endsWith(".index")).map(_.toString)
-  val iterations: List[String] = values.toList.filter(_.toString.endsWith(".iteration")).map(_.toString)
-
+  val `iteration.number` = Value(s"${ReservedTags.ForEach}.iteration.number")
+  
 } 

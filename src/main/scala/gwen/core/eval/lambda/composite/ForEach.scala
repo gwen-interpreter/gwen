@@ -22,7 +22,6 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin._
-import gwen.core.state.ReservedParam
 import gwen.core.state.ScopedData
 import gwen.core.status._
 
@@ -58,14 +57,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
             }
             items.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
               val itemNo = index + 1
-              ctx.topScope.set(s"$name index", index.toString)
-              ctx.topScope.set(s"$name number", itemNo.toString)
-              val forParams = List(
-                (ReservedParam.`ForEach.name`.toString, name),
-                (ReservedParam.`ForEach.index`.toString, index.toString),
-                (ReservedParam.`ForEach.iteration`.toString, itemNo.toString)
-              )
-              val params: List[(String, String)] = forParams ++ (currentElement match {
+              val params: List[(String, String)] = currentElement match {
                 case data: ScopedData => 
                   ctx.topScope.pushObject(name, data)
                   data.findEntries { _ => true } toList
@@ -78,7 +70,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                 case _ =>
                   ctx.topScope.pushObject(name, currentElement)
                   List((name, s"$name $itemNo"))
-              })
+              }
               (try {
                 EvalStatus(acc.map(_.evalStatus)) match {
                   case status @ Failed(_, error)  =>
@@ -102,8 +94,6 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
             } reverse
           } finally {
             ctx.topScope.set(name, null)
-            ctx.topScope.set(s"$name index", null)
-            ctx.topScope.set(s"$name number", null)
           }
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
