@@ -15,25 +15,17 @@
  */
 package gwen.core.node
 
-import scala.collection.mutable
 import gwen.core.node.gherkin.GherkinNode
 import gwen.core.node.gherkin.Step
 import gwen.core.state.ReservedParam
 
-class NodeChain {
+class NodeChain(nodes: List[GwenNode]) {
 
-  private val chain = mutable.Queue[GwenNode]()
+  assert(nodes.nonEmpty, "IllegalState: nodes cannot be empty")
 
-  def push(node: GwenNode): List[GwenNode] = { 
-    chain += node
-    chain.toList
-  }
-
-  def pop(): Option[GwenNode] = { 
-    chain.removeLastOption(false)
-  }
-
-  def nodes: List[GwenNode] = chain.toList
+  def lastNode: GwenNode = nodes.last
+  def take(n: Int): NodeChain = new NodeChain(nodes.take(n))
+  def add(node: GwenNode):NodeChain = new NodeChain(nodes ++ List(node))
 
   def nodePath: String = {
     nodes match {
@@ -69,6 +61,12 @@ class NodeChain {
       case _ => ""
     }
   }
+
+}
+
+object NodeChain {
+
+  def apply(): NodeChain = new NodeChain(List(Root))
 
 }
 

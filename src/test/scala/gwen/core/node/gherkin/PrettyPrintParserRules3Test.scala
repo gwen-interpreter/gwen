@@ -149,7 +149,7 @@ Background: A butterfly might impact a tornado
        Then the change in atmosphere might seam neglibile
         But it could alter the path of the tornado
 
-   Example: Join two strings together -- Example 1.1 Basic string concatenation
+   Example: Join two strings together -- Basic string concatenation
         This scenario is evaluated at the point where the outline is declared
       Given string 1 is "howdy"
         And string 2 is "doo"
@@ -165,7 +165,7 @@ Background: A butterfly might impact a tornado
        Then the change in atmosphere might seam neglibile
         But it could alter the path of the tornado
 
-   Example: Join two strings together -- Example 1.2 Basic string concatenation
+   Example: Join two strings together -- Basic string concatenation
         This scenario is evaluated at the point where the outline is declared
       Given string 1 is "any"
         And string 2 is "thing"

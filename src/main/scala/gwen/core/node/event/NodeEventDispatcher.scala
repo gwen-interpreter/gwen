@@ -33,7 +33,6 @@ import scala.util.Failure
 class NodeEventDispatcher extends LazyLogging {
 
   private val listeners = new mutable.Queue[NodeEventListener]()
-  private val callChain = ThreadLocal.withInitial[NodeChain] { () => new NodeChain() }
 
   def addListener(listener: NodeEventListener): Unit = { 
     listeners += listener
@@ -151,7 +150,6 @@ class NodeEventDispatcher extends LazyLogging {
       source: T,
       scopes: ScopedDataStack)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
-    callChain.get.push(source)
     listeners foreach { listener => 
       listener.pushParent(source)
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
@@ -172,7 +170,6 @@ class NodeEventDispatcher extends LazyLogging {
         }
       }
     }
-    callChain.get.pop()
   }
 
   private def dispatchHealthCheckEvent[T <: GwenNode](parent: GwenNode, source: T, scopes: ScopedDataStack)
@@ -191,7 +188,7 @@ class NodeEventDispatcher extends LazyLogging {
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Option[NodeEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = NodeEvent(phase, parent, source, callChain.get, scopes)
+      val event = NodeEvent(phase, parent, source, scopes)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)
