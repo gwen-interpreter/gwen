@@ -270,8 +270,8 @@ object RPSettings {
 
   /**
     * Provides access to the `gwen.rp.testCaseId.keys` property setting used to control how
-    * test case IDs are generated in report portal. Valid values include `nodePath+params` (default)
-    * and `sourceRef+params`, or `auto`.
+    * test case IDs are generated in report portal. Valid values include `nodePath+params` (default),
+    * `sourceRef+params`, `nodePath`, `sourceRef`, or `auto`.
     *
     * @return
     */

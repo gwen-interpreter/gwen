@@ -76,7 +76,7 @@ object RPConfig {
 
   object TestCaseIdKeys extends Enumeration {
     type TestCaseIdKeys = Value
-    val auto = Value
+    val auto, nodePath, sourceRef = Value
     val `sourceRef+params` = Value("sourceRef+params")
     val `nodePath+params` = Value("nodePath+params")
   }
