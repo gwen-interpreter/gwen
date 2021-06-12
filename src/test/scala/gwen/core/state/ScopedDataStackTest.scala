@@ -21,8 +21,8 @@ import gwen.core.Errors.UnboundAttributeException
 
 import scala.collection.mutable
 
-import org.scalatest.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.matchers.should.Matchers
 
 class ScopedDataStackTest extends BaseTest with Matchers {
 

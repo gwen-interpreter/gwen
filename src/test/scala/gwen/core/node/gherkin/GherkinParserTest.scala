@@ -20,10 +20,10 @@ import gwen.core.TestModel
 
 import scala.util.Success
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GherkinParserTest extends FlatSpec with Matchers with GherkinParser with TestModel {
+class GherkinParserTest extends AnyFlatSpec with Matchers with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
   

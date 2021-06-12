@@ -22,8 +22,8 @@ import gwen.core.TestModel
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
 
-import org.scalatest.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.matchers.should.Matchers
 
 class EnvironmentTest extends BaseTest with Matchers with TestModel {
   

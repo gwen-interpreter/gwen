@@ -30,14 +30,14 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.File
 import gwen.core.eval.GwenREPL
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar {
+class GwenInterpreterTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
   private def createInterpreter(options: GwenOptions, engine: EvalEngine[EvalContext], repl: GwenREPL[EvalContext]) = {
     new GwenInterpreter(engine)

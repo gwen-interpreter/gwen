@@ -23,9 +23,9 @@ import gwen.core.node.gherkin._
 import gwen.core.state.Environment
 import gwen.core.state.EnvState
 
-import org.scalatest.Matchers
 
 import java.io.File
+import org.scalatest.matchers.should.Matchers
 
 class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with BehaviorRules with TestModel {
 

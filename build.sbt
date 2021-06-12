@@ -3,7 +3,7 @@ lazy val gwen = (project in file("."))
     projectSettings,
     libraryDependencies ++= mainDependencies ++ testDependencies
   )
-  
+
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
@@ -57,18 +57,20 @@ lazy val mainDependencies = {
     "joda-time" % "joda-time" % jodaTime,
     "com.lihaoyi" %% "scalatags" % scalaTags,
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner
-    
+
   )
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.0.9"
+  val scalaTest = "3.2.9"
+  val scalaTestPlusMockito = "3.2.9.0"
   val mockitoAll = "1.10.19"
   val h2 = "1.4.200"
   val slick = "3.3.3"
 
   Seq(
     "org.scalatest" %% "scalatest" % scalaTest,
+    "org.scalatestplus" %% "mockito-3-4" % scalaTestPlusMockito,
     "org.mockito" % "mockito-all" % mockitoAll,
     "com.h2database" % "h2" % h2,
     "com.typesafe.slick" %% "slick" % slick

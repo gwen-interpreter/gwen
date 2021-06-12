@@ -18,7 +18,7 @@
 
  import gwen.core._
  
- import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
  class SensitiveDataTest extends BaseTest with Matchers {
 

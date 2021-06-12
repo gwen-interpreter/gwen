@@ -27,12 +27,12 @@ import gwen.core.status._
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import gwen.core.state.EnvState
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class NodeEventsTest extends FlatSpec with Matchers with MockitoSugar {
+class NodeEventsTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
   "When pause is not set at disptatcher level then all events" should "be dispatched" in {
       

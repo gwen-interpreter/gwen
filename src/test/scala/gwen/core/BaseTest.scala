@@ -16,10 +16,10 @@
 
 package gwen.core
 
-import org.scalatest.FlatSpec
 import org.scalatest.prop.TableDrivenPropertyChecks.Table
+import org.scalatest.flatspec.AnyFlatSpec
 
-abstract class BaseTest extends FlatSpec {
+abstract class BaseTest extends AnyFlatSpec {
 
   val levels = Table ( ("level"), ("feature"), ("scenario") )
 

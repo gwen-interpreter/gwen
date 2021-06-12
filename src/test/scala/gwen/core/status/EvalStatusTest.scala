@@ -21,11 +21,11 @@ import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecNormaliser
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 
-class EvalStatusTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
+class EvalStatusTest extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
 

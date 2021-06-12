@@ -19,10 +19,10 @@ package gwen.core.node.gherkin
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Tag
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TagFilterTest extends FlatSpec with Matchers with GherkinParser { 
+class TagFilterTest extends AnyFlatSpec with Matchers with GherkinParser { 
 
   private val parse = parseSpec(_: String)
   

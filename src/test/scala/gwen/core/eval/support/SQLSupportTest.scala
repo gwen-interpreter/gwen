@@ -28,9 +28,11 @@ import slick.jdbc.H2Profile.api._
 import slick.jdbc.JdbcBackend
 import slick.jdbc.JdbcBackend.Database
 import slick.lifted.Tag
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class SQLSupportTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with Matchers
     with BeforeAndAfterAll
     with SQLSupport {

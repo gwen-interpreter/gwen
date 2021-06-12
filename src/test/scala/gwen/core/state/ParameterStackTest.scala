@@ -18,10 +18,10 @@ package gwen.core.state
 
 import gwen.core.Errors.UnboundAttributeException
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ParameterStackTest extends FlatSpec with Matchers {
+class ParameterStackTest extends AnyFlatSpec with Matchers {
 
   "get" should "throw error when there is not data" in {
     

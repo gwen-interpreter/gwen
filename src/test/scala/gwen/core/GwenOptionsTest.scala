@@ -24,12 +24,12 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 
 import java.io.File
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GwenOptionsTest extends FlatSpec with Matchers {
+class GwenOptionsTest extends AnyFlatSpec with Matchers {
   
   val rootDir: File = new File("target" + File.separator + "props") tap { _.mkdirs() }
 

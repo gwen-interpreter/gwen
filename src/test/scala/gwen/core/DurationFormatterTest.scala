@@ -20,10 +20,10 @@ import gwen.core.Formatting.formatDuration
 
 import scala.concurrent.duration.Duration
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DurationFormatterTest extends FlatSpec with Matchers {
+class DurationFormatterTest extends AnyFlatSpec with Matchers {
 
   "Zero duration" should "format to ~0ms" in {
     formatDuration(Duration.fromNanos(0)) should be ("~0ms")

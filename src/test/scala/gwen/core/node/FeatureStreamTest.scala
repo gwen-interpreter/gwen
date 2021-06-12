@@ -20,10 +20,10 @@ import gwen.core._
 import gwen.core.Errors.AmbiguousCaseException
 import gwen.core.node.gherkin.TagFilter
 
-import org.scalatest.Matchers
 
 import java.io.File
 import java.util.NoSuchElementException
+import org.scalatest.matchers.should.Matchers
 
 class FeatureStreamTest extends BaseTest with Matchers {
   

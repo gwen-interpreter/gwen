@@ -16,10 +16,10 @@
 
 package gwen.core.node.gherkin
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class FeatureKeywordTest extends FlatSpec with Matchers {
+class FeatureKeywordTest extends AnyFlatSpec with Matchers {
 
    "names" should "evaluate correctly" in {
     val names = FeatureKeyword.names

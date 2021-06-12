@@ -21,12 +21,12 @@ import gwen.core.node.gherkin._
 import gwen.core.state.DataRecord
 import gwen.core.status._
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 
 import java.io.File
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
+class SpecNormaliserTest extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
 

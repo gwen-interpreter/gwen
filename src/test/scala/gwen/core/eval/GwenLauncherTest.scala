@@ -33,14 +33,14 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.File
 import java.{util => ju}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class GwenLauncherTest extends FlatSpec with Matchers with MockitoSugar with TestModel {
+class GwenLauncherTest extends AnyFlatSpec with Matchers with MockitoSugar with TestModel {
 
   val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
   
