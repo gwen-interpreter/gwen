@@ -66,14 +66,15 @@ lazy val testDependencies = {
   val scalaTestPlusMockito = "3.2.9.0"
   val mockitoAll = "1.10.19"
   val h2 = "1.4.200"
-  val slick = "3.3.3"
+  // val slick = "3.3.3"
 
   Seq(
     "org.scalatest" %% "scalatest" % scalaTest,
     "org.scalatestplus" %% "mockito-3-4" % scalaTestPlusMockito,
     "org.mockito" % "mockito-all" % mockitoAll,
     "com.h2database" % "h2" % h2,
-    "com.typesafe.slick" %% "slick" % slick
+    // TODO: uncomment and re-enable SQLSupportTest once slick releases a Scala 3-compatible version
+    // "com.typesafe.slick" %% "slick" % slick
   ).map(_ % Test)
 }
 
