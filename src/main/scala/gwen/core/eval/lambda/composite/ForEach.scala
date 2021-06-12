@@ -42,7 +42,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
     val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil)
-    engine.beforeStepDef(step, preForeachStepDef, ctx.scopes)
+    engine.beforeStepDef(preForeachStepDef, ctx)
     val steps =
       items match {
         case Nil =>
@@ -79,7 +79,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                     val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
                     if (failfast && !isSoftAssert) {
                       logger.info(s"Skipping [$name] $itemNo of $noOfElements")
-                      engine.transitionStep(preForeachStepDef, foreachSteps(index).copy(withParams = params), Skipped, ctx.scopes)
+                      engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
                     } else {
                       logger.info(s"Processing [$name] $itemNo of $noOfElements")
                       engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
@@ -97,7 +97,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
           }
       }
     val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
-    engine.afterStepDef(foreachStepDef, ctx.scopes)
+    engine.afterStepDef(foreachStepDef, ctx)
     step.copy(withStepDef = Some(foreachStepDef))
   }
 

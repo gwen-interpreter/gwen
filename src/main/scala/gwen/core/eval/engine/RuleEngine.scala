@@ -48,27 +48,27 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
         val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
-          transitionRule(parent, rule, Skipped, ctx.scopes)
+          transitionRule(rule, Skipped, ctx)
         } else if (exitOnFail && !isSoftAssert) {
-          transitionRule(parent, rule, rule.evalStatus, ctx.scopes)
+          transitionRule(rule, rule.evalStatus, ctx)
         } else {
-          beforeRule(parent, rule, ctx.scopes)
+          beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
           ) tap { r =>
             logStatus(r)
-            afterRule(r, ctx.scopes)
+            afterRule(r, ctx)
           }
         }
       case _ =>
-        beforeRule(parent, rule, ctx.scopes)
+        beforeRule(rule, ctx)
         logger.info(s"Evaluating ${rule.keyword}: $rule")
         rule.copy(
           withScenarios = evaluateScenarios(rule, rule.scenarios, ctx)
         ) tap { r =>
           logStatus(r)
-          afterRule(r, ctx.scopes)
+          afterRule(r, ctx)
         }
     }
   }

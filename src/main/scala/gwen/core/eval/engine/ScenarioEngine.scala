@@ -103,9 +103,9 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
-          transitionScenario(parent, scenario, Skipped, ctx.scopes)
+          transitionScenario(scenario, Skipped, ctx)
         } else if (exitOnFail && !isSoftAssert) {
-          transitionScenario(parent, scenario, scenario.evalStatus, ctx.scopes)
+          transitionScenario(scenario, scenario.evalStatus, ctx)
         } else {
           evaluateScenario(parent, scenario, ctx)
         }
@@ -122,7 +122,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)
     } else {
-      beforeScenario(parent, scenario, ctx.scopes)
+      beforeScenario(scenario, ctx)
       logger.info(s"Evaluating ${scenario.keyword}: $scenario")
       (if (scenario.isOutline) {
         evaluateScenarioOutline(scenario, ctx)
@@ -133,7 +133,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           evaluateScenarioWithoutBackground(scenario, ctx)
         }
       }) tap { s =>
-        afterScenario(s, ctx.scopes)
+        afterScenario(s, ctx)
       }
     } tap { s =>
       logStatus(s)
@@ -166,7 +166,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       if (outline.isExpanded) {
         step.copy(withEvalStatus = Loaded)
       } else {
-        transitionStep(outline, step, Loaded, ctx.scopes)
+        transitionStep(step, Loaded, ctx)
       }
     }
     val examples = evaluateExamples(outline, outline.examples, ctx)

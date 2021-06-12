@@ -17,6 +17,8 @@
 package gwen.core.state
 
 import gwen.core._
+import gwen.core.node.GwenNode
+import gwen.core.node.NodeChain
 import gwen.core.node.gherkin._
 import gwen.core.behavior.BehaviorType
 
@@ -24,7 +26,6 @@ import scala.util.matching.Regex
 
 import com.typesafe.scalalogging.LazyLogging
 import java.io.File
-import gwen.core.node.GwenNode
 
 /**
   * Base environment context providing access to all resources and state.
@@ -41,10 +42,10 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def paramScope: ParameterStack = scopes.paramScope
   def scopes: ScopedDataStack = state.scopes
   def topScope: TopScope = scopes.topScope
-  def callChain: List[GwenNode] = state.callChain
+  def nodeChain: NodeChain = state.nodeChain
 
   /** Create a clone of the current environment state */
-  def cloneState: EnvState = EnvState(topScope, Some(stepDefs), callChain)
+  def cloneState: EnvState = EnvState(topScope, Some(stepDefs), nodeChain)
 
   /**
     * Closes any resources associated with the evaluation context. This implementation
@@ -57,9 +58,9 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     logger.info(s"Resetting environment context")
     state = if (StateLevel.feature.equals(level)) {
       EnvState.resetAttachmentNo()
-      EnvState(topScope, None, Nil)
+      EnvState(topScope, None, NodeChain())
     } else {
-      EnvState(topScope, Some(stepDefs), callChain)
+      EnvState(topScope, Some(stepDefs), nodeChain)
     }
     
   }
@@ -185,5 +186,11 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   }
 
   def popAttachments(): List[(Int, String, File)] = state.popAttachments()
+
+  /** Pushes a node onto the node chain.*/
+  def pushNode(node: GwenNode): NodeChain = state.pushNode(node)
+
+  /** Pops a node off the node chain.*/
+  def popNode(): (GwenNode, NodeChain) = state.popNode()
   
 }

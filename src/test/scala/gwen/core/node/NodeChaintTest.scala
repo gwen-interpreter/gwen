@@ -123,16 +123,16 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]""")
     chain = builder.push(outline.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/string 1 is "<string 1>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain = builder.push(outline.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/string 2 is "<string 2>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain = builder.push(outline.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain = builder.push(outline.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/the result should be "<result>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
 
     val examples = outline.examples
     val example1 = examples(0)
@@ -147,27 +147,27 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]""")
     chain = builder.push(scenario1.background.get.steps(0))
     chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]/background step 1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/string 1 is "basket"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/string 2 is "ball"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/the result should be "basketball"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]""")
 
     val scenario2 = example1.scenarios(1)
@@ -177,29 +177,29 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]""")
     chain = builder.push(scenario2.background.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]/background step 1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/string 1 is "any"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/string 2 is "thing"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/the result should be "anything"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]""")
 
     val example2 = examples(1)
@@ -213,27 +213,27 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]""")
     chain = builder.push(scenario3.background.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]/background step 1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/string 1 is "howdy"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/string 2 is "doo"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/the result should be "howdydoo"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]""")
 
     val scenario4 = example2.scenarios(1)
@@ -243,29 +243,29 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]""")
     chain = builder.push(scenario4.background.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]/background step 1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/string 1 is "yep"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/string 2 is "ok"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/the result should be "yepok"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]""")
 
     val example3 = examples(2)
@@ -279,36 +279,36 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]""")
     chain = builder.push(scenario5.background.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]/background step 1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/string 1 is "ding"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/string 2 is "dong"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/I join the two strings[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/the result should be "dingdong"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/""")
 
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/target/NodeChainTest/outline.feature/Outline[1]")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/target/NodeChainTest/outline.feature")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/")
 
   }
@@ -362,13 +362,13 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(stepDef1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click option "<option>" in "<type>"[1]/the option is "$<option>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(stepDef1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click option "<option>" in "<type>"[1]/the type is "$<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click option "<option>" in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]""")
 
     val stepDef2 = spec.scenarios(1)
@@ -376,17 +376,17 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(stepDef2.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]/options is "~option1,option2,option3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(stepDef2.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]/condition is defined by javascript "true"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(stepDef2.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "$<type>" for each opt in options delimited by "," if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I click checbox in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]""")
 
     val scenario = spec.scenarios(2)
@@ -394,7 +394,7 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]""")
     chain = builder.push(scenario.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/the type is "my type"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]""")
     chain = builder.push(scenario.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]""")
@@ -402,11 +402,11 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/options is "~option1,option2,option3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/condition is defined by javascript "true"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]""")
@@ -422,15 +422,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]/I click option "<option>" in "<type>"[1]/the option is "~option1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]/I click option "<option>" in "<type>"[1]/the type is "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]/I click option "<option>" in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "~option1" in "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]""")
@@ -438,15 +438,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]/I click option "<option>" in "<type>"[1]/the option is "option2"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]/I click option "<option>" in "<type>"[1]/the type is "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]/I click option "<option>" in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option2" in "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]""")
@@ -454,33 +454,33 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]/I click option "<option>" in "<type>"[1]/the option is "option3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]/I click option "<option>" in "<type>"[1]""")
     chain = builder.push(scenario.steps(1).stepDef.get.steps(2).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]/I click option "<option>" in "<type>"[1]/the type is "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]/I click option "<option>" in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]/I click option "option3" in "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]/opt[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]/I click option "${opt}" in "group" for each opt in options delimited by ","[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]/condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]/I click option "${opt}" in "group" for each opt in options delimited by "," if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]/I click checbox in "<type>"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]/I click checbox in "group"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]/I process options[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/for-each.feature/For each delimited value with if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/target/NodeChainTest/for-each.feature")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/")
   }
 
@@ -533,13 +533,13 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/I increment counter[1]""")
     chain = builder.push(stepDef1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/I increment counter[1]/counter is defined by javascript "${counter} + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/I increment counter[1]""")
     chain = builder.push(stepDef1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/I increment counter[1]/counter > 3 is defined by javascript "${counter} > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]""")
 
     val scenario1 = spec.scenarios(1)
@@ -547,7 +547,7 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]""")
     chain = builder.push(scenario1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/counter is "0"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]""")
     chain = builder.push(scenario1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]""")
@@ -559,15 +559,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
@@ -575,15 +575,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
@@ -591,15 +591,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
@@ -607,21 +607,21 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]""")
 
     val scenario2 = spec.scenarios(2)
@@ -629,11 +629,11 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/counter is "-1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/condition is defined by javascript "true"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]""")
@@ -641,15 +641,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "-1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "0 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]""")
@@ -665,15 +665,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
@@ -681,15 +681,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
@@ -697,15 +697,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
@@ -713,33 +713,33 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(4))
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/counter should be "4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/target/NodeChainTest/until.feature")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/")
   }
 
@@ -798,13 +798,13 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter1[1]""")
     chain = builder.push(stepDef1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter1[1]/counter1 is defined by javascript "${counter1} + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter1[1]""")
     chain = builder.push(stepDef1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter1[1]/counter1 < 4 is defined by javascript "${counter1} < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]""")
 
     val stepDef2 = spec.scenarios(1)
@@ -812,13 +812,13 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter2[1]""")
     chain = builder.push(stepDef2.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter2[1]/counter2 is defined by javascript "${counter2} + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter2[1]""")
     chain = builder.push(stepDef2.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter2[1]/counter2 < 4 is defined by javascript "${counter2} < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]""")
 
     val scenario1 = spec.scenarios(2)
@@ -826,7 +826,7 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
     chain = builder.push(scenario1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/counter1 is "-1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
     chain = builder.push(scenario1.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]""")
@@ -834,15 +834,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]/I increment counter1[1]/counter1 is defined by javascript "-1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]/I increment counter1[1]/counter1 < 4 is defined by javascript "0 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
     chain = builder.push(scenario1.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]""")
@@ -854,15 +854,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 is defined by javascript "0 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 < 4 is defined by javascript "1 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]""")
@@ -870,15 +870,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 is defined by javascript "1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 < 4 is defined by javascript "2 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]""")
@@ -886,15 +886,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 is defined by javascript "2 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 < 4 is defined by javascript "3 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]""")
@@ -902,21 +902,21 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 is defined by javascript "3 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 < 4 is defined by javascript "4 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]""")
 
     val scenario2 = spec.scenarios(3)
@@ -924,11 +924,11 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/counter2 is "-1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/condition is defined by javascript "true"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]""")
@@ -936,15 +936,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]/I increment counter2[1]/counter2 is defined by javascript "-1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]/I increment counter2[1]/counter2 < 4 is defined by javascript "0 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]""")
@@ -960,15 +960,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 is defined by javascript "0 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 < 4 is defined by javascript "1 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]""")
@@ -976,15 +976,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 is defined by javascript "1 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 < 4 is defined by javascript "2 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]""")
@@ -992,15 +992,15 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 is defined by javascript "2 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 < 4 is defined by javascript "3 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]""")
@@ -1008,33 +1008,33 @@ class NodeChainTest extends FlatSpec with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 is defined by javascript "3 + 1"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(1))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 < 4 is defined by javascript "4 < 4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(4))
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/counter2 should be "4"[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]""")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/target/NodeChainTest/while.feature")
-    chain = builder.pop()
+    chain = builder.pop()._2
     chain.nodePath should be ("/")
   }
 

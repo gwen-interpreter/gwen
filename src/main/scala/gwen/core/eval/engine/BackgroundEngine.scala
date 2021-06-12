@@ -35,11 +35,11 @@ trait BackgroundEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging
     * Evaluates a given background.
     */
   private [engine] def evaluateBackground(parent: GwenNode, background: Background, ctx: T): Background = {
-    beforeBackground(parent, background, ctx.scopes)
+    beforeBackground(background, ctx)
     logger.info(s"Evaluating ${background.keyword}: $background")
     background.copy(withSteps = evaluateSteps(background, background.steps, ctx)) tap { bg =>
       logStatus(bg)
-      afterBackground(bg, ctx.scopes)
+      afterBackground(bg, ctx)
     }
   }
 

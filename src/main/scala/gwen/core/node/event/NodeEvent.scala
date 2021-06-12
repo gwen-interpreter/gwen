@@ -17,12 +17,13 @@
 package gwen.core.node.event
 
 import gwen.core.node.GwenNode
+import gwen.core.node.NodeChain
 import gwen.core.state.ScopedDataStack
 
 import java.{util => ju}
 
-case class NodeEvent[T <: GwenNode](phase: NodePhase.Value, parent: GwenNode, source: T, scopes: ScopedDataStack) {
+case class NodeEvent[T <: GwenNode](phase: NodePhase.Value, callChain: NodeChain, source: T, scopes: ScopedDataStack) {
   val time: ju.Date = ju.Calendar.getInstance.getTime
   override def toString: String = 
-    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,${parent.uuid},${source.uuid})"
+    s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,${callChain.last.uuid},${source.uuid})"
 }

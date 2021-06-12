@@ -44,13 +44,13 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     * Loads a stepdef to memory.
     */
   private [engine] def loadStepDef(parent: GwenNode, stepDef: Scenario, ctx: T): Scenario = {
-    beforeStepDef(parent, stepDef, ctx.scopes)
+    beforeStepDef(stepDef, ctx)
     logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
     ctx.addStepDef(stepDef)
     if (ctx.options.parallel && stepDef.isSynchronized) {
       stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
     }
-    val loadedSteps = transitionSteps(stepDef, stepDef.steps, Loaded, ctx.scopes)
+    val loadedSteps = transitionSteps(stepDef.steps, Loaded, ctx)
     val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
     val examples = if (stepDef.isOutline) {
       stepDef.examples map { exs =>
@@ -73,7 +73,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withSteps = steps,
       withExamples = examples
     ) tap { s => 
-      afterStepDef(s, ctx.scopes)
+      afterStepDef(s, ctx)
     }
   }
 
@@ -115,7 +115,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   private def evaluateStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
-    beforeStepDef(parent, stepDef, ctx.scopes)
+    beforeStepDef(stepDef, ctx)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
       evaluateSteps(stepDef, stepDef.steps, ctx)
@@ -124,7 +124,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         if (stepDef.isExpanded) {
           step.copy(withEvalStatus = Loaded)
         } else {
-          transitionStep(stepDef, step, Loaded, ctx.scopes)
+          transitionStep(step, Loaded, ctx)
         }
       }
     }
@@ -138,7 +138,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withSteps = steps,
       withExamples = examples)
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
-    afterStepDef(eStepDef, ctx.scopes) 
+    afterStepDef(eStepDef, ctx) 
     step.copy(
       withStepDef = Some(eStepDef),
       withEvalStatus = eStepDef.evalStatus

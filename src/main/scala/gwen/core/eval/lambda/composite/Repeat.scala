@@ -59,7 +59,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
             case "until" =>
               logger.info(s"repeat-until $condition: iteration $iteration")
               if (condSteps.isEmpty) {
-                engine.beforeStepDef(step, preCondStepDef, ctx.scopes)
+                engine.beforeStepDef(preCondStepDef, ctx)
               }
               val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
               condSteps = iterationStep :: condSteps
@@ -82,7 +82,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {
-                  engine.beforeStepDef(step, preCondStepDef, ctx.scopes)
+                  engine.beforeStepDef(preCondStepDef, ctx)
                 }
                 val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
                 condSteps = iterationStep :: condSteps
@@ -133,7 +133,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
             withName = doStep,
             withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
           )
-          engine.beforeStep(preCondStepDef, preStep, ctx.scopes)
+          engine.beforeStep(preStep, ctx)
           val fStep = engine.finaliseStep(
             preStep.copy(
               withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
@@ -141,14 +141,14 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
             ),
             ctx
           )
-          engine.afterStep(fStep, ctx.scopes)
+          engine.afterStep(fStep, ctx)
           fStep :: condSteps
         case _ => 
           condSteps
           
       }
       val condStepDef = preCondStepDef.copy(withSteps = steps.reverse)
-      engine.afterStepDef(condStepDef, ctx.scopes)
+      engine.afterStepDef(condStepDef, ctx)
       evaluatedStep.copy(
         withEvalStatus = condStepDef.evalStatus,
         withStepDef = Some(condStepDef)

@@ -28,20 +28,19 @@ class NodeChainBuilder extends NodeEventListener("Call chain builder") {
     new NodeChain(nodes.toList)
   }
 
-  def pop(): NodeChain = { 
-    nodes.removeLastOption(false)
-    new NodeChain(nodes.toList)
+  def pop(): (GwenNode, NodeChain) = { 
+    (nodes.removeLast(false), new NodeChain(nodes.toList))
   }
 
-  def currentChain: List[GwenNode] = nodes.toList
+  def nodeChain: NodeChain = new NodeChain(nodes.toList)
 
 }
 
 object NodeChainBuilder {
 
-  def apply(nodes: List[GwenNode]): NodeChainBuilder = {
+  def apply(chain: NodeChain): NodeChainBuilder = {
     new NodeChainBuilder() tap { builder => 
-      nodes.foreach(builder.push)
+      chain.nodes.foreach(builder.push)
     }
   }
 

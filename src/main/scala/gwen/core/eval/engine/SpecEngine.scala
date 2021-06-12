@@ -72,7 +72,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     val specType = spec.specType
     ctx.topScope.pushObject(SpecType.toString, specType)
     try {
-      beforeSpec(parent, spec, ctx.scopes)
+      beforeSpec(spec, ctx)
       val started = new Date()
       (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
         logger.info("")
@@ -94,7 +94,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
         } else {
           logger.info(result.toString)
         }
-        afterSpec(result, ctx.scopes)
+        afterSpec(result, ctx)
       }
     } finally {
       spec.specFile foreach { _ =>

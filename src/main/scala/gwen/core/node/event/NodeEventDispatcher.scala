@@ -20,7 +20,7 @@ import gwen.core._
 import gwen.core.node._
 import gwen.core.node.gherkin._
 import gwen.core.result.SpecResult
-import gwen.core.state.ScopedDataStack
+import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
 
 import scala.collection.mutable
@@ -44,45 +44,45 @@ class NodeEventDispatcher extends LazyLogging {
     logger.debug(s"Node event listener removed: ${listener.name}")
   }
 
-  def beforeUnit(unit: FeatureUnit, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(unit.parent, unit, scopes) { (listener, event) => listener.beforeUnit(event) }
-  def afterUnit(unit: FeatureUnit, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(unit, scopes) { (listener, event) => listener.afterUnit(event) }
-  def beforeSpec(parent: GwenNode, spec: Spec, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, spec, scopes) { (listener, event) => listener.beforeSpec(event) }
-  def afterSpec(result: SpecResult, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(result, scopes) { (listener, event) => listener.afterSpec(event) }
-  def beforeBackground(parent: GwenNode, background: Background, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, background, scopes) { (listener, event) => listener.beforeBackground(event) }
-  def afterBackground(background: Background, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(background, scopes) { (listener, event) => listener.afterBackground(event) }
-  def beforeScenario(parent: GwenNode, scenario: Scenario, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, scenario, scopes) { (listener, event) => listener.beforeScenario(event) }
-  def afterScenario(scenario: Scenario, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(scenario, scopes) { (listener, event) => listener.afterScenario(event) }
-  def beforeExamples(parent: GwenNode, examples: Examples, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, examples, scopes) { (listener, event) => listener.beforeExamples(event) }
-  def afterExamples(examples: Examples, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(examples, scopes) { (listener, event) => listener.afterExamples(event) }
-  def beforeRule(parent: GwenNode, rule: Rule, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, rule, scopes) { (listener, event) => listener.beforeRule(event) }
-  def afterRule(rule: Rule, scopes: ScopedDataStack): Unit =
-    dispatchAfterEvent(rule, scopes) { (listener, event) => listener.afterRule(event) }
-  def beforeStepDef(parent: GwenNode, stepDef: Scenario, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, stepDef, scopes) { (listener, event) => listener.beforeStepDef(event) }
-  def afterStepDef(stepDef: Scenario, scopes: ScopedDataStack): Unit = 
-    dispatchAfterEvent(stepDef, scopes) { (listener, event) => listener.afterStepDef(event) }
-  def beforeStep(parent: GwenNode, step: Step, scopes: ScopedDataStack): Unit =
-    dispatchBeforeEvent(parent, step, scopes) { (listener, event) => listener.beforeStep(event) }
-  def afterStep(step: Step, scopes: ScopedDataStack): Unit = {
-    // to gurantee at least 1 millisecond delay for durations less than 1 msec
+  def beforeUnit(unit: FeatureUnit, env: Environment): Unit =
+    dispatchBeforeEvent(unit, env) { (listener, event) => listener.beforeUnit(event) }
+  def afterUnit(unit: FeatureUnit, env: Environment): Unit =
+    dispatchAfterEvent(unit, env) { (listener, event) => listener.afterUnit(event) }
+  def beforeSpec(spec: Spec, env: Environment): Unit =
+    dispatchBeforeEvent(spec, env) { (listener, event) => listener.beforeSpec(event) }
+  def afterSpec(result: SpecResult, env: Environment): Unit =
+    dispatchAfterEvent(result, env) { (listener, event) => listener.afterSpec(event) }
+  def beforeBackground(background: Background, env: Environment): Unit =
+    dispatchBeforeEvent(background, env) { (listener, event) => listener.beforeBackground(event) }
+  def afterBackground(background: Background, env: Environment): Unit =
+    dispatchAfterEvent(background, env) { (listener, event) => listener.afterBackground(event) }
+  def beforeScenario(scenario: Scenario, env: Environment): Unit =
+    dispatchBeforeEvent(scenario, env) { (listener, event) => listener.beforeScenario(event) }
+  def afterScenario(scenario: Scenario, env: Environment): Unit =
+    dispatchAfterEvent(scenario, env) { (listener, event) => listener.afterScenario(event) }
+  def beforeExamples(examples: Examples, env: Environment): Unit =
+    dispatchBeforeEvent(examples, env) { (listener, event) => listener.beforeExamples(event) }
+  def afterExamples(examples: Examples, env: Environment): Unit =
+    dispatchAfterEvent(examples, env) { (listener, event) => listener.afterExamples(event) }
+  def beforeRule(rule: Rule, env: Environment): Unit =
+    dispatchBeforeEvent(rule, env) { (listener, event) => listener.beforeRule(event) }
+  def afterRule(rule: Rule, env: Environment): Unit =
+    dispatchAfterEvent(rule, env) { (listener, event) => listener.afterRule(event) }
+  def beforeStepDef(stepDef: Scenario, env: Environment): Unit =
+    dispatchBeforeEvent(stepDef, env) { (listener, event) => listener.beforeStepDef(event) }
+  def afterStepDef(stepDef: Scenario, env: Environment): Unit = 
+    dispatchAfterEvent(stepDef, env) { (listener, event) => listener.afterStepDef(event) }
+  def beforeStep(step: Step, env: Environment): Unit =
+    dispatchBeforeEvent(step, env) { (listener, event) => listener.beforeStep(event) }
+  def afterStep(step: Step, env: Environment): Unit = {
+    // to guarantee at least 1 millisecond delay for durations less than 1 msec
     if (step.evalStatus.duration.toMillis < 1) {
       Thread.sleep(1)
     }
-    dispatchAfterEvent(step, scopes) { (listener, event) => listener.afterStep(event) }
+    dispatchAfterEvent(step, env) { (listener, event) => listener.afterStep(event) }
   }
-  def healthCheck(parent: GwenNode, step: Step, scopes: ScopedDataStack): Unit = { 
-    dispatchHealthCheckEvent(parent, step, scopes) { (listener, event) => 
+  def healthCheck(step: Step, env: Environment): Unit = { 
+    dispatchHealthCheckEvent(step, env) { (listener, event) => 
       Try(listener.healthCheck(event)) match {
         case Failure(e) => 
           Settings.setLocal("gwen.feature.failfast", "true")
@@ -93,102 +93,102 @@ class NodeEventDispatcher extends LazyLogging {
     }
   }
 
-  def transitionBackground(parent: GwenNode, background: Background, toStatus: EvalStatus, scopes: ScopedDataStack): Background = {
-    beforeBackground(parent, background, scopes)
-    val steps = transitionSteps(background, background.steps, toStatus, scopes)
-    background.copy(withSteps = steps) tap { b => afterBackground(b, scopes) }
+  def transitionBackground(background: Background, toStatus: EvalStatus, env: Environment): Background = {
+    beforeBackground(background, env)
+    val steps = transitionSteps(background.steps, toStatus, env)
+    background.copy(withSteps = steps) tap { b => afterBackground(b, env) }
   }
 
-  def transitionScenario(parent: GwenNode, scenario: Scenario, toStatus: EvalStatus, scopes: ScopedDataStack): Scenario = {
-    beforeScenario(parent, scenario, scopes)
+  def transitionScenario(scenario: Scenario, toStatus: EvalStatus, env: Environment): Scenario = {
+    beforeScenario(scenario, env)
     val background = scenario.background map { background => 
-      transitionBackground(scenario, background, toStatus, scopes)
+      transitionBackground(background, toStatus, env)
     }
-    val steps = transitionSteps(scenario, scenario.steps, toStatus, scopes)
+    val steps = transitionSteps(scenario.steps, toStatus, env)
     val examples = scenario.examples map { exs =>
-      transitionExamples(scenario, exs.copy(withScenarios = Nil), toStatus, scopes)
+      transitionExamples(exs.copy(withScenarios = Nil), toStatus, env)
     }
     scenario.copy(
       withBackground = background,
       withSteps = steps,
       withExamples = examples
-    ) tap { s => afterScenario(s, scopes) }
+    ) tap { s => afterScenario(s, env) }
   }
 
-  def transitionExamples(parent: GwenNode, examples: Examples, toStatus: EvalStatus, scopes: ScopedDataStack): Examples = {
-    beforeExamples(parent, examples, scopes)
-    examples.copy() tap { exs => afterExamples(exs, scopes) }
+  def transitionExamples(examples: Examples, toStatus: EvalStatus, env: Environment): Examples = {
+    beforeExamples(examples, env)
+    examples.copy() tap { exs => afterExamples(exs, env) }
   }
 
-  def transitionStep(parent: GwenNode, step: Step, toStatus: EvalStatus, scopes: ScopedDataStack): Step = {
-    beforeStep(parent, step, scopes)
-    step.copy(withEvalStatus = toStatus) tap { s => afterStep(s, scopes) }
+  def transitionStep(step: Step, toStatus: EvalStatus, env: Environment): Step = {
+    beforeStep(step, env)
+    step.copy(withEvalStatus = toStatus) tap { s => afterStep(s, env) }
   }
 
-  def transitionSteps(parent: GwenNode, steps: List[Step], toStatus: EvalStatus, scopes: ScopedDataStack): List[Step] = {
+  def transitionSteps(steps: List[Step], toStatus: EvalStatus, env: Environment): List[Step] = {
     steps.map { step => 
-      transitionStep(parent, step, toStatus, scopes) 
+      transitionStep(step, toStatus, env) 
     }
   }
 
-  def transitionRule(parent: GwenNode, rule: Rule, toStatus: EvalStatus, scopes: ScopedDataStack): Rule = {
-    beforeRule(parent, rule, scopes)
+  def transitionRule(rule: Rule, toStatus: EvalStatus, env: Environment): Rule = {
+    beforeRule(rule, env)
     val background = rule.background.map { background => 
-      transitionBackground(rule, background, toStatus, scopes)
+      transitionBackground(background, toStatus, env)
     }
     val scenarios = rule.scenarios.map { scenario => 
-      transitionScenario(rule, scenario, toStatus, scopes)
+      transitionScenario(scenario, toStatus, env)
     }
     rule.copy(
       withBackground = background,
       withScenarios = scenarios
-    ) tap { r => afterRule(r, scopes) }
+    ) tap { r => afterRule(r, env) }
   }
 
   private def dispatchBeforeEvent[T <: GwenNode]( 
-      parent: GwenNode,
       source: T,
-      scopes: ScopedDataStack)
+      env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
+    val callChain = env.pushNode(source)
     listeners foreach { listener => 
-      listener.pushParent(source)
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
         listener.pause(source)
       } else {
-        dispatchEvent(listener, NodePhase.before, parent, source, scopes) { dispatch }
+        dispatchEvent(listener, NodePhase.before, callChain, source, env) { dispatch }
       }
     }
   }
 
-  private def dispatchAfterEvent[T <: GwenNode](source: T, scopes: ScopedDataStack)
+  private def dispatchAfterEvent[T <: GwenNode](source: T, env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
+    val callChain = env.nodeChain
+    val (node, _) = env.popNode()
     listeners foreach { listener => 
-      val parent = listener.popParent()
-      dispatchEvent(listener, NodePhase.after, parent, source, scopes) { dispatch } tap { _ =>
-        if (listener.isPausedOn(parent)) { 
+      dispatchEvent(listener, NodePhase.after, callChain, source, env) { dispatch } tap { _ =>
+        if (listener.isPausedOn(node)) { 
           listener.resume()
         }
       }
     }
   }
 
-  private def dispatchHealthCheckEvent[T <: GwenNode](parent: GwenNode, source: T, scopes: ScopedDataStack)
+  private def dispatchHealthCheckEvent[T <: GwenNode](source: T, env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
     listeners foreach { listener => 
-      dispatchEvent(listener, NodePhase.healthCheck, parent, source, scopes) { dispatch }
+      dispatchEvent(listener, NodePhase.healthCheck, env.nodeChain, source, env) { dispatch }
     }
   }
 
   private def dispatchEvent[T <: GwenNode](
       listener: NodeEventListener,
       phase: NodePhase.Value, 
-      parent: GwenNode,
+      callChain: NodeChain,
       source: T,
-      scopes: ScopedDataStack)
+      env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Option[NodeEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = NodeEvent(phase, parent, source, scopes)
+      val event = NodeEvent(phase, callChain, source, env.scopes)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

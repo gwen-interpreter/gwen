@@ -19,11 +19,11 @@ import gwen.core.node.gherkin.GherkinNode
 import gwen.core.node.gherkin.Step
 import gwen.core.state.ReservedParam
 
-class NodeChain(nodes: List[GwenNode]) {
+class NodeChain(val nodes: List[GwenNode]) {
 
   assert(nodes.nonEmpty, "IllegalState: nodes cannot be empty")
 
-  def lastNode: GwenNode = nodes.last
+  def last: GwenNode = nodes.last
   def take(n: Int): NodeChain = new NodeChain(nodes.take(n))
   def add(node: GwenNode):NodeChain = new NodeChain(nodes ++ List(node))
 

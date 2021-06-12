@@ -18,6 +18,7 @@
 
 import gwen.core._
 import gwen.core.node.GwenNode
+import gwen.core.node.NodeChain
 import gwen.core.node.NodeChainBuilder
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.StepKeyword
@@ -110,8 +111,14 @@ class EnvState(val scopes: ScopedDataStack) {
   /** Gets the behavior at the top of the stack. */
   def currentBehavior: Option[BehaviorType.Value] = behaviors.headOption
 
+  /** Pushes a node onto the node chain.*/
+  def pushNode(node: GwenNode): NodeChain = nodeBuilder.push(node)
+
+  /** Pops a node off the node chain.*/
+  def popNode(): (GwenNode, NodeChain) = nodeBuilder.pop()
+
   /** Gets the current call chain. */
-  def callChain: List[GwenNode] = nodeBuilder.currentChain
+  def nodeChain: NodeChain = nodeBuilder.nodeChain
 
 }
 
@@ -123,7 +130,7 @@ object EnvState {
     new EnvState(new ScopedDataStack())
   }
   
-  def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], callChain: List[GwenNode]): EnvState = {
+  def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain): EnvState = {
     new EnvState(new ScopedDataStack()) tap { newState => 
       topScope.implicitAtts foreach { case (n, v) => 
         newState.scopes.topScope.set(n, v)
@@ -131,7 +138,7 @@ object EnvState {
       stepDefs foreach { sdefs =>
         newState.stepDefs = sdefs
       }
-      newState.nodeBuilder = NodeChainBuilder(callChain)
+      newState.nodeBuilder = NodeChainBuilder(nodeChain)
     }
   }
 

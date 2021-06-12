@@ -86,9 +86,9 @@ trait UnitEngine[T <: EvalContext]
     if (spec.isMeta) {
       evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
     } else {
-      beforeUnit(unit, ctx.scopes)
+      beforeUnit(unit, ctx)
       evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
-        afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx.scopes)
+        afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx)
       }
     }
   }

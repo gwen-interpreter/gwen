@@ -85,7 +85,7 @@ trait StepEngine[T <: EvalContext] {
           val isAssertionError = status.isAssertionError
           val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
           if (!isAssertionError || isHardAssert) {
-            transitionStep(parent, step, Skipped, ctx.scopes)
+            transitionStep(step, Skipped, ctx)
           } else {
             evaluateStep(parent, step, ctx)
           }
@@ -100,7 +100,7 @@ trait StepEngine[T <: EvalContext] {
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     val iStep = interpolateStep(step, ctx)
     logger.info(s"Evaluating Step: $iStep")
-    beforeStep(parent, iStep.copy(withEvalStatus = Pending), ctx.scopes)
+    beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
     val eStep = ctx.withStep(iStep) { s =>
       Try(healthCheck(parent, s, ctx)) match {
         case Failure(e) => throw e
@@ -109,7 +109,7 @@ trait StepEngine[T <: EvalContext] {
     }
     finaliseStep(eStep, ctx) tap { fStep =>
       logStatus(fStep)
-      afterStep(fStep, ctx.scopes)
+      afterStep(fStep, ctx)
     }
   }
 
@@ -148,7 +148,7 @@ trait StepEngine[T <: EvalContext] {
     if (step.indexIn(parent).map(_ == 0).getOrElse(false)) {
       parent match {
         case scenario: Scenario if !scenario.isStepDef =>
-          healthCheck(parent, step, ctx.scopes)
+          healthCheck(step, ctx)
         case _ => // noop
       }
     }

@@ -20,8 +20,6 @@ import gwen.core.node._
 import gwen.core.node.gherkin._
 import gwen.core.result.SpecResult
 
-import scala.collection.mutable
-
 /**
   * Node event listener.
   *
@@ -31,14 +29,11 @@ import scala.collection.mutable
 class NodeEventListener(val name: String, val bypass: Set[NodeType.Value] = Set[NodeType.Value]()) {
   
   private val paused = ThreadLocal.withInitial[Option[String]] { () => None }
-  private val parents = ThreadLocal.withInitial[mutable.Queue[GwenNode]] { () => mutable.Queue[GwenNode]() }
 
   private [event] def isPaused: Boolean = paused.get.nonEmpty
   private [event] def isPausedOn(parent: GwenNode): Boolean = paused.get.contains(parent.uuid)
   private [event] def pause(parent: GwenNode): Unit = { paused.set(Some(parent.uuid)) }
   private [event] def resume(): Unit = { paused.set(None) }
-  private [event] def pushParent(parent: GwenNode): Unit = { parents.get += parent }
-  private [event] def popParent(): GwenNode = parents.get.removeLast()
   
   def beforeUnit(event: NodeEvent[FeatureUnit]): Unit = { }
   def afterUnit(event: NodeEvent[FeatureUnit]): Unit = { }
