@@ -29,6 +29,7 @@ trait GwenNode {
   val nodeType: NodeType.Value
   val evalStatus: EvalStatus = Pending
   val params: List[(String, String)] = Nil
+  val callerParams: List[(String, String)] = Nil
 
   def siblingsIn(parent: GwenNode): List[GwenNode]
 

@@ -50,7 +50,8 @@ case class Scenario(
     background: Option[Background],
     steps: List[Step],
     examples: List[Examples],
-    override val params: List[(String, String)]) extends GherkinNode {
+    override val params: List[(String, String)],
+    override val callerParams: List[(String, String)]) extends GherkinNode {
 
   override val nodeType: NodeType.Value = {
     if (isStepDef) {
@@ -122,8 +123,31 @@ case class Scenario(
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples,
-      withParams: List[(String, String)] = params): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams)
+      withParams: List[(String, String)] = params,
+      withCallerParams: List[(String, String)] = callerParams): Scenario = {
+    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams, withCallerParams)
+  }
+
+  def withCallerParams(caller: GwenNode): Scenario = {
+    val names = callerParams map { case (n, _) => n }
+    caller match {
+      case step: Step => 
+        step.cumulativeParams filter { case (name, _) => 
+          !names.contains(name)
+        } match {
+          case Nil => this
+          case sParams => copy(withCallerParams = callerParams ++ sParams)
+        }
+      case _ => this
+    }
+  }
+  def cumulativeParams: List[(String, String)] = {
+    val names = params map { case (n, _) => n }
+    params ++ (
+      callerParams filter { case (name, _) => 
+        !names.contains(name)
+      }
+    )
   }
 
 }
@@ -140,6 +164,7 @@ object Scenario {
       None,
       Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },
       scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) },
+      Nil,
       Nil
     )
   }

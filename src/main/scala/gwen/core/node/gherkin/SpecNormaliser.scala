@@ -73,7 +73,7 @@ trait SpecNormaliser extends BehaviorRules {
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, List((name, value)))
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, List((name, value)), Nil)
     }
     val description = s"""@Data(file="${dataRecord.dataFile.getPath}", record=${dataRecord.recordNo})"""
     val dataBackground = background match {
@@ -153,7 +153,8 @@ trait SpecNormaliser extends BehaviorRules {
                 )
               },
               Nil,
-              params
+              params,
+              Nil
             )
           }
         )

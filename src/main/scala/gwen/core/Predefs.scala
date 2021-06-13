@@ -263,6 +263,13 @@ package object core {
             |$content
             |${"\"\"\""}""".stripMargin
     }
+    def formatParams(params: List[(String, String)]): String = {
+      if (params.length > 0) {
+        s"{ ${params map { case (n, v) => s"$n : $v" } mkString ", "} }"
+      } else {
+        ""
+      }
+    }
     def splitLines(blob: String): List[String] = blob.split("\\r?\\n").toList
 
     def prettyPrintXML(xml: String, cDataElements: Option[String]): String = {

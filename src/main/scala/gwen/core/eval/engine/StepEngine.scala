@@ -98,7 +98,7 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
-    val iStep = interpolateStep(step, ctx)
+    val iStep = interpolateStep(step.withCallerParams(parent), ctx)
     logger.info(s"Evaluating Step: $iStep")
     beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
     val eStep = ctx.withStep(iStep) { s =>

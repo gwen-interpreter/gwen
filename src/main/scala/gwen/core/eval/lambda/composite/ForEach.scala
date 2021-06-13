@@ -41,7 +41,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
       )
     }
     val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
-    val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil)
+    val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
     engine.beforeStepDef(preForeachStepDef, ctx)
     val steps =
       items match {
@@ -82,11 +82,11 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                       engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
                     } else {
                       logger.info(s"Processing [$name] $itemNo of $noOfElements")
-                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
+                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil), ctx)
                     }
                   case _ =>
                     logger.info(s"Processing [$name] $itemNo of $noOfElements")
-                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params), ctx)
+                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil), ctx)
                 }
               } finally {
                 ctx.topScope.popObject(name)

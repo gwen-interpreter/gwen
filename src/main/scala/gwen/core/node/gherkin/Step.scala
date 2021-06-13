@@ -54,7 +54,8 @@ case class Step(
     table: List[(Int, List[String])],
     docString: Option[(Int, String, Option[String])],
     override val evalStatus: EvalStatus,
-    override val params: List[(String, String)]) extends GherkinNode {
+    override val params: List[(String, String)],
+    override val callerParams: List[(String, String)]) extends GherkinNode {
 
   override val nodeType: NodeType.Value = NodeType.Step
 
@@ -103,8 +104,9 @@ case class Step(
       withTable: List[(Int, List[String])] = table,
       withDocString: Option[(Int, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus,
-      withParams: List[(String, String)] = params): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams)
+      withParams: List[(String, String)] = params,
+      withCallerParams: List[(String, String)] = callerParams): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams)
   }
 
   /**
@@ -175,6 +177,28 @@ case class Step(
     } else Nil
   }
 
+  def withCallerParams(caller: GwenNode): Step = {
+    val names = callerParams map { case (n, _) => n }
+    caller match {
+      case scenario: Scenario => 
+        scenario.cumulativeParams filter { case (name, _) => 
+          !names.contains(name)
+        } match {
+          case Nil => this
+          case sParams => copy(withCallerParams = callerParams ++ sParams)
+        }
+      case _ => this
+    }
+  }
+  def cumulativeParams: List[(String, String)] = {
+    val names = params map { case (n, _) => n }
+    params ++ (
+      callerParams filter { case (name, _) => 
+        !names.contains(name)
+      }
+    )
+  }
+
 }
 
 object Step {
@@ -196,6 +220,7 @@ object Step {
       dataTable, 
       docString, 
       Pending,
+      Nil,
       Nil)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {

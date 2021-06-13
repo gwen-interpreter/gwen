@@ -77,7 +77,8 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  def callStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
+  def callStepDef(parent: GwenNode, iStepDef: Scenario, step: Step, ctx: T): Step = {
+    val stepDef = iStepDef.withCallerParams(step)
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))
     } else None
