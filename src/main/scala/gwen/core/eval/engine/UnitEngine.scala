@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@ import gwen.core.result.SpecResult
 
 import scala.util.Success
 import scala.util.Failure
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 import io.cucumber.gherkin.ParserException
@@ -35,10 +36,18 @@ import java.io.File
   * Feature unit evaluation engine
   */
 trait UnitEngine[T <: EvalContext]
-  extends SpecEngine[T] with BackgroundEngine[T] with RuleEngine[T] with ScenarioEngine[T] with ExamplesEngine[T] 
-  with StepDefEngine[T] with StepEngine[T] with GherkinParser with SpecNormaliser with LazyLogging {
-    engine: EvalEngine[T] =>
-  
+    extends SpecEngine[T]
+    with BackgroundEngine[T]
+    with RuleEngine[T]
+    with ScenarioEngine[T]
+    with ExamplesEngine[T]
+    with StepDefEngine[T]
+    with StepEngine[T]
+    with GherkinParser
+    with SpecNormaliser
+    with LazyLogging {
+  engine: EvalEngine[T] =>
+
   /**
     * Interprets a feature unit.
     *
@@ -70,7 +79,7 @@ trait UnitEngine[T <: EvalContext]
           }
       }
     } getOrElse {
-      logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}") 
+      logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}")
       None
     }
   }
@@ -87,16 +96,16 @@ trait UnitEngine[T <: EvalContext]
       evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
     } else {
       beforeUnit(unit, ctx)
-      evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result => 
+      evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result =>
         afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx)
       }
     }
   }
 
   private def loadMetaFiles(unit: FeatureUnit, metaFiles: List[File], loadedMeta: List[File], ctx: T): List[SpecResult] = {
-    metaFiles filter { file => 
+    metaFiles filter { file =>
       !loadedMeta.contains(file)
-    } flatMap { file => 
+    } flatMap { file =>
       val metaUnit = FeatureUnit(unit, file, Nil, None, unit.tagFilter)
       evaluateUnit(metaUnit, loadedMeta, ctx)
     }
@@ -123,5 +132,5 @@ trait UnitEngine[T <: EvalContext]
       }
     }
   }
-  
+
 }

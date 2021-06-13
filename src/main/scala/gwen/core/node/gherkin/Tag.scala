@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin.table.DataTable
 
+import scala.util.chaining._
+
 import io.cucumber.messages.{ Messages => Cucumber }
 
 import java.io.File
@@ -33,11 +35,11 @@ import java.io.File
   * @param name name the tag name
   */
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends GherkinNode {
-  
+
   override val nodeType: NodeType.Value = NodeType.Tag
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
-    parent match { 
+    parent match {
       case feature: Feature => feature.tags
       case scenario: Scenario => scenario.tags
       case examples: Examples => examples.tags
@@ -53,7 +55,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
       Errors.invalidTagError(s"Whitespace not allowed in @$name tag value '$v'")
     }
   }
-    
+
   /** Returns a string representation of this tag. */
   override def toString: String = s"@$name${value.map(v => s"""("$v")""").getOrElse("")}"
 
@@ -63,7 +65,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
       withValue: Option[String] = value): Tag = {
     Tag(withSourceRef, withName, withValue)
   }
-  
+
 }
 
 object Tag {
@@ -105,5 +107,5 @@ object Tag {
   def findAllByName(tags: List[Tag], name: String): List[Tag] = {
     tags.filter(_.name == name)
   }
-  
+
 }

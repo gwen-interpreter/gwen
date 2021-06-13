@@ -15,6 +15,7 @@
  */
 package gwen.core.report.json
 
+import gwen.core._
 import gwen.core.FileIO
 import gwen.core.GwenOptions
 import gwen.core.Formatting.escapeJson
@@ -26,6 +27,7 @@ import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
 import scala.util.Properties
+import scala.util.chaining._
 
 import org.apache.commons.codec.binary.Base64
 
@@ -33,10 +35,10 @@ import java.io.File
 
 /** Formats the feature summary and detail reports in cucumber compliant JSON format. */
 trait JsonReportFormatter extends ReportFormatter {
-  
+
   /**
     * Formats the feature detail report as JSON.
-    * 
+    *
     * @param options gwen command line options
     * @param unit the feature input
     * @param result the feature result to report
@@ -58,7 +60,7 @@ trait JsonReportFormatter extends ReportFormatter {
     val id = s"${result.spec.specFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
     val name = s"${result.spec.specFile.map(f => s"${f.uri}: ").getOrElse("")}${feature.name}"
     val description = s"${feature.description.mkString(Properties.lineSeparator)}"
-    
+
     Some(s"""[
   {${spec.specFile.map(file => s"""
     "uri": "${escapeJson(file.uri)}",""").getOrElse("")}
@@ -187,10 +189,10 @@ trait JsonReportFormatter extends ReportFormatter {
 
   /**
     * Formats the feature summary report as JSON (this implementation does nothing).
-    * 
+    *
     * @param options gwen command line options
     * @param summary the accumulated feature results summary
     */
   override def formatSummary(options: GwenOptions, summary: ResultsSummary): Option[String] = None
-  
+
 }

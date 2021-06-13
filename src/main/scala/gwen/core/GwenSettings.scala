@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,55 +21,55 @@ import gwen.core.behavior.FeatureMode
 import gwen.core.state.StateLevel
 
 /**
-  * Provides access to gwen settings defined through system properties loaded 
+  * Provides access to gwen settings defined through system properties loaded
   * from properties files.
   *
   * @author Branko Juric
   */
 object GwenSettings {
 
-  /** 
+  /**
    * Cap max threads to number of avilable processors.
    */
   val availableProcessors = Runtime.getRuntime().availableProcessors()
-  
+
   /**
-    * Provides access to the `gwen.feature.failfast` property setting used to enable 
-    * or disable fail fast mode at the feature level (default value is `true`). 
-    * Enabling this feature will fail a feature as soon as the first scenario in that 
+    * Provides access to the `gwen.feature.failfast` property setting used to enable
+    * or disable fail fast mode at the feature level (default value is `true`).
+    * Enabling this feature will fail a feature as soon as the first scenario in that
     * feature fails.  Other features (if provided) will resume.
     */
   def `gwen.feature.failfast`: Boolean = Settings.getOpt("gwen.feature.failfast").map(_.toBoolean).getOrElse(true)
-  
+
   /**
-    * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution 
-    * on first failure (default value is `false`). 
+    * Provides access to the `gwen.feature.failfast.exit` property setting used to exit all execution
+    * on first failure (default value is `false`).
     * Enabling this feature will exit execution when the first failure is detected.
     */
   def `gwen.feature.failfast.exit`: Boolean = Settings.getOpt("gwen.feature.failfast.exit").map(_.toBoolean).getOrElse(false)
-  
+
   /**
    * Provides access to the `gwen.report.slideshow.framespersecond` property setting
    * used to set the default frame per second (speed) of the slideshow (default value is 4).
    */
   def `gwen.report.slideshow.framespersecond`: Int = Settings.getOpt("gwen.report.slideshow.framespersecond").map(_.toInt).getOrElse(4)
-  
+
   /**
-    * Provides access to the `gwen.report.overwrite` property setting used to overwrite 
-    * or create backups of previously generated reports (default value is `false`). 
-    * Enabling this feature will create timestamped backups of previous reports. 
+    * Provides access to the `gwen.report.overwrite` property setting used to overwrite
+    * or create backups of previously generated reports (default value is `false`).
+    * Enabling this feature will create timestamped backups of previous reports.
     */
   def `gwen.report.overwrite`: Boolean = Settings.getOpt("gwen.report.overwrite").map(_.toBoolean).getOrElse(false)
-  
+
   /**
    * Provides access to the `gwen.rampup.interval.seconds` property setting used
-   * to set the ramp up interval (in seconds) for staggering parallel feature executions  
+   * to set the ramp up interval (in seconds) for staggering parallel feature executions
    * (this setting is optional and only used in for parallel execution options).
    */
   def `gwen.rampup.interval.seconds`: Option[Long] = Settings.getOpt("gwen.rampup.interval.seconds").map(_.toLong)
-  
+
   /**
-    * Provides access to the `gwen.report.suppress.meta` setting used to control whether 
+    * Provides access to the `gwen.report.suppress.meta` setting used to control whether
     * or not meta report generation will be suppressed (default value is `false`).
     */
   def `gwen.report.suppress.meta`: Boolean = Settings.getOpt("gwen.report.suppress.meta").map(_.toBoolean).getOrElse(false)
@@ -120,72 +120,72 @@ object GwenSettings {
   /**
     * Provides access to the `gwen.feature.mode` property setting used to determine whether the
     * feature mode is declarative or imperative (default value is `imperative`). When declarative,
-    * the DSL steps defined in the Gwen engine cannot be used directly in features and must be 
-    * bound to step definitions defined in meta instead. This forces the user to write features 
-    * that are clean and free of automation concerns. When imperative, then DSL steps can be used 
+    * the DSL steps defined in the Gwen engine cannot be used directly in features and must be
+    * bound to step definitions defined in meta instead. This forces the user to write features
+    * that are clean and free of automation concerns. When imperative, then DSL steps can be used
     * directly in features.
     */
-    def `gwen.feature.mode`: FeatureMode.Value = 
-      Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.withName).getOrElse(FeatureMode.imperative)
+  def `gwen.feature.mode`: FeatureMode.Value =
+    Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.withName).getOrElse(FeatureMode.imperative)
 
     /**
-    * Provides access to the `gwen.associative.meta` property setting used to control whether or 
-    * not meta files having the same name (excluding file extension) and same location as feature 
+    * Provides access to the `gwen.associative.meta` property setting used to control whether or
+    * not meta files having the same name (excluding file extension) and same location as feature
     * files are only loaded for that feature and loaded last (default value is false).
     * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
     */
-  def `gwen.associative.meta`: Boolean = 
+  def `gwen.associative.meta`: Boolean =
     `gwen.auto.discover.meta` && Settings.getOpt("gwen.associative.meta").map(_.toBoolean).getOrElse(false)
 
   /**
-    * Provides access to the `gwen.behavior.rules` property setting used to determine whether strict, 
-    * or lenient rules around Given-When-Then usage should be enforced in features (default value is 
-    * `lenient`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps 
-    * and Given steps set context, When steps must perform actions, and Then or But steps must perform 
-    * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is 
+    * Provides access to the `gwen.behavior.rules` property setting used to determine whether strict,
+    * or lenient rules around Given-When-Then usage should be enforced in features (default value is
+    * `lenient`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps
+    * and Given steps set context, When steps must perform actions, and Then or But steps must perform
+    * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is
     * an alias for this setting.
     */
-    def `gwen.behavior.rules`: BehaviorMode.Value = 
-      Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorMode.withName).getOrElse(BehaviorMode.lenient)
+  def `gwen.behavior.rules`: BehaviorMode.Value =
+    Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorMode.withName).getOrElse(BehaviorMode.lenient)
 
   /**
-    * Provides access to the `gwen.feature.dialect` property setting used to set the default 
+    * Provides access to the `gwen.feature.dialect` property setting used to set the default
     * dialect for Gherkin keywords in features.
     */
-    def `gwen.feature.dialect`: String = Settings.getOpt("gwen.feature.dialect").getOrElse("en")
+  def `gwen.feature.dialect`: String = Settings.getOpt("gwen.feature.dialect").getOrElse("en")
 
-    /**
-      * Provides access to the `gwen.parallel.maxThreads` property setting used to set the maximum number
-      * of threads to use in parallel execution mode. The value will default to the 
-      * number of avialable processors in the host environment if it is not specified or exceeds
-      * that value.
-      */
-    def `gwen.parallel.maxThreads`: Int = {
-      Settings.getOpt("gwen.parallel.maxThreads").map(_.toInt).map { maxThreads =>
-        if (maxThreads < 1) {
-          Errors.propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
-        } else if (maxThreads > availableProcessors) {
-          availableProcessors
-        } else {
-          maxThreads
-        }
-      } getOrElse { 
+  /**
+    * Provides access to the `gwen.parallel.maxThreads` property setting used to set the maximum number
+    * of threads to use in parallel execution mode. The value will default to the
+    * number of avialable processors in the host environment if it is not specified or exceeds
+    * that value.
+    */
+  def `gwen.parallel.maxThreads`: Int = {
+    Settings.getOpt("gwen.parallel.maxThreads").map(_.toInt).map { maxThreads =>
+      if (maxThreads < 1) {
+        Errors.propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 1")
+      } else if (maxThreads > availableProcessors) {
         availableProcessors
+      } else {
+        maxThreads
       }
+    } getOrElse {
+      availableProcessors
     }
+  }
 
-    /** 
-     * Provides access to the character used to mask settings defined with the `:masked` suffix.
-     * Default value is `●`.
-     */
-    def `gwen.mask.char`: Char = {
-      Settings.getOpt("gwen.mask.char") map { maskChar => 
-        if (maskChar.length != 1) {
-          Errors.invalidSettingError("gwen.mask.char", maskChar, "Mask character length must be 1")
-        } else {
-          maskChar(0)
-        }
-      } getOrElse('●')
-    }
+  /**
+    * Provides access to the character used to mask settings defined with the `:masked` suffix.
+    * Default value is `●`.
+    */
+  def `gwen.mask.char`: Char = {
+    Settings.getOpt("gwen.mask.char") map { maskChar =>
+      if (maskChar.length != 1) {
+        Errors.invalidSettingError("gwen.mask.char", maskChar, "Mask character length must be 1")
+      } else {
+        maskChar(0)
+      }
+    } getOrElse('●')
+  }
 
 }

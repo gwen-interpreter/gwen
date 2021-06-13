@@ -1,12 +1,12 @@
 /*
  * Copyright 2019-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 
 class PrettyPrintParserRules1Test extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
-      private val parse = parseSpec(_: String)
+  private val parse = parseSpec(_: String)
 
   private val featureString = s"""   @wip
    Feature: Gwen
@@ -81,7 +81,7 @@ Background: The butterfly effect
             Given-When-Then steps into automation instructions.
             ${"\"\"\""}
 """
- 
+
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     val ast1 = parse(featureString)
     val ast2 = parse(SpecPrinter.prettyPrint(ast1.get))
@@ -179,5 +179,5 @@ Background: The butterfly effect
 """.replace("\r", ""))
 
   }
-    
+
 }

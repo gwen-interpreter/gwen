@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,8 @@ import gwen.core.node.NodeChainBuilder
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.behavior.BehaviorType
+
+import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
@@ -46,7 +48,7 @@ class EnvState(val scopes: ScopedDataStack) {
 
   /**
     * Adds a step definition to the context.
-    * 
+    *
     * @param stepDef the step definition to add
     */
   def addStepDef(stepDef: Scenario): Scenario = {
@@ -55,7 +57,7 @@ class EnvState(val scopes: ScopedDataStack) {
 
   /**
     * Adds a step definition to the context.
-    * 
+    *
     * @param name the name
     * @param stepDef the step definition to add
     */
@@ -75,7 +77,7 @@ class EnvState(val scopes: ScopedDataStack) {
     * @return the removed step def
     */
   def removeStepDef(name: String): Scenario = {
-    stepDefs(name) tap { stepDef => 
+    stepDefs(name) tap { stepDef =>
       stepDefs -= name
     }
   }
@@ -87,10 +89,10 @@ class EnvState(val scopes: ScopedDataStack) {
 
   /**
     * Adds an attachment
-    * 
+    *
     * @param attachment the attachment (name-file pair) to add
     */
-  def addAttachment(name: String, file: File): Unit = { 
+  def addAttachment(name: String, file: File): Unit = {
     attachments = (EnvState.nextAttachmentNo(), name, file) :: attachments
   }
 
@@ -101,7 +103,7 @@ class EnvState(val scopes: ScopedDataStack) {
 
   /** Removes the behavior at the top of the stack. */
   def popBehavior(): Option[BehaviorType.Value] = behaviors match {
-    case head::tail => 
+    case head::tail =>
       behaviors = tail
       Some(head)
     case _ =>
@@ -129,10 +131,10 @@ object EnvState {
   def apply(): EnvState = {
     new EnvState(new ScopedDataStack())
   }
-  
+
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain): EnvState = {
-    new EnvState(new ScopedDataStack()) tap { newState => 
-      topScope.implicitAtts foreach { case (n, v) => 
+    new EnvState(new ScopedDataStack()) tap { newState =>
+      topScope.implicitAtts foreach { case (n, v) =>
         newState.scopes.topScope.set(n, v)
       }
       stepDefs foreach { sdefs =>

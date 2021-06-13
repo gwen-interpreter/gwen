@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,7 +21,7 @@ import org.scalatest.matchers.should.Matchers
 
 class FeatureKeywordTest extends AnyFlatSpec with Matchers {
 
-   "names" should "evaluate correctly" in {
+  "names" should "evaluate correctly" in {
     val names = FeatureKeyword.names
     names.size should be (11)
     names.contains("Feature") should be (true)
@@ -161,7 +161,7 @@ class FeatureKeywordTest extends AnyFlatSpec with Matchers {
     FeatureKeyword.isExample("Examples") should be (false)
     FeatureKeyword.isExample("Scenarios") should be (false)
   }
-  
+
   "isExamples" should "evaluate correctly" in {
     FeatureKeyword.isExamples("Feature") should be (false)
     FeatureKeyword.isExamples("Business Need") should be (false)

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,8 @@ import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
 import gwen.core.state.StateLevel
 
+import scala.util.chaining._
+
 import scopt.OptionParser
 
 import java.io.File
@@ -33,12 +35,12 @@ import java.io.File
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
   * @param properties list of properties files to load as settings
-  * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude) 
+  * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
   * @param metas optional list of meta file and/or directories
   * @param features optional list of feature file and/or directories
-  *    
+  *
   * @author Branko Juric
   */
 case class GwenOptions(
@@ -46,17 +48,17 @@ case class GwenOptions(
     parallel: Boolean = false,
     parallelFeatures: Boolean = false,
     reportDir: Option[File] = None,
-    reportFormats: List[ReportFormat.Value] = Nil, 
+    reportFormats: List[ReportFormat.Value] = Nil,
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
     dataFile: Option[File] = None,
-    metas: List[File] = Nil, 
+    metas: List[File] = Nil,
     features: List[File] = Nil,
     args: Option[Array[String]] = None) extends GwenInfo {
-  
+
   val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
-  
+
   def tagFilter = new TagFilter(tags)
 
   /**
@@ -66,11 +68,11 @@ case class GwenOptions(
     case (Some(params)) => s"$implName.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${params.mkString(" ")}"
     case _ => ""
   }
-  
+
 }
-    
+
 object GwenOptions {
-  
+
   /**
     * Creates a new options object from the given command line arguments.
     *
@@ -78,92 +80,92 @@ object GwenOptions {
     * @throws gwen.Errors.InvocationException if the given arguments fail to parse
     */
   def apply(args: Array[String]): GwenOptions = {
-    
+
     val parser = new OptionParser[GwenOptions]("gwen") {
-    
+
       version("version") text "Prints the implementation version"
-    
+
       help("help") text "Prints this usage text"
 
       opt[Unit]('b', "batch") action {
-        (_, c) => c.copy(batch = true) 
+        (_, c) => c.copy(batch = true)
       } text "Batch/server mode"
-      
+
       opt[Unit]("parallel") action {
-        (_, c) => { 
+        (_, c) => {
           c.copy(parallel = true, batch = true)
         }
       } text "Run features or scenarios in parallel depending on state level"
 
       opt[Unit]("parallel-features") action {
-        (_, c) => { 
+        (_, c) => {
           c.copy(parallelFeatures = true, batch = true)
         }
       } text "Run features in parallel regardless of state level"
-    
+
       opt[String]('p', "properties") action {
-        (ps, c) => 
+        (ps, c) =>
           c.copy(properties = ps.split(",").toList.map(new File(_)))
-      } validate { ps => 
-        ((ps.split(",") flatMap { p => 
-          if (new File(p).exists()) None 
+      } validate { ps =>
+        ((ps.split(",") flatMap { p =>
+          if (new File(p).exists()) None
           else Some(s"Specified properties file not found: $p")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
       } valueName "<properties files>" text "Comma separated list of properties file paths"
-    
+
       opt[File]('r', "report") action {
-        (f, c) => c.copy(reportDir = Some(f)) 
+        (f, c) => c.copy(reportDir = Some(f))
       } valueName "<report directory>" text "Evaluation report output directory"
-      
+
       opt[String]('f', "formats") action {
-        (fs, c) => 
+        (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.withName(f)))
       } valueName "<formats>" text s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})"
-      
+
       opt[String]('t', "tags") action {
-        (ts, c) => 
+        (ts, c) =>
           c.copy(tags = ts.split(",").toList.map(t => (Tag(t), t.startsWith("@"))))
       } validate { ts =>
-        ((ts.split(",") flatMap { t => 
-          if (t.matches("""^(~?@\w+,?)+$""")) None 
+        ((ts.split(",") flatMap { t =>
+          if (t.matches("""^(~?@\w+,?)+$""")) None
           else Some(s"Invalid tag $t: tags must start with @ or ~@")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
       } valueName "<tags>" text "Comma separated list of @include or ~@exclude tags"
-      
+
       opt[Unit]('n', "dry-run") action {
-        (_, c) => c.copy(dryRun = true) 
+        (_, c) => c.copy(dryRun = true)
       } text "Do not evaluate steps on engine (validate for correctness only)"
-      
+
       opt[File]('i', "input-data") action {
         (d, c) => c.copy(dataFile = Some(d))
-      } validate { d => 
+      } validate { d =>
         if (!d.exists) failure(s"Specified data file not found: $d")
         else success
       } valueName "<input data file>" text "Input data (CSV file with column headers)"
-      
+
       opt[String]('m', "meta") action {
-        (ms, c) => 
+        (ms, c) =>
           c.copy(metas = ms.split(",").toList.map(new File(_)))
-      } validate { ms => 
-        ((ms.split(",") flatMap { m => 
-          if (new File(m).exists()) None 
+      } validate { ms =>
+        ((ms.split(",") flatMap { m =>
+          if (new File(m).exists()) None
           else Some(s"Specified meta entry not found: $m")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
       } valueName "<meta files>" text "Comma separated list of meta files and directories"
-    
-      arg[File]("<features>").unbounded().optional().action { 
-        (f, c) => 
+
+      arg[File]("<features>").unbounded().optional().action {
+        (f, c) =>
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
       } text "Space separated list of feature files and/or directories"
-    
+
     }
 
     (parser.parse(args, GwenOptions()).map { options =>
@@ -179,7 +181,7 @@ object GwenOptions {
         options.dataFile,
         FileIO.appendFile(options.metas, Settings.UserMeta),
         options.features,
-        Some(args)) 
+        Some(args))
       } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
@@ -192,5 +194,5 @@ object GwenOptions {
         }
       }).getOrElse(Errors.invocationError("Failed to read in gwen arguments"))
   }
-  
+
 }
