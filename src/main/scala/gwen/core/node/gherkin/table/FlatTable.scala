@@ -48,9 +48,19 @@ class FlatTable(val records: List[List[String]], val names: List[String]) extend
   def recordScope(recordIndex: Int): ScopedData = new ScopedData(DataTable.recordKey) {
     override def isEmpty: Boolean = records.isEmpty
     override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
-      ((s"${DataTable.recordKey}.index", s"$recordIndex") :: ((s"${DataTable.recordKey}.number", s"${recordIndex + 1}") :: (names.zip(records(recordIndex).zipWithIndex) flatMap { case (name, (value, nameIndex)) =>
-          List((s"name[${nameIndex + 1}]", name), (s"data[$name]", value))
-        }))).filter(pred)
+      (
+        ("record.index", s"$recordIndex") :: (
+          ("record.number", s"${recordIndex + 1}") :: (
+            names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
+              (s"name[${nameIndex + 1}]", name)
+            }
+          ) ++ (
+            names.zip(records(recordIndex)) map { case (name, value) =>
+              (s"data[$name]", value)
+            }
+          )
+        )
+      ).filter(pred)
   }
 
 }
