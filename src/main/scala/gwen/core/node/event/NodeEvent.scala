@@ -22,7 +22,7 @@ import gwen.core.state.ScopedDataStack
 
 import java.{util => ju}
 
-case class NodeEvent[T <: GwenNode](phase: NodePhase.Value, callChain: NodeChain, source: T, scopes: ScopedDataStack) {
+case class NodeEvent[T <: GwenNode](phase: NodePhase, callChain: NodeChain, source: T, scopes: ScopedDataStack) {
   val time: ju.Date = ju.Calendar.getInstance.getTime
   override def toString: String = 
     s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,${callChain.last.uuid},${source.uuid})"

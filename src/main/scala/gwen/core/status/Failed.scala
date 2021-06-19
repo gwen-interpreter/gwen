@@ -23,7 +23,7 @@ package gwen.core.status
   * @param error the error
   */
 case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Failed
+  override val keyword: StatusKeyword = StatusKeyword.Failed
   override def exitCode = 1
   override def emoticon = "[:(]"
   override def cause = Option(error.getCause)

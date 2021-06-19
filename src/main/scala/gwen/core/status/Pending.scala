@@ -20,7 +20,7 @@ package gwen.core.status
   * Defines the pending status.
   */
 case object Pending extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Pending
+  override val keyword: StatusKeyword = StatusKeyword.Pending
   override val nanos = 0L 
   override def exitCode = 1
   override def emoticon = "[:|]"

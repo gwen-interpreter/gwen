@@ -18,8 +18,5 @@
 
 import gwen.core.node.gherkin.ReservedTags
 
-object ReservedParam extends Enumeration {
-
-  val `iteration.number` = Value(s"${ReservedTags.ForEach}.iteration.number")
-  
-} 
+enum ReservedParam:
+  case `iteration.number`

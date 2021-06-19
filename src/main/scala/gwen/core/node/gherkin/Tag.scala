@@ -36,7 +36,7 @@ import java.io.File
   */
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = NodeType.Tag
+  override val nodeType: NodeType = NodeType.Tag
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {
@@ -79,10 +79,10 @@ object Tag {
     }
   }
 
-  def apply(name: ReservedTags.Value): Tag = {
+  def apply(name: ReservedTags): Tag = {
     Tag(None, name.toString, None)
   }
-  def apply(name: ReservedTags.Value, value: String): Tag = {
+  def apply(name: ReservedTags, value: String): Tag = {
     Tag(None, name.toString, Option(value))
   }
   def apply(tagString: String): Tag = {

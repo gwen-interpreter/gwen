@@ -17,13 +17,9 @@
 package gwen.core.report
 
 /**
-  * Enumeration of supported report formats.
+  * Supported report formats.
   * 
   * @author Branko Juric
   */
-object ReportFormat extends Enumeration {
-
-  val html, slideshow, junit, json = Value
-  
-}
-
+enum ReportFormat:
+  case html, slideshow, junit, json

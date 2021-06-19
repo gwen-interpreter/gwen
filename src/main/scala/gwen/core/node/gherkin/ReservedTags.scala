@@ -16,7 +16,5 @@
 
 package gwen.core.node.gherkin
 
-object ReservedTags extends Enumeration {
-  val Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until = Value
-  val names: Set[String] = values.map(_.toString)
-}
+enum ReservedTags:
+  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until

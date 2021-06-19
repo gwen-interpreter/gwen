@@ -18,8 +18,10 @@ package gwen.core.behavior
 
 import gwen.core.GwenSettings
 
-object BehaviorMode extends Enumeration {
-  val strict, lenient = Value
+enum BehaviorMode:
+  case strict, lenient
+
+object BehaviorMode {
   def isStrict = GwenSettings.`gwen.behavior.rules` == strict
   def isLenient = GwenSettings.`gwen.behavior.rules` == lenient
 }

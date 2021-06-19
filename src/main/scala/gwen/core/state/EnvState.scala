@@ -38,7 +38,7 @@ class EnvState(val scopes: ScopedDataStack) {
   private var attachments: List[(Int, String, File)] = Nil
 
   /** Stack of behaviors. */
-  private var behaviors = List[BehaviorType.Value]()
+  private var behaviors = List[BehaviorType]()
 
   /** Current node chain builder. */
   private var nodeBuilder = new NodeChainBuilder()
@@ -97,12 +97,12 @@ class EnvState(val scopes: ScopedDataStack) {
   }
 
   /** Adds the given behavior to the top of the stack. */
-  def addBehavior(behavior: BehaviorType.Value): Unit = {
+  def addBehavior(behavior: BehaviorType): Unit = {
     behaviors = behavior :: behaviors
   }
 
   /** Removes the behavior at the top of the stack. */
-  def popBehavior(): Option[BehaviorType.Value] = behaviors match {
+  def popBehavior(): Option[BehaviorType] = behaviors match {
     case head::tail =>
       behaviors = tail
       Some(head)
@@ -111,7 +111,7 @@ class EnvState(val scopes: ScopedDataStack) {
   }
 
   /** Gets the behavior at the top of the stack. */
-  def currentBehavior: Option[BehaviorType.Value] = behaviors.headOption
+  def currentBehavior: Option[BehaviorType] = behaviors.headOption
 
   /** Pushes a node onto the node chain.*/
   def pushNode(node: GwenNode): NodeChain = nodeBuilder.push(node)

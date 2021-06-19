@@ -40,14 +40,14 @@ import java.util.Date
   */
 class SpecResult(
   val spec: Spec, 
-  val reports: Option[Map[ReportFormat.Value, List[File]]], 
+  val reports: Option[Map[ReportFormat, List[File]]], 
   val metaResults: List[SpecResult],
   val started: Date,
   val finished: Date) extends GwenNode {
 
   override val sourceRef: Option[SourceRef] = spec.sourceRef
   override val name:String = spec.name
-  override val nodeType: NodeType.Value = NodeType.Result
+  override val nodeType: NodeType = NodeType.Result
   override val evalStatus: EvalStatus = spec.evalStatus
   override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
 

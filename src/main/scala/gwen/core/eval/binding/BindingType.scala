@@ -20,13 +20,13 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-object BindingType extends Enumeration {
+enum BindingType:
+  case text, javascript, xpath, regex, sysproc, property, setting, file, sql, `json path`
 
-  val text, javascript, xpath, regex, sysproc, property, setting, file, sql = Value
-  val `json path` = Value("json path")
+object BindingType {
 
-  def parse(bType: String): BindingType.Value = {
-    Try(withName(bType)) match {
+  def parse(bType: String): BindingType = {
+    Try(valueOf(bType)) match {
       case Success(value) => value
       case Failure(error) => bType match {
         case "js" => javascript

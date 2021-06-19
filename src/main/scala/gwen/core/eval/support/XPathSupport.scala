@@ -36,9 +36,8 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-object XMLNodeType extends Enumeration {
-  val text, node, nodeset = Value
-}
+enum XMLNodeType:
+  case text, node, nodeset
 
 /** Can be mixed into evaluation contexts to provide XPath support. */
 trait XPathSupport {
@@ -53,7 +52,7 @@ trait XPathSupport {
     * @return the result of evaluating the xpath expression
     * @throws gwen.Errors.XPathException if the xpath expression fails to evaluate
     */
-  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType.Value): String = {
+  def evaluateXPath(xpath: String, source: String, targetType: XMLNodeType): String = {
     if (source.trim().length() == 0) {
       Errors.xPathError("Cannot evaluate XPath on empty source")
     }
@@ -62,7 +61,6 @@ trait XPathSupport {
         case XMLNodeType.text => XPathConstants.STRING
         case XMLNodeType.node => XPathConstants.NODE
         case XMLNodeType.nodeset => XPathConstants.NODESET
-        case _ => Errors.xPathError(s"Unsupported target XPath output type: $targetType (valid values are text|node|nodeset)")
       }
       val result = xPath.compile(expr).evaluate(new InputSource(new StringReader(source)), qname)
       targetType match {

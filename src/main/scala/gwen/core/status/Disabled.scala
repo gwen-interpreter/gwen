@@ -18,7 +18,7 @@ package gwen.core.status
 
 /** Defines the disabled status. */
 case object Disabled extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Disabled
+  override val keyword: StatusKeyword = StatusKeyword.Disabled
   override val nanos = 0L
   override def exitCode = 0
   override def emoticon = "[:)]"

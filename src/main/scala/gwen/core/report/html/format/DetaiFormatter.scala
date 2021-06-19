@@ -354,7 +354,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatExampleDiv(scenario: Scenario, status: StatusKeyword.Value): TypedTag[String] = {
+  private def formatExampleDiv(scenario: Scenario, status: StatusKeyword): TypedTag[String] = {
     div(id := scenario.uuid, `class` := s"panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}", role := "tabpanel",
       formatScenario(scenario)
     )
@@ -476,14 +476,14 @@ trait DetaiFormatter {
     ) 
   }
   
-  private def formatStepDefLink(step: Step, status: StatusKeyword.Value): TypedTag[String] = {
+  private def formatStepDefLink(step: Step, status: StatusKeyword): TypedTag[String] = {
     val stepDef = step.stepDef.get
     a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
       raw(escapeHtml(step.name))
     )
   }
                   
-  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword.Value): TypedTag[String] = {
+  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword): TypedTag[String] = {
     div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
       formatScenario(stepDef)
     )
@@ -541,13 +541,13 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword.Value): TypedTag[String] = {
+  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword): TypedTag[String] = {
     code(`class` := s"bg-${cssStatus(status)} data-table",
       raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
     )
   }
     
-  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword.Value): Option[TypedTag[String]] = {
+  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword): Option[TypedTag[String]] = {
     if (attachments.size > 1) {
       Some(
         div(`class` := s"dropdown bg-${cssStatus(status)}",
@@ -590,7 +590,7 @@ trait DetaiFormatter {
     }
   }
 
-  def formatParams(params: List[(String, String)], status: StatusKeyword.Value): Option[TypedTag[String]] = {
+  def formatParams(params: List[(String, String)], status: StatusKeyword): Option[TypedTag[String]] = {
     if (params.size > 0) {
       Some(
         div(`class` := s"dropdown bg-${cssStatus(status)}",
@@ -649,7 +649,7 @@ trait DetaiFormatter {
     }
   }
   
-  private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword.Value]): Option[Seq[TypedTag[String]]] = {
+  private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword]): Option[Seq[TypedTag[String]]] = {
     val bgClass = status.map(cssStatus).getOrElse("default")
     if (description.nonEmpty) {
       Some(

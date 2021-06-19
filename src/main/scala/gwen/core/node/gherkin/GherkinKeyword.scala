@@ -17,5 +17,5 @@
 package gwen.core.node.gherkin
 
 object GherkinKeyword {
-  val literals = FeatureKeyword.names.map(_ + ":") ++ FeatureSymbol.names ++ StepKeyword.names
+  val literals: List[String] = FeatureKeyword.names.map(_ + ":") ++ FeatureSymbol.values.map(_.toString) ++ StepKeyword.names
 }

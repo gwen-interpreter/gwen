@@ -182,7 +182,7 @@ class NodeEventDispatcher extends LazyLogging {
 
   private def dispatchEvent[T <: GwenNode](
       listener: NodeEventListener,
-      phase: NodePhase.Value,
+      phase: NodePhase,
       callChain: NodeChain,
       source: T,
       env: Environment)

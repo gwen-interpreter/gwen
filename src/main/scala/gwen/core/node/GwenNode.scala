@@ -26,7 +26,7 @@ trait GwenNode {
   val uuid: String = UUIDGenerator.nextId
   val sourceRef: Option[SourceRef]
   val name: String
-  val nodeType: NodeType.Value
+  val nodeType: NodeType
   val evalStatus: EvalStatus = Pending
   val params: List[(String, String)] = Nil
   val callerParams: List[(String, String)] = Nil

@@ -42,7 +42,7 @@ case class FeatureUnit(
 
   override val sourceRef: Option[SourceRef] = None
   override val name: String = featureFile.uri
-  override val nodeType: NodeType.Value = NodeType.Unit
+  override val nodeType: NodeType = NodeType.Unit
   override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
 
   def ancestor: GwenNode = {

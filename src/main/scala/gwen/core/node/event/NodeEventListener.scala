@@ -26,7 +26,7 @@ import gwen.core.result.SpecResult
   * @param name arbitrary listener name
   * @param bypass set of node types to bypass (events on the specified node types includes their child nodes will not be dispatced to the listener)
   */
-class NodeEventListener(val name: String, val bypass: Set[NodeType.Value] = Set[NodeType.Value]()) {
+class NodeEventListener(val name: String, val bypass: Set[NodeType] = Set[NodeType]()) {
   
   private val paused = ThreadLocal.withInitial[Option[String]] { () => None }
 

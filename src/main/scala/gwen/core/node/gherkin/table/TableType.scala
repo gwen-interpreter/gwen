@@ -16,15 +16,17 @@
 package gwen.core.node.gherkin.table
 
 /**
-  * Enumeration of supported table types.
+  * Supported table types.
   *
   * @author Branko Juric
   */
-object TableType extends Enumeration {
 
-  val horizontal, vertical, matrix = Value
+enum TableType:
+  case horizontal, vertical, matrix
 
-  def valueFor(headerType: HeaderType.Value): TableType.Value = headerType match {
+object TableType {
+
+  def valueFor(headerType: HeaderType): TableType = headerType match {
       case HeaderType.top  => horizontal
       case HeaderType.left => vertical
       case _ => matrix

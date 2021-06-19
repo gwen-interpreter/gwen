@@ -22,7 +22,7 @@ package gwen.core.status
   * @param nanos the duration in nanoseconds
   */
 case class Passed(nanos: Long) extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Passed
+  override val keyword: StatusKeyword = StatusKeyword.Passed
   override def exitCode = 0
   override def emoticon = "[:)]"
 }

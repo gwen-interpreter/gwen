@@ -31,8 +31,8 @@ trait BehaviorRules {
     * @param background the background  to check
     * @param specType the spec type currently being evaluated
     */
-  def checkBackgroundRules(background: Background, specType: SpecType.Value): Unit = {
-    if (BehaviorMode.isStrict && SpecType.isFeature(specType)) {
+  def checkBackgroundRules(background: Background, specType: SpecType): Unit = {
+    if (BehaviorMode.isStrict && specType.isFeature) {
       if (!isProperBehavior(background.steps)) {
         Errors.improperBehaviorError(background)
       }
@@ -45,8 +45,8 @@ trait BehaviorRules {
     * @param scenario the scenario to check
     * @param specType the spec type currently being evaluated
     */
-  def checkScenarioRules(scenario: Scenario, specType: SpecType.Value): Unit = {
-    if (SpecType.isFeature(specType)) {
+  def checkScenarioRules(scenario: Scenario, specType: SpecType): Unit = {
+    if (specType.isFeature) {
       if (FeatureMode.isDeclarative && scenario.isStepDef) {
         Errors.imperativeStepDefError(scenario)
       }
@@ -65,13 +65,13 @@ trait BehaviorRules {
     * @param env the environment context
     */
   def checkStepDefRules(step: Step, env: Environment): Unit = {
-    if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
+    if (env.specType.isFeature && env.isEvaluatingTopLevelStep) {
       if (BehaviorMode.isStrict) {
         step.stepDef foreach { stepDef =>
           if (!stepDef.isSynthetic) {
             stepDef.behaviorTag match {
               case Some(behaviorTag) =>
-                checkStepRules(step, BehaviorType.withName(behaviorTag.name), env)
+                checkStepRules(step, BehaviorType.valueOf(behaviorTag.name), env)
               case _ =>
                 Errors.undefinedStepDefBehaviorError(stepDef)
             }
@@ -88,8 +88,8 @@ trait BehaviorRules {
     * @param actualBehavior the actual behavior type of the step
     * @param env the environment context
     */
-  def checkStepRules(step: Step, actualBehavior: BehaviorType.Value, env: Environment): Unit = {
-    if (SpecType.isFeature(env.specType) && env.isEvaluatingTopLevelStep) {
+  def checkStepRules(step: Step, actualBehavior: BehaviorType, env: Environment): Unit = {
+    if (env.specType.isFeature && env.isEvaluatingTopLevelStep) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
         Errors.imperativeStepError(step)
       }

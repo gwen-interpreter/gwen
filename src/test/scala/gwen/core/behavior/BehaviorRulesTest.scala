@@ -668,7 +668,7 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         }
     }
 
-    private def withSpecType[T](specType: SpecType.Value)(body: SpecType.Value => T): Unit = {
+    private def withSpecType[T](specType: SpecType)(body: SpecType => T): Unit = {
         val key = SpecType.toString
         env.topScope.pushObject(key, specType)
         try {

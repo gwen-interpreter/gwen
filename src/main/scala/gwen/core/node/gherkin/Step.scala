@@ -57,7 +57,7 @@ case class Step(
     override val params: List[(String, String)],
     override val callerParams: List[(String, String)]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = NodeType.Step
+  override val nodeType: NodeType = NodeType.Step
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {

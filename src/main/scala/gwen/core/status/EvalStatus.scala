@@ -28,7 +28,7 @@ import java.util.Date
 /** The evaluation status of a node. */
 trait EvalStatus {
 
-  val keyword: StatusKeyword.Value
+  val keyword: StatusKeyword
   val nanos: Long
   val timestamp = new Date()
 
@@ -129,7 +129,7 @@ object EvalStatus {
     *
     * @param statuses the statuses to group
     */
-  def countsByType(statuses: List[EvalStatus]): Map[StatusKeyword.Value, Int] =
+  def countsByType(statuses: List[EvalStatus]): Map[StatusKeyword, Int] =
     statuses.groupBy(_.keyword) map { case (k, v) => (k, v.size) }
 
 }

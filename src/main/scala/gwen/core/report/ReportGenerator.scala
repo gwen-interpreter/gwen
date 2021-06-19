@@ -67,7 +67,7 @@ class ReportGenerator (
     }
   }
 
-  val format: ReportFormat.Value = config.format
+  val format: ReportFormat = config.format
 
   def init(lifecycle: NodeEventDispatcher): Unit = { }
   def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
@@ -188,8 +188,7 @@ object ReportGenerator {
         case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
         case ReportFormat.junit => Some(JUnitReportConfig)
         case ReportFormat.json => Some(JsonReportConfig)
-        case _ => None
-      }
+     }
     } map { config =>
       config.reportGenerator(options)
     }

@@ -47,7 +47,7 @@ case class Spec(
 
   override val name = feature.name
   override val sourceRef = feature.sourceRef
-  override val nodeType: NodeType.Value = NodeType.withName(specType.toString)
+  override val nodeType: NodeType = NodeType.valueOf(specType.toString)
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {
       case _: FeatureUnit => List(feature)
@@ -56,9 +56,9 @@ case class Spec(
   }
 
   def specFile: Option[File] = sourceRef.flatMap(_.file)
-  def specType: SpecType.Value = feature.specType
+  def specType: SpecType = feature.specType
 
-  def isMeta: Boolean = SpecType.isMeta(specType)
+  def isMeta: Boolean = specType.isMeta
 
   /** Resource id */
   def uri = specFile.map(_.uri).getOrElse(uuid)

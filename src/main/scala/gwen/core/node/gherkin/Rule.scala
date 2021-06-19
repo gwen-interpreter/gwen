@@ -45,7 +45,7 @@ case class Rule(
     background: Option[Background],
     scenarios: List[Scenario]) extends GherkinNode {
   
-  override val nodeType: NodeType.Value = NodeType.Rule
+  override val nodeType: NodeType = NodeType.Rule
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {

@@ -48,7 +48,7 @@ case class Examples(
     table: List[(Int, List[String])], 
     scenarios: List[Scenario]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = NodeType.Examples
+  override val nodeType: NodeType = NodeType.Examples
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {

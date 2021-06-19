@@ -18,7 +18,7 @@ package gwen.core.status
 
 /** Defines the skipped status. */
 case object Skipped extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Skipped
+  override val keyword: StatusKeyword = StatusKeyword.Skipped
   override val nanos = 0L
   override def exitCode = 0
   override def emoticon = "[:|]"

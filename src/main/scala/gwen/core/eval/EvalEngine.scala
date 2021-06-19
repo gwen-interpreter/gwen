@@ -110,7 +110,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$$$expression""" =>
         new CaptureByJS(attribute, step.orDocString(expression))
       case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
-        new CaptureByXPath(name, expression, source, XMLNodeType.withName(targetType))
+        new CaptureByXPath(name, expression, source, XMLNodeType.valueOf(targetType))
       case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
         new CaptureByRegex(name, expression, source)
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
@@ -138,9 +138,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$$$expression""" =>
-        new CompareByPath(source, BindingType.withName(matcher), path, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined)
+        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$$$expression""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.withName(operator), Option(negation).isDefined)
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined)
       case r"""(.+?)$attribute should be absent""" =>
         new IsAbsent(attribute)  
       case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>

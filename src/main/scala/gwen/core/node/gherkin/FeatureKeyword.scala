@@ -88,7 +88,3 @@ object FeatureKeyword extends Enumeration {
       else Examples
     }
 }
-
-object ReservedKeyword {
-  val literals = FeatureKeyword.names.map(_ + ":") ++ FeatureSymbol.names ++ StepKeyword.names
-}

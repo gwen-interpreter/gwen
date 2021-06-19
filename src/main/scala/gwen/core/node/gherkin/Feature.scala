@@ -45,7 +45,7 @@ case class Feature(
     name: String, 
     description: List[String]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = NodeType.Feature
+  override val nodeType: NodeType = NodeType.Feature
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {

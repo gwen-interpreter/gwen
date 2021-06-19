@@ -18,8 +18,10 @@ package gwen.core.behavior
 
 import gwen.core.GwenSettings
 
-object FeatureMode extends Enumeration {
-  val declarative, imperative = Value
+enum FeatureMode:
+  case declarative, imperative
+
+object FeatureMode {
   def isDeclarative = GwenSettings.`gwen.feature.mode` == declarative
   def isImperative = GwenSettings.`gwen.feature.mode` == imperative
 }

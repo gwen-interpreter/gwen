@@ -105,8 +105,8 @@ object GwenSettings {
     *   - `soft` - Collects all assertion failures and continues processing
     *   - `sustained` - Collects all assertion failures and continues processing without raising failure
     */
-  def `gwen.assertion.mode`: AssertionMode.Value =
-    Settings.getOpt("gwen.assertion.mode").map(_.toLowerCase).map(AssertionMode.withName).getOrElse(AssertionMode.hard)
+  def `gwen.assertion.mode`: AssertionMode =
+    Settings.getOpt("gwen.assertion.mode").map(_.toLowerCase).map(AssertionMode.valueOf).getOrElse(AssertionMode.hard)
 
   /**
     * Provides access to the `gwen.state.level` property setting used to control if state is maintained
@@ -114,8 +114,8 @@ object GwenSettings {
     *   - `feature` - Feature level state is shared across scenarios (default)
     *   - `scenario` - Each scenario gets a new state which is not shared across scenarios
     */
-  def `gwen.state.level`: StateLevel.Value =
-    Settings.getOpt("gwen.state.level").map(_.toLowerCase).map(StateLevel.withName).getOrElse(StateLevel.feature)
+  def `gwen.state.level`: StateLevel =
+    Settings.getOpt("gwen.state.level").map(_.toLowerCase).map(StateLevel.valueOf).getOrElse(StateLevel.feature)
 
   /**
     * Provides access to the `gwen.feature.mode` property setting used to determine whether the
@@ -125,8 +125,8 @@ object GwenSettings {
     * that are clean and free of automation concerns. When imperative, then DSL steps can be used
     * directly in features.
     */
-  def `gwen.feature.mode`: FeatureMode.Value =
-    Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.withName).getOrElse(FeatureMode.imperative)
+  def `gwen.feature.mode`: FeatureMode =
+    Settings.getOpt("gwen.feature.mode").map(_.toLowerCase).map(FeatureMode.valueOf).getOrElse(FeatureMode.imperative)
 
     /**
     * Provides access to the `gwen.associative.meta` property setting used to control whether or
@@ -145,8 +145,8 @@ object GwenSettings {
     * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is
     * an alias for this setting.
     */
-  def `gwen.behavior.rules`: BehaviorMode.Value =
-    Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorMode.withName).getOrElse(BehaviorMode.lenient)
+  def `gwen.behavior.rules`: BehaviorMode =
+    Settings.getOpt("gwen.behavior.rules").orElse(Settings.getOpt("gwen.behaviour.rules")).map(_.toLowerCase).map(BehaviorMode.valueOf).getOrElse(BehaviorMode.lenient)
 
   /**
     * Provides access to the `gwen.feature.dialect` property setting used to set the default

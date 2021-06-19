@@ -53,7 +53,7 @@ case class Scenario(
     override val params: List[(String, String)],
     override val callerParams: List[(String, String)]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = {
+  override val nodeType: NodeType = {
     if (isStepDef) {
       NodeType.StepDef
     } else {

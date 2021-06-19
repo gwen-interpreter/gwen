@@ -24,7 +24,7 @@ import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
-class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType.Value) extends UnitStep[T] {
+class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)

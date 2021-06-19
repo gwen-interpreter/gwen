@@ -63,7 +63,7 @@ trait SpecNormaliser extends BehaviorRules {
     )
   }
 
-  private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType.Value): Unit = {
+  private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType): Unit = {
     background foreach { bg =>
       checkBackgroundRules(bg, specType)
     }

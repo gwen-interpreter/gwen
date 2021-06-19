@@ -18,13 +18,14 @@ package gwen.core.behavior
 
 import gwen.core.node.gherkin.StepKeyword
 
-object BehaviorType extends Enumeration {
-  
-  val Context, Action, Assertion = Value
+enum BehaviorType:
+  case  Context, Action, Assertion
 
-  def of(stepKeyword: String): BehaviorType.Value = 
+object BehaviorType {
+  def of(stepKeyword: String): BehaviorType = {
     if (StepKeyword.isGiven(stepKeyword)) BehaviorType.Context
     else if (StepKeyword.isWhen(stepKeyword)) BehaviorType.Action
     else BehaviorType.Assertion
+  }
 
 }

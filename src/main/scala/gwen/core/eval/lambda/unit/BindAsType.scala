@@ -29,7 +29,7 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType.Value, value: String) extends UnitStep[T] {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>

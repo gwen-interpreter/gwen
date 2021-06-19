@@ -27,6 +27,7 @@ import gwen.core.node.gherkin._
 import io.cucumber.gherkin.ParserException
 
 import java.io.File
+import gwen.core.eval.binding.BindingType
 
 object Errors {
 
@@ -75,7 +76,7 @@ object Errors {
   def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
   def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
   def improperBehaviorError(node: GherkinNode) = throw new ImproperBehaviorException(node)
-  def unexpectedBehaviorError(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) = throw new UnexpectedBehaviorException(step, expected, actual)
+  def unexpectedBehaviorError(step: Step, expected: BehaviorType, actual: BehaviorType) = throw new UnexpectedBehaviorException(step, expected, actual)
   def undefinedStepDefBehaviorError(stepDef: Scenario) = throw new UndefinedStepDefBehaviorException(stepDef)
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
@@ -83,6 +84,7 @@ object Errors {
   def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
   def stepError(step: Step, cause: Throwable) = throw new StepFailure(step, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
+  def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Int], column: Option[Int]): String = at(SourceRef.toString(file, line, column))
@@ -203,7 +205,7 @@ object Errors {
     extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
-  class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) 
+  class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
     extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
@@ -225,4 +227,6 @@ object Errors {
   /** Thrown when a timeout error occurs. */
   class WaitTimeoutException(timeoutSecs: Long, reason: String, cause: Throwable) extends GwenException(s"Timed out after $timeoutSecs second(s) $reason", cause)
 
+  /** Thrown when an invalid binding type is detected in a comparison operation. */
+  class InvalidBindingPathTypeException(bindingType: BindingType) extends GwenException(s"Invalid path binding type: $bindingType (only ${BindingType.xpath} or ${BindingType.`json path`} supported)")
 }

@@ -18,7 +18,7 @@ package gwen.core.status
 
 /** Defines the loaded status. */
 case object Loaded extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Loaded
+  override val keyword: StatusKeyword = StatusKeyword.Loaded
   override val nanos = 0L
   override def exitCode = 0
   override def emoticon = "[:)]"

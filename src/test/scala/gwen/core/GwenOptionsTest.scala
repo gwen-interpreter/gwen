@@ -708,7 +708,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
                              parallel: Boolean = false,
                              parallelFeatures: Boolean = false,
                              reportDir: Option[File] = None,
-                             reportFormats: List[ReportFormat.Value] = Nil,
+                             reportFormats: List[ReportFormat] = Nil,
                              properties: List[File] = Nil,
                              tags: List[(Tag, Boolean)] = Nil,
                              dryRun: Boolean = false,

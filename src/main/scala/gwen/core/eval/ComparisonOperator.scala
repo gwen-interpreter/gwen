@@ -16,15 +16,5 @@
 
 package gwen.core.eval
 
-object ComparisonOperator extends Enumeration {
-
-  val be, contain = Value
-  val `start with` = Value("start with")
-  val `end with` = Value("end with")
-  val `match regex` = Value("match regex")
-  val `match xpath` = Value("match xpath")
-  val `match json path` = Value("match json path")
-  val `match template` = Value("match template")
-  val `match template file` = Value("match template file")
-
-}
+enum ComparisonOperator:
+  case be, contain, `start with`, `end with`, `match regex`, `match xpath`, `match json path`, `match template`, `match template file`

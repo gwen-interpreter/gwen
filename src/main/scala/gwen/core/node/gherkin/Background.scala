@@ -43,7 +43,7 @@ case class Background(
     description: List[String], 
     steps: List[Step]) extends GherkinNode {
 
-  override val nodeType: NodeType.Value = NodeType.Background
+  override val nodeType: NodeType = NodeType.Background
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {

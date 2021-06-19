@@ -16,10 +16,11 @@
 
 package gwen.core.status
 
-object StatusKeyword extends Enumeration {
+enum StatusKeyword:
+  case Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled
 
-  val Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled = Value
-  
+object StatusKeyword {
+
   val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
 
 }

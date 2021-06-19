@@ -37,7 +37,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   private var state = initialState
 
-  val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
+  val stateLevel: StateLevel = GwenSettings.`gwen.state.level`
 
   def stepDefs: Map[String, Scenario] = state.getStepDefs
   def paramScope: ParameterStack = scopes.paramScope
@@ -55,7 +55,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def close(): Unit = { }
 
   /** Resets the current context but does not close it so it can be reused. */
-  def reset(level: StateLevel.Value): Unit = {
+  def reset(level: StateLevel): Unit = {
     logger.info(s"Resetting environment context")
     state = if (StateLevel.feature.equals(level)) {
       EnvState.resetAttachmentNo()
@@ -69,7 +69,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def asString: String = scopes.asString
 
   /** The spec type currently being evaluated. */
-  def specType: SpecType.Value = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType.Value]).getOrElse(SpecType.Feature)
+  def specType: SpecType = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType]).getOrElse(SpecType.Feature)
 
   /** Returns the current visible scopes. */
   def visibleScopes: ScopedDataStack = scopes.visible
@@ -170,14 +170,14 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   }
 
   /** Adds current behavior. */
-  def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value =
+  def addBehavior(behavior: BehaviorType): BehaviorType =
     behavior tap { _ => state.addBehavior(behavior) }
 
   /** Removes the current behavior. */
-  def popBehavior(): Option[BehaviorType.Value] = state.popBehavior()
+  def popBehavior(): Option[BehaviorType] = state.popBehavior()
 
   /** Gets the current behavior. */
-  def currentBehavior: Option[BehaviorType.Value] = state.currentBehavior
+  def currentBehavior: Option[BehaviorType] = state.currentBehavior
 
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = paramScope.isEmpty

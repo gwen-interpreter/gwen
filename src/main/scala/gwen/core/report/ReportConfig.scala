@@ -25,7 +25,7 @@ import gwen.core.state.DataRecord
 import java.io.File
 
 class ReportConfig(
-  val format: ReportFormat.Value,
+  val format: ReportFormat,
   val name: String,
   val fileExtension: Option[String],
   val summaryFilename: Option[String],

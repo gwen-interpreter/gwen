@@ -16,8 +16,10 @@
 
 package gwen.core
 
-object AssertionMode extends Enumeration {
-  val hard, soft, sustained = Value
+enum AssertionMode:
+  case hard, soft, sustained
+
+object AssertionMode {
   def isHard = GwenSettings.`gwen.assertion.mode` == hard
   def isSoft = GwenSettings.`gwen.assertion.mode` == soft
   def isSustained = GwenSettings.`gwen.assertion.mode` == sustained

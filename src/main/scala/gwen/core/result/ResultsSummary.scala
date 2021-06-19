@@ -35,9 +35,9 @@ import java.util.Date
   */
 case class ResultsSummary(
   results: List[SpecResult],
-  ruleCounts: Map[StatusKeyword.Value, Int], 
-  scenarioCounts: Map[StatusKeyword.Value, Int], 
-  stepCounts: Map[StatusKeyword.Value, Int]) {
+  ruleCounts: Map[StatusKeyword, Int], 
+  scenarioCounts: Map[StatusKeyword, Int], 
+  stepCounts: Map[StatusKeyword, Int]) {
   
   lazy val started: Date = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
   lazy val finished: Date = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
@@ -47,7 +47,7 @@ case class ResultsSummary(
   lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
   lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
   lazy val overhead: Duration = DurationOps.sum(results.map(_.overhead))
-  lazy val featureCounts: Map[StatusKeyword.Value, Int] = EvalStatus.countsByType(statuses)
+  lazy val featureCounts: Map[StatusKeyword, Int] = EvalStatus.countsByType(statuses)
   lazy val sustainedCount: Int = results.map(_.sustainedCount).sum
   
   /** 
@@ -63,7 +63,7 @@ case class ResultsSummary(
       addCounts(this.stepCounts, result.stepCounts))
   }
 
-  private def addCounts(countsA: Map[StatusKeyword.Value, Int], countsB: Map[StatusKeyword.Value, Int]): Map[StatusKeyword.Value, Int] =
+  private def addCounts(countsA: Map[StatusKeyword, Int], countsB: Map[StatusKeyword, Int]): Map[StatusKeyword, Int] =
     (StatusKeyword.reportables flatMap { status => 
       val a = countsA.getOrElse(status, 0)
       val b = countsB.getOrElse(status, 0)
@@ -86,7 +86,7 @@ case class ResultsSummary(
         |[${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }
   
-  private def formatCounts(counts: Map[StatusKeyword.Value, Int]) = 
+  private def formatCounts(counts: Map[StatusKeyword, Int]) = 
     StatusKeyword.reportables map { status =>
       val count = counts.getOrElse(status, 0)
       s"$status $count"

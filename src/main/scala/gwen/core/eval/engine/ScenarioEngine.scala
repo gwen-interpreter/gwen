@@ -49,7 +49,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
 
   private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
-    if (ctx.options.isParallelScenarios && SpecType.isFeature(ctx.specType) && StateLevel.scenario.equals(ctx.stateLevel)) {
+    if (ctx.options.isParallelScenarios && ctx.specType.isFeature && StateLevel.scenario.equals(ctx.stateLevel)) {
       evaluateParallelScenarios(parent, input, ctx)
     } else {
       evaluateSequentialScenarios(parent, input, ctx)
@@ -91,7 +91,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   private def evaluateOrTransitionScenario(parent: GwenNode, scenario: Scenario, ctx: T, acc: List[Scenario]): Scenario = {
-    if (SpecType.isFeature(ctx.specType) && !scenario.isStepDef) {
+    if (ctx.specType.isFeature && !scenario.isStepDef) {
       if (StateLevel.scenario.equals(ctx.stateLevel)) {
         ctx.reset(StateLevel.scenario)
       }

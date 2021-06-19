@@ -165,7 +165,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
         val env = newEnv
         env.topScope.set("engineName", "Gwen-Core")
         env.topScope.get("engineName") should be ("Gwen-Core")
-        env.reset(StateLevel.withName(level))
+        env.reset(StateLevel.valueOf(level))
         env.topScope.getOpt("engineName") should be (None)
         env.topScope.scope should be (level)
       }

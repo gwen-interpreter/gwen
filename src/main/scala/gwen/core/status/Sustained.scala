@@ -23,7 +23,7 @@ package gwen.core.status
   * @param error the error to sustain
   */
 case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
-  override val keyword: StatusKeyword.Value = StatusKeyword.Sustained
+  override val keyword: StatusKeyword = StatusKeyword.Sustained
   override def exitCode = 0
   override def emoticon = "[:|]"
   override def cause = Option(error.getCause)

@@ -20,14 +20,18 @@ import gwen.core._
 
 import java.io.File
 
-object SpecType extends Enumeration {
+enum SpecType {
 
-  val Feature, Meta = Value
+  case Feature, Meta
 
-  def isFeature(specType: SpecType.Value):Boolean = specType == Feature
-  def isMeta(specType: SpecType.Value):Boolean = specType == Meta
+  def isFeature: Boolean = this == Feature
+  def isMeta: Boolean = this == Meta
 
-  def ofFile(specFile: File): SpecType.Value = {
+}
+
+object SpecType {
+
+  def ofFile(specFile: File): SpecType = {
     if (FileIO.isMetaFile(specFile)) SpecType.Meta
     else SpecType.Feature
   }

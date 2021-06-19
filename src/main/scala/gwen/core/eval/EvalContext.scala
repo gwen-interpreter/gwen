@@ -133,7 +133,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     } else step
   }
 
-  def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator.Value, negate: Boolean): Try[Boolean] = Try {
+  def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
       case ComparisonOperator.be      => expected == actual
       case ComparisonOperator.contain => actual.contains(expected)
@@ -153,7 +153,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     if (!negate) res else !res
   }
 
-  def parseExpression(operator: ComparisonOperator.Value, expression: String): String = {
+  def parseExpression(operator: ComparisonOperator, expression: String): String = {
     (if (operator == ComparisonOperator.`match template file`) {
       val filepath = interpolate(expression)
       if (new File(filepath).exists()) {

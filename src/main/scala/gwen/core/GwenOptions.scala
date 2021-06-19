@@ -48,7 +48,7 @@ case class GwenOptions(
     parallel: Boolean = false,
     parallelFeatures: Boolean = false,
     reportDir: Option[File] = None,
-    reportFormats: List[ReportFormat.Value] = Nil,
+    reportFormats: List[ReportFormat] = Nil,
     properties: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
@@ -121,7 +121,7 @@ object GwenOptions {
 
       opt[String]('f', "formats") action {
         (fs, c) =>
-          c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.withName(f)))
+          c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
       } valueName "<formats>" text s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})"
 
       opt[String]('t', "tags") action {

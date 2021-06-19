@@ -16,6 +16,5 @@
 
  package gwen.core.node
 
-object NodeType extends Enumeration {
-  val Root, Unit, Tag, Feature, Meta, Scenario, Background, Examples, Rule, StepDef, Step, Result = Value
-}
+enum NodeType:
+  case Root, Unit, Tag, Feature, Meta, Scenario, Background, Examples, Rule, StepDef, Step, Result

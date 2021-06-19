@@ -16,10 +16,9 @@
 package gwen.core.node.gherkin.table
 
 /**
-  * Enumeration of supported table header types.
+  * Supported table header types.
   *
   * @author Branko Juric
   */
-object HeaderType extends Enumeration {
-  val top, left, top_left  = Value
-}
+enum HeaderType:
+  case top, left, top_left

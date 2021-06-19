@@ -16,11 +16,5 @@
 
 package gwen.core.node.gherkin
 
-object FeatureSymbol extends Enumeration {
-  val `#` = Value("#")
-  val `@` = Value("@")
-
-  /** List of all keyword names. */
-  val names: Set[String] = values.map(_.toString)
-
-}
+enum FeatureSymbol:
+  case `#`, `@`

@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Errors
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.BindingType
@@ -29,7 +30,7 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Value, path: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
+class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -41,6 +42,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType.Valu
           case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
           case BindingType.xpath => ctx.evaluateXPath(
             path, src, XMLNodeType.text)
+          case _ => Errors.invalidBindingPathTypeError(pathType)
         }
         val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
         val op = {

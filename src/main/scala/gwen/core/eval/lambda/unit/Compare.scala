@@ -27,7 +27,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator.Value, negate: Boolean) extends UnitStep[T] {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>

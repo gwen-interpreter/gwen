@@ -37,7 +37,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
 
   private val percentFormatter = new DecimalFormat("#.##")
   
-  private [format] def formatProgressBar(nodeType: NodeType.Value, counts: Map[StatusKeyword.Value, Int]): Option[TypedTag[String]] = { 
+  private [format] def formatProgressBar(nodeType: NodeType, counts: Map[StatusKeyword, Int]): Option[TypedTag[String]] = { 
     for {
       total <- Some(counts.values.sum).filter(_ > 0)
     } yield {
@@ -188,7 +188,7 @@ object HtmlReportFormatter {
     )
   }
          
-  private [format] def formatBadgeStatus(status: StatusKeyword.Value, renderErrorLink: Boolean, sustainedCount: Int): TypedTag[String] = {
+  private [format] def formatBadgeStatus(status: StatusKeyword, renderErrorLink: Boolean, sustainedCount: Int): TypedTag[String] = {
     val sustainedError = s"${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}"
     li(
       span(`class` := s"badge badge-${cssStatus(status)}",

@@ -43,7 +43,7 @@ object DataTable {
       case r"""DataTable\(vertical="([^".]+?)"$namesCSV\)""" =>
         DataTable(step.table.map(_._2), HeaderType.left, namesCSV.split(",").toList)
       case r"""DataTable\(header="(top|left)"$header\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.withName(header), Nil)
+        DataTable(step.table.map(_._2), HeaderType.valueOf(header), Nil)
       case r"""DataTable\(type="matrix"\)""" =>
         DataTable(step.table.map(_._2), HeaderType.top_left, Nil)
       case _ => tagSyntaxError(tag)
@@ -71,7 +71,7 @@ object DataTable {
     * @param headerType the table  header type
     * @param headers list of header names
     */
-  def apply(rawTable: List[List[(String)]], headerType: HeaderType.Value, headers: List[String]): DataTable = {
+  def apply(rawTable: List[List[(String)]], headerType: HeaderType, headers: List[String]): DataTable = {
 
     val tableType = TableType.valueFor(headerType)
 

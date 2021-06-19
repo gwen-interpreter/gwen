@@ -18,8 +18,10 @@ package gwen.core.state
 
 import gwen.core._
 
-object StateLevel extends Enumeration {
-  val scenario, feature = Value
+enum StateLevel:
+  case scenario, feature
+
+object StateLevel {
   def isScenario = GwenSettings.`gwen.state.level` == scenario
   def isFeature = GwenSettings.`gwen.state.level` == feature
 }
