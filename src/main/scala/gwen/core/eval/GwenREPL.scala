@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import gwen.core.state.StateLevel
 import scala.jdk.CollectionConverters._
 import scala.util.Failure
 import scala.util.Success
+import scala.util.chaining._
 
 import jline.console.completer.AggregateCompleter
 import jline.console.ConsoleReader
@@ -36,7 +37,7 @@ import java.io.File
 
 /**
   * Read-Eval-Print-Loop console.
-  * 
+  *
   * @author Branko Juric
   */
 class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
@@ -182,13 +183,13 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     println("Enter steps to evaluate or type exit to quit..")
     while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) println(output) } ).nonEmpty) { }
   }
-  
+
   private def helpText() = """
     | Gwen REPL commands:
-    | 
+    |
     | help
     |   Displays this help text
-    | 
+    |
     | env [switch] ["filter"]
     |   Lists attributes in the current environment
     |     Only lists visible attributes if no options are specified
@@ -202,31 +203,30 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     |
     | history
     |   Lists all previously entered commands
-    | 
+    |
     | !<#>
     |   Executes a previously entered command (history bang operator)
     |     # : the history command number
-    | 
+    |
     | Given|When|Then|And|But <step>
     |   Evaluates a step
     |     step : the step expression
-    | 
+    |
     | exit|quit|bye
     |   Closes the REPL session and exits
     |
     | ctrl-D
     |   If in past mode: exits paste mode and interprets provided steps
     |   Otherwise: Closes REPL session and exits
-    | 
-    | <tab> 
+    |
+    | <tab>
     |   Press tab key at any time for tab completion
     | """.stripMargin
 }
 
 object GwenREPL {
   /** Filters attributes containing or matching given expression (both names and values are checked). */
-  def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = { 
+  def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = {
     case (n, v) => n.contains(filter) || n.matches(filter) || (v != null && (v.contains(filter) || v.matches(filter)))
   }
 }
-

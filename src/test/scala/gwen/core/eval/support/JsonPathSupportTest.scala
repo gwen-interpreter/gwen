@@ -18,10 +18,10 @@ package gwen.core.eval.support
 
 import gwen.core.Errors.JsonPathException
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class JsonPathSupportTest extends FlatSpec with Matchers with JsonPathSupport {
+class JsonPathSupportTest extends AnyFlatSpec with Matchers with JsonPathSupport {
 
   val JsonSource = """
   {

@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import gwen.core.eval.lambda.composite.ForEachTableRecord
 import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
 import gwen.core.eval.lambda.composite.StepDefCall
 import gwen.core.node.GwenNode
+import gwen.core.node.Root
 import gwen.core.node.gherkin.ReservedTags
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
@@ -36,7 +37,7 @@ import gwen.core.status._
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import gwen.core.node.Root
+import scala.util.chaining._
 
 /**
   * Step evaluation engine.
@@ -64,10 +65,10 @@ trait StepEngine[T <: EvalContext] {
     var behaviorCount = 0
     try {
       steps.foldLeft(List[Step]()) {
-        (acc: List[Step], step: Step) => 
+        (acc: List[Step], step: Step) =>
           if (!StepKeyword.isAnd(step.keyword)) {
             ctx.addBehavior(BehaviorType.of(step.keyword))
-            behaviorCount = behaviorCount + 1 
+            behaviorCount = behaviorCount + 1
           }
           evaluateOrTransitionStep(parent, step, acc, ctx) :: acc
       } reverse
@@ -116,18 +117,18 @@ trait StepEngine[T <: EvalContext] {
   private def translateAndEvaluate(parent: GwenNode, step: Step, ctx: T): Step = {
     translateCompositeStep(step) orElse {
       translateStepDef(step, ctx)
-    } map { lambda => 
+    } map { lambda =>
       lambda(parent, step.copy(withEvalStatus = Pending), ctx)
     } getOrElse {
       Try(translateStep(step)) match {
-        case Success(lambda) if (!step.evalStatus.isFailed) => 
-          lambda(parent, step, ctx) 
-        case Failure(e) => 
+        case Success(lambda) if (!step.evalStatus.isFailed) =>
+          lambda(parent, step, ctx)
+        case Failure(e) =>
           parent match {
             case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
               step.copy(
-                withEvalStatus = 
-                  Failed(step.evalStatus.duration.toNanos, 
+                withEvalStatus =
+                  Failed(step.evalStatus.duration.toNanos,
                     new Errors.RecursiveStepDefException(ctx.getStepDef(step.name).get))
               )
             case _ =>
@@ -158,14 +159,14 @@ trait StepEngine[T <: EvalContext] {
     ctx.getStepDef(step.name) match {
       case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
-          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map { 
-            tag => DataTable(tag, step) 
+          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map {
+            tag => DataTable(tag, step)
           }
         }
         Some(new ForEachTableRecordAnnotated(stepDef, step, dataTable, this))
       case Some(stepDef) if !ctx.paramScope.containsScope(stepDef.name) =>
         Some(new StepDefCall(step, stepDef, this))
-      case _ => 
+      case _ =>
         None
     }
   }
@@ -202,8 +203,8 @@ trait StepEngine[T <: EvalContext] {
     }
     val fStep = ctx.popAttachments() match {
       case Nil => eStep
-      case attachments => 
-        attachments.foldLeft(eStep) { case (accStep, (attachmentNo, name, file)) => 
+      case attachments =>
+        attachments.foldLeft(eStep) { case (accStep, (attachmentNo, name, file)) =>
           accStep.addAttachment(attachmentNo, name, file)
         }
     }
@@ -221,5 +222,5 @@ trait StepEngine[T <: EvalContext] {
     }
 
   }
-  
+
 }

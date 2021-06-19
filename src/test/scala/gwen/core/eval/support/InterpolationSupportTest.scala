@@ -18,11 +18,11 @@ package gwen.core.eval.support
 
 import gwen.core.Settings
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 import gwen.core.Errors
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class InterpolationSupportTest extends FlatSpec with Matchers with InterpolationSupport {
+class InterpolationSupportTest extends AnyFlatSpec with Matchers with InterpolationSupport {
 
   """interpolate using property syntax: prefix "${property}"""" should "resolve" in {
     interpolateString("""hello "${property}"""") { _ => "you" } should be ("""hello "you"""")

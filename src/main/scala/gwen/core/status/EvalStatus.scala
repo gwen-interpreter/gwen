@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,7 @@ import java.util.Date
 
 /** The evaluation status of a node. */
 trait EvalStatus {
-  
+
   val keyword: StatusKeyword.Value
   val nanos: Long
   val timestamp = new Date()
@@ -42,13 +42,13 @@ trait EvalStatus {
 
   def isEvaluated: Boolean = isPassed || isDisabled || isError
   def isError: Boolean = isFailed || isSustained
-  
+
   /** Returns the duration in nanoseconds. */
   def duration: Duration = Duration.fromNanos(nanos)
-  
+
   /** Must be overriden to return exit code. */
   def exitCode: Int
-  
+
   /** Must be overriden to return an emoticon. */
   def emoticon: String
 
@@ -71,7 +71,7 @@ trait EvalStatus {
   /** Determines whether or not this status is due to a licens error. */
   def isLicenseError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[Errors.LicenseException])
-  
+
   def message: String = cause.map(_.getMessage).getOrElse(keyword.toString)
 
   override def toString: String =
@@ -81,10 +81,10 @@ trait EvalStatus {
 }
 
 object EvalStatus {
-  
+
   /**
     * Function for getting the effective status of a given list of statuses.
-    * 
+    *
     * @param statuses the list of statuses
     */
   def apply(statuses: List[EvalStatus]): EvalStatus = apply(statuses, ignoreSustained = true)
@@ -126,10 +126,10 @@ object EvalStatus {
 
    /**
     * Groups counts by status name.
-    * 
+    *
     * @param statuses the statuses to group
     */
-  def countsByType(statuses: List[EvalStatus]): Map[StatusKeyword.Value, Int] = 
+  def countsByType(statuses: List[EvalStatus]): Map[StatusKeyword.Value, Int] =
     statuses.groupBy(_.keyword) map { case (k, v) => (k, v.size) }
-  
+
 }

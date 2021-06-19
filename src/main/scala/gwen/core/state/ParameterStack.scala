@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,12 @@ import gwen.core._
 import gwen.core.node.gherkin.ReservedTags
 
 import scala.collection.mutable
+import scala.util.chaining._
 
 /**
   * Manages and maintains an in memory stack of parameters.
-  * 
-  * @author Branko Juric  
+  *
+  * @author Branko Juric
   */
 class ParameterStack {
 
@@ -32,17 +33,17 @@ class ParameterStack {
     val itemName: String = s"${ReservedTags.ForEach}.itemName"
     val itemIndex: String = s"${ReservedTags.ForEach}.itemIndex"
     val itemNumber: String = s"${ReservedTags.ForEach}.itemNumber"
-  } 
+  }
 
   /**
     * The parameters stack.
     */
   private val paramStack = mutable.Stack[ScopedData]()
-  
+
   /**
-    * Adds the given parameters (name-value pairs) to a new scope 
+    * Adds the given parameters (name-value pairs) to a new scope
     * and pushes it onto the stack
-    * 
+    *
     * @param scope the name of the scope entry to add
     * @param params the parameters to add
     * @return the newly added scope
@@ -55,7 +56,7 @@ class ParameterStack {
       paramStack.push(data)
     }
   }
-  
+
   /** Pops the current parameters off the stack. */
   def pop(): ScopedData = paramStack.pop()
 
@@ -76,16 +77,16 @@ class ParameterStack {
     */
   def getOpt(name: String): Option[String] =
     paramStack.headOption.flatMap(_.getOpt(name)).headOption
-    
+
   /**
-    * Checks whether or not the parameter stack contains the 
+    * Checks whether or not the parameter stack contains the
     * given scope.
-    * 
+    *
     * @param scope the scope name to check
-    * @return true if the scope is found; false otherwise 
+    * @return true if the scope is found; false otherwise
     */
   def containsScope(scope: String): Boolean = paramStack.exists(_.scope == scope)
-  
+
   /** Checks whether or not the local stack is empty. */
   def isEmpty = paramStack.isEmpty
 
@@ -95,14 +96,13 @@ class ParameterStack {
   override def toString: String = {
     paramStack.headOption.map(scope => (scope.scope, scope.findEntries(_ => true).toList)) match {
       case Some((scope, entries)) if entries.nonEmpty =>
-        s"params : { scope: $scope, entries : [ ${entries map { case (n, v) => 
+        s"params : { scope: $scope, entries : [ ${entries map { case (n, v) =>
           val name = n.substring(1, n.length - 1)
-          s"{ $name: $v }" 
+          s"{ $name: $v }"
         } mkString ", "} ] }"
-      case _ => 
+      case _ =>
         "params : { }"
     }
   }
-  
-}
 
+}

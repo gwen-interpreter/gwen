@@ -26,7 +26,7 @@ import gwen.core.state.StateLevel
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.node.gherkin.table.FlatTable
 
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
 class EvalContextTest extends BaseTest with Matchers with TestModel {
   

@@ -20,9 +20,10 @@ import gwen.core.state.TopScope
 
 import scala.util.{Failure, Success}
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class TemplateSupportTest extends FlatSpec with Matchers with TemplateSupport {
+class TemplateSupportTest extends AnyFlatSpec with Matchers with TemplateSupport {
 
   val topScope = new TopScope()
 

@@ -1,12 +1,12 @@
 /*
  * Copyright 2020-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import gwen.core.Errors
 import gwen.core.GwenSettings
 
 import scala.collection.mutable
+import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
@@ -52,19 +53,19 @@ object SensitiveData {
 
   def parse(name: String, value: String): Option[(String, String)] = {
     name match {
-      case MaskedNamePattern(n) => 
+      case MaskedNamePattern(n) =>
         if (n.startsWith("gwen.") && !n.startsWith("gwen.db")) {
           Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $n")
         }
-        val mValue = MaskedValues.collectFirst { 
-          case mValue if mValue.name == n && mValue.plain == value => mValue 
+        val mValue = MaskedValues.collectFirst {
+          case mValue if mValue.name == n && mValue.plain == value => mValue
         } getOrElse {
-          MaskedValue(n, value) tap { mValue => 
+          MaskedValue(n, value) tap { mValue =>
             MaskedValues += mValue
           }
         }
         Some((n, mValue.toString))
-      case _ => 
+      case _ =>
         Some((name, value))
     }
   }
@@ -78,7 +79,7 @@ object SensitiveData {
 
   private def unmask[T](value: String): String = {
     value match {
-      case MaskedValuePattern(masked) => 
+      case MaskedValuePattern(masked) =>
         val zeroCount = countZeroes(masked)
         val index = zeroCount - 1
         if (index < MaskedValues.size) {
@@ -91,5 +92,5 @@ object SensitiveData {
       case _ => value
     }
   }
-  
+
 }

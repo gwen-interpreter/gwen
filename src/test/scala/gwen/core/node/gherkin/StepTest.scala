@@ -20,10 +20,10 @@ import gwen.core.TestModel
 
 import scala.util.Failure
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class StepTest extends FlatSpec with Matchers with GherkinParser with TestModel {
+class StepTest extends AnyFlatSpec with Matchers with GherkinParser with TestModel {
 
   private val parse = parseStep(_: String)
   

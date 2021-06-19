@@ -18,10 +18,10 @@ package gwen.core.node.gherkin
 
 import scala.util.Success
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class RuleTest extends FlatSpec with Matchers with GherkinParser {
+class RuleTest extends AnyFlatSpec with Matchers with GherkinParser {
 
   private def parse(input: String) = parseSpec(s"Feature: ftest\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
   

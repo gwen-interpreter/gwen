@@ -20,10 +20,10 @@ import gwen.core.TestModel
 
 import scala.util.Success
 
-import org.scalatest.Matchers
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class ScenarioTest extends FlatSpec with Matchers with GherkinParser with TestModel {
+class ScenarioTest extends AnyFlatSpec with Matchers with GherkinParser with TestModel {
 
   private def parse(input: String, clearPos: Boolean = true) = { 
     val scenario = parseSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)

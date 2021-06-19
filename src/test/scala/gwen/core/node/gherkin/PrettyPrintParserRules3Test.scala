@@ -19,10 +19,10 @@ package gwen.core.node.gherkin
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class PrettyPrintParserRules3Test extends FlatSpec with Matchers with SpecNormaliser with GherkinParser {
+class PrettyPrintParserRules3Test extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser {
 
   private val parse = parseSpec(_: String)
 

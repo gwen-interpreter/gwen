@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,16 +21,18 @@ import gwen.core._
 import gwen.core.node._
 import gwen.core.status._
 
+import scala.util.chaining._
+
 import java.io.PrintWriter
 import java.io.StringWriter
 
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
-  * each node to a string and can be invoked as a function.  For example, 
-  * `prettyPrint(spec)` prints an entire spec, and `prettyPrint(step)` prints 
-  * a single step.  Included in the output is the evaluation status of node 
+  * each node to a string and can be invoked as a function.  For example,
+  * `prettyPrint(spec)` prints an entire spec, and `prettyPrint(step)` prints
+  * a single step.  Included in the output is the evaluation status of node
   * (if not pending).
-  * 
+  *
   * @author Branko Juric
   */
 object SpecPrinter {
@@ -45,7 +47,7 @@ object SpecPrinter {
 
 class SpecPrinter extends SpecWalker[PrintWriter] {
 
-  override def onFeature(parent: GwenNode, feature: Feature, out: PrintWriter): PrintWriter = { 
+  override def onFeature(parent: GwenNode, feature: Feature, out: PrintWriter): PrintWriter = {
     val language = feature.language
     if (language != "en") {
       out.println(s"# language: $language")
@@ -58,7 +60,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = { 
+  override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = {
     out.println()
     out.print(s"${background.keyword}: ${background.name}")
     printDescription(background.description, out)
@@ -67,7 +69,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onScenario(parent: GwenNode, scenario: Scenario, out: PrintWriter): PrintWriter = { 
+  override def onScenario(parent: GwenNode, scenario: Scenario, out: PrintWriter): PrintWriter = {
     if (!scenario.isExpanded) {
       val keyword = scenario.keyword
       out.println()
@@ -81,7 +83,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = { 
+  override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = {
     if (!step.isExpanded(parent)) {
       val keyword = step.keyword
       out.print("  ")
@@ -91,7 +93,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
       if (step.table.nonEmpty) {
         printTable(step.table, out)
       } else {
-        step.docString foreach { docString => 
+        step.docString foreach { docString =>
           printDocString(docString, out)
         }
       }
@@ -100,15 +102,15 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     out
   }
 
-  override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = { 
+  override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
     out.println()
     out.print(s"      ${rule.keyword}: ${rule.name}")
     printDescription(rule.description, out)
     out.println()
     out
   }
-  
-  override def onExamples(parent: GwenNode, examples: Examples, out: PrintWriter): PrintWriter = { 
+
+  override def onExamples(parent: GwenNode, examples: Examples, out: PrintWriter): PrintWriter = {
     if (!examples.isExpanded) {
       printTags("  ", examples.tags, out)
       out.print(s"  ${examples.keyword}: ${examples.name}")
@@ -118,7 +120,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     }
     out
   }
-  
+
   private def printDescription(desc: List[String], out: PrintWriter): Unit = {
     printTextLines("        ", desc, out)
   }
@@ -137,13 +139,13 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
       out.print(s"$indent$line")
     }
   }
-  
-  private def printTags(indent: String, tags: List[Tag], out: PrintWriter): Unit = { 
+
+  private def printTags(indent: String, tags: List[Tag], out: PrintWriter): Unit = {
     if (tags.nonEmpty) {
       out.println(s"$indent${tags.mkString(" ")}")
     }
   }
-  
+
   private def printStatus(status: EvalStatus, out: PrintWriter): Unit = {
     status match {
       case Failed(_, error) => out.print(s" # $status: ${error.getMessage}")
@@ -151,7 +153,7 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
       case _ => out.print(s" # $status")
     }
   }
-  
+
   private def rightJustify(keyword: String) = " " * (9 - keyword.length)
 
   private def paddingFor(keyword: String) = " "*(10 - keyword.split(' ')(0).length + (if (keyword.contains(' ')) 1 else 0))
