@@ -1,12 +1,12 @@
 /*
  * Copyright 2020-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 
 package gwen.core.report
 
+import gwen.core._
 import gwen.core.FileIO
 import gwen.core.GwenOptions
 import gwen.core.node.gherkin.Spec
@@ -28,7 +29,7 @@ class ReportConfig(
   val name: String,
   val fileExtension: Option[String],
   val summaryFilename: Option[String],
-  val getGenerator: GwenOptions => ReportGenerator, 
+  val getGenerator: GwenOptions => ReportGenerator,
   val getReportDir: GwenOptions => Option[File],
   val getReportDetailFilename: (Spec, Option[DataRecord]) => Option[String]) {
 
@@ -43,7 +44,7 @@ class ReportConfig(
         reportDir map { dir =>
           file.toPath(dir, Some(dataRecordDir + FileIO.encodeDir(file.getName.substring(0, file.getName.lastIndexOf(".")))))
         }
-      case None => 
+      case None =>
         reportDir map { dir =>
           dir.getPath + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)
         }
@@ -51,7 +52,7 @@ class ReportConfig(
     reportPath map { path => new File(path) }
   }
   def createReportFile(toDir: File, prefix: String, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = {
-    fileExtension flatMap { ext => 
+    fileExtension flatMap { ext =>
       getReportFilename(spec, dataRecord) map { filename =>
         new File(toDir, s"$prefix$filename.$ext")
       }
@@ -59,4 +60,3 @@ class ReportConfig(
   }
 
 }
-

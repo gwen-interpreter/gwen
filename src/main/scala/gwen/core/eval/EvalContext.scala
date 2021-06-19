@@ -30,6 +30,7 @@ import scala.io.Source
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import scala.util.chaining._
 
 import java.io.File
 import java.io.FileNotFoundException
@@ -46,11 +47,11 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
     with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
 
-  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
+  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
     if (config.toLowerCase.trim startsWith "file:") {
       PropertyConfigurator.configure(new URL(config));
     } else {
-      PropertyConfigurator.configure(config); 
+      PropertyConfigurator.configure(config);
     }
   }
 
@@ -58,9 +59,9 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   private val bindingResolver = new BindingResolver(this)
 
   /**
-   * Gets the list of DSL steps supported by this context.  This implementation 
-   * returns all user defined stepdefs. Subclasses can override to return  
-   * addtional entries. The entries returned by this method are used for tab 
+   * Gets the list of DSL steps supported by this context.  This implementation
+   * returns all user defined stepdefs. Subclasses can override to return
+   * addtional entries. The entries returned by this method are used for tab
    * completion in the REPL.
    */
   def dsl: List[String] = stepDefs.keys.toList
@@ -79,7 +80,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
    * @param operation the operation to execute
    */
   def perform(operation: => Unit): Option[Any] = if (!options.dryRun) Some(operation) else None
-  
+
   /**
    * Gets get value bound to the given name.
    *  @param name the name of the attribute or value
@@ -93,12 +94,12 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     * @return a binding
     */
   def getBinding(name: String): Binding[EvalContext, String] = bindingResolver.getBinding(name)
-  
+
   def interpolate(value: String): String = interpolateString(value)(getBoundReferenceValue)
 
   /**
     * Interpolate all parameters in the given step.
-    * 
+    *
     * @param step the step to interpolate
     * @return the interpolated step
     */
@@ -106,7 +107,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
 
   /**
     * Interpolate all references in the given step.
-    * 
+    *
     * @param step the step to interpolate
     * @return the interpolated step
     */
@@ -181,7 +182,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     val lock = new Semaphore(1)
     lock.acquire()
     val start = System.currentTimeMillis
-    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) { 
+    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) {
       if (condition) lock.release()
     }
     try {
@@ -195,7 +196,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
 
   /**
     * Applies a function to a step and captures the result.
-    * 
+    *
     * @param step the step to evaluate
     * @param stepFunction the step evaluator function
     */
@@ -217,12 +218,12 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   }
 
   /**
-    * Adds error attachments to the given step. 
+    * Adds error attachments to the given step.
     * This includes the error trace and environment context.
-    * 
+    *
     * @param failure the failed status
     */
-  def addErrorAttachments(step: Step, failure: Failed): Step = { 
+  def addErrorAttachments(step: Step, failure: Failed): Step = {
     step
       .addAttachment("Error details", "txt", failure.error.writeStackTrace())
       .addAttachment(s"Environment", "txt", scopes.visible.asString)

@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,33 +32,35 @@ object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultInstance
 
 /**
   * Main Gwen application superclass.
-  * 
+  *
   * @param engine the evaluation engine
   */
-class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with App with GwenInfo with LazyLogging {
+class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with GwenInfo with LazyLogging {
 
-  printBanner("Welcome to ")
-  println()
+  def main(args: Array[String]): Unit = {
+    printBanner("Welcome to ")
+    println()
 
-  try {
-    System.exit(run(GwenOptions(args)))
-  } catch {
-    case e: Throwable =>
-      logger.whenDebugEnabled {
-        println(e.writeStackTrace())
-      }
-      System.err.println(s"ERROR - ${e.getMessage}")
-      println()
-      System.exit(1)
+    try {
+      System.exit(run(GwenOptions(args)))
+    } catch {
+      case e: Throwable =>
+        logger.whenDebugEnabled {
+          println(e.writeStackTrace())
+        }
+        System.err.println(s"ERROR - ${e.getMessage}")
+        println()
+        System.exit(1)
+    }
   }
-  
-  /** 
+
+  /**
     * Runs the interpreter with the given options
-    * 
+    *
     * @param options the command line options
     * @param launcher Gwen launcher
     * @return 0 if successful; 1 otherwise
-    */  
+    */
   private [gwen] def run(options: GwenOptions): Int = {
     val ctxOpt = if (options.batch) None else Some(engine.init(options, EnvState()))
     try {
@@ -74,24 +76,24 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       ctxOpt.foreach(_.close())
     }
   }
-  
+
   /**
     * Returns the console REPL.
-    * 
+    *
     * @param ctx the evaluation context
     */
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
-  
+
   private def printBanner(intro: String): Unit = {
-    println(("""|                                   
-                |                              _    
-                |   __ ___      _____ _ __    { \," 
-                |  / _` \ \ /\ / / _ \ '_ \  {_`/   
-                | | (_| |\ V  V /  __/ | | |   `    
-                |  \__, | \_/\_/ \___|_| |_|        
-                |  |___/                            
-                |                                   
+    println(("""|
+                |                              _
+                |   __ ___      _____ _ __    { \,"
+                |  / _` \ \ /\ / / _ \ '_ \  {_`/
+                | | (_| |\ V  V /  __/ | | |   `
+                |  \__, | \_/\_/ \___|_| |_|
+                |  |___/
+                |
                 |""" + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin)
   }
-  
+
 }

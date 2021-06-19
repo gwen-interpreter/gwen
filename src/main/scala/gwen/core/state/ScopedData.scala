@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,11 +19,12 @@ package gwen.core.state
 import gwen.core._
 
 import scala.collection.mutable
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 
 /**
-  * Binds data attributes to an arbitrary scope that has a name. 
+  * Binds data attributes to an arbitrary scope that has a name.
   * Attributes are stored as name value pairs in a as a list of tuples that
   * look like this:
   *
@@ -39,26 +40,26 @@ import com.typesafe.scalalogging.LazyLogging
   * }
   * }}}
   *
-  * When a new data attribute is added to the scope, it is appended to the end 
-  * of the `atts` list.  This is done internally. The order in which 
-  * attributes are stored reflects the same order in which they were added.  
-  * Once an attribute is added, it is never removed.  If a same named attribute 
-  * is added more than once, then it will appear in the scope multiple times 
+  * When a new data attribute is added to the scope, it is appended to the end
+  * of the `atts` list.  This is done internally. The order in which
+  * attributes are stored reflects the same order in which they were added.
+  * Once an attribute is added, it is never removed.  If a same named attribute
+  * is added more than once, then it will appear in the scope multiple times
   * (once for each time it is added).
   *
   * When an attribute is looked up, its most recent (latest) entry is
   * returned. For example, if the scope contains two attribute entries with
   * the same name, then the value of the second entry is returned.
-  * 
+  *
   * @author Branko Juric
-  * 
+  *
   * @param scope the scope name
   */
 class ScopedData(val scope: String) extends LazyLogging {
-  
+
   /**
-    * The internal list of name-value tuples for storing attributes.  When a 
-    * new  attribute is added (by calling `set`), it is appended to the end of 
+    * The internal list of name-value tuples for storing attributes.  When a
+    * new  attribute is added (by calling `set`), it is appended to the end of
     * the list.
     */
   private val atts = mutable.ListBuffer[(String, String)]()
@@ -69,24 +70,24 @@ class ScopedData(val scope: String) extends LazyLogging {
   private var closures = Map[String, () => String]()
 
   val isTopScope = false
-  
-  /** 
-    *  Provides access to the local flash data (attributes are pushed into this 
-    *  scope when global attributes are changed so that they become accessible in 
-    *  the current non top scope). 
+
+  /**
+    *  Provides access to the local flash data (attributes are pushed into this
+    *  scope when global attributes are changed so that they become accessible in
+    *  the current non top scope).
     */
   private [state] var flashScope: Option[mutable.Map[String, String]] = None
-  
+
   /**
     * Checks if the scoped data is empty.
-    * 
+    *
     * @return true if empty; false otherwise
     */
   def isEmpty: Boolean = atts.isEmpty && flashScope.isEmpty
 
   /**
-    * Finds and retrieves an attribute value from the scope by name.  If 
-    * multiple entries exist for the given name, then the most recently 
+    * Finds and retrieves an attribute value from the scope by name.  If
+    * multiple entries exist for the given name, then the most recently
     * (or latest) added attribute value for that name is returned.
     *
     * @param name the name of the attribute to find
@@ -110,12 +111,12 @@ class ScopedData(val scope: String) extends LazyLogging {
     *
     * @param name the name of the attribute to find
     * @return the attribute value if found (throws error otherwise)
-    * @throws gwen.Errors.UnboundAttributeException if the attribute is bound 
+    * @throws gwen.Errors.UnboundAttributeException if the attribute is bound
     *         to the given name
     */
-  def get(name: String): String = 
+  def get(name: String): String =
     getOpt(name).getOrElse(Errors.unboundAttributeError(name, scope))
-  
+
   /**
     * Finds and retrieves all attribute values from the scope by name.
     *
@@ -133,7 +134,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *
     * @param name the name of the attribute to bind
     * @param value the value to bind to the attribute
-    * @return the current scope containing the old attributes plus the 
+    * @return the current scope containing the old attributes plus the
     *         newly added attribute
     */
   def set(name: String, value: String): ScopedData = {
@@ -175,12 +176,12 @@ class ScopedData(val scope: String) extends LazyLogging {
     }
 
   }
-    
+
   /**
    * Filters all contained attributes based on the given predicate.
-   * 
+   *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
-   * @return Some(ScopedData) containing only the attributes accepted by the predicate; 
+   * @return Some(ScopedData) containing only the attributes accepted by the predicate;
    *         or None if no attributes are accepted
    */
   def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
@@ -189,10 +190,10 @@ class ScopedData(val scope: String) extends LazyLogging {
     }
     if (result.isEmpty) None else Some(result)
   }
-  
+
   /**
    * Finds the first entry that matches the given predicate.
-   * 
+   *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return Some((name, value)) or None if no match is found
    */
@@ -201,10 +202,10 @@ class ScopedData(val scope: String) extends LazyLogging {
       case Some((_, null)) => None
       case x => x
     }
-  
+
   /**
    * Finds all entries that match the given predicate.
-   * 
+   *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
@@ -233,7 +234,7 @@ class ScopedData(val scope: String) extends LazyLogging {
 
 /**
  * ScopedData factory.
- * 
+ *
  * @author Branko Juric
  */
 object ScopedData {
@@ -241,14 +242,14 @@ object ScopedData {
   /**
     * Create a new ScopedData object with an empty attribute list.
     *
-    * @param name the scope name 
+    * @param name the scope name
     */
   def apply(name: String): ScopedData = new ScopedData(name)
-  
+
   /**
     * Create a new ScopedData object with the given attribute list.
     *
-    * @param name the scope name 
+    * @param name the scope name
     * @param atts the list of attributes to include in the scope
     */
   def apply(name: String, atts: List[(String, String)]): ScopedData = new ScopedData(name) tap { _.atts ++= atts }

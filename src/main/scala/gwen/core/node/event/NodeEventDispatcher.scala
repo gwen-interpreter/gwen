@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
 
 import scala.collection.mutable
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -34,12 +35,12 @@ class NodeEventDispatcher extends LazyLogging {
 
   private val listeners = new mutable.Queue[NodeEventListener]()
 
-  def addListener(listener: NodeEventListener): Unit = { 
+  def addListener(listener: NodeEventListener): Unit = {
     listeners += listener
     logger.debug(s"Node event listener registered: ${listener.name}")
   }
 
-  def removeListener(listener: NodeEventListener): Unit = { 
+  def removeListener(listener: NodeEventListener): Unit = {
     listeners -= listener
     logger.debug(s"Node event listener removed: ${listener.name}")
   }
@@ -70,7 +71,7 @@ class NodeEventDispatcher extends LazyLogging {
     dispatchAfterEvent(rule, env) { (listener, event) => listener.afterRule(event) }
   def beforeStepDef(stepDef: Scenario, env: Environment): Unit =
     dispatchBeforeEvent(stepDef, env) { (listener, event) => listener.beforeStepDef(event) }
-  def afterStepDef(stepDef: Scenario, env: Environment): Unit = 
+  def afterStepDef(stepDef: Scenario, env: Environment): Unit =
     dispatchAfterEvent(stepDef, env) { (listener, event) => listener.afterStepDef(event) }
   def beforeStep(step: Step, env: Environment): Unit =
     dispatchBeforeEvent(step, env) { (listener, event) => listener.beforeStep(event) }
@@ -81,10 +82,10 @@ class NodeEventDispatcher extends LazyLogging {
     }
     dispatchAfterEvent(step, env) { (listener, event) => listener.afterStep(event) }
   }
-  def healthCheck(step: Step, env: Environment): Unit = { 
-    dispatchHealthCheckEvent(step, env) { (listener, event) => 
+  def healthCheck(step: Step, env: Environment): Unit = {
+    dispatchHealthCheckEvent(step, env) { (listener, event) =>
       Try(listener.healthCheck(event)) match {
-        case Failure(e) => 
+        case Failure(e) =>
           Settings.setLocal("gwen.feature.failfast", "true")
           Settings.setLocal("gwen.feature.failfast.exit", "false")
           throw e
@@ -101,7 +102,7 @@ class NodeEventDispatcher extends LazyLogging {
 
   def transitionScenario(scenario: Scenario, toStatus: EvalStatus, env: Environment): Scenario = {
     beforeScenario(scenario, env)
-    val background = scenario.background map { background => 
+    val background = scenario.background map { background =>
       transitionBackground(background, toStatus, env)
     }
     val steps = transitionSteps(scenario.steps, toStatus, env)
@@ -126,17 +127,17 @@ class NodeEventDispatcher extends LazyLogging {
   }
 
   def transitionSteps(steps: List[Step], toStatus: EvalStatus, env: Environment): List[Step] = {
-    steps.map { step => 
-      transitionStep(step, toStatus, env) 
+    steps.map { step =>
+      transitionStep(step, toStatus, env)
     }
   }
 
   def transitionRule(rule: Rule, toStatus: EvalStatus, env: Environment): Rule = {
     beforeRule(rule, env)
-    val background = rule.background.map { background => 
+    val background = rule.background.map { background =>
       transitionBackground(background, toStatus, env)
     }
-    val scenarios = rule.scenarios.map { scenario => 
+    val scenarios = rule.scenarios.map { scenario =>
       transitionScenario(scenario, toStatus, env)
     }
     rule.copy(
@@ -145,12 +146,12 @@ class NodeEventDispatcher extends LazyLogging {
     ) tap { r => afterRule(r, env) }
   }
 
-  private def dispatchBeforeEvent[T <: GwenNode]( 
+  private def dispatchBeforeEvent[T <: GwenNode](
       source: T,
       env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
     val callChain = env.pushNode(source)
-    listeners foreach { listener => 
+    listeners foreach { listener =>
       if (!listener.isPaused && listener.bypass.contains(source.nodeType)) {
         listener.pause(source)
       } else {
@@ -163,9 +164,9 @@ class NodeEventDispatcher extends LazyLogging {
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
     val callChain = env.nodeChain
     val (node, _) = env.popNode()
-    listeners foreach { listener => 
+    listeners foreach { listener =>
       dispatchEvent(listener, NodePhase.after, callChain, source, env) { dispatch } tap { _ =>
-        if (listener.isPausedOn(node)) { 
+        if (listener.isPausedOn(node)) {
           listener.resume()
         }
       }
@@ -174,14 +175,14 @@ class NodeEventDispatcher extends LazyLogging {
 
   private def dispatchHealthCheckEvent[T <: GwenNode](source: T, env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
-    listeners foreach { listener => 
+    listeners foreach { listener =>
       dispatchEvent(listener, NodePhase.healthCheck, env.nodeChain, source, env) { dispatch }
     }
   }
 
   private def dispatchEvent[T <: GwenNode](
       listener: NodeEventListener,
-      phase: NodePhase.Value, 
+      phase: NodePhase.Value,
       callChain: NodeChain,
       source: T,
       env: Environment)

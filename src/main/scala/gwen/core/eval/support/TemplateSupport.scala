@@ -18,6 +18,8 @@ package gwen.core.eval.support
 
 import gwen.core._
 
+import scala.util.chaining._
+
 import org.apache.commons.lang3.StringUtils
 
 import scala.io.Source
@@ -34,7 +36,7 @@ trait TemplateSupport {
 
   /**
     * Matches a template against a given source and extracts, ignores, or injects values.
-    * 
+    *
     * @param template the template string
     * @param source the source string
     * @param sourceName the name of the source attribute
@@ -78,5 +80,5 @@ trait TemplateSupport {
     }
   }
 
-    
+
 }

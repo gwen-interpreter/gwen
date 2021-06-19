@@ -18,10 +18,10 @@ package gwen.core.node.gherkin
 
 import scala.util.Success
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class StepKeywordParserTest extends FlatSpec with Matchers with GherkinParser {
+class StepKeywordParserTest extends AnyFlatSpec with Matchers with GherkinParser {
 
   private val parse = parseStep(_: String).map(_.keyword)
   

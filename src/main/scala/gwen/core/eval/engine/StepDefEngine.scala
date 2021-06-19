@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,8 @@ import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.status.Loaded
 
+import scala.util.chaining._
+
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.ConcurrentHashMap
@@ -35,7 +37,7 @@ import java.util.concurrent.Semaphore
   * StepDef evaluation engine.
   */
 trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
-    engine: EvalEngine[T] =>
+  engine: EvalEngine[T] =>
 
   // Lock for managing synchronized StepDefs
   private val stepDefLock: ConcurrentMap[String, Semaphore] = new ConcurrentHashMap()
@@ -72,7 +74,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withBackground = None,
       withSteps = steps,
       withExamples = examples
-    ) tap { s => 
+    ) tap { s =>
       afterStepDef(s, ctx)
     }
   }
@@ -82,7 +84,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))
     } else None
-    lock.foreach { l => 
+    lock.foreach { l =>
       l.acquire()
       logger.info(s"Synchronized StepDef execution started [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
     }
@@ -108,7 +110,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         ctx.paramScope.pop()
       }
     } finally {
-      lock.foreach { l => 
+      lock.foreach { l =>
         l.release()
         logger.info(s"Synchronized StepDef execution finished [StepDef: ${stepDef.name}] [thread: ${Thread.currentThread().getName}]")
       }
@@ -131,7 +133,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
     val examples = if (stepDef.isOutline) {
       evaluateExamples(stepDef, stepDef.examples, ctx)
-    } else { 
+    } else {
       stepDef.examples
     }
     val eStepDef = stepDef.copy(
@@ -139,7 +141,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withSteps = steps,
       withExamples = examples)
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
-    afterStepDef(eStepDef, ctx) 
+    afterStepDef(eStepDef, ctx)
     step.copy(
       withStepDef = Some(eStepDef),
       withEvalStatus = eStepDef.evalStatus

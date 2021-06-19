@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import gwen.core.state.ReservedParam
 import gwen.core.status._
 
 import scala.concurrent.duration.Duration
+import scala.util.chaining._
 
 class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T] {
 
@@ -51,7 +52,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
         ctx.waitUntil(timeout.toSeconds.toInt, s"trying to repeat: ${step.name}") {
           iteration = iteration + 1
           val preStep = step.copy(
-            withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString, 
+            withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,
             withName = doStep,
             withParams = List((ReservedParam.`iteration.number`.toString, iteration.toString)) ++ step.params
           )
@@ -121,15 +122,15 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
             evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
         }
       } catch {
-        case _: Throwable => 
+        case _: Throwable =>
           // ignore in dry run mode
       }
     }
     if (condSteps.nonEmpty) {
       val steps = evaluatedStep.evalStatus match {
-        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) => 
+        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) =>
           val preStep = condSteps.head.copy(
-            withKeyword = StepKeyword.And.toString, 
+            withKeyword = StepKeyword.And.toString,
             withName = doStep,
             withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
           )
@@ -143,9 +144,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
           )
           engine.afterStep(fStep, ctx)
           fStep :: condSteps
-        case _ => 
+        case _ =>
           condSteps
-          
+
       }
       val condStepDef = preCondStepDef.copy(withSteps = steps.reverse)
       engine.afterStepDef(condStepDef, ctx)

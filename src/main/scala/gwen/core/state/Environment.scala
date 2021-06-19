@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,17 +23,18 @@ import gwen.core.node.gherkin._
 import gwen.core.behavior.BehaviorType
 
 import scala.util.matching.Regex
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 import java.io.File
 
 /**
   * Base environment context providing access to all resources and state.
-  * 
+  *
   * @author Branko Juric
   */
 abstract class Environment(initialState: EnvState) extends LazyLogging {
-  
+
   private var state = initialState
 
   val stateLevel: StateLevel.Value = GwenSettings.`gwen.state.level`
@@ -52,7 +53,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     * does nothing (but subclasses can override).
     */
   def close(): Unit = { }
-  
+
   /** Resets the current context but does not close it so it can be reused. */
   def reset(level: StateLevel.Value): Unit = {
     logger.info(s"Resetting environment context")
@@ -62,44 +63,44 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     } else {
       EnvState(topScope, Some(stepDefs), nodeChain)
     }
-    
+
   }
-    
+
   def asString: String = scopes.asString
 
   /** The spec type currently being evaluated. */
   def specType: SpecType.Value = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType.Value]).getOrElse(SpecType.Feature)
-  
-  /** Returns the current visible scopes. */  
+
+  /** Returns the current visible scopes. */
   def visibleScopes: ScopedDataStack = scopes.visible
-  
+
   /**
    * Filters all attributes in all scopes based on the given predicate.
-   * 
+   *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
-   * @return a new Scoped data stack containing only the attributes accepted by the predicate; 
+   * @return a new Scoped data stack containing only the attributes accepted by the predicate;
    */
-  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = scopes.filterAtts(pred) 
-  
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = scopes.filterAtts(pred)
+
   /**
     * Gets a named data scope (creates it if it does not exist)
-    * 
+    *
     * @param name the name of the data scope to get (or create and get)
     */
   def addScope(name: String): ScopedData = scopes.addScope(name)
-  
+
   /**
     * Adds a step definition to the context.
-    * 
+    *
     * @param stepDef the step definition to add
     */
-  def addStepDef(stepDef: Scenario): Scenario = { 
+  def addStepDef(stepDef: Scenario): Scenario = {
     state.addStepDef(stepDef)
   }
 
   /**
     * Adds a step definition to the context.
-    * 
+    *
     * @param name the name
     * @param stepDef the step definition to add
     */
@@ -116,11 +117,11 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def removeStepDef(name: String): Scenario = {
     state.removeStepDef(name)
   }
-  
+
   /**
     * Gets the executable step definition for the given expression (if there is
     * one).
-    * 
+    *
     * @param expression the expression to match
     * @return the step definition if a match is found; false otherwise
     */
@@ -129,20 +130,20 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
       getStepDefWithParams(expression)
     }
   }
-  
+
   /**
     * Gets the paraterised step definition for the given expression (if there is
     * one).
-    * 
+    *
     * @param expression the expression to match
-    * @return the step definition and its parameters (name value tuples) if a 
+    * @return the step definition and its parameters (name value tuples) if a
     *         match is found; false otherwise
     */
   private def getStepDefWithParams(expression: String): Option[Scenario] = {
     val matches = stepDefs.values.view.flatMap { stepDef =>
       val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
       if (expression.matches(pattern)) {
-        val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name => 
+        val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name =>
           name.substring(1, name.length - 1)
         }
         names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
@@ -169,7 +170,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   }
 
   /** Adds current behavior. */
-  def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value = 
+  def addBehavior(behavior: BehaviorType.Value): BehaviorType.Value =
     behavior tap { _ => state.addBehavior(behavior) }
 
   /** Removes the current behavior. */
@@ -181,7 +182,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = paramScope.isEmpty
 
-  def addAttachment(name: String, file: File): Unit = { 
+  def addAttachment(name: String, file: File): Unit = {
     state.addAttachment(name, file)
   }
 
@@ -192,5 +193,5 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   /** Pops a node off the node chain.*/
   def popNode(): (GwenNode, NodeChain) = state.popNode()
-  
+
 }

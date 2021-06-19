@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -44,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArrayList
   * Scenario evaluation engine.
   */
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
-    engine: EvalEngine[T] =>
+  engine: EvalEngine[T] =>
 
   private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
@@ -127,7 +128,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       (if (scenario.isOutline) {
         evaluateScenarioOutline(scenario, ctx)
       } else {
-        scenario.background map  { background => 
+        scenario.background map  { background =>
           evaluateScenarioWithBackground(scenario, background, ctx)
         } getOrElse {
           evaluateScenarioWithoutBackground(scenario, ctx)

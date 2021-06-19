@@ -1,12 +1,12 @@
 /*
  * Copyright 2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,10 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Tag
 
+import scala.util.chaining._
+
 import com.github.tototoshi.csv.CSVReader
+import com.github.tototoshi.csv.defaultCSVFormat
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
@@ -36,7 +39,7 @@ import java.io.File
   * Examples evaluation engine.
   */
 trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
-    engine: EvalEngine[T] =>
+  engine: EvalEngine[T] =>
 
   def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {
     examples map { exs =>

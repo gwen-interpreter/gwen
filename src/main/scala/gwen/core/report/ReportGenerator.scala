@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
 import scala.io.Source
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -42,38 +43,38 @@ import java.util.Date
 
 /**
   * Base class for report generators.
-  * 
+  *
   * @author Branko Juric
   */
 class ReportGenerator (
     config: ReportConfig,
     options: GwenOptions) extends LazyLogging {
-  formatter: ReportFormatter => 
+  formatter: ReportFormatter =>
 
   private [report] def reportDir: Option[File] = {
     config.reportDir(options) tap { dir =>
       dir.filter(!_.exists).foreach(_.mkdirs())
     }
   }
-  
+
   private val summaryReportFile: Option[File] = {
-    config.summaryFilename.flatMap { name => 
+    config.summaryFilename.flatMap { name =>
       reportDir flatMap { dir =>
-        config.fileExtension map { ext => 
-          new File(dir, s"$name.$ext") 
+        config.fileExtension map { ext =>
+          new File(dir, s"$name.$ext")
         }
       }
     }
   }
 
   val format: ReportFormat.Value = config.format
-    
+
   def init(lifecycle: NodeEventDispatcher): Unit = { }
   def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
 
   /**
     * Generate and return a detail feature report.
-    * 
+    *
     * @param unit the feature unit
     * @param result the evaluated feature result
     * @return the list of report files (head = feature report, tail = meta reports)
@@ -81,7 +82,7 @@ class ReportGenerator (
   final def reportDetail(unit: FeatureUnit, result: SpecResult): List[File] = {
     val featureSpec = result.spec
     val dataRecord = unit.dataRecord
-    val featureReportFile = config.createReportDir(options, featureSpec, dataRecord) flatMap { dir => 
+    val featureReportFile = config.createReportDir(options, featureSpec, dataRecord) flatMap { dir =>
       config.createReportFile(dir, "", featureSpec, dataRecord)
     }
     val metaReportFiles = result.metaResults.zipWithIndex flatMap { case (metaResult, idx) =>
@@ -94,7 +95,7 @@ class ReportGenerator (
     val reportFiles = featureReportFile.map(_ :: metaReportFiles).getOrElse(Nil)
     reportFeatureDetail(unit, result, reportFiles).map(file => file :: reportMetaDetail(unit, result.metaResults, reportFiles)).getOrElse(Nil)
   }
-  
+
   private [report] def reportMetaDetail(unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = {
     if (GwenSettings.`gwen.report.suppress.meta`) {
       Nil
@@ -103,16 +104,16 @@ class ReportGenerator (
         val featureCrumb = (SpecType.Feature.toString, reportFiles.head)
         val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
         val reportFile = reportFiles.tail(idx)
-        formatDetail(options, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content => 
+        formatDetail(options, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content =>
           reportFile tap { file =>
-            file.writeText(content) 
+            file.writeText(content)
             logger.info(s"${config.name} meta detail report generated: ${file.getAbsolutePath}")
           }
         }
       }
     }
   }
-  
+
   private final def reportFeatureDetail(unit: FeatureUnit, result: SpecResult, reportFiles: List[File]): Option[File] = {
     reportFiles.headOption flatMap { reportFile =>
       formatDetail(options, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
@@ -124,17 +125,17 @@ class ReportGenerator (
       }
     }
   }
-  
+
   def reportAttachments(spec: Spec, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
     spec.attachments foreach { case (_, file) =>
       new File(attachmentsDir, file.getName).writeFile(file)
     }
   }
-  
+
   /**
     * Must be implemented to generate and return a summary report file.
-    * 
+    *
     * @param summary the feature summary to report
     */
   final def reportSummary(summary: ResultsSummary): Option[File] =
@@ -150,21 +151,21 @@ class ReportGenerator (
     } else {
       None
     }
-   
-  private [report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) = 
+
+  private [report] def copyClasspathTextResourceToFile(resource: String, targetDir: File) =
     new File(targetDir, new File(resource).getName) tap { file =>
       file.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
     }
-  
-  private [report] def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = 
+
+  private [report] def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) =
     new File(targetDir, new File(resource).getName) tap { file =>
       file.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
     }
-  
+
 }
 
 object ReportGenerator {
-  
+
   def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
     options.reportDir foreach { dir =>
       if (dir.exists) {
@@ -176,9 +177,9 @@ object ReportGenerator {
       }
       dir.mkdirs()
     }
-    val formats = 
-      if (options.reportFormats.contains(ReportFormat.html)) 
-        ReportFormat.slideshow :: options.reportFormats 
+    val formats =
+      if (options.reportFormats.contains(ReportFormat.html))
+        ReportFormat.slideshow :: options.reportFormats
       else options.reportFormats
 
     formats.flatMap { format =>
@@ -192,9 +193,9 @@ object ReportGenerator {
     } map { config =>
       config.reportGenerator(options)
     }
-  
+
   }
-  
+
   def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
-  
+
 }

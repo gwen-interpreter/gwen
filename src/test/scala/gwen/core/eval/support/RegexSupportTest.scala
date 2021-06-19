@@ -16,10 +16,10 @@
 
 package gwen.core.eval.support
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class RegexSupportTest extends FlatSpec with Matchers with RegexSupport {
+class RegexSupportTest extends AnyFlatSpec with Matchers with RegexSupport {
 
   """id=(\d+) on http://host:post/path?id=1""" should "return 1" in {
     extractByRegex("""id=(\d+)""", "http://host:post/path?id=1") should be ("1")

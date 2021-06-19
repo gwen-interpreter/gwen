@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,6 +36,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.log4j.PropertyConfigurator
@@ -46,16 +47,16 @@ import gwen.core.node.gherkin.SpecType
 
 /**
   * Launches a gwen engine.
-  * 
+  *
   * @param engine the engine to launch
   */
 class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging {
-  
-  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
+
+  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
     if (config.toLowerCase.trim startsWith "file:") {
       PropertyConfigurator.configure(new URL(config));
     } else {
-      PropertyConfigurator.configure(config); 
+      PropertyConfigurator.configure(config);
     }
   }
 
@@ -67,8 +68,8 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     * @return the evaluated result
     */
   private def interpretUnit(unit: FeatureUnit, ctx: T): Option[SpecResult] = {
-    logger.info(("""|        
-                    |   _    
+    logger.info(("""|
+                    |   _
                     |  { \," Evaluating """ + SpecType.ofFile(unit.featureFile).toString.toLowerCase + """..
                     | {_`/   """ + unit.featureFile.toString + """
                     |    `   """).stripMargin)
@@ -77,9 +78,9 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
 
   /**
     * Runs the interpreter with the given options.
-    * 
+    *
     * @param options the command line options
-    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit, 
+    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit,
     *               Some(ctx) to reuse a context for all, default is None)
     */
   def run(options: GwenOptions, ctxOpt: Option[T] = None): EvalStatus = {
@@ -95,7 +96,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         case stream @ _ #:: _ =>
           executeFeatureUnits(options, stream.flatten, ctxOpt)
         case _ =>
-          (EvalStatus { 
+          (EvalStatus {
             if (metaFiles.nonEmpty) {
               val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
               ctxOpt flatMap { ctx =>
@@ -122,15 +123,15 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
           throw e
         }
     }
-    
+
   }
-  
+
   /**
     * Executes all feature units in the given stream.
     *
     * @param options the command line options
     * @param featureStream the feature stream to execute
-    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit, 
+    * @param ctxOpt optional evaluation context (None to have Gwen create an env context for each feature unit,
     *               Some(ctx) to reuse a context for all, default is None)
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T]): EvalStatus = {
@@ -144,11 +145,11 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
       }
     } match {
-      case Success(s) => 
+      case Success(s) =>
         reportGenerators.foreach(_.close(engine, s.evalStatus))
         printSummaryStatus(s)
         s.evalStatus
-      case Failure(f) => 
+      case Failure(f) =>
         reportGenerators.foreach(_.close(engine, Failed(System.nanoTime - start, f)))
         throw f
     }
@@ -226,36 +227,36 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
-      if (ctxOpt.isEmpty) { 
-        ctx.close() 
+      if (ctxOpt.isEmpty) {
+        ctx.close()
         logger.info("Evaluation context closed")
       }
     }
   }
-  
+
   private def flattenResults(results: List[SpecResult]): List[SpecResult] = {
-    def flattenResults(results: List[SpecResult]): List[SpecResult] = results.flatMap { 
+    def flattenResults(results: List[SpecResult]): List[SpecResult] = results.flatMap {
       r => r::flattenResults(r.metaResults)
     }
     flattenResults(results).sortBy(_.finished)
   }
-    
+
   private def bindReportFiles(reportGenerators: List[ReportGenerator], unit: FeatureUnit, result: SpecResult): SpecResult = {
-    val reportFiles = reportGenerators.map { generator => 
-      (generator.format, generator.reportDetail(unit, result)) 
+    val reportFiles = reportGenerators.map { generator =>
+      (generator.format, generator.reportDetail(unit, result))
     }.filter(_._2.nonEmpty).toMap
-    if (reportFiles.nonEmpty) 
+    if (reportFiles.nonEmpty)
       new SpecResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)
-    else 
+    else
       result
   }
-  
+
   private def logSpecStatus(result: SpecResult): Unit = {
     logger.info("")
     logger.info(result.toString)
     logger.info("")
   }
-      
+
   private def printSummaryStatus(summary: ResultsSummary): Unit = {
     println()
     println(summary.toString)

@@ -20,11 +20,11 @@ import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
-import org.scalatest.FlatSpec
 
 import java.io.File
+import org.scalatest.flatspec.AnyFlatSpec
 
-class TablesTest extends FlatSpec {
+class TablesTest extends AnyFlatSpec {
 
   val interpreter = DefaultGwenInterpreter
   

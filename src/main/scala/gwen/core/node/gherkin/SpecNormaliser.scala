@@ -1,12 +1,12 @@
 /*
  * Copyright 2014-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,8 @@ import gwen.core.behavior.BehaviorRules
 import gwen.core.state.DataRecord
 import gwen.core.status.Pending
 
+import scala.util.chaining._
+
 import java.io.File
 
 /**
@@ -30,14 +32,14 @@ import java.io.File
   * top level. Positional information is preserved. The source feature file is also bound (if provided). If a CSV
   * file is provided, initialisation scenarios are created to initialise each row and the entire feature replicated
   * under each (inline data-driven approach)
-  * 
+  *
   * @author Branko Juric
   */
 trait SpecNormaliser extends BehaviorRules {
-  
+
   /**
     * Normalises a parsed feature.
-    * 
+    *
     * @param spec the feature spec
     * @param dataRecord optional feature level data record
     */
@@ -49,9 +51,9 @@ trait SpecNormaliser extends BehaviorRules {
         spec.feature.copy(
           withName = s"${spec.feature.name} [${record.recordNo}]")
       } getOrElse spec.feature,
-      None, 
+      None,
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
-      spec.rules map { rule => 
+      spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
           withBackground = None,
@@ -62,14 +64,14 @@ trait SpecNormaliser extends BehaviorRules {
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType.Value): Unit = {
-    background foreach { bg => 
+    background foreach { bg =>
       checkBackgroundRules(bg, specType)
     }
     scenarios foreach { s =>
       checkScenarioRules(s, specType)
     }
   }
-  
+
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
@@ -90,16 +92,16 @@ trait SpecNormaliser extends BehaviorRules {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${bg.name} (plus input data)", 
-          bg.description ++ List(description), 
+          s"${bg.name} (plus input data)",
+          bg.description ++ List(description),
           steps ++ bgSteps
         )
       case None =>
         Background(
           None,
-          FeatureKeyword.nameOf(FeatureKeyword.Background), 
-          "Input data", 
-          List(description), 
+          FeatureKeyword.nameOf(FeatureKeyword.Background),
+          "Input data",
+          List(description),
           steps.map(_.copy()))
     }
     expandScenarios(scenarios, Some(dataBackground))
@@ -110,13 +112,13 @@ trait SpecNormaliser extends BehaviorRules {
       if (scenario.isOutline) normaliseScenarioOutline(scenario, background)
       else expandScenario(scenario, background)
     }
-    
+
   private def expandScenario(scenario: Scenario, background: Option[Background]): Scenario = {
-    background.map { _ => 
+    background.map { _ =>
       scenario.copy(
         withBackground = if (scenario.isStepDef) {
-          None 
-        } else { 
+          None
+        } else {
           background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy())))
         },
         withExamples = Nil
@@ -134,15 +136,15 @@ trait SpecNormaliser extends BehaviorRules {
           withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), rowIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
-              outline.sourceRef map { sref => 
+              outline.sourceRef map { sref =>
                 SourceRef(sref.file, rowLineNo)
               },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
               s"${resolveParams(outline.name, params)._1}${if (exs.name.length > 0) s" -- ${exs.name}" else ""}",
               outline.description.map(line => resolveParams(line, params)._1),
-              if (outline.isStepDef) None 
-              else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))), 
+              if (outline.isStepDef) None
+              else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))),
               outline.steps.map { s =>
                 val (name, resolvedParams) = resolveParams(s.name, params)
                 s.copy(
@@ -174,11 +176,11 @@ trait SpecNormaliser extends BehaviorRules {
     }
     resolveParams(Nil, source, params)
   }
-   
+
   /**
-    * Returns the given scenarios if they contain no step definitions 
+    * Returns the given scenarios if they contain no step definitions
     * having the same name.
-    * 
+    *
     * @param scenarios the list of scenarios to conditionally return
     * @param specFile optional file from which scenarios were loaded
     */
@@ -187,10 +189,10 @@ trait SpecNormaliser extends BehaviorRules {
       val duplicates = scenarios.filter(_.isStepDef).groupBy(_.name.replaceAll("<.+?>", "<?>")) filter { case (_, stepDefs) => stepDefs.size > 1 }
       val dupCount = duplicates.size
       if (dupCount > 0) {
-        val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${specFile.map(f => s" in file $f").getOrElse("")}" 
+        val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${specFile.map(f => s" in file $f").getOrElse("")}"
         Errors.ambiguousCaseError(s"$msg: ${duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }.mkString}")
       }
     }
   }
-  
+
 }

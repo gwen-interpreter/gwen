@@ -18,10 +18,10 @@ package gwen.core.eval.support
 
 import gwen.core.Errors.DecodingException
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DecodingSupportTest extends FlatSpec with Matchers with DecodingSupport {
+class DecodingSupportTest extends AnyFlatSpec with Matchers with DecodingSupport {
 
   "Null Base64 source" should "throw error" in {
     intercept[DecodingException] {

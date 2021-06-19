@@ -1,12 +1,12 @@
 /*
  * Copyright 2015-2021 Branko Juric, Brady Wood
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,12 +21,12 @@ import gwen.core.node.gherkin._
 import gwen.core.state.DataRecord
 import gwen.core.status._
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 
 import java.io.File
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
+class SpecNormaliserTest extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
 
@@ -88,7 +88,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     scenario.steps(1).toString should be("When step 2")
     scenario.steps(2).toString should be("Then step 3")
   }
-  
+
   "StepDef without background and one step def" should "normalise without error" in {
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
@@ -131,7 +131,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     scenario.steps(1).toString should be("When step 2")
     scenario.steps(2).toString should be("Then step 3")
   }
-  
+
   "Meta with multiple unique step defs" should "normalise without error" in {
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
@@ -145,9 +145,9 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-  normaliseSpec(meta, None)
+    normaliseSpec(meta, None)
   }
-  
+
   "Meta with duplicate step def" should "error" in {
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
@@ -161,12 +161,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-      
-  intercept[Errors.AmbiguousCaseException] {
-    normaliseSpec(meta, None)
+
+    intercept[Errors.AmbiguousCaseException] {
+      normaliseSpec(meta, None)
     }
   }
-  
+
   "Meta with duplicate step def with params" should "error" in {
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
@@ -180,12 +180,12 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-      
+
     intercept[Errors.AmbiguousCaseException] {
       normaliseSpec(meta, None)
     }
   }
-  
+
   "Data driven feature with csv file and background" should "normalise without error" in {
     val feature = Spec(
     Feature(None, "About me", Nil), Some(background), List(
@@ -578,7 +578,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
 
   "Scenario with identically named steps" should "return correct indexes and occurence numbers" in {
 
-    val spec = 
+    val spec =
       s"""|  Feature: feature containing scenario with identically named steps
           |
           | Scenario: scenario with identical steps
@@ -614,7 +614,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
 
   "Feature with identically named scenarios" should "return correct indexes and occurence numbers" in {
 
-    val spec = 
+    val spec =
       s"""|  Feature: feature containing identically named scenarios
           |
           | Scenario: scenario 1
@@ -662,7 +662,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
 
   "Feature with identically named outline examples" should "return correct indexes and occurence numbers" in {
 
-    val spec = 
+    val spec =
       s"""|  Feature: feature containing identically outline examples
           |
           | Scenario Outline: outline 1
@@ -686,7 +686,7 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
           | Examples: examples 6
           |      | name 1 | name 2 |
           |      | data 1 | data 2 |
-          |  
+          |
           |""".stripMargin
 
     val feature = parse(spec).get
@@ -707,5 +707,5 @@ class SpecNormaliserTest extends FlatSpec with Matchers with SpecNormaliser with
     outline.examples(4).occurrenceIn(outline).get should be (4)
     outline.examples(5).occurrenceIn(outline).get should be (1)
   }
-  
+
 }

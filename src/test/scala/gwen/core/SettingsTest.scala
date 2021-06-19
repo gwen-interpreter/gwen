@@ -19,9 +19,9 @@ package gwen.core
 import gwen.core.Errors.MissingPropertyException
 import gwen.core.Errors.UnsupportedLocalSettingException
 
-import org.scalatest.Matchers
 
 import java.util.Properties
+import org.scalatest.matchers.should.Matchers
 
 class SettingsTest extends BaseTest with Matchers {
 
