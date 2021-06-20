@@ -709,9 +709,9 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  "Options with init command and -d option" should "parse" in {
+  "Options with init command and non existing dir" should "parse" in {
 
-    parseOptions(Array("init", "-d", "workspace")) match {
+    parseOptions(Array("init", "workspace")) match {
       case Success(options) => {
         assertOptions(options, init = true, initDir = new File("workspace"))
       }
@@ -720,19 +720,8 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  "Options with init command and --dir option" should "parse" in {
-
-    parseOptions(Array("init", "--dir", "workspace")) match {
-      case Success(options) => {
-        assertOptions(options, init = true, initDir = new File("workspace"))
-      }
-      case _ =>
-        fail("expected options but failed")
-    }
-  }
-
-  "Options with init command and -d option on existing dir" should "not parse" in {
-    parseOptions(Array("init", "-d", "target")) match {
+  "Options with init command and existing dir" should "not parse" in {
+    parseOptions(Array("init", "target")) match {
       case Success(options) => {
         fail("expected None but got options")
       }

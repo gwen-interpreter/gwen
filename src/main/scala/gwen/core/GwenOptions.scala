@@ -172,12 +172,13 @@ object GwenOptions {
 
       cmd("init").action((_, c) => c.copy(init = true))
         .children(
-          opt[File]('d', "dir") action {
-            (d, c) => c.copy(initDir = d)
-          } validate { d =>
+          arg[File]("<dir>").optional().action {
+            (d, c) =>
+              c.copy(initDir = d)
+          } validate { d => 
             if (d.exists) failure(s"Cannot initialise existing directory (delete it or specify another one): $d")
             else success
-          } valueName "<dir>" text "Init directory (default is gwen)"
+          } text "Init directory (default is gwen)"
         )
 
     }
