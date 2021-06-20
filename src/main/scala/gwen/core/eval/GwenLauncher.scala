@@ -23,6 +23,7 @@ import gwen.core.Settings
 import gwen.core.node.FeatureStream
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
+import gwen.core.node.gherkin.SpecType
 import gwen.core.report.ReportGenerator
 import gwen.core.result.SpecResult
 import gwen.core.result.ResultsSummary
@@ -41,9 +42,9 @@ import scala.util.chaining._
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.log4j.PropertyConfigurator
 
+import java.io.File
 import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
-import gwen.core.node.gherkin.SpecType
 
 /**
   * Launches a gwen engine.
@@ -58,6 +59,20 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     } else {
       PropertyConfigurator.configure(config);
     }
+  }
+
+  /**
+    * Initialises a workspace directory.
+    *
+    * @param dir the directory to initialise
+    */
+  def initWorkspace(dir: File): Unit = {
+    logger.info(("""|
+                    |   _
+                    |  { \," Initialising workspace directory..
+                    | {_`/   """ + dir.getPath + """
+                    |    `   """).stripMargin)
+    dir.mkdirs()
   }
 
   /**
@@ -90,28 +105,34 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     }
     val startNanos = System.nanoTime
     try {
-      val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
-      val featureStream = new FeatureStream(metaFiles, options.tagFilter)
-      featureStream.readAll(options.features, options.dataFile) match {
-        case stream @ _ #:: _ =>
-          executeFeatureUnits(options, stream.flatten, ctxOpt)
-        case _ =>
-          (EvalStatus {
-            if (metaFiles.nonEmpty) {
-              val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
-              ctxOpt flatMap { ctx =>
-                interpretUnit(unit, ctx) map { result =>
-                  result.evalStatus
-                }
-              } toList
-            } else {
-              Nil
+      if (options.init) {
+        initWorkspace(options.initDir)
+        logger.info(s"Gwen workspace directory initialised: ${options.initDir.getPath}")
+        Passed(System.nanoTime - startNanos)
+      } else {
+        val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
+        val featureStream = new FeatureStream(metaFiles, options.tagFilter)
+        featureStream.readAll(options.features, options.dataFile) match {
+          case stream @ _ #:: _ =>
+            executeFeatureUnits(options, stream.flatten, ctxOpt)
+          case _ =>
+            (EvalStatus {
+              if (metaFiles.nonEmpty) {
+                val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
+                ctxOpt flatMap { ctx =>
+                  interpretUnit(unit, ctx) map { result =>
+                    result.evalStatus
+                  }
+                } toList
+              } else {
+                Nil
+              }
+            }) tap { _ =>
+              if (options.features.nonEmpty) {
+                logger.warn("No features found in specified files and/or directories!")
+              }
             }
-          }) tap { _ =>
-            if (options.features.nonEmpty) {
-              logger.warn("No features found in specified files and/or directories!")
-            }
-          }
+        }
       }
     } catch {
       case e: Throwable =>

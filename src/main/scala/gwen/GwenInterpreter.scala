@@ -65,11 +65,13 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val ctxOpt = if (options.batch) None else Some(engine.init(options, EnvState()))
     try {
       val evalStatus = run(options, ctxOpt)
-      ctxOpt foreach { ctx =>
-        if (evalStatus.isEvaluated || evalStatus.isLoaded) {
-          printBanner("")
+      if (!options.init) {
+        ctxOpt foreach { ctx =>
+          if (evalStatus.isEvaluated || evalStatus.isLoaded) {
+            printBanner("")
+          }
+          createRepl(ctx).run()
         }
-        createRepl(ctx).run()
       }
       evalStatus.exitCode
     } finally {

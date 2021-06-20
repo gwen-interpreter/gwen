@@ -36,24 +36,24 @@ class HtmlReportGenerator(options: GwenOptions) extends ReportGenerator(HtmlRepo
 
     // copy in CSS files (if they don't already exist)
     new File(rdir, "resources/css") tap { dir =>
-      copyClasspathTextResourceToFile("/gwen/core/report/html/css/gwen.css", dir)
-      copyClasspathTextResourceToFile("/gwen/core/report/html/css/bootstrap.min.css", dir)
+      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/gwen.css", dir)
+      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/bootstrap.min.css", dir)
     }
 
     // copy in JS files (if they don't already exist)
     new File(rdir, "resources/js") tap { dir =>
-      copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.min.js", dir)
-      copyClasspathTextResourceToFile("/gwen/core/report/html/js/bootstrap.min.js", dir)
+      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.min.js", dir)
+      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/bootstrap.min.js", dir)
     }
 
     // copy in image files (if they don't already exist)
     new File(rdir, "resources/img") tap { dir =>
-      copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo.png", dir)
+      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo.png", dir)
     }
 
     // copy in index file
     options.reportDir foreach { dir =>
-      copyClasspathBinaryResourceToFile("/gwen/core/report/html/index.html", dir)
+      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/index.html", dir)
     }
 
   }

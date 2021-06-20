@@ -698,6 +698,48 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
 
   }
 
+  "Options with init command" should "parse" in {
+
+    parseOptions(Array("init")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, initDir = new File("gwen"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
+  "Options with init command and -d option" should "parse" in {
+
+    parseOptions(Array("init", "-d", "workspace")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, initDir = new File("workspace"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
+  "Options with init command and --dir option" should "parse" in {
+
+    parseOptions(Array("init", "--dir", "workspace")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, initDir = new File("workspace"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
+  "Options with init command and -d option on existing dir" should "not parse" in {
+    parseOptions(Array("init", "-d", "target")) match {
+      case Success(options) => {
+        fail("expected None but got options")
+      }
+      case _ =>
+    }
+  }
+
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
     GwenOptions(args)
   }
@@ -714,7 +756,9 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
                              dryRun: Boolean = false,
                              dataFile: Option[File] = None,
                              metaFiles: List[File] = Nil,
-                             features: List[File] = Nil): Unit = {
+                             features: List[File] = Nil,
+                             init: Boolean = false,
+                             initDir: File = new File("gwen")): Unit = {
 
     options.batch should be (batch)
     options.parallel should be (parallel)
@@ -727,6 +771,8 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     options.dataFile should be (dataFile)
     options.metas should be (FileIO.appendFile(metaFiles, Settings.UserMeta))
     options.features should be (features)
+    options.init should be (init)
+    options.initDir should be (initDir)
 
   }
 

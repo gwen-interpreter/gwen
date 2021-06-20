@@ -167,6 +167,16 @@ object FileIO {
   def getFileOpt(filepath: String): Option[File] = Option(new File(filepath)).filter(_.exists())
   def appendFile(files: List[File], file: File): List[File] = appendFile(files, Option(file))
   def appendFile(files: List[File], file: Option[File]): List[File] = (files.filter(!_.isSame(file)) ++ file).distinct
+  def copyClasspathTextResourceToFile(resource: String, targetDir: File, targetFilename: Option[String] = None) = {
+    new File(targetDir, targetFilename.getOrElse(new File(resource).getName)) tap { file =>
+      file.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
+    }
+  }
+  def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = {
+    new File(targetDir, new File(resource).getName) tap { file =>
+      file.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
+    }
+  }
 }
 
 /** Exception functions. */

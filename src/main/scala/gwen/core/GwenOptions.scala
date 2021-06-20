@@ -40,6 +40,8 @@ import java.io.File
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
   * @param metas optional list of meta file and/or directories
   * @param features optional list of feature file and/or directories
+  * @param init true to initialise workspace directory
+  * @param initDir workspace initialisation directory
   *
   * @author Branko Juric
   */
@@ -55,7 +57,9 @@ case class GwenOptions(
     dataFile: Option[File] = None,
     metas: List[File] = Nil,
     features: List[File] = Nil,
-    args: Option[Array[String]] = None) extends GwenInfo {
+    args: Option[Array[String]] = None,
+    init: Boolean = false,
+    initDir: File = new File("gwen")) extends GwenInfo {
 
   val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
 
@@ -166,6 +170,16 @@ object GwenOptions {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
       } text "Space separated list of feature files and/or directories"
 
+      cmd("init").action((_, c) => c.copy(init = true))
+        .children(
+          opt[File]('d', "dir") action {
+            (d, c) => c.copy(initDir = d)
+          } validate { d =>
+            if (d.exists) failure(s"Cannot initialise existing directory (delete it or specify another one): $d")
+            else success
+          } valueName "<dir>" text "Init directory (default is gwen)"
+        )
+
     }
 
     (parser.parse(args, GwenOptions()).map { options =>
@@ -181,7 +195,9 @@ object GwenOptions {
         options.dataFile,
         FileIO.appendFile(options.metas, Settings.UserMeta),
         options.features,
-        Some(args))
+        Some(args),
+        options.init,
+        options.initDir)
       } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
