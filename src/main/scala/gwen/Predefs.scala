@@ -18,6 +18,8 @@ import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.matching.Regex
 
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
 
 import java.io.BufferedInputStream
@@ -127,11 +129,24 @@ package object gwen {
 
     def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
+    def uri: String = FileIO.encodeUri(file.getPath)
+
   }
   
   object FileIO {
     def encodeDir(dirpath: String): String = 
       if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
+    def encodeUri(path: String): String = {
+      if (path != null) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+          path.replaceAll("\\\\", "/")
+        } else {
+          path
+        }
+      } else {
+        ""
+      }
+    }
     def isDirectory(location: File): Boolean = location != null && location.isDirectory
     def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
     def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
@@ -225,24 +240,40 @@ package object gwen {
     def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
     def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
     def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
+    def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
 
-    def resolveParams(source: String, params: List[(String, String)]): String = {
-      params match {
-        case Nil => source
-        case head :: tail =>
-          val (name, value) = head
-          resolveParams(source.replaceAll(s"<$name>", value), tail)
+    def resolveParams(source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
+      def resolveParams(acc: List[(String, String)], source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
+        params match {
+          case Nil => (source, acc)
+          case head :: tail =>
+            val (name, value) = head
+            val param = if (source.contains(s"<$name>")) List(head) else Nil
+            resolveParams(param ++ acc, source.replaceAll(s"<$name>", value), tail)
+        }
       }
+      resolveParams(Nil, source, params)
+    }
+
+    def formatTable(table: List[(Int, List[String])]): String = {
+      (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
     }
     def formatTableRow(table: List[(Int, List[String])], rowIndex: Int): String = {
       val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
       s"| ${(table(rowIndex)._2.zipWithIndex map { case (data, dataIndex) => s"${rightPad(data, maxWidths(dataIndex))}" }).mkString(" | ") } |"
     }
-    def formatDocString(docString: (Int, String, Option[String]), includeType: Boolean = false) = docString match {
+    def formatDocString(docString: (Int, String, Option[String]), includeType: Boolean = true) = docString match {
       case (_, content, contentType) =>
         s"""|${"\"\"\""}${if(includeType) contentType.getOrElse("") else ""}
             |$content
             |${"\"\"\""}""".stripMargin
+    }
+    def formatParams(params: List[(String, String)]): String = {
+      if (params.length > 0) {
+        s"{ ${params map { case (n, v) => s"$n : $v" } mkString ", "} }"
+      } else {
+        ""
+      }
     }
   }
   

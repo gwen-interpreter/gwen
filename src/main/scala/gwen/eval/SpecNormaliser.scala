@@ -42,7 +42,7 @@ trait SpecNormaliser extends EvalRules {
   def normalise(spec: FeatureSpec, specFile: Option[File], dataRecord: Option[DataRecord]): FeatureSpec = {
     val scenarios = noDuplicateStepDefs(spec.scenarios, specFile)
     validate(spec.background, scenarios, spec.specType)
-    FeatureSpec(
+    val nspec = FeatureSpec(
       dataRecord map { record =>
         spec.feature.copy(
           withName = s"${spec.feature.name} [${record.recordNo}]")
@@ -58,6 +58,7 @@ trait SpecNormaliser extends EvalRules {
       specFile,
       Nil
     )
+    nspec.withNodePath(s"/${specFile.map(_.uri).getOrElse("")}")
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType.Value): Unit = {
@@ -72,7 +73,7 @@ trait SpecNormaliser extends EvalRules {
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, List((name, value)), Nil)
     }
     val description = s"""@Data(file="${dataRecord.dataFilePath}", record=${dataRecord.recordNo})"""
     val dataBackground = background match {
@@ -127,25 +128,32 @@ trait SpecNormaliser extends EvalRules {
   def expandScenarioOutline(outline: Scenario, background: Option[Background]): Scenario = {
     outline.copy(
       withBackground = None,
-      withExamples = outline.examples.zipWithIndex map { case (exs, index) =>
+      withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
         exs.copy(
-          withScenarios = exs.table.tail.zipWithIndex.map { case ((_, values), subIndex) =>
+          withScenarios = exs.table.tail.zipWithIndex.map { case ((lineNo, values), rowIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
-              outline.sourceRef,
+              exs.sourceRef map { sref =>
+                SourceRef(sref.uri, Position(lineNo, sref.pos.column), None)
+              },
               outline.tags.filter(t => t.name != ReservedTags.StepDef.toString && t.name != ReservedTags.Examples.toString),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${Formatting.resolveParams(outline.name, params)} -- Example ${index + 1}.${subIndex + 1} ${exs.name}",
-              outline.description.map(line => Formatting.resolveParams(line, params)),
+              s"${Formatting.resolveParams(outline.name, params)._1}${if (exs.name.size > 0) s" -- ${exs.name}" else ""}",
+              outline.description.map(line => Formatting.resolveParams(line, params)._1),
               if (outline.isStepDef) None 
               else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))), 
               outline.steps.map { s =>
+                val (name, resolvedParams) = Formatting.resolveParams(s.name, params)
                 s.copy(
-                  withName = Formatting.resolveParams(s.name, params),
-                  withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params))) },
-                  withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params), contentType) })
+                  withName = name,
+                  withTable = s.table map { case (line, record) => (line, record.map(cell => Formatting.resolveParams(cell, params)._1)) },
+                  withDocString = s.docString map { case (line, content, contentType) => (line, Formatting.resolveParams(content, params)._1, contentType) },
+                  withParams = resolvedParams
+                )
               },
+              Nil,
+              params,
               Nil
             )
           }

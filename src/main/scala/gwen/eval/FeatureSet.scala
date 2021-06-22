@@ -16,6 +16,7 @@
 
 package gwen.eval
 
+import gwen._
 import gwen.dsl.Root
 
 import com.github.tototoshi.csv.CSVReader

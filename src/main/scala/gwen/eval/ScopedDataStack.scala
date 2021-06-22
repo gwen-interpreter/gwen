@@ -74,7 +74,7 @@ class ScopedDataStack() {
     *  and data tables are pushed and poped in and out of this scope as StepDef calls
     *  are made). 
     */
-  private[eval] val stepScope = new LocalDataStack()
+  val stepScope = new LocalDataStack()
     
   /**
     * Provides access to the top level scope (which is always at the

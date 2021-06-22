@@ -22,46 +22,53 @@ import java.io.File
 
 /** Line and column number coordinates (base is 1). */
 case class Position(line: Int, column: Int) {
-  override def toString: String = Position.asString(Some(line), Some(column))
+  override def toString: String = Position.asString(Some(line), None)
 }
 object Position {
   def asString(line: Option[Int], column: Option[Int]): String = {
     (line, column) match {
       case ((Some(l), (Some(c)))) => s"$l:$c"
-      case ((Some(l), None)) => s"line $l"
-      case ((None, Some(c))) => s"column $c"
+      case ((Some(l), None)) => s":$l"
+      case ((None, Some(c))) => s":_:$c"
       case _ => ""
     }
   }
 }
 
 /** Reperesents a location in source. */
-case class SourceRef(uri: String, pos: Position) {
+case class SourceRef(uri: String, pos: Position, nodePath: Option[String]) {
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
-  override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), Some(pos.column))
+  def withNodePath(path: String): SourceRef = {
+    SourceRef(uri, pos, Some(path))
+  }
+  override def toString: String = SourceRef.asString(Some(uri), Some(pos.line), None)
 }
+
 object SourceRef {
   private val lineOffset = new ThreadLocal[Int]() {
     override protected def initialValue: Int = 0
   }
+  def apply(uri: String, location: Cucumber.Location): SourceRef = {
+    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn), None)
+  }
   def setLineOffset(offset: Int): Unit = {
     lineOffset.set(offset)
   }
-  def apply(uri: String, location: Cucumber.Location): SourceRef = {
-    SourceRef(uri, Position(location.getLine + lineOffset.get, location.getColumn))
+  def nodePath(path: String, occurence: Int): String = {
+    s"$path${if (!path.endsWith("/") && occurence > 0) s"[$occurence]" else ""}"
   }
   def asString(sourceRef: Option[SourceRef]): String = {
     SourceRef.asString(None, sourceRef)
   }
   def asString(file: Option[File], sourceRef: Option[SourceRef]): String = {
     SourceRef.asString(
-      file.map(_.getPath).orElse(sourceRef.map(_.uri)), 
+      file.map(_.uri).orElse(sourceRef.map(_.uri)), 
       sourceRef.map(_.pos.line), 
-      sourceRef.map(_.pos.column))
+      None)
   }
   def asString(uri: Option[String], line: Option[Int], column: Option[Int]): String = {
-    s"${uri.filter(_.length > 0).map(u => s"$u:").getOrElse("")}${Position.asString(line, column)}"
+    s"${uri.filter(_.length > 0).getOrElse("")}${Position.asString(line, column)}"
   }
   
 }

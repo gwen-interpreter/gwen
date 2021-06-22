@@ -32,7 +32,7 @@ class LocalDataStack {
     * The locally scoped data stack.
     */
   private val localData = mutable.Stack[ScopedData]()
-  
+
   /**
     * Adds the given parameters (name-value pairs) to a new scope 
     * and pushes it onto the stack
@@ -44,7 +44,7 @@ class LocalDataStack {
   def push(scope: String, params: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { data =>
       params foreach { case (name, value) =>
-        data.set(name, value)
+        data.set(s"<$name>", value)
       }
       localData.push(data)
     }
@@ -84,23 +84,6 @@ class LocalDataStack {
   
   /** Checks whether or not the local stack is empty. */
   def isEmpty = localData.isEmpty
-
-  /**
-    * Returns a string representation of the entire attribute stack
-    */
-  def asString: String = {
-    val scopes = localData.reverse
-    s"""localScope : {${
-      scopes.toList match {
-        case Nil => "| "
-        case _ => scopes map {
-          scope =>
-            s"""|  ${scope.asString()}
-                |"""".stripMargin
-        }
-      }}
-    |}""".stripMargin
-  }
   
 }
 

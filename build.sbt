@@ -30,6 +30,9 @@ lazy val projectSettings = Seq(
   }
 )
 
+resolvers +=
+  "EPAM Systems" at "https://dl.bintray.com/epam/reportportal"
+
 lazy val mainDependencies = {
   val cucumberGherkin = "15.0.2"
   val scopt = "3.7.1"
@@ -41,6 +44,8 @@ lazy val mainDependencies = {
   val scalaCSV = "1.3.6"
   val jsonPath = "2.4.0"
   val jodaTime = "2.10.6"
+  val rpCommon = "5.3.3"
+  val rpClientJava = "5.0.21"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -52,7 +57,12 @@ lazy val mainDependencies = {
     "org.apache.commons" % "commons-text" % commonsText,
     "com.github.tototoshi" %% "scala-csv" % scalaCSV,
     "com.jayway.jsonpath" % "json-path" % jsonPath,
-    "joda-time" % "joda-time" % jodaTime
+    "joda-time" % "joda-time" % jodaTime,
+    "com.epam.reportportal" % "commons-model" % rpCommon,
+    "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
+      ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
+      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
+    )
   )
 }
 

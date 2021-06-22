@@ -44,6 +44,7 @@ object Errors {
   def missingPropertyError(name: String) = throw new MissingPropertyException(name)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
+  def illegalSettingError(name: String, value: String, supportedValues: Set[Any]) = throw new IllegalSettingException(name, value, supportedValues)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
@@ -77,6 +78,7 @@ object Errors {
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
+  def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
 
   private def at(sourceRef: String): String = {
     if (sourceRef.length > 0) s" [at $sourceRef]"
@@ -118,6 +120,9 @@ object Errors {
   
   /** Thrown when a property file setting is invalid. */
   class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
+
+  /** Thrown when a property file setting contains an invalid or unspported value. */
+  class IllegalSettingException(name: String, value: String, supportedValues: Set[Any]) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: ${supportedValues.mkString(", ")})")
 
   /** Thrown when a property setting fails to load. */
   class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)
@@ -199,7 +204,7 @@ object Errors {
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType.Value, actual: BehaviorType.Value) 
-    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_._1.behaviorTag.flatMap(_.sourceRef))))})")
+    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(SourceRef.asString(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef))))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
@@ -213,5 +218,8 @@ object Errors {
 
   /** Thrown when a file cannot be attached. */
   class FileAttachException(file: File, msg: String) extends GwenException(s"Failed to attach file $file: $msg")
+
+  /** Thrown when a service health check fails. */
+  class ServiceHealthCheckException(msg: String, cause: Throwable) extends GwenException(msg, cause)
 
 }

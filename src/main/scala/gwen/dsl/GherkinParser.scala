@@ -97,7 +97,7 @@ trait GherkinParser {
   
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
   def parseFeatureSpec(feature: String, specFile: Option[File] = None): Try[FeatureSpec] = Try {
-    FeatureSpec(specFile.map(_.getPath).getOrElse(""), parseDocument(feature), specFile)
+    FeatureSpec(specFile.map(_.uri).getOrElse(""), parseDocument(feature), specFile)
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */

@@ -61,7 +61,7 @@ trait JsonReportFormatter extends ReportFormatter {
     
     Some(s"""[
   {${spec.featureFile.map(file => s"""
-    "uri": "${escapeJson(file.getPath)}",""").getOrElse("")}
+    "uri": "${escapeJson(file.uri)}",""").getOrElse("")}
     "keyword": "${feature.keyword}",
     "id": "${escapeJson(id)}"${feature.sourceRef map { loc => s""",
     "line": ${loc.pos.line}""" } getOrElse("")},
@@ -145,7 +145,7 @@ trait JsonReportFormatter extends ReportFormatter {
   }
 
   private def renderSteps(steps: List[Step], parentId: String) = steps.map { step =>
-    val screenshots = step.attachments.filter(_._1 == "Screenshot").map(_._2)
+    val screenshots = step.deepAttachments.filter(_._1 == "Screenshot").map(_._2)
     s"""
           {
             "keyword": "${step.keyword} ",
@@ -156,11 +156,11 @@ trait JsonReportFormatter extends ReportFormatter {
                 "mime_type": "${escapeJson(file.mimeType)}",
                 "data": "${escapeJson(Base64.encodeBase64String(file.readBytes))}"
               }"""}.mkString(",")}
-            ],""" else ""}${step.stepDef.map { case (stepDef, _) =>
-              if (stepDef.sourceRef.nonEmpty) {
+            ],""" else ""}${step.stepDef.map { sd =>
+              if (sd.sourceRef.nonEmpty) {
                 s"""
             "match": {
-                "location": "${escapeJson(stepDef.sourceRef.get.toString)}"
+                "location": "${escapeJson(sd.sourceRef.get.toString)}"
             },"""} else ""}.getOrElse("")}${step.docString.map{ case (line, content, contentType) => s"""
             "doc_string": {
               "content_type": "${contentType.map(c => escapeJson(c)).getOrElse("")}",

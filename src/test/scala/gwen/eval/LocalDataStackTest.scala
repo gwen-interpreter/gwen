@@ -27,10 +27,10 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     
     val localData = new LocalDataStack()
     
-    intercept[UnboundAttributeException] { localData.get("username") }
-    intercept[UnboundAttributeException] { localData.get("password") }
-    intercept[UnboundAttributeException] { localData.get("firstName") }
-    intercept[UnboundAttributeException] { localData.get("lastName") }
+    intercept[UnboundAttributeException] { localData.get("<username>") }
+    intercept[UnboundAttributeException] { localData.get("<password>") }
+    intercept[UnboundAttributeException] { localData.get("<firstName>") }
+    intercept[UnboundAttributeException] { localData.get("<lastName>") }
   }
   
   "get" should "get visible local data" in {
@@ -41,15 +41,15 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     localData.push("register", List(("password", "secret")))
     
     intercept[UnboundAttributeException] {
-      localData.get("username")  should be ("gwen")
+      localData.get("<username>")  should be ("gwen")
     }
     
-    localData.get("password")   should be ("secret")
+    localData.get("<password>")   should be ("secret")
     
     localData.pop
     
-    localData.get("username")  should be ("gwen")
-    localData.get("password")   should be ("pwd")
+    localData.get("<username>")  should be ("gwen")
+    localData.get("<password>")   should be ("pwd")
     
   }
   
@@ -59,28 +59,28 @@ class LocalDataStackTest extends FlatSpec with Matchers {
     
     localData.push("stepdef1", Nil)
     intercept[UnboundAttributeException] {
-      localData.get("username")  should be ("gwen")
+      localData.get("<username>")  should be ("gwen")
     }
     
     localData.push("stepdef2", List(("username", "gwen")))
-    localData.get("username")  should be ("gwen")
+    localData.get("<username>")  should be ("gwen")
     
     localData.push("stepdef3", Nil)
     intercept[UnboundAttributeException] {
-      localData.get("username")  should be ("gwen")
+      localData.get("<username>")  should be ("gwen")
     }
     
     localData.pop
-    localData.get("username")  should be ("gwen")
+    localData.get("<username>")  should be ("gwen")
     
     localData.pop
     intercept[UnboundAttributeException] {
-      localData.get("username")  should be ("gwen")
+      localData.get("<username>")  should be ("gwen")
     }
     
     localData.pop
     intercept[UnboundAttributeException] {
-      localData.get("username")  should be ("gwen")
+      localData.get("<username>")  should be ("gwen")
     }
     
     intercept[NoSuchElementException] {

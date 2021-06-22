@@ -16,6 +16,7 @@
 
 package gwen.eval
 
+import gwen._
 import gwen.dsl.Identifiable
 import gwen.dsl.NodeType
 
@@ -37,14 +38,17 @@ case class FeatureUnit(
     dataRecord: Option[DataRecord], 
     result: Option[FeatureResult] = None) extends Identifiable {
 
-  val nodeType: NodeType.Value = NodeType.Unit
+  override def nodeType: NodeType.Value = NodeType.Unit
+
+  val uri: String = featureFile.uri
+  val name: String = s"$uri${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
+  
   def ancestor: Identifiable = parent match {
     case parentUnit @ FeatureUnit(grandparent, _, _, _, _) => 
       if (grandparent == Root) parent
       else parentUnit.ancestor
     case _ => this
   }
-  val uri: String = s"${featureFile.getPath}${dataRecord.map(rec => s"[${rec.recordNo}]").getOrElse("")}"
 }
 
 object FeatureUnit {

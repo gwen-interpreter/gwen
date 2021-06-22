@@ -35,32 +35,32 @@ trait GwenTestModel {
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil, Nil, Nil)
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples, Nil, Nil)
   }
 
   object Step {
     def apply(keyword: String, name: String): Step = {
-      new Step(None, keyword, name, Nil, None, Nil, None, Pending)
+      new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil)
     }
     def apply(keyword: String, name: String, evalStatus: EvalStatus): Step = {
-      new Step(None, keyword, name, Nil, None, Nil, None, evalStatus)
+      new Step(None, keyword, name, Nil, None, Nil, None, evalStatus, Nil, Nil)
     }
     def apply(pos: Position, keyword: String, name: String): Step = {
-      new Step(Some(SourceRef("", pos)), keyword, name, Nil, None, Nil, None, Pending)
+      new Step(Some(SourceRef("", pos, None)), keyword, name, Nil, None, Nil, None, Pending, Nil, Nil)
     }
     def apply(step: Step, sourceRef: SourceRef): Step = {
-      new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending)
+      new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending, Nil, Nil)
     }
     def apply(step: Step, keyword: String, name: String, evalStatus: EvalStatus): Step = {
-      new Step(step.sourceRef, keyword, name, step.attachments, step.stepDef, step.table, step.docString, evalStatus)
+      new Step(step.sourceRef, keyword, name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil)
     }
     def apply(step: Step, stepDef: Scenario, attachments: List[(String, File)]): Step = {
-      new Step(step.sourceRef, step.keyword, step.name, attachments, Some((stepDef, Nil)), step.table, step.docString, stepDef.evalStatus)
+      new Step(step.sourceRef, step.keyword, step.name, attachments, Some(stepDef), step.table, step.docString, stepDef.evalStatus, Nil, Nil)
     }
     def apply(step: Step, evalStatus: EvalStatus): Step = {
-      new Step(step.sourceRef, step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, evalStatus)
+      new Step(step.sourceRef, step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil)
     }
   }
   

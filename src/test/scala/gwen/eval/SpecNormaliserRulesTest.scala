@@ -270,10 +270,18 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     outline.name should be("Joining <string 1> and <string 2> should yield <result>")
     outline.background should be(None)
     outline.description should be(List("Substituting..", "string 1 = <string 1>", "string 2 = <string 2>", "result = <result>"))
-    outline.steps(0) should be (Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "<string 1>""""))
-    outline.steps(1) should be (Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "<string 2>""""))
-    outline.steps(2) should be (Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    outline.steps(3) should be (Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "<result>""""))
+    outline.steps(0).sourceRef.get.pos should be (Position(15, 5))
+    outline.steps(0).keyword should be (StepKeyword.Given.toString)
+    outline.steps(0).name should be ("""string 1 is "<string 1>"""")
+    outline.steps(1).sourceRef.get.pos should be (Position(16, 7))
+    outline.steps(1).keyword should be (StepKeyword.And.toString)
+    outline.steps(1).name should be ("""string 2 is "<string 2>"""")
+    outline.steps(2).sourceRef.get.pos should be (Position(17, 6))
+    outline.steps(2).keyword should be (StepKeyword.When.toString)
+    outline.steps(2).name should be ("I join the two strings")
+    outline.steps(3).sourceRef.get.pos should be (Position(18, 6))
+    outline.steps(3).keyword should be (StepKeyword.Then.toString)
+    outline.steps(3).name should be ("""the result should be "<result>"""")
 
     val examples = outline.examples
     examples.size should be(3)
@@ -289,32 +297,52 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     example1.scenarios.size should be(2)
 
     val scenario1 = example1.scenarios(0)
-    scenario1.sourceRef.get.pos should be (Position(8, 5))
+    scenario1.sourceRef.get.pos should be (Position(23, 5))
     scenario1.tags.map(_.name) should be(List("UnitTest"))
     scenario1.tags(0).sourceRef.get.pos should be (Position(7, 5))
-    scenario1.name should be("Joining basket and ball should yield basketball -- Example 1.1 Compound words")
+    scenario1.name should be("Joining basket and ball should yield basketball -- Compound words")
     scenario1.background.get.sourceRef.get.pos should be (Position(4, 5))
     scenario1.background.get.name should be ("background")
-    scenario1.background.get.steps(0) should be (Step(Position(5, 8), StepKeyword.Given.toString, "background step 1"))
+    scenario1.background.get.steps(0).sourceRef.get.pos should be(Position(5, 8))
+    scenario1.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario1.background.get.steps(0).name should be("background step 1")
     scenario1.description should be(List("Substituting..", "string 1 = basket", "string 2 = ball", "result = basketball"))
-    scenario1.steps(0) should be (Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "basket""""))
-    scenario1.steps(1) should be (Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "ball""""))
-    scenario1.steps(2) should be (Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    scenario1.steps(3) should be (Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "basketball""""))
+    scenario1.steps(0).sourceRef.get.pos should be(Position(15, 5))
+    scenario1.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario1.steps(0).name should be("""string 1 is "basket"""")
+    scenario1.steps(1).sourceRef.get.pos should be(Position(16, 7))
+    scenario1.steps(1).keyword should be(StepKeyword.And.toString)
+    scenario1.steps(1).name should be("""string 2 is "ball"""")
+    scenario1.steps(2).sourceRef.get.pos should be(Position(17, 6))
+    scenario1.steps(2).keyword should be(StepKeyword.When.toString)
+    scenario1.steps(2).name should be("I join the two strings")
+    scenario1.steps(3).sourceRef.get.pos should be(Position(18, 6))
+    scenario1.steps(3).keyword should be(StepKeyword.Then.toString)
+    scenario1.steps(3).name should be("""the result should be "basketball"""")
 
     val scenario2 = example1.scenarios(1)
-    scenario2.sourceRef.get.pos should be (Position(8, 5))
+    scenario2.sourceRef.get.pos should be (Position(24, 5))
     scenario2.tags.map(_.name) should be(List("UnitTest"))
     scenario2.tags(0).sourceRef.get.pos should be (Position(7, 5))
-    scenario2.name should be("Joining any and thing should yield anything -- Example 1.2 Compound words")
+    scenario2.name should be("Joining any and thing should yield anything -- Compound words")
     scenario2.background.get.sourceRef.get.pos should be (Position(4, 5))
     scenario2.background.get.name should be ("background")
-    scenario2.background.get.steps(0) should be(Step(Position(5, 8), StepKeyword.Given.toString, "background step 1"))
+    scenario2.background.get.steps(0).sourceRef.get.pos should be (Position(5, 8))
+    scenario2.background.get.steps(0).keyword should be (StepKeyword.Given.toString)
+    scenario2.background.get.steps(0).name should be ("background step 1")
     scenario2.description should be(List("Substituting..", "string 1 = any", "string 2 = thing", "result = anything"))
-    scenario2.steps(0) should be(Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "any""""))
-    scenario2.steps(1) should be(Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "thing""""))
-    scenario2.steps(2) should be(Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    scenario2.steps(3) should be(Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "anything""""))
+    scenario2.steps(0).sourceRef.get.pos should be(Position(15, 5))
+    scenario2.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario2.steps(0).name should be("""string 1 is "any"""")
+    scenario2.steps(1).sourceRef.get.pos should be(Position(16, 7))
+    scenario2.steps(1).keyword should be(StepKeyword.And.toString)
+    scenario2.steps(1).name should be("""string 2 is "thing"""")
+    scenario2.steps(2).sourceRef.get.pos should be(Position(17, 6))
+    scenario2.steps(2).keyword should be(StepKeyword.When.toString)
+    scenario2.steps(2).name should be("I join the two strings")
+    scenario2.steps(3).sourceRef.get.pos should be(Position(18, 6))
+    scenario2.steps(3).keyword should be(StepKeyword.Then.toString)
+    scenario2.steps(3).name should be("""the result should be "anything"""")
 
     val example2 = examples(1)
     example2.sourceRef.get.pos should be (Position(26, 5))
@@ -329,32 +357,52 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     example2.scenarios.size should be(2)
 
     val scenario3 = example2.scenarios(0)
-    scenario3.sourceRef.get.pos should be (Position(8, 5))
+    scenario3.sourceRef.get.pos should be (Position(32, 5))
     scenario3.tags.map(_.name) should be(List("UnitTest"))
     scenario3.tags(0).sourceRef.get.pos should be (Position(7, 5))
-    scenario3.name should be("Joining howdy and doo should yield howdydoo -- Example 2.1 Nonsensical compound words")
+    scenario3.name should be("Joining howdy and doo should yield howdydoo -- Nonsensical compound words")
     scenario3.background.get.sourceRef.get.pos should be (Position(4, 5))
     scenario3.background.get.name should be ("background")
-    scenario3.background.get.steps(0) should be(Step(Position(5, 8), StepKeyword.Given.toString, "background step 1"))
+    scenario3.background.get.steps(0).sourceRef.get.pos should be(Position(5, 8))
+    scenario3.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario3.background.get.steps(0).name should be("background step 1")
     scenario3.description should be(List("Substituting..", "string 1 = howdy", "string 2 = doo", "result = howdydoo"))
-    scenario3.steps(0) should be(Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "howdy""""))
-    scenario3.steps(1) should be(Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "doo""""))
-    scenario3.steps(2) should be(Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    scenario3.steps(3) should be(Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "howdydoo""""))
+    scenario3.steps(0).sourceRef.get.pos should be(Position(15, 5))
+    scenario3.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario3.steps(0).name should be("""string 1 is "howdy"""")
+    scenario3.steps(1).sourceRef.get.pos should be(Position(16, 7))
+    scenario3.steps(1).keyword should be(StepKeyword.And.toString)
+    scenario3.steps(1).name should be("""string 2 is "doo"""")
+    scenario3.steps(2).sourceRef.get.pos should be(Position(17, 6))
+    scenario3.steps(2).keyword should be(StepKeyword.When.toString)
+    scenario3.steps(2).name should be("I join the two strings")
+    scenario3.steps(3).sourceRef.get.pos should be(Position(18, 6))
+    scenario3.steps(3).keyword should be(StepKeyword.Then.toString)
+    scenario3.steps(3).name should be("""the result should be "howdydoo"""")
 
     val scenario4 = example2.scenarios(1)
-    scenario4.sourceRef.get.pos should be (Position(8, 5))
+    scenario4.sourceRef.get.pos should be (Position(33, 5))
     scenario4.tags.map(_.name) should be(List("UnitTest"))
     scenario4.tags(0).sourceRef.get.pos should be (Position(7, 5))
-    scenario4.name should be("Joining yep and ok should yield yepok -- Example 2.2 Nonsensical compound words")
+    scenario4.name should be("Joining yep and ok should yield yepok -- Nonsensical compound words")
     scenario4.background.get.sourceRef.get.pos should be (Position(4, 5))
     scenario4.background.get.name should be ("background")
-    scenario4.background.get.steps(0) should be(Step(Position(5, 8), StepKeyword.Given.toString, "background step 1"))
+    scenario4.background.get.steps(0).sourceRef.get.pos should be(Position(5, 8))
+    scenario4.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario4.background.get.steps(0).name should be("background step 1")
     scenario4.description should be(List("Substituting..", "string 1 = yep", "string 2 = ok", "result = yepok"))
-    scenario4.steps(0) should be(Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "yep""""))
-    scenario4.steps(1) should be(Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "ok""""))
-    scenario4.steps(2) should be(Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    scenario4.steps(3) should be(Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "yepok""""))
+    scenario4.steps(0).sourceRef.get.pos should be(Position(15, 5))
+    scenario4.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario4.steps(0).name should be("""string 1 is "yep"""")
+    scenario4.steps(1).sourceRef.get.pos should be(Position(16, 7))
+    scenario4.steps(1).keyword should be(StepKeyword.And.toString)
+    scenario4.steps(1).name should be("""string 2 is "ok"""")
+    scenario4.steps(2).sourceRef.get.pos should be(Position(17, 6))
+    scenario4.steps(2).keyword should be(StepKeyword.When.toString)
+    scenario4.steps(2).name should be("I join the two strings")
+    scenario4.steps(3).sourceRef.get.pos should be(Position(18, 6))
+    scenario4.steps(3).keyword should be(StepKeyword.Then.toString)
+    scenario4.steps(3).name should be("""the result should be "yepok"""")
 
     val example3 = examples(2)
     example3.sourceRef.get.pos should be (Position(35, 5))
@@ -366,18 +414,28 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     example3.scenarios.size should be(1)
 
     val scenario5 = example3.scenarios(0)
-    scenario5.sourceRef.get.pos should be (Position(8, 5))
+    scenario5.sourceRef.get.pos should be (Position(38, 5))
     scenario5.tags.map(_.name) should be(List("UnitTest"))
     scenario5.tags(0).sourceRef.get.pos should be (Position(7, 5))
-    scenario5.name should be("Joining ding and dong should yield dingdong -- Example 3.1 ")
+    scenario5.name should be("Joining ding and dong should yield dingdong")
     scenario5.background.get.sourceRef.get.pos should be (Position(4, 5))
     scenario5.background.get.name should be ("background")
-    scenario5.background.get.steps(0) should be(Step(Position(5, 8), StepKeyword.Given.toString, "background step 1"))
+    scenario5.background.get.steps(0).sourceRef.get.pos should be(Position(5, 8))
+    scenario5.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario5.background.get.steps(0).name should be("background step 1")
     scenario5.description should be(List("Substituting..", "string 1 = ding", "string 2 = dong", "result = dingdong"))
-    scenario5.steps(0) should be(Step(Position(15, 5), StepKeyword.Given.toString, """string 1 is "ding""""))
-    scenario5.steps(1) should be(Step(Position(16, 7), StepKeyword.And.toString, """string 2 is "dong""""))
-    scenario5.steps(2) should be(Step(Position(17, 6), StepKeyword.When.toString, "I join the two strings"))
-    scenario5.steps(3) should be(Step(Position(18, 6), StepKeyword.Then.toString, """the result should be "dingdong""""))
+    scenario5.steps(0).sourceRef.get.pos should be(Position(15, 5))
+    scenario5.steps(0).keyword should be(StepKeyword.Given.toString)
+    scenario5.steps(0).name should be("""string 1 is "ding"""")
+    scenario5.steps(1).sourceRef.get.pos should be(Position(16, 7))
+    scenario5.steps(1).keyword should be(StepKeyword.And.toString)
+    scenario5.steps(1).name should be("""string 2 is "dong"""")
+    scenario5.steps(2).sourceRef.get.pos should be(Position(17, 6))
+    scenario5.steps(2).keyword should be(StepKeyword.When.toString)
+    scenario5.steps(2).name should be("I join the two strings")
+    scenario5.steps(3).sourceRef.get.pos should be(Position(18, 6))
+    scenario5.steps(3).keyword should be(StepKeyword.Then.toString)
+    scenario5.steps(3).name should be("""the result should be "dingdong"""")
 
     val scenarios = outline.examples.flatMap(_.scenarios)
     scenarios.size should be(5)
@@ -386,6 +444,90 @@ class SpecNormaliserRulesTest extends FlatSpec with Matchers with SpecNormaliser
     scenarios(2) should be(scenario3)
     scenarios(3) should be(scenario4)
     scenarios(4) should be(scenario5)
+  }
+
+  "Rule with identically named scenarios" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically named scenarios
+          |
+          |     Rule: rule 1
+          |
+          | Scenario: scenario 1
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 3
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 4
+          |     Given step 1
+          |      Then step 2
+          | Scenario: identical
+          |     Given step 1
+          |      Then step 2
+          | Scenario: scenario 7
+          |     Given step 1
+          |      Then step 2
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normalise(feature, None, None)
+    val rule = result.rules(0)
+
+    rule.scenarios(0).occurrenceIn(rule) should be (1)
+    rule.scenarios(1).occurrenceIn(rule) should be (1)
+    rule.scenarios(2).occurrenceIn(rule) should be (1)
+    rule.scenarios(3).occurrenceIn(rule) should be (2)
+    rule.scenarios(4).occurrenceIn(rule) should be (1)
+    rule.scenarios(5).occurrenceIn(rule) should be (3)
+    rule.scenarios(6).occurrenceIn(rule) should be (1)
+  }
+
+  "Feature with identically named rules" should "return correct occurence number" in {
+
+    val spec = 
+      s"""|  Feature: feature containing identically named rules
+          |
+          |     Rule: rule 1
+          | Scenario: scenario 1
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 2
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 3
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: rule 4
+          | Scenario: scenario 4
+          |     Given step 1
+          |      Then step 2
+          |
+          |     Rule: identical
+          | Scenario: scenario 5
+          |     Given step 1
+          |      Then step 2
+          |""".stripMargin
+
+    val feature = parse(spec).get
+    val result = normalise(feature, None, None)
+
+    result.rules(0).occurrenceIn(result) should be (1)
+    result.rules(1).occurrenceIn(result) should be (1)
+    result.rules(2).occurrenceIn(result) should be (2)
+    result.rules(3).occurrenceIn(result) should be (1)
+    result.rules(4).occurrenceIn(result) should be (3)
   }
   
 }

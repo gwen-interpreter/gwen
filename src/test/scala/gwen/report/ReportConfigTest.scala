@@ -29,6 +29,7 @@ class ReportConfigTest extends FlatSpec with Matchers  {
     HtmlSlideshowReportConfig.format should be (ReportFormat.slideshow)
     JUnitReportConfig.format should be (ReportFormat.junit)
     JsonReportConfig.format should be (ReportFormat.json)
+    RPReportConfig.format should be (ReportFormat.rp)
   }
 
   "File extensions for all report formats" should "map correctly" in {
@@ -36,6 +37,7 @@ class ReportConfigTest extends FlatSpec with Matchers  {
     HtmlSlideshowReportConfig.fileExtension should be (Some("html"))
     JUnitReportConfig.fileExtension should be (Some("xml"))
     JsonReportConfig.fileExtension should be (Some("json"))
+    RPReportConfig.fileExtension should be (None)
   }
   
   "Names of all report formats" should "map correctly" in {
@@ -43,6 +45,7 @@ class ReportConfigTest extends FlatSpec with Matchers  {
     HtmlSlideshowReportConfig.name should be ("Slideshow")
     JUnitReportConfig.name should be ("JUnit-XML")
     JsonReportConfig.name should be ("JSON")
+    RPReportConfig.name should be ("Report Portal")
   }
   
   "Output directory of all report formats" should "map correctly" in {
@@ -51,6 +54,7 @@ class ReportConfigTest extends FlatSpec with Matchers  {
     HtmlSlideshowReportConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
     JUnitReportConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}junit")
     JsonReportConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}json")
+    RPReportConfig.reportDir(options) should be (None)
   }
   
   "Report generator for all report formats" should "map correctly" in {
@@ -59,6 +63,7 @@ class ReportConfigTest extends FlatSpec with Matchers  {
     HtmlSlideshowReportConfig.reportGenerator(options).isInstanceOf[HtmlSlideshowGenerator] should be (true)
     JUnitReportConfig.reportGenerator(options).isInstanceOf[JUnitReportGenerator] should be (true)
     JsonReportConfig.reportGenerator(options).isInstanceOf[JsonReportGenerator] should be (true)
+    RPReportConfig.reportGenerator(options).isInstanceOf[RPReportGenerator] should be (true)
   }
   
 }

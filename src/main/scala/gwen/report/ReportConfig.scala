@@ -109,3 +109,14 @@ object JsonReportConfig extends ReportConfig(
   }) {
   override def createReportDir(options: GwenOptions, spec: FeatureSpec, dataRecord: Option[DataRecord]): Option[File] = getReportDir(options)
 }
+
+object RPReportConfig extends ReportConfig(
+  ReportFormat.rp,
+  "Report Portal",
+  None,
+  None,
+  options => new RPReportGenerator(options),
+  options => None,
+  (spec: FeatureSpec, dataRecord: Option[DataRecord]) => None) {
+  override def createReportDir(options: GwenOptions, spec: FeatureSpec, dataRecord: Option[DataRecord]): Option[File] = None
+}

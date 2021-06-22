@@ -60,7 +60,11 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
   
   "interpreting a valid step" should "return success" in {
     val mockEnv = mock[EnvContext]
+    val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
+    when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
+    when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
     when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
     val step = Step(StepKeyword.Given.toString, "I am a valid step")
     when(mockEnv.interpolateParams(any[Step])).thenReturn(step)
@@ -83,11 +87,15 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
   "interpreting a valid step def" should "return success" in {
     val paramScope = new LocalDataStack()
     val mockEnv = mock[EnvContext]
+    val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
     val step1 = Step(StepKeyword.Given.toString, "I am a step in the stepdef")
     val step2 = Step(StepKeyword.Given.toString, "I am a valid stepdef")
     val stepdef = Scenario(List[Tag](Tag("@StepDef")), "I am a valid stepdef", Nil, None, List(step1))
-    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some((stepdef, Nil)))
+    when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
+    when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
+    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
     when(mockEnv.interpolateParams(any[Step])).thenReturn(step1)
     when(mockEnv.interpolate(any[Step])).thenReturn(step1)
@@ -116,7 +124,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
       case TrySuccess(_) =>
         fail("expected failure")
       case TryFailure(err) =>
-        err.getMessage should be ("Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+        err.getMessage should be ("Gherkin syntax error [at :1]: 'Given|When|Then|And|But <expression>' expected")
     }
   }
   
@@ -136,6 +144,9 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val mockEnv = mock[EnvContext]
     val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
+    when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
+    when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
     when(mockEnv.getStepDef(anyString)).thenReturn(None)
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockEnv.specType).thenReturn(SpecType.Feature)
@@ -206,11 +217,14 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     val mockEnv = mock[EnvContext]
     val mockTopScope = mock[TopScope]
     val mockLifecycle = mock[LifecycleEventDispatcher]
+    when(mockEnv.topScope).thenReturn(mockTopScope)
+    when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
+    when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
     when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
     when(mockEnv.getStepDef("I observe something")).thenReturn(None)
     when(mockEnv.getStepDef("it will become real")).thenReturn(None)
     when(mockEnv.getStepDef("there is order")).thenReturn(None)
-    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some((stepdef, Nil)))
+    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
     when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
     when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
     when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
