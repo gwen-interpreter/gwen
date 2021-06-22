@@ -62,6 +62,9 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
       }
 
       case r"""(.+?)$doStep if (.+?)$$$condition""" => doEvaluate(step, env) { _ =>
+        if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
+          Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
+        }
         val javascript = env.scopes.get(s"$condition/javascript")
         env.getStepDef(doStep) foreach { stepDef =>
           checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)

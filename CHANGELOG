@@ -90,6 +90,12 @@ Mar 20, 2021 - 2.31.1-beta-rp.2
 Feb 25, 2021 - 2.31.1-beta-rp.1
 - Introduce report portal integration
   
+2.32.1
+======
+May 4, 2021
+- Do not allow nested if-conditions in composite steps (only trailing posiion permitted)
+- Add screenshot and error details when while/until errors or times out
+
 2.32.0
 ======
 Apr 21, 2021
