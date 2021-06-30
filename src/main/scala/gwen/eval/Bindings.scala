@@ -44,8 +44,8 @@ case class JsonPathBinding(name: String, jsonPath: String, source: String) exten
   override def toString: String = s"$name [json path: $jsonPath, source: $source]"
 }
 
-case class SysprocBinding(name: String, sysproc: String) extends Binding {
-  override def toString: String = s"$name [sysproc: $sysproc]"
+case class SysprocBinding(name: String, sysproc: String, delimiter: Option[String]) extends Binding {
+  override def toString: String = s"$name [sysproc: $sysproc${delimiter.map(d => s", delimiter: $d").getOrElse("")}]"
 }
 
 case class FileBinding(name: String, file: File) extends Binding {

@@ -356,7 +356,13 @@ class EnvContext(options: GwenOptions) extends Evaluatable
       case XPathBinding(_, xpath, target, source) => evaluateXPath(xpath, source, XMLNodeType.withName(target))
       case RegexBinding(_, regex, source) => extractByRegex(regex, source)
       case JsonPathBinding(_, jsonPath, source) => evaluateJsonPath(jsonPath, source)
-      case SysprocBinding(_, sysproc) => evaluate("$[dryRun:sysproc]") { sysproc.!!.trim }
+      case SysprocBinding(_, sysproc, delimiter) => 
+        delimiter match {
+          case (Some(delim)) => 
+            evaluate("$[dryRun:sysproc]") { sysproc.split(delim).toSeq.!!.trim }
+          case None =>
+            evaluate("$[dryRun:sysproc]") { sysproc.!!.trim }
+        }
       case FileBinding(name, file) => evaluate("$[dryRun:file]") {
         if (file.exists()) {
           interpolate(Source.fromFile(file).mkString)(getBoundReferenceValue)
@@ -437,7 +443,8 @@ class EnvContext(options: GwenOptions) extends Evaluatable
         JsonPathBinding(name, jsonPath, source)
       }
       else if (n == s"$name/sysproc") {
-        SysprocBinding(name, v)
+        val delimiter = attScopes.getOpt(s"$name/delimiter").map(d => interpolate(d)(getBoundReferenceValue))
+        SysprocBinding(name, v, delimiter)
       }
       else if (n == s"$name/file") {
         val filepath = interpolate(v)(getBoundReferenceValue)

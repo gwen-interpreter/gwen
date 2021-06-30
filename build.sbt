@@ -7,7 +7,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
-  scalaVersion := "2.13.3",
+  scalaVersion := "2.13.6",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),
@@ -29,9 +29,6 @@ lazy val projectSettings = Seq(
       sys.error(s"JDK 8 is required to build this project. Found $javaVersion instead")
   }
 )
-
-resolvers +=
-  "EPAM Systems" at "https://dl.bintray.com/epam/reportportal"
 
 lazy val mainDependencies = {
   val cucumberGherkin = "15.0.2"
@@ -87,3 +84,5 @@ mappings in(Compile, packageBin) ++= Seq(
   file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY.txt",
   file("CHANGELOG") -> "CHANGELOG.txt"
 )
+
+Global / semanticdbEnabled := true
