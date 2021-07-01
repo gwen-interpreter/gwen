@@ -66,7 +66,7 @@ trait DefaultEngineSupport[T <: EnvContext] extends EvalEngine[T] {
           Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
         }
         val javascript = env.scopes.get(s"$condition/javascript")
-        env.getStepDef(doStep) foreach { stepDef =>
+        env.getStepDef(doStep, None) foreach { stepDef =>
           checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), env)
         }
         val iStep = step.copy(withEvalStatus = Pending)

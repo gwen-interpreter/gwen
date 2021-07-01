@@ -79,6 +79,7 @@ object Errors {
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
   def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
+  def multilineParamInterpolationError(msg: String) = throw new MultilineParamInterpolationException(msg)
 
   private def at(sourceRef: String): String = {
     if (sourceRef.length > 0) s" [at $sourceRef]"
@@ -222,4 +223,6 @@ object Errors {
   /** Thrown when a service health check fails. */
   class ServiceHealthCheckException(msg: String, cause: Throwable) extends GwenException(msg, cause)
 
+  /** Thrown when a multiline parameters is interpolated into a step expression. */
+  class MultilineParamInterpolationException(msg: String) extends GwenException(msg)
 }

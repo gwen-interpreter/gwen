@@ -725,6 +725,19 @@ case class Step(
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 
+  def docStringify: Option[Step] = {
+    name match {
+      case r"""^(?s)(.*)$prefix"\$$<(.+?)$param>"$$""" if docString.isEmpty =>
+        Some(
+          this.copy(
+            withName = prefix.trim,
+            withDocString = Some((0, s"<$param>", None))
+          )
+        )
+      case _ => None
+    }
+  }
+
   def deepSteps: List[Step] = {
     List(this) ++ (stepDef map { sd => 
       sd.steps.flatMap(_.deepSteps)

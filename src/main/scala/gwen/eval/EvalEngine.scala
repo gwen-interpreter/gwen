@@ -201,7 +201,7 @@ trait EvalEngine[T <: EnvContext] extends LazyLogging with EvalRules {
       val hasSynthetic = pStep.flatMap(s => s.stepDef.map(_.isSynthetic)).getOrElse(false)
       pStep.filter(_.evalStatus.status != StatusKeyword.Failed || hasSynthetic).getOrElse {
         if (iStep.evalStatus.status != StatusKeyword.Failed) {
-          Try(env.getStepDef(iStep.name)) match {
+          Try(env.getStepDef(iStep.expression, iStep.docString.map(_._2))) match {
             case Failure(error) =>
               iStep.copy(withEvalStatus = Failed(System.nanoTime - start, new Errors.StepFailure(iStep, error)))
             case Success(stepDefOpt) =>

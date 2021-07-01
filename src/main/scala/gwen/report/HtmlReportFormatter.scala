@@ -278,7 +278,7 @@ trait HtmlReportFormatter extends ReportFormatter {
       val contentType = docString._3
       s"""
               ${formatDocString(docString, false).split("""\r?\n""").zipWithIndex  map { case (contentLine, index) =>
-                val line = docString._1 + index
+                val line = if (docString._1 > 0) docString._1 + index else 0
               s"""
                 <div class="bg-${cssStatus(status)}">
                   <div class="line-no"><small>${if (line > 0) line else ""}</small></div>
@@ -543,7 +543,7 @@ trait HtmlReportFormatter extends ReportFormatter {
                                 <span class="line-no">$name :</span>
                               </td>
                               <td style="padding: 3px">
-                                $value
+                                ${escapeHtml(value)}
                               </td>
                             <tr>"""}).mkString }
                           </tbody>

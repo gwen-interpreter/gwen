@@ -27,7 +27,7 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
   
   "New env context" should "contain no StepDefs" in {
     val env = newEnv
-    env.getStepDef("google it") should be (None)
+    env.getStepDef("google it", None) should be (None)
   }
   
   "New StepDef added to env context" should "be accessible" in {
@@ -41,11 +41,11 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    val result = env.getStepDef("""I search for "gwen"""").get
+    val result = env.getStepDef("""I search for "gwen"""", None).get
     result.name should be (stepdef.name)
     result.params should be (Nil)
 
-    env.getStepDef("I am not defined") should be (None)
+    env.getStepDef("I am not defined", None) should be (None)
     
   }
   
@@ -60,12 +60,12 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    val result = env.getStepDef("""I search for "gwen"""").get
+    val result = env.getStepDef("""I search for "gwen"""", None).get
     result.name should be (stepdef.name)
     result.params should be (Nil)
 
     env.reset(StateLevel.feature)
-    env.getStepDef("""I search for "gwen"""") should be (None)
+    env.getStepDef("""I search for "gwen"""", None) should be (None)
     
   }
 
@@ -80,12 +80,12 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     val env = newEnv
     env.addStepDef(stepdef)
     
-    val result1 = env.getStepDef("""I search for "gwen"""").get
+    val result1 = env.getStepDef("""I search for "gwen"""", None).get
     result1.name should be (stepdef.name)
     result1.params should be (Nil)
 
     env.reset(StateLevel.scenario)
-    val result2 = env.getStepDef("""I search for "gwen"""").get
+    val result2 = env.getStepDef("""I search for "gwen"""", None).get
     result2.name should be (stepdef.name)
     result2.params should be (Nil)
   }
@@ -105,31 +105,54 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
     
-    var result = env.getStepDef("""I enter "gwen" in the search field""").get
+    var result = env.getStepDef("""I enter "gwen" in the search field""", None).get
     result.name should be (stepdef1.name)
     result.params should be (List(("searchTerm", "gwen")))
 
-    result = env.getStepDef("""I enter "gwen" in the search field again""").get
+    result = env.getStepDef("""I enter "gwen" in the search field again""", None).get
     result.name should be (stepdef2.name)
     result.params should be (List(("search term", "gwen")))
 
-    result = env.getStepDef("z = 2 + 1").get
+    result = env.getStepDef("z = 2 + 1", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("x", "2")))
 
-    result = env.getStepDef("z = 1 + 3").get
+    result = env.getStepDef("z = 1 + 3", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("x", "3")))
 
-    result = env.getStepDef("z = 2 - 2").get
+    result = env.getStepDef("z = 2 - 2", None).get
     result.name should be (stepdef5.name)
     result.params should be (List(("x", "2"), ("y", "2")))
 
     val stepdef6 = Scenario(List(Tag("@StepDef")), "z = <x> * <x>", Nil, None, Nil)
     env.addStepDef(stepdef6)
     intercept[AmbiguousCaseException] {
-      env.getStepDef("z = 3 * 4")
+      env.getStepDef("z = 3 * 4", None)
     }
+    
+  }
+
+  "StepDef with docString param" should "resolve" in {
+    
+    val stepdef = Scenario(List(Tag("@StepDef")), """I do a search for <searchTerm>""", Nil, None, Nil)
+    
+    val env = newEnv
+    env.addStepDef(stepdef)
+    
+    val docString1 = "DocString"
+    val step1 = Step("I do a search for", Some(docString1))
+    val result1 = env.getStepDef(step1.expression, step1.docString.map(_._2)).get
+    result1.name should be (stepdef.name)
+    result1.params should be (List(("searchTerm", docString1)))
+
+    val docString2 = 
+      """|Multi line
+         |DocString""".stripMargin
+    val step2 = Step("I do a search for", Some(docString2))
+    val result2 = env.getStepDef(step2.expression, step2.docString.map(_._2)).get
+    result2.name should be (stepdef.name)
+    result2.params should be (List(("searchTerm", docString2)))
     
   }
   
@@ -144,27 +167,27 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef2)
     env.addStepDef(stepdef3)
     
-    var result = env.getStepDef("z = 2 + 3").get
+    var result = env.getStepDef("z = 2 + 3", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("x", "2"), ("y", "3")))
 
-    result = env.getStepDef("z = 2 + 2").get
+    result = env.getStepDef("z = 2 + 2", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("x", "2"), ("y", "2")))
 
-    result = env.getStepDef("z = 3 + 2").get
+    result = env.getStepDef("z = 3 + 2", None).get
      result.name should be (stepdef3.name)
     result.params should be (List(("x", "3"), ("y", "2")))
 
-    result = env.getStepDef("z = 2 + 3").get
+    result = env.getStepDef("z = 2 + 3", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("x", "2"), ("y", "3")))
 
-    result = env.getStepDef("z = 5 + y").get
+    result = env.getStepDef("z = 5 + y", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("x", "5"), ("y", "y")))
 
-    result = env.getStepDef("c = a + y").get
+    result = env.getStepDef("c = a + y", None).get
     result.name should be (stepdef2.name)
     result.params should be (List(("b", "y")))
     
@@ -180,7 +203,7 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef2)
     
     intercept[AmbiguousCaseException] {
-      env.getStepDef("z = a + 3")
+      env.getStepDef("z = a + 3", None)
     }
     
   }
@@ -513,119 +536,119 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef4)
     env.addStepDef(stepdef5)
 
-    var result = env.getStepDef("""I type name """"").get
+    var result = env.getStepDef("""I type name """"", None).get
     result.name should be (stepdef1.name)
     result.params should be (List(("name", "")))
 
-    result = env.getStepDef("""I enter name "", age """"").get
+    result = env.getStepDef("""I enter name "", age """"", None).get
     result.name should be (stepdef2.name)
     result.params should be (List(("name", ""), ("age", "")))
     
-    result = env.getStepDef("""I enter name "gwen", age """"").get
+    result = env.getStepDef("""I enter name "gwen", age """"", None).get
     result.name should be (stepdef2.name)
     result.params should be (List(("name", "gwen"), ("age", "")))
     
-    result = env.getStepDef("""I enter name "", age "24"""").get
+    result = env.getStepDef("""I enter name "", age "24"""", None).get
     result.name should be (stepdef2.name)
     result.params should be (List(("name", ""), ("age", "24")))
 
-    result = env.getStepDef("""I provide name "", age "" and gender """"").get
+    result = env.getStepDef("""I provide name "", age "" and gender """"", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", "")))
     
-    result = env.getStepDef("""I provide name "gwen", age "" and gender """"").get
+    result = env.getStepDef("""I provide name "gwen", age "" and gender """"", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "")))
     
-    result = env.getStepDef("""I provide name "", age "24" and gender """"").get
+    result = env.getStepDef("""I provide name "", age "24" and gender """"", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", "")))
     
-    result = env.getStepDef("""I provide name "", age "" and gender "female"""").get
+    result = env.getStepDef("""I provide name "", age "" and gender "female"""", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", "female")))
     
-    result = env.getStepDef("""I provide name "gwen", age "24" and gender """"").get
+    result = env.getStepDef("""I provide name "gwen", age "24" and gender """"", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", "")))
     
-    result = env.getStepDef("""I provide name "", age "24" and gender "female"""").get
+    result = env.getStepDef("""I provide name "", age "24" and gender "female"""", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", "female")))
     
-    result = env.getStepDef("""I provide name "gwen", age "" and gender "female"""").get
+    result = env.getStepDef("""I provide name "gwen", age "" and gender "female"""", None).get
     result.name should be (stepdef3.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female")))
 
-    result = env.getStepDef("""I give name "", age "", gender "" and title """"").get
+    result = env.getStepDef("""I give name "", age "", gender "" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", ""), ("title", "")))
     
-    result = env.getStepDef("""I give name "gwen", age "", gender "" and title """"").get
+    result = env.getStepDef("""I give name "gwen", age "", gender "" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", ""), ("title", "")))
     
-    result = env.getStepDef("""I give name "", age "24", gender "" and title """"").get
+    result = env.getStepDef("""I give name "", age "24", gender "" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", ""), ("title", "")))
     
-    result = env.getStepDef("""I give name "", age "", gender "female" and title """"").get
+    result = env.getStepDef("""I give name "", age "", gender "female" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", "female"), ("title", "")))
     
-    result = env.getStepDef("""I give name "", age "", gender "" and title "miss"""").get
+    result = env.getStepDef("""I give name "", age "", gender "" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", ""), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title """"").get
+    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", ""), ("title", "")))
     
-    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title """"").get
+    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female"), ("title", "")))
     
-    result = env.getStepDef("""I give name "gwen", age "", gender "" and title "miss"""").get
+    result = env.getStepDef("""I give name "gwen", age "", gender "" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", ""), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "", age "24", gender "female" and title """"").get
+    result = env.getStepDef("""I give name "", age "24", gender "female" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", "female"), ("title", "")))
     
-    result = env.getStepDef("""I give name "", age "24", gender "" and title "miss"""").get
+    result = env.getStepDef("""I give name "", age "24", gender "" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", ""), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "", age "", gender "female" and title "miss"""").get
+    result = env.getStepDef("""I give name "", age "", gender "female" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", ""), ("gender", "female"), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "gwen", age "24", gender "female" and title """"").get
+    result = env.getStepDef("""I give name "gwen", age "24", gender "female" and title """"", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", "female"), ("title", "")))
     
-    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title "miss"""").get
+    result = env.getStepDef("""I give name "gwen", age "24", gender "" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", "24"), ("gender", ""), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title "miss"""").get
+    result = env.getStepDef("""I give name "gwen", age "", gender "female" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", "gwen"), ("age", ""), ("gender", "female"), ("title", "miss")))
     
-    result = env.getStepDef("""I give name "", age "24", gender "female" and title "miss"""").get
+    result = env.getStepDef("""I give name "", age "24", gender "female" and title "miss"""", None).get
     result.name should be (stepdef4.name)
     result.params should be (List(("name", ""), ("age", "24"), ("gender", "female"), ("title", "miss")))
 
-    result = env.getStepDef("""I test "" """"").get
+    result = env.getStepDef("""I test "" """"", None).get
     result.name should be (stepdef5.name)
     result.params should be (List(("param1", ""), ("param2", "")))
     
-    result = env.getStepDef("""I test "1" """"").get
+    result = env.getStepDef("""I test "1" """"", None).get
     result.name should be (stepdef5.name)
     result.params should be (List(("param1", "1"), ("param2", "")))
     
-    result = env.getStepDef("""I test "" "1"""").get
+    result = env.getStepDef("""I test "" "1"""", None).get
     result.name should be (stepdef5.name)
     result.params should be (List(("param1", ""), ("param2", "1")))
 
@@ -640,7 +663,7 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef2)
 
     intercept[AmbiguousCaseException] {
-      env.getStepDef("""I "1" on "2" and "3"""")
+      env.getStepDef("""I "1" on "2" and "3"""", None)
     }
 
   }
@@ -654,7 +677,7 @@ class EnvContextTest extends BaseTest with Matchers with GwenTestModel {
     env.addStepDef(stepdef2)
 
     intercept[AmbiguousCaseException] {
-      env.getStepDef("""I 1 on 2 and 3""")
+      env.getStepDef("""I 1 on 2 and 3""", None)
     }
 
   }

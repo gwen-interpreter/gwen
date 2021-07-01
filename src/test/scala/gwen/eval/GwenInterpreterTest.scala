@@ -24,6 +24,7 @@ import scala.util.{Success => TrySuccess}
 
 import org.mockito.Matchers.any
 import org.mockito.Matchers.anyString
+import org.mockito.Matchers.same
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -65,7 +66,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
     when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
-    when(mockEnv.getStepDef("I am a valid step")).thenReturn(None)
+    when(mockEnv.getStepDef("I am a valid step", None)).thenReturn(None)
     val step = Step(StepKeyword.Given.toString, "I am a valid step")
     when(mockEnv.interpolateParams(any[Step])).thenReturn(step)
     when(mockEnv.interpolate(any[Step])).thenReturn(step)
@@ -95,8 +96,8 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
     when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
-    when(mockEnv.getStepDef("I am a valid stepdef")).thenReturn(Some(stepdef))
-    when(mockEnv.getStepDef("I am a step in the stepdef")).thenReturn(None)
+    when(mockEnv.getStepDef("I am a valid stepdef", None)).thenReturn(Some(stepdef))
+    when(mockEnv.getStepDef("I am a step in the stepdef", None)).thenReturn(None)
     when(mockEnv.interpolateParams(any[Step])).thenReturn(step1)
     when(mockEnv.interpolate(any[Step])).thenReturn(step1)
     when(mockEnv.finaliseStep(any[Step])).thenReturn(Step(step1, Passed(1)), Step(step2, Passed(1)))
@@ -147,7 +148,7 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
     when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
-    when(mockEnv.getStepDef(anyString)).thenReturn(None)
+    when(mockEnv.getStepDef(anyString, same(None))).thenReturn(None)
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockEnv.specType).thenReturn(SpecType.Feature)
     val step1 = Step(StepKeyword.Given.toString, "I am an observer")
@@ -220,16 +221,16 @@ class GwenInterpreterTest extends FlatSpec with Matchers with MockitoSugar with 
     when(mockEnv.topScope).thenReturn(mockTopScope)
     when(mockTopScope.getOpt("gwen.override.parent.nodePath")).thenReturn(None)
     when(mockTopScope.getOpt("gwen.override.node.occurrence")).thenReturn(None)
-    when(mockEnv.getStepDef("I am an observer")).thenReturn(None)
-    when(mockEnv.getStepDef("I observe something")).thenReturn(None)
-    when(mockEnv.getStepDef("it will become real")).thenReturn(None)
-    when(mockEnv.getStepDef("there is order")).thenReturn(None)
-    when(mockEnv.getStepDef("the butterfly flaps its wings")).thenReturn(Some(stepdef))
-    when(mockEnv.getStepDef("a deterministic nonlinear system")).thenReturn(None)
-    when(mockEnv.getStepDef("a small change is initially applied")).thenReturn(None)
-    when(mockEnv.getStepDef("a large change will eventually result")).thenReturn(None)
-    when(mockEnv.getStepDef("order is lost")).thenReturn(None)
-    when(mockEnv.getStepDef("")).thenReturn(None)
+    when(mockEnv.getStepDef("I am an observer", None)).thenReturn(None)
+    when(mockEnv.getStepDef("I observe something", None)).thenReturn(None)
+    when(mockEnv.getStepDef("it will become real", None)).thenReturn(None)
+    when(mockEnv.getStepDef("there is order", None)).thenReturn(None)
+    when(mockEnv.getStepDef("the butterfly flaps its wings", None)).thenReturn(Some(stepdef))
+    when(mockEnv.getStepDef("a deterministic nonlinear system", None)).thenReturn(None)
+    when(mockEnv.getStepDef("a small change is initially applied", None)).thenReturn(None)
+    when(mockEnv.getStepDef("a large change will eventually result", None)).thenReturn(None)
+    when(mockEnv.getStepDef("order is lost", None)).thenReturn(None)
+    when(mockEnv.getStepDef("", None)).thenReturn(None)
     when(mockEnv.stepScope).thenReturn(paramScope)
     when(mockEnv.loadedMeta).thenReturn(Nil)
     when(mockEnv.topScope).thenReturn(mockTopScope)
