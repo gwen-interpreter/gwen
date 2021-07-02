@@ -20,7 +20,7 @@ import gwen.dsl.NodeType
 
 object RPConfig {
 
-  val nameMaxChars = 1024
+  val nameMaxChars = if (RPSettings.`gwen.rp.send.markdownBlocks`) 1014 else 1024
   val attributeMaxChars = 128
 
   object StepDefFormat extends Enumeration {

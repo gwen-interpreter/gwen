@@ -163,7 +163,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       session.startTestItem(rq) // root
     }
     rpids.put(node.uuid, rpid)
-    truncate(name) foreach { _ =>
+    if (name.length > RPConfig.nameMaxChars) {
       sendItemLog(LogLevel.INFO, name)
     }
     logDebugMsg(node, sourceRef, params)
@@ -230,8 +230,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   }
 
   private def addName(rq: StartTestItemRQ, name: String, inlined: Boolean): Unit = {
-    val truncatedName = truncate(name).getOrElse(name)
-    val encodedName = encode(truncatedName, inlined)
+    val encodedName = encode(name, inlined)
     rq.setName(encodedName)
   }
 
@@ -352,12 +351,6 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
     } else {
       text
     }).replaceAll(s"$ZeroChar", "")
-  }
-
-  private def truncate(text: String): Option[String] = {
-    val max = if (RPSettings.`gwen.rp.send.markdownBlocks`) RPConfig.nameMaxChars - 10 else RPConfig.nameMaxChars
-    if (text.length > max) Some(s"${text.substring(0, max - 4)}... ")
-    else None
   }
   
 }
