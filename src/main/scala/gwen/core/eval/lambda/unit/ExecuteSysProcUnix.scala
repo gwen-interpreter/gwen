@@ -26,13 +26,16 @@ import gwen.core.behavior.BehaviorType
 import scala.sys.process.stringSeqToProcess
 import scala.util.chaining._
 
-class ExecuteSysProcUnix[T <: EvalContext](systemproc: String) extends UnitStep[T] {
+class ExecuteSysProcUnix[T <: EvalContext](systemproc: String, delimiter: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.perform {
-        Seq("/bin/sh", "-c", systemproc).! match {
+        delimiter match {
+          case None => Seq("/bin/sh", "-c", systemproc).!
+          case Some(delim) => (Seq("/bin/sh", "-c") ++ systemproc.split(delim).toSeq).!
+        } match {
           case 0 =>
           case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
         }

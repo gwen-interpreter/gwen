@@ -101,10 +101,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAttribute(attribute, step.orDocString(value))
       case r"""I wait (\d+)$duration second(?:s?)""" =>
         new Sleep(duration.toInt)
+      case r"""I execute system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
+        new ExecuteSysProc(systemproc, Some(delimiter))
       case r"""I execute system process "(.+?)"$$$systemproc""" =>
-        new ExecuteSysProc(step.orDocString(systemproc))
+        new ExecuteSysProc(step.orDocString(systemproc), None)
+      case r"""I execute a unix system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
+        new ExecuteSysProcUnix(systemproc, Some(delimiter))
       case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
-        new ExecuteSysProcUnix(step.orDocString(systemproc))
+        new ExecuteSysProcUnix(step.orDocString(systemproc), None)
       case r"""I execute (?:javascript|js) "(.+?)$javascript"""" =>
         new ExecuteJS(step.orDocString(javascript))
       case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$$$expression""" =>
@@ -123,8 +127,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
+      case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
+        new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), Some(delimiter))
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$$$expression""" =>
-        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression))
+        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None)
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" =>

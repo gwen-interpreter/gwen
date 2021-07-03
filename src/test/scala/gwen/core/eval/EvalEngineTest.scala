@@ -97,6 +97,10 @@ class EvalEngineTest extends AnyFlatSpec with Matchers with MockitoSugar with Te
   "Execute system process 'hostname'" should "be successful" in {
     engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """I execute system process "hostname""""), ctx)
   }
+
+  "Execute system process 'hostname -s'" should "be successful" in {
+    engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """I execute system process "hostname,-s" delimited by ",""""), ctx)
+  }
   
   "Execute system process 'undefined'" should "fail with IOException" in {
     intercept[IOException] {

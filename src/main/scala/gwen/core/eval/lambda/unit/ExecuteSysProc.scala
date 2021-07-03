@@ -24,15 +24,19 @@ import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
 import scala.sys.process.stringToProcess
+import scala.sys.process.stringSeqToProcess
 import scala.util.chaining._
 
-class ExecuteSysProc[T <: EvalContext](systemproc: String) extends UnitStep[T] {
+class ExecuteSysProc[T <: EvalContext](systemproc: String, delimiter: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.perform {
-        systemproc.! match {
+        delimiter match {
+          case None => systemproc.!
+          case Some(delim) => systemproc.split(delim).toSeq.!
+        } match {
           case 0 =>
           case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
         }

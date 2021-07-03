@@ -25,9 +25,13 @@ import scala.util.Try
 object SysprocBinding {
   
   def key(name: String) = s"$name/${BindingType.sysproc}"
+  def delimiterKey(name: String) = s"$name/delimiter"
 
-  def bind(name: String, sysproc: String, env: Environment): Unit = {
+  def bind(name: String, sysproc: String, delimiter: Option[String], env: Environment): Unit = {
     env.scopes.set(key(name), sysproc)
+    delimiter foreach { delim => 
+      env.scopes.set(delimiterKey(name), delim)
+    }
   }
 
 }
@@ -35,18 +39,24 @@ object SysprocBinding {
 class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 
   private val key = SysprocBinding.key(name)
+  private val delimiterKey = SysprocBinding.delimiterKey(name)
 
   override def resolve(): String = {
+    val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
     lookupValue(key) { sysproc => 
-      ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}]") {
-        sysproc.!!.trim
+      ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
+        delimiter match {
+          case Some(delim) => sysproc.split(delim).toSeq.!!.trim
+          case None => sysproc.!!.trim
+        }
       }
     }
   }
 
   override def toString: String = Try {
+    val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
     lookupValue(key) { sysproc => 
-      s"$name [${BindingType.sysproc}: $sysproc]"
+      s"$name [${BindingType.sysproc}: $sysproc${delimiter.map(d => s", delimiter: $d").getOrElse("")}]"
     }
   } getOrElse name
 

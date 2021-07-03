@@ -29,14 +29,14 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String) extends UnitStep[T] {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, delimiter: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
         case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx)
-        case BindingType.sysproc => SysprocBinding.bind(target, value, ctx)
+        case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
       }
