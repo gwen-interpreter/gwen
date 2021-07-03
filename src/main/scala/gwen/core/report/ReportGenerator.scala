@@ -28,6 +28,7 @@ import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlSlideshowConfig
 import gwen.core.report.json.JsonReportConfig
 import gwen.core.report.junit.JUnitReportConfig
+import gwen.core.report.rp.RPReportConfig
 import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
@@ -178,6 +179,7 @@ object ReportGenerator {
         case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
         case ReportFormat.junit => Some(JUnitReportConfig)
         case ReportFormat.json => Some(JsonReportConfig)
+        case ReportFormat.rp => Some(RPReportConfig)
      }
     } map { config =>
       config.reportGenerator(options)

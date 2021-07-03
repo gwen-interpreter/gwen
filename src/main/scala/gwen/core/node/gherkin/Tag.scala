@@ -37,6 +37,9 @@ import java.io.File
 case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Tag
+  
+  def isAnnotation = value.nonEmpty || ReservedTags.values.filter(_ != ReservedTags.Ignore).exists(_.toString == name)
+  def isMarker = value.isEmpty && !isAnnotation
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {

@@ -204,7 +204,7 @@ object GwenOptions {
           if (opt.batch && opt.features.isEmpty) {
             Errors.invocationError("No feature files or directories specified")
           }
-          val reportables = opt.reportFormats
+          val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }

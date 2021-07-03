@@ -163,7 +163,7 @@ class NodeEventDispatcher extends LazyLogging {
   private def dispatchAfterEvent[T <: GwenNode](source: T, env: Environment)
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Unit = {
     val callChain = env.nodeChain
-    val (node, _) = env.popNode()
+    val node = callChain.last
     listeners foreach { listener =>
       dispatchEvent(listener, NodePhase.after, callChain, source, env) { dispatch } tap { _ =>
         if (listener.isPausedOn(node)) {
@@ -171,6 +171,7 @@ class NodeEventDispatcher extends LazyLogging {
         }
       }
     }
+    env.popNode()
   }
 
   private def dispatchHealthCheckEvent[T <: GwenNode](source: T, env: Environment)

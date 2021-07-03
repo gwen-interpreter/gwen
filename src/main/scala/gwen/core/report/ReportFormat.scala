@@ -22,4 +22,4 @@ package gwen.core.report
   * @author Branko Juric
   */
 enum ReportFormat:
-  case html, slideshow, junit, json
+  case html, slideshow, junit, json, rp

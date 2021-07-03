@@ -20,12 +20,12 @@ import gwen.core.TestModel
 import gwen.core.node.gherkin._
 import gwen.core.status._
 
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration.Duration
 
 import java.util.Date
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
 class ResultsSummaryTest extends AnyFlatSpec with Matchers with TestModel {
   

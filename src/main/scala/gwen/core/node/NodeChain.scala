@@ -23,9 +23,11 @@ class NodeChain(val nodes: List[GwenNode]) {
 
   assert(nodes.nonEmpty, "IllegalState: nodes cannot be empty")
 
+  def previous: GwenNode = nodes(nodes.size - 2)
   def last: GwenNode = nodes.last
   def take(n: Int): NodeChain = new NodeChain(nodes.take(n))
   def add(node: GwenNode):NodeChain = new NodeChain(nodes ++ List(node))
+  def steps: List[Step] = nodes.filter(_.nodeType == NodeType.Step).map(_.asInstanceOf[Step])
 
   def nodePath: String = {
     nodes match {

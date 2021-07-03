@@ -24,9 +24,9 @@ have to do all the programming work. It has an abstracted
 
 ### What's New?
 
+- [Doc Strings as Parameters](https://github.com/gwen-interpreter/gwen/wiki/Doc-Strings/_edit#doc-strings-as-parameters)
+- [Report Portal integration](https://github.com/gwen-interpreter/gwen/wiki/Report-Portal-Integration) for centralised reporting and real-time analytics.
 - [Masked Settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#masked-settings) to make all your private and sensitive settings appear as `●●●●●` in all Gwen logs, reports, errors and console outputs
-- Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
-- Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
 
 Why Gwen?
 ---------
@@ -77,6 +77,8 @@ Key Features
 - [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
 - [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
 - [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
+- Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
+- Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
 
 User Network and Support
 ------------------------

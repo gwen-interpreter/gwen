@@ -21,6 +21,8 @@ import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.chaining._
 
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
 import org.htmlcleaner.HtmlCleaner
 import org.htmlcleaner.PrettyHtmlSerializer
@@ -42,7 +44,6 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
 import javax.xml.transform.OutputKeys
-import org.apache.commons.lang3.SystemUtils
 
 /** Predefs and extension methods avaiable wherever this page is imported. */
 
@@ -252,10 +253,10 @@ object Formatting {
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
   def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
   def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
+  def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
 
   def formatTable(table: List[(Int, List[String])]): String = {
-    val lines = table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }
-    lines.mkString("\r\n")
+    (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
   }
   def formatTableRow(table: List[(Int, List[String])], rowIndex: Int): String = {
     val maxWidths = (table map { case (_, rows) => rows.map(_.length) }).transpose.map(_.max)
@@ -267,6 +268,14 @@ object Formatting {
           |$content
           |${"\"\"\""}""".stripMargin
   }
+  def formatParams(params: List[(String, String)]): String = {
+    if (params.length > 0) {
+      s"{ ${params map { case (n, v) => s"$n : $v" } mkString ", "} }"
+    } else {
+      ""
+    }
+  }
+
   def splitLines(blob: String): List[String] = blob.split("\\r?\\n").toList
 
   def prettyPrintXML(xml: String, cDataElements: Option[String]): String = {

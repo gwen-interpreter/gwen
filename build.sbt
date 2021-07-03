@@ -42,6 +42,8 @@ lazy val mainDependencies = {
   val jodaTime = "2.10.6"
   val scalaTags = "0.9.4"
   val htmlCleaner = "2.24"
+  val rpCommon = "5.3.3"
+  val rpClientJava = "5.0.22"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -55,7 +57,12 @@ lazy val mainDependencies = {
     "com.jayway.jsonpath" % "json-path" % jsonPath,
     "joda-time" % "joda-time" % jodaTime,
     ("com.lihaoyi" %% "scalatags" % scalaTags).cross(CrossVersion.for3Use2_13),
-    "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner
+    "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner,
+    "com.epam.reportportal" % "commons-model" % rpCommon,
+    "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
+      ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
+      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
+    )
 
   )
 }
