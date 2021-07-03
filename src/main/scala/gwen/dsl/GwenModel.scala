@@ -268,7 +268,7 @@ case class Background(
     copy(
       withSourceRef = sourceRef.map(_.withNodePath(path)),
       withSteps = steps map { s =>
-        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(steps)))
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.expression}", s.occurrenceIn(steps)))
       }
     )
   }
@@ -460,7 +460,7 @@ case class Scenario(
       withSourceRef = sourceRef.map(_.withNodePath(path)),
       withBackground = background.map(bg => bg.withNodePath(SourceRef.nodePath(s"$path/${bg.name}", 1))),
       withSteps = steps map { s => 
-        s.withNodePath(SourceRef.nodePath(s"$path/${s.name}", s.occurrenceIn(this)))
+        s.withNodePath(SourceRef.nodePath(s"$path/${s.expression}", s.occurrenceIn(this)))
       },
       withExamples = examples map { e => 
         e.withNodePath(SourceRef.nodePath(s"$path/${e.name}", 1))
