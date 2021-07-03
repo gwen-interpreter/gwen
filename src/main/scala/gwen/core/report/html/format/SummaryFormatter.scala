@@ -116,7 +116,10 @@ trait SummaryFormatter {
               status.toString
             ),
             countOfTotal,
-            if (count > 1) {
+            for {
+              opt <- Option(count > 1)
+              if opt
+            } yield {
               span(`class` := "pull-right",
                 small(
                   formatDuration(DurationOps.sum(results.map(_._1.elapsedTime)))

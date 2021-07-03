@@ -42,6 +42,9 @@ trait TestModel {
   }
 
   object Step {
+    def apply(name: String, docString: Option[String]): Step = {
+      new Step(None, StepKeyword.Given.toString, name, Nil, None, Nil, docString.map(ds => (1, ds, None)), Pending, Nil, Nil)
+    }
     def apply(keyword: String, name: String): Step = {
       new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil)
     }

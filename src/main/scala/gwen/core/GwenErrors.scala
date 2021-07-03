@@ -83,6 +83,7 @@ object Errors {
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
   def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
+  def multilineParamError(msg: String) = throw new MultilineParamException(msg)
   def stepError(step: Step, cause: Throwable) = throw new StepFailure(step, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
@@ -227,6 +228,9 @@ object Errors {
 
   /** Thrown when a service health check fails. */
   class ServiceHealthCheckException(msg: String, cause: Throwable) extends GwenException(msg, cause)
+
+  /** Thrown when a multiline parameters is substributed into an invalid position in a step expression. */
+  class MultilineParamException(msg: String) extends GwenException(msg)
 
   /** Thrown when a timeout error occurs. */
   class WaitTimeoutException(timeoutSecs: Long, reason: String, cause: Throwable) extends GwenException(s"Timed out after $timeoutSecs second(s) $reason", cause)

@@ -87,7 +87,10 @@ trait DetaiFormatter {
     div(`class` := "panel panel-default",
       div(`class` := "panel-heading", style := "padding-right: 20px; padding-bottom: 0px; border-style: none;",
         formatTags(tags),
-        if (language != "en") {
+        for {
+          opt <- Option(language != "en")
+          if opt
+        } yield {
           span(`class` := "grayed",
             p(
               small(
@@ -118,47 +121,46 @@ trait DetaiFormatter {
   }
 
   private def formatMetaResults(metaResults: List[SpecResult], reportFiles: List[File]): Option[TypedTag[String]] = {
-    if (metaResults.nonEmpty) {
+    for {
+      opt <- Option(metaResults.nonEmpty)
+      if opt
+    } yield {
       val count = metaResults.size
       val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
       val status = metaStatus.keyword
-      Some(
-        div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
-          ul(`class` := "list-group",
-            li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
-              span(`class` := s"label label-${cssStatus(status)}",
-                "Meta"
-              ),
-              a(`class` := s"text-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := "#meta", attr("aria-expanded") := "true", attr("aria-controls") := "meta",
-                s"$count meta feature${if (count > 1) "s" else ""}"
-              ),
-              span(`class` := "pull-right",
-                small(
-                  formatDuration(DurationOps.sum(metaResults.map(_.elapsedTime)))
-                )
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+        ul(`class` := "list-group",
+          li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+            span(`class` := s"label label-${cssStatus(status)}",
+              "Meta"
+            ),
+            a(`class` := s"text-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := "#meta", attr("aria-expanded") := "true", attr("aria-controls") := "meta",
+              s"$count meta feature${if (count > 1) "s" else ""}"
+            ),
+            span(`class` := "pull-right",
+              small(
+                formatDuration(DurationOps.sum(metaResults.map(_.elapsedTime)))
               )
             )
-          ),
-          div(id := "meta", `class` :="panel-collapse collapse",
-            div(`class` := "panel-body",
-              ul(`class` := "list-group",
-                li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
-                  div(`class` := "container-fluid", style := "padding: 0px 0px",
-                    for {
-                      (res, rowIndex) <- metaResults.zipWithIndex
-                      reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
-                    } yield {
-                      formatSummaryLine(res, reportPath, None, rowIndex)
-                    }
-                  )
+          )
+        ),
+        div(id := "meta", `class` :="panel-collapse collapse",
+          div(`class` := "panel-body",
+            ul(`class` := "list-group",
+              li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
+                div(`class` := "container-fluid", style := "padding: 0px 0px",
+                  for {
+                    (res, rowIndex) <- metaResults.zipWithIndex
+                    reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
+                  } yield {
+                    formatSummaryLine(res, reportPath, None, rowIndex)
+                  }
                 )
               )
             )
           )
         )
       )
-    } else {
-      None
     }
   }
 
@@ -202,7 +204,10 @@ trait DetaiFormatter {
     val status = scenario.evalStatus.keyword
     val tags = scenario.tags
     li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
-      if (scenario.isStepDef) {
+      for {
+        opt <- Option(scenario.isStepDef)
+        if opt
+      } yield {
         span(`class` := "grayed",
           p(
             small(
@@ -217,7 +222,10 @@ trait DetaiFormatter {
       span(`class` := s"label label-${cssStatus(status)}",
         if (scenario.isForEach) "ForEach" else scenario.keyword
       ),
-      if ((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1 && !scenario.isForEach) {
+      for {
+        opt <- Option((scenario.steps.size + scenario.background.map(_.steps.size).getOrElse(0)) > 1 && !scenario.isForEach)
+        if opt
+      } yield {
         span(`class` := "pull-right",
           small(
             durationOrStatus(scenario.evalStatus).toString
@@ -229,12 +237,17 @@ trait DetaiFormatter {
       formatParams(scenario.params, status),
       if (!scenario.isForEach) {
         formatDescriptionLines(scenario.description, Some(status))
-      } else if (scenario.steps.isEmpty) {
-        span(`class` := "grayed",
-          small(
-            "-- none found --"
+      } else {
+        for {
+          opt <- Option(scenario.steps.isEmpty)
+          if opt
+        } yield {
+          span(`class` := "grayed",
+            small(
+              "-- none found --"
+            )
           )
-        )
+        }
       }
     )
   }
@@ -367,7 +380,10 @@ trait DetaiFormatter {
           span(`class` := s"label label-${cssStatus(status)}",
             rule.keyword
           ),
-          if (rule.evalScenarios.size > 1) {
+          for {
+            opt <- Option(rule.evalScenarios.size > 1)
+            if opt
+          } yield {
             span(`class` := "pull-right",
               small(
                 durationOrStatus(rule.evalStatus).toString
@@ -436,7 +452,10 @@ trait DetaiFormatter {
         },
         formatStepDataTable(step, keywordPixels)
       ),
-      if (evalStatus.isError && stepDef.isEmpty) {
+      for {
+        opt <- Option(evalStatus.isError && stepDef.isEmpty)
+        if opt
+      } yield {
         ul(
           li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
             div(`class` := s"bg-${cssStatus(status)}",
@@ -451,7 +470,7 @@ trait DetaiFormatter {
             )
           )
         )
-      } 
+      }
     )
   }
 
@@ -513,7 +532,7 @@ trait DetaiFormatter {
     val contentType = docString._3
     for {
       (contentLine, index) <- formatDocString(docString, false).split("""\r?\n""").toList.zipWithIndex
-      line = docString._1 + index
+      line = if (docString._1 > 0) docString._1 + index else 0
     } yield {
       div(`class` := s"bg-${cssStatus(status)}",
         div(`class` := "line-no",
@@ -612,7 +631,7 @@ trait DetaiFormatter {
                         )
                       ),
                       td(style := "padding: 3px", 
-                        value
+                        raw(escapeHtml(value))
                       )
                     )
                   }

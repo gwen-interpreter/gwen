@@ -32,16 +32,23 @@ class NodeChain(val nodes: List[GwenNode]) {
   def nodePath: String = {
     nodes match {
       case head :: Nil =>
-        s"/${head.name}"
+        s"/${nodeName(head)}"
       case head :: tail =>
         (nodes zip tail).foldLeft("") { (path: String, pair: (GwenNode, GwenNode)) =>
           val (parent, node) = pair
-          val name = node.name
+          val name = nodeName(node)
           val occurrenceNo = occurrence(parent, node)
           s"$path/$name$occurrenceNo"
         }
       case _ => 
         ""
+    }
+  }
+
+  private def nodeName(node: GwenNode): String = {
+    node match {
+      case step: Step => step.expression
+      case _ => node.name
     }
   }
 

@@ -450,7 +450,7 @@ class RPReporter(rpClient: RPClient)
   private def errorHierarchy(callSteps: List[Step], errorTrail: List[Step]): Option[String] = {
     if (isLeafNode(errorTrail.head)) {
       val callChain = callSteps ++ errorTrail.tail
-      val hierarchy = if (callChain.size > 1) callSteps.map(_.name) else Nil
+      val hierarchy = if (callChain.size > 1) callSteps.map(_.expression) else Nil
       if (hierarchy.nonEmpty) Some(s"Hierarchy:\r\n\r\n${hierarchy.mkString("\r\n")}") else None
     } else None
   }

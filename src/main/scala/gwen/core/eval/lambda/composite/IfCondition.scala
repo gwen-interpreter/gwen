@@ -36,7 +36,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: S
     }
     val binding = new JavaScriptBinding(condition, ctx)
     val javascript = binding.resolve()
-    ctx.getStepDef(doStep) foreach { stepDef =>
+    ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
     val iStep = step.copy(withEvalStatus = Pending)

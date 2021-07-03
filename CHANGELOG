@@ -6,7 +6,6 @@ July 2, 2021
   - I execute a unix system process "<process>" delmited by "<delimiter>"
   - <attribute> <is|will be> defined by system process "<expression>" delmited by "<delimiter>"
 - Support passing DocStrings as parameters to StepDefs (addresses issue gwen-interpreter/gwen#60)
-- Update scala from v2.13.3 to v2.13.6
 - Update report portal client-java from v5.0.21 to v5.0.22
   - Long name trunctation fix
 

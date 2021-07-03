@@ -203,7 +203,10 @@ object HtmlReportFormatter {
           status.toString
         }
       ),
-      if (sustainedCount > 0) {
+      for {
+        opt <- Option(sustainedCount > 0)
+        if opt
+      } yield {
         small(
           span(`class` := "grayed", 
             " with "

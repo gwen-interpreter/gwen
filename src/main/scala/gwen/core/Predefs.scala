@@ -247,7 +247,7 @@ object Formatting {
   def padWithZeroes(num: Int): String = padWithZeroes(num, 4)
   def padWithZeroes(num: Int, padding: Int): String = s"%0${padding}d".format(num)
   def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
-  def escapeHtml(text: String): String = escapeHtmlSpaces(StringEscapeUtils.escapeHtml4(text))
+  def escapeHtml(text: String): String = escapeHtmlSpaces(StringEscapeUtils.escapeHtml4(text).replaceAll("""[\r\n]+""", "<br>"))
   def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " &nbsp;")
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)

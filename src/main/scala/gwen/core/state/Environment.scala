@@ -119,54 +119,47 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   }
 
   /**
-    * Gets the executable step definition for the given expression (if there is
-    * one).
-    *
-    * @param expression the expression to match
-    * @return the step definition if a match is found; false otherwise
+    * Gets the paraterised step definition for the given expression.
+    * 
+    * @param expression the step expression to get the step definition for
+    * @param docString optional step docString (parameter)
+    * @return the step definition and its parameters (name value tuples) if a 
+    *         match is found; None otherwise
     */
-  def getStepDef(expression: String): Option[Scenario] = {
-    stepDefs.get(expression) orElse {
-      getStepDefWithParams(expression)
-    }
-  }
-
-  /**
-    * Gets the paraterised step definition for the given expression (if there is
-    * one).
-    *
-    * @param expression the expression to match
-    * @return the step definition and its parameters (name value tuples) if a
-    *         match is found; false otherwise
-    */
-  private def getStepDefWithParams(expression: String): Option[Scenario] = {
-    val matches = stepDefs.values.view.flatMap { stepDef =>
-      val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
-      if (expression.matches(pattern)) {
-        val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name =>
-          name.substring(1, name.length - 1)
+  def getStepDef(expression: String, docString: Option[String]): Option[Scenario] = {
+    stepDefs.get(expression).orElse {
+      val matches = stepDefs.values.view.flatMap { stepDef =>
+        val pattern = Regex.quote(stepDef.name).replaceAll("<.+?>", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "")
+        if (expression.matches(pattern)) {
+          val names = "<.+?>".r.findAllIn(stepDef.name).toList map { name => 
+            name.substring(1, name.length - 1)
+          }
+          names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
+            Errors.ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
+          }
+          val values = pattern.r.unapplySeq(expression).get
+          val params = names zip values
+          val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(s"<${param._1}>", param._2) }
+          if (expression == resolved) {
+            Some(stepDef.copy(
+              withParams = docString map { ds => 
+                names zip (values.init :+ ds)
+              } getOrElse params
+            ))
+          } else None
+        } else {
+          None
         }
-        names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-          Errors.ambiguousCaseError(s"$n parameter defined ${vs.size} times in StepDef '${stepDef.name}'")
-        }
-        val values = pattern.r.unapplySeq(expression).get
-        val params = names zip values
-        val resolved = params.foldLeft(stepDef.name) { (result, param) => result.replace(s"<${param._1}>", param._2) }
-        if (expression == resolved) {
-          Some(stepDef.copy(withParams = params))
-        } else None
-      } else {
-        None
       }
-    }
-    val iter = matches.iterator
-    if (iter.hasNext) {
-      val first = Some(iter.next())
+      val iter = matches.iterator
       if (iter.hasNext) {
-        val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
-        Errors.ambiguousCaseError(s"$msg: ${matches.map { stepDef => stepDef.name }.mkString(",")}")
-      } else first
-    } else None
+        val first = Some(iter.next())
+        if (iter.hasNext) {
+          val msg = s"Ambiguous condition in resolving '$expression': 1 StepDef match expected but ${matches.size} found"
+          Errors.ambiguousCaseError(s"$msg: ${matches.map(_.name).mkString(",")}")
+        } else first
+      } else None
+    }
   }
 
   /** Adds current behavior. */

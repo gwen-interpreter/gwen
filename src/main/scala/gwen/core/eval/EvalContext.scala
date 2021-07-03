@@ -98,12 +98,24 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def interpolate(value: String): String = interpolateString(value)(getBoundReferenceValue)
 
   /**
-    * Interpolate all parameters in the given step.
-    *
+    * Interpolate all parameters in the given step before it is evaluated.
+    * 
     * @param step the step to interpolate
     * @return the interpolated step
     */
-  def interpolateParams(step: Step): Step = interpolate(step, interpolateParams)
+  def interpolateParams(step: Step): Step = {
+    val iStep = interpolate(step, interpolateParams)
+    if (Source.fromString(iStep.name).getLines().size > 1) {
+      step.docStringify match {
+        case Some(dsStep) =>
+          interpolateParams(dsStep)
+        case _ => 
+          Errors.multilineParamError("Illegal multline parameter substitution in step detected")
+      }
+    } else {
+      iStep
+    }
+  }
 
   /**
     * Interpolate all references in the given step.

@@ -38,6 +38,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 import scala.util.chaining._
+import gwen.core.Errors.MultilineParamException
 
 /**
   * Step evaluation engine.
@@ -99,14 +100,19 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
-    val iStep = interpolateStep(step.withCallerParams(parent), ctx)
-    logger.info(s"Evaluating Step: $iStep")
-    beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
-    val eStep = ctx.withStep(iStep) { s =>
-      Try(healthCheck(parent, s, ctx)) match {
-        case Failure(e) => throw e
-        case _ => translateAndEvaluate(parent, s, ctx)
-      }
+    val pStep = ctx.withStep(step) { ctx.interpolateParams }
+    val eStep = pStep.evalStatus match {
+      case Failed(_, e) if e.isInstanceOf[MultilineParamException] => pStep
+      case _ =>
+        val iStep = ctx.withStep(pStep) { ctx.interpolate }
+        logger.info(s"Evaluating Step: $iStep")
+        beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
+        ctx.withStep(iStep) { s =>
+          Try(healthCheck(parent, s, ctx)) match {
+            case Failure(e) => throw e
+            case _ => translateAndEvaluate(parent, s, ctx)
+          }
+        }
     }
     finaliseStep(eStep, ctx) tap { fStep =>
       logStatus(fStep)
@@ -126,11 +132,15 @@ trait StepEngine[T <: EvalContext] {
         case Failure(e) =>
           parent match {
             case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
-              step.copy(
-                withEvalStatus =
-                  Failed(step.evalStatus.duration.toNanos,
-                    new Errors.RecursiveStepDefException(ctx.getStepDef(step.name).get))
-              )
+              ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
+                case Some(stepDef) => 
+                  step.copy(
+                    withEvalStatus =
+                      Failed(step.evalStatus.duration.toNanos,
+                        new Errors.RecursiveStepDefException(stepDef))
+                  )
+                case _ => step
+              }
             case _ =>
               throw e
           }
@@ -138,11 +148,6 @@ trait StepEngine[T <: EvalContext] {
           step
       }
     }
-  }
-
-  private def interpolateStep(step: Step, ctx: T): Step = {
-    val pStep = ctx.withStep(step) { ctx.interpolateParams }
-    ctx.withStep(pStep) { ctx.interpolate }
   }
 
   private def healthCheck(parent: GwenNode, step: Step, ctx: T): Unit = {
@@ -156,7 +161,7 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def translateStepDef(step: Step, ctx: T): Option[CompositeStep[T]] = {
-    ctx.getStepDef(step.name) match {
+    ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
       case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
           stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map {

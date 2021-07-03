@@ -90,6 +90,19 @@ case class Step(
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 
+  def docStringify: Option[Step] = {
+    name match {
+      case r"""^(?s)(.*)$prefix"\$$<(.+?)$param>"$$""" if docString.isEmpty =>
+        Some(
+          this.copy(
+            withName = prefix.trim,
+            withDocString = Some((0, s"<$param>", None))
+          )
+        )
+      case _ => None
+    }
+  }
+
   def hasDualColumnTable: Boolean = table.nonEmpty && table.head._2.size == 2
 
   /** Returns a string representation of this step. */
