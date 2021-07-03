@@ -192,9 +192,7 @@ trait DetaiFormatter {
               ).flatten
             }
           ),
-          //if (scenario.isOutline) {
-            formatExamples(scenario.examples, scenarioKeywordPixels)
-          //}
+          formatExamples(scenario.examples, scenarioKeywordPixels)
         )
       )
     )
