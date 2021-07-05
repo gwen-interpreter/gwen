@@ -24,7 +24,7 @@ io.cucumber                     messages                 | 13.2.1    | [MIT Lice
 io.reactivex.rxjava2            rxjava                   | 2.2.10    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 io.swagger                      swagger-annotations      | 1.6.0     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 javax.validation                validation-api           | 2.0.1     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-jline                           jline                    | 2.14.6    | [The BSD License](http://www.opensource.org/licenses/bsd-license.php)
+jline                           jline                    | 2.14.6    | [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
 joda-time                       joda-time                | 2.10.6    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 log4j                           log4j                    | 1.2.17    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 net.minidev                     accessors-smart          | 1.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -34,7 +34,7 @@ org.apache.commons              commons-text             | 1.9       | [Apache L
 org.apache.tika                 tika-core                | 1.20      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.checkerframework            checker-qual             | 2.10.0    | [MIT License](http://www.slf4j.org/license.html)
 org.ow2.asm                     asm                      | 5.0.4     | [BSD License](http://asm.objectweb.org/license.html)
-org.reactivestreams             reactive-streams         | 1.0.2     | [MIT No Attribution (SPDX: MIT-0)](https://spdx.org/licenses/MIT-0.html)
+org.reactivestreams             reactive-streams         | 1.0.2     | [MIT License](https://github.com/reactive-streams/reactive-streams-jvm/blob/master/LICENSE)
 org.scala-lang                  scala-library            | 2.13.6    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.scala-lang                  scala-reflect            | 2.13.6    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.slf4j                       slf4j-api                | 1.7.26    | [MIT License](http://www.slf4j.org/license.html)
@@ -46,7 +46,7 @@ Petr Vostřel                    Reel                     | 1.3       | [MIT Lic
 LICENSES
 --------
 
-#[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+# [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 ```
                                  Apache License
@@ -252,66 +252,6 @@ LICENSES
    limitations under the License.
 ```
 
-# [BSD](https://github.com/nbronson/scala-stm/blob/master/LICENSE.txt)
-
-```
-Copyright (c) 2009-2012 Stanford University, unless otherwise specified.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of the Stanford University nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL STANFORD UNIVERSITY BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
-# [BSD 3-Clause](http://www.scala-lang.org/license.html)
-
-```
-Copyright (c) 2002-2017 EPFL
-Copyright (c) 2011-2017 Lightbend, Inc.
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are 
-permitted provided that the following conditions are met:
-
-- Redistributions of source code must retain the above copyright notice, this list of 
-  conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright notice, this list of 
-  conditions and the following disclaimer in the documentation and/or other materials 
-  provided with the distribution.
-- Neither the name of the EPFL nor the names of its contributors may be used to endorse or 
-  promote products derived from this software without specific prior written permission.
-  
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
 # [The BSD License](https://github.com/jline/jline2/blob/master/LICENSE.txt)
 
 ```
@@ -481,3 +421,23 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
+# [MIT License](https://github.com/reactive-streams/reactive-streams-jvm/blob/master/LICENSE)
+
+```
+MIT No Attribution
+
+Copyright 2014 Reactive Streams
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of 
+this software and associated documentation files (the "Software"), to deal in 
+the Software without restriction, including without limitation the rights to 
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
+of the Software, and to permit persons to whom the Software is furnished to do so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
