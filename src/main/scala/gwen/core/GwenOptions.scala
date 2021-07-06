@@ -40,8 +40,8 @@ import java.io.File
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
   * @param metas optional list of meta file and/or directories
   * @param features optional list of feature file and/or directories
-  * @param init true to initialise workspace directory
-  * @param initDir workspace initialisation directory
+  * @param init true to initialise a working directory
+  * @param initDir working diretory to initialise
   *
   * @author Branko Juric
   */

@@ -62,15 +62,15 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
   }
 
   /**
-    * Initialises a workspace directory.
+    * Initialises a Gwen working directory.
     *
     * @param dir the directory to initialise
     */
-  def initWorkspace(dir: File): Unit = {
+  def initWorkingDir(dir: File): Unit = {
     logger.info(("""|
                     |   _
-                    |  { \," Initialising workspace directory..
-                    | {_`/   """ + dir.getPath + """
+                    |  { \," Initialising working directory: """ + dir.getPath + """
+                    | {_`/   
                     |    `   """).stripMargin)
     dir.mkdirs()
   }
@@ -106,8 +106,8 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val startNanos = System.nanoTime
     try {
       if (options.init) {
-        initWorkspace(options.initDir)
-        logger.info(s"Gwen workspace directory initialised: ${options.initDir.getPath}")
+        initWorkingDir(options.initDir)
+        logger.info(s"Working directory initialised")
         Passed(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))

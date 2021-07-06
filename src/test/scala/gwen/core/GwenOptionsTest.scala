@@ -711,9 +711,9 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
 
   "Options with init command and non existing dir" should "parse" in {
 
-    parseOptions(Array("init", "workspace")) match {
+    parseOptions(Array("init", "gwen")) match {
       case Success(options) => {
-        assertOptions(options, init = true, initDir = new File("workspace"))
+        assertOptions(options, init = true, initDir = new File("gwen"))
       }
       case _ =>
         fail("expected options but failed")
