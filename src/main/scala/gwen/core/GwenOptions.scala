@@ -170,16 +170,15 @@ object GwenOptions {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
       } text "Space separated list of feature files and/or directories"
 
-      cmd("init").action((_, c) => c.copy(init = true))
-        .children(
+      cmd("init").action { 
+        (_, c) => 
+          c.copy(init = true) 
+      } children {
           arg[File]("<dir>").optional().action {
             (d, c) =>
               c.copy(initDir = d)
-          } validate { d => 
-            if (d.exists) failure(s"Cannot initialise existing directory (delete it or specify another one): $d")
-            else success
           } text "Init directory (default is gwen)"
-        )
+      }
 
     }
 
@@ -207,6 +206,9 @@ object GwenOptions {
           val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
+          }
+          if (opt.init && opt.initDir.exists) {
+            Errors.invocationError(s"Cannot initialise because directory ${opt.initDir} already exists")
           }
         }
       }).getOrElse(Errors.invocationError("Failed to read in gwen arguments"))

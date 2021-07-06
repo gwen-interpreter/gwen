@@ -56,7 +56,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   /** Resets the current context but does not close it so it can be reused. */
   def reset(level: StateLevel): Unit = {
-    logger.info(s"Resetting environment context")
+    logger.info(s"Resetting environment")
     state = if (StateLevel.feature.equals(level)) {
       EnvState.resetAttachmentNo()
       EnvState(topScope, None, NodeChain())

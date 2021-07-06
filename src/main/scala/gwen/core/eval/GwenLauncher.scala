@@ -234,11 +234,11 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
 
   private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
     Settings.clearLocal()
-    val ctx = engine.init(options, EnvState()) tap { _ =>
-      logger.info(s"Evaluation context initialised")
+    val ctx = ctxOpt getOrElse { 
+      engine.init(options, EnvState())
     }
     try {
-      ctxOpt.foreach(_.reset(StateLevel.feature))
+      if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
       unit.dataRecord foreach { record =>
         record.data foreach { case (name, value) =>
           ctx.topScope.set(name, value)
@@ -248,7 +248,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
       })
     } finally {
-      if (ctxOpt.isEmpty) {
+      if (ctxOpt.isEmpty) { 
         ctx.close()
         logger.info("Evaluation context closed")
       }
