@@ -88,7 +88,7 @@ Join our user network at [Gwenify](https://www.gwenify.com/) to get access to th
 License
 -------
 
-Copyright 2014-2021 Branko Juric, Brady Wood and [Gwen contributors](#code-contributors).
+Copyright 2014-2021 Branko Juric, Brady Wood.
 
 This software is open sourced under the
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
@@ -129,10 +129,9 @@ We thank the following contributors and active users for helping to make Gwen be
 
 ### Code Contributors
 
-The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests
-that have been merged:
+The following contributors submitted pull requests that have been merged:
 
-- [Jacob Juric](https://github.com/TheReturningVoid)
+- [Jacob Juric](https://github.com/Sorixelle)
 | [Alexandru Cuciureanu](https://github.com/acuciureanu)
 
 ### Active Users

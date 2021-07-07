@@ -2,9 +2,9 @@
 ======
 July 7, 2021
 - Add new DSLs to support invoking system processes with quoted strings and other special cases
-  - I execute system process "<process>" delmited by "<delimiter>"
-  - I execute a unix system process "<process>" delmited by "<delimiter>"
-  - <attribute> <is|will be> defined by system process "<expression>" delmited by "<delimiter>"
+  - I execute system process "<process>" delimited by "<delimiter>"
+  - I execute a unix system process "<process>" delimited by "<delimiter>"
+  - <attribute> <is|will be> defined by system process "<process>" delimited by "<delimiter>"
 - Support passing DocStrings as parameters to StepDefs (addresses issue gwen-interpreter/gwen#60)
 - Update scala from v2.13.3 to v2.13.6
 - Update report portal client-java from v5.0.21 to v5.0.22
