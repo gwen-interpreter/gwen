@@ -1,0 +1,18 @@
+name: CI
+on:
+  pull_request:
+  push:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Setup Scala
+      uses: olafurpg/setup-scala@v12
+      with:
+        java-version: "adopt@1.8"
+    - name: Build and Test
+      run: sbt -v -Dfile.encoding=UTF-8 +test
