@@ -17,6 +17,8 @@ have to do all the programming work. It has an abstracted
 
 ### Current Status
 
+[![CI](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml/badge.svg)](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml)
+
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
 
