@@ -17,7 +17,7 @@ have to do all the programming work. It has an abstracted
 
 ### Current Status
 
-[![Build Status](https://travis-ci.org/gwen-interpreter/gwen.svg)](https://travis-ci.org/gwen-interpreter/gwen)
+[![CI](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml/badge.svg)](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml)
 
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
