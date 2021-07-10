@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-+       fail-fast: false
+      fail-fast: false
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -16,4 +16,3 @@ jobs:
         java-version: "adopt@1.8"
     - name: Build and Test
       run: sbt -v -Dfile.encoding=UTF-8 +test
-      
