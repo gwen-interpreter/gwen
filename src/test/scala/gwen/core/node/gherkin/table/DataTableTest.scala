@@ -15,17 +15,17 @@
  */
 package gwen.core.node.gherkin.table
 
-import gwen.core.Errors.{DataTableException, InvalidTagException}
+import gwen.core._
+import gwen.core.Errors._
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Tag
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 /**
   * Data table tests.
   */
-class DataTableTest extends AnyFlatSpec with Matchers with GherkinParser {
+class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   private val parse = parseStep(_: String).get
   

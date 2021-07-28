@@ -16,13 +16,13 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.BaseTest
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Tag
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class TagFilterTest extends AnyFlatSpec with Matchers with GherkinParser { 
+class TagFilterTest extends BaseTest with Matchers with GherkinParser { 
 
   private val parse = parseSpec(_: String)
   

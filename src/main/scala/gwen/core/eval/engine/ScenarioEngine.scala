@@ -49,7 +49,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
 
   private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
-    if (ctx.options.isParallelScenarios && ctx.specType.isFeature && StateLevel.scenario.equals(ctx.stateLevel)) {
+    if (ctx.options.isParallelScenarios(ctx.stateLevel) && ctx.specType.isFeature) {
       evaluateParallelScenarios(parent, input, ctx)
     } else {
       evaluateSequentialScenarios(parent, input, ctx)
@@ -101,7 +101,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       case status @ Failed(_, error) =>
         val isAssertionError = status.isAssertionError
         val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
           transitionScenario(scenario, Skipped, ctx)

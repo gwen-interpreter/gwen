@@ -70,16 +70,16 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
         Some(new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" =>
-        Some(new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(DefaultRepeatDelay), this))
+        Some(new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(defaultRepeatDelay), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" =>
         Some(new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" =>
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
         Some(new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" =>
-        Some(new Repeat(doStep, operation, condition, DefaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this))
+        Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) =>
-        Some(new Repeat(doStep, operation, condition, DefaultRepeatDelay, defaultRepeatTimeout(DefaultRepeatDelay), this))
+        Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, defaultRepeatTimeout(defaultRepeatDelay), this))
       case _ =>
         None
     }
@@ -157,7 +157,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     }
   }
 
-  val DefaultRepeatDelay: Duration = Duration(1, SECONDS)
+  def defaultRepeatDelay: Duration = Duration(1, SECONDS)
   
   private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
 

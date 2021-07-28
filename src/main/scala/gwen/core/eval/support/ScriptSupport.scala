@@ -34,7 +34,7 @@ trait ScriptSupport {
     * @param params optional parameters to the script
     */
   def evaluateJS(javascript: String, params: Any*): Any =
-    evaluateScript("JavaScript", javascript, params.map(_.asInstanceOf[AnyRef]) : _*)
+    evaluateScript("JavaScript", javascript, params.map(_.asInstanceOf[AnyRef])*)
 
   /**
     * Evaluates a javascript predicate.
@@ -43,7 +43,7 @@ trait ScriptSupport {
     * @param params optional parameters to the script
     */
   def evaluateJSPredicate(javascript: String, params: Any*): Boolean = {
-    evaluateJS(formatJSReturn(javascript), params.map(_.asInstanceOf[AnyRef]) : _*).asInstanceOf[Boolean]
+    evaluateJS(formatJSReturn(javascript), params.map(_.asInstanceOf[AnyRef])*).asInstanceOf[Boolean]
   }
 
   /**

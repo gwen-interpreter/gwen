@@ -16,14 +16,16 @@
 
 package gwen.core
 
+import gwen.core.Deprecation
+import gwen.core.FileIO
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
 import gwen.core.state.StateLevel
 
-import scala.util.chaining._
-
 import scopt.OptionParser
+
+import scala.util.chaining._
 
 import java.io.File
 
@@ -34,7 +36,7 @@ import java.io.File
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
-  * @param properties list of properties files to load as settings
+  * @param configFiles list of config files to load as settings
   * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
@@ -51,7 +53,7 @@ case class GwenOptions(
     parallelFeatures: Boolean = false,
     reportDir: Option[File] = None,
     reportFormats: List[ReportFormat] = Nil,
-    properties: List[File] = Nil,
+    configFiles: List[File] = Nil,
     tags: List[(Tag, Boolean)] = Nil,
     dryRun: Boolean = false,
     dataFile: Option[File] = None,
@@ -61,7 +63,7 @@ case class GwenOptions(
     init: Boolean = false,
     initDir: File = new File("gwen")) extends GwenInfo {
 
-  val isParallelScenarios = StateLevel.isScenario && parallel && !parallelFeatures
+  def isParallelScenarios(stateLevel: StateLevel) = stateLevel == StateLevel.scenario && parallel && !parallelFeatures
 
   def tagFilter = new TagFilter(tags)
 
@@ -109,15 +111,34 @@ object GwenOptions {
 
       opt[String]('p', "properties") action {
         (ps, c) =>
-          c.copy(properties = ps.split(",").toList.map(new File(_)))
+          Deprecation.warn("CLI option", "-p/--properties", "-c/--config")
+          c.copy(configFiles = c.configFiles ++ ps.split(",").toList.map(new File(_)))
       } validate { ps =>
-        ((ps.split(",") flatMap { p =>
-          if (new File(p).exists()) None
-          else Some(s"Specified properties file not found: $p")
+        ((ps.split(",") flatMap { f =>
+          val file = new File(f)
+          if (!FileIO.hasFileExtension("properties", file)) Some("-p/--properties option only accepts *.properties files")
+          else if (file.exists()) None
+          else Some(s"Specified properties file not found: $f")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<properties files>" text "Comma separated list of properties file paths"
+      } valueName "<properties files>" text "Comma separated list of *.properties files (deprecated, use -c/--config instead)"
+
+      opt[String]('c', "config") action {
+        (cs, c) =>
+          c.copy(configFiles = c.configFiles ++ cs.split(",").toList.map(new File(_)))
+      } validate { cs =>
+        ((cs.split(",") flatMap { f =>
+          val file = new File(f)
+          if (!FileIO.hasFileExtension("conf", file) && !FileIO.hasFileExtension("json", file) && !FileIO.hasFileExtension("properties", file)) {
+            Some("-c/--config option only accepts *.conf, *.json or *.properties files")
+          }
+          else if (file.exists()) None
+          else Some(s"Specified config file not found: $f")
+        }) collectFirst {
+          case error => failure(error)
+        }).getOrElse(success)
+      } valueName "<config files>" text "Comma separated list of *.conf,*.json or *.properties files"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
@@ -178,7 +199,7 @@ object GwenOptions {
             (d, c) =>
               c.copy(initDir = d)
           } text "Init directory (default is gwen)"
-      }
+      } 
 
     }
 
@@ -189,7 +210,7 @@ object GwenOptions {
         options.parallelFeatures,
         options.reportDir,
         if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) List(ReportFormat.html) else Nil },
-        options.properties,
+        options.configFiles,
         options.tags,
         options.dryRun,
         options.dataFile,
@@ -198,20 +219,21 @@ object GwenOptions {
         Some(args),
         options.init,
         options.initDir)
-      } tap { options =>
+      }tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
             Errors.invocationError("No feature files or directories specified")
           }
-          val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
+            val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
             Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
           if (opt.init && opt.initDir.exists) {
             Errors.invocationError(s"Cannot initialise because directory ${opt.initDir} already exists")
           }
         }
-      }).getOrElse(Errors.invocationError("Failed to read in gwen arguments"))
+      }).getOrElse(Errors.invocationError("Gwen invocaation failed (see log for details)"))
+
   }
 
 }

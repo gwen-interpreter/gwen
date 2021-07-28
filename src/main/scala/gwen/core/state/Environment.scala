@@ -37,7 +37,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   private var state = initialState
 
-  val stateLevel: StateLevel = GwenSettings.`gwen.state.level`
+  lazy val stateLevel: StateLevel = GwenSettings.`gwen.state.level`
 
   def stepDefs: Map[String, Scenario] = state.getStepDefs
   def paramScope: ParameterStack = scopes.paramScope

@@ -18,6 +18,7 @@ package gwen.core.sample.bindings
 import gwen.DefaultGwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
+import gwen.core.Settings
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
@@ -37,9 +38,10 @@ class BindingsTest extends BaseTest {
           reportDir = Some(new File(s"target/report/bindings/$level-level")), 
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
           features = List(new File("features/sample/bindings")),
-          properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
+          configFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
         )
           
+        Settings.init(options.configFiles*)
         interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -58,9 +60,10 @@ class BindingsTest extends BaseTest {
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
           features = List(new File("features/sample/bindings")),
           dryRun = true,
-          properties = List(new File("src/test/resources/gwen/bindings/bindings.properties"))
+          configFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
         )
-          
+        
+        Settings.init(options.configFiles*)
         interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)

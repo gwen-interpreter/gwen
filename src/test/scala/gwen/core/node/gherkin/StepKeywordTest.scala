@@ -16,10 +16,11 @@
 
 package gwen.core.node.gherkin
 
-import org.scalatest.flatspec.AnyFlatSpec
+import gwen.core.BaseTest
+
 import org.scalatest.matchers.should.Matchers
 
-class StepKeywordTest extends AnyFlatSpec with Matchers {
+class StepKeywordTest extends BaseTest with Matchers {
 
   "names" should "evaluate correctly" in {
     val names = StepKeyword.names

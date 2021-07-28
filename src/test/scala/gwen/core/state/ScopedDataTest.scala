@@ -16,12 +16,12 @@
 
 package gwen.core.state
 
+import gwen.core.BaseTest
 import gwen.core.Errors.UnboundAttributeException
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
  
-class ScopedDataTest extends AnyFlatSpec with Matchers {
+class ScopedDataTest extends BaseTest with Matchers {
 
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("login")

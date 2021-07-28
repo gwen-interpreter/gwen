@@ -256,7 +256,7 @@ class RPReporter(rpClient: RPClient)
   }
 
   override def healthCheck(event: NodeEvent[Step]): Unit = { 
-    if (RPSettings.`gwen.rp.heartbeat`) {
+    if (RPSettings.`gwen.rp.heartbeat.enabled`) {
       rpClient.healthCheck(RPSettings.`gwen.rp.heartbeat.timeoutSecs`)
     }
   }

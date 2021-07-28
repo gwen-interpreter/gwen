@@ -27,10 +27,9 @@ import gwen.core.status._
 import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.IOException
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class EvalEngineTest extends AnyFlatSpec with Matchers with MockitoSugar with TestModel {
+class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestModel {
 
   val engine = EvalEngine.DefaultInstance
   val ctx = engine.init(new GwenOptions(), EnvState())

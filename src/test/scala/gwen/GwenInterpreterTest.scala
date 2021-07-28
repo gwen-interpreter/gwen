@@ -16,9 +16,11 @@
 
 package gwen
 
+import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.eval.GwenREPL
 import gwen.core.state.EnvState
 import gwen.core.status._
 
@@ -31,13 +33,11 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-
-import java.io.File
-import gwen.core.eval.GwenREPL
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GwenInterpreterTest extends AnyFlatSpec with Matchers with MockitoSugar {
+import java.io.File
+
+class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
 
   private def createInterpreter(options: GwenOptions, engine: EvalEngine[EvalContext], repl: GwenREPL[EvalContext]) = {
     new GwenInterpreter(engine)

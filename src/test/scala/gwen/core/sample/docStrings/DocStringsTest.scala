@@ -16,15 +16,15 @@
 package gwen.core.sample.docStrings
 
 import gwen.DefaultGwenInterpreter
+import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
 
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
 
-class DocStringsTest extends AnyFlatSpec {
+class DocStringsTest extends BaseTest {
 
   val interpreter = DefaultGwenInterpreter
   

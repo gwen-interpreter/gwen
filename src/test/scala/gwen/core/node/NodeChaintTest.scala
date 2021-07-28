@@ -24,13 +24,12 @@ import gwen.core.node.gherkin.TagFilter
 import gwen.core.state.DataRecord
 import gwen.core.state.EnvState
 
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class NodeChainTest extends AnyFlatSpec with Matchers with MockitoSugar with SpecNormaliser with GherkinParser with TestModel {
+class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNormaliser with GherkinParser with TestModel {
 
   private val mockTagFilter = mock[TagFilter]
 

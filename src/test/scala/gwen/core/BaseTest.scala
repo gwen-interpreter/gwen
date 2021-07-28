@@ -16,10 +16,13 @@
 
 package gwen.core
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.prop.TableDrivenPropertyChecks.Table
 import org.scalatest.flatspec.AnyFlatSpec
 
 abstract class BaseTest extends AnyFlatSpec {
+
+  Settings.init()
 
   val levels = Table ( ("level"), ("feature"), ("scenario") )
 

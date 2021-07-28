@@ -44,6 +44,7 @@ lazy val mainDependencies = {
   val htmlCleaner = "2.24"
   val rpCommon = "5.3.3"
   val rpClientJava = "5.0.22"
+  val tsConfig = "1.4.1"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -58,12 +59,12 @@ lazy val mainDependencies = {
     "joda-time" % "joda-time" % jodaTime,
     ("com.lihaoyi" %% "scalatags" % scalaTags).cross(CrossVersion.for3Use2_13),
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner,
+    "com.typesafe" % "config" % tsConfig,
     "com.epam.reportportal" % "commons-model" % rpCommon,
     "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
       ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
       ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
     )
-
   )
 }
 

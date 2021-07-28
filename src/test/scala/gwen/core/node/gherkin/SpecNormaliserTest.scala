@@ -23,10 +23,9 @@ import gwen.core.status._
 
 
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class SpecNormaliserTest extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser with TestModel {
+class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
 

@@ -16,15 +16,15 @@
 package gwen.core.sample.xml
 
 import gwen.DefaultGwenInterpreter
+import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
 
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
 
-class XmlTest extends AnyFlatSpec {
+class XmlTest extends BaseTest {
 
   val interpreter = DefaultGwenInterpreter
   

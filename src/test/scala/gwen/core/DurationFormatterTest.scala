@@ -16,14 +16,14 @@
 
 package gwen.core
 
+import gwen.core.BaseTest
 import gwen.core.Formatting.formatDuration
 
 import scala.concurrent.duration.Duration
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class DurationFormatterTest extends AnyFlatSpec with Matchers {
+class DurationFormatterTest extends BaseTest with Matchers {
 
   "Zero duration" should "format to ~0ms" in {
     formatDuration(Duration.fromNanos(0)) should be ("~0ms")

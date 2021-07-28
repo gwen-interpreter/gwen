@@ -26,10 +26,9 @@ import scala.util.Try
 import scala.util.chaining._
 
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GwenOptionsTest extends AnyFlatSpec with Matchers {
+class GwenOptionsTest extends BaseTest with Matchers {
 
   val rootDir: File = new File("target" + File.separator + "props") tap { _.mkdirs() }
 
@@ -242,29 +241,14 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  "Options with properties option with no properties file" should "not parse" in {
-    parseOptions(Array("-p")) match {
+  "Options with config option with no file" should "not parse" in {
+    parseOptions(Array("-c")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
     }
-    parseOptions(Array("--properties")) match {
-      case Success(_) => {
-        fail("expected None but got options")
-      }
-      case _ =>
-    }
-  }
-
-  "Options with properties option with non existing properties file" should "not parse" in {
-    parseOptions(Array("-p", "nonexisting.properties")) match {
-      case Success(_) => {
-        fail("expected None but got options")
-      }
-      case _ =>
-    }
-    parseOptions(Array("--properties", "nonexisting.properties")) match {
+    parseOptions(Array("--config")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -272,37 +256,52 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     }
   }
 
-  "Options with properties option and existing properties file" should "parse" in {
-    val propsFile = createFile("gwen.properties")
-    parseOptions(Array("-p", propsFile.getPath)) match {
+  "Options with config option with non existing conf file" should "not parse" in {
+    parseOptions(Array("-c", "nonexisting.conf")) match {
+      case Success(_) => {
+        fail("expected None but got options")
+      }
+      case _ =>
+    }
+    parseOptions(Array("--config", "nonexisting.conf")) match {
+      case Success(_) => {
+        fail("expected None but got options")
+      }
+      case _ =>
+    }
+  }
+
+  "Options with config option and existing conf file" should "parse" in {
+    val confFile = createFile("gwen.conf")
+    parseOptions(Array("-c", confFile.getPath)) match {
       case Success(options) => {
-        assertOptions(options, properties = List(propsFile))
+        assertOptions(options, configFiles = List(confFile))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--properties", propsFile.getPath)) match {
+    parseOptions(Array("--config", confFile.getPath)) match {
       case Success(options) => {
-        assertOptions(options, properties = List(propsFile))
+        assertOptions(options, configFiles = List(confFile))
       }
       case _ =>
         fail("expected options but failed")
     }
   }
 
-  "Options with properties option and multiple existing properties file" should "parse" in {
-    val propsFileA = createFile("gwen-a.properties")
-    val propsFileB = createFile("gwen-b.properties")
-    parseOptions(Array("-p", propsFileA.getPath + "," + propsFileB.getPath)) match {
+  "Options with config option and multiple existing config files" should "parse" in {
+    val configFileA = createFile("gwen-a.json")
+    val configFileB = createFile("gwen-b.conf")
+    parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath)) match {
       case Success(options) => {
-        assertOptions(options, properties = List(propsFileA, propsFileB))
+        assertOptions(options, configFiles = List(configFileA, configFileB))
       }
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--properties", propsFileA.getPath + "," + propsFileB.getPath)) match {
+    parseOptions(Array("--config", configFileA.getPath + "," + configFileB.getPath)) match {
       case Success(options) => {
-        assertOptions(options, properties = List(propsFileA, propsFileB))
+        assertOptions(options, configFiles = List(configFileA, configFileB))
       }
       case _ =>
         fail("expected options but failed")
@@ -628,7 +627,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
   "Options with all valid options" should "parse" in {
 
     val reportDir = new File("target/report")
-    val propsFile = createFile("gwen-1.properties")
+    val confFile = createFile("gwen-1.conf")
     val dataFile = createFile("gwen-1.csv")
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val metaFile = createFile("gwen.meta")
@@ -636,7 +635,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     val feature5 = createFile("dir5/file5.feature")
     val dir6 = createDir("dir6")
 
-    parseOptions(Array("-b", "--parallel", "-r", reportDir.getPath, "-f", "html,junit", "-p", propsFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
+    parseOptions(Array("-b", "--parallel", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -645,7 +644,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
           parallelFeatures = false,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
-          List(propsFile),
+          List(confFile),
           List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
@@ -656,7 +655,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--config", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -665,7 +664,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
           parallelFeatures = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
-          List(propsFile),
+          List(confFile),
           List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
@@ -676,7 +675,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--properties", propsFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--config", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -685,7 +684,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
           parallelFeatures = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
-          List(propsFile),
+          List(confFile),
           List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
           dryRun = false,
           Some(dataFile),
@@ -740,7 +739,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
                              parallelFeatures: Boolean = false,
                              reportDir: Option[File] = None,
                              reportFormats: List[ReportFormat] = Nil,
-                             properties: List[File] = Nil,
+                             configFiles: List[File] = Nil,
                              tags: List[(Tag, Boolean)] = Nil,
                              dryRun: Boolean = false,
                              dataFile: Option[File] = None,
@@ -754,7 +753,7 @@ class GwenOptionsTest extends AnyFlatSpec with Matchers {
     options.parallelFeatures should be (parallelFeatures)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
-    options.properties should be (properties)
+    options.configFiles should be (configFiles)
     options.tags should be (tags)
     options.dryRun should be (dryRun)
     options.dataFile should be (dataFile)

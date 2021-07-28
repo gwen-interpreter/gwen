@@ -16,14 +16,19 @@
 
 package gwen.core
 
-import gwen.core.Errors.MissingPropertyException
+import gwen.core.Errors.MissingSettingException
 import gwen.core.Errors.UnsupportedLocalSettingException
 
-
-import java.util.Properties
 import org.scalatest.matchers.should.Matchers
 
+import scala.util.chaining._
+
+import java.io.File
+import java.util.Properties
+
 class SettingsTest extends BaseTest with Matchers {
+
+  val targetDir: File = new File("target/SettingsTest") tap { _.mkdirs() }
 
   "user.home system property" should "be available" in {
     Settings.synchronized {
@@ -38,21 +43,29 @@ class SettingsTest extends BaseTest with Matchers {
   }
   
   "inline properties" should "resolve" in {
-    val props = new Properties()
-    props.put("prop.host", "localhost")
-    withSetting("prop.port", "8090") {
-      props.put("prop.url", "http://${prop.host}:${prop.port}/howdy")
-      Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
-    }
+    val propFile = new File(targetDir, "inline.properties")
+    propFile.delete()
+    propFile.writeText(
+      """|prop.host=localhost
+         |prop.port=8090
+         |prop.url=http://${prop.host}:${prop.port}/howdy
+         |""".stripMargin
+    )
+    Settings.init(propFile)
+    Settings.get("prop.url") should be ("http://localhost:8090/howdy")
   }
   
   "nested properties" should "resolve" in {
-    val props = new Properties()
-    props.put("prop.host", "localhost")
-    withSetting("prop.host.port", "${prop.host}:8090") {
-      props.put("prop.url", "http://${prop.host.port}/howdy")
-      Settings.resolve(props.getProperty("prop.url"), props) should be ("http://localhost:8090/howdy")
-    }
+    val propFile = new File(targetDir, "nested.properties")
+    propFile.delete()
+    propFile.writeText(
+      """|prop.host=localhost
+         |prop.host.port=${prop.host}:8090
+         |prop.url=http://${prop.host.port}/howdy
+         |""".stripMargin
+    )
+    Settings.init(propFile)
+    Settings.get("prop.url") should be ("http://localhost:8090/howdy")
   }
   
   "existing system property" should "not be overriden when override flag is false" in {
@@ -69,14 +82,17 @@ class SettingsTest extends BaseTest with Matchers {
     }
   }
 
-  "missing nested property" should "should report missing property error" in {
-    val props = new Properties()
-    props.put("prop.host", "localhost")
-    withSetting("prop.host.port", "${prop.host.missing}:8090") {
-      props.put("prop.url", "http://${prop.host.port}/howdy")
-      intercept[MissingPropertyException] {
-        Settings.resolve(props.getProperty("prop.url"), props)
-      }
+  "missing nested property" should "report missing setting error" in {
+    val propFile = new File(targetDir, "missing-nested.properties")
+    propFile.delete()
+    propFile.writeText(
+      """|prop.host=localhost
+         |prop.host.port=${prop.host.missing}:8090
+         |prop.url=http://${prop.host.port}/howdy
+         |""".stripMargin
+    )
+    intercept[MissingSettingException] {
+      Settings.init(propFile)
     }
   }
 
@@ -158,6 +174,75 @@ class SettingsTest extends BaseTest with Matchers {
           values.contains("--window-size=1920,1080") should be (true)
         }
       }
+    }
+  }
+
+  "masked setting" should "yield masked value" in {
+    val confFile = new File(targetDir, "masked.conf")
+    confFile.delete()
+    confFile.writeText(
+      """|"my.secret.setting:masked" = "secret"
+         |""".stripMargin
+    )
+    Settings.init(confFile)
+    Settings.get("my.secret.setting").contains("●●●●●") should be (true)
+  }
+
+  "masked system property" should "yield masked value" in {
+    val confFile = new File(targetDir, "masked.conf")
+    confFile.delete()
+    withSetting("my.secret.prop:masked", "secret") {
+      Settings.init(confFile)
+      Settings.get("my.secret.prop").contains("●●●●●") should be (true)
+    }
+  }
+
+  "nested keys in conf file" should "resolve" in {
+    val confFile = new File(targetDir, "nestedkeys.conf")
+    confFile.delete()
+    confFile.writeText(
+      """|"a.b"=1
+         |"a.b.c"=2
+         |""".stripMargin
+    )
+    Settings.init(confFile)
+    Settings.get("a.b") should be ("1")
+    Settings.get("a.b.c") should be ("2")
+  }
+
+  "nested keys in properties file" should "resolve" in {
+    val propFile = new File(targetDir, "nestedkeys.properties")
+    propFile.delete()
+    propFile.writeText(
+      """|d.e=3
+         |d.e.f=4
+         |""".stripMargin
+    )
+    Settings.init(propFile)
+    Settings.get("d.e") should be ("3")
+    Settings.get("d.e.f") should be ("4")
+  }
+
+  "nested keys in system properties" should "resolve" in {
+    withSetting("g.h", "5") {
+      withSetting("g.h.i", "6") {
+        Settings.get("g.h") should be ("5")
+        Settings.get("g.h.i") should be ("6")
+      }
+    }
+  }
+
+  "nested keys in properties file through system property" should "resolve" in {
+    val propFile = new File(targetDir, "nestedkeys.properties")
+    propFile.delete()
+    withSetting("j.k", "7") {
+      propFile.writeText(
+        """|j.k.l=8
+           |""".stripMargin
+      )
+      Settings.init(propFile)
+      Settings.get("j.k") should be ("7")
+      Settings.get("j.k.l") should be ("8")
     }
   }
 

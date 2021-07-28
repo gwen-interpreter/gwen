@@ -16,11 +16,13 @@
 
 package gwen.core.node
 
-import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
+import gwen.core.BaseTest
+
 import org.scalatest.matchers.should.Matchers
 
-class SourceRefTest extends AnyFlatSpec with Matchers {
+import java.io.File
+
+class SourceRefTest extends BaseTest with Matchers {
 
   val file = new File("path/to/file.feature")
 

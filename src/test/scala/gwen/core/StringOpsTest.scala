@@ -16,12 +16,12 @@
 
 package gwen.core
 
+import gwen.core.BaseTest
 import gwen.core.StringOps.lastPositionIn
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class StringOpsTest extends AnyFlatSpec with Matchers {
+class StringOpsTest extends BaseTest with Matchers {
 
   "empty string" should " return (1, 1)" in {
     lastPositionIn("") should be ((1, 1))

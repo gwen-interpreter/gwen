@@ -16,10 +16,11 @@
 
 package gwen.core.eval.support
 
-import org.scalatest.flatspec.AnyFlatSpec
+import gwen.core.BaseTest
+
 import org.scalatest.matchers.should.Matchers
 
-class ScriptSupportTest extends AnyFlatSpec with Matchers with ScriptSupport {
+class ScriptSupportTest extends BaseTest with Matchers with ScriptSupport {
 
   "JavaScript" should "execute" in {
 

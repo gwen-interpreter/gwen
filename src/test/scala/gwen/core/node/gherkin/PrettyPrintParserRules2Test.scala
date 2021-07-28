@@ -16,13 +16,14 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.BaseTest
+
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class PrettyPrintParserRules2Test extends AnyFlatSpec with Matchers with SpecNormaliser with GherkinParser {
+class PrettyPrintParserRules2Test extends BaseTest with Matchers with SpecNormaliser with GherkinParser {
 
   private val parse = parseSpec(_: String)
 

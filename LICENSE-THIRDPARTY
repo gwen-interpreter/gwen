@@ -20,6 +20,7 @@ com.jayway.jsonpath             json-path                | 2.4.0     | [Apache L
 com.lihaoyi                     geny_2.13                | 0.6.7     | [MIT](https://github.com/com-lihaoyi/geny/blob/master/LICENSE)
 com.lihaoyi                     scalatags_2.13           | 0.9.4     | [MIT](https://github.com/com-lihaoyi/scalatags/blob/master/LICENSE)
 com.lihaoyi                     sourcecode_2.13          | 0.2.3     | [MIT](https://github.com/com-lihaoyi/sourcecode/blob/master/LICENSE)
+com.typesafe                    config                   | 1.4.1     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.typesafe.scala-logging      scala-logging_3          | 3.9.4     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 commons-codec                   commons-codec            | 1.15      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 io.cucumber                     gherkin                  | 15.0.2    | [MIT License](http://www.opensource.org/licenses/mit-license)

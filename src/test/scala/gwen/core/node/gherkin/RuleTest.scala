@@ -16,12 +16,13 @@
 
 package gwen.core.node.gherkin
 
-import scala.util.Success
+import gwen.core.BaseTest
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class RuleTest extends AnyFlatSpec with Matchers with GherkinParser {
+import scala.util.Success
+
+class RuleTest extends BaseTest with Matchers with GherkinParser {
 
   private def parse(input: String) = parseSpec(s"Feature: ftest\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
   

@@ -39,10 +39,9 @@ import scala.util.chaining._
 
 import java.io.File
 import java.{util => ju}
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GwenLauncherTest extends AnyFlatSpec with Matchers with MockitoSugar with TestModel {
+class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with TestModel {
 
   val rootDir = new File("target" + File.separator + "GwenLauncherTest") tap { _.mkdirs() }
 

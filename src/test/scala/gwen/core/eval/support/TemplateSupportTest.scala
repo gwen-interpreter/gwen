@@ -16,14 +16,14 @@
 
 package gwen.core.eval.support
 
+import gwen.core.BaseTest
 import gwen.core.state.TopScope
 
 import scala.util.{Failure, Success}
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class TemplateSupportTest extends AnyFlatSpec with Matchers with TemplateSupport {
+class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
 
   val topScope = new TopScope()
 

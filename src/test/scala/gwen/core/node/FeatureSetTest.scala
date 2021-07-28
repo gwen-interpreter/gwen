@@ -16,19 +16,19 @@
 
 package gwen.core.node
 
+import gwen.core.BaseTest
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.TagFilter
 
+import org.scalatest.matchers.should.Matchers
+
 import scala.util.Success
 import scala.util.Failure
 
-
 import java.io.File
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class FeatureSetTest extends AnyFlatSpec with Matchers with GherkinParser with SpecNormaliser {
+class FeatureSetTest extends BaseTest with Matchers with GherkinParser with SpecNormaliser {
   
   "Data driven feature with csv file" should "normalise without error" in {
     val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)

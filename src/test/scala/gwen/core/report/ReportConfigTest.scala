@@ -15,6 +15,7 @@
  */
 package gwen.core.report
 
+import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlReportGenerator
@@ -27,12 +28,11 @@ import gwen.core.report.junit.JUnitReportGenerator
 import gwen.core.report.rp.RPReportConfig
 import gwen.core.report.rp.RPReportGenerator
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.io.File
 
-class ReportConfigTest extends AnyFlatSpec with Matchers  {
+class ReportConfigTest extends BaseTest with Matchers  {
   
   "Format for all report formats" should "map correctly" in {
     HtmlReportConfig.format should be (ReportFormat.html)

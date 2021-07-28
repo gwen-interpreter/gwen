@@ -16,56 +16,89 @@
 
 package gwen.core
 
-import gwen.core.Errors.GwenException
 import gwen.core.state.SensitiveData
+
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
+import scala.util.chaining._
 
 import java.io.File
 import java.io.FileReader
 import java.util.Properties
 
 /**
-  * Provides access to enviornment variables and system properties loaded from properties files. 
-  * Values  are loaded in the following order of precedence:
-  *   1. Environment variables (setting names that start with `env.`)
-  *   2. System properties passed through -D Java command line option
-  *   3. ~/gwen.properties (user overrides)
-  *   4. Properties files passed into Gwen through the -p/--properties command line option
-  *      - These are loaded in the order provided so that later ones override earlier ones
-  *   5. ./gwen.properties (working directory)
-  *   6. ~/.gwen/gwen.properties (global properties)
-  *
-  * Once a property is loaded it is never replaced. Therefore it is important to load properties in the right
-  * order as per above. System properties are not overridden.
-  *
-  * @author Branko Juric
+  * Provides access to enviornment variables and system properties loaded from JSON, HOCON or properties files. 
   */
-object Settings {
+object Settings extends LazyLogging {
 
   object Lock
 
-  val userProperties: Option[File] = FileIO.getUserFile("gwen.properties")
-  val workingProperties: Option[File] = FileIO.getFileOpt("gwen.properties")
-  val defaultProperties: Option[File] = FileIO.getUserFile(".gwen/gwen.properties")
-
-  val UserMeta: Option[File] = FileIO.getUserFile("gwen.meta")
+  private val InlineProperty = """.*\$\{(.+?)\}.*""".r
+  private val MaskedNameSuffix = ":masked"
+  private val MaskedNamePattern = s"(.+?)$MaskedNameSuffix".r
 
   // thread local settings
-  private final val localSettings = new ThreadLocal[Properties]() {
+  private val localSettings = new ThreadLocal[Properties]() {
     override protected def initialValue: Properties = new Properties()
   }
 
-  private final val InlineProperty = """.*\$\{(.+?)\}.*""".r
-  
+  val UserMeta: Option[File] = FileIO.getUserFile("gwen.meta")
+
+  private def configFileInDir(dir: File, name: String): Option[File] = {
+    val files = List("conf", "json", "properties") map { ext => 
+      new File(dir, s"$name.$ext")
+    } filter(_.exists)
+    if (files.size > 1) {
+      logger.warn(s"Multiple settings files found in directory: ${dir.getPath} >> Will load ${files.head.getName}")
+    }
+    files.headOption
+  } 
+
   /**
-    * Loads the given properties files provided to Gwen on the command line in the order provided (later ones override
-    * earlier ones). See class level comment for full details about how properties are loaded and their precedences.
-    * 
-    * @param cmdProperties command line properties passed into Gwen
+    * Loads and initialises all settings in the following order of precedence:
+    *   1. Environment variables (setting names that start with `env.`)
+    *   2. System properties passed through -D Java command line option
+    *   3. ~/gwen.properties (user overrides)
+    *   4. Settings files passed into this method (@configFiles param)
+    *      - later ones override earlier ones
+    *   5. ./gwen.properties (working directory)
+    *   6. ~/.gwen/gwen.properties (global properties)
     */
-  def loadAll(cmdProperties: List[File]): Unit = {
+  def init(configFiles: File*): Unit = {
+    val userConfigFile: Option[File] = FileIO.userDir.flatMap(d => configFileInDir(d, "gwen"))
+    val workingConfigFile: Option[File] = configFileInDir(new File("."), "gwen")
+    val globalConfigFile: Option[File] = FileIO.userDir.flatMap(d => configFileInDir(new File(d, ".gwen"), "gwen"))
+    val cFiles = (configFiles.reverse ++ workingConfigFile.toList ++ globalConfigFile.toList).foldLeft(userConfigFile.toList) { FileIO.appendFile }
+    val config = (
+      cFiles.foldLeft(ConfigFactory.defaultOverrides()) { (cfg, cFile) => 
+        cfg.withFallback(
+          if (FileIO.hasFileExtension("properties", cFile)) {
+            ConfigFactory.parseString(quoteProperties(cFile))
+          } else {
+            ConfigFactory.parseFile(cFile)
+          }
+        )
+      }
+    ).withFallback(ConfigFactory.load("gwen")).resolve()
+    
+    // read into properties object
+    val props = config.entrySet.asScala.foldLeft(new Properties()) {
+      (properties, entry) =>
+        val name = entry.getKey.asInstanceOf[String].replace("\\", "").replace("\"", "")
+        val value = entry.getValue.unwrapped().toString
+        properties.setProperty(name, value)
+        properties
+    }
+
+    // Make mask char available in sys props for GwenSettings.`gwen.mask.char` to work
+    sys.props += (("gwen.mask.char", props.getProperty("gwen.mask.char")))
 
     // mask any senstive ("*:masked") properties passed in the raw from the command line
     sys.props.toMap filter { case (key, value) => 
@@ -77,36 +110,30 @@ object Settings {
       }
     }
 
-    // create list of properties files in order of precedence (stripping out any duplicates)
-    val pFiles = cmdProperties.reverse ++ List(workingProperties, defaultProperties).flatten
-    val propFiles = pFiles.foldLeft(userProperties.toList) { FileIO.appendFile }
-
-    // load files in reverse order to ensure those with lesser precedence are overwritten by higher ones
-    val props = propFiles.reverse.foldLeft(new Properties()) {
-      (props, file) => 
-        props.load(new FileReader(file))
-        props.entrySet().asScala foreach { entry =>
-          val key = entry.getKey.asInstanceOf[String]
-          if (key == null || key.trim.isEmpty) Errors.invalidPropertyError(entry.toString, file)
-        }
-        props
-    }
-
-    // resolve all nested values and store in settings
-    props.entrySet().asScala.foreach { entry =>
-      val key = entry.getKey.asInstanceOf[String]
-      if (!names.contains(key)) {
-        try {
-          val value = resolve(props.getProperty(key), props)
-          Settings.set(key, value)
-        } catch {
-          case ge: GwenException => throw ge
-          case t: Throwable => Errors.propertyLoadError(key, t)
-        }
+    // resolve and store all settings
+    props.entrySet.asScala.foreach { entry =>
+      val name = entry.getKey.asInstanceOf[String]
+      val rawValue = entry.getValue.toString
+      val value = SensitiveData.parse(name, rawValue) map { (_, mValue) => 
+        sys.props -= name
+        mValue
+      } getOrElse {
+        rawValue
       }
+      val rValue = resolve(value, props)
+      Settings.add(name, rValue, overrideIfExists = true)
     }
+    
   }
-  
+
+  private def quoteProperties(propsFile: File): String = {
+    val props = new Properties()
+    props.load(new FileReader(propsFile))
+    props.entrySet.asScala map { entry => 
+      s""""${entry.getKey}" = "${entry.getValue}""""
+    } mkString "\n"
+  }
+
   /**
    * Resolves a given property by performing any property substitutions.
    * 
@@ -120,7 +147,7 @@ object Settings {
       val inline = if (props.containsKey(key)) {
         getEnvOpt(key).getOrElse(props.getProperty(key))
       } else {
-        getOpt(key).getOrElse(Errors.missingPropertyError(key))
+        getOpt(key).getOrElse(Errors.missingSettingError(key))
       }
       val resolved = inline match {
         case InlineProperty(_) => resolve(inline, props)
@@ -131,14 +158,26 @@ object Settings {
   }
 
   /**
-    * Gets an optional property or enviroment variable (returns None if not found)
+    * Gets an optional setting that could be deprecated or an enviroment variable (returns None if not found)
     * 
-    * @param name the name of the property to get ( `env.` prefix for env VARs)
+    * @param name the name of the setting to get ( `env.` prefix for env VARs)
+    * @param deprecatedName the deprecated name of the setting to get ( `env.` prefix for env VARs)
     */
-  def getOpt(name: String): Option[String] = {
-    getEnvOpt(name) match {
-      case None => Option(localSettings.get.getProperty(name)).orElse(sys.props.get(name))
-      case res @ _ => res
+  def getOpt(name: String, deprecatedName: Option[String] = None): Option[String] = {
+    deprecatedName flatMap { dName =>
+      getOpt(dName, None) tap { value =>
+        if (value.nonEmpty) {
+          Deprecation.fail("Setting", dName, name)
+        }
+      }
+    } orElse {
+      getEnvOpt(name) match {
+        case None => 
+          Option(localSettings.get.getProperty(name)) orElse {
+            sys.props.get(name)
+          }
+        case res @ _ => res
+      }
     }
   }
 
@@ -156,12 +195,14 @@ object Settings {
   }
 
   /**
-    * Gets a mandatory property (throws exception if not found)
+    * Gets an mandatory setting that could be deprecated or an enviroment variable (returns None if not found)
     * 
-    * @param name the name of the property to get
-    * @throws gwen.Errors.MissingPropertyException if no such property is set
+    * @param name the name of the setting to get ( `env.` prefix for env VARs)
+    * @param deprecatedName optional deprecated name of the setting to get ( `env.` prefix for env VARs)
     */
-  def get(name: String): String = getOpt(name).getOrElse(Errors.missingPropertyError(name))
+  def get(name: String, deprecatedName: Option[String] = None): String = {
+    getOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  }
 
   /**
     * Finds all properties that match the given predicate.
@@ -286,6 +327,50 @@ object Settings {
   def exclusively[T](body: => T):T = {
     Settings.Lock.synchronized {
       body
+    }
+  }
+
+  def getBoolean(name: String, deprecatedName: Option[String] = None): Boolean = {
+    getBooleanOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getBooleanOpt(name: String, deprecatedName: Option[String] = None): Option[Boolean] = {
+    getOptAndConvert(name, deprecatedName, Set(true, false).mkString(", ")) { value =>
+      value.toBoolean
+    }
+  }
+
+  def getLong(name: String, deprecatedName: Option[String] = None): Long = {
+    getLongOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getLongOpt(name: String, deprecatedName: Option[String] = None): Option[Long] = {
+    getOptAndConvert(name, deprecatedName, "Long integers") { value =>
+      value.toLong 
+    }
+  }
+
+  def getInt(name: String, deprecatedName: Option[String] = None): Int = {
+    getIntOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getIntOpt(name: String, deprecatedName: Option[String] = None): Option[Int] = {
+    getOptAndConvert(name, deprecatedName, "Integers") { value =>
+      value.toInt 
+    }
+  }
+
+  def getAndConvert[T](name: String, deprecatedName: Option[String], validValues: String)(conversion: String => T): T = {
+    (getOptAndConvert(name, deprecatedName, validValues)(conversion)).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getOptAndConvert[T](name: String, deprecatedName: Option[String], validValues: String)(conversion: String => T): Option[T] = {
+    getOpt(name, deprecatedName) map { value =>
+      Try {
+        conversion(value)
+      } getOrElse {
+        Errors.illegalSettingError(name, value, validValues)
+      }
     }
   }
   

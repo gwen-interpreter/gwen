@@ -76,7 +76,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends Composit
                   case status @ Failed(_, error)  =>
                     val isAssertionError = status.isAssertionError
                     val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-                    val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+                    val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
                     if (failfast && !isSoftAssert) {
                       logger.info(s"Skipping [$name] $itemNo of $noOfElements")
                       engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)

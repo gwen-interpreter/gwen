@@ -99,7 +99,6 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     *               Some(ctx) to reuse a context for all, default is None)
     */
   def run(options: GwenOptions, ctxOpt: Option[T] = None): EvalStatus = {
-    Settings.loadAll(options.properties)
     if (options.args.isDefined) {
       logger.info(options.commandString)
     }

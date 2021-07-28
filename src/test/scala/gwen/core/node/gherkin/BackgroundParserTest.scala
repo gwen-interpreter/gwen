@@ -16,14 +16,14 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.BaseTest
 import gwen.core.TestModel
 
 import scala.util.Success
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class BackgroundParserTest extends AnyFlatSpec with Matchers with GherkinParser with TestModel {
+class BackgroundParserTest extends BaseTest with Matchers with GherkinParser with TestModel {
 
   private def parse(input: String) = {
     val background = parseSpec(s"Feature: ftest\n$input").filter(_.background.nonEmpty).map(_.background.get)

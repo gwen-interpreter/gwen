@@ -21,6 +21,7 @@ import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.chaining._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
@@ -136,6 +137,7 @@ extension [F <: File](file: F) {
 }
 
 object FileIO {
+  val userDir: Option[File] = sys.props.get("user.home").map(d => new File(d))
   def encodeDir(dirpath: String): String =
     if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
   def encodeUri(path: String): String = {
@@ -164,7 +166,7 @@ object FileIO {
     }
   }
   def getUserFile(filename: String): Option[File] =
-    sys.props.get("user.home").map(new File(_, filename)).filter(_.exists())
+    userDir.map(d => new File(d, filename)).filter(_.exists())
   def getFileOpt(filepath: String): Option[File] = Option(new File(filepath)).filter(_.exists())
   def appendFile(files: List[File], file: File): List[File] = appendFile(files, Option(file))
   def appendFile(files: List[File], file: Option[File]): List[File] = (files.filter(!_.isSame(file)) ++ file).distinct
@@ -200,7 +202,7 @@ extension [T <: Throwable](error: T) {
   */
 extension (sc: StringContext) {
   def r: Regex = {
-    new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
+    new Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x")*)
   }
 }
 
@@ -330,4 +332,23 @@ object UUIDGenerator {
     lastUuid.set(uuid)
   }
   def prevId = lastUuid.get
+}
+
+object Deprecation extends LazyLogging {
+  def warn(category: String, oldWay: String, newWay: String): Unit = {
+    logger.warn(
+      s"""|$category is deprecated and will be unsupported soon
+          |${createMsg(category, oldWay, newWay)}""".stripMargin
+    )
+  }
+  def fail(category: String, oldWay: String, newWay: String): Unit = {
+    Errors.deprecatedError(
+      s"""|$category is deprecated and no longer supported
+          |${createMsg(category, oldWay, newWay)}""".stripMargin
+    )
+  }
+  private def createMsg(prefix: String, oldWay: String, newWay: String): String = {
+    s"""|       $oldWay >> instead use >> $newWay
+        |       ${"^" * oldWay.size}""".stripMargin
+  }
 }

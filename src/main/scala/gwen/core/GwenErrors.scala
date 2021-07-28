@@ -45,10 +45,10 @@ object Errors {
   def disabledStepError(step: Step) = throw new DisabledStepException(step)
   def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
   def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
-  def missingPropertyError(name: String) = throw new MissingPropertyException(name)
+  def missingSettingError(name: String) = throw new MissingSettingException(name)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
-  def illegalSettingError(name: String, value: String, supportedValues: Set[Any]) = throw new IllegalSettingException(name, value, supportedValues)
+  def illegalSettingError(name: String, value: String, validValues: String) = throw new IllegalSettingException(name, value, validValues)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
@@ -87,6 +87,7 @@ object Errors {
   def stepError(step: Step, cause: Throwable) = throw new StepFailure(step, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
+  def deprecatedError(msg: String) = throw new DeprecatedException(msg)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Int], column: Option[Int]): String = at(SourceRef.toString(file, line, column))
@@ -116,8 +117,8 @@ object Errors {
   /** Thrown when an attribute cannot be found in a scope. */
   class UnboundAttributeException(name: String, scope: Option[String]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
   
-  /** Thrown when a property setting is not found. */
-  class MissingPropertyException(name: String) extends GwenException(s"Property not found: $name")
+  /** Thrown when a setting is not found. */
+  class MissingSettingException(name: String) extends GwenException(s"Setting not found: $name")
 
   /** Thrown when a property setting that does not support masking is masked. */
   class UnsupportedMaskedPropertyException(msg: String) extends GwenException(msg)
@@ -129,7 +130,7 @@ object Errors {
   class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
 
   /** Thrown when a property file setting contains an invalid or unspported value. */
-  class IllegalSettingException(name: String, value: String, supportedValues: Set[Any]) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: ${supportedValues.mkString(", ")})")
+  class IllegalSettingException(name: String, value: String, validValues: String) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: $validValues)")
   
   /** Thrown when a property setting fails to load. */
   class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)
@@ -237,4 +238,7 @@ object Errors {
 
   /** Thrown when an invalid binding type is detected in a comparison operation. */
   class InvalidBindingPathTypeException(bindingType: BindingType) extends GwenException(s"Invalid path binding type: $bindingType (only ${BindingType.xpath} or ${BindingType.`json path`} supported)")
+
+  /** Signals usage of a deprecated feature that is no longer supported. */
+  class DeprecatedException(msg: String) extends GwenException(msg)
 }

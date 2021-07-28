@@ -19,12 +19,11 @@ package gwen.core.eval.support
 import gwen.core._
 import gwen.core.Errors.XPathException
 
-import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.util.chaining._
 
-class XPathSupportTest extends AnyFlatSpec with Matchers with XPathSupport {
+class XPathSupportTest extends BaseTest with Matchers with XPathSupport {
 
   val XmlSource =
     """<root><parent><name>P1</name><surname>O'Reilly</surname><children><child><name>C1</name></child><child><name>C2</name><middleName/><surname>CS2</surname></child></children></parent></root>"""

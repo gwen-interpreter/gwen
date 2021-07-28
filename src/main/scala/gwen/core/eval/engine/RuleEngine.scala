@@ -47,7 +47,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
       case status @ Failed(_, error) =>
         val isAssertionError = status.isAssertionError
         val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
-        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast` }
+        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {
           transitionRule(rule, Skipped, ctx)
