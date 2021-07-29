@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.core.sample.sync
+package gwen.core.features
 
 import gwen.DefaultGwenInterpreter
 import gwen.core.BaseTest
@@ -37,7 +37,7 @@ class SyncTest extends BaseTest {
           parallel = true,
           reportDir = Some(new File(s"target/report/sync/$level-level")),
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-          features = List(new File("features/sample/sync"))
+          features = List(new File("src/test/features/sync"))
         )
           
         interpreter.run(options, None) match {
@@ -57,7 +57,7 @@ class SyncTest extends BaseTest {
           parallel = true,
           reportDir = Some(new File(s"target/report/sync-dry-run/$level-level")),
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-          features = List(new File("features/sample/sync")),
+          features = List(new File("src/test/features/sync")),
           dryRun = true
         )
           

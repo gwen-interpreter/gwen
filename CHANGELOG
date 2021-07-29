@@ -2,16 +2,15 @@
 =====
 m d, yyyy
 - Gwen 3 release
-  - Refactor codebase for improved performance and maintainability
-  - Migrate codebase to Scala 3
-  - Add init CLI option for initialising Gwen working directory
+  - Refactor and migrate codebase to Scala 3
+  - Add init CLI option for initialising a new Gwen working directory
   - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
-  - Deprecated settings:
+  - Deprecate CLI option:
+    - `-p/--properties` in favor of `-c/--config`
+  - Deprecate settings:
     - `gwen.feature.failfast` in favor of `gwen.feature.failfast.enabled`
     - `gwen.rp.heartbeat` in favor of `gwen.rp.heartbeat.enabled`
-  - Deprecated CLI option:
-    - `-p/--properties` in favor of `-c/--config`
-
+  
 2.34.0
 ======
 July 2, 2021

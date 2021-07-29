@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Branko Juric, Brady Wood
+ * Copyright 2017-2021 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.core.sample.xml
+package gwen.core.features
 
 import gwen.DefaultGwenInterpreter
 import gwen.core.BaseTest
@@ -24,17 +24,17 @@ import gwen.core.status._
 
 import java.io.File
 
-class XmlTest extends BaseTest {
+class RulesTest extends BaseTest {
 
   val interpreter = DefaultGwenInterpreter
-  
-  "XML tests" should "pass" in {
+
+  "Scenario rules" should "evaluate without error" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/xml")),
+      reportDir = Some(new File("target/report/rules")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/xml"))
+      features = List(new File("src/test/features/rules"))
     )
       
     interpreter.run(options, None) match {
@@ -44,13 +44,13 @@ class XmlTest extends BaseTest {
     }
   }
   
-  "XML tests" should "pass --dry-run" in {
+  "Scenario rules" should "pass --dry-run test" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/xml-dry-run")),
+      reportDir = Some(new File("target/report/rules-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/xml")),
+      features = List(new File("src/test/features/rules")),
       dryRun = true
     )
       

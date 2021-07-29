@@ -34,7 +34,7 @@
            """
            {"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}
            """
-       And contents should match template file "features/sample/templates/json/StaticSingleLineTemplate.json"
+       And contents should match template file "src/test/features/templates/json/StaticSingleLineTemplate.json"
 
 
  Scenario: Match static multi line JSON template
@@ -62,7 +62,7 @@
              "status": "available"
            }
            """
-       And contents should match template file "features/sample/templates/json/StaticMultiLineTemplate.json"
+       And contents should match template file "src/test/features/templates/json/StaticMultiLineTemplate.json"
 
 
  Scenario: Match dynamic single line JSON template (1 ignore, 1 extract, 1 inject)
@@ -115,7 +115,7 @@
            {"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}
            """
       When I capture my value as contents
-      Then contents should match template file "features/sample/templates/json/DynamicSingleLineTemplate.json"
+      Then contents should match template file "src/test/features/templates/json/DynamicSingleLineTemplate.json"
        And category name 1 should be absent
        And pet id 1 should be absent
        And pet name 1 should be "tiger"
@@ -135,7 +135,7 @@
        And the pet name is defined in my value by json path "$.name"
        And the pet status is defined in my value by json path "$.status"
       When I capture my value as contents
-      Then contents should match template file "features/sample/templates/json/DynamicMultiLineTemplate.json"
+      Then contents should match template file "src/test/features/templates/json/DynamicMultiLineTemplate.json"
        And pet id 2 should be "42"
        And category name 2 should be "pet"
        And the pet name should be "tiger"

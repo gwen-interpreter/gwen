@@ -33,7 +33,7 @@
            """
            <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
            """
-       And my value should match template file "features/sample/templates/xml/StaticSingleLineTemplate.xml"
+       And my value should match template file "src/test/features/templates/xml/StaticSingleLineTemplate.xml"
 
 
  Scenario: Match static multi line XML template
@@ -61,7 +61,7 @@
                <status>available</status>
            </result>
            """
-       And my value should match template file "features/sample/templates/xml/StaticMultiLineTemplate.xml"
+       And my value should match template file "src/test/features/templates/xml/StaticMultiLineTemplate.xml"
 
 
  Scenario: Match dynamic single line XML template (1 ignore, 1 extract, 1 inject)
@@ -114,7 +114,7 @@
            <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
            """
       When I capture my value
-      Then my value should match template file "features/sample/templates/xml/DynamicSingleLineTemplate.xml"
+      Then my value should match template file "src/test/features/templates/xml/DynamicSingleLineTemplate.xml"
        And category name 1 should be absent
        And pet id 1 should be absent
        And pet name 1 should be "tiger"
@@ -134,7 +134,7 @@
        And the pet name is defined by the text in my value by xpath "result/name"
        And the pet status is defined by the text in my value by xpath "result/status"
       When I capture my value
-      Then my value should match template file "features/sample/templates/xml/DynamicMultiLineTemplate.xml"
+      Then my value should match template file "src/test/features/templates/xml/DynamicMultiLineTemplate.xml"
        And pet id 2 should be "42"
        And category name 2 should be "pet"
        And the pet name should be "tiger"

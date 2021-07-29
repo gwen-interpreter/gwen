@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.core.sample.tables
+package gwen.core.features
 
 import gwen.DefaultGwenInterpreter
 import gwen.core.BaseTest
@@ -34,7 +34,7 @@ class TablesTest extends BaseTest {
       batch = true,
       reportDir = Some(new File("target/report/tables")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables"))
+      features = List(new File("src/test/features/tables"))
     )
       
     interpreter.run(options, None) match {
@@ -50,7 +50,7 @@ class TablesTest extends BaseTest {
       batch = true,
       reportDir = Some(new File("target/report/tables-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables")),
+      features = List(new File("src/test/features/tables")),
       dryRun = true
     )
       

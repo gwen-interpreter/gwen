@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.core.sample.tables
+package gwen.core.features
 
 import gwen.DefaultGwenInterpreter
 import gwen.core.BaseTest
@@ -24,17 +24,17 @@ import gwen.core.status._
 
 import java.io.File
 
-class TablesForEachTest extends BaseTest {
+class OutlinesTest extends BaseTest {
 
   val interpreter = DefaultGwenInterpreter
   
-  "Data tables with for-each" should "evaluate without error" in {
+  "Scenario outlines" should "evaluate without error" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables-foreach")),
+      reportDir = Some(new File("target/report/outlines")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables-foreach"))
+      features = List(new File("src/test/features/outlines"))
     )
       
     interpreter.run(options, None) match {
@@ -44,13 +44,13 @@ class TablesForEachTest extends BaseTest {
     }
   }
   
-  "Data tables with for-each" should "pass --dry-run test" in {
+  "Scenario outlines" should "pass --dry-run test" in {
     
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/tables-foreach-dry-run")),
+      reportDir = Some(new File("target/report/outlines-dry-run")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("features/sample/tables-foreach")),
+      features = List(new File("src/test/features/outlines")),
       dryRun = true
     )
       
