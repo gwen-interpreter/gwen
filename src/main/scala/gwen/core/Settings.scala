@@ -16,10 +16,12 @@
 
 package gwen.core
 
+import gwen.core.report.ReportFormat
 import gwen.core.state.SensitiveData
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigValueType
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable
@@ -92,8 +94,15 @@ object Settings extends LazyLogging {
     val props = config.entrySet.asScala.foldLeft(new Properties()) {
       (properties, entry) =>
         val name = entry.getKey.asInstanceOf[String].replace("\\", "").replace("\"", "")
-        val value = entry.getValue.unwrapped().toString
-        properties.setProperty(name, value)
+        val cValue = entry.getValue
+        if (ConfigValueType.LIST == cValue.valueType()) {
+          config.getAnyRefList(entry.getKey).asScala.map(_.toString) foreach { value => 
+            properties.setProperty(s"$name.${System.nanoTime()}", value)
+          }
+        } else {
+          val value = cValue.unwrapped().toString
+          properties.setProperty(name, value)
+        }
         properties
     }
 
@@ -162,10 +171,11 @@ object Settings extends LazyLogging {
     * 
     * @param name the name of the setting to get ( `env.` prefix for env VARs)
     * @param deprecatedName the deprecated name of the setting to get ( `env.` prefix for env VARs)
+    * @param config optional config object to read setting from
     */
-  def getOpt(name: String, deprecatedName: Option[String] = None): Option[String] = {
+  def getOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[String] = {
     deprecatedName flatMap { dName =>
-      getOpt(dName, None) tap { value =>
+      getOpt(dName, None, config) tap { value =>
         if (value.nonEmpty) {
           Deprecation.fail("Setting", dName, name)
         }
@@ -174,7 +184,11 @@ object Settings extends LazyLogging {
       getEnvOpt(name) match {
         case None => 
           Option(localSettings.get.getProperty(name)) orElse {
-            sys.props.get(name)
+            config flatMap { conf => 
+              if (conf.hasPath(name)) Option(conf.getString(name)) else None
+            } orElse {
+              sys.props.get(name)
+            }
           }
         case res @ _ => res
       }
@@ -199,9 +213,10 @@ object Settings extends LazyLogging {
     * 
     * @param name the name of the setting to get ( `env.` prefix for env VARs)
     * @param deprecatedName optional deprecated name of the setting to get ( `env.` prefix for env VARs)
+    * @param config optional config object to read setting from
     */
-  def get(name: String, deprecatedName: Option[String] = None): String = {
-    getOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  def get(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): String = {
+    getOpt(name, deprecatedName, config).getOrElse(Errors.missingSettingError(name))
   }
 
   /**
@@ -219,9 +234,8 @@ object Settings extends LazyLogging {
    * set in the given multiName property with all name-value properties that start with singleName.
    * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
    */
-  def findAllMulti(multiName: String, singleName: String): Map[String, String] = {
-    val assignments: Seq[String] = Settings.getOpt(multiName).map(_.split(",")).map(_.toList).getOrElse(Nil)
-    val nvps: Seq[(String, String)] = assignments.map(_.split('=')).map { nvp =>
+  def getMap(multiName: String, singleName: String): Map[String, String] = {
+    val nvps: Seq[(String, String)] = Settings.getList(multiName).map(_.split('=')).map { nvp =>
       if (nvp.length == 2) (nvp(0), nvp(1))
       else if (nvp.length == 1) (nvp(0), "")
       else Errors.propertyLoadError(nvp(0), "name-value pair expected")
@@ -229,16 +243,6 @@ object Settings extends LazyLogging {
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
       (n.substring(singleName.length + 1), v)
     }).toMap
-  }
-
-  /**
-   * Provides access to multiple settings. This method merges a comma separated list of name-value pairs
-   * set in the given multiName property with all name-value properties that start with singleName.
-   * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
-   */
-  def findAllMulti(name: String): List[String] = {
-    val values = Settings.getOpt(name).map(_.split(",").toList.map(_.trim)).getOrElse(Nil)
-    values ++ Settings.findAll(_.startsWith(s"$name.")).map { case (_, v) => v }
   }
 
   /** Gets all settings names (keys). */
@@ -330,47 +334,90 @@ object Settings extends LazyLogging {
     }
   }
 
-  def getBoolean(name: String, deprecatedName: Option[String] = None): Boolean = {
-    getBooleanOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  def getList(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): List[String] = {
+    (config map { conf => 
+      deprecatedName map { dName =>
+        getList(dName, conf) match {
+          case Nil =>
+            getList(name, conf)
+          case _ =>
+            Deprecation.fail("Setting", dName, name)
+            Nil
+        }
+      } getOrElse {
+        getList(name, conf)
+      }
+    } getOrElse {
+      getOpt(name, deprecatedName, config).map(_.split(",").toList.map(_.trim).filter(_.length > 0)).getOrElse(Nil)
+    }) ++ (
+      if (config.isEmpty) {
+        Settings.findAll(_.startsWith(s"$name.")).map { case (n, v) => v }
+      } else {
+        Nil
+      }
+    )
   }
 
-  def getBooleanOpt(name: String, deprecatedName: Option[String] = None): Option[Boolean] = {
-    getOptAndConvert(name, deprecatedName, Set(true, false).mkString(", ")) { value =>
+  private def getList(name: String, config: Config): List[String] = {
+    Try(config.getAnyRefList(name)) match {
+      case Success(list) => 
+        list.asScala.toList.map(_.toString)
+      case _ => 
+        Nil
+    }
+  }
+
+  def getBoolean(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Boolean = {
+    getBooleanOpt(name, deprecatedName, config).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getBooleanOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[Boolean] = {
+    getOptAndConvert(name, deprecatedName, Set(true, false).mkString(", "), config) { value =>
       value.toBoolean
     }
   }
 
-  def getLong(name: String, deprecatedName: Option[String] = None): Long = {
-    getLongOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  def getLong(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Long = {
+    getLongOpt(name, deprecatedName, config).getOrElse(Errors.missingSettingError(name))
   }
 
-  def getLongOpt(name: String, deprecatedName: Option[String] = None): Option[Long] = {
-    getOptAndConvert(name, deprecatedName, "Long integers") { value =>
+  def getLongOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[Long] = {
+    getOptAndConvert(name, deprecatedName, "Long integers", config) { value =>
       value.toLong 
     }
   }
 
-  def getInt(name: String, deprecatedName: Option[String] = None): Int = {
-    getIntOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
+  def getInt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Int = {
+    getIntOpt(name, deprecatedName, config).getOrElse(Errors.missingSettingError(name))
   }
 
-  def getIntOpt(name: String, deprecatedName: Option[String] = None): Option[Int] = {
-    getOptAndConvert(name, deprecatedName, "Integers") { value =>
+  def getIntOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[Int] = {
+    getOptAndConvert(name, deprecatedName, "Integers", config) { value =>
       value.toInt 
     }
   }
 
-  def getAndConvert[T](name: String, deprecatedName: Option[String], validValues: String)(conversion: String => T): T = {
-    (getOptAndConvert(name, deprecatedName, validValues)(conversion)).getOrElse(Errors.missingSettingError(name))
+  def getReportFormat(name: String, value: String): ReportFormat = {
+    convert(name, value, ReportFormat.values.mkString(", ")) { value =>
+      ReportFormat.valueOf(value)
+    }
   }
 
-  def getOptAndConvert[T](name: String, deprecatedName: Option[String], validValues: String)(conversion: String => T): Option[T] = {
-    getOpt(name, deprecatedName) map { value =>
-      Try {
-        conversion(value)
-      } getOrElse {
-        Errors.illegalSettingError(name, value, validValues)
-      }
+  def getAndConvert[T](name: String, deprecatedName: Option[String], validValues: String, config: Option[Config] = None)(conversion: String => T): T = {
+    (getOptAndConvert(name, deprecatedName, validValues, config)(conversion)).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getOptAndConvert[T](name: String, deprecatedName: Option[String], validValues: String, config: Option[Config] = None)(conversion: String => T): Option[T] = {
+    getOpt(name, deprecatedName, config) map { value =>
+      convert(name, value, validValues)(conversion)
+    }
+  }
+
+  def convert[T](name: String, value: String, validValues: String)(conversion: String => T): T = {
+    Try {
+      conversion(value)
+    } getOrElse {
+      Errors.illegalSettingError(name, value, validValues)
     }
   }
   

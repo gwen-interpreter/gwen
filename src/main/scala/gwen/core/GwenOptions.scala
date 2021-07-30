@@ -48,20 +48,20 @@ import java.io.File
   * @author Branko Juric
   */
 case class GwenOptions(
-    batch: Boolean = false,
-    parallel: Boolean = false,
-    parallelFeatures: Boolean = false,
-    reportDir: Option[File] = None,
-    reportFormats: List[ReportFormat] = Nil,
-    configFiles: List[File] = Nil,
-    tags: List[(Tag, Boolean)] = Nil,
-    dryRun: Boolean = false,
-    dataFile: Option[File] = None,
-    metas: List[File] = Nil,
-    features: List[File] = Nil,
+    batch: Boolean = GwenOptions.Defaults.batch,
+    parallel: Boolean = GwenOptions.Defaults.parallel,
+    parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
+    reportDir: Option[File] = GwenOptions.Defaults.report,
+    reportFormats: List[ReportFormat] = GwenOptions.Defaults.formats,
+    configFiles: List[File] = GwenOptions.Defaults.config,
+    tags: List[(Tag, Boolean)] = GwenOptions.Defaults.tags,
+    dryRun: Boolean = GwenOptions.Defaults.dryRun,
+    dataFile: Option[File] = GwenOptions.Defaults.input,
+    metas: List[File] = GwenOptions.Defaults.meta,
+    features: List[File] = GwenOptions.Defaults.features,
     args: Option[Array[String]] = None,
     init: Boolean = false,
-    initDir: File = new File("gwen")) extends GwenInfo {
+    initDir: File = GwenOptions.Defaults.initDir) extends GwenInfo {
 
   def isParallelScenarios(stateLevel: StateLevel) = stateLevel == StateLevel.scenario && parallel && !parallelFeatures
 
@@ -78,6 +78,21 @@ case class GwenOptions(
 }
 
 object GwenOptions {
+
+  object Defaults {
+    val batch = CLISettings.`gwen.cli.options.batch`
+    val formats = CLISettings.`gwen.cli.options.formats`
+    val config = CLISettings.`gwen.cli.options.config`
+    val dryRun = CLISettings.`gwen.cli.options.dryRun`
+    val features = CLISettings.`gwen.cli.options.features`
+    val initDir = CLISettings.`gwen.cli.options.initDir`
+    val input = CLISettings.`gwen.cli.options.input`
+    val parallel = CLISettings.`gwen.cli.options.parallel`
+    val parallelFeatures = CLISettings.`gwen.cli.options.parallelFeatures`
+    val meta = CLISettings.`gwen.cli.options.meta`
+    val report = CLISettings.`gwen.cli.options.report`
+    val tags = CLISettings.`gwen.cli.options.tags`
+  }
 
   /**
     * Creates a new options object from the given command line arguments.
@@ -118,7 +133,7 @@ object GwenOptions {
           val file = new File(f)
           if (!FileIO.hasFileExtension("properties", file)) Some("-p/--properties option only accepts *.properties files")
           else if (file.exists()) None
-          else Some(s"Specified properties file not found: $f")
+          else Some(s"Provided properties file not found: $f")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
@@ -134,7 +149,7 @@ object GwenOptions {
             Some("-c/--config option only accepts *.conf, *.json or *.properties files")
           }
           else if (file.exists()) None
-          else Some(s"Specified config file not found: $f")
+          else Some(s"Provided config file not found: $f")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
@@ -147,7 +162,8 @@ object GwenOptions {
       opt[String]('f', "formats") action {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
-      } valueName "<formats>" text s"Comma separated list of report formats to produce\n         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${ReportFormat.html})"
+      } valueName "<formats>" text s"""|Comma separated list of report formats to produce
+                                       |         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${GwenOptions.Defaults.formats.mkString(", ")})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -198,7 +214,7 @@ object GwenOptions {
           arg[File]("<dir>").optional().action {
             (d, c) =>
               c.copy(initDir = d)
-          } text "Init directory (default is gwen)"
+          } text s"Init directory (default is ${GwenOptions.Defaults.initDir.getPath()})"
       } 
 
     }
@@ -209,7 +225,7 @@ object GwenOptions {
         options.parallel,
         options.parallelFeatures,
         options.reportDir,
-        if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) List(ReportFormat.html) else Nil },
+        if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) GwenOptions.Defaults.formats else Nil },
         options.configFiles,
         options.tags,
         options.dryRun,
@@ -222,11 +238,11 @@ object GwenOptions {
       }tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
-            Errors.invocationError("No feature files or directories specified")
+            Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
-            Errors.invocationError(s"Required -r/--report option not specified for -f/--format option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
+            Errors.invocationError(s"Required -r/--report option not provided for -f/--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
           if (opt.init && opt.initDir.exists) {
             Errors.invocationError(s"Cannot initialise because directory ${opt.initDir} already exists")

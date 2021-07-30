@@ -22,9 +22,10 @@ import gwen.core.state.StateLevel
 
 import scala.util.Try
 
+import java.io.File
+
 /**
-  * Provides access to gwen settings defined through system properties loaded
-  * from properties files.
+  * Provides access to all Gwen configuration settings.
   *
   * @author Branko Juric
   */

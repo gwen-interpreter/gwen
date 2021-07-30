@@ -47,14 +47,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("No feature files or directories specified")
+        error.getMessage should be ("No feature files or directories provided")
     }
     parseOptions(Array("--batch")) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("No feature files or directories specified")
+        error.getMessage should be ("No feature files or directories provided")
     }
   }
 
@@ -167,18 +167,20 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with format option but no report directory" should "not parse" in {
+  "Options with format option but no report directory" should "get default report dir" in {
     parseOptions(Array("-f", "html")) match {
-      case Success(_) => {
-        fail("expected None but got options")
+      case Success(options) => {
+        assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
       case _ =>
+        fail("expected options but failed")
     }
-    parseOptions(Array("--format", "html")) match {
-      case Success(_) => {
-        fail("expected None but got options")
+    parseOptions(Array("--formats", "html")) match {
+      case Success(options) => {
+        assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
       case _ =>
+        fail("expected options but failed")
     }
   }
 
@@ -189,7 +191,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       }
       case _ =>
     }
-    parseOptions(Array("--format")) match {
+    parseOptions(Array("--formats")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -734,19 +736,19 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   private def assertOptions(
                              options: GwenOptions,
-                             batch: Boolean = false,
-                             parallel: Boolean = false,
-                             parallelFeatures: Boolean = false,
-                             reportDir: Option[File] = None,
-                             reportFormats: List[ReportFormat] = Nil,
-                             configFiles: List[File] = Nil,
-                             tags: List[(Tag, Boolean)] = Nil,
-                             dryRun: Boolean = false,
-                             dataFile: Option[File] = None,
-                             metaFiles: List[File] = Nil,
-                             features: List[File] = Nil,
+                             batch: Boolean = GwenOptions.Defaults.batch,
+                             parallel: Boolean = GwenOptions.Defaults.parallel,
+                             parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
+                             reportDir: Option[File] = GwenOptions.Defaults.report,
+                             reportFormats: List[ReportFormat] = GwenOptions.Defaults.formats,
+                             configFiles: List[File] = GwenOptions.Defaults.config,
+                             tags: List[(Tag, Boolean)] = GwenOptions.Defaults.tags,
+                             dryRun: Boolean = GwenOptions.Defaults.dryRun,
+                             dataFile: Option[File] = GwenOptions.Defaults.input,
+                             metaFiles: List[File] = GwenOptions.Defaults.meta,
+                             features: List[File] = GwenOptions.Defaults.features,
                              init: Boolean = false,
-                             initDir: File = new File("gwen")): Unit = {
+                             initDir: File = GwenOptions.Defaults.initDir): Unit = {
 
     options.batch should be (batch)
     options.parallel should be (parallel)

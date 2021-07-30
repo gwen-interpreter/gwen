@@ -40,9 +40,9 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     println()
-
     try {
-      System.exit(run(GwenOptions(args)))
+      val options = GwenOptions(args)
+      System.exit(run(options))
     } catch {
       case e: Throwable =>
         logger.whenDebugEnabled {
@@ -62,9 +62,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     * @return 0 if successful; 1 otherwise
     */
   private [gwen] def run(options: GwenOptions): Int = {
-    logger.info(s"Initialising Gwen settings")
-    Settings.init(options.configFiles*)
-    GwenSettings.check()
     val ctxOpt = if (options.batch || options.init) None else Some(engine.init(options, EnvState()))
     try {
       val evalStatus = run(options, ctxOpt)

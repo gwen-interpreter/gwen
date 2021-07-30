@@ -48,6 +48,12 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.report.suppress.meta` should be (false)
       GwenSettings.`gwen.report.slideshow.create` should be (false)
       GwenSettings.`gwen.report.slideshow.framespersecond` should be (4)
+      GwenSettings.`gwen.state.level` should be (StateLevel.feature)
+    }
+  }
+
+  "Default Gwen RP settings" should "load" in {
+    Settings.exclusively {
       RPSettings.`gwen.rp.debug` should be (false)
       RPSettings.`gwen.rp.heartbeat.enabled` should be (true)
       RPSettings.`gwen.rp.heartbeat.timeoutSecs` should be (3)
@@ -63,7 +69,6 @@ class GwenSettingsTest extends BaseTest with Matchers {
       RPSettings.`gwen.rp.send.stepDefs` should be (StepDefFormat.none)
       RPSettings.`gwen.rp.send.tags` should be (true)
       RPSettings.`gwen.rp.testCaseId.keys` should be (TestCaseIdKeys.`nodePath+params`)
-      GwenSettings.`gwen.state.level` should be (StateLevel.feature)
     }
   }
 

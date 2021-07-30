@@ -5,9 +5,10 @@ m d, yyyy
   - Refactor and migrate codebase to Scala 3
   - Add init CLI option for initialising a new Gwen working directory
   - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
-  - Deprecate CLI option:
+  - Configurable CLI defaults
+  - Deprecated CLI option:
     - `-p/--properties` in favor of `-c/--config`
-  - Deprecate settings:
+  - Deprecated settings:
     - `gwen.feature.failfast` in favor of `gwen.feature.failfast.enabled`
     - `gwen.rp.heartbeat` in favor of `gwen.rp.heartbeat.enabled`
   
@@ -642,7 +643,7 @@ Jun 27, 2017
 =====
 Jun 25, 2017
 - Add cucumber compliant JSON output reports
-  - json -f/--format option
+  - json -f/--formats option
   - evaluated scenario outlines are expanded in the report (and not expanded if not evaluated)
 - Expand evaluated scenario outlines in JUnit-XML reports (and do not expanded if not evaluated)
 - Capture location of all gherkin nodes instead of just steps only

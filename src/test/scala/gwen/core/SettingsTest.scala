@@ -150,7 +150,7 @@ class SettingsTest extends BaseTest with Matchers {
     withSetting("gwen.web.chrome.prefs", "alternate_error_pages.enabled=false,session.length_limit=9999999999,other=?") {
       withSetting("gwen.web.chrome.pref.download.prompt_for_download", "false") {
         withSetting("gwen.web.chrome.pref.download.default_directory", "downloads") {
-          val props = Settings.findAllMulti("gwen.web.chrome.prefs", "gwen.web.chrome.pref")
+          val props = Settings.getMap("gwen.web.chrome.prefs", "gwen.web.chrome.pref")
           props("alternate_error_pages.enabled") should be ("false")
           props("session.length_limit") should be ("9999999999")
           props("other") should be ("?")
@@ -165,7 +165,7 @@ class SettingsTest extends BaseTest with Matchers {
     withSetting("gwen.web.chrome.args", "--touch-events=disabled,--incognito,--other") {
       withSetting("gwen.web.chrome.args.0", "--ignore-certificate-errors") {
         withSetting("gwen.web.chrome.args.1", "--window-size=1920,1080") {
-          val values = Settings.findAllMulti("gwen.web.chrome.args")
+          val values = Settings.getList("gwen.web.chrome.args")
           values.size should be (5)
           values.contains("--touch-events=disabled") should be (true)
           values.contains("--incognito") should be (true)
