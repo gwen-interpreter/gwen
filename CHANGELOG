@@ -6,6 +6,7 @@ m d, yyyy
   - Add init CLI option for initialising a new Gwen working directory
   - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
   - Configurable CLI defaults
+  - Associated meta enabled by default
   - Deprecated CLI option:
     - `-p/--properties` in favor of `-c/--config`
   - Deprecated settings:
