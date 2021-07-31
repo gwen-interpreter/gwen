@@ -1,3 +1,8 @@
+2.34.1
+======
+July 31, 2021
+- Default `gwen.rp.send.annotations` setting to false
+
 2.34.0
 ======
 July 7, 2021

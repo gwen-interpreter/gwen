@@ -224,7 +224,7 @@ object RPSettings {
    */
   def `gwen.rp.send.annotations`: Boolean = {
     Try {
-      Settings.getOpt("gwen.rp.send.annotations").map(_.toBoolean).getOrElse(true)
+      Settings.getOpt("gwen.rp.send.annotations").map(_.toBoolean).getOrElse(false)
     } getOrElse {
       Errors.illegalSettingError("gwen.rp.send.annotations", Settings.getOpt("gwen.rp.send.annotations").getOrElse(""), Set(true, false))
     }
