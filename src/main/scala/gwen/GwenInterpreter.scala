@@ -22,6 +22,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.GwenLauncher
 import gwen.core.eval.GwenREPL
 import gwen.core.state.EnvState
+import gwen.core.status.Failed
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -40,15 +41,19 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     println()
+    val start = System.nanoTime
     try {
       val options = GwenOptions(args)
+      logger.info("Initialising settings")
+      Settings.init(options.configFiles*)
+      GwenSettings.check()
       System.exit(run(options))
     } catch {
       case e: Throwable =>
         logger.whenDebugEnabled {
           println(e.writeStackTrace())
         }
-        System.err.println(s"ERROR - ${e.getMessage}")
+        System.err.println(s"ERROR - ${Failed(System.nanoTime - start, e).message}")
         println()
         System.exit(1)
     }

@@ -137,7 +137,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
       case e: Throwable =>
         val failed = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
-          logger.error(e.getMessage, e)
+          logger.error(failed.message, e)
           failed
         } else {
           throw e

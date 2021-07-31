@@ -160,13 +160,7 @@ object GwenSettings {
     *   - `scenario` - Each scenario gets a new state which is not shared across scenarios
     */
   def `gwen.state.level`: StateLevel = {
-    try {
-      StateLevel.valueOf(Settings.get("gwen.state.level"))
-    } catch {
-      case e: Throwable =>
-        e.printStackTrace()
-        throw e
-    }
+    StateLevel.valueOf(Settings.get("gwen.state.level"))
   }
 
   /**

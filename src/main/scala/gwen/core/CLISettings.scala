@@ -58,7 +58,7 @@ object CLISettings extends LazyLogging {
     * -b/--batch CLI switch.
     */
   def `gwen.cli.options.batch`: Boolean = {
-    Settings.getBoolean("gwen.cli.options.batch") tap { enabled => 
+    Settings.getBoolean("gwen.cli.options.batch", None, Some(config)) tap { enabled => 
       if (enabled) logger.warn("Setting gwen.cli.options.batch=true will enable batch mode only and disable REPL")
     }
   }
@@ -90,7 +90,7 @@ object CLISettings extends LazyLogging {
     * --n/--dry-run CLI switch.
     */
   def `gwen.cli.options.dryRun`: Boolean = {
-    Settings.getBoolean("gwen.cli.options.dryRun") tap { enabled => 
+    Settings.getBoolean("gwen.cli.options.dryRun", None, Some(config)) tap { enabled => 
       if (enabled) logger.warn("Setting gwen.cli.options.dryRun=true will enable validation only and disable execution")
     }
   }
@@ -138,7 +138,7 @@ object CLISettings extends LazyLogging {
     * --parallel CLI switch.
     */
   def `gwen.cli.options.parallel`: Boolean = {
-    Settings.getBoolean("gwen.cli.options.parallel")
+    Settings.getBoolean("gwen.cli.options.parallel", None, Some(config))
   }
 
   /**
@@ -146,7 +146,7 @@ object CLISettings extends LazyLogging {
     * --parallel-features CLI switch.
     */
   def `gwen.cli.options.parallelFeatures`: Boolean = {
-    Settings.getBoolean("gwen.cli.options.parallelFeatures")
+    Settings.getBoolean("gwen.cli.options.parallelFeatures", None, Some(config))
   }
 
   /**

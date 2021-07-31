@@ -27,5 +27,7 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override def exitCode = 1
   override def emoticon = "[:(]"
   override def cause = Option(error.getCause)
-  override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
+  override def message: String = {
+    cause.map(_.getMessage).orElse(Option(error.getMessage)).getOrElse(error.getClass.getSimpleName)
+  }
 }
