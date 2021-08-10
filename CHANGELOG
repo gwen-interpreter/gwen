@@ -12,6 +12,8 @@ m d, yyyy
   - Deprecated settings:
     - `gwen.feature.failfast` in favor of `gwen.feature.failfast.enabled`
     - `gwen.rp.heartbeat` in favor of `gwen.rp.heartbeat.enabled`
+  - New setting for specifying output directory of Gwen generated files (reports, etc..)
+    - `gwen.output.dir` (default = target)
   
 2.34.0
 ======

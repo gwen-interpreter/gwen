@@ -397,6 +397,16 @@ object Settings extends LazyLogging {
     }
   }
 
+  def getFile(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): File = {
+    getFileOpt(name, deprecatedName, config).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getFileOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[File] = {
+    getOptAndConvert(name, deprecatedName, "File system directories", config) { value =>
+      new File(value)
+    }
+  }
+
   def getReportFormat(name: String, value: String): ReportFormat = {
     convert(name, value, ReportFormat.values.mkString(", ")) { value =>
       ReportFormat.valueOf(value)

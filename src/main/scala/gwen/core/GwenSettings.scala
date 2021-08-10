@@ -235,4 +235,11 @@ object GwenSettings {
     }
   }
 
+  /**
+    * Provides access to the `gwen.output.dir` used to set the Gwen output directory.
+    */
+  def `gwen.output.dir`: File = {
+    Settings.getFile("gwen.output.dir")
+  }
+
 }
