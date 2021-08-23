@@ -214,7 +214,7 @@ object GwenOptions {
           arg[File]("<dir>").optional().action {
             (d, c) =>
               c.copy(initDir = d)
-          } text s"Init directory (default is ${GwenOptions.Defaults.initDir.getPath()})"
+          } text s"Directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
       } 
 
     }

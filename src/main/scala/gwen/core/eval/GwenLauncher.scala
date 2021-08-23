@@ -62,14 +62,14 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
   }
 
   /**
-    * Initialises a Gwen working directory.
+    * Initialises a Gwen project directory.
     *
     * @param dir the directory to initialise
     */
-  def initWorkingDir(dir: File): Unit = {
+  def initProjectDir(dir: File): Unit = {
     logger.info(("""|
                     |   _
-                    |  { \," Initialising working directory: """ + dir.getPath + """
+                    |  { \," Initialising project directory: """ + dir.getPath + """
                     | {_`/   
                     |    `   """).stripMargin)
     dir.mkdirs()
@@ -105,7 +105,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val startNanos = System.nanoTime
     try {
       if (options.init) {
-        initWorkingDir(options.initDir)
+        initProjectDir(options.initDir)
         logger.info(s"Working directory initialised")
         Passed(System.nanoTime - startNanos)
       } else {

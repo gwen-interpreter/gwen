@@ -201,10 +201,10 @@ object Errors {
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends GwenException(s"Imperative step not permitted in feature${at(step.sourceRef)} (move it to meta): $step")
+  class ImperativeStepException(step: Step) extends GwenException(s"Gwen DSL step not permitted in feature${at(step.sourceRef)} << Move it to meta >> $step")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(stepDef.sourceRef)} (move it to meta)")
+  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(stepDef.sourceRef)} << Move it to meta")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 

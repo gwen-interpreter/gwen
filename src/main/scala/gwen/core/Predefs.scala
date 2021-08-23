@@ -128,6 +128,7 @@ extension [F <: File](file: F) {
     case _ => "text/plain"
   }
 
+  def isSame(other: File): Boolean = isSame(Option(other))
   def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
 
   def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
@@ -348,7 +349,7 @@ object Deprecation extends LazyLogging {
     )
   }
   private def createMsg(prefix: String, oldWay: String, newWay: String): String = {
-    s"""|       $oldWay >> instead use >> $newWay
+    s"""|       $oldWay >> Instead use >> $newWay
         |       ${"^" * oldWay.size}""".stripMargin
   }
 }

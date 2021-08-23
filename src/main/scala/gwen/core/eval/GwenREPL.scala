@@ -17,6 +17,7 @@
 package gwen.core.eval
 
 import gwen.core._
+import gwen.core.behavior.FeatureMode
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.StepKeyword
@@ -57,6 +58,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => ctx.dsl.distinct.map(y => s"$x $y")).asJava)))
     }
   }
+
+  // repl always runs in imperative mode
+  Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
 
   /** Reads an input string or command from the command line. */
   private def read(): String = {
