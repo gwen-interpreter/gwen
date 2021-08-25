@@ -104,25 +104,29 @@ object GwenOptions {
 
     val parser = new OptionParser[GwenOptions]("gwen") {
 
-      version("version") text "Prints the implementation version"
+      version("version") text "Print Gwen version"
 
-      help("help") text "Prints this usage text"
-
-      opt[Unit]('b', "batch") action {
-        (_, c) => c.copy(batch = true)
-      } text "Batch/server mode"
+      help("help") text "Print CLI usage"
 
       opt[Unit]("parallel") action {
         (_, c) => {
           c.copy(parallel = true, batch = true)
         }
-      } text "Run features or scenarios in parallel depending on state level"
+      } text "Execute features/scenarios in parallel"
 
       opt[Unit]("parallel-features") action {
         (_, c) => {
           c.copy(parallelFeatures = true, batch = true)
         }
-      } text "Run features in parallel regardless of state level"
+      } text "Execute features only in parallel"
+
+      opt[Unit]('b', "batch") action {
+        (_, c) => c.copy(batch = true)
+      } text "Exit after execution completes (omit to open REPL)"
+
+      opt[Unit]('n', "dry-run") action {
+        (_, c) => c.copy(dryRun = true)
+      } text "Detect and report errors and possible runtime failures"
 
       opt[String]('p', "properties") action {
         (ps, c) =>
@@ -137,7 +141,7 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<properties files>" text "Comma separated list of *.properties files (deprecated, use -c/--config instead)"
+      } valueName "<files>" text "Properties files (deprecated, use -c/--config instead)"
 
       opt[String]('c', "config") action {
         (cs, c) =>
@@ -153,17 +157,17 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<config files>" text "Comma separated list of *.conf,*.json or *.properties files"
+      } valueName "<files>" text "Settings files: conf, json or properties (comma separated)"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
-      } valueName "<report directory>" text "Evaluation report output directory"
+      } valueName "<dir>" text "Directory to output evaluation report(s) to"
 
       opt[String]('f', "formats") action {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
-      } valueName "<formats>" text s"""|Comma separated list of report formats to produce
-                                       |         - Supported formats include: ${ReportFormat.values.mkString(",")} (default is ${GwenOptions.Defaults.formats.mkString(", ")})""".stripMargin
+      } valueName "<formats>" text s"""|Report formats to output (comma separated)
+                                       |- ${ReportFormat.values.filter(_ != ReportFormat.slideshow).mkString(",")} (default is ${GwenOptions.Defaults.formats.mkString(", ")})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -175,18 +179,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<tags>" text "Comma separated list of @include or ~@exclude tags"
-
-      opt[Unit]('n', "dry-run") action {
-        (_, c) => c.copy(dryRun = true)
-      } text "Do not evaluate steps on engine (validate for correctness only)"
+      } valueName "<@tag/~@tag>" text "Tags to @include/~@exclude for execution (comma separated)"
 
       opt[File]('i', "input-data") action {
         (d, c) => c.copy(dataFile = Some(d))
       } validate { d =>
         if (!d.exists) failure(s"Specified data file not found: $d")
         else success
-      } valueName "<input data file>" text "Input data (CSV file with column headers)"
+      } valueName "<file>" text "Input data feed file (CSV with column headers)"
 
       opt[String]('m', "meta") action {
         (ms, c) =>
@@ -198,14 +198,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<meta files>" text "Comma separated list of meta files and directories"
+      } valueName "<files/dirs>" text "Explicit meta files/directories to load (comma separated)"
 
-      arg[File]("<features>").unbounded().optional().action {
+      arg[File]("<files/dirs>").unbounded().optional().action {
         (f, c) =>
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
-      } text "Space separated list of feature files and/or directories"
+      } text "Feature files/directories to execute (space separated)"
 
       cmd("init").action { 
         (_, c) => 

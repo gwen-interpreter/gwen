@@ -15,7 +15,12 @@ m d, yyyy
     - `gwen.associative.meta = true` instead of `false`
   - New setting for specifying output directory of Gwen generated files (reports, etc..)
     - `gwen.output.dir` (default = target)
-  
+
+2.35.0  
+======
+July 25, 2021
+- Improved usage (--help) text
+
 2.34.0
 ======
 July 2, 2021
