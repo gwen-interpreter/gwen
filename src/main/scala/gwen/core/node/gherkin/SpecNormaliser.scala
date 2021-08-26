@@ -25,6 +25,7 @@ import gwen.core.status.Pending
 import scala.util.chaining._
 
 import java.io.File
+import java.util.regex.Matcher
 
 /**
   * Normalises a parsed feature spec by expanding scenarios and scenario outlines in preparation for evaluation.
@@ -171,7 +172,7 @@ trait SpecNormaliser extends BehaviorRules {
         case head :: tail =>
           val (name, value) = head
           val param = if (source.contains(s"<$name>")) List(head) else Nil
-          resolveParams(param ++ acc, source.replaceAll(s"<$name>", value), tail)
+          resolveParams(param ++ acc, source.replaceAll(s"<$name>", Matcher.quoteReplacement(value)), tail)
       }
     }
     resolveParams(Nil, source, params)

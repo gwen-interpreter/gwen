@@ -20,6 +20,7 @@ m d, yyyy
 ======
 July 25, 2021
 - Improved usage (--help) text
+- Issue gwen-interpreter/gwen-web#79: resolve attributes in examples tables
 
 2.34.0
 ======
