@@ -326,11 +326,13 @@ class EnvContext(options: GwenOptions) extends Evaluatable
     val iDocString = step.docString map { case (line, content, contentType) =>
       (line, interpolator(content) { resolver }, contentType)
     }
-    if (iName != step.name || iTable != step.table || iDocString != step.docString) {
+    val iParams = step.params map { case (name, value) => (name, interpolator(value) { resolver }) }
+    if (iName != step.name || iTable != step.table || iDocString != step.docString || iParams.mkString != step.params.mkString) {
       step.copy(
         withName = iName,
         withTable = iTable,
-        withDocString = iDocString
+        withDocString = iDocString,
+        withParams = iParams
       ) tap { iStep =>
         logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
       }

@@ -33,6 +33,7 @@ import java.io.StringWriter
 import java.nio.file.{Files, Paths}
 import java.text.DecimalFormat
 import java.{util => ju}
+import java.util.regex.Matcher
 
 /** Predefs and implicits avaiable wherever this page is imported. */
 
@@ -249,7 +250,7 @@ package object gwen {
           case head :: tail =>
             val (name, value) = head
             val param = if (source.contains(s"<$name>")) List(head) else Nil
-            resolveParams(param ++ acc, source.replaceAll(s"<$name>", value), tail)
+            resolveParams(param ++ acc, source.replaceAll(s"<$name>", Matcher.quoteReplacement(value)), tail)
         }
       }
       resolveParams(Nil, source, params)
