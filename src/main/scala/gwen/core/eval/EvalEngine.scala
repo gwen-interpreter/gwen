@@ -33,7 +33,7 @@ import scala.concurrent.duration._
 object EvalEngine {
   val DefaultInstance = new EvalEngine[EvalContext]() {
     override def init(options: GwenOptions, envState: EnvState): EvalContext = {
-      new EvalContext(options, EnvState())
+      new EvalContext(options, envState)
     }
   }
 }

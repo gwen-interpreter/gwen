@@ -29,7 +29,7 @@ import scala.util.chaining._
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
 
-class EnvState(val scopes: ScopedDataStack) {
+class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
 
   /** Loaded step defs. */
   private var stepDefs = Map[String, Scenario]()
@@ -128,12 +128,14 @@ object EnvState {
 
   private var attachmentCounter = new AtomicInteger(0)
 
-  def apply(): EnvState = {
-    new EnvState(new ScopedDataStack())
+  def apply(): EnvState = EnvState(GwenSettings.`gwen.state.level`)
+  
+  def apply(stateLevel: StateLevel): EnvState = {
+    new EnvState(new ScopedDataStack(), stateLevel)
   }
 
-  def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain): EnvState = {
-    new EnvState(new ScopedDataStack()) tap { newState =>
+  def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain, stateLevel: StateLevel): EnvState = {
+    new EnvState(new ScopedDataStack(), stateLevel) tap { newState =>
       topScope.implicitAtts foreach { case (n, v) =>
         newState.scopes.topScope.set(n, v)
       }

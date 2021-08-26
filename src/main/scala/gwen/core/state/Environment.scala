@@ -37,8 +37,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   private var state = initialState
 
-  lazy val stateLevel: StateLevel = GwenSettings.`gwen.state.level`
-
+  def stateLevel: StateLevel = state.stateLevel
   def stepDefs: Map[String, Scenario] = state.getStepDefs
   def paramScope: ParameterStack = scopes.paramScope
   def scopes: ScopedDataStack = state.scopes
@@ -46,7 +45,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def nodeChain: NodeChain = state.nodeChain
 
   /** Create a clone of the current environment state */
-  def cloneState: EnvState = EnvState(topScope, Some(stepDefs), nodeChain)
+  def cloneState: EnvState = EnvState(topScope, Some(stepDefs), nodeChain, stateLevel)
 
   /**
     * Closes any resources associated with the evaluation context. This implementation
@@ -59,9 +58,9 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     logger.info(s"Resetting environment")
     state = if (StateLevel.feature.equals(level)) {
       EnvState.resetAttachmentNo()
-      EnvState(topScope, None, NodeChain())
+      EnvState(topScope, None, NodeChain(), level)
     } else {
-      EnvState(topScope, Some(stepDefs), nodeChain)
+      EnvState(topScope, Some(stepDefs), nodeChain, level)
     }
 
   }
