@@ -21,6 +21,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.GwenLauncher
 import gwen.core.eval.GwenREPL
+import gwen.core.node.gherkin.Dialect
 import gwen.core.state.EnvState
 import gwen.core.status.Failed
 
@@ -47,6 +48,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       logger.info("Initialising settings")
       Settings.init(options.configFiles*)
       GwenSettings.check()
+      Dialect.instance
       System.exit(run(options))
     } catch {
       case e: Throwable =>
