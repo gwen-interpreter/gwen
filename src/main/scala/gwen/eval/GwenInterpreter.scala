@@ -69,6 +69,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       }
     }
     engine.init(options) tap { env =>
+      Dialect.instance
       logger.info("Environment context initialised")
     }
   }

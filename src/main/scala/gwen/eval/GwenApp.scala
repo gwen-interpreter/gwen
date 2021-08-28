@@ -73,13 +73,27 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   
   private def printBanner(intro: String): Unit = {
     println(("""|
-                |   __ ___      _____ _ __     _
-                |  / _` \ \ /\ / / _ \ '_ \   { \,"
-                | | (_| |\ V  V /  __/ | | | {_`/
-                |  \__, | \_/\_/ \___|_| |_|   `
-                |  |___/
+                |   __ ___      _____ _ __     _    
+                |  / _` \ \ /\ / / _ \ '_ \   { \," 
+                | | (_| |\ V  V /  __/ | | | {_`/   
+                |  \__, | \_/\_/ \___|_| |_|   `    
+                |  |___/                            
                 |
-                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin)
+                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin + """|
+                |gweninterpreter.org""".stripMargin)
+
+    sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
+      println(
+        """|
+           | ╭───────────────────────────────────────────────────────────────╮
+           | │  Gwen Workspaces DEPRECATED!                                  |
+           | │                                                               |
+           | │  Gwen Workspaces are now deprecated and will be discontinued  |
+           | │  in upcoming Gwen 3 release in favor of JS projects and npm.  |
+           | │  Migration guide coming soon at https://gweninterpreter.org/  |                                       |
+           | ╰───────────────────────────────────────────────────────────────╯""".stripMargin)
+    }
+    
   }
   
 }
