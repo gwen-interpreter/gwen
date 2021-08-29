@@ -82,8 +82,8 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       }
       val resultSpec = spec.copy(
         withBackground = None,
-        withScenarios = evaluateScenarios(spec, spec.scenarios, ctx),
-        withRules = evaluateRules(spec, spec.rules, ctx),
+        withScenarios = evaluateScenarios(spec, spec.scenarios, ctx, spec.feature.language),
+        withRules = evaluateRules(spec, spec.rules, ctx, spec.feature.language),
         withMetaSpecs = metaResults.map(_.spec)
       )
       resultSpec.specFile foreach { _ =>

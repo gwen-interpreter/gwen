@@ -22,6 +22,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.ParallelExecutors
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Background
+import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.ReservedTags
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
@@ -47,10 +48,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T, language: String): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
     if (ctx.options.isParallelScenarios(ctx.stateLevel) && ctx.specType.isFeature) {
-      evaluateParallelScenarios(parent, input, ctx)
+      evaluateParallelScenarios(parent, input, ctx, language)
     } else {
       evaluateSequentialScenarios(parent, input, ctx)
     }
@@ -63,7 +64,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     } reverse
   }
 
-  private def evaluateParallelScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T): List[Scenario] = {
+  private def evaluateParallelScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T, language: String): List[Scenario] = {
     val stepDefs = scenarios.filter(_.isStepDef).foldLeft(List[Scenario]()) {
       (acc: List[Scenario], stepDef: Scenario) =>
         evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
@@ -75,8 +76,10 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       Future {
         val ctxClone = engine.init(ctx.options, ctx.cloneState)
         try {
-          evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
-            acc.add(s)
+          Dialect.withLanguage(language) {
+            evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
+              acc.add(s)
+            }
           }
         } finally {
           ctxClone.close()

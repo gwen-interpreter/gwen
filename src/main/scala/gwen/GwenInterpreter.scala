@@ -94,26 +94,25 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
   private def printBanner(intro: String): Unit = {
-    println(("""|
-                |   __ ___      _____ _ __     _    
-                |  / _` \ \ /\ / / _ \ '_ \   { \," 
-                | | (_| |\ V  V /  __/ | | | {_`/   
-                |  \__, | \_/\_/ \___|_| |_|   `    
-                |  |___/                            
-                |
-                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin + """|
-                |gweninterpreter.org""".stripMargin)
+    println("""|
+               |   __ ___      _____ _ __     _    
+               |  / _` \ \ /\ / / _ \ '_ \   { \," 
+               | | (_| |\ V  V /  __/ | | | {_`/   
+               |  \__, | \_/\_/ \___|_| |_|   `    
+               |  |___/                            
+               |
+               |""" + intro + implName + implVersion + " v" + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+               |gweninterpreter.org""".stripMargin)
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
       println(
         """|
-           | ╭───────────────────────────────────────────────────────────────╮
-           | │  Gwen Workspaces DEPRECATED!                                  |
-           | │                                                               |
-           | │  Gwen Workspaces are now deprecated and will be discontinued  |
-           | │  in upcoming Gwen 3 release in favor of JS projects and npm.  |
-           | │  Migration guide coming soon at https://gweninterpreter.org/  |                                       |
-           | ╰───────────────────────────────────────────────────────────────╯""".stripMargin)
+           | ╭─────────────────────────────────────────────────────────────╮
+           | │  Gwen Workspaces DISCONTINUED!                              │
+           | │                                                             │
+           | │  Gwen Workspaces are no longer supported and have been      │
+           | │  dicontinued in favor of JS projects and npm since Gwen 3.  │
+           | ╰─────────────────────────────────────────────────────────────╯""".stripMargin)
     }
   }
 
