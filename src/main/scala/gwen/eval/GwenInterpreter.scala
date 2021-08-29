@@ -157,7 +157,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
       }
       val resultSpec = featureSpec.copy(
         withBackground = None,
-        withScenarios = evaluateScenarios(featureSpec, featureSpec.scenarios, env),
+        withScenarios = evaluateScenarios(featureSpec, featureSpec.scenarios, featureSpec.feature.language, env),
         withRules = evaluateRules(featureSpec, featureSpec.rules, env),
         withMetaSpecs = metaResults.map(_.spec)
       )
@@ -180,7 +180,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     }
   }
 
-  private def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], env: T): List[Scenario] = {
+  private def evaluateScenarios(parent: Identifiable, scenarios: List[Scenario], language: String, env: T): List[Scenario] = {
     val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, env) else s)
     if (env.isParallelScenarios && SpecType.isFeature(env.specType) && StateLevel.scenario.equals(env.stateLevel)) {
       val stepDefOutput = input.filter(_.isStepDef).foldLeft(List[Scenario]()) {
@@ -194,8 +194,10 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         Future {
           val envClone = env.clone(engine)
           try {
-            evaluateScenario(parent, scenario, acc.asScala.toList, envClone) tap { s =>
-              acc.add(s)
+            Dialect.withLanguage(language) {
+              evaluateScenario(parent, scenario, acc.asScala.toList, envClone) tap { s =>
+                acc.add(s)
+              }
             }
           } finally {
             envClone.close()
@@ -243,11 +245,11 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
   private def evaluateRules(spec: FeatureSpec, rules: List[Rule], env: T): List[Rule] = {
     rules.foldLeft(List[Rule]()) {
       (acc: List[Rule], rule: Rule) =>
-        evaluateRule(spec, rule, acc, env) :: acc
+        evaluateRule(spec, rule, acc, spec.feature.language, env) :: acc
     } reverse
   }
 
-  private def evaluateRule(parent: Identifiable, rule: Rule, acc: List[Rule], env: T): Rule = {
+  private def evaluateRule(parent: Identifiable, rule: Rule, acc: List[Rule], language: String, env: T): Rule = {
     env.topScope.set("gwen.rule.name", rule.name)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
@@ -263,7 +265,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
           lifecycle.beforeRule(parent, rule, env.scopes)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
-            withScenarios = evaluateScenarios(rule, rule.scenarios, env)
+            withScenarios = evaluateScenarios(rule, rule.scenarios, language, env)
           ) tap { r =>
             logStatus(r)
             lifecycle.afterRule(r, env.scopes)
@@ -273,7 +275,7 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
         lifecycle.beforeRule(parent, rule, env.scopes)
         logger.info(s"Evaluating ${rule.keyword}: $rule")
         rule.copy(
-          withScenarios = evaluateScenarios(rule, rule.scenarios, env)
+          withScenarios = evaluateScenarios(rule, rule.scenarios, language, env)
         ) tap { r =>
           logStatus(r)
           lifecycle.afterRule(r, env.scopes)
