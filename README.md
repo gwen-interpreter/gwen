@@ -3,17 +3,8 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://docs.cucumber.io/gherkin/reference/) interpreter that turns Given-When-Then steps into automation instructions and executes them for you so you don't 
-have to do all the programming work. It has an abstracted 
+Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for executing feature specs through automation bindings in [meta specs](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) that you compose. It has an abstracted 
 [evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation capability to be built and mixed in.
-[Meta specifications](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) (also expressed in Gherkin) are used to capture automation bindings and allow you to compose step definitions in a declarative manner.
-
-> [Home](http://gweninterpreter.org)
-  | [Gwen Web](https://github.com/gwen-interpreter/gwen-web)
-  | [Blog](https://gweninterpreter.wordpress.com)
-  | [Wiki](https://github.com/gwen-interpreter/gwen/wiki)
-  | [FAQ](https://github.com/gwen-interpreter/gwen/wiki/FAQ)
-  | [Support](#user-network-and-support)
 
 ### Current Status
 
@@ -28,24 +19,15 @@ have to do all the programming work. It has an abstracted
 - [Report Portal integration](https://github.com/gwen-interpreter/gwen/wiki/Report-Portal-Integration) for centralised reporting and real-time analytics.
 - [Masked Settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#masked-settings) to make all your private and sensitive settings appear as `●●●●●` in all Gwen logs, reports, errors and console outputs
 
-Why Gwen?
----------
+System Requirements
+-------------------
 
-> Gwen = [G]iven [W]hen Th[en]
+- Java 8 (version 1.8) or higher
 
-We wanted to make automation with executable specifications simpler for everyone and easier for non developers with little to no coding experience. So we developed an interpreter to read plain text Gherkin features as input and produce executing automation instructions as output through automation engines that can be developed and shared.
+Get Started
+-----------
 
-What engines are available?
----------------------------
-
-- [gwen-web](https://github.com/gwen-interpreter/gwen-web)
-  - A web automation engine for Gwen that you can download and use to quickly automate web application testing and
-    robotic online processing without having to manage native browser drivers, develop page objects or write Selenium code.
-
-Core Runtime Requirement
-------------------------
-
-- Java SE 8 Runtime Environment
+See the [getting started](https://gweninterpreter.org/docs/get-started) guide on our Gwen project website.
 
 Key Features
 ------------
@@ -79,11 +61,6 @@ Key Features
 - [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
 - Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
 - Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
-
-User Network and Support
-------------------------
-
-Join our user network at [Gwenify](https://www.gwenify.com/) to get access to the community and company level chat and support for your workplace.
 
 License
 -------
