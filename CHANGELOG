@@ -16,11 +16,17 @@ m d, yyyy
   - New setting for specifying output directory of Gwen generated files (reports, etc..)
     - `gwen.output.dir` (default = target)
 
-2.35.0  
+2.34.2
 ======
-July 25, 2021
+July 29, 2021
 - Improved usage (--help) text
 - Issue gwen-interpreter/gwen-web#79: resolve attributes in examples tables
+- Fix parallel scenario-level execution for Gherkin's spoken languages/dialects
+
+2.34.1
+======
+July 31, 2021
+- Default `gwen.rp.send.annotations` setting to false
 
 2.34.0
 ======

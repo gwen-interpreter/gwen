@@ -95,14 +95,26 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
 
   private def printBanner(intro: String): Unit = {
     println(("""|
-                |                              _
-                |   __ ___      _____ _ __    { \,"
-                |  / _` \ \ /\ / / _ \ '_ \  {_`/
-                | | (_| |\ V  V /  __/ | | |   `
-                |  \__, | \_/\_/ \___|_| |_|
-                |  |___/
+                |   __ ___      _____ _ __     _    
+                |  / _` \ \ /\ / / _ \ '_ \   { \," 
+                | | (_| |\ V  V /  __/ | | | {_`/   
+                |  \__, | \_/\_/ \___|_| |_|   `    
+                |  |___/                            
                 |
-                |""" + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin)
+                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin + """|
+                |gweninterpreter.org""".stripMargin)
+
+    sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
+      println(
+        """|
+           | ╭───────────────────────────────────────────────────────────────╮
+           | │  Gwen Workspaces DEPRECATED!                                  |
+           | │                                                               |
+           | │  Gwen Workspaces are now deprecated and will be discontinued  |
+           | │  in upcoming Gwen 3 release in favor of JS projects and npm.  |
+           | │  Migration guide coming soon at https://gweninterpreter.org/  |                                       |
+           | ╰───────────────────────────────────────────────────────────────╯""".stripMargin)
+    }
   }
 
 }
