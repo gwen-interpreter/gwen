@@ -1,6 +1,11 @@
+2.34.3
+======
+Sep 8, 2021
+- Improved CLI usage text
+
 2.34.2
 ======
-July 29, 2021
+Aug 29, 2021
 - Improved usage (--help) text
 - Issue gwen-interpreter/gwen-web#79: resolve attributes in examples tables
 - Fix parallel scenario-level execution for Gherkin's spoken languages/dialects
