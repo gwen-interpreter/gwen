@@ -101,7 +101,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
                |  \__, | \_/\_/ \___|_| |_|   `    
                |  |___/                            
                |
-               |""" + intro + implName + implVersion + " v" + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+               |""".stripMargin + intro + implName + implVersion + " v" + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
                |gweninterpreter.org""".stripMargin)
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>

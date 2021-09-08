@@ -112,21 +112,22 @@ object GwenOptions {
         (_, c) => {
           c.copy(parallel = true, batch = true)
         }
-      } text "Execute features/scenarios in parallel"
+      } text """|Execute features or scenarios in parallel
+                |- depending on gwen.state.level (default is features)""".stripMargin
 
       opt[Unit]("parallel-features") action {
         (_, c) => {
           c.copy(parallelFeatures = true, batch = true)
         }
-      } text "Execute features only in parallel"
+      } text "Execute features in parallel (unconditionally)"
 
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
-      } text "Exit after execution completes (omit to open REPL)"
+      } text "Exit when execution completes (omit to open REPL)"
 
       opt[Unit]('n', "dry-run") action {
         (_, c) => c.copy(dryRun = true)
-      } text "Detect and report errors and possible runtime failures"
+      } text "Check all syntax and bindings and report errors"
 
       opt[String]('p', "properties") action {
         (ps, c) =>
@@ -141,7 +142,7 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<files>" text "Properties files (deprecated, use -c/--config instead)"
+      } valueName "files" text "Properties files (deprecated, use -c/--config instead)"
 
       opt[String]('c', "config") action {
         (cs, c) =>
@@ -157,17 +158,17 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<files>" text "Settings files: conf, json or properties (comma separated)"
+      } valueName "files" text "Settings files: conf, json or properties (comma separated)"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
-      } valueName "<dir>" text "Directory to output evaluation report(s) to"
+      } valueName "dir" text "Directory to output generated report(s) to"
 
       opt[String]('f', "formats") action {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
-      } valueName "<formats>" text s"""|Report formats to output (comma separated)
-                                       |- ${ReportFormat.values.filter(_ != ReportFormat.slideshow).mkString(",")} (default is ${GwenOptions.Defaults.formats.mkString(", ")})""".stripMargin
+      } valueName "include" text s"""|Report formats to include in output (comma separated)
+                                     |- ${ReportFormat.values.filter(_ != ReportFormat.slideshow).mkString(",")} (default is ${ReportFormat.html})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -179,14 +180,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<@tag/~@tag>" text "Tags to @include/~@exclude for execution (comma separated)"
+      } valueName "filter" text "Tags to @include or ~@exclude (comma separated)"
 
       opt[File]('i', "input-data") action {
         (d, c) => c.copy(dataFile = Some(d))
       } validate { d =>
         if (!d.exists) failure(s"Specified data file not found: $d")
         else success
-      } valueName "<file>" text "Input data feed file (CSV with column headers)"
+      } valueName "file" text "Input data feed (CSV file with column headers)"
 
       opt[String]('m', "meta") action {
         (ms, c) =>
@@ -198,20 +199,20 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "<files/dirs>" text "Explicit meta files/directories to load (comma separated)"
+      } valueName "files/dirs" text "Meta files or directories (comma separated)"
 
-      arg[File]("<files/dirs>").unbounded().optional().action {
+      arg[File]("files/dirs").unbounded().optional().action {
         (f, c) =>
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
-      } text "Feature files/directories to execute (space separated)"
+      } text "Feature files or directories (space separated)"
 
       cmd("init").action { 
         (_, c) => 
           c.copy(init = true) 
       } children {
-          arg[File]("<dir>").optional().action {
+          arg[File]("dir").optional().action {
             (d, c) =>
               c.copy(initDir = d)
           } text s"Directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"

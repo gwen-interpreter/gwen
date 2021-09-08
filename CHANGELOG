@@ -16,6 +16,11 @@ m d, yyyy
   - New setting for specifying output directory of Gwen generated files (reports, etc..)
     - `gwen.output.dir` (default = target)
 
+2.34.3
+======
+Sep 8, 2021
+- Improved CLI usage text
+
 2.34.2
 ======
 July 29, 2021
