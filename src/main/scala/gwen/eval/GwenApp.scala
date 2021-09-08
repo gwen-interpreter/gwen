@@ -72,15 +72,15 @@ class GwenApp[T <: EnvContext](interpreter: GwenInterpreter[T]) extends App with
   private[eval] def createRepl(env: T): GwenREPL[T] = new GwenREPL[T](interpreter, env)
   
   private def printBanner(intro: String): Unit = {
-    println(("""|
-                |   __ ___      _____ _ __     _    
-                |  / _` \ \ /\ / / _ \ '_ \   { \," 
-                | | (_| |\ V  V /  __/ | | | {_`/   
-                |  \__, | \_/\_/ \___|_| |_|   `    
-                |  |___/                            
-                |
-                |""" + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("")).stripMargin + """|
-                |gweninterpreter.org""".stripMargin)
+    println("""|
+               |   __ ___      _____ _ __     _    
+               |  / _` \ \ /\ / / _ \ '_ \   { \," 
+               | | (_| |\ V  V /  __/ | | | {_`/   
+               |  \__, | \_/\_/ \___|_| |_|   `    
+               |  |___/                            
+               |
+               |""".stripMargin + intro + interpreter.implName + " v" + interpreter.implVersion + interpreter.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+               |gweninterpreter.org""".stripMargin)
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
       println(
