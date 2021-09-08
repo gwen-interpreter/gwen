@@ -20,6 +20,8 @@ m d, yyyy
 ======
 Sep 8, 2021
 - Improved CLI usage text
+- Update Gwen core from v2.34.3 to v[2.34.4](https://github.com/gwen-interpreter/gwen/releases/tag/v2.34.4)
+  - Console banner fix
 
 2.34.2
 ======
