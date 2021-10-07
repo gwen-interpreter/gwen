@@ -16,6 +16,11 @@ m d, yyyy
   - New setting for specifying output directory of Gwen generated files (reports, etc..)
     - `gwen.output.dir` (default = target)
 
+2.35.4
+======
+Oct 7, 2021
+- Close input stream after reading RP heartbeat response
+
 2.34.3
 ======
 Sep 8, 2021

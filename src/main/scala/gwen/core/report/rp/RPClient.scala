@@ -110,12 +110,17 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       if (code != 200) {
         Errors.serviceHealthCheckError(s"Report Portal unavailable or unreachable at $endpoint")
       } else {
-        val body = Source.fromInputStream(conn.getInputStream()).mkString.trim
-        if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
-          logger.info(s"Report Portal heartbeat OK: $code $body")
-        } else {
-          logger.error(s"Report Portal heartbeat FAILED")
-          Errors.serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
+        val is = conn.getInputStream()
+        try {
+          val body = Source.fromInputStream(is).mkString.trim
+          if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
+            logger.info(s"Report Portal heartbeat OK: $code $body")
+          } else {
+            logger.error(s"Report Portal heartbeat FAILED")
+            Errors.serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
+          }
+        } finally {
+          is.close()
         }
       }
     } catch {
