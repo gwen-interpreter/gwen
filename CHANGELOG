@@ -1,3 +1,8 @@
+2.34.5
+======
+Oct 7, 2021
+- Close input stream after reading RP heartbeat response.
+
 2.34.4
 ======
 Sep 8, 2021
