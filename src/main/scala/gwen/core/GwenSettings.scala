@@ -105,7 +105,7 @@ object GwenSettings {
 
     /**
     * Controls whether or not slideshows should be generated in HTML reports. This property is implicitly set to true
-    * in the web engine only if screenshot capturing is enabled (gwen.web.capture.screenshots=true in web engine settings).
+    * in the web engine only if screenshot capturing is enabled (gwen.web.capture.screenshots.enabled=true in web engine settings).
     * Users should not explicitly set this value.
     */
   def `gwen.report.slideshow.create` = {

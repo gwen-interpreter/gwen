@@ -70,7 +70,7 @@ case class Spec(
     * 
     * @return a list containing all the steps (or an empty list if none exist)
     */
-  def steps: List[Step] = rules.flatMap(_.allSteps) ++ scenarios.flatMap(_.allSteps)
+  def steps: List[Step] = scenarios.flatMap(_.allSteps) ++ rules.flatMap(_.allSteps)
 
   def evalScenarios = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
 

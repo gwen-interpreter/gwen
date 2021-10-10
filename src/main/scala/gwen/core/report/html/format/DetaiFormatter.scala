@@ -732,11 +732,15 @@ object DetailFormatter {
         formatBadgeStatus(status, renderErrorLink, sustainedCount),
         formatDateStatus("Started", result.started),
         formatDateStatus("Finished", result.finished),
-        if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) {
-          li(
-            SlideshowFormatter.formatSlideshowModal(screenshots, result.spec, unit, rootPath)
-          )
-        }
+        Seq(
+          if (GwenSettings.`gwen.report.slideshow.create` && screenshots.nonEmpty) {
+            Some(
+              li(
+                SlideshowFormatter.formatSlideshowModal(screenshots, result.spec, unit, rootPath)
+              )
+            )
+          } else None
+        ).flatten
       )
     )
 
