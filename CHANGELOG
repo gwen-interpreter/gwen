@@ -1,7 +1,9 @@
 2.34.5
 ======
-Oct 7, 2021
-- Close input stream after reading RP heartbeat response.
+Oct 11, 2021
+- Fix RP heartbeat timeout issue gwen-interpreter/gwen-web#85:
+  - Close input stream after reading RP heartbeat response.
+  - Keep retrying failed RP heartbeats until configured timeout expires
 
 2.34.4
 ======

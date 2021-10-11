@@ -47,6 +47,8 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.{util => ju}
+import scala.util.Failure
+import scala.util.Try
 
 /**
   * Connects to report portal and performs all reporting operations.
@@ -57,6 +59,7 @@ import java.{util => ju}
 class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   info: GwenInfo =>
   
+  private val maxHeartbeatTimeoutSecs = 21
   private val startTime = ju.Calendar.getInstance.getTime
   private val rpids = new ju.concurrent.ConcurrentHashMap[String, Maybe[String]]()
   private val launchLock = new ju.concurrent.Semaphore(1)
@@ -95,37 +98,58 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   }
 
   def healthCheck(timeoutSecs: Int): Unit = {
+    Try(heartbeatWithRetry(timeoutSecs)) match {
+      case Failure(e) => 
+        logger.error(s"Report Portal heartbeat FAILED")
+        e match {
+          case _: SocketTimeoutException =>
+            serviceHealthCheckError(s"Report Portal health check timed out after ${timeoutSecs} second(s)")
+          case _: ServiceHealthCheckException => 
+            throw e
+          case _ =>
+            serviceHealthCheckError(s"Report Portal health check FAILED: $e")
+        }
+      case _ => // OK
+    }
+  }
+
+  private def heartbeatWithRetry(timeoutSecs: Int): Unit = {
+    Try(heartbeat(if (timeoutSecs < maxHeartbeatTimeoutSecs) timeoutSecs else maxHeartbeatTimeoutSecs)) match {
+      case Failure(e) => 
+        e match {
+          case _: SocketTimeoutException =>
+            if (timeoutSecs > maxHeartbeatTimeoutSecs) {
+              heartbeatWithRetry(timeoutSecs - maxHeartbeatTimeoutSecs)
+            } else throw e
+          case _ => throw e
+        }
+      case _ => // OK
+    }
+  }
+  
+  private def heartbeat(timeoutSecs: Int): Unit = {
     val endpoint = RPSettings.`rp.endpoint`
     val healthUrl = s"${RPSettings.`rp.endpoint`}${if (RPSettings.`rp.endpoint`.endsWith("/")) "" else "/" }health"
-    try {
-      val conn = new URL(healthUrl).openConnection().asInstanceOf[HttpURLConnection]
-      conn.setConnectTimeout(timeoutSecs * 1000)
-      conn.setReadTimeout(timeoutSecs * 1000)
-      conn.setRequestMethod("GET");
-      val code = conn.getResponseCode
-      if (code != 200) {
-        serviceHealthCheckError(s"Report Portal unavailable or unreachable at $endpoint")
-      } else {
-        val is = conn.getInputStream()
-        try {
-          val body = Source.fromInputStream(is).mkString.trim
-          if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
-            logger.info(s"Report Portal heartbeat OK: $code $body")
-          } else {
-            logger.error(s"Report Portal heartbeat FAILED")
-            serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
-          }
-        } finally {
-          is.close()
+    val conn = new URL(healthUrl).openConnection().asInstanceOf[HttpURLConnection]
+    conn.setConnectTimeout(timeoutSecs * 1000)
+    conn.setReadTimeout(timeoutSecs * 1000)
+    conn.setRequestMethod("GET");
+    val code = conn.getResponseCode
+    if (code != 200) {
+      serviceHealthCheckError(s"Report Portal unavailable or unreachable at $endpoint")
+    } else {
+      val is = conn.getInputStream()
+      try {
+        val body = Source.fromInputStream(is).mkString.trim
+        if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
+          logger.info(s"Report Portal heartbeat OK: $code $body")
+        } else {
+          logger.error(s"Report Portal heartbeat FAILED")
+          serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
         }
+      } finally {
+        is.close()
       }
-    } catch {
-      case e: SocketTimeoutException =>
-        logger.error(s"Report Portal heartbeat FAILED")
-        serviceHealthCheckError(s"Report Portal health check at $healthUrl timed out after ${timeoutSecs} second(s)")
-      case e: Throwable => 
-        logger.error(s"Report Portal heartbeat FAILED")
-        serviceHealthCheckError(s"Report Portal health check FAILED: $e")
     }
   }
 
