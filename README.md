@@ -3,11 +3,12 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for executing feature specs through automation bindings in [meta specs](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features) that you compose. It has an abstracted 
-[evaluation engine](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines) allowing any type of automation capability to be built and mixed in.
+Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. An embedded [Gwen-Web engine](https://github.com/gwen-interpreter/gwen-web) executes each step in your features according to the meta to automate operations in browsers for you.
+ 
+Get Started
+-----------
 
-Available engines:
-- [Gwen-Web](https://github.com/gwen-interpreter/gwen-web)
+Visit the [Gwen home page](https://gweninterpreter.org) for our user documentation and getting started guide.
 
 ### Current Status
 
@@ -26,11 +27,6 @@ System Requirements
 -------------------
 
 - Java 8 (version 1.8) or higher
-
-Get Started
------------
-
-See the [getting started](https://gweninterpreter.org/docs/get-started) guide on our Gwen project website.
 
 Key Features
 ------------
