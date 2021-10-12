@@ -3,7 +3,7 @@
 Gwen
 ====
 
-Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. An embedded [Gwen-Web engine](https://github.com/gwen-interpreter/gwen-web) executes each step in your features according to the meta to automate operations in browsers for you.
+Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. An embedded [web engine](https://github.com/gwen-interpreter/gwen-web) executes each step in your features according to the meta to automate operations in browsers for you.
  
 Get Started
 -----------
