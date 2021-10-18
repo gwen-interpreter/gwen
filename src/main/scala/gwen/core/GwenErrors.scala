@@ -201,22 +201,22 @@ object Errors {
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends GwenException(s"Gwen DSL step not permitted in feature${at(step.sourceRef)} << Move it to meta (or set gwen.feature.mode to imperative to disable this rule) >> $step")
+  class ImperativeStepException(step: Step) extends GwenException(s"Declarative feature violation: DSL step not permitted in feature${at(step.sourceRef)}: $step")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"StepDef declaration not permitted in feature${at(stepDef.sourceRef)} << Move it to meta (or set gwen.feature.mode to imperative to disable this rule)")
+  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"Declarative feature violation: StepDef declaration not permitted in feature${at(stepDef.sourceRef)}")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 
-    extends GwenException(s"Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)} << Fix the order (or set gwen.behaviour.rules to lenient to disable this rule)")
+    extends GwenException(s"Strict behaviour violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends GwenException(s"$actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))}) << Use correct semantics (or set gwen.behaviour.rules to lenient to disable this rule)")
+    extends GwenException(s"Strict behaviour violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends GwenException(s"Missing @Context, @Action, or @Assertion behavior annotation on StepDef${at(stepDef.sourceRef)} << Annotate StepDef appropriately (or set gwen.behaviour.rules to lenient to disable this rule)")
+    extends GwenException(s"Strict behaviour violation: Missing @Context, @Action, or @Assertion behavior annotation on StepDef${at(stepDef.sourceRef)}")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

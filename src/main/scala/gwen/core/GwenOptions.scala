@@ -168,7 +168,7 @@ object GwenOptions {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
       } valueName "include" text s"""|Report formats to include in output (comma separated)
-                                     |- ${ReportFormat.values.filter(_ != ReportFormat.slideshow).mkString(",")} (default is ${ReportFormat.html})""".stripMargin
+                                     |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default is ${ReportFormat.html})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -242,7 +242,7 @@ object GwenOptions {
             Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
-            val reportables = opt.reportFormats.filter(_ != ReportFormat.rp)
+            val reportables = opt.reportFormats.filter(_.isFileSystemReport)
             Errors.invocationError(s"Required -r/--report option not provided for -f/--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
           if (opt.init && opt.initDir.exists) {

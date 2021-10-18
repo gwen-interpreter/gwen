@@ -108,7 +108,7 @@ class ReportGenerator (
         formatDetail(options, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content =>
           reportFile tap { file =>
             file.writeText(content)
-            logger.info(s"${config.name} meta detail report generated: ${file.getAbsolutePath}")
+            logger.info(s"${config.name} meta detail${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -121,7 +121,7 @@ class ReportGenerator (
         reportFile tap { file =>
           file.writeText(content)
           reportAttachments(result.spec, file)
-          logger.info(s"${config.name} feature detail report generated: ${file.getAbsolutePath}")
+          logger.info(s"${config.name} feature detail${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
         }
       }
     }
@@ -145,7 +145,7 @@ class ReportGenerator (
         reportFile foreach { file =>
           formatSummary(options, summary) foreach { content =>
             file.writeText(content)
-            logger.info(s"${config.name} feature summary report generated: ${file.getAbsolutePath}")
+            logger.info(s"${config.name} feature summary${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
           }
         }
       }
@@ -168,21 +168,31 @@ object ReportGenerator {
       }
       dir.mkdirs()
     }
-    val formats =
-      if (options.reportFormats.contains(ReportFormat.html))
-        ReportFormat.slideshow :: options.reportFormats
-      else options.reportFormats
+    options.reportFormats.distinct match {
+      case head :: Nil if (head == ReportFormat.none) => Nil
+      case reportFormats => 
+        var formats = 
+          if (reportFormats.contains(ReportFormat.html))
+            ReportFormat.slideshow :: reportFormats
+          else reportFormats
 
-    formats.flatMap { format =>
-      format match {
-        case ReportFormat.html => Some(HtmlReportConfig)
-        case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
-        case ReportFormat.junit => Some(JUnitReportConfig)
-        case ReportFormat.json => Some(JsonReportConfig)
-        case ReportFormat.rp => Some(RPReportConfig)
-     }
-    } map { config =>
-      config.reportGenerator(options)
+        formats =
+          if (options.dryRun && !formats.contains(ReportFormat.html))
+            ReportFormat.html :: formats
+          else formats
+
+        formats.flatMap { format =>
+          format match {
+            case ReportFormat.html => Some(HtmlReportConfig)
+            case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
+            case ReportFormat.junit => Some(JUnitReportConfig)
+            case ReportFormat.json => Some(JsonReportConfig)
+            case ReportFormat.rp => Some(RPReportConfig)
+            case ReportFormat.none => None
+        }
+        } map { config =>
+          config.reportGenerator(options)
+        }
     }
 
   }
