@@ -115,7 +115,7 @@ object GwenSettings {
 
   /**
     * Provides access to the `gwen.report.suppress.meta` setting used to control whether
-    * or not meta report generation will be suppressed (default value is `false`).
+    * or not meta report generation will be suppressed (default value is `true`).
     */
   def `gwen.report.suppress.meta`: Boolean = {
     Settings.getBoolean("gwen.report.suppress.meta")
@@ -134,7 +134,7 @@ object GwenSettings {
 
   /**
     * Provides access to the `gwen.auto.discover.data.csv` setting used to enable
-    * or disable automatic discovery of CSV data files (default value is `true` for enabled).
+    * or disable automatic discovery of CSV data files (default value is `false` for enabled).
     * Disabling this will prevent Gwen from automatically discovering and loading CSV files in the path of an executing
     * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
     */
@@ -178,7 +178,7 @@ object GwenSettings {
     /**
     * Provides access to the `gwen.associative.meta` setting used to control whether or
     * not meta files having the same name (excluding file extension) and same location as feature
-    * files are only loaded for that feature and loaded last (default value is false).
+    * files are only loaded for that feature and loaded last (default value is true).
     * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
     */
   def `gwen.associative.meta`: Boolean = {
@@ -188,9 +188,9 @@ object GwenSettings {
   /**
     * Provides access to the `gwen.behavior.rules` setting used to determine whether strict,
     * or lenient rules around Given-When-Then usage should be enforced in features (default value is
-    * `lenient`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps
+    * `strict`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps
     * and Given steps set context, When steps must perform actions, and Then or But steps must perform
-    * assertions. When `leneient` no behavioral rules are enforced. Not that `gwen.behaviour.rules` is
+    * assertions. When `leneient` no behavioral rules are enforced. Note that `gwen.behaviour.rules` is
     * an alias for this setting.
     */
   def `gwen.behavior.rules`: BehaviorMode = {

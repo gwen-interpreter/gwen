@@ -7,14 +7,25 @@ m d, yyyy
   - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
   - Configurable CLI defaults
   - Deprecated CLI option:
-    - `-p/--properties` in favor of `-c/--config`
-  - Deprecated settings:
-    - `gwen.feature.failfast` in favor of `gwen.feature.failfast.enabled`
-    - `gwen.rp.heartbeat` in favor of `gwen.rp.heartbeat.enabled`
-  - Changed setting defaults:
-    - `gwen.associative.meta = true` instead of `false`
-  - New setting for specifying output directory of Gwen generated files (reports, etc..)
-    - `gwen.output.dir` (default = target)
+    - `-p/--properties` in favor of `-c/--conf`
+  - Renamed settings:
+    - `gwen.feature.failfast` renamed to `gwen.feature.failfast.enabled`
+    - `gwen.rp.heartbeat` renamed to `gwen.rp.heartbeat.enabled`
+  - New settings
+    - For specifying output directory of Gwen generated files (reports, etc..)
+      - `gwen.output.dir` (default = target)
+    - Configurable CLI defaults:
+      - `gwen.cli.options.batch`
+      - `gwen.cli.options.formats`
+      - `gwen.cli.options.config`
+      - `gwen.cli.options.dryRun`
+      - `gwen.cli.options.features`
+      - `gwen.cli.options.input`
+      - `gwen.cli.options.meta`
+      - `gwen.cli.options.parallel`
+      - `gwen.cli.options.parallelFeatures`
+      - `gwen.cli.options.report`
+      - `gwen.cli.options.tags`
 
 2.34.5
 ======

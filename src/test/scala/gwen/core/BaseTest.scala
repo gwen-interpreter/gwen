@@ -19,6 +19,7 @@ package gwen.core
 import com.typesafe.config.ConfigFactory
 import org.scalatest.prop.TableDrivenPropertyChecks.Table
 import org.scalatest.flatspec.AnyFlatSpec
+import java.io.File
 
 abstract class BaseTest extends AnyFlatSpec {
 

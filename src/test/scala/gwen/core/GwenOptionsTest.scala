@@ -243,14 +243,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with config option with no file" should "not parse" in {
+  "Options with conf option with no file" should "not parse" in {
     parseOptions(Array("-c")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case _ =>
     }
-    parseOptions(Array("--config")) match {
+    parseOptions(Array("--conf")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -265,7 +265,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       }
       case _ =>
     }
-    parseOptions(Array("--config", "nonexisting.conf")) match {
+    parseOptions(Array("--conf", "nonexisting.conf")) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -273,7 +273,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with config option and existing conf file" should "parse" in {
+  "Options with conf option and existing conf file" should "parse" in {
     val confFile = createFile("gwen.conf")
     parseOptions(Array("-c", confFile.getPath)) match {
       case Success(options) => {
@@ -282,7 +282,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--config", confFile.getPath)) match {
+    parseOptions(Array("--conf", confFile.getPath)) match {
       case Success(options) => {
         assertOptions(options, configFiles = List(confFile))
       }
@@ -291,7 +291,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with config option and multiple existing config files" should "parse" in {
+  "Options with conf option and multiple existing config files" should "parse" in {
     val configFileA = createFile("gwen-a.json")
     val configFileB = createFile("gwen-b.conf")
     parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath)) match {
@@ -301,7 +301,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case _ =>
         fail("expected options but failed")
     }
-    parseOptions(Array("--config", configFileA.getPath + "," + configFileB.getPath)) match {
+    parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath)) match {
       case Success(options) => {
         assertOptions(options, configFiles = List(configFileA, configFileB))
       }
@@ -657,7 +657,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--config", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
@@ -677,7 +677,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--config", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,

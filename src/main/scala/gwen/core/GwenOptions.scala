@@ -129,6 +129,22 @@ object GwenOptions {
         (_, c) => c.copy(dryRun = true)
       } text "Check all syntax and bindings and report errors"
 
+      opt[String]('c', "conf") action {
+        (cs, c) =>
+          c.copy(configFiles = c.configFiles ++ cs.split(",").toList.map(new File(_)))
+      } validate { cs =>
+        ((cs.split(",") flatMap { f =>
+          val file = new File(f)
+          if (!FileIO.hasFileExtension("conf", file) && !FileIO.hasFileExtension("json", file) && !FileIO.hasFileExtension("properties", file)) {
+            Some("-c/--conf option only accepts *.conf, *.json or *.properties files")
+          }
+          else if (file.exists()) None
+          else Some(s"Provided config file not found: $f")
+        }) collectFirst {
+          case error => failure(error)
+        }).getOrElse(success)
+      } valueName "files" text "Settings files: conf, json or properties (comma separated)"
+
       opt[String]('p', "properties") action {
         (ps, c) =>
           Deprecation.warn("CLI option", "-p/--properties", "-c/--config")
@@ -143,22 +159,6 @@ object GwenOptions {
           case error => failure(error)
         }).getOrElse(success)
       } valueName "files" text "Properties files (deprecated, use -c/--config instead)"
-
-      opt[String]('c', "config") action {
-        (cs, c) =>
-          c.copy(configFiles = c.configFiles ++ cs.split(",").toList.map(new File(_)))
-      } validate { cs =>
-        ((cs.split(",") flatMap { f =>
-          val file = new File(f)
-          if (!FileIO.hasFileExtension("conf", file) && !FileIO.hasFileExtension("json", file) && !FileIO.hasFileExtension("properties", file)) {
-            Some("-c/--config option only accepts *.conf, *.json or *.properties files")
-          }
-          else if (file.exists()) None
-          else Some(s"Provided config file not found: $f")
-        }) collectFirst {
-          case error => failure(error)
-        }).getOrElse(success)
-      } valueName "files" text "Settings files: conf, json or properties (comma separated)"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
