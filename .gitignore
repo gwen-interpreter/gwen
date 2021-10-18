@@ -16,3 +16,4 @@ metals.sbt
 /bin/
 .java-version
 .bsp/
+*.semanticdb
