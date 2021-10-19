@@ -16,9 +16,7 @@
 
 package gwen.core.eval
 
-import gwen.core.GwenOptions
-import gwen.core.GwenSettings
-import gwen.core.FileIO
+import gwen.core._
 import gwen.core.Settings
 import gwen.core.node.FeatureStream
 import gwen.core.node.FeatureUnit
@@ -44,6 +42,7 @@ import org.apache.log4j.PropertyConfigurator
 
 import java.io.File
 import java.net.URL
+import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -62,11 +61,22 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
   }
 
   /**
-    * Initialises a Gwen project directory.
+    * Initialises a new Gwen project.
     *
     * @param dir the directory to initialise
     */
-  def initProjectDir(dir: File): Unit = {
+  def initProject(dir: File): Unit = {
+    if (dir.exists) {
+      if (dir.isFile) {
+        Errors.initProjectError(s"Cannot initialise ${dir} because it is a file that already exists")
+      } else if (Files.newDirectoryStream(dir.toPath).iterator.hasNext) {
+        if (dir.isSame(new File("."))) {
+          Errors.initProjectError("Cannot initialise current directory because it is not empty")
+        } else {
+          Errors.initProjectError(s"Cannot initialise ${dir} directory because it exists and is not empty")
+        }              
+      }
+    }
     logger.info(("""|
                     |   _
                     |  { \," Initialising project directory: """ + dir.getPath + """
@@ -105,8 +115,8 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val startNanos = System.nanoTime
     try {
       if (options.init) {
-        initProjectDir(options.initDir)
-        logger.info(s"Working directory initialised")
+        initProject(options.initDir)
+        logger.info(s"Project directory initialised")
         Passed(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))

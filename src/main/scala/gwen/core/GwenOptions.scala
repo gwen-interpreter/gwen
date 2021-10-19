@@ -245,9 +245,6 @@ object GwenOptions {
             val reportables = opt.reportFormats.filter(_.isFileSystemReport)
             Errors.invocationError(s"Required -r/--report option not provided for -f/--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
-          if (opt.init && opt.initDir.exists) {
-            Errors.invocationError(s"Cannot initialise because directory ${opt.initDir} already exists")
-          }
         }
       }).getOrElse(Errors.invocationError("Gwen invocaation failed (see log for details)"))
 

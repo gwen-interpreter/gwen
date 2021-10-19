@@ -88,6 +88,7 @@ object Errors {
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
+  def initProjectError(msg: String) = throw new InitProjectException(msg)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Int], column: Option[Int]): String = at(SourceRef.toString(file, line, column))
@@ -241,4 +242,7 @@ object Errors {
 
   /** Signals usage of a deprecated feature that is no longer supported. */
   class DeprecatedException(msg: String) extends GwenException(msg)
+
+  /** Throw when there is an error tryig to initialise a Gwen project directory. */
+  class InitProjectException(msg: String) extends GwenException(msg)
 }
