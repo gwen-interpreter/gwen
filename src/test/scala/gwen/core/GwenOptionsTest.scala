@@ -721,15 +721,6 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with init command and existing dir" should "not parse" in {
-    parseOptions(Array("init", "target")) match {
-      case Success(options) => {
-        fail("expected None but got options")
-      }
-      case _ =>
-    }
-  }
-
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
     GwenOptions(args)
   }
