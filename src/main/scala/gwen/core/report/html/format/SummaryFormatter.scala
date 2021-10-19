@@ -104,7 +104,7 @@ trait SummaryFormatter {
     for {
       status <- StatusKeyword.reportables.reverse
       results = summary.results.zipWithIndex.filter { _._1.evalStatus.keyword == status }
-      (result, index) <- results
+      if results.nonEmpty
       count = results.size
       total = summary.results.size
       countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
