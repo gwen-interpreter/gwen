@@ -52,7 +52,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       System.exit(run(options))
     } catch {
       case e: Throwable =>
-        logger.whenDebugEnabled {
+        if (!e.isInstanceOf[Errors.GwenException]) {
           println(e.writeStackTrace())
         }
         System.err.println(s"ERROR - ${Failed(System.nanoTime - start, e).message}")
@@ -101,18 +101,19 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
                |  \__, | \_/\_/ \___|_| |_|   `    
                |  |___/                            
                |
-               |""".stripMargin + intro + implName + implVersion + " v" + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+               |""".stripMargin + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
                |gweninterpreter.org""".stripMargin)
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
       println(
         """|
-           | ╭─────────────────────────────────────────────────────────────╮
-           | │  Gwen Workspaces DISCONTINUED!                              │
-           | │                                                             │
-           | │  Gwen Workspaces are no longer supported and have been      │
-           | │  dicontinued in favor of JS projects and npm since Gwen 3.  │
-           | ╰─────────────────────────────────────────────────────────────╯""".stripMargin)
+           | ╭──────────────────────────────────────────────────────────╮
+           | │  Gwen Workspaces DEPRECATED!                             │
+           | │                                                          │
+           | │  Gwen Workspaces are deprecated in favor of JS projects  │
+           | │  in Gwen 3. Please visit the migration page for options  │
+           | │  at https://gweninterpreter.org/docs/migration/gwen3     │
+           | ╰──────────────────────────────────────────────────────────╯""".stripMargin)
     }
   }
 
