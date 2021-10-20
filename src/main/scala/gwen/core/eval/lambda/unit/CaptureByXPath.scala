@@ -22,12 +22,12 @@ import gwen.core.eval.lambda.UnitStep
 import gwen.core.eval.support.XMLNodeType
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: String, nodeType: XMLNodeType) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    checkStepRules(step, BehaviorType.Action, ctx)
+    checkStepRules(step, BehaviourType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
     val content = ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
       ctx.evaluateXPath(xpath, sourceValue, nodeType)

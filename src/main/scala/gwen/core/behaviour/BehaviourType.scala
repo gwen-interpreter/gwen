@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package gwen.core.behavior
+package gwen.core.behaviour
 
-import gwen.core.GwenSettings
+import gwen.core.node.gherkin.StepKeyword
 
-enum BehaviorMode:
-  case strict, lenient
+enum BehaviourType:
+  case  Context, Action, Assertion
 
-object BehaviorMode {
-  def isStrict = GwenSettings.`gwen.behavior.rules` == strict
-  def isLenient = GwenSettings.`gwen.behavior.rules` == lenient
+object BehaviourType {
+  def of(stepKeyword: String): BehaviourType = {
+    if (StepKeyword.isGiven(stepKeyword)) BehaviourType.Context
+    else if (StepKeyword.isWhen(stepKeyword)) BehaviourType.Action
+    else BehaviourType.Assertion
+  }
+
 }

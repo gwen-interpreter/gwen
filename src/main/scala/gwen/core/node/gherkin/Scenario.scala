@@ -19,7 +19,7 @@ package gwen.core.node.gherkin
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
@@ -110,8 +110,8 @@ case class Scenario(
     allSteps.flatMap(step => step.deepAttachments)
   }
   
-  def behaviorTag: Option[Tag] = {
-    tags.find(tag => BehaviorType.values.exists(_.toString == tag.name))
+  def behaviourTag: Option[Tag] = {
+    tags.find(tag => BehaviourType.values.exists(_.toString == tag.name))
   }
 
   def copy(

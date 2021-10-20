@@ -17,49 +17,10 @@ Visit the [Gwen home page](https://gweninterpreter.org) for our user documentati
 - [Latest release](https://github.com/gwen-interpreter/gwen/releases/latest)
 - [Change log](CHANGELOG)
 
-### What's New?
-
-- [Doc Strings as Parameters](https://github.com/gwen-interpreter/gwen/wiki/Doc-Strings/_edit#doc-strings-as-parameters)
-- [Report Portal integration](https://github.com/gwen-interpreter/gwen/wiki/Report-Portal-Integration) for centralised reporting and real-time analytics.
-- [Masked Settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#masked-settings) to make all your private and sensitive settings appear as `●●●●●` in all Gwen logs, reports, errors and console outputs
-
 System Requirements
 -------------------
 
 - Java 8 (version 1.8) or higher
-
-Key Features
-------------
-
-- Integrated [Gherkin](https://cucumber.io/docs/reference) parser from Cucubmer
-- [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
-- [Evaluation engines](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Engines)
-- [Evaluation reports](https://github.com/gwen-interpreter/gwen/wiki/Evaluation-Reports)
-- [Command line interface](https://github.com/gwen-interpreter/gwen/wiki/Command-Line-Interface)
-- [REPL console](https://github.com/gwen-interpreter/gwen/wiki/REPL-Console)
-- [Serial execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#serial-execution)
-- [Parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-execution) for features or scenarios
-- [Dry run execution and validation](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#dry-run-validation)
-- [Data driven execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#data-driven-execution)
-- [Meta features](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features)
-- [Composable step definitions](https://github.com/gwen-interpreter/gwen/wiki/Meta-Features#composable-step-definitions)
-- [Runtime settings](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings)
-- [User settings](https://github.com/gwen-interpreter/gwen/wiki/User-Settings)
-- [String interpolation](https://github.com/gwen-interpreter/gwen/wiki/String-Interpolation)
-- [SQL data bindings](https://github.com/gwen-interpreter/gwen/wiki/SQL-Data-Bindings)
-- [Implicit attributes](https://github.com/gwen-interpreter/gwen/wiki/Implicit-Attributes)
-- [Template matching](https://github.com/gwen-interpreter/gwen/wiki/Template-Matching)
-- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
-- [Synchronized StepDef execution](https://github.com/gwen-interpreter/gwen/wiki/Synchronized-StepDefs)
-- Hard, soft, and sustained [Assertion modes](https://github.com/gwen-interpreter/gwen/wiki/Assertion-Modes)
-- Supports full Gherkin syntax including [example mapping](https://cucumber.io/blog/2015/12/08/example-mapping-introduction)
-- [State levels](https://github.com/gwen-interpreter/gwen/wiki/State-Levels) and [parallel execution](https://github.com/gwen-interpreter/gwen/wiki/Execution-Modes#parallel-scenario-execution) for scenarios in additon to features
-- [Declarative feature mode](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturemode) to force all imperative steps to meta and promote cleaner features.
-- [Associative meta](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenassociativemeta)
-- [Behavior rules](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenbehaviorrules) to help enforce good Gherkin style
-- [Dialects](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenfeaturedialect) for [Gherkin's spoken languages](https://cucumber.io/docs/gherkin/reference/#spoken-languages)
-- Configurable [maximum number of threads](https://github.com/gwen-interpreter/gwen/wiki/Runtime-Settings#gwenparallelmaxthreads) for parallel execution
-- Simplified [data table iteration with @ForEach](https://github.com/gwen-interpreter/gwen/wiki/Data-Tables#simplified-foreach)
 
 License
 -------

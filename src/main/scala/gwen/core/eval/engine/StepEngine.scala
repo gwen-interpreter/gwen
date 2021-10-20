@@ -20,7 +20,7 @@ import gwen.core._
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.lambda.composite.ForEachTableRecord
 import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
@@ -63,19 +63,19 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a list of steps.
     */
   def evaluateSteps(parent: GwenNode, steps: List[Step], ctx: T): List[Step] = {
-    var behaviorCount = 0
+    var behaviourCount = 0
     try {
       steps.foldLeft(List[Step]()) {
         (acc: List[Step], step: Step) =>
           if (!StepKeyword.isAnd(step.keyword)) {
-            ctx.addBehavior(BehaviorType.of(step.keyword))
-            behaviorCount = behaviorCount + 1
+            ctx.addBehaviour(BehaviourType.of(step.keyword))
+            behaviourCount = behaviourCount + 1
           }
           evaluateOrTransitionStep(parent, step, acc, ctx) :: acc
       } reverse
     } finally {
-      0 until behaviorCount foreach { _ =>
-        ctx.popBehavior()
+      0 until behaviourCount foreach { _ =>
+        ctx.popBehaviour()
       }
     }
   }

@@ -20,12 +20,12 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 class CaptureByJS[T <: EvalContext](target: String, javascript: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    checkStepRules(step, BehaviorType.Action, ctx)
+    checkStepRules(step, BehaviourType.Action, ctx)
     val content = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
     ctx.topScope.set(target, content)
     step.addAttachment(target, "txt", content)

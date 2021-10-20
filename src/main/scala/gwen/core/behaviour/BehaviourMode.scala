@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package gwen.core.behavior
+package gwen.core.behaviour
 
 import gwen.core.GwenSettings
 
-enum FeatureMode:
-  case declarative, imperative
+enum BehaviourMode:
+  case strict, lenient
 
-object FeatureMode {
-  def isDeclarative = GwenSettings.`gwen.feature.mode` == declarative
-  def isImperative = GwenSettings.`gwen.feature.mode` == imperative
+object BehaviourMode {
+  def isStrict = GwenSettings.`gwen.behaviour.rules` == strict
+  def isLenient = GwenSettings.`gwen.behaviour.rules` == lenient
 }

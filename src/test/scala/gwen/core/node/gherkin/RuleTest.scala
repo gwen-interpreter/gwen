@@ -45,7 +45,7 @@ class RuleTest extends BaseTest with Matchers with GherkinParser {
     Scenario: Declarative to imperative mapping
               Gwen for executable specifications
               Business specs mapped to meta
-        Given any software behavior
+        Given any software behaviour
          When expressed in Gherkin
          Then Gwen can evaluate it"""
   

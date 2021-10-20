@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.behavior
+package gwen.core.behaviour
 
 import gwen.core.BaseTest
 import gwen.core.Errors._
@@ -27,7 +27,7 @@ import gwen.core.state.EnvState
 import java.io.File
 import org.scalatest.matchers.should.Matchers
 
-class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with BehaviorRules with TestModel {
+class BehaviourRulesTest extends BaseTest with Matchers with GherkinParser with BehaviourRules with TestModel {
 
     private def createScenario(steps: String): Scenario = {
         val input = s"""
@@ -78,9 +78,9 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         }
     }
 
-    "imperative feature with stepdef with behavior tag" should "pass strict behavior rules check" in {
+    "imperative feature with stepdef with behaviour tag" should "pass strict behaviour rules check" in {
         withSetting("gwen.feature.mode", "imperative") {
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 SpecType.values.foreach { specType =>
                     val stepDef = feature.scenarios(1)
                     checkScenarioRules(stepDef, specType)
@@ -89,20 +89,20 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         }
     }
 
-    "imperative feature with stepdef but no behavior tag" should "fail strict behavior rules check" in {
+    "imperative feature with stepdef but no behaviour tag" should "fail strict behaviour rules check" in {
         withSetting("gwen.feature.mode", "imperative") {
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 val stepDef = feature.scenarios(1)  
-                val stepDefNobehaviorTag = Scenario(
+                val stepDefNobehaviourTag = Scenario(
                     List(Tag("@StepDef")),
                     stepDef.name,
                     stepDef.description,
                     stepDef.background,
                     stepDef.steps,
                     stepDef.examples)
-                val step = Step(feature.scenarios(0).steps(2), stepDefNobehaviorTag, stepDefNobehaviorTag.steps.flatMap(_.attachments))
+                val step = Step(feature.scenarios(0).steps(2), stepDefNobehaviourTag, stepDefNobehaviourTag.steps.flatMap(_.attachments))
                 withSpecType(SpecType.Feature) { _ =>
-                    intercept[UndefinedStepDefBehaviorException] {
+                    intercept[UndefinedStepDefBehaviourException] {
                         checkStepDefRules(step, env)
                     }
                 }
@@ -118,11 +118,11 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
             val step = feature.scenarios(0).steps(1)
             withSpecType(SpecType.Feature) { _ =>
                 intercept[ImperativeStepException] {
-                    checkStepRules(step, BehaviorType.Action, env)
+                    checkStepRules(step, BehaviourType.Action, env)
                 }
             }
             withSpecType(SpecType.Meta) { _ =>
-                checkStepRules(step, BehaviorType.Action, env)
+                checkStepRules(step, BehaviourType.Action, env)
             }
         }
     }
@@ -132,13 +132,13 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
             val step = feature.scenarios(0).steps(1)
             SpecType.values foreach { specType =>
                 withSpecType(specType) { _ =>
-                    checkStepRules(step, BehaviorType.Action, env)
+                    checkStepRules(step, BehaviourType.Action, env)
                 }
             }
         }
     }
 
-    "scenarios or backgrounds with G-W-T sequence" should "pass strict and lenient behavior rules checks" in {
+    "scenarios or backgrounds with G-W-T sequence" should "pass strict and lenient behaviour rules checks" in {
         
         val steps = """
         |     Given I set the context
@@ -149,18 +149,18 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         SpecType.values foreach { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
     }
 
-    "scenarios or backgrounds with G-W-T-B sequence" should "pass strict and lenient behavior rules checks" in {
+    "scenarios or backgrounds with G-W-T-B sequence" should "pass strict and lenient behaviour rules checks" in {
         
         val steps = """
         |     Given I set the context
@@ -172,18 +172,18 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         SpecType.values foreach { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
     }
 
-    "scenarios or backgrounds with G-A-W-A-T-A-B sequence" should "pass strict and lenient behavior rules checks" in {
+    "scenarios or backgrounds with G-A-W-A-T-A-B sequence" should "pass strict and lenient behaviour rules checks" in {
         
         val steps = """
         |     Given I set some context
@@ -198,11 +198,11 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         SpecType.values foreach { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -221,26 +221,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -260,26 +260,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -296,26 +296,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -334,26 +334,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -373,26 +373,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -410,26 +410,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -446,26 +446,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -481,26 +481,26 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
         val background = createBackground(steps)
 
         withSpecType(SpecType.Feature) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
-                intercept[ImproperBehaviorException] {
+            withSetting("gwen.behaviour.rules", "strict") {
+                intercept[ImproperBehaviourException] {
                     checkScenarioRules(scenario, specType)
                 }
-                intercept[ImproperBehaviorException] {
+                intercept[ImproperBehaviourException] {
                     checkBackgroundRules(background, specType)
                 }
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
         }
 
         withSpecType(SpecType.Meta) { specType =>
-            withSetting("gwen.behavior.rules", "strict") {
+            withSetting("gwen.behaviour.rules", "strict") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
-            withSetting("gwen.behavior.rules", "lenient") {
+            withSetting("gwen.behaviour.rules", "lenient") {
                 checkScenarioRules(scenario, specType)
                 checkBackgroundRules(background, specType)
             }
@@ -508,160 +508,160 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
     }
 
     "Cntext steps" should "pass strict Context rules checks" in {
-        val behavior = BehaviorType.Context
-        env.addBehavior(behavior)
+        val behaviour = BehaviourType.Context
+        env.addBehaviour(behaviour)
         withSpecType(SpecType.Feature) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(givenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(whenStep, behavior, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(givenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(whenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(thenStep, behavior, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(thenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(butStep, behavior, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(butStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(givenStep, BehaviorType.Action, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(givenStep, BehaviourType.Action, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Action, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Action, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(givenStep, BehaviorType.Assertion, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(givenStep, BehaviourType.Assertion, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Assertion, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Assertion, env)
                 }
             }
         }
 
         withSpecType(SpecType.Meta) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(givenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                checkStepRules(whenStep, behavior, env)
-                checkStepRules(thenStep, behavior, env)
-                checkStepRules(butStep, behavior, env)
-                checkStepRules(givenStep, BehaviorType.Action, env)
-                checkStepRules(andStep, BehaviorType.Action, env)
-                checkStepRules(givenStep, BehaviorType.Assertion, env)
-                checkStepRules(andStep, BehaviorType.Assertion, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(givenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                checkStepRules(whenStep, behaviour, env)
+                checkStepRules(thenStep, behaviour, env)
+                checkStepRules(butStep, behaviour, env)
+                checkStepRules(givenStep, BehaviourType.Action, env)
+                checkStepRules(andStep, BehaviourType.Action, env)
+                checkStepRules(givenStep, BehaviourType.Assertion, env)
+                checkStepRules(andStep, BehaviourType.Assertion, env)
             }
         }
     }
 
     "Action steps" should "pass strict Action rules checks" in {
-        val behavior = BehaviorType.Action
-        env.addBehavior(behavior)
+        val behaviour = BehaviourType.Action
+        env.addBehaviour(behaviour)
         withSpecType(SpecType.Feature) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(whenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(givenStep, behavior, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(whenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(givenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(thenStep, behavior, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(thenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(butStep, behavior, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(butStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(whenStep, BehaviorType.Context, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(whenStep, BehaviourType.Context, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Context, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Context, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(whenStep, BehaviorType.Assertion, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(whenStep, BehaviourType.Assertion, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Assertion, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Assertion, env)
                 }
             }
         }
 
         withSpecType(SpecType.Meta) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(whenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                checkStepRules(givenStep, behavior, env)
-                checkStepRules(thenStep, behavior, env)
-                checkStepRules(butStep, behavior, env)
-                checkStepRules(whenStep, BehaviorType.Context, env)
-                checkStepRules(andStep, BehaviorType.Context, env)
-                checkStepRules(whenStep, BehaviorType.Assertion, env)
-                checkStepRules(andStep, BehaviorType.Assertion, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(whenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                checkStepRules(givenStep, behaviour, env)
+                checkStepRules(thenStep, behaviour, env)
+                checkStepRules(butStep, behaviour, env)
+                checkStepRules(whenStep, BehaviourType.Context, env)
+                checkStepRules(andStep, BehaviourType.Context, env)
+                checkStepRules(whenStep, BehaviourType.Assertion, env)
+                checkStepRules(andStep, BehaviourType.Assertion, env)
             }
         }
     }
 
     "Assertion steps" should "pass strict Assertion rules checks" in {
-        val behavior = BehaviorType.Assertion
-        env.addBehavior(behavior)
+        val behaviour = BehaviourType.Assertion
+        env.addBehaviour(behaviour)
         withSpecType(SpecType.Feature) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(thenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                checkStepRules(butStep, behavior, env)
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(givenStep, behavior, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(thenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                checkStepRules(butStep, behaviour, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(givenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(whenStep, behavior, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(whenStep, behaviour, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(thenStep, BehaviorType.Context, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(thenStep, BehaviourType.Context, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Context, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Context, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(butStep, BehaviorType.Context, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(butStep, BehaviourType.Context, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(thenStep, BehaviorType.Action, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(thenStep, BehaviourType.Action, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(andStep, BehaviorType.Action, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(andStep, BehaviourType.Action, env)
                 }
-                intercept[UnexpectedBehaviorException] {
-                    checkStepRules(butStep, BehaviorType.Action, env)
+                intercept[UnexpectedBehaviourException] {
+                    checkStepRules(butStep, BehaviourType.Action, env)
                 }
             }
         }
 
         withSpecType(SpecType.Meta) { _ =>
-            withSetting("gwen.behavior.rules", "strict") {
-                checkStepRules(thenStep, behavior, env)
-                checkStepRules(andStep, behavior, env)
-                checkStepRules(butStep, behavior, env)
-                checkStepRules(givenStep, behavior, env)
-                checkStepRules(whenStep, behavior, env)
-                checkStepRules(thenStep, BehaviorType.Context, env)
-                checkStepRules(andStep, BehaviorType.Context, env)
-                checkStepRules(butStep, BehaviorType.Context, env)
-                checkStepRules(thenStep, BehaviorType.Action, env)
-                checkStepRules(andStep, BehaviorType.Action, env)
-                checkStepRules(butStep, BehaviorType.Action, env)
+            withSetting("gwen.behaviour.rules", "strict") {
+                checkStepRules(thenStep, behaviour, env)
+                checkStepRules(andStep, behaviour, env)
+                checkStepRules(butStep, behaviour, env)
+                checkStepRules(givenStep, behaviour, env)
+                checkStepRules(whenStep, behaviour, env)
+                checkStepRules(thenStep, BehaviourType.Context, env)
+                checkStepRules(andStep, BehaviourType.Context, env)
+                checkStepRules(butStep, BehaviourType.Context, env)
+                checkStepRules(thenStep, BehaviourType.Action, env)
+                checkStepRules(andStep, BehaviourType.Action, env)
+                checkStepRules(butStep, BehaviourType.Action, env)
             }
         }
     }
 
-    "Steps of any behavior" should "pass lenient behavior rules checks" in {
+    "Steps of any behaviour" should "pass lenient behaviour rules checks" in {
         SpecType.values.foreach { specType =>
             withSpecType(specType) { _ =>
-                withSetting("gwen.behavior.rules", "lenient") {
-                    BehaviorType.values foreach { behavior =>
-                        env.addBehavior(behavior)
-                        checkStepRules(givenStep, behavior, env)
-                        checkStepRules(whenStep, behavior, env)
-                        checkStepRules(thenStep, behavior, env)
-                        checkStepRules(andStep, behavior, env)
-                        checkStepRules(butStep, behavior, env)
+                withSetting("gwen.behaviour.rules", "lenient") {
+                    BehaviourType.values foreach { behaviour =>
+                        env.addBehaviour(behaviour)
+                        checkStepRules(givenStep, behaviour, env)
+                        checkStepRules(whenStep, behaviour, env)
+                        checkStepRules(thenStep, behaviour, env)
+                        checkStepRules(andStep, behaviour, env)
+                        checkStepRules(butStep, behaviour, env)
                     }
                 }
             }

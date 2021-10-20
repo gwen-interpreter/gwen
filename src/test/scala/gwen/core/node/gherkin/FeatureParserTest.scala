@@ -72,47 +72,47 @@ class FeatureParserTest extends BaseTest with Matchers with GherkinParser with T
     var feature = parse(
       """Feature: let me tell you something
            As a tester
-           I want to test all behavior
+           I want to test all behaviour
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
     feature.description.length should be (3)
     feature.description(0) should be ("As a tester")
-    feature.description(1) should be ("I want to test all behavior")
+    feature.description(1) should be ("I want to test all behaviour")
     feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
            As a tester
-           I want to test all behavior""").get
+           I want to test all behaviour""").get
      
     feature.name should be ("let me tell you something")
     feature.description.length should be (2)
     feature.description(0) should be ("As a tester")
-    feature.description(1) should be ("I want to test all behavior")
+    feature.description(1) should be ("I want to test all behaviour")
     
     feature = parse(
       """Feature: let me tell you something
            As an experienced tester
-           I want to test all behavior
+           I want to test all behaviour
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
     feature.description.length should be (3)
     feature.description(0) should be ("As an experienced tester")
-    feature.description(1) should be ("I want to test all behavior")
+    feature.description(1) should be ("I want to test all behaviour")
     feature.description(2) should be ("So that there are no suprises")
     
     feature = parse(
       """Feature: let me tell you something
            As TESTCO
-           I want to test all behavior
+           I want to test all behaviour
            So that there are no suprises""").get
      
     feature.name should be ("let me tell you something")
     feature.description.length should be (3)
     feature.description(0) should be ("As TESTCO")
-    feature.description(1) should be ("I want to test all behavior")
+    feature.description(1) should be ("I want to test all behaviour")
     feature.description(2) should be ("So that there are no suprises")
     
   }

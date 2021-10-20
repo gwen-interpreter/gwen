@@ -17,7 +17,7 @@
 package gwen.core.eval
 
 import gwen.core._
-import gwen.core.behavior.FeatureMode
+import gwen.core.behaviour.FeatureMode
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.StepKeyword

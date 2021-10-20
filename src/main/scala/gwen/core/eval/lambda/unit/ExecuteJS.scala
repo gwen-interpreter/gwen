@@ -20,7 +20,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -28,7 +28,7 @@ class ExecuteJS[T <: EvalContext](javascript: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Action, ctx)
+      checkStepRules(step, BehaviourType.Action, ctx)
       ctx.evaluateJS(javascript)
     }
   }

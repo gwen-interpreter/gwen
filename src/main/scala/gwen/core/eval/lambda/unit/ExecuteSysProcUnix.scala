@@ -21,7 +21,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.sys.process.stringSeqToProcess
 import scala.util.chaining._
@@ -30,7 +30,7 @@ class ExecuteSysProcUnix[T <: EvalContext](systemproc: String, delimiter: Option
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Action, ctx)
+      checkStepRules(step, BehaviourType.Action, ctx)
       ctx.perform {
         delimiter match {
           case None => Seq("/bin/sh", "-c", systemproc).!

@@ -21,7 +21,7 @@ import gwen.core.eval.lambda.UnitStep
 import gwen.core.eval.support.SQLSupport
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -29,7 +29,7 @@ class UpdateBySQL[T <: EvalContext](dbName: String, updateStmt: String) extends 
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Action, ctx)
+      checkStepRules(step, BehaviourType.Action, ctx)
       SQLSupport.checkDBSettings(dbName)
       val rowsAffected = ctx.evaluate(0) {
         ctx.executeSQLUpdate(updateStmt, dbName)

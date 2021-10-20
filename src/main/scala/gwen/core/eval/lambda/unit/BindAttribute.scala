@@ -20,7 +20,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -28,7 +28,7 @@ class BindAttribute[T <: EvalContext](target: String, value: String) extends Uni
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Context, ctx)
+      checkStepRules(step, BehaviourType.Context, ctx)
       ctx.topScope.set(target, value)
     }
   }

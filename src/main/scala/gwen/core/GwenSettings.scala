@@ -16,8 +16,8 @@
 
 package gwen.core
 
-import gwen.core.behavior.BehaviorMode
-import gwen.core.behavior.FeatureMode
+import gwen.core.behaviour.BehaviourMode
+import gwen.core.behaviour.FeatureMode
 import gwen.core.state.StateLevel
 
 import scala.util.Try
@@ -39,7 +39,7 @@ object GwenSettings {
     `gwen.associative.meta`
     `gwen.auto.discover.data.csv`
     `gwen.auto.discover.meta`
-    `gwen.behavior.rules`
+    `gwen.behaviour.rules`
     `gwen.feature.dialect`
     `gwen.feature.failfast.enabled`
     `gwen.feature.failfast.exit`
@@ -186,15 +186,15 @@ object GwenSettings {
   }
 
   /**
-    * Provides access to the `gwen.behavior.rules` setting used to determine whether strict,
+    * Provides access to the `gwen.behaviour.rules` setting used to determine whether strict,
     * or lenient rules around Given-When-Then usage should be enforced in features (default value is
     * `strict`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps
     * and Given steps set context, When steps must perform actions, and Then or But steps must perform
-    * assertions. When `leneient` no behavioral rules are enforced. Note that `gwen.behaviour.rules` is
+    * assertions. When `leneient` no behavioural rules are enforced. Note that `gwen.behaviour.rules` is
     * an alias for this setting.
     */
-  def `gwen.behavior.rules`: BehaviorMode = {
-    BehaviorMode.valueOf(Settings.getOpt("gwen.behavior.rules").getOrElse(Settings.get("gwen.behaviour.rules")))
+  def `gwen.behaviour.rules`: BehaviourMode = {
+    BehaviourMode.valueOf(Settings.getOpt("gwen.behaviour.rules").getOrElse(Settings.get("gwen.behaviour.rules")))
   }
 
   /**

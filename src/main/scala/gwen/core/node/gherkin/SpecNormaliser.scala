@@ -18,7 +18,7 @@ package gwen.core.node.gherkin
 
 import gwen.core._
 import gwen.core.node._
-import gwen.core.behavior.BehaviorRules
+import gwen.core.behaviour.BehaviourRules
 import gwen.core.state.DataRecord
 import gwen.core.status.Pending
 
@@ -36,7 +36,7 @@ import java.util.regex.Matcher
   *
   * @author Branko Juric
   */
-trait SpecNormaliser extends BehaviorRules {
+trait SpecNormaliser extends BehaviourRules {
 
   /**
     * Normalises a parsed feature.

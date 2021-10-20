@@ -21,7 +21,7 @@ import gwen.core.eval.binding.SQLBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -29,7 +29,7 @@ class BindAsSQL[T <: EvalContext](target: String, dbName: String, selectStmt: St
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Context, ctx)
+      checkStepRules(step, BehaviourType.Context, ctx)
       SQLBinding.bind(target, dbName, selectStmt, ctx)
     }
   }

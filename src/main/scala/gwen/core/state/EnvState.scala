@@ -22,7 +22,7 @@ import gwen.core.node.NodeChain
 import gwen.core.node.NodeChainBuilder
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.StepKeyword
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -37,8 +37,8 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
    /** List of temporarily cached attachments (number-name-file tripples). */
   private var attachments: List[(Int, String, File)] = Nil
 
-  /** Stack of behaviors. */
-  private var behaviors = List[BehaviorType]()
+  /** Stack of behaviours. */
+  private var behaviours = List[BehaviourType]()
 
   /** Current node chain builder. */
   private var nodeBuilder = new NodeChainBuilder()
@@ -96,22 +96,22 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
     attachments = (EnvState.nextAttachmentNo(), name, file) :: attachments
   }
 
-  /** Adds the given behavior to the top of the stack. */
-  def addBehavior(behavior: BehaviorType): Unit = {
-    behaviors = behavior :: behaviors
+  /** Adds the given behaviour to the top of the stack. */
+  def addBehaviour(behaviour: BehaviourType): Unit = {
+    behaviours = behaviour :: behaviours
   }
 
-  /** Removes the behavior at the top of the stack. */
-  def popBehavior(): Option[BehaviorType] = behaviors match {
+  /** Removes the behaviour at the top of the stack. */
+  def popBehaviour(): Option[BehaviourType] = behaviours match {
     case head::tail =>
-      behaviors = tail
+      behaviours = tail
       Some(head)
     case _ =>
       None
   }
 
-  /** Gets the behavior at the top of the stack. */
-  def currentBehavior: Option[BehaviorType] = behaviors.headOption
+  /** Gets the behaviour at the top of the stack. */
+  def currentBehaviour: Option[BehaviourType] = behaviours.headOption
 
   /** Pushes a node onto the node chain.*/
   def pushNode(node: GwenNode): NodeChain = nodeBuilder.push(node)

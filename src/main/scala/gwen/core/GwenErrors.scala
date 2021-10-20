@@ -20,7 +20,7 @@
  */
 package gwen.core
 
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin._
 
@@ -76,9 +76,9 @@ object Errors {
   def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
   def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
   def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
-  def improperBehaviorError(node: GherkinNode) = throw new ImproperBehaviorException(node)
-  def unexpectedBehaviorError(step: Step, expected: BehaviorType, actual: BehaviorType) = throw new UnexpectedBehaviorException(step, expected, actual)
-  def undefinedStepDefBehaviorError(stepDef: Scenario) = throw new UndefinedStepDefBehaviorException(stepDef)
+  def improperBehaviourError(node: GherkinNode) = throw new ImproperBehaviourException(node)
+  def unexpectedBehaviourError(step: Step, expected: BehaviourType, actual: BehaviourType) = throw new UnexpectedBehaviourException(step, expected, actual)
+  def undefinedStepDefBehaviourError(stepDef: Scenario) = throw new UndefinedStepDefBehaviourException(stepDef)
   def keywordDialectError(language: String, keyword: String) = throw new KeywordDialectException(language, keyword)
   def metaDialectError(language: String, specFile: File) = throw new MetaDialectException(language, specFile)
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
@@ -208,16 +208,16 @@ object Errors {
   class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"Declarative feature violation: StepDef declaration not permitted in feature${at(stepDef.sourceRef)}")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
-  class ImproperBehaviorException(node: GherkinNode) 
+  class ImproperBehaviourException(node: GherkinNode) 
     extends GwenException(s"Strict behaviour violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
-  /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
-  class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends GwenException(s"Strict behaviour violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
+  /** Thrown in strict rules mode when a step' behaviour type does not match its Given, When, or Then position. */
+  class UnexpectedBehaviourException(step: Step, expected: BehaviourType, actual: BehaviourType) 
+    extends GwenException(s"Strict behaviour violation: $actual behaviour not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviourTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
-  class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends GwenException(s"Strict behaviour violation: Missing @Context, @Action, or @Assertion behavior annotation on StepDef${at(stepDef.sourceRef)}")
+  class UndefinedStepDefBehaviourException(stepDef: Scenario) 
+    extends GwenException(s"Strict behaviour violation: Missing @Context, @Action, or @Assertion behaviour annotation on StepDef${at(stepDef.sourceRef)}")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

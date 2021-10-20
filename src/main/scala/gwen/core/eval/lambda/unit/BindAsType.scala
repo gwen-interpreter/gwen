@@ -25,7 +25,7 @@ import gwen.core.eval.binding.SysprocBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behavior.BehaviorType
+import gwen.core.behaviour.BehaviourType
 
 import scala.util.chaining._
 
@@ -33,7 +33,7 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviorType.Context, ctx)
+      checkStepRules(step, BehaviourType.Context, ctx)
       bindingType match {
         case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx)
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
