@@ -151,6 +151,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new IsAbsent(attribute)  
       case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
         new AttachFile(name, filepath)
+      case r"""I attach "(.+?)"$filepath as (.+?)$$$name""" =>
+        new AttachFile(name, filepath)
       case _ =>
         Errors.undefinedStepError(step)
         
