@@ -78,11 +78,20 @@ object Settings extends LazyLogging {
     val workingConfigFile: Option[File] = configFileInDir(new File("."), "gwen")
     val globalConfigFile: Option[File] = FileIO.userDir.flatMap(d => configFileInDir(new File(d, ".gwen"), "gwen"))
     val cFiles = (configFiles.reverse ++ workingConfigFile.toList ++ globalConfigFile.toList).foldLeft(userConfigFile.toList) { FileIO.appendFile }
+    val orphans = new Properties(); // track orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
     val config = (
       cFiles.foldLeft(ConfigFactory.defaultOverrides()) { (cfg, cFile) => 
         cfg.withFallback(
           if (FileIO.hasFileExtension("properties", cFile)) {
-            ConfigFactory.parseString(quoteProperties(cFile))
+            val props = new Properties()
+            props.load(new FileReader(cFile))
+            props.entrySet.asScala foreach { entry => 
+              val key = entry.getKey.toString
+              if (!orphans.contains(key)) {
+                orphans.setProperty(key, entry.getValue.toString)
+              }
+            }
+            ConfigFactory.parseProperties(props)
           } else {
             ConfigFactory.parseFile(cFile)
           }
@@ -102,8 +111,15 @@ object Settings extends LazyLogging {
         } else {
           val value = cValue.unwrapped().toString
           properties.setProperty(name, value)
+          orphans.remove(name)
         }
         properties
+    }
+    orphans.entrySet.asScala foreach { entry => 
+      val key = entry.getKey.toString
+      if (!props.contains(key)) {
+        props.setProperty(key, entry.getValue.toString)
+      }
     }
 
     // Make mask char available in sys props for GwenSettings.`gwen.mask.char` to work
@@ -133,14 +149,6 @@ object Settings extends LazyLogging {
       Settings.add(name, rValue, overrideIfExists = true)
     }
     
-  }
-
-  private def quoteProperties(propsFile: File): String = {
-    val props = new Properties()
-    props.load(new FileReader(propsFile))
-    props.entrySet.asScala map { entry => 
-      s""""${entry.getKey}" = "${entry.getValue}""""
-    } mkString "\n"
   }
 
   /**
