@@ -131,12 +131,12 @@ class JsonPathSupportTest extends BaseTest with Matchers with JsonPathSupport {
   } 
   
   "match on number of books" should "return that number" in {
-    evaluateJsonPath("$..book.length()" ,JsonSource) should be ("""[4]""")
+    evaluateJsonPath("$..book.length()" ,JsonSource) should be ("4")
   }
   
   "match on number of books on empty json source" should "error" in {
     intercept[JsonPathException] {
-      evaluateJsonPath("$..book.length()","") should be ("""[4]""")
+      evaluateJsonPath("$..book.length()","") should be ("4")
     }
   }
   

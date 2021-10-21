@@ -23,7 +23,7 @@ import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -69,13 +69,13 @@ case class Background(
 }
 
 object Background {
-  def apply(file: Option[File], background: Cucumber.GherkinDocument.Feature.Background): Background = {
+  def apply(file: Option[File], background: cucumber.Background): Background = {
     Background(
       Option(background.getLocation).map(loc => SourceRef(file, loc)),
       background.getKeyword,
       background.getName,
       Option(background.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      Option(background.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) }
+      Option(background.getSteps).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) }
     )
   }
 }

@@ -18,9 +18,8 @@ package gwen.core.node
 
 import gwen.core._
 
-import io.cucumber.messages.{ Messages => Cucumber }
-
 import java.io.File
+import io.cucumber.messages.{ types => cucumber }
 
 /** 
  * Reperesents a location in source. 
@@ -28,13 +27,13 @@ import java.io.File
  * @param file the source file
  * @param line the line number in the source (base 1)
  */
-case class SourceRef(file: Option[File], line: Int) {
+case class SourceRef(file: Option[File], line: Long) {
   
   def uri = file.map(_.uri).getOrElse("")
   def isFeature = uri.endsWith(".feature")
   def isMeta = uri.endsWith(".meta")
 
-  def copy(withFile: Option[File] = file, withLine: Int = line): SourceRef = {
+  def copy(withFile: Option[File] = file, withLine: Long = line): SourceRef = {
     SourceRef(withFile, withLine)
   }
   
@@ -43,16 +42,16 @@ case class SourceRef(file: Option[File], line: Int) {
 }
 
 object SourceRef {
-  private val lineOffset = new ThreadLocal[Int]() {
-    override protected def initialValue: Int = 0
+  private val lineOffset = new ThreadLocal[Long]() {
+    override protected def initialValue: Long = 0
   }
-  def apply(file: Option[File], location: Cucumber.Location): SourceRef = {
+  def apply(file: Option[File], location: cucumber.Location): SourceRef = {
     SourceRef(file, location.getLine + lineOffset.get)
   }
-  def setLineOffset(offset: Int): Unit = {
+  def setLineOffset(offset: Long): Unit = {
     lineOffset.set(offset)
   }
-  def toString(file: Option[File], line: Option[Int], column: Option[Int]): String = {
+  def toString(file: Option[File], line: Option[Long], column: Option[Long]): String = {
     (file, line, column) match {
       case (Some(f), Some(l), Some(c)) => s"${f.uri}:$l:$c"
       case (Some(f), Some(l), None) => s"${f.uri}:$l"

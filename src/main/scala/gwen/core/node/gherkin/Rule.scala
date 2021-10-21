@@ -23,7 +23,7 @@ import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -81,14 +81,14 @@ case class Rule(
 }
 
 object Rule {
-  def apply(file: Option[File], rule: Cucumber.GherkinDocument.Feature.FeatureChild.Rule): Rule = {
+  def apply(file: Option[File], rule: cucumber.Rule): Rule = {
     Rule(
       Option(rule.getLocation).map(loc => SourceRef(file, loc)),
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      rule.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(file, x.getBackground)),
-      rule.getChildrenList.asScala.toList.filter(_.hasScenario).map { case x => Scenario(file, x.getScenario) }
+      rule.getChildren.asScala.toList.filter(_.getBackground != null).headOption.map(x => Background(file, x.getBackground)),
+      rule.getChildren.asScala.toList.filter(_.getScenario != null).map { case x => Scenario(file, x.getScenario) }
     )
   }
 }

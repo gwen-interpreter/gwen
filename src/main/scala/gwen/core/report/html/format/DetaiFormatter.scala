@@ -316,7 +316,7 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Int, List[String])], keywordPixels: Int): TypedTag[String] = {
+  private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Long, List[String])], keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
     val line = table.head._1
     li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
@@ -334,7 +334,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatExampleRow(scenario: Scenario, table: List[(Int, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
+  private def formatExampleRow(scenario: Scenario, table: List[(Long, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
     val line = table(rowIndex)._1
     val status = scenario.evalStatus.keyword
     val rowHtml = formatDataRow(table, rowIndex, status)
@@ -558,7 +558,7 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatDataRow(table: List[(Int, List[String])], rowIndex: Int, status: StatusKeyword): TypedTag[String] = {
+  private def formatDataRow(table: List[(Long, List[String])], rowIndex: Int, status: StatusKeyword): TypedTag[String] = {
     code(`class` := s"bg-${cssStatus(status)} data-table",
       raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
     )

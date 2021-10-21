@@ -3,6 +3,7 @@
 m d, yyyy
 - Gwen 3 release
   - Refactor and migrate codebase to Scala 3
+  - Update Gherkin parser and all dependencies
   - Settings changes:
     - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
     - Renamed settings:
@@ -41,8 +42,8 @@ m d, yyyy
       -  `-p|--properties` in favor of `-c|--conf`
     - Configurable defaults for all CLI options
     - Generate HTML reports by default
-    - Add alternative DSL for attaching files to report (without quotes around name)
-      - `I attach "<filepath>" as <name>`
+  - Add alternative DSL for attaching files to report (without quotes around name)
+    - `I attach "<filepath>" as <name>`
 
 2.34.5
 ======

@@ -24,7 +24,7 @@ import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -153,8 +153,8 @@ case class Scenario(
 }
 
 object Scenario {
-  def apply(file: Option[File], scenario: Cucumber.GherkinDocument.Feature.Scenario): Scenario = {
-    def tags = Option(scenario.getTagsList).map(_.asScala.toList).getOrElse(Nil).distinct map { t => Tag(file, t) }
+  def apply(file: Option[File], scenario: cucumber.Scenario): Scenario = {
+    def tags = Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).distinct map { t => Tag(file, t) }
     Scenario(
       Option(scenario.getLocation).map(loc => SourceRef(file, loc)),
       tags,
@@ -162,8 +162,8 @@ object Scenario {
       scenario.getName,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
-      Option(scenario.getStepsList).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },
-      scenario.getExamplesList.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) },
+      Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },
+      scenario.getExamples.asScala.toList.zipWithIndex map { case (examples, index) => Examples(file, examples) },
       Nil,
       Nil
     )

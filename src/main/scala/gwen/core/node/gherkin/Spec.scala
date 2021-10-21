@@ -23,7 +23,7 @@ import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 import gwen.core.node.FeatureUnit
@@ -114,11 +114,11 @@ case class Spec(
 }
 
 object Spec {
-  def apply(file: Option[File], spec: Cucumber.GherkinDocument): Spec = {
+  def apply(file: Option[File], spec: cucumber.GherkinDocument): Spec = {
     val feature = Feature(file, spec.getFeature)
-    val background = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasBackground).headOption.map(x => Background(file, x.getBackground))
-    val scenarios = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasScenario).map { x => Scenario(file, x.getScenario) }
-    val rules = spec.getFeature.getChildrenList.asScala.toList.filter(_.hasRule()).map { case x => Rule(file, x.getRule) }
+    val background = spec.getFeature.getChildren.asScala.toList.filter(_.getBackground != null).headOption.map(x => Background(file, x.getBackground))
+    val scenarios = spec.getFeature.getChildren.asScala.toList.filter(_.getScenario != null).map { x => Scenario(file, x.getScenario) }
+    val rules = spec.getFeature.getChildren.asScala.toList.filter(_.getRule != null).map { case x => Rule(file, x.getRule) }
     Spec(feature, background, scenarios, rules, Nil)
   }
 }

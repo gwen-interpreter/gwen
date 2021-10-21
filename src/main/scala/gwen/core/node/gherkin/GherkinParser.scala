@@ -24,7 +24,7 @@ import scala.util.{Failure, Success, Try}
 
 import io.cucumber.gherkin.Gherkin
 import io.cucumber.messages.IdGenerator
-import io.cucumber.messages.{Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 import java.{util => ju}
@@ -82,9 +82,9 @@ trait GherkinParser {
         Try(parseDocument(s"${if (language != "en") s"# language: ${language}\n${FeatureKeyword.nameOf(FeatureKeyword.Feature)}" else FeatureKeyword.Feature.toString}:\n${FeatureKeyword.nameOf(FeatureKeyword.Scenario)}:\n$step")) match {
           case Success(ast) =>
             Option(ast.getFeature)
-            .map(_.getChildrenList)
+            .map(_.getChildren)
             .filter(!_.isEmpty)
-            .map(_.get(0).getScenario.getStepsList)
+            .map(_.get(0).getScenario.getSteps)
             .filter(!_.isEmpty)
             .map(steps => Step(None, steps.get(0)))
             .map(_.copy(withSourceRef = None))
@@ -96,13 +96,14 @@ trait GherkinParser {
     }
   }
 
-  private def parseDocument(feature: String): Cucumber.GherkinDocument = {
+  private def parseDocument(feature: String): cucumber.GherkinDocument = {
     val idGenerator = new IdGenerator.Incrementing()
     val envelope = Gherkin.makeSourceEnvelope(feature, "")
     val envelopes = Gherkin.fromSources(ju.Collections.singletonList(envelope), false, true, false, idGenerator).collect(ju.stream.Collectors.toList())
     val result = envelopes.get(0)
-    if (result.hasParseError()) {
-      throw new RuntimeException(s"Parser errors:\n${result.getParseError().getMessage()}");
+    val parseError = result.getParseError
+    if (parseError != null) {
+      throw new RuntimeException(s"Parser errors:\n${result.getParseError.getMessage}");
     } else {
       result.getGherkinDocument()
     }

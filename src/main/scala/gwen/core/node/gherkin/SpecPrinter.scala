@@ -125,11 +125,11 @@ class SpecPrinter extends SpecWalker[PrintWriter] {
     printTextLines("        ", desc, out)
   }
 
-  private def printTable(table: List[(Int, List[String])], out: PrintWriter): Unit = {
+  private def printTable(table: List[(Long, List[String])], out: PrintWriter): Unit = {
     printTextLines("            ", Formatting.splitLines(Formatting.formatTable(table)), out)
   }
 
-  private def printDocString(docString: (Int, String, Option[String]), out: PrintWriter): Unit = {
+  private def printDocString(docString: (Long, String, Option[String]), out: PrintWriter): Unit = {
     printTextLines("            ", Formatting.splitLines(Formatting.formatDocString(docString)), out)
   }
 

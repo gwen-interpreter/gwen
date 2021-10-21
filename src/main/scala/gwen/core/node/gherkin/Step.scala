@@ -24,7 +24,7 @@ import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 import java.nio.file.Files
@@ -51,8 +51,8 @@ case class Step(
     name: String,
     attachments: List[(String, File)],
     stepDef: Option[Scenario],
-    table: List[(Int, List[String])],
-    docString: Option[(Int, String, Option[String])],
+    table: List[(Long, List[String])],
+    docString: Option[(Long, String, Option[String])],
     override val evalStatus: EvalStatus,
     override val params: List[(String, String)],
     override val callerParams: List[(String, String)]) extends GherkinNode {
@@ -114,8 +114,8 @@ case class Step(
       withName: String = name,
       withAttachments: List[(String, File)] = attachments,
       withStepDef: Option[Scenario] = stepDef,
-      withTable: List[(Int, List[String])] = table,
-      withDocString: Option[(Int, String, Option[String])] = docString,
+      withTable: List[(Long, List[String])] = table,
+      withDocString: Option[(Long, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus,
       withParams: List[(String, String)] = params,
       withCallerParams: List[(String, String)] = callerParams): Step = {
@@ -215,14 +215,14 @@ case class Step(
 }
 
 object Step {
-  def apply(file: Option[File], step: Cucumber.GherkinDocument.Feature.Step): Step = {
+  def apply(file: Option[File], step: cucumber.Step): Step = {
     val dataTable = Option(step.getDataTable).map { dt =>
-      dt.getRowsList.asScala.toList map { row =>
-        (row.getLocation.getLine, row.getCellsList.asScala.toList.map(_.getValue))
+      dt.getRows.asScala.toList map { row =>
+        (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
       }
     } getOrElse Nil
     val docString = Option(step.getDocString()).filter(_.getContent().trim.length > 0) map { ds =>
-      (ds.getLocation.getLine, ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
+      (Long2long(ds.getLocation.getLine), ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
     Step(
       Option(step.getLocation).map(loc => SourceRef(file, loc)),

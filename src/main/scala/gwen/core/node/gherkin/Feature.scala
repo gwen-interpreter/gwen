@@ -22,7 +22,7 @@ import gwen.core.node.SourceRef
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -69,11 +69,11 @@ case class Feature(
 }
 
 object Feature {
-  def apply(file: Option[File], feature: Cucumber.GherkinDocument.Feature): Feature = {
+  def apply(file: Option[File], feature: cucumber.Feature): Feature = {
     Feature(
       feature.getLanguage,  
       Option(feature.getLocation).map(loc => SourceRef(file, loc)),
-      Option(feature.getTagsList).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t)  },
+      Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t)  },
       feature.getKeyword,
       feature.getName, 
       Option(feature.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct

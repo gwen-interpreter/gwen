@@ -32,8 +32,8 @@ import gwen.core.eval.binding.BindingType
 object Errors {
 
   def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None, None)
-  def syntaxError(msg: String, line: Int) = throw new GherkinSyntaxError(msg, None, Some(line), None)
-  def syntaxError(msg: String, file: Option[File], line: Int, col: Int) = throw new GherkinSyntaxError(msg, file, Some(line), Some(col))
+  def syntaxError(msg: String, line: Long) = throw new GherkinSyntaxError(msg, None, Some(line), None)
+  def syntaxError(msg: String, file: Option[File], line: Long, col: Long) = throw new GherkinSyntaxError(msg, file, Some(line), Some(col))
   def syntaxError(file: File, cause: ParserException) = Option(cause.location) match {
     case Some(loc) =>
       throw new GherkinSyntaxError(cause.getMessage, Some(file), Some(loc.getLine), Some(loc.getColumn))
@@ -91,7 +91,7 @@ object Errors {
   def initProjectError(msg: String) = throw new InitProjectException(msg)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
-  private def at(file: Option[File], line: Option[Int], column: Option[Int]): String = at(SourceRef.toString(file, line, column))
+  private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
   private def at(location: String): String = if (location.length > 0) s" [at $location]" else ""
   
   /** Base exception\. */
@@ -101,7 +101,7 @@ object Errors {
   class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step${at(step.sourceRef)}: $step: ${cause.getMessage}", cause)
 
   /** Thrown when a Gherkin parsing error occurs. */
-  class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Int], col: Option[Int]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
+  class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Long], col: Option[Long]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
 
   /** Thrown when an ambiguous condition is detected. */
   class AmbiguousCaseException(msg: String) extends GwenException(msg)

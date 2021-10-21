@@ -24,7 +24,7 @@ import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -45,7 +45,7 @@ case class Examples(
     keyword: String, 
     name: String, 
     description: List[String], 
-    table: List[(Int, List[String])], 
+    table: List[(Long, List[String])], 
     scenarios: List[Scenario]) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Examples
@@ -74,7 +74,7 @@ case class Examples(
       withKeyword: String = keyword, 
       withName: String = name, 
       withDescription: List[String] = description, 
-      withTable: List[(Int, List[String])] = table, 
+      withTable: List[(Long, List[String])] = table, 
       withScenarios: List[Scenario] = scenarios): Examples = {
     Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withScenarios)
   }
@@ -82,7 +82,7 @@ case class Examples(
 }
 
 object Examples {
-  def apply(file: Option[File], examples: Cucumber.GherkinDocument.Feature.Scenario.Examples): Examples = {
+  def apply(file: Option[File], examples: cucumber.Examples): Examples = {
     val header = examples.getTableHeader
     if (header == null) {
       Errors.syntaxError(
@@ -91,7 +91,7 @@ object Examples {
         examples.getLocation.getLine,
         examples.getLocation.getColumn)
     }
-    val body = examples.getTableBodyList
+    val body = examples.getTableBody
     if (body == null) {
       Errors.syntaxError(
         s"Failed to read table header. Possible syntax error or missing column delimiter in table",
@@ -101,13 +101,13 @@ object Examples {
     }
     Examples(
       Option(examples.getLocation).map(loc => SourceRef(file, loc)),
-      Option(examples.getTagsList).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t) },
+      Option(examples.getTags).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t) },
       examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      (header.getLocation.getLine, header.getCellsList.asScala.toList.map(_.getValue)) ::
+      (header.getLocation.getLine, header.getCells.asScala.toList.map(_.getValue)) ::
         body.iterator.asScala.toList.map { row =>
-          (row.getLocation.getLine, row.getCellsList.asScala.toList.map(_.getValue))
+          (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
         },
       Nil
     )

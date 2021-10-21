@@ -7,7 +7,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
-  scalaVersion := "3.0.0",
+  scalaVersion := "3.0.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),
@@ -30,7 +30,7 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "15.0.2"
+  val cucumberGherkin = "22.0.0"
   val scopt = "4.0.1"
   val slf4jLog4j = "1.7.26"
   val scalaLogging = "3.9.4"
@@ -38,10 +38,10 @@ lazy val mainDependencies = {
   val commonCodec = "1.15"
   val commonsText = "1.9"
   val scalaCSV = "1.3.8"
-  val jsonPath = "2.4.0"
-  val jodaTime = "2.10.6"
+  val jsonPath = "2.6.0"
+  val jodaTime = "2.10.12"
   val scalaTags = "0.9.4"
-  val htmlCleaner = "2.24"
+  val htmlCleaner = "2.25"
   val rpCommon = "5.3.3"
   val rpClientJava = "5.0.22"
   val tsConfig = "1.4.1"
@@ -69,9 +69,9 @@ lazy val mainDependencies = {
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.9"
-  val scalaTestPlusMockito = "3.2.9.0"
-  val mockitoCore = "3.11.1"
+  val scalaTest = "3.2.10"
+  val scalaTestPlusMockito = "3.2.10.0"
+  val mockitoCore = "3.12.4"
   val h2 = "1.4.200"
   // val slick = "3.3.3"
 

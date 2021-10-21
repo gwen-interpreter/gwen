@@ -24,7 +24,7 @@ import gwen.core.node.gherkin.table.DataTable
 
 import scala.util.chaining._
 
-import io.cucumber.messages.{ Messages => Cucumber }
+import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 
@@ -73,7 +73,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
 
 object Tag {
 
-  def apply(file: Option[File], tag: Cucumber.GherkinDocument.Feature.Tag): Tag = {
+  def apply(file: Option[File], tag: cucumber.Tag): Tag = {
     val pos = Option(tag.getLocation).map(loc => SourceRef(file, loc))
     Tag(pos, tag.getName) tap { t =>
       if (t.name == ReservedTags.DataTable.toString) {
