@@ -25,7 +25,7 @@ import scala.util.Try
 import java.io.File
 
 /**
-  * Provides access to all Gwen configuration settings.
+  * Provides access to all Gwen settings.
   *
   * @author Branko Juric
   */

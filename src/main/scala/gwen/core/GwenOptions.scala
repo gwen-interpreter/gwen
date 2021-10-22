@@ -36,7 +36,7 @@ import java.io.File
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param reportDir optional directory to generate evaluation report into
-  * @param configFiles list of config files to load as settings
+  * @param settingsFiles list of settings files to load
   * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
   * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
@@ -52,11 +52,11 @@ case class GwenOptions(
     parallel: Boolean = GwenOptions.Defaults.parallel,
     parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
     reportDir: Option[File] = GwenOptions.Defaults.report,
-    reportFormats: List[ReportFormat] = GwenOptions.Defaults.formats,
-    configFiles: List[File] = GwenOptions.Defaults.config,
+    reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
+    settingsFiles: List[File] = GwenOptions.Defaults.conf,
     tags: List[(Tag, Boolean)] = GwenOptions.Defaults.tags,
     dryRun: Boolean = GwenOptions.Defaults.dryRun,
-    dataFile: Option[File] = GwenOptions.Defaults.input,
+    dataFile: Option[File] = GwenOptions.Defaults.inputData,
     metas: List[File] = GwenOptions.Defaults.meta,
     features: List[File] = GwenOptions.Defaults.features,
     args: Option[Array[String]] = None,
@@ -81,12 +81,12 @@ object GwenOptions {
 
   object Defaults {
     val batch = CLISettings.`gwen.cli.options.batch`
-    val formats = CLISettings.`gwen.cli.options.formats`
-    val config = CLISettings.`gwen.cli.options.config`
+    val format = CLISettings.`gwen.cli.options.format`
+    val conf = CLISettings.`gwen.cli.options.conf`
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`
     val initDir = CLISettings.`gwen.cli.options.initDir`
-    val input = CLISettings.`gwen.cli.options.input`
+    val inputData = CLISettings.`gwen.cli.options.inputData`
     val parallel = CLISettings.`gwen.cli.options.parallel`
     val parallelFeatures = CLISettings.`gwen.cli.options.parallelFeatures`
     val meta = CLISettings.`gwen.cli.options.meta`
@@ -131,7 +131,7 @@ object GwenOptions {
 
       opt[String]('c', "conf") action {
         (cs, c) =>
-          c.copy(configFiles = c.configFiles ++ cs.split(",").toList.map(new File(_)))
+          c.copy(settingsFiles = c.settingsFiles ++ cs.split(",").toList.map(new File(_)))
       } validate { cs =>
         ((cs.split(",") flatMap { f =>
           val file = new File(f)
@@ -139,7 +139,7 @@ object GwenOptions {
             Some("-c/--conf option only accepts *.conf, *.json or *.properties files")
           }
           else if (file.exists()) None
-          else Some(s"Provided config file not found: $f")
+          else Some(s"Provided settings file not found: $f")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
@@ -147,8 +147,8 @@ object GwenOptions {
 
       opt[String]('p', "properties") action {
         (ps, c) =>
-          Deprecation.warn("CLI option", "-p/--properties", "-c/--config")
-          c.copy(configFiles = c.configFiles ++ ps.split(",").toList.map(new File(_)))
+          Deprecation.warn("CLI option", "-p/--properties", "-c/--conf")
+          c.copy(settingsFiles = c.settingsFiles ++ ps.split(",").toList.map(new File(_)))
       } validate { ps =>
         ((ps.split(",") flatMap { f =>
           val file = new File(f)
@@ -158,7 +158,7 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "files" text "Properties files (deprecated, use -c/--config instead)"
+      } valueName "files" text "Properties files (deprecated, use -c/--conf instead)"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
@@ -215,7 +215,7 @@ object GwenOptions {
           arg[File]("dir").optional().action {
             (d, c) =>
               c.copy(initDir = d)
-          } text s"Directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
+          } text s"Project directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
       } 
 
     }
@@ -226,8 +226,8 @@ object GwenOptions {
         options.parallel,
         options.parallelFeatures,
         options.reportDir,
-        if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) GwenOptions.Defaults.formats else Nil },
-        options.configFiles,
+        if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) GwenOptions.Defaults.format else Nil },
+        options.settingsFiles,
         options.tags,
         options.dryRun,
         options.dataFile,

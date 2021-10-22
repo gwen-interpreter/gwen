@@ -53,7 +53,7 @@ object Settings extends LazyLogging {
 
   val UserMeta: Option[File] = FileIO.getUserFile("gwen.meta")
 
-  private def configFileInDir(dir: File, name: String): Option[File] = {
+  private def settingsFileInDir(dir: File, name: String): Option[File] = {
     val files = List("conf", "json", "properties") map { ext => 
       new File(dir, s"$name.$ext")
     } filter(_.exists)
@@ -68,16 +68,16 @@ object Settings extends LazyLogging {
     *   1. Environment variables (setting names that start with `env.`)
     *   2. System properties passed through -D Java command line option
     *   3. ~/gwen.properties (user overrides)
-    *   4. Settings files passed into this method (@configFiles param)
+    *   4. Settings files passed into this method (@launchSettings param)
     *      - later ones override earlier ones
     *   5. ./gwen.properties (working directory)
     *   6. ~/.gwen/gwen.properties (global properties)
     */
-  def init(configFiles: File*): Unit = {
-    val userConfigFile: Option[File] = FileIO.userDir.flatMap(d => configFileInDir(d, "gwen"))
-    val workingConfigFile: Option[File] = configFileInDir(new File("."), "gwen")
-    val globalConfigFile: Option[File] = FileIO.userDir.flatMap(d => configFileInDir(new File(d, ".gwen"), "gwen"))
-    val cFiles = (configFiles.reverse ++ workingConfigFile.toList ++ globalConfigFile.toList).foldLeft(userConfigFile.toList) { FileIO.appendFile }
+  def init(launchSettings: File*): Unit = {
+    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
+    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
+    val fallbackSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(new File(d, ".gwen"), "gwen"))
+    val cFiles = (launchSettings.reverse ++ projectSettingsFile.toList ++ fallbackSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
     val orphans = new Properties(); // track orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
     val config = (
       cFiles.foldLeft(ConfigFactory.defaultOverrides()) { (cfg, cFile) => 

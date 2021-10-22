@@ -277,14 +277,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val confFile = createFile("gwen.conf")
     parseOptions(Array("-c", confFile.getPath)) match {
       case Success(options) => {
-        assertOptions(options, configFiles = List(confFile))
+        assertOptions(options, settingsFiles = List(confFile))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--conf", confFile.getPath)) match {
       case Success(options) => {
-        assertOptions(options, configFiles = List(confFile))
+        assertOptions(options, settingsFiles = List(confFile))
       }
       case _ =>
         fail("expected options but failed")
@@ -296,14 +296,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val configFileB = createFile("gwen-b.conf")
     parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath)) match {
       case Success(options) => {
-        assertOptions(options, configFiles = List(configFileA, configFileB))
+        assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath)) match {
       case Success(options) => {
-        assertOptions(options, configFiles = List(configFileA, configFileB))
+        assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
       case _ =>
         fail("expected options but failed")
@@ -731,11 +731,11 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
                              reportDir: Option[File] = GwenOptions.Defaults.report,
-                             reportFormats: List[ReportFormat] = GwenOptions.Defaults.formats,
-                             configFiles: List[File] = GwenOptions.Defaults.config,
+                             reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
+                             settingsFiles: List[File] = GwenOptions.Defaults.conf,
                              tags: List[(Tag, Boolean)] = GwenOptions.Defaults.tags,
                              dryRun: Boolean = GwenOptions.Defaults.dryRun,
-                             dataFile: Option[File] = GwenOptions.Defaults.input,
+                             dataFile: Option[File] = GwenOptions.Defaults.inputData,
                              metaFiles: List[File] = GwenOptions.Defaults.meta,
                              features: List[File] = GwenOptions.Defaults.features,
                              init: Boolean = false,
@@ -746,7 +746,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.parallelFeatures should be (parallelFeatures)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
-    options.configFiles should be (configFiles)
+    options.settingsFiles should be (settingsFiles)
     options.tags should be (tags)
     options.dryRun should be (dryRun)
     options.dataFile should be (dataFile)

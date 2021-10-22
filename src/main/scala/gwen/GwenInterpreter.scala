@@ -46,7 +46,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     try {
       val options = GwenOptions(args)
       logger.info("Initialising settings")
-      Settings.init(options.configFiles*)
+      Settings.init(options.settingsFiles*)
       GwenSettings.check()
       Dialect.instance
       System.exit(run(options))

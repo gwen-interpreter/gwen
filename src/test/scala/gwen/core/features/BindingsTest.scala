@@ -38,10 +38,10 @@ class BindingsTest extends BaseTest {
           reportDir = Some(new File(s"target/report/bindings/$level-level")), 
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
           features = List(new File("src/test/features/bindings")),
-          configFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
+          settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
         )
           
-        Settings.init(options.configFiles*)
+        Settings.init(options.settingsFiles*)
         interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -60,10 +60,10 @@ class BindingsTest extends BaseTest {
           reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
           features = List(new File("src/test/features/bindings")),
           dryRun = true,
-          configFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
+          settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
         )
         
-        Settings.init(options.configFiles*)
+        Settings.init(options.settingsFiles*)
         interpreter.run(options, None) match {
           case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)

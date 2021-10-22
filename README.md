@@ -1,16 +1,18 @@
-[![Gwen](https://github.com/gwen-interpreter/gwen/wiki/img/gwen-attractor.png)](https://github.com/gwen-interpreter/gwen/wiki/The-Gwen-Logo)
-
 Gwen
 ====
 
-Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. An embedded [web engine](https://github.com/gwen-interpreter/gwen-web) executes each step in your features according to the meta to automate operations in browsers for you.
+Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. 
+
+See also: 
+-  [gwen-web](https://github.com/gwen-interpreter/gwen-web): A Gwen interpreter with an embedded web automation engine
  
 Get Started
 -----------
 
 Visit the [Gwen home page](https://gweninterpreter.org) for our user documentation and getting started guide.
 
-### Current Status
+Current Status
+--------------
 
 [![CI](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml/badge.svg)](https://github.com/gwen-interpreter/gwen/actions/workflows/ci.yml)
 
@@ -27,21 +29,18 @@ License
 
 Copyright 2014-2021 Branko Juric, Brady Wood and [Gwen contributors](#code-contributors).
 
-This software is open sourced under the
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
+This software is open sourced under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
 See also: [LICENSE](LICENSE)
 
-This project has dependencies on other open source projects. All distributed third party dependencies and their
-licenses are listed in the [LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
+This project has dependencies on other open source projects. All distributed third party dependencies and their licenses are listed in the [LICENSE-THIRDPARTY](LICENSE-THIRDPARTY) file.
 
 Open sourced 14 May 2014 09:30 pm AEST
 
 Contributions
 -------------
 
-New capabilities, improvements, and fixes and documentation are all valid candidates for contribution. Submissions can be made using pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being integrated and released 
-to the community. We ask that all code submissions include unit tests.
+New capabilities, improvements, and fixes and documentation are all valid candidates for contribution. Submissions can be made using pull requests. Each submission is reviewed and verified by the project [maintainers](#maintainers) before being integrated and released to the community. We ask that all code submissions include unit tests.
 
 By submitting contributions, you agree to release your work under the [license](#license) that covers this software.
 
@@ -62,12 +61,11 @@ Maintainers
 Contributors
 ------------
 
-We thank the following contributors and active users for helping to make Gwen better. You are all awesome!
+We thank the following contributors and active users for helping to make Gwen better.
 
 ### Code Contributors
 
-The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests
-that have been merged:
+The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests that have been merged:
 
 - [Jacob Juric](https://github.com/TheReturningVoid)
 | [Alexandru Cuciureanu](https://github.com/acuciureanu)

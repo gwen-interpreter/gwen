@@ -25,12 +25,12 @@ class CLISettingsTest extends BaseTest with Matchers {
   "Default Gwen CLI settings" should "load" in {
     Settings.exclusively {
       CLISettings.`gwen.cli.options.batch` should be (false)
-      CLISettings.`gwen.cli.options.formats` should be (List(ReportFormat.html))
-      CLISettings.`gwen.cli.options.config` should be (Nil)
+      CLISettings.`gwen.cli.options.format` should be (List(ReportFormat.html))
+      CLISettings.`gwen.cli.options.conf` should be (Nil)
       CLISettings.`gwen.cli.options.dryRun` should be (false)
       CLISettings.`gwen.cli.options.features` should be (Nil)
       CLISettings.`gwen.cli.options.initDir`.getPath should be ("gwen")
-      CLISettings.`gwen.cli.options.input` should be (None)
+      CLISettings.`gwen.cli.options.inputData` should be (None)
       CLISettings.`gwen.cli.options.meta` should be (Nil)
       CLISettings.`gwen.cli.options.parallel` should be (false)
       CLISettings.`gwen.cli.options.parallelFeatures` should be (false)
