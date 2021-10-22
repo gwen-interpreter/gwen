@@ -113,7 +113,7 @@ object GwenOptions {
           c.copy(parallel = true, batch = true)
         }
       } text """|Execute features or scenarios in parallel
-                |- depending on gwen.state.level (default is features)""".stripMargin
+                |- depending on gwen.state.level (default is feature)""".stripMargin
 
       opt[Unit]("parallel-features") action {
         (_, c) => {
@@ -136,7 +136,7 @@ object GwenOptions {
         ((cs.split(",") flatMap { f =>
           val file = new File(f)
           if (!FileIO.hasFileExtension("conf", file) && !FileIO.hasFileExtension("json", file) && !FileIO.hasFileExtension("properties", file)) {
-            Some("-c/--conf option only accepts *.conf, *.json or *.properties files")
+            Some("-c|--conf option only accepts *.conf, *.json or *.properties files")
           }
           else if (file.exists()) None
           else Some(s"Provided settings file not found: $f")
@@ -147,18 +147,18 @@ object GwenOptions {
 
       opt[String]('p', "properties") action {
         (ps, c) =>
-          Deprecation.warn("CLI option", "-p/--properties", "-c/--conf")
+          Deprecation.warn("CLI option", "-p|--properties", "-c|--conf")
           c.copy(settingsFiles = c.settingsFiles ++ ps.split(",").toList.map(new File(_)))
       } validate { ps =>
         ((ps.split(",") flatMap { f =>
           val file = new File(f)
-          if (!FileIO.hasFileExtension("properties", file)) Some("-p/--properties option only accepts *.properties files")
+          if (!FileIO.hasFileExtension("properties", file)) Some("-p|--properties option only accepts *.properties files")
           else if (file.exists()) None
           else Some(s"Provided properties file not found: $f")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "files" text "Properties files (deprecated, use -c/--conf instead)"
+      } valueName "files" text "Properties files (deprecated, use -c|--conf instead)"
 
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
@@ -167,7 +167,7 @@ object GwenOptions {
       opt[String]('f', "formats") action {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
-      } valueName "include" text s"""|Report formats to include in output (comma separated)
+      } valueName "reports" text s"""|Report formats to include in output (comma separated)
                                      |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default is ${ReportFormat.html})""".stripMargin
 
       opt[String]('t', "tags") action {
@@ -199,14 +199,14 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "files/dirs" text "Meta files or directories (comma separated)"
+      } valueName "files|dirs" text "Meta files or directories to load (comma separated)"
 
-      arg[File]("files/dirs").unbounded().optional().action {
+      arg[File]("files|dirs").unbounded().optional().action {
         (f, c) =>
           c.copy(features = c.features :+ f)
       } validate {
         f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
-      } text "Feature files or directories (space separated)"
+      } text "Feature files or directories to execute (space separated)"
 
       cmd("init").action { 
         (_, c) => 
@@ -243,7 +243,7 @@ object GwenOptions {
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             val reportables = opt.reportFormats.filter(_.isFileSystemReport)
-            Errors.invocationError(s"Required -r/--report option not provided for -f/--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
+            Errors.invocationError(s"Required -r|--report option not provided for -f|--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocaation failed (see log for details)"))
