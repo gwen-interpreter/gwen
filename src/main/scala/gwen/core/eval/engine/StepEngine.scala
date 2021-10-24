@@ -38,7 +38,6 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 import scala.util.chaining._
-import gwen.core.Errors.MultilineParamException
 
 /**
   * Step evaluation engine.
@@ -102,7 +101,7 @@ trait StepEngine[T <: EvalContext] {
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     val pStep = ctx.withStep(step) { ctx.interpolateParams }
     val eStep = pStep.evalStatus match {
-      case Failed(_, e) if e.isInstanceOf[MultilineParamException] => pStep
+      case Failed(_, e) if e.isInstanceOf[Errors.MultilineParamException] => pStep
       case _ =>
         val iStep = ctx.withStep(pStep) { ctx.interpolate }
         logger.info(s"Evaluating Step: $iStep")

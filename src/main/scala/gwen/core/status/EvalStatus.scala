@@ -21,6 +21,8 @@ import gwen.core.DurationOps
 import gwen.core.Errors
 import gwen.core.Formatting
 
+import com.typesafe.scalalogging.Logger
+
 import scala.concurrent.duration._
 
 import java.util.Date
@@ -73,6 +75,10 @@ trait EvalStatus {
     cause.exists(c => c != null && c.isInstanceOf[Errors.LicenseException])
 
   def message: String = cause.map(_.getMessage).getOrElse(keyword.toString)
+
+  def log(logger: Logger, msg: String): Unit = {
+    logger.warn(msg)
+  }
 
   override def toString: String =
     if (nanos > 0) {

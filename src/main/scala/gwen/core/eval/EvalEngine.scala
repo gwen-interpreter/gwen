@@ -165,13 +165,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
 
   def logStatus(node: GherkinNode): Unit = { 
     val msg = s"${node.evalStatus} ${node.nodeType}: $node"
-    node.evalStatus match {
-      case Loaded => logger.debug(msg)
-      case Passed(_) => logger.info(msg)
-      case Failed(_, _) => logger.error(msg)
-      case Sustained(_, _) => logger.warn(msg)
-      case _ => logger.warn(msg)
-    }
+    node.evalStatus.log(logger, msg)
   }
   
 }

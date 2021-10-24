@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.status._
 
 import scala.concurrent.duration._
+import scala.io.AnsiColor
 
 import java.util.Date
 
@@ -70,8 +71,8 @@ case class ResultsSummary(
       val sum = a + b
       if (sum > 0) Some((status, sum)) else None
     }).toMap
-    
-  override def toString: String = {
+
+  def statsString: String = {
     val featureCount = featureCounts.values.sum
     val rulesCount = ruleCounts.values.sum
     val scenarioCount = scenarioCounts.values.sum
@@ -79,9 +80,11 @@ case class ResultsSummary(
     s"""|$featureCount feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
         |$rulesCount rule${if (rulesCount == 1) "" else "s"}: ${formatCounts(ruleCounts)}
         |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
-        |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}
-        |
-        |[${Formatting.formatDuration(resultsElapsedTime)}] ${evalStatus.keyword}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}
+        |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}""".stripMargin
+  }
+
+  def statusString: String = {
+    s"""|[${Formatting.formatDuration(resultsElapsedTime)}] ${evalStatus.keyword}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}}
         |[${Formatting.formatDuration(overhead)}] Overhead
         |[${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }

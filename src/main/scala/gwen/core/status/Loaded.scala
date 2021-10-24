@@ -16,10 +16,15 @@
 
 package gwen.core.status
 
+import com.typesafe.scalalogging.Logger
+
 /** Defines the loaded status. */
 case object Loaded extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Loaded
   override val nanos = 0L
   override def exitCode = 0
   override def emoticon = "[:)]"
+  override def log(logger: Logger, msg: String): Unit = {
+    logger.info(msg)
+  }
 }

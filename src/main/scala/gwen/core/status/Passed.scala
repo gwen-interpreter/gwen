@@ -16,6 +16,8 @@
 
 package gwen.core.status
 
+import com.typesafe.scalalogging.Logger
+
 /**
   * Defines a passed status.
   * 
@@ -25,4 +27,7 @@ case class Passed(nanos: Long) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Passed
   override def exitCode = 0
   override def emoticon = "[:)]"
+  override def log(logger: Logger, msg: String): Unit = {
+    logger.info(msg)
+  }
 }

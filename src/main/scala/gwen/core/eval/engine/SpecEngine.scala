@@ -94,7 +94,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
         if(!spec.isMeta) {
           logStatus(resultSpec)
         } else {
-          logger.info(result.toString)
+          result.evalStatus.log(logger, result.toString)
         }
         afterSpec(result, ctx)
       }

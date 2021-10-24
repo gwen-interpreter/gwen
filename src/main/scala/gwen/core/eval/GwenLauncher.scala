@@ -283,13 +283,15 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
 
   private def logSpecStatus(result: SpecResult): Unit = {
     logger.info("")
-    logger.info(result.toString)
+    result.evalStatus.log(logger, result.toString)
     logger.info("")
   }
 
   private def printSummaryStatus(summary: ResultsSummary): Unit = {
     println()
-    println(summary.toString)
+    logger.info(summary.statsString)
+    println()
+    summary.evalStatus.log(logger, summary.statusString)
     println()
   }
 }
