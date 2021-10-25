@@ -43,7 +43,7 @@ Background: The butterfly effect
    Example: Declarative to imperative mapping
         Gwen for executable specifications
         Business specs mapped to meta
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
@@ -60,7 +60,7 @@ Background: A butterfly might impact a tornado
         But it could alter the path of the tornado
 
    Example: Evaluation
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
@@ -120,7 +120,7 @@ Background: The butterfly effect
    Example: Declarative to imperative mapping
         Gwen for executable specifications
         Business specs mapped to meta
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
@@ -137,7 +137,7 @@ Background: A butterfly might impact a tornado
         But it could alter the path of the tornado
 
    Example: Evaluation
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 

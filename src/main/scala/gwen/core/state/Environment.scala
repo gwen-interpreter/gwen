@@ -20,7 +20,7 @@ import gwen.core._
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeChain
 import gwen.core.node.gherkin._
-import gwen.core.behaviour.BehaviourType
+import gwen.core.behavior.BehaviorType
 
 import scala.util.matching.Regex
 import scala.util.chaining._
@@ -161,15 +161,15 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     }
   }
 
-  /** Adds current behaviour. */
-  def addBehaviour(behaviour: BehaviourType): BehaviourType =
-    behaviour tap { _ => state.addBehaviour(behaviour) }
+  /** Adds current behavior. */
+  def addBehavior(behavior: BehaviorType): BehaviorType =
+    behavior tap { _ => state.addBehavior(behavior) }
 
-  /** Removes the current behaviour. */
-  def popBehaviour(): Option[BehaviourType] = state.popBehaviour()
+  /** Removes the current behavior. */
+  def popBehavior(): Option[BehaviorType] = state.popBehavior()
 
-  /** Gets the current behaviour. */
-  def currentBehaviour: Option[BehaviourType] = state.currentBehaviour
+  /** Gets the current behavior. */
+  def currentBehavior: Option[BehaviorType] = state.currentBehavior
 
   /** Checks if a top level step is currently being evaluated). */
   def isEvaluatingTopLevelStep: Boolean = paramScope.isEmpty

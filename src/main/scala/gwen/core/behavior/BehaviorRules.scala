@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-package gwen.core.behaviour
+package gwen.core.behavior
 
 import gwen.core._
 import gwen.core.node.gherkin._
 import gwen.core.state.Environment
 
  /**
-  * Enfores certain rules depending on `gwen.feature.mode` and `gwen.behaviour.rules` settings.
+  * Enfores certain rules depending on `gwen.feature.mode` and `gwen.behavior.rules` settings.
   */
-trait BehaviourRules {
+trait BehaviorRules {
 
   /**
-    * Checks that a background satisfies behaviour rules before evaluation.
+    * Checks that a background satisfies behavior rules before evaluation.
     *
     * @param background the background  to check
     * @param specType the spec type currently being evaluated
     */
   def checkBackgroundRules(background: Background, specType: SpecType): Unit = {
-    if (BehaviourMode.isStrict && specType.isFeature) {
-      if (!isProperBehaviour(background.steps)) {
-        Errors.improperBehaviourError(background)
+    if (BehaviorMode.isStrict && specType.isFeature) {
+      if (!isProperBehavior(background.steps)) {
+        Errors.improperBehaviorError(background)
       }
     }
   }
 
   /**
-    * Checks that a scenario or stepdef satisfies behaviour rules before evaluation.
+    * Checks that a scenario or stepdef satisfies behavior rules before evaluation.
     *
     * @param scenario the scenario to check
     * @param specType the spec type currently being evaluated
@@ -50,9 +50,9 @@ trait BehaviourRules {
       if (FeatureMode.isDeclarative && scenario.isStepDef) {
         Errors.imperativeStepDefError(scenario)
       }
-      if (BehaviourMode.isStrict && !(FeatureMode.isImperative && scenario.isStepDef)) {
-        if (!isProperBehaviour(scenario.steps)) {
-          Errors.improperBehaviourError(scenario)
+      if (BehaviorMode.isStrict && !(FeatureMode.isImperative && scenario.isStepDef)) {
+        if (!isProperBehavior(scenario.steps)) {
+          Errors.improperBehaviorError(scenario)
         }
       }
     }
@@ -66,14 +66,14 @@ trait BehaviourRules {
     */
   def checkStepDefRules(step: Step, env: Environment): Unit = {
     if (env.specType.isFeature && env.isEvaluatingTopLevelStep) {
-      if (BehaviourMode.isStrict) {
+      if (BehaviorMode.isStrict) {
         step.stepDef foreach { stepDef =>
           if (!stepDef.isSynthetic) {
-            stepDef.behaviourTag match {
-              case Some(behaviourTag) =>
-                checkStepRules(step, BehaviourType.valueOf(behaviourTag.name), env)
+            stepDef.behaviorTag match {
+              case Some(behaviorTag) =>
+                checkStepRules(step, BehaviorType.valueOf(behaviorTag.name), env)
               case _ =>
-                Errors.undefinedStepDefBehaviourError(stepDef)
+                Errors.undefinedStepDefBehaviorError(stepDef)
             }
           }
         }
@@ -85,22 +85,22 @@ trait BehaviourRules {
     * Checks that a step called in a feature satisfies behavoiur rules at evaluation.
     *
     * @param step the step to check
-    * @param actualBehaviour the actual behaviour type of the step
+    * @param actualBehavior the actual behavior type of the step
     * @param env the environment context
     */
-  def checkStepRules(step: Step, actualBehaviour: BehaviourType, env: Environment): Unit = {
+  def checkStepRules(step: Step, actualBehavior: BehaviorType, env: Environment): Unit = {
     if (env.specType.isFeature && env.isEvaluatingTopLevelStep) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
         Errors.imperativeStepError(step)
       }
-      if (BehaviourMode.isStrict) {
-        env.currentBehaviour foreach { expectedBehaviour =>
-          if (actualBehaviour != expectedBehaviour) {
-            Errors.unexpectedBehaviourError(step, expectedBehaviour, actualBehaviour)
+      if (BehaviorMode.isStrict) {
+        env.currentBehavior foreach { expectedBehavior =>
+          if (actualBehavior != expectedBehavior) {
+            Errors.unexpectedBehaviorError(step, expectedBehavior, actualBehavior)
           } else if (!StepKeyword.isAnd(step.keyword)) {
-            val stepBehaviour = BehaviourType.of(step.keyword) 
-            if (stepBehaviour != expectedBehaviour) {
-              Errors.unexpectedBehaviourError(step, expectedBehaviour, stepBehaviour)
+            val stepBehavior = BehaviorType.of(step.keyword) 
+            if (stepBehavior != expectedBehavior) {
+              Errors.unexpectedBehaviorError(step, expectedBehavior, stepBehavior)
             }
           }
         }
@@ -108,7 +108,7 @@ trait BehaviourRules {
     }
   }
 
-  private def isProperBehaviour(steps: List[Step]): Boolean = {
+  private def isProperBehavior(steps: List[Step]): Boolean = {
     val order = steps.map(_.keyword).filter(k => !StepKeyword.isAnd(k)).map { keyword => 
       StepKeyword.valueOf(keyword).toString
     }

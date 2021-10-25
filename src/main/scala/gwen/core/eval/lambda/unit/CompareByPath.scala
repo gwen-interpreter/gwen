@@ -24,7 +24,7 @@ import gwen.core.eval.lambda.UnitStep
 import gwen.core.eval.support.XMLNodeType
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behaviour.BehaviourType
+import gwen.core.behavior.BehaviorType
 
 import scala.util.Success
 import scala.util.Failure
@@ -34,7 +34,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviourType.Assertion, ctx)
+      checkStepRules(step, BehaviorType.Assertion, ctx)
       val expected = ctx.parseExpression(operator, expression)
       ctx.perform {
         val src = ctx.scopes.get(source)

@@ -43,12 +43,12 @@ Background: The butterfly effect
   Scenario: Evaluation
         Gwen for executable specifications
         Business specs mapped to meta
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
   Scenario: Evaluation
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
@@ -106,7 +106,7 @@ Background: The butterfly effect
   Scenario: Evaluation
         Gwen for executable specifications
         Business specs mapped to meta
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 
@@ -117,7 +117,7 @@ Background: The butterfly effect
        Then a large change will eventually result
 
   Scenario: Evaluation
-      Given any software behaviour
+      Given any software behavior
        When expressed in Gherkin
        Then Gwen can evaluate it
 

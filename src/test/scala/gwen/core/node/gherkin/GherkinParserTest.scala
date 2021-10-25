@@ -43,7 +43,7 @@ class GherkinParserTest extends BaseTest with Matchers with GherkinParser with T
          Then a large change will eventually result
     
     Scenario: Evaluation
-        Given any software behaviour
+        Given any software behavior
          When expressed in Gherkin
          Then Gwen can evaluate it
     
@@ -96,7 +96,7 @@ class GherkinParserTest extends BaseTest with Matchers with GherkinParser with T
           List(
             Scenario(List[Tag](), "Evaluation", Nil, None,
               List(
-                Step(StepKeyword.Given.toString, "any software behaviour"),
+                Step(StepKeyword.Given.toString, "any software behavior"),
                 Step(StepKeyword.When.toString,  "expressed in Gherkin"),
                 Step(StepKeyword.Then.toString,  "Gwen can evaluate it")
               )

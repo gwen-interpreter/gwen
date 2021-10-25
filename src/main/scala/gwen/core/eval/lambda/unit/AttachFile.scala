@@ -22,14 +22,14 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behaviour.BehaviourType
+import gwen.core.behavior.BehaviorType
 
 import java.io.File
 
 class AttachFile[T <: EvalContext](target: String, filepath: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    checkStepRules(step, BehaviourType.Action, ctx)
+    checkStepRules(step, BehaviorType.Action, ctx)
     val file = new File(filepath)
     if (!file.exists) { 
       Errors.fileAttachError(file, "not found")

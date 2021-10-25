@@ -21,7 +21,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behaviour.BehaviourType
+import gwen.core.behavior.BehaviorType
 
 import scala.util.Failure
 import scala.util.Success
@@ -31,7 +31,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviourType.Assertion, ctx)
+      checkStepRules(step, BehaviorType.Assertion, ctx)
       val binding = ctx.getBinding(source)
       val expected = ctx.parseExpression(operator, expression)
       val actualValue = binding.resolve()

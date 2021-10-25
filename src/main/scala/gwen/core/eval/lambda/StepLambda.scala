@@ -19,14 +19,14 @@ package gwen.core.eval.lambda
 import gwen.core.eval.EvalContext
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behaviour.BehaviourRules
+import gwen.core.behavior.BehaviorRules
 
 import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Base class for all step lambdas.
   */
-abstract class StepLambda[T <: EvalContext, U]() extends BehaviourRules with LazyLogging {
+abstract class StepLambda[T <: EvalContext, U]() extends BehaviorRules with LazyLogging {
 
   /**
     * The operation to apply.

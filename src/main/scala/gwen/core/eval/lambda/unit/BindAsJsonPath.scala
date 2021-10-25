@@ -22,7 +22,7 @@ import gwen.core.eval.binding.JsonPathBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
-import gwen.core.behaviour.BehaviourType
+import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
@@ -30,7 +30,7 @@ class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source:
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
-      checkStepRules(step, BehaviourType.Context, ctx)
+      checkStepRules(step, BehaviorType.Context, ctx)
       JsonPathBinding.bind(target, jsonPath, source, ctx)
     }
   }

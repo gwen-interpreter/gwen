@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package gwen.core.behaviour
+package gwen.core.behavior
 
-import gwen.core.GwenSettings
+import gwen.core.node.gherkin.StepKeyword
 
-enum FeatureMode:
-  case declarative, imperative
+enum BehaviorType:
+  case  Context, Action, Assertion
 
-object FeatureMode {
-  def isDeclarative = GwenSettings.`gwen.feature.mode` == declarative
-  def isImperative = GwenSettings.`gwen.feature.mode` == imperative
+object BehaviorType {
+  def of(stepKeyword: String): BehaviorType = {
+    if (StepKeyword.isGiven(stepKeyword)) BehaviorType.Context
+    else if (StepKeyword.isWhen(stepKeyword)) BehaviorType.Action
+    else BehaviorType.Assertion
+  }
+
 }
