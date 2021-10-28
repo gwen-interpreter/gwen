@@ -171,14 +171,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with report option and report directory" should "parse" in {
     parseOptions(Array("-r", "target/report")) match {
       case Success(options) => {
-        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats = List(ReportFormat.html))
+        assertOptions(options, reportDir = Some(new File("target/report")))
       }
       case _ =>
         fail("expected options but failed")
     }
     parseOptions(Array("--report", "target/report")) match {
       case Success(options) => {
-        assertOptions(options, reportDir = Some(new File("target/report")), reportFormats = List(ReportFormat.html))
+        assertOptions(options, reportDir = Some(new File("target/report")))
       }
       case _ =>
         fail("expected options but failed")

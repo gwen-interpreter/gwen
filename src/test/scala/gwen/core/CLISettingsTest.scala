@@ -25,7 +25,7 @@ class CLISettingsTest extends BaseTest with Matchers {
   "Default Gwen CLI settings" should "load" in {
     Settings.exclusively {
       CLISettings.`gwen.cli.options.batch` should be (false)
-      CLISettings.`gwen.cli.options.format` should be (List(ReportFormat.html))
+      CLISettings.`gwen.cli.options.format` should be (Nil)
       CLISettings.`gwen.cli.options.conf` should be (Nil)
       CLISettings.`gwen.cli.options.dryRun` should be (false)
       CLISettings.`gwen.cli.options.features` should be (Nil)

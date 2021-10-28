@@ -158,41 +158,44 @@ class ReportGenerator (
 object ReportGenerator {
 
   def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
-    options.reportDir foreach { dir =>
-      if (dir.exists) {
-        if (GwenSettings.`gwen.report.overwrite`) {
-          dir.deleteDir()
-        } else {
-          dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+    if (options.reportFormats == List(ReportFormat.none)) Nil 
+    else {
+      options.reportDir foreach { dir =>
+        if (dir.exists) {
+          if (GwenSettings.`gwen.report.overwrite`) {
+            dir.deleteDir()
+          } else {
+            dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+          }
         }
+        dir.mkdirs()
       }
-      dir.mkdirs()
-    }
-    options.reportFormats.distinct match {
-      case head :: Nil if (head == ReportFormat.none) => Nil
-      case reportFormats => 
-        var formats = 
-          if (reportFormats.contains(ReportFormat.html))
-            ReportFormat.slideshow :: reportFormats
-          else reportFormats
+      options.reportFormats.distinct match {
+        case head :: Nil if (head == ReportFormat.none) => Nil
+        case reportFormats => 
+          var formats = 
+            if (reportFormats.contains(ReportFormat.html))
+              ReportFormat.slideshow :: reportFormats
+            else reportFormats
 
-        formats =
-          if (options.dryRun && !formats.contains(ReportFormat.html))
-            ReportFormat.html :: formats
-          else formats
+          formats =
+            if (options.dryRun && !formats.contains(ReportFormat.html))
+              ReportFormat.html :: formats
+            else formats
 
-        formats.flatMap { format =>
-          format match {
-            case ReportFormat.html => Some(HtmlReportConfig)
-            case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
-            case ReportFormat.junit => Some(JUnitReportConfig)
-            case ReportFormat.json => Some(JsonReportConfig)
-            case ReportFormat.rp => Some(RPReportConfig)
-            case ReportFormat.none => None
-        }
-        } map { config =>
-          config.reportGenerator(options)
-        }
+          formats.flatMap { format =>
+            format match {
+              case ReportFormat.html => Some(HtmlReportConfig)
+              case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
+              case ReportFormat.junit => Some(JUnitReportConfig)
+              case ReportFormat.json => Some(JsonReportConfig)
+              case ReportFormat.rp => Some(RPReportConfig)
+              case ReportFormat.none => None
+          }
+          } map { config =>
+            config.reportGenerator(options)
+          }
+      }
     }
 
   }

@@ -84,7 +84,7 @@ object GwenOptions {
 
   object Defaults {
     val batch = CLISettings.`gwen.cli.options.batch`
-    val format = CLISettings.`gwen.cli.options.format`
+    val format = List(ReportFormat.html)
     val conf = CLISettings.`gwen.cli.options.conf`
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`
