@@ -160,4 +160,12 @@ object CLISettings extends LazyLogging {
     }
   }
 
+  /**
+    * Provides access to the `gwen.cli.options.verbose` setting used to set the default
+    * -v/--verbose CLI option.
+    */
+  def `gwen.cli.options.verbose`: Boolean = {
+    Settings.getBoolean("gwen.cli.options.verbose", None, Some(conf))
+  }
+
 }

@@ -36,6 +36,7 @@ import java.io.File
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
+  * @param verbose true for verbose log output, false for pretty log output
   * @param reportDir optional directory to generate evaluation report into
   * @param settingsFiles list of settings files to load
   * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
@@ -52,6 +53,7 @@ case class GwenOptions(
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
     parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
+    verbose: Boolean = GwenOptions.Defaults.verbose,
     reportDir: Option[File] = GwenOptions.Defaults.report,
     reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
     settingsFiles: List[File] = GwenOptions.Defaults.conf,
@@ -93,6 +95,7 @@ object GwenOptions {
     val meta = CLISettings.`gwen.cli.options.meta`
     val report = CLISettings.`gwen.cli.options.report`
     val tags = CLISettings.`gwen.cli.options.tags`
+    val verbose = CLISettings.`gwen.cli.options.verbose`
   }
 
   /**
@@ -125,6 +128,10 @@ object GwenOptions {
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
       } text "Exit when execution completes (omit to open REPL)"
+
+      opt[Unit]('v', "verbose") action {
+        (_, c) => c.copy(verbose = true)
+      } text "Enable verbose log output"
 
       opt[Unit]('n', "dry-run") action {
         (_, c) => c.copy(dryRun = true)
@@ -226,6 +233,7 @@ object GwenOptions {
         options.batch,
         options.parallel,
         options.parallelFeatures,
+        options.verbose,
         options.reportDir,
         if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) GwenOptions.Defaults.format else Nil },
         options.settingsFiles,

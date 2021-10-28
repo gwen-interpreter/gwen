@@ -26,6 +26,13 @@ import gwen.core.state.EnvState
 import gwen.core.status.Failed
 
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.log4j.PropertyConfigurator
+import org.slf4j.bridge.SLF4JBridgeHandler
+
+import java.io.OutputStream
+import java.io.PrintStream
+import java.net.URL
+import java.util.{ logging => jul}
 
 /**
   * Default Gwen interpreter application.
@@ -51,6 +58,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       logger.info("Initialising settings")
       Settings.init(options.settingsFiles*)
       GwenSettings.check()
+      initLogging(options)
       Dialect.instance
       System.exit(run(options))
     } catch {
@@ -88,6 +96,36 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       evalStatus.exitCode
     } finally {
       ctxOpt.foreach(_.close())
+    }
+  }
+
+  private def initLogging(options: GwenOptions): Unit = {
+
+    if (options.verbose) {
+      val config = getClass.getResourceAsStream("/log4j-verbose.properties")
+      PropertyConfigurator.configure(config)
+    } else {
+      
+      // suppress error stream
+      System.setErr(new PrintStream(
+        new OutputStream() {
+          override def write(b: Int): Unit = { }
+        }
+      ))
+
+      // send all j.u.l logs to slf4j
+      SLF4JBridgeHandler.removeHandlersForRootLogger()
+      SLF4JBridgeHandler.install()
+
+    }
+
+    // load user provided lo4j configuration
+    Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
+      if (config.toLowerCase.trim startsWith "file:") {
+        PropertyConfigurator.configure(new URL(config))
+      } else {
+        PropertyConfigurator.configure(config)
+      }
     }
   }
 

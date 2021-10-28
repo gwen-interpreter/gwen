@@ -30,6 +30,8 @@ import gwen.core.state.EnvState
 import gwen.core.state.StateLevel
 import gwen.core.status._
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext
@@ -38,16 +40,9 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-import com.typesafe.scalalogging.LazyLogging
-import org.apache.log4j.PropertyConfigurator
-import org.slf4j.bridge.SLF4JBridgeHandler
 import java.io.File
-import java.io.OutputStream
-import java.io.PrintStream
-import java.net.URL
 import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.{ logging => jul}
 
 /**
   * Launches a gwen engine.
@@ -55,26 +50,6 @@ import java.util.{ logging => jul}
   * @param engine the engine to launch
   */
 class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging {
-
-  // suppress error stream
-  System.setErr(new PrintStream(
-    new OutputStream() {
-      override def write(b: Int): Unit = { }
-    }
-  ))
-
-  // send all j.u.l logs to slf4j
-  SLF4JBridgeHandler.removeHandlersForRootLogger()
-  SLF4JBridgeHandler.install()
-
-  // load custom lo4j configuration
-  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
-    if (config.toLowerCase.trim startsWith "file:") {
-      PropertyConfigurator.configure(new URL(config));
-    } else {
-      PropertyConfigurator.configure(config);
-    }
-  }
 
   /**
     * Initialises a new Gwen project.
@@ -177,7 +152,9 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T]): EvalStatus = {
     val start = System.nanoTime
-    engine.addListener(ConsoleReporter)
+    if (!options.verbose) {
+      engine.addListener(ConsoleReporter)
+    }
     try {
       val reportGenerators = ReportGenerator.generatorsFor(options)
       reportGenerators.foreach(_.init(engine))
@@ -197,7 +174,9 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
           throw f
       }
     } finally {
-      engine.removeListener(ConsoleReporter)
+      if (!options.verbose) {
+        engine.removeListener(ConsoleReporter)
+      }
     }
   }
 
@@ -310,4 +289,5 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     summary.evalStatus.log(logger, summary.statusString)
     logger.info("")
   }
+  
 }

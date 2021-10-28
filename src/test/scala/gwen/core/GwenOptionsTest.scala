@@ -76,6 +76,24 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with verbose option and files " should "parse" in {
+    parseOptions(Array("-v", ".")) match {
+      case Success(options) => {
+        assertOptions(options, verbose = true, features = List(new File(".")))
+
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--verbose", ".")) match {
+      case Success(options) => {
+        assertOptions(options, verbose = true, features = List(new File(".")))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
   "Options with dry run option and no files" should "be ok" in {
     parseOptions(Array("-n")) match {
       case Success(options) => {
@@ -637,13 +655,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val feature5 = createFile("dir5/file5.feature")
     val dir6 = createDir("dir6")
 
-    parseOptions(Array("-b", "--parallel", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
+    parseOptions(Array("-b", "--parallel", "-v", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = true,
           parallelFeatures = false,
+          verbose = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -657,13 +676,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = true,
           parallelFeatures = true,
+          verbose = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -677,13 +697,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel-features", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel-features", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = false,
           parallelFeatures = true,
+          verbose = true,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -730,6 +751,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
+                             verbose: Boolean = GwenOptions.Defaults.verbose,
                              reportDir: Option[File] = GwenOptions.Defaults.report,
                              reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
                              settingsFiles: List[File] = GwenOptions.Defaults.conf,
@@ -744,6 +766,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.parallelFeatures should be (parallelFeatures)
+    options.verbose should be (verbose)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
     options.settingsFiles should be (settingsFiles)

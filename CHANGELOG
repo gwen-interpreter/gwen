@@ -4,6 +4,7 @@ m d, yyyy
 - Gwen 3 release
   - Refactor and migrate codebase to Scala 3
   - Update Gherkin parser and all dependencies
+  - Introduce pretty console logger
   - Settings changes:
     - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
     - Renamed settings:
@@ -38,6 +39,7 @@ m d, yyyy
     - New options
       - `-c|--conf` for loading .conf, .json and .properties settings files
       - `-f|--format none` for no report generation
+      - `-v|--verbose` for verbose logging (pretty logging otherwise)
     - Deprecated option
       -  `-p|--properties` in favor of `-c|--conf`
     - Configurable defaults for all CLI options
