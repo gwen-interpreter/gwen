@@ -21,13 +21,13 @@
 package gwen.core
 
 import gwen.core.behavior.BehaviorType
+import gwen.core.eval.binding.BindingType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin._
 
 import io.cucumber.gherkin.ParserException
 
 import java.io.File
-import gwen.core.eval.binding.BindingType
 
 object Errors {
 
@@ -46,6 +46,7 @@ object Errors {
   def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
   def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
   def missingSettingError(name: String) = throw new MissingSettingException(name)
+  def settingsNotFound(files: List[File]) = throw new SettingsNotFoundException(files)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
   def illegalSettingError(name: String, value: String, validValues: String) = throw new IllegalSettingException(name, value, validValues)
@@ -120,6 +121,9 @@ object Errors {
   
   /** Thrown when a setting is not found. */
   class MissingSettingException(name: String) extends GwenException(s"Setting not found: $name")
+
+  /** Thrown when one or more settings files are missing. */
+  class SettingsNotFoundException(files: List[File]) extends GwenException(s"Settings file${if (files.size > 1) "s" else ""} not found: ${files.mkString(", ")}")
 
   /** Thrown when a property setting that does not support masking is masked. */
   class UnsupportedMaskedPropertyException(msg: String) extends GwenException(msg)
@@ -202,22 +206,22 @@ object Errors {
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends GwenException(s"Declarative feature violation: DSL step not permitted in feature${at(step.sourceRef)}: $step")
+  class ImperativeStepException(step: Step) extends GwenException(s"Declarative feature mode violation: DSL step not permitted in feature${at(step.sourceRef)}: $step")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"Declarative feature violation: StepDef declaration not permitted in feature${at(stepDef.sourceRef)}")
+  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"Declarative feature mode violation: StepDef not permitted in feature${at(stepDef.sourceRef)}")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 
-    extends GwenException(s"Strict behavior violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
+    extends GwenException(s"Strict behavior rules violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)}")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends GwenException(s"Strict behavior violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
+    extends GwenException(s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends GwenException(s"Strict behavior violation: Missing @Context, @Action, or @Assertion behavior annotation on StepDef${at(stepDef.sourceRef)}")
+    extends GwenException(s"Strict behavior rules violation: Missing @Context, @Action, or @Assertion annotation on StepDef${at(stepDef.sourceRef)}")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

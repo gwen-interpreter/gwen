@@ -35,8 +35,6 @@ import scala.util.chaining._
 import java.io.File
 import java.io.FileNotFoundException
 
-import org.apache.log4j.PropertyConfigurator
-
 import java.net.URL
 import java.util.concurrent.Semaphore
 
@@ -46,14 +44,6 @@ import java.util.concurrent.Semaphore
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
     with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
-
-  Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
-    if (config.toLowerCase.trim startsWith "file:") {
-      PropertyConfigurator.configure(new URL(config));
-    } else {
-      PropertyConfigurator.configure(config);
-    }
-  }
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
@@ -221,7 +211,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
         val status = eStep.stepDef map { sd => sd.evalStatus }  getOrElse {
           eStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
-            case _ => Passed(System.nanoTime - start)
+            case _ => OK(System.nanoTime - start)
           }
         }
         eStep.copy(withEvalStatus = status)

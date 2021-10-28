@@ -31,9 +31,10 @@ lazy val projectSettings = Seq(
 
 lazy val mainDependencies = {
   val cucumberGherkin = "22.0.0"
-  val scopt = "4.0.1"
-  val slf4jLog4j = "1.7.26"
   val scalaLogging = "3.9.4"
+  val slf4j = "1.7.32"
+  val slf4jLog4j = "1.7.26"
+  val scopt = "4.0.1"
   val jline = "2.14.6"
   val commonCodec = "1.15"
   val commonsText = "1.9"
@@ -49,9 +50,10 @@ lazy val mainDependencies = {
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
     "com.github.scopt" %% "scopt" % scopt,
-    "org.slf4j" % "slf4j-log4j12" % slf4jLog4j,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
     "jline" % "jline" % jline,
+    "org.slf4j" % "slf4j-log4j12" % slf4jLog4j,
+    "org.slf4j" % "jul-to-slf4j" % slf4j,
     "commons-codec" % "commons-codec" % commonCodec,
     "org.apache.commons" % "commons-text" % commonsText,
     "com.github.tototoshi" %% "scala-csv" % scalaCSV,

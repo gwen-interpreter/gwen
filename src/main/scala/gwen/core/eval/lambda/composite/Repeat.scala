@@ -128,7 +128,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
     }
     if (condSteps.nonEmpty) {
       val steps = evaluatedStep.evalStatus match {
-        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) =>
+        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isOK) =>
           val preStep = condSteps.head.copy(
             withKeyword = StepKeyword.And.toString,
             withName = doStep,

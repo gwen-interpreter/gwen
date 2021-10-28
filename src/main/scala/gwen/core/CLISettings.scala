@@ -31,7 +31,7 @@ import java.io.File
   */
 object CLISettings extends LazyLogging {
 
-  private val conf = ConfigFactory.load("gwen")
+  private val (conf, _) =  Settings.load()
 
   check()
 
@@ -44,7 +44,6 @@ object CLISettings extends LazyLogging {
     `gwen.cli.options.conf`
     `gwen.cli.options.dryRun`
     `gwen.cli.options.features`
-    `gwen.cli.options.initDir`
     `gwen.cli.options.inputData`
     `gwen.cli.options.parallel`
     `gwen.cli.options.parallelFeatures`
@@ -81,7 +80,7 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.conf`: List[File] = {
     Settings.getList("gwen.cli.options.conf", None, Some(conf)) map { filepath => 
-      new File(filepath)
+      Settings.toFile(filepath)
     }
   }
 
@@ -101,16 +100,8 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.features`: List[File] = {
     Settings.getList("gwen.cli.options.features", None, Some(conf)) map { filepath => 
-      new File(filepath)
+      Settings.toFile(filepath)
     }
-  }
-
-  /**
-    * Provides access to the `gwen.cli.options.initDir` setting used to set the default
-    * directory for the init CLI command.
-    */
-  def `gwen.cli.options.initDir`: File = {
-    new File(Settings.get("gwen.cli.options.initDir", None, Some(conf)))
   }
 
   /**
@@ -119,7 +110,7 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.inputData`: Option[File] = {
     Settings.getList("gwen.cli.options.inputData", None, Some(conf)).headOption map { filepath => 
-      new File(filepath)
+      Settings.toFile(filepath)
     }
   }
 
@@ -129,7 +120,7 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.meta`: List[File] = {
     Settings.getList("gwen.cli.options.meta", None, Some(conf)) map { filepath => 
-      new File(filepath)
+      Settings.toFile(filepath)
     }
   }
 
@@ -155,7 +146,7 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.report`: Option[File] = {
     Settings.getOpt("gwen.cli.options.report", None, Some(conf)) map { filepath => 
-      new File(filepath)
+      Settings.toFile(filepath)
     }
   }
 

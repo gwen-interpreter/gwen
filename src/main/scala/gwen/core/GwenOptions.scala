@@ -18,6 +18,7 @@ package gwen.core
 
 import gwen.core.Deprecation
 import gwen.core.FileIO
+import gwen.core.OS
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
@@ -71,7 +72,7 @@ case class GwenOptions(
     * Gets the command string used to invoke gwen.
     */
   def commandString: String = args match {
-    case (Some(params)) => s"$implName.${if(sys.props("os.name").startsWith("Windows")) "bat" else "sh"} ${params.mkString(" ")}"
+    case (Some(params)) => s"$implName.${if(OS.isWindows) "bat" else "sh"} ${params.mkString(" ")}"
     case _ => ""
   }
 
@@ -85,7 +86,7 @@ object GwenOptions {
     val conf = CLISettings.`gwen.cli.options.conf`
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`
-    val initDir = CLISettings.`gwen.cli.options.initDir`
+    val initDir = new File("gwen")
     val inputData = CLISettings.`gwen.cli.options.inputData`
     val parallel = CLISettings.`gwen.cli.options.parallel`
     val parallelFeatures = CLISettings.`gwen.cli.options.parallelFeatures`
@@ -236,7 +237,7 @@ object GwenOptions {
         Some(args),
         options.init,
         options.initDir)
-      }tap { options =>
+      } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {
             Errors.invocationError("No feature files or directories provided")

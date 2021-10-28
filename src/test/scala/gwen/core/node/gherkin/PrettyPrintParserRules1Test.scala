@@ -27,55 +27,66 @@ class PrettyPrintParserRules1Test extends BaseTest with Matchers with SpecNormal
 
   private val parse = parseSpec(_: String)
 
-  private val featureString = s"""   @wip
-   Feature: Gwen
-        As a tester
-        I want to automate tests
-        So that gwen can run them
+  private val featureString = s"""@wip
+Feature: Gwen
 
-      Rule: Deterministic chaos
-        Unpredictable yet non random
+  As a tester
+  I want to automate tests
+  So that gwen can run them
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+  Rule: Deterministic chaos
+
+    Unpredictable yet non random
+
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   @wip @test
-   Example: Evaluation
-        Gwen for executable specifications
-        Business specs mapped to meta
-      Given any software behavior
+    @wip @test
+    Example: Evaluation
+
+      Gwen for executable specifications
+      Business specs mapped to meta
+
+      Given any software behaviour
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-   Example: Evaluation
-      Given any software behavior
+    Example: Evaluation
+      Given any software behaviour
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-   Scenario Template: Join two strings together
-        This scenario is evaluated at the point where the outline is declared
+    Scenario Template: Join two strings together
+
+      This scenario is evaluated at the point where the outline is declared
+
       Given string 1 is "<string 1>"
         And string 2 is "<string 2>"
        When I join the two strings
        Then the result should be "<result>"
-  Examples: Basic string concatenation
+
+      Examples: Basic string concatenation
+
         The header row contains the placeholder names. The body rows that
         follow contain the data that is bound to each scenario that is evaluated.
-            | string 1 | string 2 | result   |
-            | howdy    | doo      | howdydoo |
-            | any      | thing    | anything |
 
-   Example: Numbers as words
+          | string 1 | string 2 | result   |
+          | howdy    | doo      | howdydoo |
+          | any      | thing    | anything |
+
+    Example: Numbers as words
       Given a mapping of words to numbers
        Then the word should match the number
             | one   | 1 |
             | two   | 2 |
             | three | 3 |
 
-   Example: Multiline DocString
+    Example: Multiline DocString
       Given my line is
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns
@@ -92,86 +103,106 @@ Background: The butterfly effect
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
     val specFeature = normaliseSpec(parse(featureString).get, None)
-    SpecPrinter.prettyPrint(specFeature).replace("\r", "") should be (s"""   @wip
-   Feature: Gwen
-        As a tester
-        I want to automate tests
-        So that gwen can run them
+    SpecPrinter.prettyPrint(specFeature).replace("\r", "") should be (s"""@wip
+Feature: Gwen
 
-      Rule: Deterministic chaos
-        Unpredictable yet non random
+  As a tester
+  I want to automate tests
+  So that gwen can run them
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+  Rule: Deterministic chaos
+
+    Unpredictable yet non random
+
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   @wip @test
-   Example: Evaluation
-        Gwen for executable specifications
-        Business specs mapped to meta
-      Given any software behavior
+    @wip @test
+    Example: Evaluation
+
+      Gwen for executable specifications
+      Business specs mapped to meta
+
+      Given any software behaviour
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   Example: Evaluation
-      Given any software behavior
+    Example: Evaluation
+      Given any software behaviour
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   Example: Join two strings together -- Basic string concatenation
-        This scenario is evaluated at the point where the outline is declared
+    Example: Join two strings together -- Basic string concatenation
+
+      This scenario is evaluated at the point where the outline is declared
+
       Given string 1 is "howdy"
         And string 2 is "doo"
        When I join the two strings
        Then the result should be "howdydoo"
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   Example: Join two strings together -- Basic string concatenation
-        This scenario is evaluated at the point where the outline is declared
+    Example: Join two strings together -- Basic string concatenation
+
+      This scenario is evaluated at the point where the outline is declared
+
       Given string 1 is "any"
         And string 2 is "thing"
        When I join the two strings
        Then the result should be "anything"
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   Example: Numbers as words
+    Example: Numbers as words
       Given a mapping of words to numbers
        Then the word should match the number
             | one   | 1 |
             | two   | 2 |
             | three | 3 |
 
-Background: The butterfly effect
-        Sensitivity to initial conditions
+    Background: The butterfly effect
+
+      Sensitivity to initial conditions
+
       Given a deterministic nonlinear system
        When a small change is initially applied
        Then a large change will eventually result
 
-   Example: Multiline DocString
+    Example: Multiline DocString
       Given my line is
             ${"\"\"\""}
             Gwen is a Gherkin interpreter that turns

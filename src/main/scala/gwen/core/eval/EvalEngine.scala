@@ -31,7 +31,7 @@ import gwen.core.status._
 import scala.concurrent.duration._
 
 object EvalEngine {
-  val DefaultInstance = new EvalEngine[EvalContext]() {
+  def apply(): EvalEngine[EvalContext] = new EvalEngine[EvalContext]() {
     override def init(options: GwenOptions, envState: EnvState): EvalContext = {
       new EvalContext(options, envState)
     }
@@ -162,10 +162,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
   def defaultRepeatDelay: Duration = Duration(1, SECONDS)
   
   private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
-
+  
   def logStatus(node: GherkinNode): Unit = { 
     val msg = s"${node.evalStatus} ${node.nodeType}: $node"
     node.evalStatus.log(logger, msg)
-  }
+  }  
   
 }

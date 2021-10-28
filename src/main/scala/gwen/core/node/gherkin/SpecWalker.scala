@@ -21,7 +21,7 @@ import gwen.core.node.GwenNode
 /**
   * Walks the nodes of a specification and accumuates a result of type T.
   */
-abstract class SpecWalker[T] {
+abstract class SpecWalker[T](deep: Boolean) {
 
   // overridable callbacks
   def onSpec(parent: GwenNode, spec: Spec, acc: T): T = acc
@@ -44,48 +44,63 @@ abstract class SpecWalker[T] {
     node match {
       case spec: Spec =>
         acc = onSpec(parent, spec, acc)
-        acc = onFeature(spec, spec.feature, acc)
-        spec.background foreach { background => 
-          acc = walk(spec.feature, background, acc)
+        if (deep) {
+          acc = walk(spec, spec.feature, acc)
+          spec.background foreach { background => 
+            acc = walk(spec.feature, background, acc)
+          }
+          spec.scenarios foreach { scenario => 
+            acc = walk(spec.feature, scenario, acc)
+          }
+          spec.rules foreach { rule => 
+            acc = walk(spec.feature, rule, acc)
+          }
         }
-        spec.scenarios foreach { scenario => 
-          acc = walk(spec.feature, scenario, acc)
-        }
-        spec.rules foreach { rule => 
-          acc = walk(spec.feature, rule, acc)
-        }
+        acc
+      case feature: Feature =>
+        acc = onFeature(parent, feature, acc)
         acc
       case background: Background =>
         acc = onBackground(parent, background, acc)
-        background.steps foreach { step => 
-          acc = walk(background, step, acc)
+        if (deep) {
+          background.steps foreach { step => 
+            acc = walk(background, step, acc)
+          }
         }
         acc
       case rule: Rule =>
         acc = onRule(parent, rule, acc)
-        rule.background foreach { background => 
-          acc = walk(rule, background, acc)
-        }
-        rule.scenarios foreach { scenario => 
-          acc = walk(rule, scenario, acc)
+        if (deep) {
+          rule.background foreach { background => 
+            acc = walk(rule, background, acc)
+          }
+          rule.scenarios foreach { scenario => 
+            acc = walk(rule, scenario, acc)
+          }
         }
         acc
       case scenario: Scenario =>
-        scenario.background foreach { background =>
-          acc = walk(parent, background, acc)
+        if (deep) {
+          scenario.background foreach { background =>
+            acc = walk(scenario, background, acc)
+          }
         }
         acc = onScenario(parent, scenario, acc)
-        scenario.steps foreach { step => 
-          acc = walk(scenario, step, acc)
-        }
-        scenario.examples foreach { exs =>
-          acc = walk(scenario, exs, acc)
+        if (deep) {
+          scenario.steps foreach { step => 
+            acc = walk(scenario, step, acc)
+          }
+          scenario.examples foreach { exs =>
+            acc = walk(scenario, exs, acc)
+          }
         }
         acc
       case examples: Examples  => 
         acc = onExamples(parent, examples, acc)
-        examples.scenarios foreach { scenario => 
-          acc = walk(examples, scenario, acc)
+        if (deep) {
+          examples.scenarios foreach { scenario => 
+            acc = walk(examples, scenario, acc)
+          }
         }
         acc
       case step: Step =>

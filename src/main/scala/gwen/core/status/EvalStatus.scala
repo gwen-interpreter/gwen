@@ -34,7 +34,7 @@ trait EvalStatus {
   val nanos: Long
   val timestamp = new Date()
 
-  def isPassed: Boolean = keyword == StatusKeyword.Passed
+  def isOK: Boolean = keyword == StatusKeyword.OK
   def isFailed: Boolean = keyword == StatusKeyword.Failed
   def isSustained: Boolean = keyword == StatusKeyword.Sustained
   def isSkipped: Boolean = keyword == StatusKeyword.Skipped
@@ -42,7 +42,7 @@ trait EvalStatus {
   def isLoaded: Boolean = keyword == StatusKeyword.Loaded
   def isDisabled: Boolean = keyword == StatusKeyword.Disabled
 
-  def isEvaluated: Boolean = isPassed || isDisabled || isError
+  def isEvaluated: Boolean = isOK || isDisabled || isError
   def isError: Boolean = isFailed || isSustained
 
   /** Returns the duration in nanoseconds. */
@@ -110,7 +110,7 @@ object EvalStatus {
         case None =>
           fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
             case Some(sustained) =>
-              if (ignoreSustained) Passed(duration.toNanos)
+              if (ignoreSustained) OK(duration.toNanos)
               else Sustained(duration.toNanos, sustained.error)
             case None =>
               if (fStatuses.forall(_.isLoaded)) {
@@ -118,7 +118,7 @@ object EvalStatus {
               } else {
                 fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
-                    case Passed(_) => Passed(duration.toNanos)
+                    case OK(_) => OK(duration.toNanos)
                     case Skipped => lastStatus
                     case _ => Pending
                   }

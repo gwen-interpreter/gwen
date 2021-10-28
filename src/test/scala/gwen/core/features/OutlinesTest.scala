@@ -15,7 +15,7 @@
  */
 package gwen.core.features
 
-import gwen.DefaultGwenInterpreter
+import gwen.GwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
@@ -26,7 +26,7 @@ import java.io.File
 
 class OutlinesTest extends BaseTest {
 
-  val interpreter = DefaultGwenInterpreter
+  val interpreter = GwenInterpreter()
   
   "Scenario outlines" should "evaluate without error" in {
     
@@ -38,7 +38,7 @@ class OutlinesTest extends BaseTest {
     )
       
     interpreter.run(options, None) match {
-      case Passed(_) => // excellent :)
+      case OK(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
@@ -55,7 +55,7 @@ class OutlinesTest extends BaseTest {
     )
       
     interpreter.run(options, None) match {
-      case Passed(_) => // excellent :)
+      case OK(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }

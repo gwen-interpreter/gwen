@@ -26,7 +26,7 @@ object HtmlReportConfig extends ReportConfig(
   ReportFormat.html,
   "HTML", 
   Some("html"), 
-  Some("feature-summary"), 
+  Some("index"), 
   options => new HtmlReportGenerator(options), 
   options => options.reportDir.map(dir => new File(dir, "html")),
   (spec: Spec, _) =>

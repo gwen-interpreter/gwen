@@ -15,7 +15,7 @@
  */
 package gwen.core.features
 
-import gwen.DefaultGwenInterpreter
+import gwen.GwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
@@ -27,7 +27,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 
 class SyncTest extends BaseTest {
 
-  val interpreter = DefaultGwenInterpreter
+  val interpreter = GwenInterpreter()
 
   forAll (levels) { level =>
     s"Synced StepDef using $level level state" should "evaluate one feature at time in parallel execution mode" in { 
@@ -41,7 +41,7 @@ class SyncTest extends BaseTest {
         )
           
         interpreter.run(options, None) match {
-          case Passed(_) => // excellent :)
+          case OK(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }
@@ -62,7 +62,7 @@ class SyncTest extends BaseTest {
         )
           
         interpreter.run(options, None) match {
-          case Passed(_) => // excellent :)
+          case OK(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }

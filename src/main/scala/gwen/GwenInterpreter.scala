@@ -30,7 +30,11 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Default Gwen interpreter application.
   */
-object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine.DefaultInstance)
+object DefaultGwenInterpreter extends GwenInterpreter(EvalEngine())
+
+object GwenInterpreter {
+  def apply() = new GwenInterpreter(EvalEngine())
+}
 
 /**
   * Main Gwen application superclass.
@@ -41,7 +45,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
 
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
-    println()
     val start = System.nanoTime
     try {
       val options = GwenOptions(args)
@@ -52,10 +55,12 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       System.exit(run(options))
     } catch {
       case e: Throwable =>
+        val errMsg = s"${Failed(System.nanoTime - start, e).message}"
         if (!e.isInstanceOf[Errors.GwenException]) {
-          println(e.writeStackTrace())
+          logger.error(errMsg, e)
+        } else {
+          logger.error(errMsg)
         }
-        System.err.println(s"ERROR - ${Failed(System.nanoTime - start, e).message}")
         println()
         System.exit(1)
     }
@@ -102,7 +107,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
                |  |___/                            
                |
                |""".stripMargin + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
-               |gweninterpreter.org""".stripMargin)
+               |gweninterpreter.org
+               |""".stripMargin)
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
       println(

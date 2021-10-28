@@ -32,6 +32,11 @@ import org.scalatestplus.mockito.MockitoSugar
 import gwen.core.state.EnvState
 import org.scalatest.matchers.should.Matchers
 
+class NodeEventListener1 extends NodeEventListener("Listener1") { }
+class NodeEventListener2NoStepDef extends NodeEventListener("Listener2", Set(NodeType.StepDef)) { }
+class NodeEventListener2NoMetaNoStepDef extends NodeEventListener("Listener2", Set(NodeType.Meta, NodeType.StepDef)) { }
+class NodeEventListener3 extends NodeEventListener("Listener3") { }
+
 class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
   "When pause is not set at disptatcher level then all events" should "be dispatched" in {
@@ -44,7 +49,7 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val ruleEventCaptor = ArgumentCaptor.forClass(classOf[NodeEvent[Rule]])
     val stepEventCaptor = ArgumentCaptor.forClass(classOf[NodeEvent[Step]])
 
-    val listener = spy(new NodeEventListener("Listener"))
+    val listener = spy(new NodeEventListener1())
     val dispatcher = new NodeEventDispatcher()
 
     val unit = mock[FeatureUnit]
@@ -58,7 +63,7 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val env = new Environment(EnvState()) { }
 
-    when(step.evalStatus).thenReturn(Passed(1))
+    when(step.evalStatus).thenReturn(OK(1))
 
     dispatcher.addListener(listener)
 
@@ -126,9 +131,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
   "When one listener bypasses StepDefs then it should not receive those events but other listeners" should "receive all events" in {
 
-    val listener1 = spy(new NodeEventListener("Listener1"))
-    val listener2 = spy(new NodeEventListener("Listener2", Set(NodeType.StepDef)))
-    val listener3 = spy(new NodeEventListener("Listener3"))
+    val listener1 = spy(new NodeEventListener1())
+    val listener2 = spy(new NodeEventListener2NoStepDef())
+    val listener3 = spy(new NodeEventListener3())
     val listeners = List(listener1, listener2, listener3)
     val listeners1and3 = List(listener1, listener3)
     val dispatcher = new NodeEventDispatcher()
@@ -147,9 +152,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val env = new Environment(EnvState()) { }
 
-    when(step1.evalStatus).thenReturn(Passed(1))
-    when(step2.evalStatus).thenReturn(Passed(1))
-    when(step3.evalStatus).thenReturn(Passed(1))
+    when(step1.evalStatus).thenReturn(OK(1))
+    when(step2.evalStatus).thenReturn(OK(1))
+    when(step3.evalStatus).thenReturn(OK(1))
 
     when(step1.nodeType).thenReturn(NodeType.Step)
     when(step2.nodeType).thenReturn(NodeType.Step)
@@ -233,9 +238,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
   "When one listener bypasses both Meta and StepDefs then it should not receive those events but other listeners" should "receive all events" in {
 
-    val listener1 = spy(new NodeEventListener("Listener1"))
-    val listener2 = spy(new NodeEventListener("Listener2", Set(NodeType.Meta, NodeType.StepDef)))
-    val listener3 = spy(new NodeEventListener("Listener3"))
+    val listener1 = spy(new NodeEventListener1())
+    val listener2 = spy(new NodeEventListener2NoMetaNoStepDef())
+    val listener3 = spy(new NodeEventListener3())
     val listeners = List(listener1, listener2, listener3)
     val listeners1and3 = List(listener1, listener3)
     val dispatcher = new NodeEventDispatcher()
@@ -264,10 +269,10 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
 
-    when(step1.evalStatus).thenReturn(Passed(1))
-    when(step2.evalStatus).thenReturn(Passed(1))
-    when(step3.evalStatus).thenReturn(Passed(1))
-    when(step4.evalStatus).thenReturn(Passed(1))
+    when(step1.evalStatus).thenReturn(OK(1))
+    when(step2.evalStatus).thenReturn(OK(1))
+    when(step3.evalStatus).thenReturn(OK(1))
+    when(step4.evalStatus).thenReturn(OK(1))
 
     when(featureSpec.nodeType).thenReturn(NodeType.Feature)
     when(featureResult.nodeType).thenReturn(NodeType.Result)

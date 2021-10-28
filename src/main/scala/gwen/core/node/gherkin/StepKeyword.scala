@@ -68,5 +68,7 @@ object StepKeyword extends Enumeration {
       else if (isAnd(keyword)) And
       else But
     }
+  
+  def maxLength: Int = names.map(_.length).max
 
 }

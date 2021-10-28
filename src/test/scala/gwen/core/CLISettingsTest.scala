@@ -29,12 +29,11 @@ class CLISettingsTest extends BaseTest with Matchers {
       CLISettings.`gwen.cli.options.conf` should be (Nil)
       CLISettings.`gwen.cli.options.dryRun` should be (false)
       CLISettings.`gwen.cli.options.features` should be (Nil)
-      CLISettings.`gwen.cli.options.initDir`.getPath should be ("gwen")
       CLISettings.`gwen.cli.options.inputData` should be (None)
       CLISettings.`gwen.cli.options.meta` should be (Nil)
       CLISettings.`gwen.cli.options.parallel` should be (false)
       CLISettings.`gwen.cli.options.parallelFeatures` should be (false)
-      CLISettings.`gwen.cli.options.report`.map(_.getPath) should be (Some("target/reports"))
+      CLISettings.`gwen.cli.options.report`.map(_.getPath) should be (Some("output/reports"))
       CLISettings.`gwen.cli.options.tags` should be (Nil)
     }
   }

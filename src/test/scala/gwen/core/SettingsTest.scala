@@ -69,16 +69,16 @@ class SettingsTest extends BaseTest with Matchers {
   }
   
   "existing system property" should "not be overriden when override flag is false" in {
-    withSetting("gwen.web.browser", "firefox") {
-      Settings.add("gwen.web.browser", "chrome", overrideIfExists = false)
-      Settings.get("gwen.web.browser") should be ("firefox")
+    withSetting("gwen.target.browser", "firefox") {
+      Settings.add("gwen.target.browser", "chrome", overrideIfExists = false)
+      Settings.get("gwen.target.browser") should be ("firefox")
     }
   }
   
   "existing system property" should "be overriden when override flag is true" in {
-    withSetting("gwen.web.browser", "firefox") {
-      Settings.add("gwen.web.browser", "chrome", overrideIfExists = true)
-      Settings.get("gwen.web.browser") should be ("chrome")
+    withSetting("gwen.target.browser", "firefox") {
+      Settings.add("gwen.target.browser", "chrome", overrideIfExists = true)
+      Settings.get("gwen.target.browser") should be ("chrome")
     }
   }
 
@@ -97,42 +97,42 @@ class SettingsTest extends BaseTest with Matchers {
   }
 
   "Settings.entries" should "return all system and local entries" in {
-    withSetting("gwen.web.browser", "chrome") {
+    withSetting("gwen.target.browser", "chrome") {
       val size = Settings.size
       (size > 0) should be (true)
       Settings.entries.size should be (size)
       try {
-        Settings.get("gwen.web.browser") should be ("chrome")
-        Settings.entries.filter(_._1 == "gwen.web.browser").values.head should be ("chrome")
-        Settings.setLocal("gwen.web.browser", "safari")  // override sys property
-        Settings.get("gwen.web.browser") should be ("safari")
-        Settings.contains("gwen.web.browser") should be (true)
-        Settings.entries.filter(_._1 == "gwen.web.browser").values.head should be ("safari")
+        Settings.get("gwen.target.browser") should be ("chrome")
+        Settings.entries.filter(_._1 == "gwen.target.browser").values.head should be ("chrome")
+        Settings.setLocal("gwen.target.browser", "safari")  // override sys property
+        Settings.get("gwen.target.browser") should be ("safari")
+        Settings.contains("gwen.target.browser") should be (true)
+        Settings.entries.filter(_._1 == "gwen.target.browser").values.head should be ("safari")
         Settings.entries.size should be (size)
         Settings.entries.size should be (Settings.size)
       } finally {
-        Settings.clearLocal("gwen.web.browser")
-        Settings.get("gwen.web.browser") should be ("chrome") // sys property still thre
+        Settings.clearLocal("gwen.target.browser")
+        Settings.get("gwen.target.browser") should be ("chrome") // sys property still thre
         Settings.entries.size should be (size)
       }
     }
   }
 
   "Settings.names" should "return all system and local names" in {
-    withSetting("gwen.web.browser", "chrome") {
+    withSetting("gwen.target.browser", "chrome") {
       val size = Settings.size
       (size > 0) should be (true)
       Settings.names.size should be (size)
       try {
-        Settings.get("gwen.web.browser") should be ("chrome")
-        Settings.setLocal("gwen.web.browser", "safari")  // override sys property
-        Settings.get("gwen.web.browser") should be ("safari")
-        Settings.contains("gwen.web.browser") should be (true)
+        Settings.get("gwen.target.browser") should be ("chrome")
+        Settings.setLocal("gwen.target.browser", "safari")  // override sys property
+        Settings.get("gwen.target.browser") should be ("safari")
+        Settings.contains("gwen.target.browser") should be (true)
         Settings.names.size should be (size)
         Settings.names.size should be (Settings.size)
       } finally {
-        Settings.clearLocal("gwen.web.browser")
-        Settings.get("gwen.web.browser") should be ("chrome") // sys property still thre
+        Settings.clearLocal("gwen.target.browser")
+        Settings.get("gwen.target.browser") should be ("chrome") // sys property still thre
         Settings.names.size should be (size)
       }
     }
@@ -189,10 +189,8 @@ class SettingsTest extends BaseTest with Matchers {
   }
 
   "masked system property" should "yield masked value" in {
-    val confFile = new File(targetDir, "masked.conf")
-    confFile.delete()
     withSetting("my.secret.prop:masked", "secret") {
-      Settings.init(confFile)
+      Settings.init()
       Settings.get("my.secret.prop").contains("●●●●●") should be (true)
     }
   }

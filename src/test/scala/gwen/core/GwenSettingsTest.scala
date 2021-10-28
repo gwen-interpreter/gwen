@@ -42,7 +42,8 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.feature.failfast.exit` should be (false)
       GwenSettings.`gwen.feature.mode` should be (FeatureMode.imperative)
       GwenSettings.`gwen.mask.char` should be ('●')
-      GwenSettings.`gwen.output.dir`.getPath should be ("target")
+      GwenSettings.`gwen.baseDir`.getPath should be (".")
+      GwenSettings.`gwen.outDir`.getPath should be ("output")
       GwenSettings.`gwen.parallel.maxThreads` should be (GwenSettings.availableProcessors)
       GwenSettings.`gwen.rampup.interval.seconds` should be (None)
       GwenSettings.`gwen.report.overwrite` should be (false)
@@ -50,6 +51,8 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.report.slideshow.create` should be (false)
       GwenSettings.`gwen.report.slideshow.framespersecond` should be (4)
       GwenSettings.`gwen.state.level` should be (StateLevel.feature)
+      GwenSettings.`gwen.console.log.colors` should be (true)
+      GwenSettings.`gwen.console.log.stepDefs` should be (true)
     }
   }
 

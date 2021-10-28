@@ -28,7 +28,7 @@ object RPSettings {
 
   private val rerun: Boolean = `rp.rerun`
   private val rerunOf: Option[String] = `rp.rerun.of`
-  private lazy val rerunFile: File = new File(s"${GwenSettings.`gwen.output.dir`}/.rp-rerun.properties")
+  private lazy val rerunFile: File = new File(s"${GwenSettings.`gwen.outDir`}/.rp-rerun.properties")
 
   def init(): Unit = {
 

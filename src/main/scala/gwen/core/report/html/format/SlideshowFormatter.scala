@@ -51,7 +51,7 @@ trait SlideshowFormatter extends ReportFormatter {
       val reportDir = HtmlSlideshowConfig.reportDir(options).get
       val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
-      val summaryCrumb = ("Summary", new File(s"$rootPath/html", "feature-summary.html"))
+      val summaryCrumb = ("Summary", new File(s"$rootPath/html", "index.html"))
       val dir = HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord).get
       val file = HtmlReportConfig.createReportFile(dir, "", result.spec, unit.dataRecord).get
       val featureCrumb = (SpecType.Feature.toString, file)

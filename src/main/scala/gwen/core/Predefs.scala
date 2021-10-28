@@ -22,21 +22,25 @@ import scala.util.matching.Regex
 import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.Logger
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
 import org.htmlcleaner.HtmlCleaner
 import org.htmlcleaner.PrettyHtmlSerializer
 
+import java.io.ByteArrayOutputStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.FileWriter
+import java.io.PrintStream
 import java.io.PrintWriter
 import java.io.StringReader
 import java.io.StringWriter
+
 import java.nio.file.{Files, Paths}
 import java.text.DecimalFormat
 import java.util.UUID
@@ -351,5 +355,21 @@ object Deprecation extends LazyLogging {
   private def createMsg(prefix: String, oldWay: String, newWay: String): String = {
     s"""|       $oldWay >> Instead use >> $newWay
         |       ${"^" * oldWay.size}""".stripMargin
+  }
+}
+
+object OS {
+  def isWindows: Boolean = sys.props.get("os.name").map(_.startsWith("Windows")).getOrElse(false)
+}
+
+object Booleans {
+  def isTruthy(value: Option[String]): Boolean = !isFalsy(value)
+  def isTruthy(value: String): Boolean = !isFalsy(value)
+  def isFalsy(value: Option[String]): Boolean = value.map(isFalsy).getOrElse(true)
+  def isFalsy(value: String): Boolean = {
+    value == null
+      || value.isEmpty
+      || value.trim == "0"
+      || value.trim.toLowerCase == "false"
   }
 }

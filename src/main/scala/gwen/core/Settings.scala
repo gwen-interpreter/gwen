@@ -65,41 +65,18 @@ object Settings extends LazyLogging {
 
   /**
     * Loads and initialises all settings in the following order of precedence:
-    *   1. Environment variables (setting names that start with `env.`)
-    *   2. System properties passed through -D Java command line option
-    *   3. ~/gwen.properties (user overrides)
-    *   4. Settings files passed into this method (@launchSettings param)
+    *   1. System properties passed through -D Java command line option
+    *   2. ~/gwen.properties (user overrides)
+    *   3. Settings files passed into this method (@launchSettings param)
     *      - later ones override earlier ones
-    *   5. ./gwen.properties (working directory)
-    *   6. ~/.gwen/gwen.properties (global properties)
+    *   4. Project settings (gwen settings in your project root)
+    *   5. Gwen defaults
     */
   def init(launchSettings: File*): Unit = {
-    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
-    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
-    val fallbackSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(new File(d, ".gwen"), "gwen"))
-    val cFiles = (launchSettings.reverse ++ projectSettingsFile.toList ++ fallbackSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
-    val orphans = new Properties(); // track orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
-    val config = (
-      cFiles.foldLeft(ConfigFactory.defaultOverrides()) { (cfg, cFile) => 
-        cfg.withFallback(
-          if (FileIO.hasFileExtension("properties", cFile)) {
-            val props = new Properties()
-            props.load(new FileReader(cFile))
-            props.entrySet.asScala foreach { entry => 
-              val key = entry.getKey.toString
-              if (!orphans.contains(key)) {
-                orphans.setProperty(key, entry.getValue.toString)
-              }
-            }
-            ConfigFactory.parseProperties(props)
-          } else {
-            ConfigFactory.parseFile(cFile)
-          }
-        )
-      }
-    ).withFallback(ConfigFactory.load("gwen")).resolve()
+
+    val (config, orphans) = load(launchSettings*)
     
-    // read into properties object
+    // write into properties object
     val props = config.entrySet.asScala.foldLeft(new Properties()) {
       (properties, entry) =>
         val name = entry.getKey.asInstanceOf[String].replace("\\", "").replace("\"", "")
@@ -151,6 +128,49 @@ object Settings extends LazyLogging {
     
   }
 
+    /**
+    * Loads and initialises all settings in the following order of precedence:
+    *   1. System properties passed through -D Java command line option
+    *   2. ~/gwen.properties (user overrides)
+    *   3. Settings files passed into this method (@launchSettings param)
+    *      - later ones override earlier ones
+    *   4. Project settings (gwen settings in your project root)
+    *   5. Gwen defaults
+    */
+  private [core] def load(launchSettings: File*): (Config, Properties) = {
+    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
+    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
+    val settingsFiles = (launchSettings.reverse ++ projectSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
+    val orphans = new Properties(); // track orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
+    val config = settingsFiles.filter(!_.exists) match {
+      case Nil =>
+        (
+          settingsFiles.foldLeft(ConfigFactory.defaultOverrides()) { (conf, settingsFile) => 
+            conf.withFallback(
+              if (FileIO.hasFileExtension("properties", settingsFile)) {
+                val props = new Properties()
+                props.load(new FileReader(settingsFile))
+                props.entrySet.asScala foreach { entry => 
+                  val key = entry.getKey.toString
+                  if (!orphans.contains(key)) {
+                    orphans.setProperty(key, entry.getValue.toString)
+                  }
+                }
+                ConfigFactory.parseProperties(props)
+              } else {
+                ConfigFactory.parseFile(settingsFile)
+              }
+            )
+          }
+        ).withFallback(ConfigFactory.load("gwen")).resolve()
+      case filesNotFound =>
+        Errors.settingsNotFound(filesNotFound)
+    }
+
+    (config, orphans)
+    
+  }
+
   /**
    * Resolves a given property by performing any property substitutions.
    * 
@@ -175,6 +195,31 @@ object Settings extends LazyLogging {
   }
 
   /**
+   * Resolves a given property by performing any property substitutions.
+   * 
+   * @param value the value to resolve
+   * @param conf the config already read (candidates for substitution)
+   * @throws MissingPropertyException if a property cannot be substituted 
+   *         because it is missing from the given props
+   */
+  private [core] def resolve(value: String, conf: Config): String = {
+    value match {
+      case InlineProperty(key) =>
+        val inline = if (conf.hasPath(key)) {
+          getEnvOpt(key).getOrElse(conf.getString(key))
+        } else {
+          getOpt(key).getOrElse(Errors.missingSettingError(key))
+        }
+        val resolved = inline match {
+          case InlineProperty(_) => resolve(inline, conf)
+          case _ => inline
+        }
+        resolve(value.replaceAll("""\$\{""" + key + """\}""", resolved), conf)
+      case _ => value
+    }
+  }
+
+  /**
     * Gets an optional setting that could be deprecated or an enviroment variable (returns None if not found)
     * 
     * @param name the name of the setting to get ( `env.` prefix for env VARs)
@@ -193,7 +238,7 @@ object Settings extends LazyLogging {
         case None => 
           Option(localSettings.get.getProperty(name)) orElse {
             config flatMap { conf => 
-              if (conf.hasPath(name)) Option(conf.getString(name)) else None
+              if (conf.hasPath(name)) Option(resolve(conf.getString(name), conf)) else None
             } orElse {
               sys.props.get(name)
             }
@@ -369,7 +414,7 @@ object Settings extends LazyLogging {
   private def getList(name: String, config: Config): List[String] = {
     Try(config.getAnyRefList(name)) match {
       case Success(list) => 
-        list.asScala.toList.map(_.toString)
+        list.asScala.toList.map(_.toString).map(value => resolve(value, config))
       case _ => 
         Nil
     }
@@ -411,7 +456,7 @@ object Settings extends LazyLogging {
 
   def getFileOpt(name: String, deprecatedName: Option[String] = None, config: Option[Config] = None): Option[File] = {
     getOptAndConvert(name, deprecatedName, "File system directories", config) { value =>
-      new File(value)
+      toFile(value)
     }
   }
 
@@ -436,6 +481,15 @@ object Settings extends LazyLogging {
       conversion(value)
     } getOrElse {
       Errors.illegalSettingError(name, value, validValues)
+    }
+  }
+
+  def toFile(path: String): File = {
+    if (path.startsWith("./") || path.startsWith(".\\")) {
+      if (path.length > 2) new File(path.substring(2))
+      else new File(".")
+    } else {
+      new File(path)
     }
   }
   

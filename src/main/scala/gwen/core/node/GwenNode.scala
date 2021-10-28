@@ -36,6 +36,10 @@ trait GwenNode {
   final def indexIn(parent: GwenNode): Option[Int] = {
     indexIn(siblingsIn(parent))
   }
+
+  final def isLast: Boolean = {
+    siblingsIn(this).lastOption.map(_ == this).getOrElse(false)
+  }
   
   final def occurrenceIn(parent: GwenNode): Option[Int] = { 
     indexIn(

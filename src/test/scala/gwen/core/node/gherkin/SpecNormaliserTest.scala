@@ -32,7 +32,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
   val background = Background(
     "background",
     List("Initialise"),
-    List(Step(StepKeyword.Given.toString, "background step 1", Passed(2)))
+    List(Step(StepKeyword.Given.toString, "background step 1", OK(2)))
   )
 
   "Feature with no background and no step defs" should "normalise without error" in {
@@ -41,9 +41,9 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       None,
       List(
       Scenario(List[Tag](), "scenario1", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       )),
       Nil,
       Nil)
@@ -66,9 +66,9 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       Some(background),
       List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-          Step(StepKeyword.When.toString, "step 2", Passed(1)),
-          Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+          Step(StepKeyword.Given.toString, "step 1", OK(2)),
+          Step(StepKeyword.When.toString, "step 2", OK(1)),
+          Step(StepKeyword.Then.toString, "step 3", OK(2)))
         )),
         Nil,
         Nil)
@@ -92,9 +92,9 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       )), Nil, Nil)
 
     val result = normaliseSpec(meta, None)
@@ -113,9 +113,9 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val meta = Spec(
       Feature(None, "meta1", Nil), Some(background), List(
         Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-          Step(StepKeyword.When.toString, "step 2", Passed(1)),
-          Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+          Step(StepKeyword.Given.toString, "step 1", OK(2)),
+          Step(StepKeyword.When.toString, "step 2", OK(1)),
+          Step(StepKeyword.Then.toString, "step 3", OK(2)))
         )), Nil, Nil)
 
     val result = normaliseSpec(meta, None)
@@ -135,14 +135,14 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       ),
       Scenario(List(Tag("@StepDef")), "stepdef2", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       )), Nil, Nil)
     normaliseSpec(meta, None)
   }
@@ -151,14 +151,14 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       ),
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       )), Nil, Nil)
 
     intercept[Errors.AmbiguousCaseException] {
@@ -170,14 +170,14 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val meta = Spec(
     Feature(None, "meta1", Nil), None, List(
       Scenario(List(Tag("@StepDef")), "stepdef <number>", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       ),
       Scenario(List(Tag("@StepDef")), "stepdef <index>", Nil, None, List(
-        Step(StepKeyword.Given.toString, "step 1", Passed(2)),
-        Step(StepKeyword.When.toString, "step 2", Passed(1)),
-        Step(StepKeyword.Then.toString, "step 3", Passed(2)))
+        Step(StepKeyword.Given.toString, "step 1", OK(2)),
+        Step(StepKeyword.When.toString, "step 2", OK(1)),
+        Step(StepKeyword.Then.toString, "step 3", OK(2)))
       )), Nil, Nil)
 
     intercept[Errors.AmbiguousCaseException] {

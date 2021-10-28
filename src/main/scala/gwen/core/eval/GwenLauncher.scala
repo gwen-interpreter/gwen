@@ -22,6 +22,7 @@ import gwen.core.node.FeatureStream
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
 import gwen.core.node.gherkin.SpecType
+import gwen.core.report.console.ConsoleReporter
 import gwen.core.report.ReportGenerator
 import gwen.core.result.SpecResult
 import gwen.core.result.ResultsSummary
@@ -39,11 +40,14 @@ import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.log4j.PropertyConfigurator
-
+import org.slf4j.bridge.SLF4JBridgeHandler
 import java.io.File
+import java.io.OutputStream
+import java.io.PrintStream
 import java.net.URL
 import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.{ logging => jul}
 
 /**
   * Launches a gwen engine.
@@ -52,6 +56,18 @@ import java.util.concurrent.atomic.AtomicInteger
   */
 class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging {
 
+  // suppress error stream
+  System.setErr(new PrintStream(
+    new OutputStream() {
+      override def write(b: Int): Unit = { }
+    }
+  ))
+
+  // send all j.u.l logs to slf4j
+  SLF4JBridgeHandler.removeHandlersForRootLogger()
+  SLF4JBridgeHandler.install()
+
+  // load custom lo4j configuration
   Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
     if (config.toLowerCase.trim startsWith "file:") {
       PropertyConfigurator.configure(new URL(config));
@@ -93,11 +109,6 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     * @return the evaluated result
     */
   private def interpretUnit(unit: FeatureUnit, ctx: T): Option[SpecResult] = {
-    logger.info(("""|
-                    |   _
-                    |  { \," Evaluating """ + SpecType.ofFile(unit.featureFile).toString.toLowerCase + """..
-                    | {_`/   """ + unit.featureFile.toString + """
-                    |    `   """).stripMargin)
     engine.evaluateUnit(unit, ctx)
   }
 
@@ -117,7 +128,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
       if (options.init) {
         initProject(options.initDir)
         logger.info(s"Project directory initialised")
-        Passed(System.nanoTime - startNanos)
+        OK(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
         val featureStream = new FeatureStream(metaFiles, options.tagFilter)
@@ -166,22 +177,27 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T]): EvalStatus = {
     val start = System.nanoTime
-    val reportGenerators = ReportGenerator.generatorsFor(options)
-    reportGenerators.foreach(_.init(engine))
-    Try {
-      if (options.parallel) {
-        executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
-      } else {
-        executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
+    engine.addListener(ConsoleReporter)
+    try {
+      val reportGenerators = ReportGenerator.generatorsFor(options)
+      reportGenerators.foreach(_.init(engine))
+      Try {
+        if (options.parallel) {
+          executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
+        } else {
+          executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
+        }
+      } match {
+        case Success(s) =>
+          reportGenerators.foreach(_.close(engine, s.evalStatus))
+          printSummaryStatus(s)
+          s.evalStatus
+        case Failure(f) =>
+          reportGenerators.foreach(_.close(engine, Failed(System.nanoTime - start, f)))
+          throw f
       }
-    } match {
-      case Success(s) =>
-        reportGenerators.foreach(_.close(engine, s.evalStatus))
-        printSummaryStatus(s)
-        s.evalStatus
-      case Failure(f) =>
-        reportGenerators.foreach(_.close(engine, Failed(System.nanoTime - start, f)))
-        throw f
+    } finally {
+      engine.removeListener(ConsoleReporter)
     }
   }
 
@@ -288,10 +304,10 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
   }
 
   private def printSummaryStatus(summary: ResultsSummary): Unit = {
-    println()
+    logger.info("")
     logger.info(summary.statsString)
-    println()
+    logger.info("")
     summary.evalStatus.log(logger, summary.statusString)
-    println()
+    logger.info("")
   }
 }

@@ -17,10 +17,10 @@
 package gwen.core.status
 
 enum StatusKeyword:
-  case Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled
+  case OK, Failed, Sustained, Skipped, Pending, Loaded, Disabled
 
 object StatusKeyword {
 
-  val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
+  val reportables = List(OK, Failed, Sustained, Skipped, Pending)
 
 }

@@ -15,7 +15,7 @@
  */
 package gwen.core.features
 
-import gwen.DefaultGwenInterpreter
+import gwen.GwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.Settings
@@ -28,7 +28,7 @@ import java.io.File
 
 class BindingsTest extends BaseTest {
 
-  val interpreter = DefaultGwenInterpreter
+  val interpreter = GwenInterpreter()
 
   forAll (levels) { level =>
     s"binding features using $level level state" should "evaluate without error" in {
@@ -43,7 +43,7 @@ class BindingsTest extends BaseTest {
           
         Settings.init(options.settingsFiles*)
         interpreter.run(options, None) match {
-          case Passed(_) => // excellent :)
+          case OK(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }
@@ -65,7 +65,7 @@ class BindingsTest extends BaseTest {
         
         Settings.init(options.settingsFiles*)
         interpreter.run(options, None) match {
-          case Passed(_) => // excellent :)
+          case OK(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }

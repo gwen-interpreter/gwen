@@ -18,14 +18,14 @@ m d, yyyy
     - Removed settings alias
       - `gwen.behaviour.rules` in favor of `gwen.behavior.rules`
     - New settings
-      - Configurable output directory
-        - `gwen.output.dir` (default = target)
+      - Configurable base and output directories
+        - `gwen.baseDir` (default = .)
+        - `gwen.outDir` (default = ${gwen.baseDir}/output)
       - Configurable CLI options:
         - `gwen.cli.options.parallel`
         - `gwen.cli.options.parallelFeatures`
         - `gwen.cli.options.batch`
         - `gwen.cli.options.dryRun`
-        - `gwen.cli.options.conf`
         - `gwen.cli.options.report`
         - `gwen.cli.options.format`
         - `gwen.cli.options.tags`
