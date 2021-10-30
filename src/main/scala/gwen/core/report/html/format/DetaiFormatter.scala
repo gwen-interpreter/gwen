@@ -434,7 +434,7 @@ trait DetaiFormatter {
           )
         ),
         " ",
-        if (stepDef.nonEmpty && status == StatusKeyword.OK) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
+        if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" &nbsp; "),
         formatParams(step.params, status),
         raw(" &nbsp; "),
@@ -459,7 +459,7 @@ trait DetaiFormatter {
         ul(
           li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
             div(`class` := s"bg-${cssStatus(status)}",
-              span(`class` := s"badge badge-${cssStatus(status)}${if(status != StatusKeyword.OK && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}",
+              span(`class` := s"badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}",
                 status.toString
               ),
               span(`class` := s"text-${cssStatus(status)}",
@@ -501,7 +501,7 @@ trait DetaiFormatter {
   }
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword): TypedTag[String] = {
-    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.OK) " in" else ""}", role := "tabpanel",
+    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
       formatScenario(stepDef)
     )
   }

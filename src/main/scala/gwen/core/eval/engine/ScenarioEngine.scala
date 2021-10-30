@@ -140,14 +140,14 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         afterScenario(s, ctx)
       }
     } tap { s =>
-      logStatus(s)
+      logStatus(ctx.options, s)
     }
   }
 
   private def evaluateScenarioWithBackground(scenario: Scenario, background: Background, ctx: T): Scenario = {
     val bg = evaluateBackground(scenario, background, ctx)
     val steps: List[Step] = bg.evalStatus match {
-      case OK(_) => evaluateSteps(scenario, scenario.steps, ctx)
+      case Passed(_) => evaluateSteps(scenario, scenario.steps, ctx)
       case Skipped if bg.steps.isEmpty => evaluateSteps(scenario, scenario.steps, ctx)
       case _ => scenario.steps map { _.copy(withEvalStatus = Skipped) }
     }

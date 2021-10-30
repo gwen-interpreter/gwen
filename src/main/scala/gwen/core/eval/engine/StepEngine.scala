@@ -114,7 +114,7 @@ trait StepEngine[T <: EvalContext] {
         }
     }
     finaliseStep(eStep, ctx) tap { fStep =>
-      logStatus(fStep)
+      logStatus(ctx.options, fStep)
       afterStep(fStep, ctx)
     }
   }
@@ -187,16 +187,20 @@ trait StepEngine[T <: EvalContext] {
         step.evalStatus match {
           case failure: Failed if !step.attachments.exists{ case (n, _) => n == "Error details"} =>
             (if (!failure.isDisabledError) {
-              if (ctx.options.batch) {
-                logger.error(ctx.scopes.visible.asString)
+              if (ctx.options.verbose) {
+                if (ctx.options.batch) {
+                  logger.error(ctx.scopes.visible.asString)
+                }
+                logger.error(failure.error.getMessage)
               }
-              logger.error(failure.error.getMessage)
               ctx.addErrorAttachments(step, failure)
             } else {
               step
             }) tap { _ =>
-              logger.whenDebugEnabled {
-                logger.error("Exception: ", failure.error)
+              if (ctx.options.verbose) {
+                logger.whenDebugEnabled {
+                  logger.error("Exception: ", failure.error)
+                }
               }
             }
           case _ => step

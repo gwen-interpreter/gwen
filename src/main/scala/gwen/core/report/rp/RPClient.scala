@@ -104,7 +104,9 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   def healthCheck(timeoutSecs: Int): Unit = {
     Try(heartbeatWithRetry(timeoutSecs)) match {
       case Failure(e) => 
-        logger.error(s"Report Portal heartbeat FAILED")
+        if (options.verbose) {
+          logger.error(s"Report Portal heartbeat FAILED")
+        }
         e match {
           case _: SocketTimeoutException =>
             Errors.serviceHealthCheckError(s"Report Portal health check timed out after ${timeoutSecs} second(s)")
@@ -113,7 +115,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
           case _ =>
             Errors.serviceHealthCheckError(s"Report Portal health check FAILED: $e")
         }
-      case _ => // OK
+      case _ => // Passed
     }
   }
 
@@ -127,7 +129,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
             } else throw e
           case _ => throw e
         }
-      case _ => // OK
+      case _ => // Passed
     }
   }
 
@@ -148,7 +150,9 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
         if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
           logger.info(s"Report Portal heartbeat OK: $code $body")
         } else {
-          logger.error(s"Report Portal heartbeat FAILED")
+          if (options.verbose) {
+            logger.error(s"Report Portal heartbeat FAILED")
+          }
           Errors.serviceHealthCheckError(s"Report Portal health check at $healthUrl failed with response: $code $body")
         }
       } finally {
@@ -351,7 +355,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
 
   private def mapStatus(evalStatus: EvalStatus): ItemStatus = {
     evalStatus.keyword match {
-      case StatusKeyword.OK | StatusKeyword.Loaded | StatusKeyword.Sustained => ItemStatus.PASSED
+      case StatusKeyword.Passed | StatusKeyword.Loaded | StatusKeyword.Sustained => ItemStatus.PASSED
       case StatusKeyword.Skipped | StatusKeyword.Pending | StatusKeyword.Disabled => ItemStatus.SKIPPED
       case _ => ItemStatus.FAILED
     }
@@ -360,7 +364,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   private def mapLevel(evalStatus: EvalStatus): LogLevel = {
     evalStatus.keyword match {
       case StatusKeyword.Failed => LogLevel.ERROR
-      case StatusKeyword.OK => LogLevel.INFO
+      case StatusKeyword.Passed => LogLevel.INFO
       case _ => LogLevel.WARN
     }
   }

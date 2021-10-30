@@ -103,7 +103,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
       if (options.init) {
         initProject(options.initDir)
         logger.info(s"Project directory initialised")
-        OK(System.nanoTime - startNanos)
+        Passed(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
         val featureStream = new FeatureStream(metaFiles, options.tagFilter)
@@ -152,9 +152,8 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     */
   private def executeFeatureUnits(options: GwenOptions, featureStream: LazyList[FeatureUnit], ctxOpt: Option[T]): EvalStatus = {
     val start = System.nanoTime
-    if (!options.verbose) {
-      engine.addListener(ConsoleReporter)
-    }
+    val consoleReporter = Option(options.verbose).filter(!_).map(_ => new ConsoleReporter(options))
+    consoleReporter.foreach(engine.addListener)
     try {
       val reportGenerators = ReportGenerator.generatorsFor(options)
       reportGenerators.foreach(_.init(engine))
@@ -166,17 +165,16 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         }
       } match {
         case Success(s) =>
-          reportGenerators.foreach(_.close(engine, s.evalStatus))
-          printSummaryStatus(s)
+          consoleReporter foreach { _.printSummary(s) }
+          reportGenerators foreach (_.close(engine, s.evalStatus))
+          printSummaryStatus(options, s)
           s.evalStatus
         case Failure(f) =>
           reportGenerators.foreach(_.close(engine, Failed(System.nanoTime - start, f)))
           throw f
       }
     } finally {
-      if (!options.verbose) {
-        engine.removeListener(ConsoleReporter)
-      }
+      consoleReporter.foreach(engine.removeListener)
     }
   }
 
@@ -200,7 +198,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
           }
         }
         evaluateUnit(options, ctxOpt, unit) { result =>
-          result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(logSpecStatus) }
+          result.map(bindReportFiles(reportGenerators, unit, _)) tap { _ => result.foreach(r => logSpecStatus(options, r)) }
         }
       }
     }
@@ -230,7 +228,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
                   _.reportSummary(accSummary)
                 }
               }
-          }) tap { _ => result.foreach(logSpecStatus) }
+          }) tap { _ => result.foreach(r => logSpecStatus(options, r)) }
         }
       }
     }
@@ -276,17 +274,16 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
       result
   }
 
-  private def logSpecStatus(result: SpecResult): Unit = {
+  private def logSpecStatus(options: GwenOptions, result: SpecResult): Unit = {
     logger.info("")
-    result.evalStatus.log(logger, result.toString)
+    StatusLogger.log(options, logger, result.evalStatus, result.toString)
     logger.info("")
   }
 
-  private def printSummaryStatus(summary: ResultsSummary): Unit = {
+  private def printSummaryStatus(options: GwenOptions, summary: ResultsSummary): Unit = {
+    logger.info(s"\n${summary.statsString}")
     logger.info("")
-    logger.info(summary.statsString)
-    logger.info("")
-    summary.evalStatus.log(logger, summary.statusString)
+    StatusLogger.log(options, logger, summary.evalStatus, summary.statusString)
     logger.info("")
   }
   

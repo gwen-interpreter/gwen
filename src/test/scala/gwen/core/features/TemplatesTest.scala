@@ -40,7 +40,7 @@ class TemplatesTest extends BaseTest {
         )
           
         interpreter.run(options, None) match {
-          case OK(_) => // excellent :)
+          case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }
@@ -60,7 +60,7 @@ class TemplatesTest extends BaseTest {
         )
           
         interpreter.run(options, None) match {
-          case OK(_) => // excellent :)
+          case Passed(_) => // excellent :)
           case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
           case _ => fail("evaluation expected but got noop")
         }

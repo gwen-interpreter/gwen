@@ -16,18 +16,13 @@
 
 package gwen.core.status
 
-import com.typesafe.scalalogging.Logger
-
 /**
-  * Defines an OK status.
+  * Defines an Passed status.
   * 
   * @param nanos the duration in nanoseconds
   */
-case class OK(nanos: Long) extends EvalStatus {
-  override val keyword: StatusKeyword = StatusKeyword.OK
+case class Passed(nanos: Long) extends EvalStatus {
+  override val keyword: StatusKeyword = StatusKeyword.Passed
   override def exitCode = 0
   override def emoticon = "[:)]"
-  override def log(logger: Logger, msg: String): Unit = {
-    logger.info(msg)
-  }
 }

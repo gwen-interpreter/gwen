@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2021 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,21 @@
 
 package gwen.core.status
 
-enum StatusKeyword:
-  case Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled
+import gwen.core.GwenOptions
 
-object StatusKeyword {
+import com.typesafe.scalalogging.Logger
 
-  val reportables = List(Passed, Failed, Sustained, Skipped, Pending)
+object StatusLogger {
 
+  def log(options: GwenOptions, logger: Logger, evalStatus: EvalStatus, msg: String): Unit = {
+    if (options.verbose) {
+      evalStatus match {
+        case _: Passed => logger.info(msg)
+        case Loaded => logger.info(msg)
+        case _: Failed => logger.error(msg)
+        case _ => logger.warn(msg)
+      }
+    }
+  }
 }
+

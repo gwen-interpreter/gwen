@@ -101,7 +101,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
         }
       } catch {
         case e: Throwable =>
-          logger.error(e.getMessage)
+          if (ctx.options.verbose) {
+            logger.error(e.getMessage)
+          }
           val nanos = System.nanoTime() - start
           val durationNanos = {
             if (nanos > timeout.toNanos) timeout.toNanos
@@ -128,7 +130,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
     }
     if (condSteps.nonEmpty) {
       val steps = evaluatedStep.evalStatus match {
-        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isOK) =>
+        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) =>
           val preStep = condSteps.head.copy(
             withKeyword = StepKeyword.And.toString,
             withName = doStep,

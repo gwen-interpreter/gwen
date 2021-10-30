@@ -16,8 +16,6 @@
 
 package gwen.core.status
 
-import com.typesafe.scalalogging.Logger
-
 /**
   * Defines a failed status.
   * 
@@ -31,8 +29,5 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override def cause = Option(error.getCause)
   override def message: String = {
     cause.map(_.getMessage).orElse(Option(error.getMessage)).getOrElse(error.getClass.getSimpleName)
-  }
-  override def log(logger: Logger, msg: String): Unit = {
-    logger.error(msg)
   }
 }

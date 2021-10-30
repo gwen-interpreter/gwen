@@ -63,7 +63,7 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val env = new Environment(EnvState()) { }
 
-    when(step.evalStatus).thenReturn(OK(1))
+    when(step.evalStatus).thenReturn(Passed(1))
 
     dispatcher.addListener(listener)
 
@@ -152,9 +152,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val env = new Environment(EnvState()) { }
 
-    when(step1.evalStatus).thenReturn(OK(1))
-    when(step2.evalStatus).thenReturn(OK(1))
-    when(step3.evalStatus).thenReturn(OK(1))
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
 
     when(step1.nodeType).thenReturn(NodeType.Step)
     when(step2.nodeType).thenReturn(NodeType.Step)
@@ -269,10 +269,10 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
 
-    when(step1.evalStatus).thenReturn(OK(1))
-    when(step2.evalStatus).thenReturn(OK(1))
-    when(step3.evalStatus).thenReturn(OK(1))
-    when(step4.evalStatus).thenReturn(OK(1))
+    when(step1.evalStatus).thenReturn(Passed(1))
+    when(step2.evalStatus).thenReturn(Passed(1))
+    when(step3.evalStatus).thenReturn(Passed(1))
+    when(step4.evalStatus).thenReturn(Passed(1))
 
     when(featureSpec.nodeType).thenReturn(NodeType.Feature)
     when(featureResult.nodeType).thenReturn(NodeType.Result)

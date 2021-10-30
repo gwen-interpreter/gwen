@@ -64,10 +64,10 @@ object Errors {
   def recursiveStepDefError(stepDef: Scenario) = throw new RecursiveStepDefException(stepDef)
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
-  def missingOrInvalidImportFileError(importTag: Tag) = throw new MissingOrInvalidImportFileException(importTag)
-  def unsupportedImportError(importTag: Tag) = throw new UnsupportedImportException(importTag)
-  def unsupportedDataFileError(dataTag: Tag) = throw new UnsupportedDataFileException(dataTag)
-  def recursiveImportError(importTag: Tag) = throw new RecursiveImportException(importTag)
+  def missingOrInvalidImportFileError(importAnnotation: Tag) = throw new MissingOrInvalidImportFileException(importAnnotation)
+  def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
+  def unsupportedDataFileError(dataAnnotation: Tag) = throw new UnsupportedDataFileException(dataAnnotation)
+  def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
   def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
@@ -85,7 +85,7 @@ object Errors {
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
   def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
   def multilineParamError(msg: String) = throw new MultilineParamException(msg)
-  def stepError(step: Step, cause: Throwable) = throw new StepFailure(step, cause)
+  def stepError(step: Step, cause: Throwable) = throw new StepException(step, cause.getMessage, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
@@ -99,7 +99,10 @@ object Errors {
   class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
 
   /** Signals a step that failed to execute. */
-  class StepFailure(step: Step, cause: Throwable) extends GwenException(s"Failed step${at(step.sourceRef)}: $step: ${cause.getMessage}", cause)
+  class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(step.sourceRef)}", cause)
+
+  /** Signals a StepDef that failed to execute. */
+  class StepDefException(stepDef: Scenario, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(stepDef.sourceRef)}", cause)
 
   /** Thrown when a Gherkin parsing error occurs. */
   class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Long], col: Option[Long]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
@@ -108,13 +111,13 @@ object Errors {
   class AmbiguousCaseException(msg: String) extends GwenException(msg)
 
   /** Thrown when an unsupported or undefined step is encountered. */
-  class UndefinedStepException(step: Step) extends GwenException(s"Unsupported or undefined step: $step")
+  class UndefinedStepException(step: Step) extends StepException(step, "Unsupported or undefined step")
 
   /** Thrown when an illegal step is detected. */
   class IllegalStepException(msg: String) extends GwenException(msg)
 
   /** Thrown when a step is disabled. */
-  class DisabledStepException(step: Step) extends GwenException(s"Disabled step: $step")
+  class DisabledStepException(step: Step) extends StepException(step, "Step is disabled")
 
   /** Thrown when an attribute cannot be found in a scope. */
   class UnboundAttributeException(name: String, scope: Option[String]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
@@ -140,8 +143,8 @@ object Errors {
   /** Thrown when a property setting fails to load. */
   class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)
 
-  /** Thrown when an invalid tag (annotation) is detected. */
-  class InvalidTagException(tagString: String) extends GwenException(s"Invalid tag: $tagString")
+  /** Thrown when an invalid tag is detected. */
+  class InvalidTagException(annotation: String) extends GwenException(s"Invalid annotation: $annotation")
 
   /** Thrown when a regex error occurs. */
   class RegexException(msg: String) extends GwenException(msg)
@@ -162,28 +165,28 @@ object Errors {
   class InvocationException(msg: String) extends GwenException(msg)
   
   /** Signals a step that failed to evaluate. */
-  class StepEvaluationException(step: Step, val cause: Throwable) extends GwenException(s"Failed step${at(step.sourceRef)}: $step: ${cause.getMessage}", cause)
+  class StepEvaluationException(step: Step, val cause: Throwable) extends StepException(step, cause.getMessage, cause)
   
   /** Signals an infinite recursive StepDef. */
-  class RecursiveStepDefException(stepDef: Scenario) extends GwenException(s"Illegal recursive call to StepDef${at(stepDef.sourceRef)}")
+  class RecursiveStepDefException(stepDef: Scenario) extends StepDefException(stepDef, s"Illegal recursive call to StepDef")
 
   /** Thrown when a decoding error occurs. */
   class DecodingException(msg: String) extends GwenException(msg)
   
   /** Thrown when an invalid StepDef is detected. */
-  class InvalidStepDefException(stepDef: Scenario, msg: String) extends GwenException(s"Invalid StepDef: $stepDef: $msg")
+  class InvalidStepDefException(stepDef: Scenario, msg: String) extends StepDefException(stepDef, s"Invalid StepDef: $msg")
   
   /** Thrown when an import file is not found. */
-  class MissingOrInvalidImportFileException(importTag: Tag) extends GwenException(s"Missing or invalid file detected in $importTag${at(importTag.sourceRef)}")
+  class MissingOrInvalidImportFileException(importAnnotation: Tag) extends GwenException(s"Missing or invalid file detected in $importAnnotation annotation${at(importAnnotation.sourceRef)}")
 
   /** Thrown when an unsupported import file is detected. */
-  class UnsupportedImportException(importTag: Tag) extends GwenException(s"Unsupported file type detected in $importTag${at(importTag.sourceRef)} (only .meta files can be imported)")
+  class UnsupportedImportException(importAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $importAnnotation annotation${at(importAnnotation.sourceRef)} (only .meta files can be imported)")
 
   /** Thrown when an unsupported data table file is detected. */
-  class UnsupportedDataFileException(dataTag: Tag) extends GwenException(s"Unsupported file type detected in $dataTag${at(dataTag.sourceRef)}: only .csv data files supported")
+  class UnsupportedDataFileException(dataAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $dataAnnotation annotation${at(dataAnnotation.sourceRef)}: only .csv data files supported")
   
   /** Thrown when a recursive import is detected. */
-  class RecursiveImportException(importTag: Tag) extends GwenException(s"Recursive (cyclic) $importTag detected${at(importTag.sourceRef)}") {
+  class RecursiveImportException(importAnnotation: Tag) extends GwenException(s"Recursive (cyclic) $importAnnotation detected${at(importAnnotation.sourceRef)}") {
     override def fillInStackTrace(): RecursiveImportException = this
   }
   
@@ -206,10 +209,10 @@ object Errors {
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends GwenException(s"Declarative feature mode violation: DSL step not permitted in feature${at(step.sourceRef)}: $step")
+  class ImperativeStepException(step: Step) extends StepException(step, "Declarative feature mode violation: DSL step not permitted in feature")
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends GwenException(s"Declarative feature mode violation: StepDef not permitted in feature${at(stepDef.sourceRef)}")
+  class ImperativeStepDefException(stepDef: Scenario) extends StepDefException(stepDef, "Declarative feature mode violation: StepDef not permitted in feature}")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 
@@ -217,11 +220,11 @@ object Errors {
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends GwenException(s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual tag${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
+    extends StepException(step, s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected (StepDef has @$actual annotation${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))})")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends GwenException(s"Strict behavior rules violation: Missing @Context, @Action, or @Assertion annotation on StepDef${at(stepDef.sourceRef)}")
+    extends StepDefException(stepDef, s"Strict behavior rules violation: Missing @Context, @Action, or @Assertion annotation on StepDef")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")

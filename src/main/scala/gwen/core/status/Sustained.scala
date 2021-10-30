@@ -16,8 +16,6 @@
 
 package gwen.core.status
 
-import com.typesafe.scalalogging.Logger
-
 /**
   * Defines the sustained status.
   *
@@ -30,7 +28,4 @@ case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
   override def emoticon = "[:|]"
   override def cause = Option(error.getCause)
   override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
-  override def log(logger: Logger, msg: String): Unit = {
-    logger.warn(msg)
-  }
 }

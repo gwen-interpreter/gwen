@@ -17,6 +17,7 @@
 package gwen.core.result
 
 import gwen.core._
+import gwen.core.node.NodeType
 import gwen.core.status._
 
 import scala.concurrent.duration._
@@ -44,7 +45,7 @@ case class ResultsSummary(
   lazy val elapsedTime: Duration = Duration(finished.getTime - started.getTime, MILLISECONDS)
   
   private lazy val statuses = results.map(_.spec.evalStatus)
-  lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else OK(0)
+  lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
   lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
   lazy val overhead: Duration = DurationOps.sum(results.map(_.overhead))
   lazy val featureCounts: Map[StatusKeyword, Int] = EvalStatus.countsByType(statuses)
@@ -72,14 +73,10 @@ case class ResultsSummary(
     }).toMap
 
   def statsString: String = {
-    val featureCount = featureCounts.values.sum
-    val rulesCount = ruleCounts.values.sum
-    val scenarioCount = scenarioCounts.values.sum
-    val stepCount = stepCounts.values.sum
-    s"""|$featureCount feature${if (featureCount == 1) "" else "s"}: ${formatCounts(featureCounts)}
-        |$rulesCount rule${if (rulesCount == 1) "" else "s"}: ${formatCounts(ruleCounts)}
-        |$scenarioCount scenario${if (scenarioCount == 1) "" else "s"}: ${formatCounts(scenarioCounts)}
-        |$stepCount step${if (stepCount == 1) "" else "s"}: ${formatCounts(stepCounts)}""".stripMargin
+    statusCounts(withEmpty = true) map { (node, counts) =>
+      val sum = counts.values.sum
+      s"$sum ${node.toString.toLowerCase}${if (sum == 1) "" else "s"}: ${formatCounts(counts)}"
+    } mkString ("\n")
   }
 
   def statusString: String = {
@@ -87,12 +84,24 @@ case class ResultsSummary(
         |[${Formatting.formatDuration(overhead)}] Overhead
         |[${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }
+
+  def statusCounts(withEmpty: Boolean): List[(NodeType, Map[StatusKeyword, Int])] = {
+    List(
+      (NodeType.Feature, featureCounts),
+      (NodeType.Rule, ruleCounts),
+      (NodeType.Scenario, scenarioCounts),
+      (NodeType.Step, stepCounts)
+    ) filter { (nodeType, counts) => 
+      withEmpty || counts.nonEmpty
+    }
+  }
   
-  private def formatCounts(counts: Map[StatusKeyword, Int]) = 
+  private def formatCounts(counts: Map[StatusKeyword, Int]): String = {
     StatusKeyword.reportables map { status =>
       val count = counts.getOrElse(status, 0)
       s"$status $count"
     } mkString ", "
+  }
   
 }
 

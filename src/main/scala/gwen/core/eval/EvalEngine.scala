@@ -163,9 +163,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
   
   private def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
   
-  def logStatus(node: GherkinNode): Unit = { 
+  def logStatus(options: GwenOptions, node: GherkinNode): Unit = { 
     val msg = s"${node.evalStatus} ${node.nodeType}: $node"
-    node.evalStatus.log(logger, msg)
+    StatusLogger.log(options, logger, node.evalStatus, msg)
   }  
   
 }

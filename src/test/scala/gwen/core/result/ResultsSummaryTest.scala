@@ -29,10 +29,10 @@ import java.util.Date
 
 class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
   
-  val OK1 = OK(1000000)
-  val OK2 = OK(2000000)
-  val OK3 = OK(3000000)
-  val OK4 = OK(4000000)
+  val Passed1 = Passed(1000000)
+  val Passed2 = Passed(2000000)
+  val Passed3 = Passed(3000000)
+  val Passed4 = Passed(4000000)
   
   val Failed3 = Failed(3000000, new Exception())
   val Failed4 = Failed(4000000, new Exception())
@@ -45,11 +45,11 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     summary.stepCounts.size should be (0)
     val summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("0 features: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("0 scenarios: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(3) should be ("0 steps: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summary.statusString.contains("OK") should be (true)
+    summaryLines(0) should be ("0 features: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("0 scenarios: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(3) should be ("0 steps: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summary.statusString.contains("Passed") should be (true)
   }
   
   "Accumulated feature results in summary" should "sum correctly" in {
@@ -61,9 +61,9 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     val meta1 = Spec(
       Feature(None, "meta1", Nil), None, List(
         Scenario(List[Tag](), "metaScenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "meta step 1", OK2),
-          Step(StepKeyword.When.toString, "meta step 2", OK1),
-          Step(StepKeyword.Then.toString, "meta step 3", OK2))
+          Step(StepKeyword.Given.toString, "meta step 1", Passed2),
+          Step(StepKeyword.When.toString, "meta step 2", Passed1),
+          Step(StepKeyword.Then.toString, "meta step 3", Passed2))
         ),
         Scenario(List(Tag("@StepDef")), "metaStepDef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Loaded),
@@ -71,13 +71,13 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.Then.toString, "step 3", Loaded))
         )), Nil, Nil)
         
-    // add 1 OK scenario
+    // add 1 Passed scenario
     val feature1 = Spec(
       Feature(None, "feature1", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK1),
-          Step(StepKeyword.Then.toString, "step 3", OK2))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed1),
+          Step(StepKeyword.Then.toString, "step 3", Passed2))
         ),
         Scenario(List(Tag("@StepDef")), "StepDef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Loaded),
@@ -90,24 +90,24 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     val metaResult = new SpecResult(meta1, None, Nil, new Date(), new Date())
     var featureResult = new SpecResult(feature1, None, List(metaResult), new Date(), new Date())
     summary = summary + featureResult
-    EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.OK)
+    EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Passed)
     summary.results.size should be (1)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 3)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 3)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("1 feature: OK 1, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("1 scenario: OK 1, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(3) should be ("3 steps: OK 3, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summary.statusString.contains("OK") should be (true)
+    summaryLines(0) should be ("1 feature: Passed 1, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("1 scenario: Passed 1, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(3) should be ("3 steps: Passed 3, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summary.statusString.contains("Passed") should be (true)
     
     // add 1 failed scenario
     val feature2 = Spec(
       Feature(None, "feature2", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Failed3),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
         )), Nil, Nil)
@@ -115,43 +115,43 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (2)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 1), (StatusKeyword.Failed -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 1), (StatusKeyword.Failed -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 4), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 1), (StatusKeyword.Failed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 1), (StatusKeyword.Failed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 4), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("2 features: OK 1, Failed 1, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("2 scenarios: OK 1, Failed 1, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(3) should be ("6 steps: OK 4, Failed 1, Sustained 0, Skipped 1, Pending 0")
+    summaryLines(0) should be ("2 features: Passed 1, Failed 1, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("2 scenarios: Passed 1, Failed 1, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(3) should be ("6 steps: Passed 4, Failed 1, Sustained 0, Skipped 1, Pending 0")
     summary.statusString.contains("Failed") should be (true)
     
-    // add 2 OK scenarios
+    // add 2 Passed scenarios
     val feature3 = Spec(
       Feature(None, "feature3", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK1),
-          Step(StepKeyword.Then.toString, "step 3", OK2))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed1),
+          Step(StepKeyword.Then.toString, "step 3", Passed2))
         ), 
         Scenario(List[Tag](), "scenario2", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK1),
-          Step(StepKeyword.Then.toString, "step 3", OK2))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed1),
+          Step(StepKeyword.Then.toString, "step 3", Passed2))
         )), Nil, Nil)
     featureResult = new SpecResult(feature3, None, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (3)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 2), (StatusKeyword.Failed -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 3), (StatusKeyword.Failed -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("3 features: OK 2, Failed 1, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("4 scenarios: OK 3, Failed 1, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(3) should be ("12 steps: OK 10, Failed 1, Sustained 0, Skipped 1, Pending 0")
+    summaryLines(0) should be ("3 features: Passed 2, Failed 1, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("4 scenarios: Passed 3, Failed 1, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(3) should be ("12 steps: Passed 10, Failed 1, Sustained 0, Skipped 1, Pending 0")
     summary.statusString.contains("Failed") should be (true)
     
     // add 1 skipped scenario
@@ -166,15 +166,15 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (4)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("4 features: OK 2, Failed 1, Sustained 0, Skipped 1, Pending 0")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("5 scenarios: OK 3, Failed 1, Sustained 0, Skipped 1, Pending 0")
-    summaryLines(3) should be ("15 steps: OK 10, Failed 1, Sustained 0, Skipped 4, Pending 0")
+    summaryLines(0) should be ("4 features: Passed 2, Failed 1, Sustained 0, Skipped 1, Pending 0")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("5 scenarios: Passed 3, Failed 1, Sustained 0, Skipped 1, Pending 0")
+    summaryLines(3) should be ("15 steps: Passed 10, Failed 1, Sustained 0, Skipped 4, Pending 0")
     summary.statusString.contains("Failed") should be (true)
     
     // add 1 pending scenario
@@ -188,40 +188,40 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (5)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4), (StatusKeyword.Pending -> 2)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 3), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 10), (StatusKeyword.Failed -> 1), (StatusKeyword.Skipped -> 4), (StatusKeyword.Pending -> 2)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("5 features: OK 2, Failed 1, Sustained 0, Skipped 1, Pending 1")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("6 scenarios: OK 3, Failed 1, Sustained 0, Skipped 1, Pending 1")
-    summaryLines(3) should be ("17 steps: OK 10, Failed 1, Sustained 0, Skipped 4, Pending 2")
+    summaryLines(0) should be ("5 features: Passed 2, Failed 1, Sustained 0, Skipped 1, Pending 1")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("6 scenarios: Passed 3, Failed 1, Sustained 0, Skipped 1, Pending 1")
+    summaryLines(3) should be ("17 steps: Passed 10, Failed 1, Sustained 0, Skipped 4, Pending 2")
     summary.statusString.contains("Failed") should be (true)
     
-    // add 4 OK and 1 failed scenario
+    // add 4 Passed and 1 failed scenario
     val feature6 = Spec(
       Feature(None, "feature6", Nil), None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK1),
-          Step(StepKeyword.Then.toString, "step 3", OK2))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed1),
+          Step(StepKeyword.Then.toString, "step 3", Passed2))
         ), 
         Scenario(List[Tag](), "scenario2", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK4),
-          Step(StepKeyword.When.toString, "step 2", OK1))
+          Step(StepKeyword.Given.toString, "step 1", Passed4),
+          Step(StepKeyword.When.toString, "step 2", Passed1))
         ),
         Scenario(List[Tag](), "scenario3", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK1),
-          Step(StepKeyword.Then.toString, "step 3", OK2))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed1),
+          Step(StepKeyword.Then.toString, "step 3", Passed2))
         ),
         Scenario(List[Tag](), "scenario4", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK2),
-          Step(StepKeyword.When.toString, "step 2", OK3))
+          Step(StepKeyword.Given.toString, "step 1", Passed2),
+          Step(StepKeyword.When.toString, "step 2", Passed3))
         ),
         Scenario(List[Tag](), "scenario5", Nil, None, List(
-          Step(StepKeyword.Given.toString, "step 1", OK1),
+          Step(StepKeyword.Given.toString, "step 1", Passed1),
           Step(StepKeyword.When.toString, "step 2", Failed4),
           Step(StepKeyword.Then.toString, "step 3", Skipped),
           Step(StepKeyword.And.toString, "step 3", Skipped))
@@ -230,15 +230,15 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (6)
-    summary.featureCounts should equal (Map((StatusKeyword.OK -> 2), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
-    summary.scenarioCounts should equal (Map((StatusKeyword.OK -> 7), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
-    summary.stepCounts should equal (Map((StatusKeyword.OK -> 21), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 6), (StatusKeyword.Pending -> 2)))
+    summary.featureCounts should equal (Map((StatusKeyword.Passed -> 2), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.scenarioCounts should equal (Map((StatusKeyword.Passed -> 7), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 1), (StatusKeyword.Pending -> 1)))
+    summary.stepCounts should equal (Map((StatusKeyword.Passed -> 21), (StatusKeyword.Failed -> 2), (StatusKeyword.Skipped -> 6), (StatusKeyword.Pending -> 2)))
     summaryLines = summary.statsString.split("\\r?\\n");
     summaryLines.size should be (4)
-    summaryLines(0) should be ("6 features: OK 2, Failed 2, Sustained 0, Skipped 1, Pending 1")
-    summaryLines(1) should be ("0 rules: OK 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
-    summaryLines(2) should be ("11 scenarios: OK 7, Failed 2, Sustained 0, Skipped 1, Pending 1")
-    summaryLines(3) should be ("31 steps: OK 21, Failed 2, Sustained 0, Skipped 6, Pending 2")
+    summaryLines(0) should be ("6 features: Passed 2, Failed 2, Sustained 0, Skipped 1, Pending 1")
+    summaryLines(1) should be ("0 rules: Passed 0, Failed 0, Sustained 0, Skipped 0, Pending 0")
+    summaryLines(2) should be ("11 scenarios: Passed 7, Failed 2, Sustained 0, Skipped 1, Pending 1")
+    summaryLines(3) should be ("31 steps: Passed 21, Failed 2, Sustained 0, Skipped 6, Pending 2")
     summary.statusString.contains("Failed") should be (true)
     
   }

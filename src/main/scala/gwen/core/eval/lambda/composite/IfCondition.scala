@@ -50,7 +50,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: S
         sdCall()
       } else {
         logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
-        step.copy(withEvalStatus = OK(0))
+        step.copy(withEvalStatus = Passed(0))
       }
     }
   }

@@ -64,10 +64,10 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     } catch {
       case e: Throwable =>
         val errMsg = s"${Failed(System.nanoTime - start, e).message}"
-        if (!e.isInstanceOf[Errors.GwenException]) {
-          logger.error(errMsg, e)
-        } else {
+        if (e.isInstanceOf[Errors.GwenException]) {
           logger.error(errMsg)
+        } else {
+          logger.error(errMsg, e)
         }
         println()
         System.exit(1)

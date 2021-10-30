@@ -211,12 +211,12 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
         val status = eStep.stepDef map { sd => sd.evalStatus }  getOrElse {
           eStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
-            case _ => OK(System.nanoTime - start)
+            case _ => Passed(System.nanoTime - start)
           }
         }
         eStep.copy(withEvalStatus = status)
       case Failure(error) =>
-        val failure = Failed(System.nanoTime - start, new Errors.StepFailure(step, error))
+        val failure = Failed(System.nanoTime - start, new Errors.StepException(step, error.getMessage, error))
         step.copy(withEvalStatus = failure)
     }
   }

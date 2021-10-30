@@ -48,7 +48,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
   val feature = new Spec(
       Feature(None, "test-feature", Nil),
       None,
-      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test", OK(10))))),
+      List(Scenario(List[Tag](), "scenario1", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test", Passed(10))))),
       Nil,
       Nil
   )
@@ -76,7 +76,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx, never()).reset(StateLevel.feature)
     verify(mockCtx).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 
@@ -98,7 +98,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx).reset(StateLevel.feature)
     verify(mockCtx, never()).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 
@@ -121,7 +121,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx).reset(StateLevel.feature)
     verify(mockCtx, never()).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 
@@ -145,7 +145,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx).reset(StateLevel.feature)
     verify(mockCtx, never()).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 
@@ -170,7 +170,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx).reset(StateLevel.feature)
     verify(mockCtx, never()).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 
@@ -240,14 +240,14 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val feature6A = new Spec(
       Feature(Some(feature6a), "test-feature-6a", Nil),
       None,
-      List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6A", OK(1000))))),
+      List(Scenario(List[Tag](), "scenario6A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6A", Passed(1000))))),
       Nil,
       Nil
     )
     val feature6B = new Spec(
       Feature(Some(feature6b), "test-feature-6b", Nil),
       None,
-      List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6B", OK(2000))))),
+      List(Scenario(List[Tag](), "scenario6B", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 6B", Passed(2000))))),
       Nil,
       Nil
     )
@@ -255,7 +255,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val feature7A = new Spec(
       Feature(Some(feature7a), "test-feature-7a", Nil),
       None,
-      List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 7A", OK(3000))))),
+      List(Scenario(List[Tag](), "scenario7A", Nil, None, List(Step(StepKeyword.Given.toString, "I am a test 7A", Passed(3000))))),
       Nil,
       Nil
     )
@@ -271,7 +271,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx, never()).reset(StateLevel.feature)
     verify(mockCtx, times(3)).close()
 
-    evalStatus should be (OK(6000))
+    evalStatus should be (Passed(6000))
 
     new File(reportDir.getPath() + File.separator + "html" + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6a", "file6a.feature.html").exists should be (true)
     new File(reportDir.getPath() + File.separator + "html" + File.separator + "target-GwenLauncherTest-dir6" + File.separator + "file6b", "file6b.feature.html").exists should be (true)
@@ -300,7 +300,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     verify(mockCtx, never()).reset(StateLevel.feature)
     verify(mockCtx).close()
 
-    evalStatus should be (OK(10))
+    evalStatus should be (Passed(10))
 
   }
 

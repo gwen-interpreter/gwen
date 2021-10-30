@@ -58,7 +58,7 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
     ctx.scopes.set("y", "1")
     var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
     step = engine.evaluateStep(parent, step, ctx)
-    step.evalStatus.keyword should be (StatusKeyword.OK)
+    step.evalStatus.keyword should be (StatusKeyword.Passed)
     ctx.scopes.get("x") should be ("1")
     step.stepDef should be (None)
   }
@@ -75,7 +75,7 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
     ctx.scopes.set("y", "1")
     var step = Step(StepKeyword.When.toString, "I assign x, y, and z")
     step = engine.evaluateStep(parent, step, ctx)
-    step.evalStatus.keyword should be (StatusKeyword.OK)
+    step.evalStatus.keyword should be (StatusKeyword.Passed)
     ctx.scopes.get("x") should be ("1")
     ctx.scopes.get("y") should be ("2")
     ctx.scopes.get("z") should be ("3")

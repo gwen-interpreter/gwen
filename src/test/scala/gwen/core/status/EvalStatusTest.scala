@@ -100,11 +100,11 @@ Background: The tester
           scenario.description,
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map {step =>
-              Step(step, step.keyword, step.name, OK(1))
+              Step(step, step.keyword, step.name, Passed(1))
             })
           }, 
           scenario.steps map {step =>
-            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else OK(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           }) 
       },
       Nil,
@@ -112,11 +112,11 @@ Background: The tester
     
     // assert
     
-    featureSpec.evalStatus                             should be (OK(24))
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(0).evalStatus                should be (OK(12))
-    featureSpec.scenarios(1).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(1).evalStatus                should be (OK(12))
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)    
     featureSpec.scenarios(2).evalStatus                should be (Loaded)
     featureSpec.sustainedCount should be(0)
@@ -139,11 +139,11 @@ Background: The tester
           scenario.description,
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map {step =>
-              Step(step, step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else OK(1))
+              Step(step, step.keyword, step.name, if (step.name.contains("should")) Sustained(1, sustained) else Passed(1))
             })
           },
           scenario.steps map {step =>
-            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else OK(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else Passed(1))
           })
       },
       Nil,
@@ -151,11 +151,11 @@ Background: The tester
 
     // assert
 
-    featureSpec.evalStatus                             should be (OK(24))
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(0).evalStatus                should be (OK(12))
-    featureSpec.scenarios(1).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(1).evalStatus                should be (OK(12))
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)
     featureSpec.scenarios(2).evalStatus                should be (Loaded)
     featureSpec.sustainedCount should be(6)
@@ -178,11 +178,11 @@ Background: The tester
           scenario.description,
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map {step =>
-              Step(step, step.keyword, step.name, OK(1))
+              Step(step, step.keyword, step.name, Passed(1))
             })
           },
           scenario.steps.zipWithIndex map { case (step, index) =>
-            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  OK(1))
+            Step(step, step.keyword, step.name, if (scenario.isStepDef) Loaded else if (index == 0) Sustained(1, sustained) else  Passed(1))
           })
       },
       Nil,
@@ -190,11 +190,11 @@ Background: The tester
 
     // assert
 
-    featureSpec.evalStatus                             should be (OK(24))
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(0).evalStatus                should be (OK(12))
-    featureSpec.scenarios(1).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(1).evalStatus                should be (OK(12))
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)
     featureSpec.scenarios(2).evalStatus                should be (Loaded)
     featureSpec.sustainedCount should be(2)
@@ -219,7 +219,7 @@ Background: The tester
           scenario.description,
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map {step =>
-              Step(step, step.keyword, step.name, OK(1))
+              Step(step, step.keyword, step.name, Passed(1))
             })
           },
           scenario.steps map { step =>
@@ -229,7 +229,7 @@ Background: The tester
               isSustained = true
               Sustained(1, sustained)
             } else {
-              OK(1)
+              Passed(1)
             }
             Step(step, step.keyword, step.name, status)
           })
@@ -239,11 +239,11 @@ Background: The tester
 
     // assert
 
-    featureSpec.evalStatus                             should be (OK(24))
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(0).evalStatus                should be (OK(12))
-    featureSpec.scenarios(1).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(1).evalStatus                should be (OK(12))
+    featureSpec.evalStatus                             should be (Passed(24))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(1).evalStatus                should be (Passed(12))
     featureSpec.scenarios(2).background                should be (None)
     featureSpec.scenarios(2).evalStatus                should be (Loaded)
     featureSpec.sustainedCount should be(1)
@@ -270,7 +270,7 @@ Background: The tester
             Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step, step.keyword, step.name, stepIndex match {
-                case 0 | 1 | 2 if scenarioIndex == 0 => OK(1)
+                case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
                 case 3 if scenarioIndex == 0 => Failed(99, error)
                 case _ => step.evalStatus
               })
@@ -286,9 +286,9 @@ Background: The tester
     featureSpec.evalStatus should be (Failed(102, error))
     
     featureSpec.scenarios(0).background.get.evalStatus          should be (Failed(102, error))
-    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (OK(1))
+    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (Passed(1))
     featureSpec.scenarios(0).background.get.steps(3).evalStatus should be (Failed(99, error))
     featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (Pending)
     featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (Pending)
@@ -335,9 +335,9 @@ Background: The tester
             Background(background.name, background.description, background.steps.zipWithIndex map {zip =>
               val (step, stepIndex) = zip
               Step(step, step.keyword, step.name, stepIndex match {
-                case 0 | 1 | 2 if scenarioIndex < 2 => OK(1)
+                case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
                 case 3 if scenarioIndex == 1 => Failed(99, error)
-                case _ => if (scenarioIndex < 1) OK(1) else step.evalStatus
+                case _ => if (scenarioIndex < 1) Passed(1) else step.evalStatus
               })
             }) 
           }, 
@@ -350,18 +350,18 @@ Background: The tester
     
     featureSpec.evalStatus should be (Failed(108, error))
     
-    featureSpec.scenarios(0).background.get.evalStatus          should be (OK(6))
-    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(3).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (OK(1))
+    featureSpec.scenarios(0).background.get.evalStatus          should be (Passed(6))
+    featureSpec.scenarios(0).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(2).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(3).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(4).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).background.get.steps(5).evalStatus should be (Passed(1))
     
     featureSpec.scenarios(1).background.get.evalStatus          should be (Failed(102, error))
-    featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (OK(1))
-    featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (OK(1))
-    featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (OK(1))
+    featureSpec.scenarios(1).background.get.steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).background.get.steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).background.get.steps(2).evalStatus should be (Passed(1))
     featureSpec.scenarios(1).background.get.steps(3).evalStatus should be (Failed(99, error))
     featureSpec.scenarios(1).background.get.steps(4).evalStatus should be (Pending)
     featureSpec.scenarios(1).background.get.steps(5).evalStatus should be (Pending)
@@ -399,7 +399,7 @@ Background: The tester
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map { step =>
               Step(step, step.keyword, step.name, scenarioIndex match {
-                case 0 => OK(1)
+                case 0 => Passed(1)
                 case _ => step.evalStatus
               })
             }) 
@@ -407,7 +407,7 @@ Background: The tester
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
             Step(step, step.keyword, step.name, stepIndex match {
-              case 0 | 1 | 2 if scenarioIndex == 0 => OK(1)
+              case 0 | 1 | 2 if scenarioIndex == 0 => Passed(1)
               case 3 if scenarioIndex == 0 => Failed(99, error)
               case _ => step.evalStatus
             })
@@ -420,12 +420,12 @@ Background: The tester
     
     featureSpec.evalStatus.keyword should be (StatusKeyword.Failed)
     
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
     
     featureSpec.scenarios(0).evalStatus          should be (Failed(108, error))
-    featureSpec.scenarios(0).steps(0).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).steps(1).evalStatus should be (OK(1))
-    featureSpec.scenarios(0).steps(2).evalStatus should be (OK(1))
+    featureSpec.scenarios(0).steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(0).steps(2).evalStatus should be (Passed(1))
     featureSpec.scenarios(0).steps(3).evalStatus should be (Failed(99, error))
     featureSpec.scenarios(0).steps(4).evalStatus should be (Pending)
     featureSpec.scenarios(0).steps(5).evalStatus should be (Pending)
@@ -470,15 +470,15 @@ Background: The tester
           scenario.description, 
           scenario.background map { background =>
             Background(background.name, background.description, background.steps map { step =>
-              Step(step, step.keyword, step.name, OK(1))
+              Step(step, step.keyword, step.name, Passed(1))
             }) 
           }, 
           scenario.steps.zipWithIndex map { zip =>
             val (step, stepIndex) = zip
             Step(step, step.keyword, step.name, stepIndex match {
-              case 0 | 1 | 2 if scenarioIndex < 2 => OK(1)
+              case 0 | 1 | 2 if scenarioIndex < 2 => Passed(1)
               case 3 if scenarioIndex == 1 => Failed(99, error)
-              case _ => if (scenarioIndex == 0) OK(1) else step.evalStatus
+              case _ => if (scenarioIndex == 0) Passed(1) else step.evalStatus
             })
           }) 
       },
@@ -489,14 +489,14 @@ Background: The tester
     
     featureSpec.evalStatus.keyword should be (StatusKeyword.Failed)
     
-    featureSpec.scenarios(0).background.get.evalStatus should be (OK(6))
-    featureSpec.scenarios(0).evalStatus                should be (OK(12))
-    featureSpec.scenarios(1).background.get.evalStatus should be (OK(6))
+    featureSpec.scenarios(0).background.get.evalStatus should be (Passed(6))
+    featureSpec.scenarios(0).evalStatus                should be (Passed(12))
+    featureSpec.scenarios(1).background.get.evalStatus should be (Passed(6))
     
     featureSpec.scenarios(1).evalStatus should be (Failed(108, error))
-    featureSpec.scenarios(1).steps(0).evalStatus should be (OK(1))
-    featureSpec.scenarios(1).steps(1).evalStatus should be (OK(1))
-    featureSpec.scenarios(1).steps(2).evalStatus should be (OK(1))
+    featureSpec.scenarios(1).steps(0).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).steps(1).evalStatus should be (Passed(1))
+    featureSpec.scenarios(1).steps(2).evalStatus should be (Passed(1))
     featureSpec.scenarios(1).steps(3).evalStatus should be (Failed(99, error))
     featureSpec.scenarios(1).steps(4).evalStatus should be (Pending)
     featureSpec.scenarios(1).steps(5).evalStatus should be (Pending)
@@ -514,8 +514,8 @@ Background: The tester
   }
 
 
-  "isEvaluated on OK, Failed, and Sustained" should "return true, false otherwise" in {
-    OK(1).isEvaluated should be (true)
+  "isEvaluated on Passed, Failed, and Sustained" should "return true, false otherwise" in {
+    Passed(1).isEvaluated should be (true)
     Failed(1, new Exception()).isEvaluated should be (true)
     Disabled.isEvaluated should be (true)
     Sustained(1, new Exception()).isEvaluated should be (true)
@@ -524,16 +524,16 @@ Background: The tester
     Loaded.isEvaluated should be (false)
   }
 
-  "OK statuses with one Disabled" should "be OK" in {
-    EvalStatus(List(Disabled, OK(10), OK(10))).keyword should be (StatusKeyword.OK)
-    EvalStatus(List(OK(10), Disabled, OK(10))).keyword should be (StatusKeyword.OK)
-    EvalStatus(List(OK(10), OK(10), Disabled)).keyword should be (StatusKeyword.OK)
+  "Passed statuses with one Disabled" should "be Passed" in {
+    EvalStatus(List(Disabled, Passed(10), Passed(10))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Disabled, Passed(10))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Disabled)).keyword should be (StatusKeyword.Passed)
   }
 
-  "OK statuses with some Disabled" should "be OK" in {
-    EvalStatus(List(Disabled, OK(10), OK(10), Disabled, Disabled)).keyword should be (StatusKeyword.OK)
-    EvalStatus(List(OK(10), Disabled, OK(10), Disabled, Disabled)).keyword should be (StatusKeyword.OK)
-    EvalStatus(List(OK(10), OK(10), Disabled, Disabled, Disabled)).keyword should be (StatusKeyword.OK)
+  "Passed statuses with some Disabled" should "be Passed" in {
+    EvalStatus(List(Disabled, Passed(10), Passed(10), Disabled, Disabled)).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Disabled, Passed(10), Disabled, Disabled)).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Disabled, Disabled, Disabled)).keyword should be (StatusKeyword.Passed)
   }
 
   "All disabled statuses" should "be Skipped" in {

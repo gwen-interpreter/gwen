@@ -258,7 +258,8 @@ object Formatting {
   def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " &nbsp;")
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
-  def rightPad(str: String, size: Int): String = if (str.length < size) rightPad(str + " ", size) else str
+  def leftPad(str: String, size: Int): String = s"${" " * (size - str.length)}$str"
+  def rightPad(str: String, size: Int): String = s"$str${" " * (size - str.length)}"
   def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
   def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
 

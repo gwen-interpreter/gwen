@@ -40,7 +40,7 @@ trait BackgroundEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging
     beforeBackground(background, ctx)
     logger.info(s"Evaluating ${background.keyword}: $background")
     background.copy(withSteps = evaluateSteps(background, background.steps, ctx)) tap { bg =>
-      logStatus(bg)
+      logStatus(ctx.options, bg)
       afterBackground(bg, ctx)
     }
   }

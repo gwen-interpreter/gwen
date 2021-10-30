@@ -255,7 +255,7 @@ object GwenOptions {
             Errors.invocationError(s"Required -r|--report option not provided for -f|--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
         }
-      }).getOrElse(Errors.invocationError("Gwen invocaation failed (see log for details)"))
+      }).getOrElse(Errors.invocationError("Gwen invocation failed (see log for details)"))
 
   }
 

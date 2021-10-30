@@ -103,7 +103,7 @@ trait SummaryFormatter {
     val reportDir = HtmlReportConfig.reportDir(options).get
     for {
       status <- StatusKeyword.reportables.reverse
-      results = summary.results.zipWithIndex.filter { _._1.evalStatus.keyword == status }
+      results = summary.results.zipWithIndex filter { _._1.evalStatus.keyword == status }
       if results.nonEmpty
       count = results.size
       total = summary.results.size
