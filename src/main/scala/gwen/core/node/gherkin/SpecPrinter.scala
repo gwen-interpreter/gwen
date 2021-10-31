@@ -196,10 +196,10 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   }
 
   def printSpecResult(result: SpecResult): String = {
-    printSpecResult(result.started, result.finished, result.evalStatus, result.statusCounts(withEmpty = false))
+    printSpecResult(result.started, result.finished, result.elapsedTime, result.evalStatus, result.statusCounts(withEmpty = false))
   }
 
-  private def printSpecResult(started: Date, finished: Date, evalStatus: EvalStatus, statusCounts: List[(NodeType, Map[StatusKeyword, Int])]): String = {
+  private def printSpecResult(started: Date, finished: Date, elapsedTime: Duration, evalStatus: EvalStatus, statusCounts: List[(NodeType, Map[StatusKeyword, Int])]): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
     val header: List[String] = "" :: StatusKeyword.reportables.map(_.toString)
@@ -233,6 +233,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     pw.println()
     pw.println(s"${Formatting.leftPad("Started", widths(0))}  $started")
     pw.println(s"${Formatting.leftPad("Finished", widths(0))}  $finished")
+    pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
     pw.println()
     printStatus("  ", evalStatus, withMessage = false, pw)
     pw.println()
@@ -251,7 +252,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
         pw.println(s"  ${spec.uri} ${printStatus(spec, withMessage = false)}")
       }
     }
-    pw.println(printSpecResult(summary.started, summary.finished, summary.evalStatus, summary.statusCounts(withEmpty = false)))
+    pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false)))
     sw.toString
   }
 
