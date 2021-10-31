@@ -20,10 +20,12 @@ import gwen.core._
 import gwen.core.behavior.FeatureMode
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
+import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
 
+import scala.io.AnsiColor
 import scala.jdk.CollectionConverters._
 import scala.util.Failure
 import scala.util.Success
@@ -48,12 +50,16 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private var paste: Option[List[String]] = None
   private var pastingDocString = false
 
+  private val colors = GwenSettings.`gwen.console.log.colors`
+  private val printer = new SpecPrinter(deep = false, colors)
+  private val prompt = s"${if (colors) AnsiColor.MAGENTA else ""}gwen> ${if (colors) AnsiColor.RESET else ""}"
+  
   private lazy val reader = {
     new ConsoleReader() tap { reader =>
       reader.setHistory(history)
       reader.setBellEnabled(false)
       reader.setExpandEvents(false)
-      reader.setPrompt("gwen> ")
+      reader.setPrompt(prompt)
       reader.addCompleter(new StringsCompleter((StepKeyword.names ++ List("help", "env", "history", "exit")).asJava))
       reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => ctx.dsl.distinct.map(y => s"$x $y")).asJava)))
     }
@@ -120,11 +126,11 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
           paste foreach { steps =>
             println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
             steps.reverse map { step =>
-              println(s"\ngwen> ${Formatting.padTailLines(step, "      ")}\n")
+              println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
               evaluateInput(step) tap { output => println(output) }
             }
           }
-          reader.setPrompt("gwen> ")
+          reader.setPrompt(prompt)
           paste = None
           pastingDocString = false
           Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
@@ -175,8 +181,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         s"# language: $language"
       case _ =>
         engine.interpretStep(input, ctx) match {
-          case Success(step) => s"\n[${step.evalStatus.keyword}]"
-          case Failure(error) => s"$error\n\n[non-step]"
+          case Success(step) => printer.printStatus(step, withMessage = true)
+          case Failure(error) => s"${if (colors) AnsiColor.RED else ""}$error\n\n[non-step]${if (colors) AnsiColor.RESET else ""}"
         }
     }
   }

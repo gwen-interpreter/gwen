@@ -89,7 +89,6 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       resultSpec.specFile foreach { _ =>
         logger.info(s"${if (resultSpec.isMeta) "Loaded" else "Evaluated"} $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
       }
-      logger.debug(SpecPrinter.prettyPrint(resultSpec))
       new SpecResult(resultSpec, None, metaResults, started, new Date()) tap { result =>
         if(!spec.isMeta) {
           logStatus(ctx.options, resultSpec)

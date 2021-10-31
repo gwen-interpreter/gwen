@@ -45,12 +45,6 @@ object SpecPrinter {
   val TagsColor = AnsiColor.CYAN
   val ClauseColor = AnsiColor.MAGENTA
 
-  def prettyPrint(node: GwenNode): String = {
-    new StringWriter() tap { sw =>
-      new SpecPrinter(deep = true, colors = false).walk(Root, node, new PrintWriter(sw))
-    } toString
-  }
-
 }
 
 class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter](deep) {
@@ -64,6 +58,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   }
 
   override def onFeature(parent: GwenNode, feature: Feature, out: PrintWriter): PrintWriter = {
+    inRule.set(false)
     val language = feature.language
     if (language != "en") {
       out.println(s"# language: $language")
@@ -248,17 +243,15 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
     val status = summary.evalStatus.keyword
-    if (summary.results.size > 1) {
-      pw.println("Summary:")
-      pw.println()
-      StatusKeyword.reportables.reverse foreach { keyword => 
-        summary.results filter { _.evalStatus.keyword == keyword } foreach { result =>
-          val spec = result.spec
-          pw.println(s"  ${spec.uri} ${printStatus(spec, withMessage = false)}")
-        }
+    pw.println("Summary:")
+    pw.println()
+    StatusKeyword.reportables.reverse foreach { keyword => 
+      summary.results filter { _.evalStatus.keyword == keyword } foreach { result =>
+        val spec = result.spec
+        pw.println(s"  ${spec.uri} ${printStatus(spec, withMessage = false)}")
       }
-      pw.println(printSpecResult(summary.started, summary.finished, summary.evalStatus, summary.statusCounts(withEmpty = false)))
     }
+    pw.println(printSpecResult(summary.started, summary.finished, summary.evalStatus, summary.statusCounts(withEmpty = false)))
     sw.toString
   }
 

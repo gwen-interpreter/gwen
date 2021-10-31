@@ -26,6 +26,7 @@ import org.scalatest.matchers.should.Matchers
 class PrettyPrintParserRules2Test extends BaseTest with Matchers with SpecNormaliser with GherkinParser {
 
   private val parse = parseSpec(_: String)
+  private val printer = new SpecPrinter(deep = true, false)
 
   private val featureString = s"""@wip
 Feature: Gwen
@@ -100,14 +101,14 @@ Feature: Gwen
  
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     val ast1 = parse(featureString)
-    val ast2 = parse(SpecPrinter.prettyPrint(ast1.get))
-    SpecPrinter.prettyPrint(ast2.get).replace("\r", "") should be (featureString.replace("\r", ""))
+    val ast2 = parse(printer.prettyPrint(ast1.get))
+    printer.prettyPrint(ast2.get).replace("\r", "") should be (featureString.replace("\r", ""))
   }
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
     val specFeature = normaliseSpec(parse(featureString).get, None)
-    SpecPrinter.prettyPrint(specFeature).replace("\r", "") should be (s"""@wip
+    printer.prettyPrint(specFeature).replace("\r", "") should be (s"""@wip
 Feature: Gwen
 
   As a tester

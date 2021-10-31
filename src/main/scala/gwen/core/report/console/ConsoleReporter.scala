@@ -148,7 +148,9 @@ class ConsoleReporter(options: GwenOptions)
   }
 
   def printSummary(summary: ResultsSummary): Unit = {
-    Console.println(printer.printSummary(summary))
+    if (summary.results.size > 1) {
+      Console.println(printer.printSummary(summary))
+    }
   }
   
 }
