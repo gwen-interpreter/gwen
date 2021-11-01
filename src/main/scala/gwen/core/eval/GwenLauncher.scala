@@ -165,8 +165,12 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         }
       } match {
         case Success(s) =>
-          consoleReporter foreach { _.printSummary(s) }
-          reportGenerators foreach (_.close(engine, s.evalStatus))
+          val reports = reportGenerators flatMap { reportGenerator => 
+            reportGenerator.close(engine, s.evalStatus) flatMap { report =>
+              Some((reportGenerator.format, report))
+            }
+          }
+          consoleReporter foreach { _.printSummary(s.withReports(reports)) }
           printSummaryStatus(options, s)
           s.evalStatus
         case Failure(f) =>

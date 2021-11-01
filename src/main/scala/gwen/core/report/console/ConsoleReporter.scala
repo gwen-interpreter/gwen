@@ -151,6 +151,14 @@ class ConsoleReporter(options: GwenOptions)
     if (summary.results.size > 1) {
       Console.println(printer.printSummary(summary))
     }
+    val reports = summary.reports
+    if (reports.nonEmpty) {
+      val maxWidh = (reports map { (format, _) => format.toString.length }).max
+      reports foreach { (format, report) => 
+        Console.println(s"${Formatting.leftPad(s"${format.toString.toUpperCase} report", maxWidh + 7)}  $report")
+      }
+      Console.println()
+    }
   }
   
 }

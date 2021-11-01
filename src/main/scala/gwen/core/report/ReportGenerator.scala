@@ -71,7 +71,16 @@ class ReportGenerator (
   val format: ReportFormat = config.format
 
   def init(lifecycle: NodeEventDispatcher): Unit = { }
-  def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { }
+
+  def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Option[String] = {
+    summaryReportFile.map(_.getAbsolutePath) orElse {
+      reportDir flatMap { dir => 
+        if (format.isCliOption) {
+          Some(dir.getAbsolutePath)
+        } else None
+      }
+    }
+  }
 
   /**
     * Generate and return a detail feature report.

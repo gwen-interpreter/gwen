@@ -25,6 +25,8 @@ import gwen.core.report.ReportFormatter
 import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
 
+import scala.util.chaining._
+
 /**
   * Generates reports in reoprt portal.
   */
@@ -41,10 +43,11 @@ class RPReportGenerator(val options: GwenOptions) extends NoopReportGenerator(RP
     }
   }
 
-  override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Unit = { 
-    rpReporter.foreach { reporter => 
-      reporter.close(evalStatus)
-      lifecycle.removeListener(reporter)
+  override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Option[String] = { 
+    rpReporter.flatMap { reporter => 
+      reporter.close(evalStatus) tap { _ =>
+        lifecycle.removeListener(reporter)
+      }
     }
   }
 

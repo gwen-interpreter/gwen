@@ -18,12 +18,12 @@ package gwen.core.result
 
 import gwen.core._
 import gwen.core.node.NodeType
+import gwen.core.report.ReportFormat
 import gwen.core.status._
 
 import scala.concurrent.duration._
 
 import java.util.Date
-
 /**
   * Captures the feature summary results of an evaluated feature.
   * 
@@ -38,7 +38,8 @@ case class ResultsSummary(
   results: List[SpecResult],
   ruleCounts: Map[StatusKeyword, Int], 
   scenarioCounts: Map[StatusKeyword, Int], 
-  stepCounts: Map[StatusKeyword, Int]) {
+  stepCounts: Map[StatusKeyword, Int],
+  reports: List[(ReportFormat, String)]) {
   
   lazy val started: Date = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
   lazy val finished: Date = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
@@ -61,7 +62,8 @@ case class ResultsSummary(
       this.results ++ List(result), 
       addCounts(this.ruleCounts, result.ruleCounts),
       addCounts(this.scenarioCounts, result.scenarioCounts),
-      addCounts(this.stepCounts, result.stepCounts))
+      addCounts(this.stepCounts, result.stepCounts),
+      Nil)
   }
 
   private def addCounts(countsA: Map[StatusKeyword, Int], countsB: Map[StatusKeyword, Int]): Map[StatusKeyword, Int] =
@@ -102,13 +104,17 @@ case class ResultsSummary(
       s"$status $count"
     } mkString ", "
   }
+
+  def withReports(reports: List[(ReportFormat, String)]): ResultsSummary = {
+    ResultsSummary(results, ruleCounts, scenarioCounts, stepCounts, reports)
+  }
   
 }
 
 /** Feature summary factory. */
 object ResultsSummary {
-  def apply(): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map())
-  def apply(elapsedTime: Duration): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map())
+  def apply(): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map(), Nil)
+  def apply(elapsedTime: Duration): ResultsSummary = new ResultsSummary(Nil, Map(), Map(), Map(), Nil)
   def apply(result: SpecResult): ResultsSummary = ResultsSummary() + result
 }
 

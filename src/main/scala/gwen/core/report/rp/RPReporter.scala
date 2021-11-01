@@ -31,6 +31,7 @@ import gwen.core.status.Skipped
 
 import scala.concurrent.duration.Duration
 import scala.io.Source
+import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
 import com.epam.reportportal.listeners.LogLevel
@@ -479,9 +480,11 @@ class RPReporter(rpClient: RPClient)
     }
   }
 
-  def close(evalStatus: EvalStatus): Unit = {
-    rpClient.close(evalStatus) foreach { url =>
-      logger.info(s"${RPReportConfig.name} launch report generated: $url")
+  def close(evalStatus: EvalStatus): Option[String] = {
+    rpClient.close(evalStatus) map { url =>
+      url tap { _ =>
+        logger.info(s"${RPReportConfig.name} launch report generated: $url")
+      }
     }
   }
   
