@@ -69,7 +69,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         } else {
           logger.error(errMsg, e)
         }
-        println()
+        Console.println()
         System.exit(1)
     }
   }
@@ -137,19 +137,21 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
   private def printBanner(intro: String): Unit = {
-    println("""|
-               |   __ ___      _____ _ __     _    
-               |  / _` \ \ /\ / / _ \ '_ \   { \," 
-               | | (_| |\ V  V /  __/ | | | {_`/   
-               |  \__, | \_/\_/ \___|_| |_|   `    
-               |  |___/                            
-               |
-               |""".stripMargin + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
-               |gweninterpreter.org
-               |""".stripMargin)
+    Console.println(
+      """|
+         |   __ ___      _____ _ __     _    
+         |  / _` \ \ /\ / / _ \ '_ \   { \," 
+         | | (_| |\ V  V /  __/ | | | {_`/   
+         |  \__, | \_/\_/ \___|_| |_|   `    
+         |  |___/                            
+         |
+         |""".stripMargin + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+         |gweninterpreter.org
+         |""".stripMargin
+      )
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
-      println(
+      Console.println(
         """|
            | ╭──────────────────────────────────────────────────────────╮
            | │  Gwen Workspaces DEPRECATED!                             │
@@ -157,7 +159,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
            | │  Gwen Workspaces are deprecated in favor of JS projects  │
            | │  in Gwen 3. Please visit the migration page for options  │
            | │  at https://gweninterpreter.org/docs/migration/gwen3     │
-           | ╰──────────────────────────────────────────────────────────╯""".stripMargin)
+           | ╰──────────────────────────────────────────────────────────╯""".stripMargin
+      )
     }
   }
 

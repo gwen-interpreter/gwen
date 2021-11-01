@@ -52,7 +52,6 @@ class ParameterStackTest extends BaseTest with Matchers {
     params.get("<password>")   should be ("secret")
 
     params.pop()
-    println("params : { }")
 
     params.get("<username>")  should be ("gwen")
     params.get("<password>")   should be ("pwd")

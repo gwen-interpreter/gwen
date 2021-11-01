@@ -70,8 +70,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   /** Reads an input string or command from the command line. */
   private def read(): String = {
-    if (paste.isEmpty) println()
-    reader.readLine() tap { _ => if (paste.isEmpty) println() }
+    if (paste.isEmpty) Console.println()
+    reader.readLine() tap { _ => if (paste.isEmpty) Console.println() }
   }
 
   /**
@@ -111,7 +111,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
           history.get(num).toString match {
             case x if input.trim.equals(x) =>
               Some(s"Unable to refer to self history - !$historyValue")
-            case s => println(s"--> $s\n"); eval(s)
+            case s => Console.println(s"--> $s\n"); eval(s)
           }
         } else {
           Some(s"No such history: !$historyValue")
@@ -120,14 +120,14 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         if (paste.isEmpty) {
           paste = Some(List())
           reader.setPrompt("")
-          println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
+          Console.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
           Some("")
         } else {
           paste foreach { steps =>
-            println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
+            Console.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
             steps.reverse map { step =>
-              println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
-              evaluateInput(step) tap { output => println(output) }
+              Console.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
+              evaluateInput(step) tap { output => Console.println(output) }
             }
           }
           reader.setPrompt(prompt)
@@ -189,9 +189,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
-    println("\nREPL Console\n")
-    println("Enter steps to evaluate or type exit to quit..")
-    while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) println(output) } ).nonEmpty) { }
+    Console.println("\nREPL Console\n")
+    Console.println("Enter steps to evaluate or type exit to quit..")
+    while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) Console.println(output) } ).nonEmpty) { }
   }
 
   private def helpText() = """
