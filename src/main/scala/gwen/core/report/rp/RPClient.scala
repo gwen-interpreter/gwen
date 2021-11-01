@@ -148,7 +148,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       try {
         val body = Source.fromInputStream(is).mkString.trim
         if (body.replaceAll("""\s""", "") == """{"status":"UP"}""") {
-          logger.info(s"Report Portal heartbeat OK: $code $body")
+          logger.info(s"Report Portal heartbeat Passed: $code $body")
         } else {
           if (options.verbose) {
             logger.error(s"Report Portal heartbeat FAILED")
@@ -164,17 +164,19 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
   def close(evalStatus: EvalStatus): Option[String] = {
     launchLock.acquire()
     launchUuid map { launchId =>
-      logger.info(s"Closing Report Portal connection..")
+      val closingMsg = "Closing Report Portal connection.."
+      if (options.verbose) logger.info(closingMsg) else Console.print(closingMsg)
       sendLaunchLog(mapLevel(evalStatus), s"Finished ${evalStatus}")
       val rq = new FinishExecutionRQ()
       rq.setEndTime(ju.Calendar.getInstance.getTime)
       val start = System.nanoTime
       session.finish(rq)
       val duration = Formatting.formatDuration(Duration.fromNanos(System.nanoTime - start))
-      logger.info(s"[$duration] Report Portal connection closed${launchUuid.map(uuid => s" [Launch uuid $uuid]").getOrElse("")}")
+      if (options.verbose) {
+        logger.info(s"[$duration] Report Portal connection closed${launchUuid.map(uuid => s" [Launch uuid $uuid]").getOrElse("")}")
+      } else Console.println(s"  [$duration] Closed\n")
       val endpoint = RPSettings.`rp.endpoint`
       s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all/$launchId"
-      s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all"
     }
   }
   

@@ -77,16 +77,6 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
         attr("skipped") := skippedCount,
         attr("time") := time,
         attr("timestamp") := timestamp,
-        tag("properties")(
-          for {
-            (n, v) <- Settings.entries.toList
-          } yield {
-            tag("property")(
-              attr("name") := n,
-              attr("value") := v
-            )
-          }
-        ),
         for {
           (scenario, idx) <- scenarios.zipWithIndex
           name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.name}"
