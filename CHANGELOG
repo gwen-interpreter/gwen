@@ -49,6 +49,11 @@ m d, yyyy
   - New user documentation
     - At Gwen home page here: https://gweninterpreter.org/
 
+2.34.6
+======
+Nov 2, 2021
+- Remove trailing commas in JSON report gwen-interpreter/gwen-web#86
+
 2.34.5
 ======
 Oct 11, 2021

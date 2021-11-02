@@ -72,7 +72,7 @@ trait JsonReportFormatter extends ReportFormatter {
     "tags": [${feature.tags.filter(_.value.isEmpty).map { tag => s"""
       {
         "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
-        "line": ${loc.line}""" } getOrElse("")},
+        "line": ${loc.line}""" } getOrElse("")}
       }"""}.mkString(",")}
     ]""" else ""}${if(scenarios.nonEmpty) s""",
     "elements": [${scenarios.zipWithIndex.map { case ((scenario, isExpanded), idx) =>
@@ -114,7 +114,7 @@ trait JsonReportFormatter extends ReportFormatter {
         "tags": [${scenario.tags.map { case tag => s"""
           {
             "name": "${escapeJson(tag.toString)}"${tag.sourceRef map { loc => s""",
-            "line": ${loc.line}""" } getOrElse("")},
+            "line": ${loc.line}""" } getOrElse("")}
           }"""}.mkString(",")}
         ]""" else ""},
         "type": "${scenario.keyword.toLowerCase.replace(" ", "_")}"${if (scenario.steps.nonEmpty) s""",
