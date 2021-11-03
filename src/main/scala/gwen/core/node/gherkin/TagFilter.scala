@@ -16,8 +16,6 @@
 
 package gwen.core.node.gherkin
 
-import com.typesafe.scalalogging.LazyLogging
-
 /**
   * Checks that a feature satisfies all user provided include/exclude tags.
   * Features that do not satisfy any of the provided tags are filtered out 
@@ -32,7 +30,7 @@ object TagFilter {
   private val DefaultFilters = List((Tag(ReservedTags.Ignore), false))
 }
 
-class TagFilter(tagFilters: List[(Tag, Boolean)]) extends LazyLogging {
+class TagFilter(tagFilters: List[(Tag, Boolean)]) {
   
   /**
     * Filters a feature using the given include/exclude tag filters.
@@ -47,9 +45,6 @@ class TagFilter(tagFilters: List[(Tag, Boolean)]) extends LazyLogging {
       rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
     }
     if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
-      spec.specFile foreach { file =>
-        logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
-      }
       None
     } else {
       Some(spec.copy(

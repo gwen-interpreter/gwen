@@ -69,8 +69,15 @@ trait UnitEngine[T <: EvalContext]
     Option(unit.featureFile).filter(_.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
-          unit.tagFilter.filter(pspec) map { spec =>
-            evaluateSpec(unit, spec, loadedMeta, ctx)
+          unit.tagFilter.filter(pspec) match {
+            case Some(spec) =>
+              Some(evaluateSpec(unit, spec, loadedMeta, ctx))
+            case None =>
+              if (ctx.options.verbose)
+                logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
+              else 
+                Console.println(s"Feature file skipped (does not satisfy tag filters): ${file}\n")
+              None
           }
         case Failure(e) =>
           e match {

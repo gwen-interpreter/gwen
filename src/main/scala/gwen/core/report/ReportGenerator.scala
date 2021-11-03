@@ -73,13 +73,19 @@ class ReportGenerator (
   def init(lifecycle: NodeEventDispatcher): Unit = { }
 
   def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Option[String] = {
-    summaryReportFile.map(_.getAbsolutePath) orElse {
+    summaryReportFile orElse {
       reportDir flatMap { dir => 
         if (format.isCliOption) {
-          Some(dir.getAbsolutePath)
+          Some(dir)
         } else None
       }
-    }
+    } filter { report => 
+      if (report.isFile) report.exists
+      else { 
+        val contents = report.list
+        contents != null && contents.length > 0
+      }
+     } map (_.getAbsolutePath)
   }
 
   /**
@@ -167,46 +173,45 @@ class ReportGenerator (
 object ReportGenerator {
 
   def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
-    if (options.reportFormats == List(ReportFormat.none)) Nil 
-    else {
-      options.reportDir foreach { dir =>
-        if (dir.exists) {
-          if (GwenSettings.`gwen.report.overwrite`) {
-            dir.deleteDir()
-          } else {
-            dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+    options.reportFormats.distinct match {
+      case Nil  => Nil
+      case head :: Nil if (head == ReportFormat.none) => Nil
+      case reportFormats => 
+        if (reportFormats.exists(_.isFileSystemReport)) {
+          options.reportDir foreach { dir =>
+            if (dir.exists) {
+              if (GwenSettings.`gwen.report.overwrite`) {
+                dir.deleteDir()
+              } else {
+                dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+              }
+            }
+            dir.mkdirs()
           }
         }
-        dir.mkdirs()
-      }
-      options.reportFormats.distinct match {
-        case head :: Nil if (head == ReportFormat.none) => Nil
-        case reportFormats => 
-          var formats = 
-            if (reportFormats.contains(ReportFormat.html))
-              ReportFormat.slideshow :: reportFormats
-            else reportFormats
+        var formats = 
+          if (reportFormats.contains(ReportFormat.html))
+            ReportFormat.slideshow :: reportFormats
+          else reportFormats
 
-          formats =
-            if (options.dryRun && !formats.contains(ReportFormat.html))
-              ReportFormat.html :: formats
-            else formats
+        formats =
+          if (options.dryRun && !formats.contains(ReportFormat.html))
+            ReportFormat.html :: formats
+          else formats
 
-          formats.flatMap { format =>
-            format match {
-              case ReportFormat.html => Some(HtmlReportConfig)
-              case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
-              case ReportFormat.junit => Some(JUnitReportConfig)
-              case ReportFormat.json => Some(JsonReportConfig)
-              case ReportFormat.rp => Some(RPReportConfig)
-              case ReportFormat.none => None
+        formats.flatMap { format =>
+          format match {
+            case ReportFormat.html => Some(HtmlReportConfig)
+            case ReportFormat.slideshow => Some(HtmlSlideshowConfig)
+            case ReportFormat.junit => Some(JUnitReportConfig)
+            case ReportFormat.json => Some(JsonReportConfig)
+            case ReportFormat.rp => Some(RPReportConfig)
+            case ReportFormat.none => None
           }
-          } map { config =>
-            config.reportGenerator(options)
-          }
-      }
+        } map { config =>
+          config.reportGenerator(options)
+        }
     }
-
   }
 
   def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
