@@ -29,6 +29,24 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   private val parse = parseStep(_: String).get
   
+  "Data in multi record horizontal table with header" should "be accessible" in {
+
+    val dataTable = DataTable(
+      Tag("""@DataTable"""), parse(
+      """
+        |Given a multi record horizontal table with header
+        |      | a | b | c |
+        |      | 0 | 1 | 1 |
+        |      | 1 | 1 | 2 |
+        |      | 1 | 2 | 3 |
+        |      | 2 | 3 | 5 |
+        |      | 3 | 5 | 8 |
+      """.stripMargin)).asInstanceOf[FlatTable]
+
+    checkFlatTable_multiRecord(dataTable)
+
+  }
+
   "Data in multi record horizontal table with no header" should "be accessible" in {
 
     val dataTable = DataTable(
@@ -459,7 +477,6 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
   }
 
   "Invalid data table tag syntax" should "error" in {
-    checkInvalidTag("@DataTable")
     checkInvalidTag("@DataTable(horizontal")
     checkInvalidTag("""@DataTable(horizontal="")""")
     checkInvalidTag("""@DataTable(horizontal ="a")""")

@@ -38,6 +38,9 @@ object DataTable {
 
   def apply(tag: Tag, step: Step): DataTable = {
     tag.name.trim match {
+      case r"""DataTable""" =>
+        val table = step.table.map(_._2)
+        DataTable(if (table.nonEmpty) table.tail else Nil, HeaderType.top, table.headOption.getOrElse(Nil))
       case r"""DataTable\(horizontal="([^".]+?)"$namesCSV\)""" =>
         DataTable(step.table.map(_._2), HeaderType.top, namesCSV.split(",").toList)
       case r"""DataTable\(vertical="([^".]+?)"$namesCSV\)""" =>
@@ -51,6 +54,7 @@ object DataTable {
   }
 
   private val validTags = List(
+    """DataTable""",
     """DataTable\(horizontal="([^".]+?)"\)""",
     """DataTable\(vertical="([^".]+?)"\)""",
     """DataTable\(header="(top|left)"\)""",
@@ -61,7 +65,7 @@ object DataTable {
 
   private def tagSyntaxError(tag: Tag) =
     Errors.invalidTagError(
-      s"""Invalid tag syntax: $tag - correct table tags include: @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")"""
+      s"""Invalid tag syntax: $tag - correct table tags include: @DataTable, @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")"""
     )
 
   /**

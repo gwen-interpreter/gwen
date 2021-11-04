@@ -163,7 +163,7 @@ trait StepEngine[T <: EvalContext] {
     ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
       case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
-          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}(")) map {
+          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}")) map {
             tag => DataTable(tag, step)
           }
         }

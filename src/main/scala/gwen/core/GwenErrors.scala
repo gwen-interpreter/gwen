@@ -99,7 +99,7 @@ object Errors {
   class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
 
   /** Signals a step that failed to execute. */
-  class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(step.sourceRef)}", cause)
+  class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${if(msg.endsWith(at(step.sourceRef))) "" else at(step.sourceRef)}", cause)
 
   /** Signals a StepDef that failed to execute. */
   class StepDefException(stepDef: Scenario, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(stepDef.sourceRef)}", cause)

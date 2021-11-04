@@ -25,7 +25,10 @@ class DataRecordBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
 
   override def resolve(): String = {
     ctx.topScope.getObject(DataTable.recordKey) match {
-      case Some(record: ScopedData) => record.get(name)
+      case Some(record: ScopedData) => 
+        record.getOpt(name).orElse(record.getOpt(s"data[$name]")).getOrElse {
+          record.get(name)
+        }
       case _ => Errors.unboundAttributeError(name)
     }
   }
