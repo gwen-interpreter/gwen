@@ -54,6 +54,7 @@ class ConsoleReporter(options: GwenOptions)
       Console.println()
     } else {
       val unit = event.source
+      val parent = event.callChain.previous
       val action = if (options.dryRun) "Checked" else "Executed"
       unit.result foreach { result =>
         Console.println(
@@ -62,7 +63,7 @@ class ConsoleReporter(options: GwenOptions)
               | {_`/   """ + unit.name + """
               |    `
               |
-              |""").stripMargin + printer.prettyPrint(result.spec) + printer.printSpecResult(result)
+              |""").stripMargin + printer.prettyPrint(parent, result.spec) + printer.printSpecResult(result)
         )
       }
     }
@@ -71,7 +72,8 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeSpec(event: NodeEvent[Spec]): Unit = {
     if (!parallel) {
       val spec = event.source
-      Console.println(printer.prettyPrint(spec.feature))
+      val parent = event.callChain.previous
+      Console.println(printer.prettyPrint(parent, spec.feature))
     }
   }
 
@@ -85,7 +87,8 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeBackground(event: NodeEvent[Background]): Unit = {
     if (!parallel) {
       val background = event.source
-      Console.println(printer.prettyPrint(background))
+      val parent = event.callChain.previous
+      Console.println(printer.prettyPrint(parent, background))
     }
   }
 
@@ -96,7 +99,8 @@ class ConsoleReporter(options: GwenOptions)
       } map { node => 
         node.asInstanceOf[Scenario]
       } foreach { scenario =>
-        Console.println(printer.prettyPrint(scenario))
+        val parent = event.callChain.previous
+        Console.println(printer.prettyPrint(parent, scenario))
       }
     }
   }
@@ -105,7 +109,8 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val scenario = event.source
       if (scenario.background.isEmpty) {
-        Console.println(printer.prettyPrint(scenario))
+        val parent = event.callChain.previous
+        Console.println(printer.prettyPrint(parent, scenario))
       }
     }
   }
@@ -115,7 +120,8 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeExamples(event: NodeEvent[Examples]): Unit = {
     if (!parallel) {
       val examples = event.source
-      Console.println(printer.prettyPrint(examples))
+      val parent = event.callChain.previous
+      Console.println(printer.prettyPrint(parent, examples))
     }
   }
 
@@ -124,7 +130,8 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeRule(event: NodeEvent[Rule]): Unit = {
     if (!parallel) {
       val rule = event.source
-      Console.println(printer.prettyPrint(rule))
+      val parent = event.callChain.previous
+      Console.println(printer.prettyPrint(parent, rule))
     }
   }
 
@@ -136,7 +143,8 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeStep(event: NodeEvent[Step]): Unit = {
     if (!parallel) {
       val step = event.source
-      Console.print(printer.prettyPrint(step))
+      val parent = event.callChain.previous
+      Console.print(printer.prettyPrint(parent, step))
     }
   }
 

@@ -51,9 +51,9 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
 
   private val inRule = ThreadLocal.withInitial[Boolean] { () => false }
 
-  def prettyPrint(node: GwenNode): String = {
+  def prettyPrint(parent: GwenNode, node: GwenNode): String = {
     new StringWriter() tap { sw =>
-      walk(Root, node, new PrintWriter(sw))
+      walk(parent, node, new PrintWriter(sw))
     } toString
   }
 
@@ -101,16 +101,17 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
 
   override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = {
     if (!step.isExpanded(parent)) {
-      val indent = indentFor(step)
       val keyword = step.keyword
-      out.print(s"$indent${if (colors) AnsiColor.BOLD else ""}${rightJustify(keyword)}${if (colors) AnsiColor.RESET else ""} ${step.name}")
+      val keywordMaxLength = step.siblingsIn(parent).map(_.asInstanceOf[Step].keyword.length).max
+      val indent = indentFor(step)
+      out.print(s"$indent${if (colors) AnsiColor.BOLD else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) AnsiColor.RESET else ""} ${step.name}")
       if (step.table.nonEmpty) {
         out.println()
-        printTable(s"$indent${keywordIndent}", step.table, out)
+        printTable(s"$indent ${" " * keywordMaxLength}", step.table, out)
       } else {
         step.docString foreach { docString =>
           out.println()
-          printDocString(s"$indent${keywordIndent}", docString, out)
+          printDocString(s"$indent ${" " * keywordMaxLength}", docString, out)
         }
       }
       if (deep) out.println(printStatus(step, withMessage = true))
@@ -288,12 +289,6 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       case StatusKeyword.Loaded => AnsiColor.GREEN
       case _ => AnsiColor.CYAN
     }
-  }
-
-  private def keywordIndent: String = " " * (StepKeyword.maxLength + 1)
-
-  private def rightJustify(keyword: String) = {
-    Formatting.leftPad(keyword, StepKeyword.maxLength)
   }
 
 }

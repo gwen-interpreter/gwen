@@ -17,7 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core.BaseTest
-
+import gwen.core.node.Root
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 
@@ -112,14 +112,14 @@ Feature: Gwen
 
   "parsing pretty printed Gwen feature" should "yield same AST" in {
     val ast1 = parse(featureString)
-    val ast2 = parse(printer.prettyPrint(ast1.get))
-    printer.prettyPrint(ast2.get).replace("\r", "") should be (featureString.replace("\r", ""))
+    val ast2 = parse(printer.prettyPrint(Root, ast1.get))
+    printer.prettyPrint(Root, ast2.get).replace("\r", "") should be (featureString.replace("\r", ""))
   }
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
     val specFeature = normaliseSpec(parse(featureString).get, None)
-    printer.prettyPrint(specFeature).replace("\r", "") should be (s"""@wip
+    printer.prettyPrint(Root, specFeature).replace("\r", "") should be (s"""@wip
 Feature: Gwen
 
   As a tester
