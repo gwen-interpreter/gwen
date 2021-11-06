@@ -21,7 +21,6 @@ import gwen.core.GwenOptions
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
-
 import java.io.File
 
 class DocStringsTest extends BaseTest {
