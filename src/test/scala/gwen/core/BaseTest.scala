@@ -23,27 +23,31 @@ import java.io.File
 
 abstract class BaseTest extends AnyFlatSpec {
 
-  Settings.init()
+  Settings.exclusively {
+    Settings.init()
+  }
 
   val levels = Table ( ("level"), ("feature"), ("scenario") )
 
   def withSetting[T](name: String, value: String)(body: => T):T = {
-    if (name.startsWith("gwen.")) {
-      try {
-        Settings.setLocal(name, value)
-        body
-      } finally {
-        Settings.clearLocal()
-      }
-    } else {
-      Settings.exclusively {
-        val original = Settings.getOpt(name)
+    Settings.exclusively {
+      if (name.startsWith("gwen.")) {
         try {
-          Settings.set(name, value)
+          Settings.setLocal(name, value)
           body
         } finally {
-          original.fold(Settings.clear(name)) { v =>
-            Settings.set(name, v)
+          Settings.clearLocal()
+        }
+      } else {
+        Settings.exclusively {
+          val original = Settings.getOpt(name)
+          try {
+            Settings.set(name, value)
+            body
+          } finally {
+            original.fold(Settings.clear(name)) { v =>
+              Settings.set(name, v)
+            }
           }
         }
       }

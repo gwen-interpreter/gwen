@@ -51,8 +51,10 @@ class SettingsTest extends BaseTest with Matchers {
          |prop.url=http://${prop.host}:${prop.port}/howdy
          |""".stripMargin
     )
-    Settings.init(propFile)
-    Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+    Settings.exclusively {
+      Settings.init(propFile)
+      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+    }
   }
   
   "nested properties" should "resolve" in {
@@ -64,8 +66,10 @@ class SettingsTest extends BaseTest with Matchers {
          |prop.url=http://${prop.host.port}/howdy
          |""".stripMargin
     )
-    Settings.init(propFile)
-    Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+    Settings.exclusively {
+      Settings.init(propFile)
+      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+    }
   }
   
   "existing system property" should "not be overriden when override flag is false" in {
@@ -92,7 +96,9 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     intercept[MissingSettingException] {
-      Settings.init(propFile)
+      Settings.exclusively {
+        Settings.init(propFile)
+      }
     }
   }
 
@@ -190,8 +196,10 @@ class SettingsTest extends BaseTest with Matchers {
          |}
          |""".stripMargin
     )
-    Settings.init(confFile)
-    Settings.get("my.secret.conf.setting").contains("●●●●●") should be (true)
+    Settings.exclusively {
+      Settings.init(confFile)
+      Settings.get("my.secret.conf.setting").contains("●●●●●") should be (true)
+    }
   }
 
   "masked json setting" should "yield masked value" in {
@@ -209,8 +217,10 @@ class SettingsTest extends BaseTest with Matchers {
          |}
          |""".stripMargin
     )
-    Settings.init(confFile)
-    Settings.get("my.secret.json.setting").contains("●●●●●") should be (true)
+    Settings.exclusively {
+      Settings.init(confFile)
+      Settings.get("my.secret.json.setting").contains("●●●●●") should be (true)
+    }
   }
 
   "masked system property" should "yield masked value" in {
@@ -228,9 +238,11 @@ class SettingsTest extends BaseTest with Matchers {
          |"a.b.c"=2
          |""".stripMargin
     )
-    Settings.init(confFile)
-    Settings.get("a.b") should be ("1")
-    Settings.get("a.b.c") should be ("2")
+    Settings.exclusively {
+      Settings.init(confFile)
+      Settings.get("a.b") should be ("1")
+      Settings.get("a.b.c") should be ("2")
+    }
   }
 
   "nested keys in properties file" should "resolve" in {
@@ -241,9 +253,11 @@ class SettingsTest extends BaseTest with Matchers {
          |d.e.f=4
          |""".stripMargin
     )
-    Settings.init(propFile)
-    Settings.get("d.e") should be ("3")
-    Settings.get("d.e.f") should be ("4")
+    Settings.exclusively {
+      Settings.init(propFile)
+      Settings.get("d.e") should be ("3")
+      Settings.get("d.e.f") should be ("4")
+    }
   }
 
   "nested keys in system properties" should "resolve" in {
@@ -263,9 +277,11 @@ class SettingsTest extends BaseTest with Matchers {
         """|j.k.l=8
            |""".stripMargin
       )
-      Settings.init(propFile)
-      Settings.get("j.k") should be ("7")
-      Settings.get("j.k.l") should be ("8")
+      Settings.exclusively {
+        Settings.init(propFile)
+        Settings.get("j.k") should be ("7")
+        Settings.get("j.k.l") should be ("8")
+      }
     }
   }
 
