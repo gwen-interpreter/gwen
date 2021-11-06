@@ -177,15 +177,40 @@ class SettingsTest extends BaseTest with Matchers {
     }
   }
 
-  "masked setting" should "yield masked value" in {
+  "masked conf setting" should "yield masked value" in {
     val confFile = new File(targetDir, "masked.conf")
     confFile.delete()
     confFile.writeText(
-      """|"my.secret.setting:masked" = "secret"
+      """|my {
+         |  secret {
+         |    conf {
+         |      "setting:masked" = "secret"
+         |    }
+         |  }
+         |}
          |""".stripMargin
     )
     Settings.init(confFile)
-    Settings.get("my.secret.setting").contains("●●●●●") should be (true)
+    Settings.get("my.secret.conf.setting").contains("●●●●●") should be (true)
+  }
+
+  "masked json setting" should "yield masked value" in {
+    val confFile = new File(targetDir, "masked.json")
+    confFile.delete()
+    confFile.writeText(
+      """|{
+         |  "my": {
+         |    "secret": {
+         |      "json": {
+         |        "setting:masked": "secret"
+         |      }
+         |    }
+         |  }
+         |}
+         |""".stripMargin
+    )
+    Settings.init(confFile)
+    Settings.get("my.secret.json.setting").contains("●●●●●") should be (true)
   }
 
   "masked system property" should "yield masked value" in {
