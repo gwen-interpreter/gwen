@@ -85,13 +85,15 @@ abstract class SpecWalker[T](deep: Boolean) {
             acc = walk(scenario, background, acc)
           }
         }
-        acc = onScenario(parent, scenario, acc)
-        if (deep) {
-          scenario.steps foreach { step => 
-            acc = walk(scenario, step, acc)
-          }
-          scenario.examples foreach { exs =>
-            acc = walk(scenario, exs, acc)
+        if (!scenario.isStepDef) {
+          acc = onScenario(parent, scenario, acc)
+          if (deep) {
+            scenario.steps foreach { step => 
+              acc = walk(scenario, step, acc)
+            }
+            scenario.examples foreach { exs =>
+              acc = walk(scenario, exs, acc)
+            }
           }
         }
         acc
