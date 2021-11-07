@@ -173,7 +173,14 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
 
   private def printTags(indent: String, tags: List[Tag], out: PrintWriter): Unit = {
     if (tags.nonEmpty) {
-      out.println(s"$indent${tags.map(t => s"${if (colors) SpecPrinter.TagsColor else ""}$t${if (colors) AnsiColor.RESET else ""}").mkString(" ")}")
+      val tagsByLine = tags.groupBy(_.sourceRef.map(_.line).getOrElse(0L))
+      val lines = tags.map(_.sourceRef.map(_.line).getOrElse(0L)).distinct.sorted
+      lines foreach { line => 
+        val tagline = tagsByLine(line) map { tag => 
+          s"${if (colors) SpecPrinter.TagsColor else ""}$tag${if (colors) AnsiColor.RESET else ""}"
+        } mkString (" ")
+        out.println(s"$indent$tagline")
+      }
     }
   }
 

@@ -655,12 +655,16 @@ trait DetaiFormatter {
       
   private def formatTags(tags: List[gwen.core.node.gherkin.Tag]): Option[TypedTag[String]] = {
     if (tags.nonEmpty) {
+      val tagsByLine = tags.groupBy(_.sourceRef.map(_.line).getOrElse(0L))
+      val lines = tags.map(_.sourceRef.map(_.line).getOrElse(0L)).distinct.sorted
       Some(
         span(`class` := "grayed",
           p(
             small(
               raw(
-                tags map { tag => s"${escapeHtml(tag.toString)}<br>" } mkString
+                lines map { line => 
+                  tagsByLine(line) map { tag => s"${escapeHtml(tag.toString)}" } mkString " "
+                } mkString "<br>"
               )
             )
           )
