@@ -64,6 +64,24 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   }
 
+  "Data in multi record horizontal table with an impilcit top header" should "be accessible" in {
+
+    val dataTable = DataTable(
+      Tag("""@DataTable"""), parse(
+      """
+        |Given a multi record horizontal table with a top header
+        |      | a | b | c |
+        |      | 0 | 1 | 1 |
+        |      | 1 | 1 | 2 |
+        |      | 1 | 2 | 3 |
+        |      | 2 | 3 | 5 |
+        |      | 3 | 5 | 8 |
+      """.stripMargin)).asInstanceOf[FlatTable]
+
+    checkFlatTable_multiRecord(dataTable)
+
+  }
+
   "Data in multi record horizontal table with a top header" should "be accessible" in {
 
     val dataTable = DataTable(
@@ -167,6 +185,20 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   }
 
+  "Data in single record horizontal table with an implicit top header" should "be accessible" in {
+
+    val dataTable = DataTable(
+      Tag("""@DataTable"""), parse(
+      """
+        |Given a single record horizontal table with a top header
+        |      | a | b | c |
+        |      | 1 | 2 | 3 |
+      """.stripMargin)).asInstanceOf[FlatTable]
+
+    checkFlatTable_singleRecord(dataTable)
+
+  }
+
   "Data in single record horizontal table with a top header" should "be accessible" in {
 
     val dataTable = DataTable(
@@ -254,6 +286,20 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   }
 
+  "Data in single item horizontal table with implicit top header" should "be accessible" in {
+
+    val dataTable = DataTable(
+      Tag("""@DataTable"""), parse(
+      """
+        |Given a single item horizontal table with a top header
+        |      | a |
+        |      | 1 |
+      """.stripMargin)).asInstanceOf[FlatTable]
+
+    checkFlatTable_singleItem(dataTable)
+
+  }
+
   "Data in single item horizontal table with top header" should "be accessible" in {
 
     val dataTable = DataTable(
@@ -322,6 +368,19 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
     intercept[DataTableException] {
       DataTable(
         Tag("""@DataTable(header="top")"""), parse(
+        """
+          |Given a zero item horizontal table with a top header
+          |      |  a  |
+        """.stripMargin)).asInstanceOf[MatrixTable]
+    }
+
+  }
+
+  "Zero item horizontal table with implicit top header" should "error" in {
+
+    intercept[DataTableException] {
+      DataTable(
+        Tag("""@DataTable"""), parse(
         """
           |Given a zero item horizontal table with a top header
           |      |  a  |
@@ -499,6 +558,7 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
   }
 
   "Valid data table tags" should "not error" in {
+    DataTable.checkTagSyntax(Tag("""@DataTable"""))
     DataTable.checkTagSyntax(Tag("""@DataTable(horizontal="decimal,binary")"""))
     DataTable.checkTagSyntax(Tag("""@DataTable(horizontal="a,b,c")"""))
     DataTable.checkTagSyntax(Tag("""@DataTable(header="top")"""))
