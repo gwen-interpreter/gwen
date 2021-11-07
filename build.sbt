@@ -94,3 +94,5 @@ Compile / packageBin / mappings ++= Seq(
   file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY.txt",
   file("CHANGELOG") -> "CHANGELOG.txt"
 )
+
+Test/ parallelExecution := false
