@@ -144,14 +144,19 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val step = event.source
       val parent = event.callChain.previous
-      Console.print(printer.prettyPrint(parent, step))
+      if (!parent.isInstanceOf[Step]) {
+        Console.print(printer.prettyPrint(parent, step))
+      }
     }
   }
 
   override def afterStep(event: NodeEvent[Step]): Unit = {
     if (!parallel) {
       val step = event.source
-      Console.println(printer.printStatus(step, withMessage = true))
+      val parent = event.callChain.previous
+      if (!parent.isInstanceOf[Step]) {
+        Console.println(printer.printStatus(step, withMessage = true))
+      }
     }
   }
 
