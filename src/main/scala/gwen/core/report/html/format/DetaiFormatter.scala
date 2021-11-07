@@ -34,6 +34,7 @@ import scalatags.Text.all._
 import scalatags.Text.TypedTag
 
 import java.io.File
+import gwen.core.node.gherkin.SpecType
 
 /** Formats the feature summary and detail reports in HTML. */
 trait DetaiFormatter {
@@ -100,7 +101,11 @@ trait DetaiFormatter {
           )
         },
         span(`class` := "label label-black",
-          result.spec.specType.toString
+          if (result.spec.specType.isFeature) {
+            result.spec.feature.keyword
+          } else {
+            result.spec.specType.toString
+          }
         ),
         raw(escapeHtml(result.spec.feature.name)),
         formatDescriptionLines(result.spec.feature.description, None),
