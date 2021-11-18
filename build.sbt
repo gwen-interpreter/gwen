@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.0.1"
+val gwenVersion = "3.0.2"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -54,6 +54,7 @@ lazy val mainDependencies = {
   val rpCommon = "5.3.3"
   val rpClientJava = "5.0.22"
   val tsConfig = "1.4.1"
+  val jansi = "2.4.0"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -74,7 +75,8 @@ lazy val mainDependencies = {
     "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
       ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
       ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
-    )
+    ),
+    "org.fusesource.jansi" % "jansi" % jansi
   )
 }
 

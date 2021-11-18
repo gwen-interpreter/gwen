@@ -24,7 +24,6 @@ import gwen.core.node.event.NodeEvent
 import gwen.core.node.event.NodeEventListener
 import gwen.core.result.SpecResult
 
-import scala.Console
 import gwen.core.status.StatusKeyword
 import gwen.core.result.ResultsSummary
 
@@ -32,32 +31,32 @@ class ConsoleReporter(options: GwenOptions)
     extends NodeEventListener("Console Reporter", Set(NodeType.Meta, NodeType.StepDef)) {
 
   private val parallel = options.parallel || options.parallelFeatures
-  private val printer = new SpecPrinter(parallel, GwenSettings.`gwen.console.log.colors`)
+  private val printer = new SpecPrinter(parallel, ConsoleColors.isEnabled)
 
   override def beforeUnit(event: NodeEvent[FeatureUnit]): Unit = { 
     val unit = event.source
     val action = if (options.dryRun) "Checking" else "Executing"
     if (parallel) {
-      Console.println(s"""[""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + ": " + unit.name + """
-                          |""".stripMargin)
+      System.out.println(s"""[""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + ": " + unit.name + """
+                             |""".stripMargin)
     } else {
-      Console.println(("""|   _
-                          |  { \," """ + action + " " + SpecType.Feature.toString.toLowerCase + """:
-                          | {_`/   """ + unit.name + """
-                          |    `
-                          |""").stripMargin)
+      System.out.println(("""|   _
+                             |  { \," """ + action + " " + SpecType.Feature.toString.toLowerCase + """:
+                             | {_`/   """ + unit.name + """
+                             |    `
+                             |""").stripMargin)
     }
   } 
 
   override def afterUnit(event: NodeEvent[FeatureUnit]): Unit = {
     if (!parallel) {
-      Console.println()
+      System.out.println()
     } else {
       val unit = event.source
       val parent = event.callChain.previous
       val action = if (options.dryRun) "Checked" else "Executed"
       unit.result foreach { result =>
-        Console.println(
+        System.out.println(
           ("""|   _
               |  { \," [""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + """:
               | {_`/   """ + unit.name + """
@@ -73,14 +72,14 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val spec = event.source
       val parent = event.callChain.previous
-      Console.println(printer.prettyPrint(parent, spec.feature))
+      System.out.println(printer.prettyPrint(parent, spec.feature))
     }
   }
 
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     if (!parallel) {
       val result = event.source
-      Console.print(printer.printSpecResult(result))
+      System.out.print(printer.printSpecResult(result))
     }
   }
 
@@ -88,7 +87,7 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val background = event.source
       val parent = event.callChain.previous
-      Console.println(printer.prettyPrint(parent, background))
+      System.out.println(printer.prettyPrint(parent, background))
     }
   }
 
@@ -100,7 +99,7 @@ class ConsoleReporter(options: GwenOptions)
         node.asInstanceOf[Scenario]
       } foreach { scenario =>
         val parent = event.callChain.previous
-        Console.println(printer.prettyPrint(parent, scenario))
+        System.out.println(printer.prettyPrint(parent, scenario))
       }
     }
   }
@@ -110,7 +109,7 @@ class ConsoleReporter(options: GwenOptions)
       val scenario = event.source
       if (scenario.background.isEmpty) {
         val parent = event.callChain.previous
-        Console.println(printer.prettyPrint(parent, scenario))
+        System.out.println(printer.prettyPrint(parent, scenario))
       }
     }
   }
@@ -121,7 +120,7 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val examples = event.source
       val parent = event.callChain.previous
-      Console.println(printer.prettyPrint(parent, examples))
+      System.out.println(printer.prettyPrint(parent, examples))
     }
   }
 
@@ -131,7 +130,7 @@ class ConsoleReporter(options: GwenOptions)
     if (!parallel) {
       val rule = event.source
       val parent = event.callChain.previous
-      Console.println(printer.prettyPrint(parent, rule))
+      System.out.println(printer.prettyPrint(parent, rule))
     }
   }
 
@@ -145,7 +144,7 @@ class ConsoleReporter(options: GwenOptions)
       val step = event.source
       val parent = event.callChain.previous
       if (!parent.isInstanceOf[Step]) {
-        Console.print(printer.prettyPrint(parent, step))
+        System.out.print(printer.prettyPrint(parent, step))
       }
     }
   }
@@ -155,22 +154,22 @@ class ConsoleReporter(options: GwenOptions)
       val step = event.source
       val parent = event.callChain.previous
       if (!parent.isInstanceOf[Step]) {
-        Console.println(printer.printStatus(step, withMessage = true))
+        System.out.println(printer.printStatus(step, withMessage = true))
       }
     }
   }
 
   def printSummary(summary: ResultsSummary): Unit = {
     if (summary.results.size > 1) {
-      Console.println(printer.printSummary(summary))
+      System.out.println(printer.printSummary(summary))
     }
     val reports = summary.reports
     if (reports.nonEmpty) {
       val maxWidh = (reports map { (format, _) => format.toString.length }).max
       reports foreach { (format, report) => 
-        Console.println(s"${Formatting.leftPad(s"${format.toString.toUpperCase} report", maxWidh + 7)}  $report")
+        System.out.println(s"${Formatting.leftPad(s"${format.toString.toUpperCase} report", maxWidh + 7)}  $report")
       }
-      Console.println()
+      System.out.println()
     }
   }
   

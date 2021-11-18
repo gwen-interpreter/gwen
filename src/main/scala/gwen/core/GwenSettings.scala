@@ -239,11 +239,7 @@ object GwenSettings {
     * Provides access to the `gwen.console.log.colors` setting used to control whether or not to use ANSI 
     * colors to highlight Gherkin keywords and evaulation results in all console output.
     */
-  def `gwen.console.log.colors`: Boolean = {
-    Settings.getBoolean("gwen.console.log.colors") 
-      && Booleans.isFalsy(sys.env.get("CI")) 
-      && Booleans.isFalsy(sys.env.get("NO_COLOR"))
-  }
+  def `gwen.console.log.colors`: Boolean = Settings.getBoolean("gwen.console.log.colors")
 
   /**
     * Provides access to the `gwen.console.log.stepDefs` setting used to control whether or to log StepDefs

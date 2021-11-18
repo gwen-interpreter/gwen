@@ -23,8 +23,9 @@ import gwen.core.status._
 import gwen.core.result.SpecResult
 import gwen.core.result.ResultsSummary
 
+import org.fusesource.jansi.Ansi._
+
 import scala.concurrent.duration.Duration
-import scala.io.AnsiColor
 import scala.util.chaining._
 
 import java.io.PrintWriter
@@ -42,8 +43,8 @@ import java.util.Date
   */
 object SpecPrinter {
 
-  val TagsColor = AnsiColor.CYAN
-  val ClauseColor = AnsiColor.MAGENTA
+  val TagsColor = Color.CYAN
+  val ClauseColor = Color.MAGENTA
 
 }
 
@@ -65,7 +66,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       out.println()
     }
     printTags("", feature.tags, out)
-    out.print(s"${if (colors) SpecPrinter.ClauseColor else ""}${feature.keyword}:${if (colors) AnsiColor.RESET else ""} ${feature.name}")
+    out.print(s"${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${feature.keyword}:${if (colors) ansi.reset else ""} ${feature.name}")
     if (deep || feature.description.nonEmpty) out.println()
     printDescription("  ", feature.description, out)
     out
@@ -74,7 +75,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = {
     val indent = indentFor(background)
     out.println()
-    out.print(s"$indent${if (colors) SpecPrinter.ClauseColor else ""}${background.keyword}:${if (colors) AnsiColor.RESET else ""} ${background.name}")
+    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""} ${background.name}")
     if (deep || background.description.nonEmpty) out.println()
     printDescription(s"$indent  ", background.description, out)
     if (background.description.nonEmpty && background.steps.nonEmpty) {
@@ -89,7 +90,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val keyword = scenario.keyword
       out.println()
       printTags(indent, scenario.tags, out)
-      out.print(s"$indent${if (colors) SpecPrinter.ClauseColor else ""}${keyword}:${if (colors) AnsiColor.RESET else ""} ${scenario.name}")
+      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""} ${scenario.name}")
       if (deep || scenario.description.nonEmpty) out.println()
       printDescription(s"$indent  ", scenario.description, out)
       if (scenario.description.nonEmpty && scenario.steps.nonEmpty) {
@@ -104,7 +105,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val keyword = step.keyword
       val keywordMaxLength = step.siblingsIn(parent).map(_.asInstanceOf[Step].keyword.length).max
       val indent = indentFor(step)
-      out.print(s"$indent${if (colors) AnsiColor.BOLD else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) AnsiColor.RESET else ""} ${step.name}")
+      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${step.name}")
       if (step.table.nonEmpty) {
         out.println()
         printTable(s"$indent ${" " * keywordMaxLength}", step.table, out)
@@ -122,7 +123,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
     val indent = indentFor(rule)
     if (deep) out.println()
-    out.print(s"$indent${if (colors) SpecPrinter.ClauseColor else ""}${rule.keyword}:${if (colors) AnsiColor.RESET else ""} ${rule.name}")
+    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${rule.keyword}:${if (colors) ansi.reset else ""} ${rule.name}")
     if (deep || rule.description.nonEmpty) out.println()
     printDescription(s"$indent  ", rule.description, out)
     inRule.set(true)
@@ -134,7 +135,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val indent = indentFor(examples)
       if (deep) out.println()
       printTags(indent, examples.tags, out)
-      out.print(s"$indent${if (colors) SpecPrinter.ClauseColor else ""}${examples.keyword}:${if (colors) AnsiColor.RESET else ""} ${examples.name}")
+      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${examples.keyword}:${if (colors) ansi.reset else ""} ${examples.name}")
       if (deep || examples.description.nonEmpty) out.println()
       printDescription(s"$indent  ", examples.description, out)
       if (examples.description.nonEmpty && examples.table.nonEmpty) {
@@ -177,7 +178,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val lines = tags.map(_.sourceRef.map(_.line).getOrElse(0L)).distinct.sorted
       lines foreach { line => 
         val tagline = tagsByLine(line) map { tag => 
-          s"${if (colors) SpecPrinter.TagsColor else ""}$tag${if (colors) AnsiColor.RESET else ""}"
+          s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}$tag${if (colors) ansi.reset else ""}"
         } mkString (" ")
         out.println(s"$indent$tagline")
       }
@@ -194,12 +195,12 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
 
   private def printStatus(indent: String, status: EvalStatus, withMessage: Boolean, out: PrintWriter): Unit = {
     status match {
-      case Failed(_, error) => out.print(s"$indent${if (colors) colorFor(status) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) AnsiColor.RESET else ""}")
-      case Sustained(_, error) => out.print(s"$indent${if (colors) colorFor(status) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) AnsiColor.RESET else ""}")
-      case _: Passed => out.print(s"$indent${if (colors) colorFor(status) else ""}$status${if (colors) AnsiColor.RESET else ""}")
-      case Loaded => out.print(s"$indent${if (colors) colorFor(status) else ""}$status${if (colors) AnsiColor.RESET else ""}")
+      case Failed(_, error) => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) ansi.reset else ""}")
+      case Sustained(_, error) => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) ansi.reset else ""}")
+      case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
+      case Loaded => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
       case Pending => // noop
-      case _ => out.print(s"$indent${if (colors) colorFor(status) else ""}$status${if (colors) AnsiColor.RESET else ""}")
+      case _ => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
     }
   }
 
@@ -229,10 +230,10 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
           if (colors) {
             if (rowIndex == 0) {
               if (colIndex == 0 || header(colIndex) == evalStatus.keyword.toString) {
-                s"${colorFor(evalStatus)}${AnsiColor.BOLD}$column${AnsiColor.RESET}"
+                s"${ansi.bold.fg(colorFor(evalStatus))}$column${ansi.reset}"
               } else column
             } else if (colIndex > 0 && cell != "-") {
-              s"${colorFor(StatusKeyword.valueOf(header(colIndex)))}$column${AnsiColor.RESET}"
+              s"${ansi.fg(colorFor(StatusKeyword.valueOf(header(colIndex))))}$column${ansi.reset}"
             } else column
           } else column
         } mkString
@@ -283,18 +284,18 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     " " * indents
   }
 
-  private def colorFor(status: EvalStatus): String = {
+  private def colorFor(status: EvalStatus): Color = {
     colorFor(status.keyword)
   }
 
-  private def colorFor(keyword: StatusKeyword): String = {
+  private def colorFor(keyword: StatusKeyword): Color = {
     keyword match {
-      case StatusKeyword.Failed => AnsiColor.RED
-      case StatusKeyword.Sustained => AnsiColor.YELLOW
-      case StatusKeyword.Skipped => AnsiColor.YELLOW
-      case StatusKeyword.Passed => AnsiColor.GREEN
-      case StatusKeyword.Loaded => AnsiColor.GREEN
-      case _ => AnsiColor.CYAN
+      case StatusKeyword.Failed => Color.RED
+      case StatusKeyword.Sustained => Color.YELLOW
+      case StatusKeyword.Skipped => Color.YELLOW
+      case StatusKeyword.Passed => Color.GREEN
+      case StatusKeyword.Loaded => Color.GREEN
+      case _ => Color.CYAN
     }
   }
 

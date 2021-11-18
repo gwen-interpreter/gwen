@@ -374,3 +374,11 @@ object Booleans {
       || value.trim.toLowerCase == "false"
   }
 }
+
+object ConsoleColors {
+  def isEnabled: Boolean = {
+    GwenSettings.`gwen.console.log.colors`
+      && Booleans.isFalsy(sys.env.get("CI")) 
+      && Booleans.isFalsy(sys.env.get("NO_COLOR"))
+  }
+}

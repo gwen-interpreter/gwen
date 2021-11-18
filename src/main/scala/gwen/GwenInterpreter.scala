@@ -27,6 +27,7 @@ import gwen.core.status.Failed
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.log4j.PropertyConfigurator
+import org.fusesource.jansi.AnsiConsole
 import org.slf4j.bridge.SLF4JBridgeHandler
 
 import java.io.OutputStream
@@ -69,7 +70,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         } else {
           logger.error(errMsg, e)
         }
-        Console.println()
+        System.out.println()
         System.exit(1)
     }
   }
@@ -101,6 +102,10 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
 
   private def initLogging(options: GwenOptions): Unit = {
 
+    if (ConsoleColors.isEnabled) {
+      AnsiConsole.systemInstall()
+    }
+
     if (options.verbose) {
       val config = getClass.getResourceAsStream("/log4j-verbose.properties")
       PropertyConfigurator.configure(config)
@@ -127,6 +132,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         PropertyConfigurator.configure(config)
       }
     }
+
   }
 
   /**
@@ -137,7 +143,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
   private def printBanner(intro: String): Unit = {
-    Console.println(
+    System.out.println(
       """|
          |   __ ___      _____ _ __     _    
          |  / _` \ \ /\ / / _ \ '_ \   { \," 
@@ -151,7 +157,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       )
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
-      Console.println(
+      System.out.println(
         """|
            | ╭──────────────────────────────────────────────────────────╮
            | │  Gwen Workspaces DEPRECATED!                             │

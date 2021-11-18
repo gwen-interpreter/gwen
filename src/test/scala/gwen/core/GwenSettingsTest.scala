@@ -51,7 +51,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.report.slideshow.create` should be (false)
       GwenSettings.`gwen.report.slideshow.framespersecond` should be (4)
       GwenSettings.`gwen.state.level` should be (StateLevel.feature)
-      GwenSettings.`gwen.console.log.colors`
+      GwenSettings.`gwen.console.log.colors` should be (true)
       GwenSettings.`gwen.console.log.stepDefs` should be (true)
     }
   }

@@ -25,7 +25,6 @@ import gwen.core.node.gherkin.StepKeyword
 import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
 
-import scala.io.AnsiColor
 import scala.jdk.CollectionConverters._
 import scala.util.Failure
 import scala.util.Success
@@ -35,6 +34,7 @@ import jline.console.completer.AggregateCompleter
 import jline.console.ConsoleReader
 import jline.console.completer.StringsCompleter
 import jline.console.history.FileHistory
+import org.fusesource.jansi.Ansi._
 
 import java.io.File
 
@@ -50,9 +50,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private var paste: Option[List[String]] = None
   private var pastingDocString = false
 
-  private val colors = GwenSettings.`gwen.console.log.colors`
+  private val colors = ConsoleColors.isEnabled
   private val printer = new SpecPrinter(deep = false, colors)
-  private val prompt = s"${if (colors) AnsiColor.MAGENTA else ""}gwen> ${if (colors) AnsiColor.RESET else ""}"
+  private val prompt = s"${if (colors) ansi.bold else ""}gwen> ${if (colors) ansi.reset else ""}"
   
   private lazy val reader = {
     new ConsoleReader() tap { reader =>
@@ -70,8 +70,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   /** Reads an input string or command from the command line. */
   private def read(): String = {
-    if (paste.isEmpty) Console.println()
-    reader.readLine() tap { _ => if (paste.isEmpty) Console.println() }
+    if (paste.isEmpty) System.out.println()
+    reader.readLine() tap { _ => if (paste.isEmpty) System.out.println() }
   }
 
   /**
@@ -111,7 +111,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
           history.get(num).toString match {
             case x if input.trim.equals(x) =>
               Some(s"Unable to refer to self history - !$historyValue")
-            case s => Console.println(s"--> $s\n"); eval(s)
+            case s => System.out.println(s"--> $s\n"); eval(s)
           }
         } else {
           Some(s"No such history: !$historyValue")
@@ -120,14 +120,14 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         if (paste.isEmpty) {
           paste = Some(List())
           reader.setPrompt("")
-          Console.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
+          System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
           Some("")
         } else {
           paste foreach { steps =>
-            Console.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
+            System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
             steps.reverse map { step =>
-              Console.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
-              evaluateInput(step) tap { output => Console.println(output) }
+              System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
+              evaluateInput(step) tap { output => System.out.println(output) }
             }
           }
           reader.setPrompt(prompt)
@@ -182,16 +182,16 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       case _ =>
         engine.interpretStep(input, ctx) match {
           case Success(step) => printer.printStatus(step, withMessage = true)
-          case Failure(error) => s"${if (colors) AnsiColor.RED else ""}$error\n\n[non-step]${if (colors) AnsiColor.RESET else ""}"
+          case Failure(error) => s"${if (colors) ansi.fg(Color.RED) else ""}$error\n\n[non-step]${if (colors) ansi.reset else ""}"
         }
     }
   }
 
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
-    Console.println("\nREPL Console\n")
-    Console.println("Enter steps to evaluate or type exit to quit..")
-    while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) Console.println(output) } ).nonEmpty) { }
+    System.out.println("\nREPL Console\n")
+    System.out.println("Enter steps to evaluate or type exit to quit..")
+    while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) System.out.println(output) } ).nonEmpty) { }
   }
 
   private def helpText() = """

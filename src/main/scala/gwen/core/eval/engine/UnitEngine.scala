@@ -76,7 +76,7 @@ trait UnitEngine[T <: EvalContext]
               if (ctx.options.verbose)
                 logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
               else 
-                Console.println(s"Feature file skipped (does not satisfy tag filters): ${file}\n")
+                System.out.println(s"Feature file skipped (does not satisfy tag filters): ${file}\n")
               None
           }
         case Failure(e) =>

@@ -1,3 +1,9 @@
+3.0.2
+=====
+Nov 18, 2021
+- Fix Ansi colors for windows
+- Restore `gwen.console.log.colors` default to true
+
 3.0.1
 =====
 Nov 18, 2021
