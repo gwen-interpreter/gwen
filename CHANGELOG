@@ -2,6 +2,7 @@
 =====
 Nov 18, 2021
 - Set default mask char to '*' instead of '●'
+- Temporaritly default `gwen.console.log.colors` to false (until windows ANSI issues are fixed)
 
 3.0.0
 =====
