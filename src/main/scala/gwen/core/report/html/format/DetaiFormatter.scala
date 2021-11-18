@@ -238,7 +238,7 @@ trait DetaiFormatter {
         )
       },
       raw(escapeHtml(scenario.name)),
-      raw(" &nbsp; "),
+      raw(" \u00a0 "),
       formatParams(scenario.params, status),
       if (!scenario.isForEach) {
         formatDescriptionLines(scenario.description, Some(status))
@@ -363,7 +363,7 @@ trait DetaiFormatter {
             rowHtml
           )
         } else rowHtml,
-        raw(" &nbsp; "),
+        raw(" \u00a0 "),
         formatAttachments(scenario.attachments, status),
         formatExampleDiv(scenario, status)
       )
@@ -440,9 +440,9 @@ trait DetaiFormatter {
         ),
         " ",
         if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
-        raw(" &nbsp; "),
+        raw(" \u00a0 "),
         formatParams(step.params, status),
-        raw(" &nbsp; "),
+        raw(" \u00a0 "),
         formatAttachments(step.deepAttachments, status),
         for {
           sd <- stepDef
@@ -586,11 +586,11 @@ trait DetaiFormatter {
               li(role := "presentation", `class` := s"text-${cssStatus(status)}",
                 a(role := "menuitem", tabindex := "-1", href := s"${attachmentHref(file)}", target := "_blank",
                   span(`class` := "line-no", style := "width: 0px;",
-                    raw(s"${index + 1}. &nbsp; ")
+                    raw(s"${index + 1}. \u00a0 ")
                   ),
                   name,
                   span(`class` := "line-no", style := "width: 0px;",
-                    raw(" &nbsp; ")
+                    raw(" \u00a0 ")
                   )
                 )
               )

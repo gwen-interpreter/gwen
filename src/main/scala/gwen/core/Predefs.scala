@@ -255,7 +255,7 @@ object Formatting {
   def padWithZeroes(num: Int, padding: Int): String = s"%0${padding}d".format(num)
   def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
   def escapeHtml(text: String): String = escapeHtmlSpaces(StringEscapeUtils.escapeHtml4(text).replaceAll("""[\r\n]+""", "<br>"))
-  def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " &nbsp;")
+  def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " \u00a0")
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
   def leftPad(str: String, size: Int): String = s"${" " * (size - str.length)}$str"

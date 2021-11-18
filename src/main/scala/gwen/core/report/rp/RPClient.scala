@@ -174,7 +174,7 @@ class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
       val duration = Formatting.formatDuration(Duration.fromNanos(System.nanoTime - start))
       if (options.verbose) {
         logger.info(s"[$duration] Report Portal connection closed${launchUuid.map(uuid => s" [Launch uuid $uuid]").getOrElse("")}")
-      } else System.out.println(s"  [$duration] Closed\n")
+      } else println(s"  [$duration] Closed\n")
       val endpoint = RPSettings.`rp.endpoint`
       s"$endpoint${if (endpoint.endsWith("/")) "" else "/"}ui/#${RPSettings.`rp.project`}/launches/all/$launchId"
     }

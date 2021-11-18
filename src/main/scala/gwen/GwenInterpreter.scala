@@ -70,7 +70,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         } else {
           logger.error(errMsg, e)
         }
-        System.out.println()
+        println()
         System.exit(1)
     }
   }
@@ -143,7 +143,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
   private def printBanner(intro: String): Unit = {
-    System.out.println(
+    println(
       """|
          |   __ ___      _____ _ __     _    
          |  / _` \ \ /\ / / _ \ '_ \   { \," 
@@ -157,7 +157,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       )
 
     sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
-      System.out.println(
+      println(
         """|
            | ╭──────────────────────────────────────────────────────────╮
            | │  Gwen Workspaces DEPRECATED!                             │
