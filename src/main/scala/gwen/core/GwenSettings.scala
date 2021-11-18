@@ -224,7 +224,7 @@ object GwenSettings {
 
   /**
     * Provides access to the character used to mask settings defined with the `:masked` suffix.
-    * Default value is `●`.
+    * Default value is `*`.
     */
   def `gwen.mask.char`: Char = {
     val maskChar = sys.props("gwen.mask.char")

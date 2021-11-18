@@ -20,6 +20,8 @@
  
 import org.scalatest.matchers.should.Matchers
 
+import scala.util.matching.Regex
+
  class SensitiveDataTest extends BaseTest with Matchers {
 
   "isMaskedName" should "return true for masked proeprty names" in {
@@ -41,7 +43,7 @@ import org.scalatest.matchers.should.Matchers
     parsed should not be (None)
     parsed foreach { case (name, value) => 
       name should be ("my.prop")
-      val pattern = s"($MaskChar{5})${ZeroChar}+"
+      val pattern = s"(${Regex.quote(MaskChar.toString)}{5})${ZeroChar}+"
       value.matches(pattern) should be (true)
       value.trim.matches(pattern) should be (true)
       value.matches("howdydoo") should be (false)

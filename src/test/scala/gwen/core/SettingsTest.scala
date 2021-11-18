@@ -198,7 +198,7 @@ class SettingsTest extends BaseTest with Matchers {
     )
     Settings.exclusively {
       Settings.init(confFile)
-      Settings.get("my.secret.conf.setting").contains("●●●●●") should be (true)
+      Settings.get("my.secret.conf.setting").contains("*****") should be (true)
     }
   }
 
@@ -219,14 +219,14 @@ class SettingsTest extends BaseTest with Matchers {
     )
     Settings.exclusively {
       Settings.init(confFile)
-      Settings.get("my.secret.json.setting").contains("●●●●●") should be (true)
+      Settings.get("my.secret.json.setting").contains("*****") should be (true)
     }
   }
 
   "masked system property" should "yield masked value" in {
     withSetting("my.secret.prop:masked", "secret") {
       Settings.init()
-      Settings.get("my.secret.prop").contains("●●●●●") should be (true)
+      Settings.get("my.secret.prop").contains("*****") should be (true)
     }
   }
 

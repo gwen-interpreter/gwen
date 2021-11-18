@@ -41,7 +41,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.feature.failfast.enabled` should be (true)
       GwenSettings.`gwen.feature.failfast.exit` should be (false)
       GwenSettings.`gwen.feature.mode` should be (FeatureMode.imperative)
-      GwenSettings.`gwen.mask.char` should be ('●')
+      GwenSettings.`gwen.mask.char` should be ('*')
       GwenSettings.`gwen.baseDir`.getPath should be (".")
       GwenSettings.`gwen.outDir`.getPath should be ("output")
       GwenSettings.`gwen.parallel.maxThreads` should be (GwenSettings.availableProcessors)

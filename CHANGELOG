@@ -1,3 +1,8 @@
+3.0.1
+=====
+Nov 18, 2021
+- Set default mask char to '*' instead of '●'
+
 3.0.0
 =====
 Nov 16, 2021
