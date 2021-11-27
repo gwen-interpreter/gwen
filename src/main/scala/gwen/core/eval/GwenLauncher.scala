@@ -105,7 +105,9 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
         logger.info(s"Project directory initialised")
         Passed(System.nanoTime - startNanos)
       } else {
-        val metaFiles = options.metas.flatMap(m => if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta"))
+        val metaFiles = options.metas.filter(_.exists).flatMap { m => 
+          if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta") 
+        }
         val featureStream = new FeatureStream(metaFiles, options.tagFilter)
         featureStream.readAll(options.features, options.dataFile) match {
           case stream @ _ #:: _ =>
