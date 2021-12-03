@@ -20,9 +20,12 @@ import gwen.core.BaseTest
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Tag
 
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.when
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
-class TagFilterTest extends BaseTest with Matchers with GherkinParser { 
+class TagFilterTest extends BaseTest with Matchers with GherkinParser with MockitoSugar { 
 
   private val parse = parseSpec(_: String)
   
@@ -327,6 +330,17 @@ class TagFilterTest extends BaseTest with Matchers with GherkinParser {
         scenarios(2).examples(0).name should be ("play examples")
 
       case None => fail("feature expected")
+    }
+  }
+
+  "Meta spec" should "not be filtered" in {
+    val source = parse(featureString).get
+    val meta = spy(source)
+    when(meta.isMeta).thenReturn(true)
+    val tagFilter = new TagFilter(List((Tag("@filter"), true)))
+    tagFilter.filter(meta) match {
+      case Some(target) => source should be (target)
+      case None => fail("same feature expected")
     }
   }
   

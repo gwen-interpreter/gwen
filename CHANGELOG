@@ -1,3 +1,9 @@
+3.0.5
+=====
+Dec 4, 2021
+- Fix issue gwen-interpreter/gwen-web#61
+  - Skip tag filtering for meta specs
+
 3.0.4
 =====
 Nov 27, 2021

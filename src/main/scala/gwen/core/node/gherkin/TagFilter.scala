@@ -40,16 +40,18 @@ class TagFilter(tagFilters: List[(Tag, Boolean)]) {
     *         Some otherwise (with only the scenarios that do)
     */
   def filter(spec: Spec): Option[Spec] = { 
-    def scenarios = filterScenarios(spec, spec.scenarios)
-    def rules = spec.rules map { rule =>
-      rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
-    }
-    if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
-      None
-    } else {
-      Some(spec.copy(
-        withScenarios = scenarios, 
-        withRules = rules))
+    if (spec.isMeta) Some(spec) else {
+      def scenarios = filterScenarios(spec, spec.scenarios)
+      def rules = spec.rules map { rule =>
+        rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
+      }
+      if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
+        None
+      } else {
+        Some(spec.copy(
+          withScenarios = scenarios, 
+          withRules = rules))
+      }
     }
   }
 
