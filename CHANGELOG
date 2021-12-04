@@ -1,8 +1,10 @@
 3.0.5
 =====
 Dec 4, 2021
-- Fix issue gwen-interpreter/gwen-web#61
+- Fix issue gwen-interpreter/gwen-web#89:
   - Skip tag filtering for meta specs
+- Fix issue gwen-interpreter/gwen-web#90:
+  - Fix evaluation of JS containing if condition
 
 3.0.4
 =====
