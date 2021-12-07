@@ -17,6 +17,7 @@
 package gwen.core.eval.binding
 
 import gwen.core.Errors
+import gwen.core.Settings
 import gwen.core.eval.EvalContext
 import gwen.core.node.gherkin.table.DataTable
 
@@ -24,7 +25,14 @@ class DataTableBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T
 
   override def resolve(): String = {
     ctx.topScope.getObject(DataTable.tableKey) match {
-      case Some(table: DataTable) => table.tableScope.get(name)
+      case Some(table: DataTable) => 
+        table.tableScope.getOpt(name) getOrElse {
+          ctx.scopes.getOpt(name) getOrElse {
+            Settings.getOpt(name) getOrElse {
+              Errors.unboundAttributeError(name)
+            }
+          }
+        }
       case _ => Errors.unboundAttributeError(name)
     }
   }

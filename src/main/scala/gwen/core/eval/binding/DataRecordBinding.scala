@@ -17,6 +17,7 @@
 package gwen.core.eval.binding
 
 import gwen.core.Errors
+import gwen.core.Settings
 import gwen.core.eval.EvalContext
 import gwen.core.state.ScopedData
 import gwen.core.node.gherkin.table.DataTable
@@ -27,9 +28,16 @@ class DataRecordBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
     ctx.topScope.getObject(DataTable.recordKey) match {
       case Some(record: ScopedData) => 
         record.getOpt(name).orElse(record.getOpt(s"data[$name]")).getOrElse {
-          record.get(name)
+          record.getOpt(name) getOrElse {
+            ctx.scopes.getOpt(name) getOrElse {
+              Settings.getOpt(name) getOrElse {
+                Errors.unboundAttributeError(name)
+              }
+            }
+          }
         }
-      case _ => Errors.unboundAttributeError(name)
+      case _ => 
+        Errors.unboundAttributeError(name)
     }
   }
 
