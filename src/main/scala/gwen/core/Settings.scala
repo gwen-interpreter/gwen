@@ -64,6 +64,26 @@ object Settings extends LazyLogging {
   } 
 
   /**
+    * Initialises all settings in the following order of precedence:
+    *   1. System properties passed through -D Java command line option
+    *   2. ~/gwen.properties (user overrides)
+    *   3. Settings files passed into this method (@launchSettings param)
+    *      - later ones override earlier ones
+    *   4. Project settings (gwen settings in your project root)
+    *   5. Gwen defaults
+    */
+  def init(settingsFiles: File*): Unit = {
+    init(prime = true, settingsFiles*)
+  }
+
+  /**
+    * Adds the given settings.
+    */
+  def add(settingsFiles: File*): Unit = {
+    init(prime = false, settingsFiles*)
+  }
+
+  /**
     * Loads and initialises all settings in the following order of precedence:
     *   1. System properties passed through -D Java command line option
     *   2. ~/gwen.properties (user overrides)
@@ -72,9 +92,19 @@ object Settings extends LazyLogging {
     *   4. Project settings (gwen settings in your project root)
     *   5. Gwen defaults
     */
-  def init(launchSettings: File*): Unit = {
+  private def init(prime: Boolean, launchSettings: File*): Unit = {
 
-    val (config, orphans) = load(launchSettings*)
+    val settingsFiles = {
+      if (prime) {
+        val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
+        val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
+        (launchSettings.reverse ++ projectSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
+      } else {
+        launchSettings.toList.reverse
+      }
+    }
+
+    val (config, orphans) = load(settingsFiles*)
     
     // write into properties object
     val props = config.entrySet.asScala.foldLeft(new Properties()) {
@@ -99,50 +129,45 @@ object Settings extends LazyLogging {
       }
     }
 
-    // Make mask char available in sys props for GwenSettings.`gwen.mask.char` to work
-    sys.props += (("gwen.mask.char", props.getProperty("gwen.mask.char")))
+    if (prime) {
+      // Make mask char available in sys props for GwenSettings.`gwen.mask.char` to work
+      sys.props += (("gwen.mask.char", props.getProperty("gwen.mask.char")))
 
-    // mask any senstive ("*:masked") properties passed in the raw from the command line
-    sys.props.toMap filter { case (key, value) => 
-      SensitiveData.isMaskedName(key) 
-    } foreach { case (key, value) =>
-      SensitiveData.parse(key, value) foreach { case (mKey, mValue) => 
-        sys.props -= key
-        sys.props += ((mKey, mValue))
+      // mask any senstive ("*:masked") properties passed in the raw from the command line
+      sys.props.toMap filter { case (key, value) => 
+        SensitiveData.isMaskedName(key) 
+      } foreach { case (key, value) =>
+        SensitiveData.parse(key, value) foreach { case (mKey, mValue) => 
+          sys.props -= key
+          sys.props += ((mKey, mValue))
+        }
       }
     }
 
     // resolve and store all settings
     props.entrySet.asScala.foreach { entry =>
       val name = entry.getKey.asInstanceOf[String]
-      val rawValue = entry.getValue.toString
-      val value = SensitiveData.parse(name, rawValue) map { (_, mValue) => 
-        sys.props -= name
-        mValue
-      } getOrElse {
-        rawValue
+      if (prime || !sys.props.contains(name)) {
+        val rawValue = entry.getValue.toString
+        val value = SensitiveData.parse(name, rawValue) map { (_, mValue) => 
+          sys.props -= name
+          mValue
+        } getOrElse {
+          rawValue
+        }
+        val rValue = resolve(value, props)
+        Settings.add(name, rValue, overrideIfExists = true)
       }
-      val rValue = resolve(value, props)
-      Settings.add(name, rValue, overrideIfExists = true)
     }
     
   }
 
-    /**
-    * Loads and initialises all settings in the following order of precedence:
-    *   1. System properties passed through -D Java command line option
-    *   2. ~/gwen.properties (user overrides)
-    *   3. Settings files passed into this method (@launchSettings param)
-    *      - later ones override earlier ones
-    *   4. Project settings (gwen settings in your project root)
-    *   5. Gwen defaults
+   /**
+    * Loads and initialises the given settings files
     */
-  private [core] def load(launchSettings: File*): (Config, Properties) = {
-    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
-    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
-    val settingsFiles = (launchSettings.reverse ++ projectSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
+  private [core] def load(settingsFiles: File*): (Config, Properties) = {
     val orphans = new Properties(); // track orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
-    val config = settingsFiles.filter(!_.exists) match {
+    val config = settingsFiles.toList.filter(!_.exists) match {
       case Nil =>
         (
           settingsFiles.foldLeft(ConfigFactory.defaultOverrides()) { (conf, settingsFile) => 

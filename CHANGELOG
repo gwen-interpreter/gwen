@@ -1,3 +1,9 @@
+3.0.7
+=====
+Dec 8, 2021
+- Fix issue gwen-interpreter/gwen-web#92:
+  - Honor launch settings for RP reruns
+
 3.0.6
 =====
 Dec 7, 2021

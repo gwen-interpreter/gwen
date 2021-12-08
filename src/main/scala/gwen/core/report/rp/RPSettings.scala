@@ -57,7 +57,7 @@ object RPSettings {
 
     // load rerun settings
     if (rerun && rerunOf.isEmpty && rerunFile.exists()) {
-      Settings.init(rerunFile)
+      Settings.add(rerunFile)
     }
     
   }
