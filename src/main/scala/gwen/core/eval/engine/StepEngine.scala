@@ -24,6 +24,7 @@ import gwen.core.behavior.BehaviorType
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.lambda.composite.ForEachTableRecord
 import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
+import gwen.core.eval.lambda.composite.IfCondition
 import gwen.core.eval.lambda.composite.StepDefCall
 import gwen.core.node.GwenNode
 import gwen.core.node.Root
@@ -123,7 +124,20 @@ trait StepEngine[T <: EvalContext] {
     translateCompositeStep(step) orElse {
       translateStepDef(step, ctx)
     } map { lambda =>
-      lambda(parent, step.copy(withEvalStatus = Pending), ctx)
+      Try(lambda(parent, step.copy(withEvalStatus = Pending), ctx)) match {
+        case Failure(e) => 
+          if (lambda.isInstanceOf[IfCondition[T]] && 
+              lambda.asInstanceOf[IfCondition[T]].isUnboundConditionError(e)) {
+            translateStepDef(step, ctx) map { sdLambda => 
+              sdLambda(parent, step, ctx)
+            } getOrElse {
+              throw e
+            }
+          } else {
+            throw e
+          }
+        case Success(step) => step
+      }
     } getOrElse {
       Try(translateStep(step)) match {
         case Success(lambda) if (!step.evalStatus.isFailed) =>

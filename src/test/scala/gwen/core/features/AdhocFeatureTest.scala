@@ -1,12 +1,12 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
- *
+ * Copyright 2016-2021 Branko Juric, Brady Wood
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,41 +18,28 @@ package gwen.core.features
 import gwen.GwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
+import gwen.core.Settings
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
 import java.io.File
 
-class DocStringsTest extends BaseTest {
+class AdhocFeatureTest extends BaseTest {
+
+  val feature = "src/test/features/stepdefs/NameContainingIf.feature"
 
   val interpreter = GwenInterpreter()
-  
-  "DocStrings" should "evaluate without error" in {
-    
+
+  s"Feature should" should "execute" in {
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File("target/report/docStrings")),
+      reportDir = Some(new File(s"target/reports")), 
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("src/test/features/docStrings"))
+      features = List(new File(feature)),
+      settingsFiles = List(new File("src/test/resources/gwen.conf"))
     )
-      
-    interpreter.run(options, None) match {
-      case Passed(_) => // excellent :)
-      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
-    }
-  }
-  
-  "DocStrings" should "pass --dry-run test" in {
-    
-    val options = GwenOptions(
-      batch = true,
-      reportDir = Some(new File("target/report/docStrings-dry-run")),
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File("src/test/features/docStrings")),
-      dryRun = true
-    )
-      
+        
+    Settings.init(options.settingsFiles*)
     interpreter.run(options, None) match {
       case Passed(_) => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)

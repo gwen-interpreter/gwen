@@ -55,4 +55,9 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: S
     }
   }
 
+  def isUnboundConditionError(e: Throwable): Boolean = {
+    e.isInstanceOf[Errors.UnboundAttributeException] &&
+      new Errors.UnboundAttributeException(condition, None).getMessage == e.getMessage
+  }
+
 }
