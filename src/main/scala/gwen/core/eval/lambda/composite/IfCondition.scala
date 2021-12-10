@@ -27,15 +27,17 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Tag
 import gwen.core.status._
+import gwen.core.eval.binding.Binding
 
-class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: StepDefEngine[T]) extends CompositeStep[T] {
+import scala.util.Try
+
+class IfCondition[T <: EvalContext](doStep: String, val condition: String, engine: StepDefEngine[T]) extends CompositeStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
-    val binding = new JavaScriptBinding(condition, ctx)
-    val javascript = binding.resolve()
+    val javascript = getBinding(ctx).resolve()
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
@@ -55,9 +57,12 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, engine: S
     }
   }
 
-  def isUnboundConditionError(e: Throwable): Boolean = {
-    e.isInstanceOf[Errors.UnboundAttributeException] &&
-      new Errors.UnboundAttributeException(condition, None).getMessage == e.getMessage
+  private def getBinding(ctx: T): JavaScriptBinding[T] = {
+    JavaScriptBinding(condition, ctx)
+  }
+
+  override def isResolvable(ctx: T): Boolean = {
+    Try(getBinding(ctx).resolve()).isSuccess
   }
 
 }

@@ -33,7 +33,7 @@ object JavaScriptBinding {
 
 class JavaScriptBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 
-  private val key = JavaScriptBinding.key(name)
+  val key = JavaScriptBinding.key(name)
 
   override def resolve(): String = {
     resolveValue(key) { javascript =>

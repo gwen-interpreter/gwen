@@ -22,6 +22,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.behavior.BehaviorType
 import gwen.core.eval.lambda.CompositeStep
+import gwen.core.eval.lambda.StepLambda
 import gwen.core.eval.lambda.composite.ForEachTableRecord
 import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
 import gwen.core.eval.lambda.composite.IfCondition
@@ -121,45 +122,68 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def translateAndEvaluate(parent: GwenNode, step: Step, ctx: T): Step = {
-    translateCompositeStep(step) orElse {
-      translateStepDef(step, ctx)
-    } map { lambda =>
-      Try(lambda(parent, step.copy(withEvalStatus = Pending), ctx)) match {
-        case Failure(e) => 
-          if (lambda.isInstanceOf[IfCondition[T]] && 
-              lambda.asInstanceOf[IfCondition[T]].isUnboundConditionError(e)) {
-            translateStepDef(step, ctx) map { sdLambda => 
-              sdLambda(parent, step, ctx)
-            } getOrElse {
-              throw e
-            }
-          } else {
-            throw e
-          }
-        case Success(step) => step
+    translateCompositeStep(step).filter(_.isResolvable(ctx)) match {
+      case Some(cLambda) =>
+        translateStepDef(step, ctx) match {
+          case None =>
+            cLambda(parent, step.copy(withEvalStatus = Pending), ctx)
+          case Some(sdLambda) =>
+            val lambda = prioritise(step, ctx, cLambda, sdLambda)
+            lambda(parent, step.copy(withEvalStatus = Pending), ctx)
+        }
+      case None =>
+        translateStepDef(step, ctx) match {
+          case Some(sLambda) =>
+            sLambda(parent, step.copy(withEvalStatus = Pending), ctx)
+          case None =>
+            evaluateUnitStep(parent, step, ctx)
+        }
+    }
+  }
+
+  private def prioritise(step: Step, ctx: T, cLambda: CompositeStep[T], sdLambda: CompositeStep[T]): StepLambda[T, Step] = {
+    (
+      if (sdLambda.isInstanceOf[StepDefCall[T]]) {
+        val stepDef = sdLambda.asInstanceOf[StepDefCall[T]].stepDef
+        if (step.name == stepDef.name) {
+          Some(sdLambda)
+        } else  { 
+          None
+        }
+      } else {
+        None
       }
-    } getOrElse {
+    ) getOrElse {
       Try(translateStep(step)) match {
-        case Success(lambda) if (!step.evalStatus.isFailed) =>
-          lambda(parent, step, ctx)
-        case Failure(e) =>
-          parent match {
-            case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
-              ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
-                case Some(stepDef) => 
-                  step.copy(
-                    withEvalStatus =
-                      Failed(step.evalStatus.duration.toNanos,
-                        new Errors.RecursiveStepDefException(stepDef))
-                  )
-                case _ => step
-              }
-            case _ =>
-              throw e
-          }
+        case Success(sLambda) if !step.evalStatus.isFailed =>
+          sLambda
         case _ =>
-          step
+          cLambda
       }
+    }
+  }
+
+  private def evaluateUnitStep(parent: GwenNode, step: Step, ctx: T): Step = {
+    Try(translateStep(step)) match {
+      case Success(lambda) if (!step.evalStatus.isFailed) =>
+        lambda(parent, step.copy(withEvalStatus = Pending), ctx)
+      case Failure(e) =>
+        parent match {
+          case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
+            ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
+              case Some(stepDef) => 
+                step.copy(
+                  withEvalStatus =
+                    Failed(step.evalStatus.duration.toNanos,
+                      new Errors.RecursiveStepDefException(stepDef))
+                )
+              case _ => step
+            }
+          case _ =>
+            throw e
+        }
+      case _ =>
+        step
     }
   }
 

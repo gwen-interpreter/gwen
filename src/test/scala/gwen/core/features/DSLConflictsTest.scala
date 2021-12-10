@@ -25,9 +25,9 @@ import gwen.core.status._
 import java.io.File
 
 // tests gwen-web issue #93
-class StepDefNameWithIfTest extends BaseTest {
+class DSLConflictsTest extends BaseTest {
 
-  val feature = "src/test/features/stepdefs/NameContainingIf.feature"
+  val feature = "src/test/features/dsl-conflicts/DSLConflicts.feature"
 
   val interpreter = GwenInterpreter()
 
