@@ -30,7 +30,8 @@ import scala.util.Try
 import com.github.tototoshi.csv.CSVReader
 import com.typesafe.scalalogging.LazyLogging
 import io.cucumber.gherkin.ParserException
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LoggerContext
 
 import java.io.File
 import java.util.Date
@@ -61,11 +62,15 @@ class GwenInterpreter[T <: EnvContext] extends GwenInfo with GherkinParser with 
     * @param options command line options
     */
   private[eval] def initialise(options: GwenOptions): T = {
-    Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config => 
+    Settings.getOpt("log4j.configurationFile")
+      .orElse(Settings.getOpt("log4j.configuration"))
+      .orElse(Settings.getOpt("log4j2.configuration"))
+      .orElse(Settings.getOpt("log4j2.configurationFile")).foreach { config => 
+      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
       if (config.toLowerCase.trim startsWith "file:") {
-        PropertyConfigurator.configure(new URL(config));
+        context.setConfigLocation(new URL(config).toURI);
       } else {
-        PropertyConfigurator.configure(config); 
+        context.setConfigLocation(new File(config).toURI);
       }
     }
     engine.init(options) tap { env =>
