@@ -26,10 +26,12 @@ import gwen.core.state.EnvState
 import gwen.core.status.Failed
 
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.core.LoggerContext
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.bridge.SLF4JBridgeHandler
 
+import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
 import java.net.URL
@@ -107,8 +109,9 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
 
     if (options.verbose) {
-      val config = getClass.getResourceAsStream("/log4j-verbose.properties")
-      PropertyConfigurator.configure(config)
+      val config = getClass.getResource("/log4j2-verbose.properties")
+      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
+      context.setConfigLocation(config.toURI)
     } else {
       
       // suppress error stream
@@ -125,12 +128,18 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
 
     // load user provided lo4j configuration
-    Settings.getOpt("log4j.configuration").orElse(Settings.getOpt("log4j.configurationFile")).foreach { config =>
+    Settings.getOpt("log4j2.configurationFile")
+      .orElse(Settings.getOpt("log4j2.configuration"))
+      .orElse(Settings.getOpt("log4j.configurationFile"))
+      .orElse(Settings.getOpt("log4j.configuration")).foreach { config =>
+
+      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
       if (config.toLowerCase.trim startsWith "file:") {
-        PropertyConfigurator.configure(new URL(config))
+        context.setConfigLocation(new URL(config).toURI)
       } else {
-        PropertyConfigurator.configure(config)
+        context.setConfigLocation(new File(config).toURI)
       }
+
     }
 
   }

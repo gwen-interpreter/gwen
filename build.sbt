@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.0.9"
+val gwenVersion = "3.1.0"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -42,7 +42,7 @@ lazy val mainDependencies = {
   val cucumberGherkin = "22.0.0"
   val scalaLogging = "3.9.4"
   val slf4j = "1.7.32"
-  val slf4jLog4j = "1.7.26"
+  val slf4jLog4j = "2.16.0"
   val scopt = "4.0.1"
   val jline = "2.14.6"
   val commonCodec = "1.15"
@@ -62,7 +62,7 @@ lazy val mainDependencies = {
     "com.github.scopt" %% "scopt" % scopt,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
     "jline" % "jline" % jline,
-    "org.slf4j" % "slf4j-log4j12" % slf4jLog4j,
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % slf4jLog4j,
     "org.slf4j" % "jul-to-slf4j" % slf4j,
     "commons-codec" % "commons-codec" % commonCodec,
     "org.apache.commons" % "commons-text" % commonsText,
