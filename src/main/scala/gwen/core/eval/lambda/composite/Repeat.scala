@@ -34,7 +34,7 @@ import gwen.core.status._
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T] {
+class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")

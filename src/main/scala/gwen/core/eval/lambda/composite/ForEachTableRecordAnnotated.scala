@@ -25,7 +25,7 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.node.gherkin.table.FlatTable
 
-class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T]) extends ForEach[T](engine) {
+class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: FlatTable,  engine: EvalEngine[T]) extends ForEach[T](engine, stepDef.name) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     ctx.topScope.pushObject(DataTable.tableKey, dataTable)
@@ -41,7 +41,7 @@ class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Ste
       val records = () => {
         dataTable.records.indices.map(idx => dataTable.recordScope(idx))
       }
-      evaluateForEach(records, DataTable.recordKey, parent, step, doStepDef.name, ctx)
+      evaluateForEach(records, DataTable.recordKey, parent, step, ctx)
     } finally {
       ctx.removeStepDef(doStepDef.name)
       ctx.addStepDef(stepDef)

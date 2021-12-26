@@ -23,7 +23,7 @@ import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 
-class StepDefCall[T <: EvalContext](caller: GwenNode, val stepDef: Scenario, engine: StepDefEngine[T]) extends CompositeStep[T] {
+class StepDefCall[T <: EvalContext](caller: GwenNode, val stepDef: Scenario, engine: StepDefEngine[T]) extends CompositeStep[T](stepDef.name) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     engine.callStepDef(caller, stepDef, step, ctx)

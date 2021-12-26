@@ -25,7 +25,6 @@ import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.lambda.StepLambda
 import gwen.core.eval.lambda.composite.ForEachTableRecord
 import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
-import gwen.core.eval.lambda.composite.IfCondition
 import gwen.core.eval.lambda.composite.StepDefCall
 import gwen.core.node.GwenNode
 import gwen.core.node.Root
@@ -122,44 +121,23 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def translateAndEvaluate(parent: GwenNode, step: Step, ctx: T): Step = {
-    translateCompositeStep(step).filter(_.isResolvable(ctx)) match {
-      case Some(cLambda) =>
-        translateStepDef(step, ctx) match {
-          case None =>
-            cLambda(parent, step.copy(withEvalStatus = Pending), ctx)
-          case Some(sdLambda) =>
-            val lambda = prioritise(step, ctx, cLambda, sdLambda)
-            lambda(parent, step.copy(withEvalStatus = Pending), ctx)
-        }
-      case None =>
-        translateStepDef(step, ctx) match {
-          case Some(sLambda) =>
-            sLambda(parent, step.copy(withEvalStatus = Pending), ctx)
-          case None =>
-            evaluateUnitStep(parent, step, ctx)
-        }
-    }
-  }
-
-  private def prioritise(step: Step, ctx: T, cLambda: CompositeStep[T], sdLambda: CompositeStep[T]): StepLambda[T, Step] = {
-    (
+    translateStepDef(step, ctx) map { sdLambda =>
       if (sdLambda.isInstanceOf[StepDefCall[T]]) {
-        val stepDef = sdLambda.asInstanceOf[StepDefCall[T]].stepDef
-        if (step.name == stepDef.name) {
-          Some(sdLambda)
-        } else  { 
-          None
+        translateCompositeStep(step) match {
+          case Some(cLambda) =>
+            translateStepDef(step.copy(withName = cLambda.doStep), ctx) match {
+              case Some(sddLambda) if sdLambda.doStep == sddLambda.doStep => cLambda
+              case _ => sdLambda
+            }
+          case None => sdLambda
         }
       } else {
-        None
+        sdLambda
       }
-    ) getOrElse {
-      Try(translateStep(step)) match {
-        case Success(sLambda) if !step.evalStatus.isFailed =>
-          sLambda
-        case _ =>
-          cLambda
-      }
+    } orElse translateCompositeStep(step) map { lambda =>
+      lambda(parent, step.copy(withEvalStatus = Pending), ctx)
+    } getOrElse {
+      evaluateUnitStep(parent, step, ctx)
     }
   }
 

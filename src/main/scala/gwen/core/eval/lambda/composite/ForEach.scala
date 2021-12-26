@@ -27,12 +27,12 @@ import gwen.core.status._
 
 import scala.util.Try
 
-abstract class ForEach[T <: EvalContext](engine: EvalEngine[T]) extends CompositeStep[T] {
+abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) extends CompositeStep[T](doStep) {
 
   /**
     * Repeats a step for each item in list of items of type U.
     */
-  def evaluateForEach[U](itemList: ()=>Seq[U], name: String, parent: GwenNode, step: Step, doStep: String, ctx: T): Step = {
+  def evaluateForEach[U](itemList: ()=>Seq[U], name: String, parent: GwenNode, step: Step, ctx: T): Step = {
     val keyword = FeatureKeyword.nameOf(FeatureKeyword.Scenario)
     val items = itemList()
     val foreachSteps = items.toList.zipWithIndex map { case (_, index) => 

@@ -23,11 +23,4 @@ import gwen.core.node.gherkin.Step
 /**
   * Base class for compositie step lambdas.
   */
-abstract class CompositeStep[T <: EvalContext] extends StepLambda[T, Step] {
-
-  /**
-   * Checks if inputs are resolvable.
-   */
-  def isResolvable(ctx: T): Boolean = true
-
-}
+abstract class CompositeStep[T <: EvalContext](val doStep: String) extends StepLambda[T, Step]

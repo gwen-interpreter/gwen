@@ -31,7 +31,7 @@ import gwen.core.eval.binding.Binding
 
 import scala.util.Try
 
-class IfCondition[T <: EvalContext](doStep: String, val condition: String, engine: StepDefEngine[T]) extends CompositeStep[T] {
+class IfCondition[T <: EvalContext](doStep: String, val condition: String, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
@@ -59,10 +59,6 @@ class IfCondition[T <: EvalContext](doStep: String, val condition: String, engin
 
   private def getBinding(ctx: T): JavaScriptBinding[T] = {
     JavaScriptBinding(condition, ctx)
-  }
-
-  override def isResolvable(ctx: T): Boolean = {
-    Try(getBinding(ctx).resolve()).isSuccess
   }
 
 }

@@ -24,14 +24,14 @@ import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.node.gherkin.table.FlatTable
 
-class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine) {
+class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine, doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     val dataTable = ForEachTableRecord.parseFlatTable(ctx.topScope.getObject(DataTable.tableKey))
     val records = () => {
       dataTable.records.indices.map(idx => dataTable.recordScope(idx))
     }
-    evaluateForEach(records, DataTable.recordKey, parent, step, doStep, ctx)
+    evaluateForEach(records, DataTable.recordKey, parent, step, ctx)
   }
 
 }
