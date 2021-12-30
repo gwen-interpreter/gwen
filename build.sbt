@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.1.2"
+val gwenVersion = "3.1.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -42,7 +42,7 @@ lazy val mainDependencies = {
   val cucumberGherkin = "22.0.0"
   val scalaLogging = "3.9.4"
   val slf4j = "1.7.32"
-  val slf4jLog4j = "2.17.0"
+  val slf4jLog4j = "2.17.1"
   val scopt = "4.0.1"
   val jline = "2.14.6"
   val commonCodec = "1.15"
