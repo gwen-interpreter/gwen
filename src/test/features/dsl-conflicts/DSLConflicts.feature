@@ -45,4 +45,9 @@ Feature: DSL conflicts
     Given strings is "some string1, some string2, some string3"
      When some function "${str}" for each str in strings delimited by ","
      Then attr should not be ""
+
+  Scenario: Test similar step defs
+   Given listOfSubMenu is "TEST1,TEST3,TEST3"
+    When I select "Main Menu" "${submenu}" in sidebar for each submenu in listOfSubMenu delimited by "," 
+    Then info should be "GWEN SHOULD run this DSL"
     

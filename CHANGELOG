@@ -3,6 +3,8 @@
 Jan 11, 2022
 - Fix issue gwen-interpreter/gwen-web#94:
   - Handle wait/until errors correctly
+- Fix issue gwen-interpreter/gwen-web#95:
+  - Handle similar step defs
 
 3.1.3
 =====
