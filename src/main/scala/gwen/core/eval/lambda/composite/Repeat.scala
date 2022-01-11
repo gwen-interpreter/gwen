@@ -110,7 +110,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
             else nanos
           }
           evaluatedStep = step.copy(
-            withEvalStatus = Failed(durationNanos, Errors.stepError(step, e))
+            withEvalStatus = Failed(durationNanos, new Errors.StepException(step, e.getMessage, e))
           )
       }
     } getOrElse {
