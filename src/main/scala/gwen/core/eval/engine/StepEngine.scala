@@ -126,10 +126,8 @@ trait StepEngine[T <: EvalContext] {
         translateCompositeStep(step) match {
           case Some(cLambda) =>
             translateStepDef(step.copy(withName = cLambda.doStep), ctx) match {
-              case Some(sddLambda) => 
-                if (sdLambda.doStep == sddLambda.doStep) cLambda
-                else sddLambda
-              case _ => sdLambda
+              case None => sdLambda
+              case _ => cLambda
             }
           case None => sdLambda
         }
