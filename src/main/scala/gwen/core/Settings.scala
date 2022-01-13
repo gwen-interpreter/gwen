@@ -137,7 +137,7 @@ object Settings extends LazyLogging {
       sys.props.toMap filter { case (key, value) => 
         SensitiveData.isMaskedName(key) 
       } foreach { case (key, value) =>
-        SensitiveData.parse(key, value) foreach { case (mKey, mValue) => 
+        SensitiveData.parse(key, resolve(value, props)) foreach { case (mKey, mValue) => 
           sys.props -= key
           sys.props += ((mKey, mValue))
         }
@@ -149,7 +149,7 @@ object Settings extends LazyLogging {
       val name = entry.getKey.asInstanceOf[String]
       if (prime || !sys.props.contains(name)) {
         val rawValue = entry.getValue.toString
-        val value = SensitiveData.parse(name, rawValue) map { (_, mValue) => 
+        val value = SensitiveData.parse(name, resolve(rawValue, props)) map { (_, mValue) => 
           sys.props -= name
           mValue
         } getOrElse {
