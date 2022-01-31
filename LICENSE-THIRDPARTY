@@ -44,7 +44,7 @@ org.fusesource.jansi            jansi                    | 2.4.0       | [Apache
 org.jdom                        jdom2                    | 2.0.5       | [Similar to Apache License but with the acknowledgment clause removed](https://raw.githubusercontent.com/hunterhacker/jdom/master/LICENSE.txt)
 org.ow2.asm                     asm                      | 9.1         | [BSD License](http://asm.objectweb.org/license.html)
 org.reactivestreams             reactive-streams         | 1.0.2       | [MIT No Attribution (SPDX: MIT-0)](https://spdx.org/licenses/MIT-0.html)
-org.scala-lang                  scala-library_3          | 3.0.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+org.scala-lang                  scala-library_3          | 3.1.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.slf4j                       jul-to-slf4j             | 1.7.32      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.slf4j                       slf4j-api                | 1.7.30      | [MIT License](http://www.slf4j.org/license.html)
 Twitter, Inc                    Bootstrap                | 3.3.6       | [MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)

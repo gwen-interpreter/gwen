@@ -3,6 +3,7 @@ Feature: String rules
   Rule: Joining two strings together should result in a string containing both
 
     Background: Reset strings
+      Howdy doo
       Given string 1 is ""
         And string 2 is ""
        When I join the two strings

@@ -43,8 +43,8 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     }
     feature1.feature.name should be ("About me [1]")
     feature1.scenarios.length should be (1)
-    feature1.scenarios(0).background.get.name should be ("Input data")
-    feature1.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=1)"""))
+    feature1.scenarios(0).background.get.name should be ("Input data record 1")
+    feature1.scenarios(0).background.get.description should be (List(s"Input data file: ${dataFile.getPath}", "Input data record: 1"))
     feature1.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
     feature1.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
     feature1.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
@@ -61,8 +61,8 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     }
     feature2.feature.name should be ("About me [2]")
     feature2.scenarios.length should be (1)
-    feature2.scenarios(0).background.get.name should be ("Input data")
-    feature2.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=2)"""))
+    feature2.scenarios(0).background.get.name should be ("Input data record 2")
+    feature2.scenarios(0).background.get.description should be (List(s"Input data file: ${dataFile.getPath}", "Input data record: 2"))
     feature2.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
     feature2.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "female"""")
     feature2.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Miss"""")
@@ -79,8 +79,8 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     }
     feature3.feature.name should be ("About me [3]")
     feature3.scenarios.length should be (1)
-    feature3.scenarios(0).background.get.name should be ("Input data")
-    feature3.scenarios(0).background.get.description should be (List(s"""@Data(file="${dataFile.getPath}", record=3)"""))
+    feature3.scenarios(0).background.get.name should be ("Input data record 3")
+    feature3.scenarios(0).background.get.description should be (List(s"Input data file: ${dataFile.getPath}", "Input data record: 3"))
     feature3.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "22"""")
     feature3.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "female"""")
     feature3.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Ms"""")

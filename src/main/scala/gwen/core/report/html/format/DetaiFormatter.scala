@@ -35,6 +35,7 @@ import scalatags.Text.TypedTag
 
 import java.io.File
 import gwen.core.node.gherkin.SpecType
+import gwen.core.node.gherkin.GherkinNode
 
 /** Formats the feature summary and detail reports in HTML. */
 trait DetaiFormatter {
@@ -174,15 +175,15 @@ trait DetaiFormatter {
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      for {
+        background <- scenario.background
+      } yield {
+        formatBackground(scenario, background)
+      },
       ul(`class` := "list-group",
         formatScenarioHeader(scenario)
       ),
       div(`class` := "panel-body",
-        for {
-          background <- scenario.background
-        } yield {
-          formatBackground(background)
-        },
         div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
           ul(`class` := "list-group",
             for {
@@ -257,12 +258,12 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatBackground(background: Background): TypedTag[String] = {
+  private def formatBackground(parent: GherkinNode, background: Background): TypedTag[String] = {
     val status = background.evalStatus.keyword
     val keywordPixels = noOfKeywordPixels(background.steps)
-    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}", style := "border-top: none; border-left:none; border-right: none; border-radius: 4px 4px 0 0",
       ul(`class` := "list-group",
-        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px;",
+        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
           span(`class` := s"label label-${cssStatus(status)}",
             background.keyword
           ),
@@ -271,17 +272,25 @@ trait DetaiFormatter {
               durationOrStatus(background.evalStatus).toString
             )
           ),
-          raw(escapeHtml(background.name)),
-          formatDescriptionLines(background.description, Some(status))
-        )
-      ),
-      div(`class` := "panel-body",
-        ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
-          for {
-            step <- background.steps
-          } yield {
-            formatStepLine(step, step.evalStatus, keywordPixels)
-          }
+          if (!background.evalStatus.isFailed) {
+            a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${parent.uuid}-${background.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := s"${parent.uuid}-${background.uuid}",
+              raw(escapeHtml(background.name)),
+            ),
+          } else {
+            raw(escapeHtml(background.name)),
+          },
+          div(id := s"${parent.uuid}-${background.uuid}", `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
+            formatDescriptionLines(background.description, Some(status)),
+            div(`class` := "panel-body",
+              ul(`class` := "list-group", style := "margin-right: -20px; margin-left: -10px; margin-top: 10px",
+                for {
+                  step <- background.steps
+                } yield {
+                  formatStepLine(step, step.evalStatus, keywordPixels)
+                }
+              )
+            )
+          )
         )
       )
     )
@@ -380,6 +389,11 @@ trait DetaiFormatter {
     val status = rule.evalStatus.keyword
     val conflict = rule.scenarios.map(_.evalStatus.keyword).exists(_ != status)
     div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      for {
+        background <- rule.background
+      } yield {
+        formatBackground(rule, background)
+      },
       ul(`class` := "list-group",
         li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
           span(`class` := s"label label-${cssStatus(status)}",
@@ -400,11 +414,6 @@ trait DetaiFormatter {
         )
       ),
       div(`class` := "panel-body",
-        for {
-          background <- rule.background
-        } yield {
-          formatBackground(background)
-        },
         div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
           ul(`class` := "list-group",
             for {
