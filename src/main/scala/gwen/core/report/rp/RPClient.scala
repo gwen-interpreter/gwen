@@ -60,8 +60,7 @@ import java.{util => ju}
   * @param options Gwen options
   * @param info Gwen info
   */
-class RPClient(options: GwenOptions) extends LazyLogging with GwenInfo {
-  info: GwenInfo =>
+class RPClient(options: GwenOptions, info: GwenInfo) extends LazyLogging {
   
   private val startTime = ju.Calendar.getInstance.getTime
   private val rpids = new ju.concurrent.ConcurrentHashMap[String, Maybe[String]]()

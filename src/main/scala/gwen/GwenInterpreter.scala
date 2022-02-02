@@ -51,7 +51,7 @@ object GwenInterpreter {
   *
   * @param engine the evaluation engine
   */
-class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with GwenInfo with LazyLogging {
+class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging {
 
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
@@ -160,7 +160,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
          |  \__, | \_/\_/ \___|_| |_|   `    
          |  |___/                            
          |
-         |""".stripMargin + intro + implName + " v" + implVersion + noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+             |""".stripMargin + intro + engine.implName + " v" + engine.implVersion + engine.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
          |gweninterpreter.org
          |""".stripMargin
       )

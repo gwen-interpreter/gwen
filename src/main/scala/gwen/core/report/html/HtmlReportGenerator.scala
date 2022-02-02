@@ -30,7 +30,7 @@ import java.io.File
   *
   * @author Branko Juric
   */
-class HtmlReportGenerator(options: GwenOptions) extends ReportGenerator(HtmlReportConfig, options) with HtmlReportFormatter {
+class HtmlReportGenerator(options: GwenOptions, info: GwenInfo) extends ReportGenerator(HtmlReportConfig, options, info) with HtmlReportFormatter {
 
   reportDir foreach { rdir =>
 

@@ -157,7 +157,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val consoleReporter = Option(options.verbose).filter(!_).map(_ => new ConsoleReporter(options))
     consoleReporter.foreach(engine.addListener)
     try {
-      val reportGenerators = ReportGenerator.generatorsFor(options)
+      val reportGenerators = ReportGenerator.generatorsFor(options, engine)
       reportGenerators.foreach(_.init(engine))
       Try {
         if (options.parallel) {

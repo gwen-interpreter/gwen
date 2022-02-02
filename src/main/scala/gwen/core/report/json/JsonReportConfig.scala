@@ -31,7 +31,7 @@ object JsonReportConfig extends ReportConfig(
   "JSON",
   Some("json"),
   None,
-  options => new JsonReportGenerator(options),
+  (options, info) => new JsonReportGenerator(options, info),
   options => options.reportDir.map(dir => new File(dir, "json")),
   (spec: Spec, dataRecord: Option[DataRecord]) => {
     val parentDirPath = spec.specFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")

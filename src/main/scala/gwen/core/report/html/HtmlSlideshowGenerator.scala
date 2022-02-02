@@ -29,7 +29,7 @@ import java.io.File
   *
   * @author Branko Juric
   */
-class HtmlSlideshowGenerator(options: GwenOptions) extends ReportGenerator(HtmlSlideshowConfig, options) with SlideshowFormatter {
+class HtmlSlideshowGenerator(options: GwenOptions, info: GwenInfo) extends ReportGenerator(HtmlSlideshowConfig, options, info) with SlideshowFormatter {
 
   reportDir foreach { rdir =>
 

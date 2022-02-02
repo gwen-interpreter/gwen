@@ -16,6 +16,7 @@
 
 package gwen.core.report.junit
 
+import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.report.NoopReportGenerator
 
@@ -25,4 +26,4 @@ import gwen.core.report.NoopReportGenerator
   * 
   * @author Branko Juric
   */
-class JUnitReportGenerator(options: GwenOptions) extends NoopReportGenerator(JUnitReportConfig, options) with JUnitReportFormatter
+class JUnitReportGenerator(options: GwenOptions, info: GwenInfo) extends NoopReportGenerator(JUnitReportConfig, options, info) with JUnitReportFormatter

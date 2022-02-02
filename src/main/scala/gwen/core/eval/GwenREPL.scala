@@ -18,10 +18,12 @@ package gwen.core.eval
 
 import gwen.core._
 import gwen.core.behavior.FeatureMode
+import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.StepKeyword
+import gwen.core.node.gherkin.Step
 import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
 
@@ -37,6 +39,7 @@ import jline.console.history.FileHistory
 import org.fusesource.jansi.Ansi._
 
 import java.io.File
+import java.io.PrintWriter
 
 /**
   * Read-Eval-Print-Loop console.
@@ -48,7 +51,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private val history = new FileHistory(new File(".history").getAbsoluteFile)
 
   private var paste: Option[List[String]] = None
-  private var pastingDocString = false
+  private var pastingDocString: Boolean = false
+  private var debug: Boolean = false
 
   private val colors = ConsoleColors.isEnabled
   private val printer = new SpecPrinter(deep = false, colors)
@@ -135,9 +139,12 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
           pastingDocString = false
           Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
         }
-      case "exit" | "bye" | "quit" if paste.isEmpty =>
+      case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
         reader.getHistory.asInstanceOf[FileHistory].flush()
         None
+      case "c" | "continue" | "resume" if debug =>
+        reader.getHistory.asInstanceOf[FileHistory].flush()
+        Some("continue")
       case _ =>
         if (paste.isEmpty) {
           Some(evaluateInput(input))
@@ -189,49 +196,73 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
-    System.out.println("\nREPL Console\n")
-    System.out.println("Enter steps to evaluate or type exit to quit..")
+    debug = false
+    System.out.println("\nREPL Console")
+    System.out.println("\nEnter steps to evaluate or type help for more options..")
     while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) System.out.println(output) } ).nonEmpty) { }
   }
 
-  private def helpText() = """
-    | Gwen REPL commands:
-    |
-    | help
-    |   Displays this help text
-    |
-    | env [switch] ["filter"]
-    |   Lists attributes in the current environment
-    |     Only lists visible attributes if no options are specified
-    |     switch :
-    |       -a : to list all attributes in all scopes
-    |       -f : to list all attributes in the feature (global) scope
-    |     filter : literal string or regex filter expression
-    |
-    | :paste|paste
-    |   Enters paste mode (for evaluating multiline steps)
-    |
-    | history
-    |   Lists all previously entered commands
-    |
-    | !<#>
-    |   Executes a previously entered command (history bang operator)
-    |     # : the history command number
-    |
-    | Given|When|Then|And|But <step>
-    |   Evaluates a step
-    |     step : the step expression
-    |
-    | exit|quit|bye
-    |   Closes the REPL session and exits
-    |
-    | ctrl-D
-    |   If in past mode: exits paste mode and interprets provided steps
-    |   Otherwise: Closes REPL session and exits
-    |
-    | <tab>
-    |   Press tab key at any time for tab completion
-    | """.stripMargin
+  /** Runs the read-eval-print-loop in debug mode. */
+  def debug(parent: GwenNode, step: Step): Boolean = {
+    var continue: Boolean = false
+    debug = true
+    System.out.println(s"\nPaused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
+    System.out.println(printer.prettyPrint(parent, step))
+    System.out.println("\nEnter c to continue or q to quit (or type help for more options)..")
+    while(
+      eval(read()) map { output => 
+        continue = output == "continue"
+        output tap { _ => if (paste.isEmpty && !continue) System.out.println(output) } 
+        output
+      } filter { output => output != "continue" } nonEmpty
+    ) { }
+    continue
+  }
+
+  private def helpText() = { 
+    val help = """
+      | Gwen REPL commands:
+      |
+      | help
+      |   Displays this help text
+      |
+      | env [switch] ["filter"]
+      |   Lists attributes in the current environment
+      |     Only lists visible attributes if no options are specified
+      |     switch :
+      |       -a : to list all attributes in all scopes
+      |       -f : to list all attributes in the feature (global) scope
+      |     filter : literal string or regex filter expression
+      |
+      | :paste|paste
+      |   Enters paste mode (for evaluating multiline steps)
+      |
+      | history
+      |   Lists all previously entered commands
+      |
+      | !<#>
+      |   Executes a previously entered command (history bang operator)
+      |     # : the history command number
+      |
+      | Given|When|Then|And|But <step>
+      |   Evaluates a step
+      |     step : the step expression
+      |
+      | q|exit|quit|bye
+      |   Closes the REPL session and exits
+      |
+      | ctrl-D
+      |   If in past mode: exits paste mode and interprets provided steps
+      |   Otherwise: Closes REPL session and exits
+      |
+      | <tab>
+      |   Press tab key at any time for tab completion
+      | """.stripMargin
+    if (!debug) help else help ++ s"""
+      | c|continue|resume
+      |   Continue executing from current step (debug mode only)
+      | """.stripMargin
+  }
 }
 
 object GwenREPL {

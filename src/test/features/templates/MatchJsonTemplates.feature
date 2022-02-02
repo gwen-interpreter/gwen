@@ -2,8 +2,8 @@ Feature: Match and extract JSON templates
 
   Background: Init
     Given my pet status is "available"
-      When I capture my pet status
-      Then my pet status should be "available"
+     When I capture my pet status
+     Then my pet status should be "available"
 
   Scenario: Match static single line JSON template
     Given my value is

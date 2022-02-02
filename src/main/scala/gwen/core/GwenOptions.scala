@@ -37,6 +37,7 @@ import java.io.File
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param verbose true for verbose log output, false for pretty log output
+  * @param debug true to enable debug mode, false otherwise
   * @param reportDir optional directory to generate evaluation report into
   * @param settingsFiles list of settings files to load
   * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
@@ -54,6 +55,7 @@ case class GwenOptions(
     parallel: Boolean = GwenOptions.Defaults.parallel,
     parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
     verbose: Boolean = GwenOptions.Defaults.verbose,
+    debug: Boolean = GwenOptions.Defaults.debug,
     reportDir: Option[File] = GwenOptions.Defaults.report,
     reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
     settingsFiles: List[File] = GwenOptions.Defaults.conf,
@@ -64,7 +66,7 @@ case class GwenOptions(
     features: List[File] = GwenOptions.Defaults.features,
     args: Option[Array[String]] = None,
     init: Boolean = false,
-    initDir: File = GwenOptions.Defaults.initDir) extends GwenInfo {
+    initDir: File = GwenOptions.Defaults.initDir) {
 
   def isParallelScenarios(stateLevel: StateLevel) = stateLevel == StateLevel.scenario && parallel && !parallelFeatures
 
@@ -74,7 +76,7 @@ case class GwenOptions(
     * Gets the command string used to invoke gwen.
     */
   def commandString: String = args match {
-    case (Some(params)) => s"$implName.${if(OS.isWindows) "bat" else "sh"} ${params.mkString(" ")}"
+    case (Some(params)) => s"gwen.${if(OS.isWindows) "bat" else "sh"} ${params.mkString(" ")}"
     case _ => ""
   }
 
@@ -96,6 +98,7 @@ object GwenOptions {
     val report = CLISettings.`gwen.cli.options.report`
     val tags = CLISettings.`gwen.cli.options.tags`
     val verbose = CLISettings.`gwen.cli.options.verbose`
+    val debug = false
   }
 
   /**
@@ -136,6 +139,10 @@ object GwenOptions {
       opt[Unit]('n', "dry-run") action {
         (_, c) => c.copy(dryRun = true)
       } text "Check all syntax and bindings and report errors"
+
+      opt[Unit]('d', "debug") action {
+        (_, c) => c.copy(debug = true)
+      } text "Enable breakpoints and debugging"
 
       opt[String]('c', "conf") action {
         (cs, c) =>
@@ -234,6 +241,7 @@ object GwenOptions {
         options.parallel,
         options.parallelFeatures,
         options.verbose,
+        options.debug,
         options.reportDir,
         if (options.reportFormats.nonEmpty) options.reportFormats else { if (options.reportDir.nonEmpty) GwenOptions.Defaults.format else Nil },
         options.settingsFiles,
@@ -253,6 +261,9 @@ object GwenOptions {
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
             val reportables = opt.reportFormats.filter(_.isFileSystemReport)
             Errors.invocationError(s"Required -r|--report option not provided for -f|--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
+          }
+          if (opt.debug && (opt.parallel || opt.parallelFeatures)) {
+            Errors.invocationError("Debug mode not supported for parallel executions")
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocation failed (see log for details)"))

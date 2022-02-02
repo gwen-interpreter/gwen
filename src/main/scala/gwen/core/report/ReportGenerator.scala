@@ -49,7 +49,8 @@ import java.util.Date
   */
 class ReportGenerator (
     config: ReportConfig,
-    options: GwenOptions) extends LazyLogging {
+    options: GwenOptions,
+    info: GwenInfo) extends LazyLogging {
   formatter: ReportFormatter =>
 
   private [report] def reportDir: Option[File] = {
@@ -120,7 +121,7 @@ class ReportGenerator (
         val featureCrumb = (SpecType.Feature.toString, reportFiles.head)
         val breadcrumbs = summaryReportFile.map(f => List(("Summary", f), featureCrumb)).getOrElse(List(featureCrumb))
         val reportFile = reportFiles.tail(idx)
-        formatDetail(options, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content =>
+        formatDetail(options, info, unit, metaResult, breadcrumbs, reportFile :: Nil) map { content =>
           reportFile tap { file =>
             file.writeText(content)
             logger.info(s"${config.name} meta detail${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
@@ -132,7 +133,7 @@ class ReportGenerator (
 
   private final def reportFeatureDetail(unit: FeatureUnit, result: SpecResult, reportFiles: List[File]): Option[File] = {
     reportFiles.headOption flatMap { reportFile =>
-      formatDetail(options, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
+      formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
         reportFile tap { file =>
           file.writeText(content)
           reportAttachments(result.spec, file)
@@ -158,7 +159,7 @@ class ReportGenerator (
     if (summary.results.nonEmpty) {
       summaryReportFile tap { reportFile =>
         reportFile foreach { file =>
-          formatSummary(options, summary) foreach { content =>
+          formatSummary(options, info, summary) foreach { content =>
             file.writeText(content)
             logger.info(s"${config.name} feature summary${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
           }
@@ -172,7 +173,7 @@ class ReportGenerator (
 
 object ReportGenerator {
 
-  def generatorsFor(options: GwenOptions): List[ReportGenerator] = {
+  def generatorsFor(options: GwenOptions, info: GwenInfo): List[ReportGenerator] = {
     options.reportFormats.distinct match {
       case Nil  => Nil
       case head :: Nil if (head == ReportFormat.none) => Nil
@@ -209,7 +210,7 @@ object ReportGenerator {
             case ReportFormat.none => None
           }
         } map { config =>
-          config.reportGenerator(options)
+          config.reportGenerator(options, info)
         }
     }
   }

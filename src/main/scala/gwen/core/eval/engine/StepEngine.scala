@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.eval.GwenREPL
 import gwen.core.behavior.BehaviorType
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.lambda.StepLambda
@@ -35,6 +36,7 @@ import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.status._
 
+import scala.io.StdIn.readBoolean
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
@@ -100,23 +102,34 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
-    val pStep = ctx.withStep(step) { ctx.interpolateParams }
-    val eStep = pStep.evalStatus match {
-      case Failed(_, e) if e.isInstanceOf[Errors.MultilineParamException] => pStep
-      case _ =>
-        val iStep = ctx.withStep(pStep) { ctx.interpolate }
-        logger.info(s"Evaluating Step: $iStep")
-        beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
-        ctx.withStep(iStep) { s =>
-          Try(healthCheck(parent, s, ctx)) match {
-            case Failure(e) => throw e
-            case _ => translateAndEvaluate(parent, s, ctx)
-          }
-        }
+    val continue = if (step.breakpoint && ctx.options.debug) {
+       new GwenREPL(engine, ctx).debug(parent, step)
+    } else {
+      true
     }
-    finaliseStep(eStep, ctx) tap { fStep =>
-      logStatus(ctx.options, fStep)
-      afterStep(fStep, ctx)
+    if (continue) {
+      val pStep = ctx.withStep(step) { ctx.interpolateParams }
+      val eStep = pStep.evalStatus match {
+        case Failed(_, e) if e.isInstanceOf[Errors.MultilineParamException] => pStep
+        case _ =>
+          val iStep = ctx.withStep(pStep) { ctx.interpolate }
+          logger.info(s"Evaluating Step: $iStep")
+          beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
+          ctx.withStep(iStep) { s =>
+            Try(healthCheck(parent, s, ctx)) match {
+              case Failure(e) => throw e
+              case _ => translateAndEvaluate(parent, s, ctx)
+            }
+          }
+      }
+      finaliseStep(eStep, ctx) tap { fStep =>
+        logStatus(ctx.options, fStep)
+        afterStep(fStep, ctx)
+      }
+    } else {
+      ctx.close()
+      System.exit(0)
+      step
     }
   }
 

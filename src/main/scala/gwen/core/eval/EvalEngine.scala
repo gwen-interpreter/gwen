@@ -43,7 +43,7 @@ object EvalEngine {
   *
   * @author Branko Juric
   */
-abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with UnitEngine[T] with StepTranslator[T] {
+abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with UnitEngine[T] with StepTranslator[T] with GwenInfo {
 
   /**
     * Initialises the engine and returns a new evaluation context.

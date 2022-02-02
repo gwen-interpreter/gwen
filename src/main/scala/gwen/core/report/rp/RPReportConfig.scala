@@ -29,7 +29,7 @@ object RPReportConfig extends ReportConfig(
   "Report Portal",
   None,
   None,
-  options => new RPReportGenerator(options),
+  (options, info) => new RPReportGenerator(options, info),
   options => None,
   (spec: Spec, dataRecord: Option[DataRecord]) => None) {
   override def createReportDir(options: GwenOptions, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = None

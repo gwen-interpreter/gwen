@@ -27,7 +27,7 @@ object HtmlSlideshowConfig extends ReportConfig(
   "Slideshow", 
   Some("html"), 
   None, 
-  options => new HtmlSlideshowGenerator(options), 
+  (options, info) => new HtmlSlideshowGenerator(options, info), 
   options => options.reportDir.map(dir => new File(dir, "html")),
   (spec: Spec, _) =>
     Some(s"${spec.specFile.map(_.getName).getOrElse(spec.feature.name)}.slideshow"))

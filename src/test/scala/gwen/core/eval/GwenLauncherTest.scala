@@ -68,6 +68,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 
@@ -90,6 +95,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 
@@ -113,6 +123,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 
@@ -137,6 +152,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 
@@ -162,6 +182,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 
@@ -185,6 +210,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
 
@@ -211,6 +241,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenThrow(new RuntimeException("meta error (don't be alarmed, this is a negative test)"))
 
@@ -260,6 +295,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
       Nil
     )
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(
       Some(new SpecResult(feature6A, None, Nil, new ju.Date(), new ju.Date())),
@@ -292,6 +332,11 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
 
+    when(mockEngine.implHome).thenReturn("https://github.com/gwen-interpreter/gwen")
+    when(mockEngine.releaseNotesUrl).thenReturn(Some("https://github.com/gwen-interpreter/gwen/releases/latest"))
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some(result))
 

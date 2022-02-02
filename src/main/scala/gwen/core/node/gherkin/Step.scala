@@ -44,6 +44,8 @@ import gwen.core.state.EnvState
   * @param docString optional tuple of line, content, and content type
   * @param evalStatus the evaluation status of the step
   * @param params optional step parameters
+  * @param callerParams optional caller parameters
+  * @param breakpoint true to add a breakpoint on this step; false otherwise
   */
 case class Step(
     sourceRef: Option[SourceRef],
@@ -55,7 +57,8 @@ case class Step(
     docString: Option[(Long, String, Option[String])],
     override val evalStatus: EvalStatus,
     override val params: List[(String, String)],
-    override val callerParams: List[(String, String)]) extends GherkinNode {
+    override val callerParams: List[(String, String)],
+    breakpoint: Boolean) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Step
 
@@ -118,8 +121,9 @@ case class Step(
       withDocString: Option[(Long, String, Option[String])] = docString,
       withEvalStatus: EvalStatus = evalStatus,
       withParams: List[(String, String)] = params,
-      withCallerParams: List[(String, String)] = callerParams): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams)
+      withCallerParams: List[(String, String)] = callerParams,
+      withBreakpoint: Boolean): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams, withBreakpoint)
   }
 
   /**
@@ -224,17 +228,22 @@ object Step {
     val docString = Option(step.getDocString()).filter(_.getContent().trim.length > 0) map { ds =>
       (Long2long(ds.getLocation.getLine), ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
+    val (name, breakpoint) = step.getText.trim match {
+      case r"""(?i)@Breakpoint (.+?)$name""" => (name, true)
+      case _ => (step.getText, false)
+    }
     Step(
       Option(step.getLocation).map(loc => SourceRef(file, loc)),
       step.getKeyword.trim, 
-      step.getText, 
+      name, 
       Nil, 
       None, 
       dataTable, 
       docString, 
       Pending,
       Nil,
-      Nil)
+      Nil,
+      breakpoint)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {
     case b: Background => b.steps.flatMap(_.errorTrails)

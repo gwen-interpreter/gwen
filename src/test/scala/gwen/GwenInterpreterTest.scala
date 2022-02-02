@@ -85,6 +85,9 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
     val mockEngine = mock[EvalEngine[EvalContext]]
     val interpreter = spy(createInterpreter(options, mockEngine, mockRepl))
 
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.noticeMsg).thenReturn(None)
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     doReturn(Passed(1)).when(interpreter).run(options, Some(mockCtx))
     doReturn(mockRepl).when(interpreter).createRepl(mockCtx)
@@ -104,6 +107,9 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
     val mockEngine = mock[EvalEngine[EvalContext]]
     val interpreter = spy(createInterpreter(options, mockEngine, mockRepl))
 
+    when(mockEngine.implName).thenReturn("gwen")
+    when(mockEngine.implVersion).thenReturn("1.0.0")
+    when(mockEngine.noticeMsg).thenReturn(None)
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     doReturn(Passed(1)).when(interpreter).run(options, Some(mockCtx))
     doReturn(mockRepl).when(interpreter).createRepl(mockCtx)

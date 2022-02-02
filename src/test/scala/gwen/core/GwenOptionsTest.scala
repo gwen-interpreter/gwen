@@ -94,6 +94,24 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with debug option and files " should "parse" in {
+    parseOptions(Array("-d", ".")) match {
+      case Success(options) => {
+        assertOptions(options, debug = true, features = List(new File(".")))
+
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--debug", ".")) match {
+      case Success(options) => {
+        assertOptions(options, debug = true, features = List(new File(".")))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
   "Options with dry run option and no files" should "be ok" in {
     parseOptions(Array("-n")) match {
       case Success(options) => {
@@ -663,6 +681,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
           parallel = true,
           parallelFeatures = false,
           verbose = true,
+          debug = false,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -684,6 +703,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
           parallel = true,
           parallelFeatures = true,
           verbose = true,
+          debug = false,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -705,6 +725,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
           parallel = false,
           parallelFeatures = true,
           verbose = true,
+          debug = false,
           Some(reportDir),
           List(ReportFormat.html, ReportFormat.junit),
           List(confFile),
@@ -752,6 +773,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
                              verbose: Boolean = GwenOptions.Defaults.verbose,
+                             debug: Boolean = GwenOptions.Defaults.debug,
                              reportDir: Option[File] = GwenOptions.Defaults.report,
                              reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
                              settingsFiles: List[File] = GwenOptions.Defaults.conf,
@@ -767,6 +789,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.parallel should be (parallel)
     options.parallelFeatures should be (parallelFeatures)
     options.verbose should be (verbose)
+    options.debug should be (debug)
     options.reportDir should be (reportDir)
     options.reportFormats should be (reportFormats)
     options.settingsFiles should be (settingsFiles)

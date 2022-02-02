@@ -16,6 +16,7 @@
 package gwen.core.report
 
 import gwen.core.BaseTest
+import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlReportGenerator
@@ -69,11 +70,12 @@ class ReportConfigTest extends BaseTest with Matchers  {
   
   "Report generator for all report formats" should "map correctly" in {
     val options = GwenOptions(reportDir = Some(new File("target/report")))
-    HtmlReportConfig.reportGenerator(options).isInstanceOf[HtmlReportGenerator] should be (true)
-    HtmlSlideshowConfig.reportGenerator(options).isInstanceOf[HtmlSlideshowGenerator] should be (true)
-    JUnitReportConfig.reportGenerator(options).isInstanceOf[JUnitReportGenerator] should be (true)
-    JsonReportConfig.reportGenerator(options).isInstanceOf[JsonReportGenerator] should be (true)
-    RPReportConfig.reportGenerator(options).isInstanceOf[RPReportGenerator] should be (true)
+    val info = new GwenInfo() { }
+    HtmlReportConfig.reportGenerator(options, info).isInstanceOf[HtmlReportGenerator] should be (true)
+    HtmlSlideshowConfig.reportGenerator(options, info).isInstanceOf[HtmlSlideshowGenerator] should be (true)
+    JUnitReportConfig.reportGenerator(options, info).isInstanceOf[JUnitReportGenerator] should be (true)
+    JsonReportConfig.reportGenerator(options, info).isInstanceOf[JsonReportGenerator] should be (true)
+    RPReportConfig.reportGenerator(options, info).isInstanceOf[RPReportGenerator] should be (true)
   }
   
 }

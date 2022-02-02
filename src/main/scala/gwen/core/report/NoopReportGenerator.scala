@@ -16,6 +16,7 @@
 
 package gwen.core.report
 
+import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
@@ -26,7 +27,7 @@ import java.io.File
 /**
   * Noop report generator.
   */
-abstract class NoopReportGenerator(config: ReportConfig, options: GwenOptions) extends ReportGenerator(config, options) with ReportFormatter {
+abstract class NoopReportGenerator(config: ReportConfig, options: GwenOptions, info: GwenInfo) extends ReportGenerator(config, options, info) with ReportFormatter {
   
   override def reportAttachments(spec: Spec, featureReportFile: File): Unit = {}
   override def reportMetaDetail(unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = Nil

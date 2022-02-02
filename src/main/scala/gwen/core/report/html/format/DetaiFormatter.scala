@@ -47,12 +47,13 @@ trait DetaiFormatter {
     * Formats the feature detail report as HTML.
     *
     * @param options     gwen command line options
+    * @param info gwen info
     * @param unit        the feature input
     * @param result      the feature result to report
     * @param breadcrumbs names and references for linking back to parent reports
     * @param reportFiles the target report files (head = detail, tail = metas)
     */
-  override def formatDetail(options: GwenOptions, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
+  override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val reportDir = HtmlReportConfig.reportDir(options).get
     val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
@@ -63,7 +64,7 @@ trait DetaiFormatter {
       html(lang := "en",
         formatHtmlHead(s"$title - $featureName", rootPath),
         body(
-          formatReportHeader(title, featureName, rootPath, this),
+          formatReportHeader(title, featureName, rootPath, info),
           DetailFormatter.formatDetailStatusBar(unit, result, rootPath, breadcrumbs, result.screenshots, true),
           formatDetailMetrics(result, result.summary),
           formatMetaResults(result.metaResults, reportFiles),

@@ -29,11 +29,11 @@ class ReportConfig(
   val name: String,
   val fileExtension: Option[String],
   val summaryFilename: Option[String],
-  val getGenerator: GwenOptions => ReportGenerator,
+  val getGenerator: (GwenOptions, GwenInfo) => ReportGenerator,
   val getReportDir: GwenOptions => Option[File],
   val getReportDetailFilename: (Spec, Option[DataRecord]) => Option[String]) {
 
-  def reportGenerator(options: GwenOptions): ReportGenerator = getGenerator(options)
+  def reportGenerator(options: GwenOptions, info: GwenInfo): ReportGenerator = getGenerator(options, info)
   def reportDir(options: GwenOptions): Option[File] = getReportDir(options)
   def getReportFilename(spec: Spec, dataRecord: Option[DataRecord]): Option[String] = getReportDetailFilename(spec, dataRecord)
   def createReportDir(options: GwenOptions, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = {

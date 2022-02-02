@@ -31,7 +31,7 @@ object JUnitReportConfig extends ReportConfig(
   "JUnit-XML", 
   Some("xml"), 
   None, 
-  options => new JUnitReportGenerator(options), 
+  (options, info) => new JUnitReportGenerator(options, info), 
   options => options.reportDir.map(dir => new File(dir, "junit")),
   (spec: Spec, dataRecord: Option[DataRecord]) => {
     val parentDirPath = spec.specFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")

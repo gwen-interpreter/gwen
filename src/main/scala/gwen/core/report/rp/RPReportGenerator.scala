@@ -17,6 +17,7 @@
 package gwen.core.report.rp
 
 import gwen.GwenInterpreter
+import gwen.core.GwenInfo
 import gwen.core.GwenOptions
 import gwen.core.eval.EvalContext
 import gwen.core.node.event.NodeEventDispatcher
@@ -30,13 +31,13 @@ import scala.util.chaining._
 /**
   * Generates reports in reoprt portal.
   */
-class RPReportGenerator(val options: GwenOptions) extends NoopReportGenerator(RPReportConfig, options) with ReportFormatter {
+class RPReportGenerator(val options: GwenOptions, info: GwenInfo) extends NoopReportGenerator(RPReportConfig, options, info) with ReportFormatter {
 
   private var rpReporter: Option[RPReporter] = None
 
   override def init(lifecycle: NodeEventDispatcher): Unit = { 
     if (!options.dryRun) {
-      val client = new RPClient(options)
+      val client = new RPClient(options, info)
       val reporter = new RPReporter(client)
       lifecycle.addListener(reporter)
       rpReporter = Some(reporter)
