@@ -139,10 +139,13 @@ trait StepEngine[T <: EvalContext] {
         translateCompositeStep(step) match {
           case Some(cLambda) =>
             translateStepDef(step.copy(withName = cLambda.doStep), ctx) match {
-              case None => sdLambda
-              case _ => cLambda
+              case None => 
+                sdLambda
+              case _ => 
+                cLambda
             }
-          case None => sdLambda
+          case None => 
+            sdLambda
         }
       } else {
         sdLambda
@@ -163,12 +166,9 @@ trait StepEngine[T <: EvalContext] {
           case scenario: Scenario if scenario.isStepDef && e.isInstanceOf[Errors.UndefinedStepException] =>
             ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
               case Some(stepDef) => 
-                step.copy(
-                  withEvalStatus =
-                    Failed(step.evalStatus.duration.toNanos,
-                      new Errors.RecursiveStepDefException(stepDef))
-                )
-              case _ => step
+                throw new Errors.RecursiveStepDefException(stepDef)
+              case _ => 
+                throw e
             }
           case _ =>
             throw e
