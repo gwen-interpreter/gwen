@@ -103,7 +103,10 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = {
     if (!step.isExpanded(parent)) {
       val keyword = step.keyword
-      val keywordMaxLength = step.siblingsIn(parent).map(_.asInstanceOf[Step].keyword.length).max
+      val keywordMaxLength = step.siblingsIn(parent) match { 
+        case Nil => keyword.size
+        case siblings => siblings.map(_.asInstanceOf[Step].keyword.length).max
+      }
       val indent = indentFor(step)
       out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${step.name}")
       if (step.table.nonEmpty) {
