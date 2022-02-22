@@ -108,7 +108,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
         case siblings => siblings.map(_.asInstanceOf[Step].keyword.length).max
       }
       val indent = indentFor(step)
-      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${step.name}")
+      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (step.printableTags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${step.printableTags.map(_.toString).mkString(" ")} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
       if (step.table.nonEmpty) {
         out.println()
         printTable(s"$indent ${" " * keywordMaxLength}", step.table, out)

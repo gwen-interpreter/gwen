@@ -223,7 +223,8 @@ class RPReporter(rpClient: RPClient)
     val breadcrumbs = breadcrumbAtts(step.sourceRef, callChain.steps, scopes)
     val atts = if (breadcrumbs.nonEmpty) { breadcrumbs ++ Map("step" -> step.name) } else breadcrumbs
     val params = step.cumulativeParams
-    rpClient.startItem(startTime, Some(parent), step, nodePath, name, desc, Nil, atts, params, inlined)
+    val tags = filterTags(step.printableTags)
+    rpClient.startItem(startTime, Some(parent), step, nodePath, name, desc, tags, atts, params, inlined)
     step.docString foreach { docString =>
       rpClient.sendItemLog(LogLevel.INFO, Formatting.formatDocString(docString))
     }

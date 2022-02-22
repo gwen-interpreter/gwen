@@ -84,7 +84,7 @@ trait StepEngine[T <: EvalContext] {
 
   private def evaluateOrTransitionStep(parent: GwenNode, step: Step, acc: List[Step], ctx: T): Step = {
     EvalStatus(acc.map(_.evalStatus)) match {
-      case status @ Failed(_, error) =>
+      case status @ Failed(_, error) if !step.isFinally =>
         ctx.evaluate(evaluateStep(parent, step, ctx)) {
           val isAssertionError = status.isAssertionError
           val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
@@ -102,7 +102,7 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
-    val continue = if (step.breakpoint && ctx.options.debug) {
+    val continue = if (step.isBreakpoint && ctx.options.debug) {
        new GwenREPL(engine, ctx).debug(parent, step)
     } else {
       true
@@ -222,6 +222,8 @@ trait StepEngine[T <: EvalContext] {
                 }
                 logger.error(failure.error.getMessage)
               }
+              ctx.topScope.set("gwen.eval.status.keyword", failure.keyword.toString)
+              ctx.topScope.set("gwen.eval.status.message", failure.error.getMessage)
               ctx.addErrorAttachments(step, failure)
             } else {
               step

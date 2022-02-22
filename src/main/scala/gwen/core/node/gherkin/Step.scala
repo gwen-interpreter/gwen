@@ -45,7 +45,7 @@ import gwen.core.state.EnvState
   * @param evalStatus the evaluation status of the step
   * @param params optional step parameters
   * @param callerParams optional caller parameters
-  * @param breakpoint true to add a breakpoint on this step; false otherwise
+  * @param tags list of optional tags/annotations
   */
 case class Step(
     sourceRef: Option[SourceRef],
@@ -58,7 +58,7 @@ case class Step(
     override val evalStatus: EvalStatus,
     override val params: List[(String, String)],
     override val callerParams: List[(String, String)],
-    breakpoint: Boolean) extends GherkinNode {
+    tags: List[Tag]) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Step
 
@@ -107,6 +107,7 @@ case class Step(
   }
 
   def hasDualColumnTable: Boolean = table.nonEmpty && table.head._2.size == 2
+  def printableTags: List[Tag] = tags.filter(_.name.toLowerCase != ReservedTags.Breakpoint.toString.toLowerCase)
 
   /** Returns a string representation of this step. */
   override def toString: String = s"$keyword ${expression}"
@@ -122,8 +123,8 @@ case class Step(
       withEvalStatus: EvalStatus = evalStatus,
       withParams: List[(String, String)] = params,
       withCallerParams: List[(String, String)] = callerParams,
-      withBreakpoint: Boolean): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams, withBreakpoint)
+      withTags: List[Tag]): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams, withTags)
   }
 
   /**
@@ -207,6 +208,7 @@ case class Step(
       case _ => this
     }
   }
+
   def cumulativeParams: List[(String, String)] = {
     val names = params map { case (n, _) => n }
     params ++ (
@@ -215,6 +217,9 @@ case class Step(
       }
     )
   }
+
+  def isBreakpoint: Boolean = tags.exists(_.name.toLowerCase == ReservedTags.Breakpoint.toString.toLowerCase)
+  def isFinally: Boolean = tags.exists(_.name.toLowerCase == ReservedTags.Finally.toString.toLowerCase)
 
 }
 
@@ -228,14 +233,15 @@ object Step {
     val docString = Option(step.getDocString()).filter(_.getContent().trim.length > 0) map { ds =>
       (Long2long(ds.getLocation.getLine), ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
     }
-    val (name, breakpoint) = step.getText.trim match {
-      case r"""(?i)@Breakpoint (.+?)$name""" => (name, true)
-      case _ => (step.getText, false)
+    val (name, tagList): (String, List[Tag]) = step.getText.trim match {
+      case r"""(?i)((?:@\w+\s+)+)$ts(.*)$name""" => 
+        (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
+      case _ => (step.getText, Nil)
     }
     Step(
       Option(step.getLocation).map(loc => SourceRef(file, loc)),
       step.getKeyword.trim, 
-      name, 
+      name.trim, 
       Nil, 
       None, 
       dataTable, 
@@ -243,7 +249,7 @@ object Step {
       Pending,
       Nil,
       Nil,
-      breakpoint)
+      tagList)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {
     case b: Background => b.steps.flatMap(_.errorTrails)
@@ -253,4 +259,15 @@ object Step {
     case s: Step => s.errorTrails
     case _ => Nil
   }
+  
+  def validate(steps: List[Step]): List[Step] = {
+    val lastStep = steps.last
+    steps.filter(_.isFinally) foreach {step => 
+      if (step != lastStep) {
+        Errors.illegalStepAnnotationError(step, "@Finally permitted only in last step of parent node")
+      }
+    }
+    steps
+  }
+  
 }

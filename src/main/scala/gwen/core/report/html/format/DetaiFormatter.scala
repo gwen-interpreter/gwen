@@ -89,7 +89,7 @@ trait DetaiFormatter {
     val tags = result.spec.feature.tags
     div(`class` := "panel panel-default",
       div(`class` := "panel-heading", style := "padding-right: 20px; padding-bottom: 0px; border-style: none;",
-        formatTags(tags),
+        formatTags(tags, false),
         for {
           opt <- Option(language != "en")
           if opt
@@ -225,7 +225,7 @@ trait DetaiFormatter {
           )
         )
       },
-      formatTags(tags),
+      formatTags(tags, false),
       span(`class` := s"label label-${cssStatus(status)}",
         if (scenario.isForEach) "ForEach" else scenario.keyword
       ),
@@ -449,6 +449,7 @@ trait DetaiFormatter {
           )
         ),
         " ",
+        if (step.printableTags.nonEmpty) formatTags(step.printableTags, true) else "",
         if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" \u00a0 "),
         formatParams(step.params, status),
@@ -663,26 +664,34 @@ trait DetaiFormatter {
 
   private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
       
-  private def formatTags(tags: List[gwen.core.node.gherkin.Tag]): Option[TypedTag[String]] = {
+  private def formatTags(tags: List[gwen.core.node.gherkin.Tag], inline: Boolean): Option[TypedTag[String]] = {
     if (tags.nonEmpty) {
-      val tagsByLine = tags.groupBy(_.sourceRef.map(_.line).getOrElse(0L))
-      val lines = tags.map(_.sourceRef.map(_.line).getOrElse(0L)).distinct.sorted
       Some(
         span(`class` := "grayed",
-          p(
-            small(
-              raw(
-                lines map { line => 
-                  tagsByLine(line) map { tag => s"${escapeHtml(tag.toString)}" } mkString " "
-                } mkString "<br>"
-              )
+          if (inline) {
+            formatTagLines(tags)
+          } else {
+            p(
+              formatTagLines(tags)
             )
-          )
+          }
         )
       )
     } else {
       None
     }
+  }
+
+  private def formatTagLines(tags: List[gwen.core.node.gherkin.Tag]): TypedTag[String] = {
+    val tagsByLine = tags.groupBy(_.sourceRef.map(_.line).getOrElse(0L))
+    val lines = tags.map(_.sourceRef.map(_.line).getOrElse(0L)).distinct.sorted
+    small(
+      raw(
+        lines map { line => 
+          tagsByLine(line) map { tag => s"${escapeHtml(tag.toString)}" } mkString " "
+        } mkString "<br>"
+      )
+    )
   }
   
   private def formatDescriptionLines(description: List[String], status: Option[StatusKeyword]): Option[Seq[TypedTag[String]]] = {

@@ -47,6 +47,8 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       ctx.topScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
     }
     ctx.topScope.set("gwen.feature.name", spec.feature.name)
+    ctx.topScope.set("gwen.eval.status.keyword", StatusKeyword.Pending.toString)
+    ctx.topScope.set("gwen.eval.status.message", "")
     Dialect.withLanguage(spec.feature.language) {
       val nspec = normaliseSpec(spec, dataRecord)
       evaluateSpec(parent, nspec, metaResults, ctx)

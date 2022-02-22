@@ -1,9 +1,16 @@
-3.2.1
+3.3.0
 =====
-Feb 21, 2022
+Feb 22, 2022
 - Remove redundant reference to data file record number in html reports
 - Report undefined step errors in StepDefs
 - Handle breakpoints entered in REPL
+- Add @Finally step annotation
+  - Steps with this annotation will execute regardless of current evauation status
+- Add implicit attriburtes
+  - `gwen.eval.status.keyword`
+    - The current evaluation status
+  - `gwen.eval.status.message` 
+    - The current evaluation status message (if failed or sustained, blank otherwise)
 
 3.2.0
 =====

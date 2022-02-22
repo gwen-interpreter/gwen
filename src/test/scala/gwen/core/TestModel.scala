@@ -43,28 +43,28 @@ trait TestModel {
 
   object Step {
     def apply(name: String, docString: Option[String]): Step = {
-      new Step(None, StepKeyword.Given.toString, name, Nil, None, Nil, docString.map(ds => (1, ds, None)), Pending, Nil, Nil, false)
+      new Step(None, StepKeyword.Given.toString, name, Nil, None, Nil, docString.map(ds => (1, ds, None)), Pending, Nil, Nil, Nil)
     }
     def apply(keyword: String, name: String): Step = {
-      new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, false)
+      new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, Nil)
     }
     def apply(keyword: String, name: String, evalStatus: EvalStatus): Step = {
-      new Step(None, keyword, name, Nil, None, Nil, None, evalStatus, Nil, Nil, false)
+      new Step(None, keyword, name, Nil, None, Nil, None, evalStatus, Nil, Nil, Nil)
     }
     def apply(line: Int, keyword: String, name: String): Step = {
-      new Step(Some(SourceRef(None, line)), keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, false)
+      new Step(Some(SourceRef(None, line)), keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, Nil)
     }
     def apply(step: Step, sourceRef: SourceRef): Step = {
-      new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending, Nil, Nil, false)
+      new Step(Some(sourceRef), step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, Pending, Nil, Nil, Nil)
     }
     def apply(step: Step, keyword: String, name: String, evalStatus: EvalStatus): Step = {
-      new Step(step.sourceRef, keyword, name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil, false)
+      new Step(step.sourceRef, keyword, name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil, Nil)
     }
     def apply(step: Step, stepDef: Scenario, attachments: List[(String, File)]): Step = {
-      new Step(step.sourceRef, step.keyword, step.name, attachments, Some(stepDef), step.table, step.docString, stepDef.evalStatus, Nil, Nil, false)
+      new Step(step.sourceRef, step.keyword, step.name, attachments, Some(stepDef), step.table, step.docString, stepDef.evalStatus, Nil, Nil, Nil)
     }
     def apply(step: Step, evalStatus: EvalStatus): Step = {
-      new Step(step.sourceRef, step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil, false)
+      new Step(step.sourceRef, step.keyword, step.name, step.attachments, step.stepDef, step.table, step.docString, evalStatus, Nil, Nil, Nil)
     }
   }
   

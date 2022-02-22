@@ -50,6 +50,7 @@ object Errors {
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
   def illegalSettingError(name: String, value: String, validValues: String) = throw new IllegalSettingException(name, value, validValues)
+  def illegalStepAnnotationError(step: Step, msg: String) = throw new IllegalStepAnnotationException(step, msg)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
@@ -139,6 +140,9 @@ object Errors {
 
   /** Thrown when a property file setting contains an invalid or unspported value. */
   class IllegalSettingException(name: String, value: String, validValues: String) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: $validValues)")
+
+  /** Thrown when an annotation is found in an illegal step position. */
+  class IllegalStepAnnotationException(step: Step, msg: String) extends GwenException(s"Invalid or illegal step annotation${at(step.sourceRef)}: $msg")
   
   /** Thrown when a property setting fails to load. */
   class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)

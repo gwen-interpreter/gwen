@@ -67,16 +67,18 @@ trait SpecNormaliser extends BehaviorRules {
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType): Unit = {
     background foreach { bg =>
       checkBackgroundRules(bg, specType)
+      Step.validate(bg.steps)
     }
     scenarios foreach { s =>
       checkScenarioRules(s, specType)
+      Step.validate(s.steps)
     }
   }
 
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, false)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, Nil)
     }
     val description = List(s"Input data file: ${dataRecord.dataFile.getPath}")
     val dataBackground = background match {
