@@ -1,3 +1,8 @@
+3.3.2
+=====
+Feb 25, 2022
+- Put gwen REPL .history file in output directory instead of root
+
 3.3.1
 =====
 Feb 25, 2022

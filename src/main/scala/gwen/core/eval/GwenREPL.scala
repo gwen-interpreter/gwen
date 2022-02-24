@@ -48,7 +48,8 @@ import java.io.PrintWriter
   */
 class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
-  private val history = new FileHistory(new File(".history").getAbsoluteFile)
+  private val outDir = GwenSettings.`gwen.outDir`
+  private val history = new FileHistory(new File(outDir, ".history").getAbsoluteFile)
 
   private var paste: Option[List[String]] = None
   private var pastingDocString: Boolean = false
