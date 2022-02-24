@@ -48,7 +48,7 @@ trait SlideshowFormatter extends ReportFormatter {
     */
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
     val screenshots = result.screenshots
-    if (screenshots.isEmpty || result.isMeta) None
+    if (!GwenSettings.`gwen.report.slideshow.create` || screenshots.isEmpty || result.isMeta) None
     else {
       val reportDir = HtmlSlideshowConfig.reportDir(options).get
       val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
