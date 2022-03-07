@@ -432,7 +432,7 @@ trait DetaiFormatter {
     val status = evalStatus.keyword
     val stepDef = step.stepDef
     li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)} ${if (evalStatus.isDisabled) "text-muted" else ""}",
+      div(`class` := s"bg-${cssStatus(status)} ${if (evalStatus.isDisabled || evalStatus.isAbstained) "text-muted" else ""}",
         span(`class` := "pull-right",
           small(
             durationOrStatus(step.evalStatus).toString

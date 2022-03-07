@@ -96,7 +96,7 @@ case class Spec(
       case _ =>
         val totalStatus = EvalStatus((metaSpecs.flatMap(_.steps) ++ steps).map(_.evalStatus))
         specStatus match {
-          case Passed(_) => Passed(totalStatus.nanos)
+          case _: Passed => Passed(totalStatus.nanos)
           case _ => totalStatus
         }
     }

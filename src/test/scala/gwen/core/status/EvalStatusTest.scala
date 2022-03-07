@@ -528,6 +528,7 @@ Background: The tester
     EvalStatus(List(Disabled, Passed(10), Passed(10))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10), Disabled, Passed(10))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10), Passed(10), Disabled)).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Passed(10, true))).keyword should be (StatusKeyword.Passed)
   }
 
   "Passed statuses with some Disabled" should "be Passed" in {
@@ -536,10 +537,22 @@ Background: The tester
     EvalStatus(List(Passed(10), Passed(10), Disabled, Disabled, Disabled)).keyword should be (StatusKeyword.Passed)
   }
 
+  "Passed statuses with some Abstained" should "be Passed" in {
+    EvalStatus(List(Passed(10, true), Passed(10), Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Disabled, Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Passed(10, true), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+  }
+
   "All disabled statuses" should "be Skipped" in {
     EvalStatus(List(Disabled)).keyword should be (StatusKeyword.Skipped)
     EvalStatus(List(Disabled, Disabled)).keyword should be (StatusKeyword.Skipped)
     EvalStatus(List(Disabled, Disabled, Disabled)).keyword should be (StatusKeyword.Skipped)
+  }
+
+  "All abstained statuses" should "be Passed" in {
+    EvalStatus(List(Passed(10, true))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10, true), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
   }
 
 }

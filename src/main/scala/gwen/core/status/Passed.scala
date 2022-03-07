@@ -16,13 +16,22 @@
 
 package gwen.core.status
 
+object Passed {
+  
+  def apply(nanos: Long): Passed = Passed(nanos, false)
+
+}
+
 /**
   * Defines an Passed status.
   * 
   * @param nanos the duration in nanoseconds
+  * @param abstrained true if abstained, false otherwise
   */
-case class Passed(nanos: Long) extends EvalStatus {
+case class Passed(nanos: Long, abstained: Boolean) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Passed
   override def exitCode = 0
   override def emoticon = "[:)]"
+
+  override def isAbstained: Boolean = abstained
 }

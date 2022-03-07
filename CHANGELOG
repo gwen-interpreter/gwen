@@ -2,6 +2,8 @@
 =====
 Mar 7, 2022
 - Add support for negated if conditions
+- Introduce abstained status for steps that are skipped due to false if conditions
+  - Greyed out in HTML reports
 
 3.3.2
 =====

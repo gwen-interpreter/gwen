@@ -69,7 +69,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
   private [format] def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
-      case Passed(nanos) if result.sustainedCount > 0 => Sustained(nanos, null)
+      case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
     div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
@@ -131,7 +131,8 @@ object HtmlReportFormatter {
     StatusKeyword.Skipped -> "warning",
     StatusKeyword.Pending -> "info",
     StatusKeyword.Loaded -> "success",
-    StatusKeyword.Disabled -> "default")
+    StatusKeyword.Disabled -> "default"
+  )
 
   private [format] val linkColor = Map(
     StatusKeyword.Passed -> "#3c763d",

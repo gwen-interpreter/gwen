@@ -37,7 +37,7 @@ class DocStringsTest extends BaseTest {
     )
       
     interpreter.run(options, None) match {
-      case Passed(_) => // excellent :)
+      case _: Passed => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }
@@ -54,7 +54,7 @@ class DocStringsTest extends BaseTest {
     )
       
     interpreter.run(options, None) match {
-      case Passed(_) => // excellent :)
+      case _: Passed => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
       case _ => fail("evaluation expected but got noop")
     }

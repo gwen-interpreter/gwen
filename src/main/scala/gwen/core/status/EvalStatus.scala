@@ -39,6 +39,7 @@ trait EvalStatus {
   def isPending: Boolean = keyword == StatusKeyword.Pending
   def isLoaded: Boolean = keyword == StatusKeyword.Loaded
   def isDisabled: Boolean = keyword == StatusKeyword.Disabled
+  def isAbstained: Boolean = false
 
   def isEvaluated: Boolean = isPassed || isDisabled || isError
   def isError: Boolean = isFailed || isSustained
@@ -104,7 +105,7 @@ object EvalStatus {
         case None =>
           fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
             case Some(sustained) =>
-              if (ignoreSustained) Passed(duration.toNanos)
+              if (ignoreSustained) Passed(duration.toNanos, false)
               else Sustained(duration.toNanos, sustained.error)
             case None =>
               if (fStatuses.forall(_.isLoaded)) {
@@ -112,7 +113,7 @@ object EvalStatus {
               } else {
                 fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
-                    case Passed(_) => Passed(duration.toNanos)
+                    case _: Passed => Passed(duration.toNanos, false)
                     case Skipped => lastStatus
                     case _ => Pending
                   }
