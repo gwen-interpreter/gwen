@@ -30,35 +30,48 @@ import gwen.core.status._
 import gwen.core.eval.binding.Binding
 
 import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
-class IfCondition[T <: EvalContext](doStep: String, val condition: String, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
+class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
-    val javascript = getBinding(ctx).resolve()
+    val (cond, javascript, isNegated) = {
+      if (negate) {
+        Try(getBinding(s"not $condition", ctx).resolve()) match { 
+          case Success(js) => (s"not $condition", js, false)
+          case Failure(_) => (condition, getBinding(condition, ctx).resolve(), true)
+        }
+      } else {
+        (condition, getBinding(condition, ctx).resolve(), false)
+      }
+    }
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
     val iStep = step.copy(withEvalStatus = Pending)
-    val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.If), Tag(ReservedTags.StepDef))
-    val iStepDef = Scenario(None, tags, ReservedTags.If.toString, condition, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
+    val ifTag = Tag(ReservedTags.If)
+    val tags = List(Tag(ReservedTags.Synthetic), ifTag, Tag(ReservedTags.StepDef))
+    val iStepDef = Scenario(None, tags, ifTag.toString, cond, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {
-      val satisfied = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
+      val boolResult = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
+      val satisfied = if (isNegated) !boolResult else boolResult
       if (satisfied) {
-        logger.info(s"Processing conditional step ($condition = true): ${step.keyword} $doStep")
+        logger.info(s"Processing conditional step (${if (isNegated) "not " else ""}$cond = true): ${step.keyword} $doStep")
         sdCall()
       } else {
-        logger.info(s"Skipping conditional step ($condition = false): ${step.keyword} $doStep")
+        logger.info(s"Skipping conditional step (${if (isNegated) "not " else ""}$cond = false): ${step.keyword} $doStep")
         step.copy(withEvalStatus = Passed(0))
       }
     }
   }
 
-  private def getBinding(ctx: T): JavaScriptBinding[T] = {
-    JavaScriptBinding(condition, ctx)
+  private def getBinding(cond: String, ctx: T): JavaScriptBinding[T] = {
+    JavaScriptBinding(cond, ctx)
   }
 
 }

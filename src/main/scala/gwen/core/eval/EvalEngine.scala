@@ -65,8 +65,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new ForEachTableRecord(doStep, this))
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" =>
         Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
-      case r"""(.+?)$doStep if (.+?)$$$condition""" if condition.count(_ == '"') % 2 == 0 =>
-        Some(new IfCondition(doStep, condition, this))
+      case r"""(.+?)$doStep if( not)?$negation (.+?)$$$condition""" if condition.count(_ == '"') % 2 == 0 =>
+        Some(new IfCondition(doStep, condition, Option(negation).isDefined, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if condition.count(_ == '"') % 2 == 0 =>
         Some(new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" if condition.count(_ == '"') % 2 == 0 =>
