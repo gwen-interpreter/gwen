@@ -16,6 +16,8 @@
 
 package gwen.core.status
 
+import gwen.core._
+
 /**
   * Defines a failed status.
   * 
@@ -28,6 +30,12 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override def emoticon = "[:(]"
   override def cause = Option(error.getCause)
   override def message: String = {
-    cause.map(_.getMessage).orElse(Option(error.getMessage)).getOrElse(error.getClass.getSimpleName)
+    cause.map(getErrorMessage).orElse(Option(getErrorMessage(error))).getOrElse(error.getClass.getSimpleName)
+  }
+  private def getErrorMessage(err: Throwable): String = {
+    err.getMessage match { 
+      case r"""assertion failed: "(.+?)$msg"""" if err.isInstanceOf[AssertionError] => msg // custom assertion message
+      case msg => msg
+    }
   }
 }

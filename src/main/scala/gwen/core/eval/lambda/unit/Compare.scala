@@ -27,7 +27,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStep[T] {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -46,9 +46,9 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
-            assert(assertion, s"Expected $binding to ${if(negate) "not " else ""}$op '$expected' but got '$actualValue'")
+            assert(assertion, message getOrElse s"Expected $binding to ${if(negate) "not " else ""}$op '$expected' but got '$actualValue'")
           case Failure(error) =>
-            assert(assertion = false, error.getMessage)
+            assert(assertion = false, message getOrElse error.getMessage)
         }
       }
     }

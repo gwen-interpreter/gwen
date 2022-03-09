@@ -223,7 +223,7 @@ trait StepEngine[T <: EvalContext] {
                 logger.error(failure.error.getMessage)
               }
               ctx.topScope.set("gwen.eval.status.keyword", failure.keyword.toString)
-              ctx.topScope.set("gwen.eval.status.message", failure.error.getMessage)
+              ctx.topScope.set("gwen.eval.status.message", failure.message)
               ctx.addErrorAttachments(step, failure)
             } else {
               step

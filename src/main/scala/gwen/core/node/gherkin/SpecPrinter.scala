@@ -198,8 +198,8 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
 
   private def printStatus(indent: String, status: EvalStatus, withMessage: Boolean, out: PrintWriter): Unit = {
     status match {
-      case Failed(_, error) => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) ansi.reset else ""}")
-      case Sustained(_, error) => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${error.getMessage}" else ""}${if (colors) ansi.reset else ""}")
+      case _: Failed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${status.message}" else ""}${if (colors) ansi.reset else ""}")
+      case _: Sustained => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${status.message}" else ""}${if (colors) ansi.reset else ""}")
       case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
       case Loaded => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
       case Pending => // noop

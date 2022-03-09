@@ -1,3 +1,13 @@
+3.5.0
+=====
+Mar 9, 2022
+- Add support for custom messages to all assertion steps using `: "<message>"` suffix.
+  - Example: 
+    - Without custom message (the standard assertion message will be reported if assertion fails): 
+      - `Then x should be y`
+    - With custom message: 
+      - `Then x should be y: "This custom message will be reported if assertion fails"`
+
 3.4.0
 =====
 Mar 7, 2022

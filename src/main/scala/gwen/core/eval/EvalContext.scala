@@ -139,7 +139,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
 
   def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {
-      case ComparisonOperator.be      => expected == actual
+      case ComparisonOperator.be => expected == actual
       case ComparisonOperator.contain => actual.contains(expected)
       case ComparisonOperator.`start with` => actual.startsWith(expected)
       case ComparisonOperator.`end with` => actual.endsWith(expected)

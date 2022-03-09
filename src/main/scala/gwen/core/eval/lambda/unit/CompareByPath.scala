@@ -30,7 +30,7 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStep[T] {
+class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -54,9 +54,9 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
         }
         result match {
           case Success(assertion) =>
-            assert(assertion, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
+            assert(assertion, message getOrElse s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected' but got '$actual'")
           case Failure(error) =>
-            assert(assertion = false, error.getMessage)
+            assert(assertion = false, message getOrElse error.getMessage)
         }
       }
     }

@@ -25,13 +25,13 @@ import gwen.core.behavior.BehaviorType
 import scala.util.chaining._
 import scala.util.Try
 
-class IsAbsent[T <: EvalContext](source: String) extends UnitStep[T] {
+class IsAbsent[T <: EvalContext](source: String, message: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       ctx.perform {
-        assert(Try(ctx.getBoundReferenceValue(source)).isFailure, s"Expected $source to be absent")
+        assert(Try(ctx.getBoundReferenceValue(source)).isFailure, message getOrElse s"Expected $source to be absent")
       }
     }
   }
