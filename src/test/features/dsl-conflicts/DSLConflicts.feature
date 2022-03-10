@@ -41,6 +41,12 @@ Feature: DSL conflicts
      When I capture value
      Then value should be "${value}"
 
+  Scenario: Test if keyword conflict in string literal before if condition
+    Given precondition is defined by js "true"
+    Given value2 is "This contains an if literal if" if precondition
+     When I capture value
+     Then value2 should be "${value2}"
+
   Scenario: Test delimited string
     Given strings is "some string1, some string2, some string3"
      When some function "${str}" for each str in strings delimited by ","

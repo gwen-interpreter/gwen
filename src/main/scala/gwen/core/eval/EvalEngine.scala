@@ -63,9 +63,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     step.expression match {
       case r"""(.+?)$doStep for each data record""" =>
         Some(new ForEachTableRecord(doStep, this))
-      case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$$$delimiter""" =>
+      case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$delimiter""" =>
         Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
-      case r"""(.+?)$doStep if( not)?$negation (.+?)$$$condition""" if condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if condition.count(_ == '"') % 2 == 0 =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if condition.count(_ == '"') % 2 == 0 =>
         Some(new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this))
@@ -78,7 +78,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" && condition.count(_ == '"') % 2 == 0 =>
         Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$$$condition""" if (doStep != "I wait" && condition.count(_ == '"') % 2 == 0 && !step.expression.matches(""".*".*(until|while).*".*""")) =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && condition.count(_ == '"') % 2 == 0 && !step.expression.matches(""".*".*(until|while).*".*""")) =>
         Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, defaultRepeatTimeout(defaultRepeatDelay), this))
       case _ =>
         None
@@ -93,55 +93,55 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     */
   override def translateStep(step: Step): UnitStep[T] = {
     step.expression match {
-      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$$$value""" =>
+      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$value""" =>
         new SetProperty(name, value)
       case r"""I reset my (.+?)$name (?:property|setting)""" =>
         new ClearProperty(name)
-      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$$$value""" =>
+      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$value""" =>
         new BindAttribute(attribute, step.orDocString(value))
       case r"""I wait (\d+)$duration second(?:s?)""" =>
         new Sleep(duration.toInt)
       case r"""I execute system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
         new ExecuteSysProc(systemproc, Some(delimiter))
-      case r"""I execute system process "(.+?)"$$$systemproc""" =>
+      case r"""I execute system process "(.+?)"$systemproc""" =>
         new ExecuteSysProc(step.orDocString(systemproc), None)
       case r"""I execute a unix system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
         new ExecuteSysProcUnix(systemproc, Some(delimiter))
-      case r"""I execute a unix system process "(.+?)"$$$systemproc""" =>
+      case r"""I execute a unix system process "(.+?)"$systemproc""" =>
         new ExecuteSysProcUnix(step.orDocString(systemproc), None)
       case r"""I execute (?:javascript|js) "(.+?)$javascript"""" =>
         new ExecuteJS(step.orDocString(javascript))
-      case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$$$expression""" =>
+      case r"""I capture (.+?)$attribute by (?:javascript|js) "(.+?)"$expression""" =>
         new CaptureByJS(attribute, step.orDocString(expression))
-      case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$$$name""" =>
+      case r"""I capture the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByXPath(name, expression, source, XMLNodeType.valueOf(targetType))
-      case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$$$name""" =>
+      case r"""I capture the text in (.+?)$source by regex "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByRegex(name, expression, source)
-      case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$$$name""" =>
+      case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByJsonPath(name, expression, source)
-      case r"""I capture (.+?)$source as (.+?)$$$attribute""" =>
+      case r"""I capture (.+?)$source as (.+?)$attribute""" =>
         new Capture(attribute, source)
-      case r"""I capture (.+?)$$$attribute""" =>
+      case r"""I capture (.+?)$attribute""" =>
         new Capture(attribute, attribute)
-      case r"""I base64 decode (.+?)$attribute as (.+?)$$$name""" =>
+      case r"""I base64 decode (.+?)$attribute as (.+?)$name""" =>
         new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
         new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), Some(delimiter))
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None)
-      case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$expression""" =>
         new BindAsRegex(attribute, step.orDocString(expression), source)
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$$$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$expression""" =>
         new BindAsJsonPath(attribute, step.orDocString(expression), source)
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
         new BindAsSQL(attribute, dbName, selectStmt)
-      case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$$$selectStmt""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
         new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
-      case r"""I update the (.+?)$dbName database by sql "(.+?)"$$$updateStmt""" =>
+      case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression(?:: )?(".+")?$message""" =>
         new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, Option(message))
@@ -149,9 +149,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, Option(message))
       case r"""(.+?)$attribute should be absent(?:: )?(".+")?$message""" =>
         new IsAbsent(attribute, Option(message))
-      case r"""I attach "(.+?)"$filepath as "(.+?)"$$$name""" =>
+      case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(name, filepath)
-      case r"""I attach "(.+?)"$filepath as (.+?)$$$name""" =>
+      case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>
         new AttachFile(name, filepath)
       case _ =>
         Errors.undefinedStepError(step)
