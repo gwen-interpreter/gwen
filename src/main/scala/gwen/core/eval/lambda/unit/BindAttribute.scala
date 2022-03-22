@@ -17,6 +17,7 @@
 package gwen.core.eval.lambda.unit
 
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.JavaScriptBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
@@ -29,7 +30,12 @@ class BindAttribute[T <: EvalContext](target: String, value: String) extends Uni
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      ctx.topScope.set(target, value)
+      value match {
+        case "true" | "false" => 
+           JavaScriptBinding.bind(target, value, ctx)
+        case _ =>
+          ctx.topScope.set(target, value)
+      }
     }
   }
 

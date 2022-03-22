@@ -44,12 +44,12 @@ Feature: If Conditionals
 
    Scenario: Do perform this (negated)
     Given the called step is "none"
-      And this condition is defined by javascript "true"
+      And this condition is "true"
      When I perform this if not this condition
      Then the called step should be "none"
 
    Scenario: Do not perform this (negated)
     Given the called step is "none"
-      And this condition is defined by javascript "false"
+      And this condition is "false"
      When I perform this if not this condition
      Then the called step should be "this step"
