@@ -2,8 +2,13 @@ Feature: If Conditionals
 
   @StepDef
   @Action
+  Scenario: no operation
+
+  @StepDef
+  @Action
   Scenario: I perform this
     Given the called step is "this step"
+     When no operation
 
   @StepDef
   @Action

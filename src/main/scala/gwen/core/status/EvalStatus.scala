@@ -114,7 +114,9 @@ object EvalStatus {
                 fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
                     case _: Passed => Passed(duration.toNanos, false)
-                    case Skipped => lastStatus
+                    case Skipped => 
+                      if (fStatuses.forall(_.isSkipped)) Skipped
+                      else apply(statuses.filter(!_.isSkipped), ignoreSustained)
                     case _ => Pending
                   }
                   case None => Pending

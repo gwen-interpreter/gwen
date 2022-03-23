@@ -261,10 +261,11 @@ object Step {
   }
   
   def validate(steps: List[Step]): List[Step] = {
-    val lastStep = steps.last
-    steps.filter(_.isFinally) foreach {step => 
-      if (step != lastStep) {
-        Errors.illegalStepAnnotationError(step, "@Finally permitted only in last step of parent node")
+    steps.lastOption foreach { lastStep =>
+      steps.filter(_.isFinally) foreach { step => 
+        if (step != lastStep) {
+          Errors.illegalStepAnnotationError(step, "@Finally permitted only in last step of parent node")
+        }
       }
     }
     steps
