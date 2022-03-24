@@ -100,7 +100,7 @@ object SlideshowFormatter {
         div(`class` := "modal-dialog", style := "width: 60%;",
           div(`class` := "modal-content",
             div(`class` := "modal-body",
-              a(href := s"${HtmlSlideshowConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowConfig.fileExtension.get}", id := "full-screen",
+              a(`class` := s"inverted", href := s"${HtmlSlideshowConfig.getReportDetailFilename(spec, unit.dataRecord).get}.${HtmlSlideshowConfig.fileExtension.get}", id := "full-screen",
                 "Full Screen"
               ),
               a(href := "#", title := "Close",

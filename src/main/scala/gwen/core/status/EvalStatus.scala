@@ -97,7 +97,7 @@ object EvalStatus {
     * @param ignoreSustained true to ignore sustained errors, false otherwise
     */
   def apply(statuses: List[EvalStatus], ignoreSustained: Boolean): EvalStatus = {
-    val fStatuses = statuses.filter(!_.isDisabled)
+    val fStatuses = statuses.filter(s => !s.isDisabled && !s.isSkipped)
     if (fStatuses.nonEmpty) {
       val duration = DurationOps.sum(fStatuses.map(_.duration))
       fStatuses.collectFirst { case failed @ Failed(_, _) => failed } match {
@@ -114,9 +114,6 @@ object EvalStatus {
                 fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
                     case _: Passed => Passed(duration.toNanos, false)
-                    case Skipped => 
-                      if (fStatuses.forall(_.isSkipped)) Skipped
-                      else apply(statuses.filter(!_.isSkipped), ignoreSustained)
                     case _ => Pending
                   }
                   case None => Pending

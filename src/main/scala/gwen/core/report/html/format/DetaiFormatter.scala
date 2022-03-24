@@ -141,7 +141,7 @@ trait DetaiFormatter {
             span(`class` := s"label label-${cssStatus(status)}",
               "Meta"
             ),
-            a(`class` := s"text-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := "#meta", attr("aria-expanded") := "true", attr("aria-controls") := "meta",
+            a(`class` := s"inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := "#meta", attr("aria-expanded") := "true", attr("aria-controls") := "meta",
               s"$count meta feature${if (count > 1) "s" else ""}"
             ),
             span(`class` := "pull-right",
@@ -274,7 +274,7 @@ trait DetaiFormatter {
             )
           ),
           if (!background.evalStatus.isFailed) {
-            a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${parent.uuid}-${background.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := s"${parent.uuid}-${background.uuid}",
+            a(`class` := s"inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${parent.uuid}-${background.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := s"${parent.uuid}-${background.uuid}",
               raw(escapeHtml(background.name)),
             ),
           } else {
@@ -320,10 +320,18 @@ trait DetaiFormatter {
         div(`class` := "panel-body",
           ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
             formatExampleHeader(exs.evalStatus, exs.table, keywordPixels),
-            for {
-              (scenario, subindex) <- exs.scenarios.zipWithIndex
-            } yield {
-              formatExampleRow(scenario, exs.table, subindex + 1, keywordPixels)
+            if (exs.isExpanded) {
+              for {
+                (scenario, subindex) <- exs.scenarios.zipWithIndex
+              } yield {
+                formatExampleRow(Some(scenario), scenario.evalStatus, exs.table, subindex + 1, keywordPixels, true)
+              }
+            } else {
+              for {
+                rowIndex <- exs.table.tail.zipWithIndex.map(_._2 + 1)
+              } yield {
+                formatExampleRow(None, exs.evalStatus, exs.table, rowIndex, keywordPixels, false)
+              }
             }
           )
         )
@@ -344,20 +352,20 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " ",
         ),
-        formatDataRow(table, 0, status)
+        formatDataRow(table, 0, evalStatus, true)
       )
     )
   }
 
-  private def formatExampleRow(scenario: Scenario, table: List[(Long, List[String])], rowIndex: Int, keywordPixels: Int): TypedTag[String] = {
+  private def formatExampleRow(scenarioOpt: Option[Scenario], evalStatus: EvalStatus, table: List[(Long, List[String])], rowIndex: Int, keywordPixels: Int, isExpanded: Boolean): TypedTag[String] = {
     val line = table(rowIndex)._1
-    val status = scenario.evalStatus.keyword
-    val rowHtml = formatDataRow(table, rowIndex, status)
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (scenario.evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
+    val status = evalStatus.keyword
+    val rowHtml = formatDataRow(table, rowIndex, evalStatus, isExpanded)
+    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
       div(`class` := s"bg-${cssStatus(status)}",
         span(`class` := "pull-right",
           small(
-            durationOrStatus(scenario.evalStatus).toString
+            durationOrStatus(evalStatus).toString
           )
         ),
         div(`class` := "line-no",
@@ -368,14 +376,14 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " ",
         ),
-        if (!scenario.evalStatus.isFailed) {
-          a(`class` := s"inverted inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
+        if (scenarioOpt.nonEmpty && !evalStatus.isFailed) {
+          val scenario = scenarioOpt.get
+          a(`class` := s"inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${scenario.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := scenario.uuid,
             rowHtml
           )
         } else rowHtml,
-        raw(" \u00a0 "),
-        formatAttachments(scenario.attachments, status),
-        formatExampleDiv(scenario, status)
+        scenarioOpt.flatMap(scenario => formatAttachments(scenario.attachments, status)),
+        scenarioOpt.map(scenario => formatExampleDiv(scenario, status)).getOrElse(span())
       )
     )
   }
@@ -503,15 +511,16 @@ trait DetaiFormatter {
           strong(
             step.keyword
           ),
-          raw(escapeHtml(step.name))
-        )
+        ),
+        " ",
+        raw(escapeHtml(step.name))
       )
     ) 
   }
   
   private def formatStepDefLink(step: Step, status: StatusKeyword): TypedTag[String] = {
     val stepDef = step.stepDef.get
-    a(`class` := s"inverted inverted-${cssStatus(step.evalStatus.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
+    a(`class` := s"inverted-${cssStatus(step.evalStatus.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
       raw(escapeHtml(step.name))
     )
   }
@@ -523,7 +532,8 @@ trait DetaiFormatter {
   }
 
   private def formatStepDataTable(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
-    val status = step.evalStatus.keyword
+    val evalStatus = step.evalStatus
+    val status = evalStatus.keyword
     for {
       rowIndex <- step.table.indices
       line = step.table(rowIndex)._1
@@ -537,7 +547,7 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " "
         ),
-        formatDataRow(step.table, rowIndex, status)
+        formatDataRow(step.table, rowIndex, evalStatus, false)
       )
     }
   }
@@ -574,8 +584,8 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatDataRow(table: List[(Long, List[String])], rowIndex: Int, status: StatusKeyword): TypedTag[String] = {
-    code(`class` := s"bg-${cssStatus(status)} data-table",
+  private def formatDataRow(table: List[(Long, List[String])], rowIndex: Int, status: EvalStatus, isExample: Boolean): TypedTag[String] = {
+    code(`class` := s"bg-${cssStatus(status.keyword)} ${if (rowIndex == 0 || status.isFailed || !isExample) "data-table" else s"text-${cssStatus(status.keyword)}"}",
       raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
     )
   }
@@ -595,7 +605,7 @@ trait DetaiFormatter {
               ((name, file), index) <- attachments.zipWithIndex
             } yield {
               li(role := "presentation", `class` := s"text-${cssStatus(status)}",
-                a(role := "menuitem", tabindex := "-1", href := s"${attachmentHref(file)}", target := "_blank",
+                a(`class` := "inverted", role := "menuitem", tabindex := "-1", href := s"${attachmentHref(file)}", target := "_blank",
                   span(`class` := "line-no", style := "width: 0px;",
                     raw(s"${index + 1}. \u00a0 ")
                   ),
@@ -612,7 +622,7 @@ trait DetaiFormatter {
     } else if (attachments.size == 1)  {
       val (name, file) = attachments(0)
       Some(
-        a(href := s"${attachmentHref(file)}", target := "_blank", style := s"color: ${linkColor(status)};",
+        a(href := s"${attachmentHref(file)}", target := "_blank", `class` := s"inverted-${cssStatus(status)}",
           strong(style := "font-size: 12px;",
             name
           )
@@ -752,7 +762,7 @@ object DetailFormatter {
           li(
             span(`class` := "caret-left"),
             " ",
-            a(href := s"${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}",
+            a(`class` := "inverted", href := s"${if (text == "Summary") rootPath else { if (result.isMeta) "../" else "" }}${reportFile.getName}",
               text
             )
           )

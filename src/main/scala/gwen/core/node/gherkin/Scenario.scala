@@ -62,11 +62,11 @@ case class Scenario(
   }
 
   override val evalStatus: EvalStatus = {
-    if (isOutline && examples.flatMap(_.scenarios).isEmpty) {
-      Pending
-    } else {
+    // if (isOutline && examples.flatMap(_.scenarios).isEmpty) {
+    //   Pending
+    // } else {
       EvalStatus(allSteps.map(_.evalStatus), ignoreSustained = !isStepDef)
-    }
+    //}
   }
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {

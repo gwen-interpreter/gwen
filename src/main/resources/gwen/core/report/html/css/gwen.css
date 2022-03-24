@@ -179,13 +179,55 @@ a:hover {
 }
 
 a:link.inverted {
-  color:#333333;
   text-decoration: none;
 }
 
 a:visited.inverted {
-  color:#333333;
+  text-decoration: none;
+}
+
+a:hover.inverted {
   text-decoration: underline;
+}
+
+a:link.inverted-success {
+  text-decoration: none;
+  color: #3c763d;
+}
+
+a:link.inverted-danger {
+  text-decoration: none;
+  color: #a94442;
+}
+
+a:link.inverted-info {
+  text-decoration: none;
+  color: #31708f;
+}
+
+a:link.inverted-warning {
+  text-decoration: none;
+  color: #8a6d3b;
+}
+
+a:visited.inverted-success {
+  text-decoration: none;
+  color: #3c763d;
+}
+
+a:visited.inverted-danger {
+  text-decoration: none;
+  color: #a94442;
+}
+
+a:visited.inverted-info {
+  text-decoration: none;
+  color: #31708f;
+}
+
+a:visited.inverted-warning {
+  text-decoration: none;
+  color: #8a6d3b;
 }
 
 a:hover.inverted-success {

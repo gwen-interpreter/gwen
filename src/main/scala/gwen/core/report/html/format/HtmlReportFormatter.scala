@@ -92,7 +92,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       div(`class` := "col-md-4",
         reportPath match {
           case Some(rpath) =>
-            a(`class` := s"text-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
+            a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
               span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
                 raw(escapeHtml(featureName))
               )
@@ -195,7 +195,7 @@ object HtmlReportFormatter {
       span(`class` := s"badge badge-${cssStatus(status)}",
         if (renderErrorLink && status == StatusKeyword.Failed) {
           Seq(
-            a(id := "failed-link", href := "#", style := "color:white;",
+            a(`class` := s"inverted", id := "failed-link", href := "#", style := "color:white;",
               status.toString
             ),
             formatFailedLinkScript("failed")
@@ -215,7 +215,7 @@ object HtmlReportFormatter {
           span(`class` := "badge badge-danger",
             if (renderErrorLink) {
               Seq(
-                a(id := "sustained-link", href := "#", style := "color:white;",
+                a(`class` := s"inverted", id := "sustained-link", href := "#", style := "color:white;",
                   sustainedError
                 ),
                 formatFailedLinkScript("sustained")
