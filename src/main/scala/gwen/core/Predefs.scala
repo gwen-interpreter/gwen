@@ -41,9 +41,10 @@ import java.io.PrintWriter
 import java.io.StringReader
 import java.io.StringWriter
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.text.DecimalFormat
 import java.util.UUID
+import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
@@ -125,6 +126,18 @@ extension [F <: File](file: F) {
 
   def toFile(targetDir: File, targetSubDir: Option[String]): File =
     new File(toDir(targetDir, targetSubDir), file.getName)
+
+  def copyToDir(targetDir: File): File = {
+    val targetFile = new File(targetDir, file.getName)
+    file.copyToFile(targetFile)
+  }
+
+  def copyToFile(targetFile: File): File = {
+    if (targetFile.getParentFile != null && !targetFile.getParentFile.exists()) {
+      targetFile.getParentFile.mkdirs()
+    }
+    Files.copy(file.toPath, targetFile.toPath, StandardCopyOption.REPLACE_EXISTING).toFile
+  }
 
   def mimeType: String = file.extension match {
     case "png" => "image/png"
@@ -380,5 +393,31 @@ object ConsoleColors {
     GwenSettings.`gwen.console.log.colors`
       && Booleans.isFalsy(sys.env.get("CI")) 
       && Booleans.isFalsy(sys.env.get("NO_COLOR"))
+  }
+}
+
+object Wait {
+  /**
+    * Waits until a given condition is ready for a given number of seconds.
+    * Errors on given timeout out seconds. Checks condition every 1 second.
+    *
+    * @param timeoutSecs the number of seconds to wait before timing out
+    * @param reason a description of what is being waited on
+    * @param condition the boolean condition to wait for (until true)
+    */
+  def waitUntil(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
+    val lock = new Semaphore(1)
+    lock.acquire()
+    val start = System.currentTimeMillis
+    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) {
+      if (condition) lock.release()
+    }
+    try {
+      if (lock.availablePermits < 1) {
+        Errors.waitTimeoutError(timeoutSecs, reason)
+      }
+    } finally {
+      lock.release()
+    }
   }
 }

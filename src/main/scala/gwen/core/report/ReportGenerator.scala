@@ -136,17 +136,28 @@ class ReportGenerator (
       formatDetail(options, info, unit, result, summaryReportFile.map(f => List(("Summary", f))).getOrElse(Nil), reportFiles) map { content =>
         reportFile tap { file =>
           file.writeText(content)
-          reportAttachments(result.spec, file)
+          copyAttachments(result.spec, file)
+          copyVideos(result, file)
           logger.info(s"${config.name} feature detail${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
         }
       }
     }
   }
 
-  def reportAttachments(spec: Spec, featureReportFile: File): Unit = {
+  def copyAttachments(spec: Spec, featureReportFile: File): Unit = {
     val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
     spec.attachments foreach { case (_, file) =>
-      new File(attachmentsDir, file.getName).writeFile(file)
+      file.copyToDir(attachmentsDir)
+    }
+  }
+
+  def copyVideos(result: SpecResult, featureReportFile: File): Unit = {
+    val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
+    val videoDir = new File(attachmentsDir, "videos")
+    result.videos foreach { videoFile =>
+      Wait.waitUntil(30, "waiting for video file") { videoFile.exists }
+      videoFile.copyToDir(videoDir)
+      videoFile.deleteOnExit
     }
   }
 

@@ -593,31 +593,7 @@ trait DetaiFormatter {
   private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword): Option[TypedTag[String]] = {
     if (attachments.size > 1) {
       Some(
-        div(`class` := s"dropdown bg-${cssStatus(status)}",
-          button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
-            strong(
-              "attachments "
-            ),
-            span(`class` :="caret")
-          ),
-          ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
-            for {
-              ((name, file), index) <- attachments.zipWithIndex
-            } yield {
-              li(role := "presentation", `class` := s"text-${cssStatus(status)}",
-                a(`class` := "inverted", role := "menuitem", tabindex := "-1", href := s"${attachmentHref(file)}", target := "_blank",
-                  span(`class` := "line-no", style := "width: 0px;",
-                    raw(s"${index + 1}. \u00a0 ")
-                  ),
-                  name,
-                  span(`class` := "line-no", style := "width: 0px;",
-                    raw(" \u00a0 ")
-                  )
-                )
-              )
-            }
-          )
-        )
+        DetailFormatter.formatAttachmentsDropdown("attachments", attachments, status, attachmentHref)
       )
     } else if (attachments.size == 1)  {
       val (name, file) = attachments(0)
@@ -777,11 +753,54 @@ object DetailFormatter {
                 SlideshowFormatter.formatSlideshowModal(screenshots, result.spec, unit, rootPath)
               )
             )
+          } else None,
+          if (result.videos.nonEmpty) {
+            Some(
+              li(
+                if (result.videos.size > 1) {
+                  formatAttachmentsDropdown("Videos", result.videos.map(f => ("Video", f)), Disabled.keyword, videoHref)
+                } else {
+                  button(attr("type") := "button", `class` := "btn btn-default btn-lg", onclick := s"window.open('${videoHref(result.videos.head)}', '_blank');",
+                    "Video"
+                  )
+                }
+              )
+            )
           } else None
         ).flatten
       )
     )
 
+  }
+
+  private def videoHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/videos/${file.getName}"
+
+  private [format] def formatAttachmentsDropdown(name: String, attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = {
+    div(`class` := s"dropdown bg-${cssStatus(status)}",
+      button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
+        strong(
+          name
+        ),
+        span(`class` :="caret")
+      ),
+      ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
+        for {
+          ((name, file), index) <- attachments.zipWithIndex
+        } yield {
+          li(role := "presentation", `class` := s"text-${cssStatus(status)}",
+            a(`class` := "inverted", role := "menuitem", tabindex := "-1", href := s"${hrefFormatter(file)}", target := "_blank",
+              span(`class` := "line-no", style := "width: 0px;",
+                raw(s"${index + 1}. \u00a0 ")
+              ),
+              name,
+              span(`class` := "line-no", style := "width: 0px;",
+                raw(" \u00a0 ")
+              )
+            )
+          )
+        }
+      )
+    )
   }
 
 }

@@ -87,8 +87,8 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
       Nil,
       List(meta1))
         
-    val metaResult = new SpecResult(meta1, None, Nil, new Date(), new Date())
-    var featureResult = new SpecResult(feature1, None, List(metaResult), new Date(), new Date())
+    val metaResult = new SpecResult(meta1, None, Nil, Nil, new Date(), new Date())
+    var featureResult = new SpecResult(feature1, None, Nil, List(metaResult), new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Passed)
     summary.results.size should be (1)
@@ -111,7 +111,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.When.toString, "step 2", Failed3),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
         )), Nil, Nil)
-    featureResult = new SpecResult(feature2, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature2, None, Nil, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (2)
@@ -139,7 +139,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.When.toString, "step 2", Passed1),
           Step(StepKeyword.Then.toString, "step 3", Passed2))
         )), Nil, Nil)
-    featureResult = new SpecResult(feature3, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature3, None, Nil, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (3)
@@ -162,7 +162,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.When.toString, "step 2", Skipped),
           Step(StepKeyword.Then.toString, "step 3", Skipped))
         )), Nil, Nil)
-    featureResult = new SpecResult(feature4, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature4, None, Nil, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (4)
@@ -184,7 +184,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.Given.toString, "step 1", Pending),
           Step(StepKeyword.When.toString, "step 2", Pending))
         )), Nil, Nil)
-    featureResult = new SpecResult(feature5, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature5, None, Nil, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (5)
@@ -226,7 +226,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
           Step(StepKeyword.Then.toString, "step 3", Skipped),
           Step(StepKeyword.And.toString, "step 3", Skipped))
         )), Nil, Nil)
-    featureResult = new SpecResult(feature6, None, Nil, new Date(), new Date())
+    featureResult = new SpecResult(feature6, None, Nil, Nil, new Date(), new Date())
     summary = summary + featureResult
     EvalStatus(summary.results.map(_.spec.evalStatus)).keyword should be (StatusKeyword.Failed)
     summary.results.size should be (6)

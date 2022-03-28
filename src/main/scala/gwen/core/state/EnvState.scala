@@ -37,6 +37,9 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
    /** List of temporarily cached attachments (number-name-file tripples). */
   private var attachments: List[(Int, String, File)] = Nil
 
+  /** List of recorded videos. */
+  private var videos: List[File] = Nil
+
   /** Stack of behaviors. */
   private var behaviors = List[BehaviorType]()
 
@@ -95,6 +98,17 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
   def addAttachment(name: String, file: File): Unit = {
     attachments = (EnvState.nextAttachmentNo(), name, file) :: attachments
   }
+
+  /**
+    * Adds a video file
+    *
+    * @param videoFile the video file to add
+    */
+  def addVideo(videoFile: File): Unit = {
+    videos = videos ++ List(videoFile)
+  }
+
+  def getVideos: List[File] = videos
 
   /** Adds the given behavior to the top of the stack. */
   def addBehavior(behavior: BehaviorType): Unit = {

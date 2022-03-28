@@ -335,7 +335,6 @@ class RPClient(options: GwenOptions, info: GwenInfo) extends LazyLogging {
 
   def sendItemLog(level: LogLevel, msg: String, file: Option[File]): Unit = {
     logger.debug(s"sendItemLog(level=$level, msg=$msg, file=${file})")
-    //val encodedMsg = encode(msg, true)
     file match {
       case Some(f) => 
         val rpMessage = new ReportPortalMessage(f, msg)

@@ -52,7 +52,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
       Nil,
       Nil
   )
-  val result = new SpecResult(feature, None, Nil, new ju.Date(), new ju.Date())
+  val result = new SpecResult(feature, None, Nil, Nil, new ju.Date(), new ju.Date())
 
   private def launcher(mockEngine: EvalEngine[EvalContext]) = {
     new GwenLauncher(mockEngine)
@@ -302,9 +302,9 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(
-      Some(new SpecResult(feature6A, None, Nil, new ju.Date(), new ju.Date())),
-      Some(new SpecResult(feature6B, None, Nil, new ju.Date(), new ju.Date())),
-      Some(new SpecResult(feature7A, None, Nil, new ju.Date(), new ju.Date())))
+      Some(new SpecResult(feature6A, None, Nil, Nil, new ju.Date(), new ju.Date())),
+      Some(new SpecResult(feature6B, None, Nil, Nil, new ju.Date(), new ju.Date())),
+      Some(new SpecResult(feature7A, None, Nil, Nil, new ju.Date(), new ju.Date())))
 
     val evalStatus = launcher(mockEngine).run(options)
 

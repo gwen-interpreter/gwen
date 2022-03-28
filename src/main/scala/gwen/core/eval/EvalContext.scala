@@ -36,7 +36,6 @@ import java.io.File
 import java.io.FileNotFoundException
 
 import java.net.URL
-import java.util.concurrent.Semaphore
 
 /**
   * Provides all evaluation capabilities.
@@ -183,19 +182,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     * @param condition the boolean condition to wait for (until true)
     */
   def waitUntil(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
-    val lock = new Semaphore(1)
-    lock.acquire()
-    val start = System.currentTimeMillis
-    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) {
-      if (condition) lock.release()
-    }
-    try {
-      if (lock.availablePermits < 1) {
-        Errors.waitTimeoutError(timeoutSecs, reason)
-      }
-    } finally {
-      lock.release()
-    }
+    Wait.waitUntil(timeoutSecs, reason) { condition }
   }
 
   /**

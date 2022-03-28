@@ -77,9 +77,10 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val ctxClone = engine.init(ctx.options, ctx.cloneState)
         try {
           Dialect.withLanguage(language) {
-            evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
+            val scenarioResult = evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
               acc.add(s)
             }
+            (scenarioResult, ctxClone)
           }
         } finally {
           ctxClone.close()
@@ -89,7 +90,11 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     Await.result(
       Future.sequence(futures.force),
       Duration.Inf
-    )
+    ) sortBy { (s, _) => 
+      s.sourceRef.map(_.line).getOrElse(0L)
+    } foreach { (_, c) => 
+      c.getVideos foreach ctx.addVideo
+    } 
     acc.asScala.toList.sortBy(_.sourceRef.map(_.line).getOrElse(0L))
   }
 

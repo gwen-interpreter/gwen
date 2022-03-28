@@ -245,22 +245,23 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val ctx = ctxOpt getOrElse { 
       engine.init(options, EnvState())
     }
-    try {
-      if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
-      unit.dataRecord foreach { record =>
-        record.data foreach { case (name, value) =>
-          ctx.topScope.set(name, value)
-        }
+    if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
+    unit.dataRecord foreach { record =>
+      record.data foreach { case (name, value) =>
+        ctx.topScope.set(name, value)
       }
-      f(interpretUnit(unit, ctx) map { res =>
-        new SpecResult(res.spec, res.reports, flattenResults(res.metaResults), res.started, res.finished)
-      })
+    }
+    val result = try {
+      interpretUnit(unit, ctx)
     } finally {
       if (ctxOpt.isEmpty) { 
         ctx.close()
         logger.info("Evaluation context closed")
-      }
+      } 
     }
+    f(result map { res =>
+      new SpecResult(res.spec, res.reports, res.videos, (res.metaResults), res.started, res.finished)
+    })
   }
 
   private def flattenResults(results: List[SpecResult]): List[SpecResult] = {
@@ -275,7 +276,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
       (generator.format, generator.reportDetail(unit, result))
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty)
-      new SpecResult(result.spec, Some(reportFiles), result.metaResults, result.started, result.finished)
+      new SpecResult(result.spec, Some(reportFiles), result.videos, result.metaResults, result.started, result.finished)
     else
       result
   }

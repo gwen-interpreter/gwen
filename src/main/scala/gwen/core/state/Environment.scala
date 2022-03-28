@@ -180,6 +180,12 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   def popAttachments(): List[(Int, String, File)] = state.popAttachments()
 
+  def addVideo(videoFile: File): Unit = {
+    state.addVideo(videoFile)
+  }
+
+  def getVideos: List[File] = state.getVideos
+
   /** Pushes a node onto the node chain.*/
   def pushNode(node: GwenNode): NodeChain = state.pushNode(node)
 

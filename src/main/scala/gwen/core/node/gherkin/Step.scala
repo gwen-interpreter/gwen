@@ -27,8 +27,6 @@ import scala.jdk.CollectionConverters._
 import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import gwen.core.state.EnvState
 
 /**
@@ -135,7 +133,7 @@ case class Step(
    * @param content the content to write to the file
    */
   def addAttachment(name: String, extension: String, content: String): Step = { 
-    val file = File.createTempFile(s"${attachmentPrefix(EnvState.nextAttachmentNo())}-", s".$extension")
+    val file = File.createTempFile(s"${Formatting.padWithZeroes(EnvState.nextAttachmentNo())}-", s".$extension")
     file.deleteOnExit()
     Option(content) foreach { file.writeText }
     addAttachment((name, file))
@@ -159,11 +157,7 @@ case class Step(
    * @param file the file to attach
    */
   def addAttachment(attachmentNo: Int, name: String, file: File): Step = { 
-    val fileCopy = Files.copy(
-      file.toPath, 
-      File.createTempFile(s"${attachmentPrefix(attachmentNo)}-${file.simpleName}-", s".${file.extension}").toPath,
-      StandardCopyOption.REPLACE_EXISTING
-    ).toFile
+    val fileCopy = file.copyToFile(File.createTempFile(s"${Formatting.padWithZeroes(attachmentNo)}-${file.simpleName}-", s".${file.extension}"))
     fileCopy.deleteOnExit()
     addAttachment((name, fileCopy))
   }
@@ -177,10 +171,6 @@ case class Step(
     this.copy(
       withAttachments = (attachment :: this.attachments) sortBy { case (_, file) => file.getName }
     )
-  }
-
-  private def attachmentPrefix(attachmentNo: Int): String = {
-    Formatting.padWithZeroes(attachmentNo)
   }
 
   lazy val errorTrails: List[List[Step]] = {

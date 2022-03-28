@@ -29,7 +29,8 @@ import java.io.File
   */
 abstract class NoopReportGenerator(config: ReportConfig, options: GwenOptions, info: GwenInfo) extends ReportGenerator(config, options, info) with ReportFormatter {
   
-  override def reportAttachments(spec: Spec, featureReportFile: File): Unit = {}
+  override def copyAttachments(spec: Spec, featureReportFile: File): Unit = {}
+  override def copyVideos(result: SpecResult, featureReportFile: File): Unit = {}
   override def reportMetaDetail(unit: FeatureUnit, metaResults: List[SpecResult], reportFiles: List[File]): List[File] = Nil
 
 }

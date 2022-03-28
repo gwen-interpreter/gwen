@@ -33,14 +33,16 @@ import java.util.Date
   * Captures the results of an evaluated specification.
   * 
   * @param spec the evaluated feature
-  * @param metaResults the evaluated meta results
+  * @param videos optional list of recorded videos
   * @param reports optional map of report files (keyed by report type)
+  * @param metaResults the evaluated meta results
   * @param started the started time
   * @param finished the finished time
   */
 class SpecResult(
   val spec: Spec, 
   val reports: Option[Map[ReportFormat, List[File]]], 
+  val videos: List[File],
   val metaResults: List[SpecResult],
   val started: Date,
   val finished: Date) extends GwenNode {
