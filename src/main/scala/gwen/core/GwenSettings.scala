@@ -51,6 +51,8 @@ object GwenSettings {
     `gwen.report.suppress.meta`
     `gwen.report.slideshow.framespersecond`
     `gwen.state.level`
+    `gwen.video.dir`
+    `gwen.video.timeoutSecs`
   }
 
   /**
@@ -261,6 +263,20 @@ object GwenSettings {
     */
   def `gwen.outDir`: File = {
     Settings.getFile("gwen.outDir")
+  }
+
+  /**
+   * Gets the video output directory (default is ${gwen.outDir}/.video).
+   */
+  def `gwen.video.dir`: File = {
+    Settings.getFileOpt("gwen.video.dir").getOrElse(new File(`gwen.outDir`, ".video"))
+  }
+
+  /**
+   * Gets the number of seconds to wait for video file to be ready when generating report (default is 10 secs).
+   */
+  def `gwen.video.timeoutSecs`: Int = {
+    Settings.getIntOpt("gwen.video.timeoutSecs").getOrElse(10)
   }
 
 }

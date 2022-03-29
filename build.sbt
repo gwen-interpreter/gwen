@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "A Given-When-Then interpreter for Gherkin",
-  scalaVersion := "3.1.0",
+  scalaVersion := "3.1.1",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
   organizationHomepage := Some(url("http://gweninterpreter.org")),
@@ -47,14 +47,14 @@ lazy val mainDependencies = {
   val jline = "2.14.6"
   val commonCodec = "1.15"
   val commonsText = "1.9"
-  val scalaCSV = "1.3.8"
-  val jsonPath = "2.6.0"
-  val jodaTime = "2.10.12"
-  val scalaTags = "0.9.4"
-  val htmlCleaner = "2.25"
+  val scalaCSV = "1.3.10"
+  val jsonPath = "2.7.0"
+  val jodaTime = "2.10.14"
+  val scalaTags = "0.11.1"
+  val htmlCleaner = "2.26"
   val rpCommon = "5.3.3"
   val rpClientJava = "5.0.22"
-  val tsConfig = "1.4.1"
+  val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 
   Seq(
@@ -69,7 +69,7 @@ lazy val mainDependencies = {
     "com.github.tototoshi" %% "scala-csv" % scalaCSV,
     "com.jayway.jsonpath" % "json-path" % jsonPath,
     "joda-time" % "joda-time" % jodaTime,
-    ("com.lihaoyi" %% "scalatags" % scalaTags).cross(CrossVersion.for3Use2_13),
+    "com.lihaoyi" %% "scalatags" % scalaTags,
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner,
     "com.typesafe" % "config" % tsConfig,
     "com.epam.reportportal" % "commons-model" % rpCommon,
@@ -82,7 +82,7 @@ lazy val mainDependencies = {
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.10"
+  val scalaTest = "3.2.11"
   val scalaTestPlusMockito = "3.2.10.0"
   val mockitoCore = "3.12.4"
   val h2 = "1.4.200"
