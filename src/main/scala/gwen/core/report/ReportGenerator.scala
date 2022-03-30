@@ -17,6 +17,7 @@
 package gwen.core.report
 
 import gwen.core._
+import gwen.core.Errors.WaitTimeoutException
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecType
@@ -33,6 +34,9 @@ import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
 import scala.io.Source
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
@@ -153,11 +157,17 @@ class ReportGenerator (
 
   def copyVideos(result: SpecResult, featureReportFile: File): Unit = {
     result.videos foreach { videoFile =>
-      Wait.waitUntil(GwenSettings.`gwen.video.timeoutSecs`, "waiting for video file") { videoFile.exists }
-      val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
-      val videoDir = new File(attachmentsDir, "videos")
-      videoFile.copyToDir(videoDir)
-      videoFile.deleteOnExit
+      Try(Wait.waitUntil(GwenSettings.`gwen.video.timeoutSecs`, s"waiting for video file: $videoFile") { videoFile.exists }) match {
+        case Success(_) => 
+          val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
+          val videoDir = new File(attachmentsDir, "videos")
+          videoFile.copyToDir(videoDir)
+          videoFile.deleteOnExit
+        case Failure(e) => 
+          if (e.isInstanceOf[WaitTimeoutException]) {
+            logger.error(e.getMessage)
+          } else throw e
+      }
     }
   }
 
