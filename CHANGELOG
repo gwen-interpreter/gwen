@@ -1,10 +1,17 @@
+3.7.3
+=====
+Mar 31, 2022
+- Update dependencies to eliminate transitive vulnerabilities:
+  - Update tika-core from v1.22 to v1.26
+  - Update guava from v29.0-jre to v31.1-jre
+
 3.7.2
 =====
 Mar 31, 2022
-- Udpate dependencies to eliminate transitive vunlerabilities:
-  - Update jackson-databind from v2.10.2 to v2.13.2.2
-  - Update guava from v28.2-jre to v31.1-jre
-  - Update tika-core from v1.20 to v1.22
+  - Update dependencies to eliminate transitive vulnerabilities:
+    - Update jackson-databind from v2.10.2 to v2.13.2.2
+    - Update guava from v28.2-jre to v29.0-jre
+    - Update tika-core from v1.20 to v1.22
 
 3.7.1
 =====
