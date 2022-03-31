@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.7.1"
+val gwenVersion = "3.7.2"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -78,6 +78,18 @@ lazy val mainDependencies = {
       ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
     ),
     "org.fusesource.jansi" % "jansi" % jansi
+  ) ++ mainOverrides
+}
+
+lazy val mainOverrides = {
+  val jacksonDataBind = "2.13.2.2"
+  val tikaCore = "1.22"
+  val guava = "29.0-jre"
+
+  Seq(
+    "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
+    "org.apache.tika" % "tika-core" % tikaCore,
+    "com.google.guava" % "guava" % guava
   )
 }
 

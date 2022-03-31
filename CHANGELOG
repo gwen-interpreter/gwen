@@ -1,7 +1,15 @@
+3.7.2
+=====
+Mar 31, 2022
+- Udpate dependencies to eliminate transitive vunlerabilities:
+  - Update jackson-databind from v2.10.2 to v2.13.2.2
+  - Update guava from v28.2-jre to v31.1-jre
+  - Update tika-core from v1.20 to v1.22
+
 3.7.1
 =====
 Mar 31, 2022
-- Log error instaed of failing when timing out waiting for video files
+- Log error instead of failing when timing out waiting for video files
 
 3.7.0
 =====
