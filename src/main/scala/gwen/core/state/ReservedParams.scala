@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
- package gwen.core.state
-
-import gwen.core.node.gherkin.ReservedTags
+package gwen.core.state
 
 enum ReservedParam:
   case `iteration.number`

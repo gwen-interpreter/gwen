@@ -23,7 +23,7 @@ import gwen.core.eval.ParallelExecutors
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Background
 import gwen.core.node.gherkin.Dialect
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.SpecType
@@ -128,7 +128,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     */
   private [engine] def evaluateScenario(parent: GwenNode, scenario: Scenario, ctx: T): Scenario = {
     if (scenario.isStepDef || scenario.isDataTable) {
-      if (!scenario.isStepDef) Errors.dataTableError(s"${ReservedTags.StepDef} tag also expected where ${ReservedTags.DataTable} is specified")
+      if (!scenario.isStepDef) Errors.dataTableError(s"${Annotations.StepDef} tag also expected where ${Annotations.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)
     } else {
       beforeScenario(scenario, ctx)

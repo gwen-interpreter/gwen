@@ -19,7 +19,7 @@ package gwen.core.eval.lambda.composite
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.table.DataTable
@@ -31,8 +31,8 @@ class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Ste
     ctx.topScope.pushObject(DataTable.tableKey, dataTable)
     val doStepDef = stepDef.copy(
       withTags = stepDef.tags filter { tag => 
-        tag.name != ReservedTags.ForEach.toString &&
-        !tag.name.startsWith(ReservedTags.DataTable.toString)
+        tag.name != Annotations.ForEach.toString &&
+        !tag.name.startsWith(Annotations.DataTable.toString)
       }
     )
     ctx.removeStepDef(stepDef.name)

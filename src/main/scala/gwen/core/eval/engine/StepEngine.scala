@@ -29,7 +29,7 @@ import gwen.core.eval.lambda.composite.ForEachTableRecordAnnotated
 import gwen.core.eval.lambda.composite.StepDefCall
 import gwen.core.node.GwenNode
 import gwen.core.node.Root
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.StepKeyword
@@ -192,7 +192,7 @@ trait StepEngine[T <: EvalContext] {
     ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
       case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
         val dataTable = ForEachTableRecord.parseFlatTable {
-          stepDef.tags.find(_.name.startsWith(s"${ReservedTags.DataTable.toString}")) map {
+          stepDef.tags.find(_.name.startsWith(s"${Annotations.DataTable.toString}")) map {
             tag => DataTable(tag, step)
           }
         }

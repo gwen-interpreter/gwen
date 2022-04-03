@@ -32,7 +32,7 @@ import com.typesafe.scalalogging.LazyLogging
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 
 /**
   * StepDef evaluation engine.
@@ -96,7 +96,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       checkStepDefRules(sdStep, ctx)
       ctx.paramScope.push(stepDef.name, stepDef.params)
       try {
-        val dataTableOpt = stepDef.tags.find(_.name.startsWith(ReservedTags.DataTable.toString)) map { tag => DataTable(tag, step) }
+        val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         dataTableOpt foreach { table =>
           ctx.topScope.pushObject(DataTable.tableKey, table)
         }

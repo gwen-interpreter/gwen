@@ -93,18 +93,18 @@ case class Scenario(
     else List(this)
   }
   
-  def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == ReservedTags.Examples.toString)
+  def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == Annotations.Examples.toString)
   def isExpanded: Boolean = examples.flatMap(_.scenarios).nonEmpty 
-  def isStepDef: Boolean = tags.exists(_.name == ReservedTags.StepDef.toString)
-  def isForEach: Boolean = tags.exists(_.name == ReservedTags.ForEach.toString)
-  def isIfCondition: Boolean = tags.exists(_.name == ReservedTags.If.toString)
-  def isWhileCondition: Boolean = tags.exists(_.name == ReservedTags.While.toString)
-  def isUntilCondition: Boolean = tags.exists(_.name == ReservedTags.Until.toString)
-  def isDataTable: Boolean = tags.exists(_.name.startsWith(ReservedTags.DataTable.toString))
+  def isStepDef: Boolean = tags.exists(_.name == Annotations.StepDef.toString)
+  def isForEach: Boolean = tags.exists(_.name == Annotations.ForEach.toString)
+  def isIfCondition: Boolean = tags.exists(_.name == Annotations.If.toString)
+  def isWhileCondition: Boolean = tags.exists(_.name == Annotations.While.toString)
+  def isUntilCondition: Boolean = tags.exists(_.name == Annotations.Until.toString)
+  def isDataTable: Boolean = tags.exists(_.name.startsWith(Annotations.DataTable.toString))
   def isSynchronized: Boolean = tags.map(_.name).exists { 
-    name => name == ReservedTags.Synchronized.toString || name == ReservedTags.Synchronised.toString
+    name => name == Annotations.Synchronized.toString || name == Annotations.Synchronised.toString
   }
-  def isSynthetic: Boolean = Tag.findByName(tags, ReservedTags.Synthetic.toString).nonEmpty
+  def isSynthetic: Boolean = Tag.findByName(tags, Annotations.Synthetic.toString).nonEmpty
   
   def attachments: List[(String, File)] = {
     allSteps.flatMap(step => step.deepAttachments)
@@ -171,7 +171,7 @@ object Scenario {
   def keywordFor(scenario: Scenario): String = keywordFor(scenario.tags, scenario.keyword)
   def keywordFor(tags: List[Tag], keyword: String): String = {
     tags.map(_.name) find { name =>
-      name == ReservedTags.StepDef.toString || name == ReservedTags.ForEach.toString || name == ReservedTags.If.toString || name == ReservedTags.Until.toString || name == ReservedTags.While.toString
+      name == Annotations.StepDef.toString || name == Annotations.ForEach.toString || name == Annotations.If.toString || name == Annotations.Until.toString || name == Annotations.While.toString
     } getOrElse {
       keyword.trim
     }

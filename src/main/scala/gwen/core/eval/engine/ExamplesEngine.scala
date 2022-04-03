@@ -22,7 +22,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.FeatureKeyword
 import gwen.core.node.gherkin.Examples
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Tag
@@ -65,7 +65,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val csvExamples = outline.tags.flatMap { tag =>
       tag match {
         case Tag(_, name, Some(fileValue)) =>
-          if (name == ReservedTags.Examples.toString) {
+          if (name == Annotations.Examples.toString) {
             val filepath = ctx.interpolate(fileValue)
             val examplesTag = tag.copy(withValue = Some(filepath))
             val file = new File(filepath)
@@ -73,7 +73,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
             val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1L, row.toList) }
             Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath", Nil, table, Nil))
-          } else if (name.equalsIgnoreCase(ReservedTags.Examples.toString)) {
+          } else if (name.equalsIgnoreCase(Annotations.Examples.toString)) {
             Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv")""")
           } else {
             None

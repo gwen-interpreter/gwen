@@ -105,7 +105,7 @@ case class Step(
   }
 
   def hasDualColumnTable: Boolean = table.nonEmpty && table.head._2.size == 2
-  def printableTags: List[Tag] = tags.filter(_.name.toLowerCase != ReservedTags.Breakpoint.toString.toLowerCase)
+  def printableTags: List[Tag] = tags.filter(_.name.toLowerCase != Annotations.Breakpoint.toString.toLowerCase)
 
   /** Returns a string representation of this step. */
   override def toString: String = s"$keyword ${expression}"
@@ -208,16 +208,16 @@ case class Step(
     )
   }
 
-  def isBreakpoint: Boolean = hasTag(ReservedTags.Breakpoint)
-  def isFinally: Boolean = hasTag(ReservedTags.Finally)
+  def isBreakpoint: Boolean = hasTag(Annotations.Breakpoint)
+  def isFinally: Boolean = hasTag(Annotations.Finally)
   def loadStrategy: Option[LoadStrategy] = { 
     if (isEager) Some(LoadStrategy.Eager)
     else if (isLazy) Some(LoadStrategy.Lazy)
     else None
   }
-  def isEager: Boolean = hasTag(ReservedTags.Eager)
-  def isLazy: Boolean = hasTag(ReservedTags.Lazy)
-  private def hasTag(tag: ReservedTags) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
+  def isEager: Boolean = hasTag(Annotations.Eager)
+  def isLazy: Boolean = hasTag(Annotations.Lazy)
+  private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
 }
 
@@ -269,15 +269,15 @@ object Step {
     steps.filter(s => s.isEager || s.isLazy) foreach { step => 
       if (!step.name.matches(".+ (is|will be) defined .*by ((?!property|setting).)+"))  {
         val annotation = { 
-          if (step.isEager) ReservedTags.Eager
-          else if (step.isLazy) ReservedTags.Lazy
-          else ReservedTags.Deferred
+          if (step.isEager) Annotations.Eager
+          else if (step.isLazy) Annotations.Lazy
+          else Annotations.Deferred
         }
         Errors.illegalStepAnnotationError(step, s"@$annotation annotation permitted only for '<x> defined by <y>' DSL steps")
       } else {
         val annotations = {
-          (if (step.isEager) List(ReservedTags.Eager) else Nil) ++
-          (if (step.isLazy) List(ReservedTags.Lazy) else Nil)
+          (if (step.isEager) List(Annotations.Eager) else Nil) ++
+          (if (step.isLazy) List(Annotations.Lazy) else Nil)
         }
         if (annotations.size > 1) {
           Errors.illegalStepAnnotationError(step, s"Only one of ${annotations.map(a => s"@$a").mkString(", ")} annotation permitted for step")

@@ -27,7 +27,7 @@ package gwen.core.node.gherkin
   */
 
 object TagFilter {
-  private val DefaultFilters = List((Tag(ReservedTags.Ignore), false))
+  private val DefaultFilters = List((Tag(Annotations.Ignore), false))
 }
 
 class TagFilter(tagFilters: List[(Tag, Boolean)]) {

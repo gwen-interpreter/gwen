@@ -23,7 +23,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.binding.JavaScriptBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.StepKeyword
@@ -40,8 +40,8 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
     assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
     assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
     assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
-    val operationTag = Tag(if (operation == "until") ReservedTags.Until else ReservedTags.While)
-    val tags = List(Tag(ReservedTags.Synthetic), operationTag, Tag(ReservedTags.StepDef))
+    val operationTag = Tag(if (operation == "until") Annotations.Until else Annotations.While)
+    val tags = List(Tag(Annotations.Synthetic), operationTag, Tag(Annotations.StepDef))
     val preCondStepDef = Scenario(None, tags, operationTag.name, condition, Nil, None, Nil, Nil, step.params, step.cumulativeParams)
     var condSteps: List[Step] = Nil
     var evaluatedStep = step

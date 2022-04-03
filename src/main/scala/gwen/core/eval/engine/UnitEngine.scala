@@ -122,7 +122,7 @@ trait UnitEngine[T <: EvalContext]
     spec.feature.tags.flatMap { tag =>
       tag match {
         case Tag(_, name, Some(filepath)) =>
-          if (name == ReservedTags.Import.toString) {
+          if (name == Annotations.Import.toString) {
             val file = new File(filepath)
             if (!file.exists()) Errors.missingOrInvalidImportFileError(tag)
             if (!file.getName.endsWith(".meta")) Errors.unsupportedImportError(tag)
@@ -130,7 +130,7 @@ trait UnitEngine[T <: EvalContext]
               Errors.recursiveImportError(tag)
             }
             Some(file)
-          } else if (name.equalsIgnoreCase(ReservedTags.Import.toString)) {
+          } else if (name.equalsIgnoreCase(Annotations.Import.toString)) {
             Errors.invalidTagError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
           } else {
             None

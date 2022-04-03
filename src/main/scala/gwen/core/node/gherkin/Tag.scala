@@ -38,7 +38,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
 
   override val nodeType: NodeType = NodeType.Tag
   
-  def isAnnotation = value.nonEmpty || ReservedTags.values.filter(_ != ReservedTags.Ignore).exists(_.toString == name)
+  def isAnnotation = value.nonEmpty || Annotations.values.filter(_ != Annotations.Ignore).exists(_.toString == name)
   def isMarker = value.isEmpty && !isAnnotation
 
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
@@ -76,16 +76,16 @@ object Tag {
   def apply(file: Option[File], tag: cucumber.Tag): Tag = {
     val pos = Option(tag.getLocation).map(loc => SourceRef(file, loc))
     Tag(pos, tag.getName) tap { t =>
-      if (t.name == ReservedTags.DataTable.toString) {
+      if (t.name == Annotations.DataTable.toString) {
         DataTable.checkTagSyntax(t)
       }
     }
   }
 
-  def apply(name: ReservedTags): Tag = {
+  def apply(name: Annotations): Tag = {
     Tag(None, name.toString, None)
   }
-  def apply(name: ReservedTags, value: String): Tag = {
+  def apply(name: Annotations, value: String): Tag = {
     Tag(None, name.toString, Option(value))
   }
   def apply(tagString: String): Tag = {

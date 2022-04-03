@@ -22,7 +22,7 @@ import gwen.core.eval.binding.JavaScriptBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.engine.StepDefEngine
 import gwen.core.node.GwenNode
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Tag
@@ -53,8 +53,8 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
     val iStep = step.copy(withEvalStatus = Pending)
-    val ifTag = Tag(ReservedTags.If)
-    val tags = List(Tag(ReservedTags.Synthetic), ifTag, Tag(ReservedTags.StepDef))
+    val ifTag = Tag(Annotations.If)
+    val tags = List(Tag(Annotations.Synthetic), ifTag, Tag(Annotations.StepDef))
     val iStepDef = Scenario(None, tags, ifTag.toString, cond, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {

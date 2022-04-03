@@ -40,7 +40,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
         withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
       )
     }
-    val tags = List(Tag(ReservedTags.Synthetic), Tag(ReservedTags.ForEach), Tag(ReservedTags.StepDef))
+    val tags = List(Tag(Annotations.Synthetic), Tag(Annotations.ForEach), Tag(Annotations.StepDef))
     val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
     engine.beforeStepDef(preForeachStepDef, ctx)
     val steps =

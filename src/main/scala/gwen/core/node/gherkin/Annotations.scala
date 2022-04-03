@@ -16,5 +16,5 @@
 
 package gwen.core.node.gherkin
 
-enum ReservedTags:
+enum Annotations:
   case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred

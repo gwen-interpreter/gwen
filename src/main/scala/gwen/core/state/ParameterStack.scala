@@ -17,7 +17,7 @@
 package gwen.core.state
 
 import gwen.core._
-import gwen.core.node.gherkin.ReservedTags
+import gwen.core.node.gherkin.Annotations
 
 import scala.collection.mutable
 import scala.util.chaining._
@@ -30,9 +30,9 @@ import scala.util.chaining._
 class ParameterStack {
 
   object ForEachParam {
-    val itemName: String = s"${ReservedTags.ForEach}.itemName"
-    val itemIndex: String = s"${ReservedTags.ForEach}.itemIndex"
-    val itemNumber: String = s"${ReservedTags.ForEach}.itemNumber"
+    val itemName: String = s"${Annotations.ForEach}.itemName"
+    val itemIndex: String = s"${Annotations.ForEach}.itemIndex"
+    val itemNumber: String = s"${Annotations.ForEach}.itemNumber"
   }
 
   /**
