@@ -30,6 +30,7 @@ object FileBinding {
   def key(name: String) = s"$name/${BindingType.file}"
 
   def bind(name: String, filepath: String, env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(key(name), filepath)
   }
 

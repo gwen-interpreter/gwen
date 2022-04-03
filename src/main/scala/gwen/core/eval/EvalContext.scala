@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.binding.Binding
 import gwen.core.eval.binding.BindingResolver
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.support._
 import gwen.core.node.gherkin.Step
 import gwen.core.state.Environment
@@ -74,7 +75,13 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
    * Gets get value bound to the given name.
    *  @param name the name of the attribute or value
    */
-  def getBoundReferenceValue(name: String): String = getBinding(name).resolve()
+  def getBoundReferenceValue(name: String): String = {
+    getBinding(name).resolve() tap { value => 
+      LoadStrategyBinding.getBoundValue(name, this).filter(_ == LoadStrategy.Lazy) foreach { strategy => 
+        LoadStrategyBinding.bind(name, Option(value), strategy, this)
+      }
+    }
+  }
 
   /**
     * Gets a named binding

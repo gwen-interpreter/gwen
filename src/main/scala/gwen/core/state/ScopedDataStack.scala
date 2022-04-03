@@ -140,6 +140,16 @@ class ScopedDataStack() {
     ScopedDataStack(scopes.flatMap(_.filterAtts(pred)))
 
   /**
+    * Clears an attribute from the currently active scope.  An error is thrown
+    * if no current scope is set.
+    *
+    * @param name the name of the attribute to clear
+    */
+  def clear(name: String): Unit = {
+    current.clear(name)
+  }
+
+  /**
     * Binds an attribute to the currently active scope.  An error is thrown
     * if no current scope is set.
     *

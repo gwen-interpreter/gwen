@@ -30,6 +30,7 @@ object XPathBinding {
   private def sourceKey(name: String) = s"${baseKey(name)}/source"
 
   def bind(name: String, xpath: String, target: String, source: String, env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(xpathKey(name), xpath)
     env.scopes.set(targetKey(name), target)
     env.scopes.set(sourceKey(name), source)

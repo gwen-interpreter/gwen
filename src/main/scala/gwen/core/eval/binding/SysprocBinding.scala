@@ -28,6 +28,7 @@ object SysprocBinding {
   def delimiterKey(name: String) = s"$name/delimiter"
 
   def bind(name: String, sysproc: String, delimiter: Option[String], env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(key(name), sysproc)
     delimiter foreach { delim => 
       env.scopes.set(delimiterKey(name), delim)

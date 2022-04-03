@@ -26,6 +26,7 @@ object JavaScriptBinding {
   def key(name: String) = s"$name/${BindingType.javascript}"
 
   def bind(name: String, javascript: String, env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(key(name), javascript)
   }
 

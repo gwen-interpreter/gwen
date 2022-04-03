@@ -28,6 +28,7 @@ object JsonPathBinding {
   private def sourceKey(name: String) = s"${baseKey(name)}/source"
 
   def bind(name: String, jsonPath: String, source: String, env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(pathKey(name), jsonPath)
     env.scopes.set(sourceKey(name), source)
   }

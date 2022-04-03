@@ -18,6 +18,7 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core._
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.binding.JsonPathBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -32,6 +33,13 @@ class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source:
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       JsonPathBinding.bind(target, jsonPath, source, ctx)
+      step.loadStrategy foreach { strategy =>
+        val value = {
+          if (strategy == LoadStrategy.Eager) Option(new JsonPathBinding(target, ctx).resolve())
+          else None
+        }
+        LoadStrategyBinding.bind(target, value, strategy, ctx)
+      }
     }
   }
 

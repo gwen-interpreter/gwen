@@ -24,7 +24,7 @@ import gwen.core.status._
 
 import java.io.File
 
-class AdhocFeatureTest extends BaseTest {
+class LoadStrategiesTest extends BaseTest {
 
   val feature = "src/test/features/load/LoadStrategies.feature"
 
@@ -33,7 +33,7 @@ class AdhocFeatureTest extends BaseTest {
   s"Feature should" should "execute" in {
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File(s"target/reports")), 
+      reportDir = Some(new File(s"target/reports/load")), 
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File(feature)),
       settingsFiles = List(new File("src/test/resources/gwen.conf"))

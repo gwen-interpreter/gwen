@@ -28,6 +28,7 @@ object RegexBinding {
   private def sourceKey(name: String) = s"${baseKey(name)}/source"
 
   def bind(name: String, regex: String, source: String, env: Environment): Unit = {
+    env.scopes.clear(name)
     env.scopes.set(regexKey(name), regex)
     env.scopes.set(sourceKey(name), source)
   }

@@ -34,7 +34,7 @@ class DSLConflictsTest extends BaseTest {
   s"Feature should" should "execute" in {
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File(s"target/reports")), 
+      reportDir = Some(new File(s"target/reports/dsl-conflicts")), 
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
       features = List(new File(feature)),
       settingsFiles = List(new File("src/test/resources/gwen.conf"))

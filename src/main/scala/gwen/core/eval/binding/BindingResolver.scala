@@ -16,11 +16,14 @@
 
 package gwen.core.eval.binding
 
+import gwen.core.LoadStrategy
 import gwen.core.Errors
 import gwen.core.Settings
 import gwen.core.eval.EvalContext
 import gwen.core.state.ScopedData
 import gwen.core.node.gherkin.table.DataTable
+
+import scala.util.chaining._
 
 /** 
  * Resolves all bindings.
@@ -33,7 +36,9 @@ class BindingResolver[T <: EvalContext](ctx: T) {
     * @param name the binding name
     * @return the resolved value
     */
-  def resolve(name: String): String = getBinding(name).resolve()
+  def resolve(name: String): String = { 
+    getBinding(name).resolve()
+  }
 
   /**
     * Finds and returns a given binding.

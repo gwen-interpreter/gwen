@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.binding
+package gwen.core
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
-
-enum BindingType:
-  case text, javascript, xpath, regex, sysproc, property, setting, file, sql, `json path`, loading
-
-object BindingType {
-
-  def parse(bType: String): BindingType = {
-    Try(valueOf(bType)) match {
-      case Success(value) => value
-      case Failure(error) => bType match {
-        case "js" => javascript
-        case "system process" => sysproc
-        case _ => throw error
-      }
-    }
-  }
-
-}
-
+enum LoadStrategy:
+  case Eager, Lazy

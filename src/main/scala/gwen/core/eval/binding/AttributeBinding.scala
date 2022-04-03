@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,17 @@
 
 package gwen.core.eval.binding
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import gwen.core.state.Environment
 
-enum BindingType:
-  case text, javascript, xpath, regex, sysproc, property, setting, file, sql, `json path`, loading
+object AttributeBinding {
 
-object BindingType {
-
-  def parse(bType: String): BindingType = {
-    Try(valueOf(bType)) match {
-      case Success(value) => value
-      case Failure(error) => bType match {
-        case "js" => javascript
-        case "system process" => sysproc
-        case _ => throw error
-      }
+  def bind(name: String, value: String, env: Environment): Unit = {
+    value match {
+      case "true" | "false" => 
+          JavaScriptBinding.bind(name, value, env)
+      case _ =>
+        env.topScope.set(name, value)
     }
   }
 
 }
-

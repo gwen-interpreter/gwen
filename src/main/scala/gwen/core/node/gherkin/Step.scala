@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
+import gwen.core.state.EnvState
 import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
@@ -27,7 +28,6 @@ import scala.jdk.CollectionConverters._
 import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
-import gwen.core.state.EnvState
 
 /**
   * Captures a gherkin step.
@@ -208,8 +208,16 @@ case class Step(
     )
   }
 
-  def isBreakpoint: Boolean = tags.exists(_.name.toLowerCase == ReservedTags.Breakpoint.toString.toLowerCase)
-  def isFinally: Boolean = tags.exists(_.name.toLowerCase == ReservedTags.Finally.toString.toLowerCase)
+  def isBreakpoint: Boolean = hasTag(ReservedTags.Breakpoint)
+  def isFinally: Boolean = hasTag(ReservedTags.Finally)
+  def loadStrategy: Option[LoadStrategy] = { 
+    if (isEager) Some(LoadStrategy.Eager)
+    else if (isLazy) Some(LoadStrategy.Lazy)
+    else None
+  }
+  def isEager: Boolean = hasTag(ReservedTags.Eager)
+  def isLazy: Boolean = hasTag(ReservedTags.Lazy)
+  private def hasTag(tag: ReservedTags) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
 }
 
@@ -255,6 +263,24 @@ object Step {
       steps.filter(_.isFinally) foreach { step => 
         if (step != lastStep) {
           Errors.illegalStepAnnotationError(step, "@Finally permitted only in last step of parent node")
+        }
+      }
+    }
+    steps.filter(s => s.isEager || s.isLazy) foreach { step => 
+      if (!step.name.matches(".+ (is|will be) defined .*by ((?!property|setting).)+"))  {
+        val annotation = { 
+          if (step.isEager) ReservedTags.Eager
+          else if (step.isLazy) ReservedTags.Lazy
+          else ReservedTags.Deferred
+        }
+        Errors.illegalStepAnnotationError(step, s"@$annotation annotation permitted only for '<x> defined by <y>' DSL steps")
+      } else {
+        val annotations = {
+          (if (step.isEager) List(ReservedTags.Eager) else Nil) ++
+          (if (step.isLazy) List(ReservedTags.Lazy) else Nil)
+        }
+        if (annotations.size > 1) {
+          Errors.illegalStepAnnotationError(step, s"Only one of ${annotations.map(a => s"@$a").mkString(", ")} annotation permitted for step")
         }
       }
     }

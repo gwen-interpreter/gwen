@@ -178,6 +178,22 @@ class ScopedData(val scope: String) extends LazyLogging {
   }
 
   /**
+    * Clears the given attribure.
+    * 
+    * @param name the name of the attribute to clear
+    */
+  def clear(name: String): ScopedData = {
+    findEntries { case (n, _) =>
+      (n == name || n.startsWith(s"$name/"))
+    } filter { (_, v) => 
+      v!= null 
+    } foreach { (n, _) =>
+      set(n, null)
+    }
+    this
+  }
+
+  /**
    * Filters all contained attributes based on the given predicate.
    *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
@@ -209,8 +225,9 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
-  def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
+  def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
     atts.map(resolveNVP).filter(pred).toSeq ++ flashScope.map(_.map(resolveNVP).filter(pred).toSeq).getOrElse(Nil)
+  }
 
   /**
     * Returns this entire scope as a String.

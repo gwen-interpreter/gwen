@@ -18,9 +18,12 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core._
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.AttributeBinding
+import gwen.core.eval.binding.AttributeBinding
 import gwen.core.eval.binding.BindingType
 import gwen.core.eval.binding.FileBinding
 import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.binding.SysprocBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -35,10 +38,24 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
-        case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx)
+        case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx) 
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
+      }
+      step.loadStrategy foreach { strategy =>
+        val value = {
+          if (strategy == LoadStrategy.Eager) Option(
+            bindingType match {
+              case BindingType.javascript => new JavaScriptBinding(target, ctx).resolve()
+              case BindingType.sysproc => new SysprocBinding(target, ctx).resolve()
+              case BindingType.file => new FileBinding(target, ctx).resolve()
+              case _ => null
+            }
+          )
+          else None
+        }
+        LoadStrategyBinding.bind(target, value, strategy, ctx)
       }
     }
   }

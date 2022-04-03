@@ -16,7 +16,9 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.LoadStrategy
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.binding.XPathBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -31,6 +33,13 @@ class BindAsXPath[T <: EvalContext](target: String, xpath: String, targetType: S
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       XPathBinding.bind(target, xpath, targetType, source, ctx)
+      step.loadStrategy foreach { strategy =>
+        val value = {
+          if (strategy == LoadStrategy.Eager) Option(new XPathBinding(target, ctx).resolve())
+          else None
+        }
+        LoadStrategyBinding.bind(target, value, strategy, ctx)
+      }
     }
   }
 

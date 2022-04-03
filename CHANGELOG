@@ -1,3 +1,11 @@
+3.8.0
+=====
+Apr 2, 2022
+- Introduce `@Eager` and `@Lazy` annotations for `X defined by Y` DSL steps
+  - `@Eager` evaluates Y on the spot and assigns the value to X for subsequent reuse
+  - `@Lazy` evaluates Y when referenced the first time and assigns the value to X for subsequent reuse
+  - Neither (the default) evaluates Y when referenced every time and assigns the value to X for one-time use
+
 3.7.3
 =====
 Mar 31, 2022

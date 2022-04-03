@@ -16,7 +16,9 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.LoadStrategy
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.binding.RegexBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -31,6 +33,13 @@ class BindAsRegex[T <: EvalContext](target: String, regex: String, source: Strin
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       RegexBinding.bind(target, regex, source, ctx)
+      step.loadStrategy foreach { strategy =>
+        val value = {
+          if (strategy == LoadStrategy.Eager) Option(new RegexBinding(target, ctx).resolve())
+          else None
+        }
+        LoadStrategyBinding.bind(target, value, strategy, ctx)
+      }
     }
   }
 
