@@ -143,12 +143,12 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
-      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression(?:: )?(".+")?$message""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, Option(message))
-      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression(?:: )?(".+")?$message""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, Option(message))
-      case r"""(.+?)$attribute should be absent(?:: )?(".+")?$message""" =>
-        new IsAbsent(attribute, Option(message))
+      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
+        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
+      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
+      case r"""(.+?)$attribute should be absent""" =>
+        new IsAbsent(attribute, step.message)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(name, filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>

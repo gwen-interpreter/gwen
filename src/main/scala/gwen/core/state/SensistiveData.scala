@@ -17,6 +17,7 @@
 package gwen.core.state
 
 import gwen.core.Errors
+import gwen.core.Formatting
 import gwen.core.GwenSettings
 
 import scala.collection.mutable
@@ -31,7 +32,7 @@ import java.util.regex.Pattern
   */
 object SensitiveData {
 
-  private val ZeroChar = '‎' // zero width space char
+  private val ZeroChar = Formatting.ZeroChar // zero width space char
 
   private sealed case class MaskedValue(name: String, plain: String) {
     val masked = s"$Mask${ZeroChar.toString * ZeroCounter.incrementAndGet()}"

@@ -82,11 +82,11 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                       engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
                     } else {
                       logger.info(s"Processing [$name] $itemNo of $noOfElements")
-                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil), ctx)
+                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None), ctx)
                     }
                   case _ =>
                     logger.info(s"Processing [$name] $itemNo of $noOfElements")
-                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil), ctx)
+                    engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None), ctx)
                 }
               } finally {
                 ctx.topScope.popObject(name)

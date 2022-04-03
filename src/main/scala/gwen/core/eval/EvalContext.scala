@@ -124,6 +124,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
     val resolver: String => String = name => Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))
     val iName = interpolator(step.name) { resolver }
+    val iMessage = step.message.map(msg => interpolator(msg) { resolver })
     val iTable = step.table map { case (line, record) =>
       (line, record.map(cell => interpolator(cell) { resolver }))
     }
@@ -131,12 +132,13 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       (line, interpolator(content) { resolver }, contentType)
     }
     val iParams = step.params map { (name, value) => (name, interpolator(value) { resolver }) }
-    if (iName != step.name || iTable != step.table || iDocString != step.docString || iParams.mkString != step.params.mkString) {
+    if (iName != step.name || iTable != step.table || iDocString != step.docString || iParams.mkString != step.params.mkString || iMessage.flatMap(im => step.message.map(m => im != m)).getOrElse(false)) {
       step.copy(
         withName = iName,
         withTable = iTable,
         withDocString = iDocString,
-        withParams = iParams
+        withParams = iParams,
+        withMessage = iMessage
       ) tap { iStep =>
         logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
       }

@@ -226,6 +226,8 @@ extension (sc: StringContext) {
 
 object Formatting {
 
+  val ZeroChar = '‎' // zero width space char
+
   /**
     * Formats durations for presentation purposes.
     */

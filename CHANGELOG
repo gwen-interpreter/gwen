@@ -6,6 +6,7 @@ Apr 2, 2022
   - `@Lazy` evaluates Y when referenced the first time and assigns the value to X for subsequent reuse
   - Neither (the default) evaluates Y when referenced every time and assigns the value to X for one-time use
 - Refactor: renamed ReservedTags to Annoations
+- Parse out custom assert messages so they do not appear in reported step output
 
 3.7.3
 =====
