@@ -146,7 +146,7 @@ Feature: Load Strategies
      Then status 1 should be "passed"
       And status 2 should be "sustained"
       And status 3 should be "sustained"
-      And the json should be "{ "status": "sustained" }": "wrong json"
+      And the json should be "{ "status": "sustained" }" @Message "sustained status expected"
 
   Scenario: Eager, lazy and ephemeral system process dates
     Given date 1a is "0"

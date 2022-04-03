@@ -241,7 +241,8 @@ object Step {
         case _ => (step.getText, Nil)
       }
       n match {
-        case r"""(.+ should .+)$s: "(.+)$m"""" if !m.contains('"') => (s, t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
+        case r"""(.+)$s @Message "(.+)$m"""" => (s, t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
+        case r"""(.+)$s: "(.+)$m"""" if !m.contains('"') => (s, t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
         case _ => (n, t, None)
       }
     }

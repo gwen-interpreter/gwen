@@ -1,12 +1,19 @@
 3.8.0
 =====
-Apr 2, 2022
+Apr 3, 2022
 - Introduce `@Eager` and `@Lazy` annotations for `X defined by Y` DSL steps
   - `@Eager` evaluates Y on the spot and assigns the value to X for subsequent reuse
   - `@Lazy` evaluates Y when referenced the first time and assigns the value to X for subsequent reuse
   - Neither (the default) evaluates Y when referenced every time and assigns the value to X for one-time use
 - Refactor: renamed ReservedTags to Annoations
 - Parse out custom assert messages so they do not appear in reported step output
+- Introduce `@Message` annotation for custom assertion messages in addition to `: "message"` notation
+  - Example: 
+    - Without custom message (the standard assertion message will be reported if assertion fails): 
+      - `Then x should be y`
+    - With custom message: 
+      - `Then x should be y @Message "This custom message will be reported if assertion fails"` (new approach)
+      - or `Then x should be y: "This custom message will be reported if assertion fails"` (old approach)
 
 3.7.3
 =====

@@ -19,7 +19,7 @@ package gwen.core.status
 import gwen.core._
 
 object Failed {
-  val customAssertMessage = s"assertion failed: ${Formatting.ZeroChar}(.+?)${Formatting.ZeroChar}".r
+  val customMessage = s".*${Formatting.ZeroChar}(.+?)${Formatting.ZeroChar}".r
 }
 
 /**
@@ -38,7 +38,7 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   }
   private def getErrorMessage(err: Throwable): String = {
     err.getMessage match { 
-      case Failed.customAssertMessage(msg) if err.isInstanceOf[AssertionError] => msg // custom assertion message
+      case Failed.customMessage(msg) => msg // custom assertion message
       case msg => msg
     }
   }
