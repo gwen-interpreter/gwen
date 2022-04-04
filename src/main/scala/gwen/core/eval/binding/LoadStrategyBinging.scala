@@ -32,7 +32,10 @@ object LoadStrategyBinding {
         }
         else if (strategy == LoadStrategy.Lazy) {
           AttributeBinding.bind(name, v, ctx)
-          ctx.topScope.set(key(name), null)
+          val nKey = key(name)
+          if (ctx.topScope.getOpt(nKey).nonEmpty) {
+            ctx.topScope.set(key(name), null)
+          }
         }
       case None =>
         if (strategy == LoadStrategy.Lazy) {
@@ -41,8 +44,10 @@ object LoadStrategyBinding {
     }
   }
 
-  def getBoundValue[T <: EvalContext](name: String, ctx: T): Option[LoadStrategy] = {
-    ctx.topScope.getOpt(key(name)).map(LoadStrategy.valueOf)
+  def bindIfLazy[T <: EvalContext](name: String, value: String, ctx: T): Unit = {
+    ctx.topScope.getOpt(key(name)).map(LoadStrategy.valueOf).filter(_ == LoadStrategy.Lazy) foreach { strategy => 
+      LoadStrategyBinding.bind(name, Option(value), strategy, ctx)
+    }
   }
 
 }

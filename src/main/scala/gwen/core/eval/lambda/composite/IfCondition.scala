@@ -19,6 +19,7 @@ package gwen.core.eval.lambda.composite
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.engine.StepDefEngine
 import gwen.core.node.GwenNode
@@ -32,6 +33,8 @@ import gwen.core.eval.binding.Binding
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+
+import util.chaining.scalaUtilChainingOps
 
 class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
@@ -59,6 +62,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {
       val boolResult = ctx.evaluateJSPredicate(ctx.interpolate(javascript))
+      LoadStrategyBinding.bindIfLazy(cond, boolResult.toString, ctx)
       val satisfied = if (isNegated) !boolResult else boolResult
       if (satisfied) {
         logger.info(s"Processing conditional step (${if (isNegated) "not " else ""}$cond = true): ${step.keyword} $doStep")
@@ -70,7 +74,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     }
   }
 
-  private def getBinding(cond: String, ctx: T): JavaScriptBinding[T] = {
+  private def getBinding(cond: String, ctx: T): Binding[T, String] = {
     JavaScriptBinding(cond, ctx)
   }
 

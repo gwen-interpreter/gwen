@@ -183,11 +183,13 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param name the name of the attribute to clear
     */
   def clear(name: String): ScopedData = {
-    findEntries { case (n, _) =>
-      (n == name || n.startsWith(s"$name/"))
-    } filter { (_, v) => 
-      v!= null 
-    } foreach { (n, _) =>
+    (findEntries { case (n, _) =>
+      n == name || n.startsWith(s"$name/")
+    } map { case (n, _) =>
+      n
+    } distinct) filter { n => 
+      getOpt(n).nonEmpty
+    } foreach { n =>
       set(n, null)
     }
     this
