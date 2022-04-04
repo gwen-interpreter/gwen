@@ -131,7 +131,8 @@ Feature: Load Strategies
       And status 3 should be "sustained"
 
   Scenario: Eager, lazy and ephemeral JSON statuses
-    Given status 1 is "pending"
+    Given condition is "true"
+      And status 1 is "pending"
       And status 2 is "pending"
       And status 3 is "pending"
       And the json is "{ "status": "passed" }"
@@ -146,7 +147,12 @@ Feature: Load Strategies
      Then status 1 should be "passed"
       And status 2 should be "sustained"
       And status 3 should be "sustained"
-      And the json should be "{ "status": "sustained" }" @Message "sustained status expected"
+      And the json should be "{ "status": "sustained" }"  @Message("sustained status expected") if condition
+      And the json should be "{ "status": "sustained" }": "sustained status expected" if condition
+      And the json should be "{ "status": "sustained" }" if condition  @Message("sustained status expected")
+      And the json should be "{ "status": "sustained" }" if condition: "sustained status expected"
+      And the json should be "{ "status": "sustained" }"  @Message("sustained status expected")
+      And the json should be "{ "status": "sustained" }": "sustained status expected"
 
   Scenario: Eager, lazy and ephemeral system process dates
     Given date 1a is "0"

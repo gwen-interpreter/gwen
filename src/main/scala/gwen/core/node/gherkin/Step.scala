@@ -236,13 +236,13 @@ object Step {
     }
     val (name, tagList, message): (String, List[Tag], Option[String]) = {
       val (n, t) = step.getText.trim match {
-        case r"""(?i)((?:@\w+\s+)+)$ts(.*)$name""" => 
+        case r"""((?:@\w+\s+)+)$ts(.*)$name""" => 
           (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
         case _ => (step.getText, Nil)
       }
       n match {
-        case r"""(.+)$s @Message "(.+)$m"""" => (s, t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
-        case r"""(.+)$s: "(.+)$m"""" if !m.contains('"') => (s, t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
+        case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
+        case r"""(.+)$s1: "(.+)$m"\s*(.*)?$s2""" if !m.contains('"') => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
         case _ => (n, t, None)
       }
     }
