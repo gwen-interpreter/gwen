@@ -50,10 +50,11 @@ class BindingResolver[T <: EvalContext](ctx: T) {
     val visibleScopes = ctx.scopes.visible
     val attScopes = visibleScopes.filterAtts{case (n, _) => n.startsWith(name)}
     attScopes.findEntry { case (n, _) => 
-      n.matches(s"""$name(/(text|javascript|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")
+      n.matches(s"""$name(/(text|javascript|function.+|xpath.+|regex.+|json path.+|sysproc|file|sql.+))?""")
     } map { case (n, _) =>
       if (n == TextBinding.key(name)) new TextBinding(name, ctx)
-      else if (n == JavaScriptBinding.key(name)) new  JavaScriptBinding(name, ctx)
+      else if (n == JSBinding.key(name)) new  JSBinding(name, Nil, ctx)
+      else if (n.startsWith(JSFunctionBinding.baseKey(name))) new JSFunctionBinding(name, ctx)
       else if (n.startsWith(XPathBinding.baseKey(name))) new XPathBinding(name, ctx)
       else if (n.startsWith(RegexBinding.baseKey(name))) new RegexBinding(name, ctx)
       else if (n.startsWith(JsonPathBinding.baseKey(name))) new JsonPathBinding(name, ctx)

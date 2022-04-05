@@ -23,7 +23,7 @@ object AttributeBinding {
   def bind(name: String, value: String, env: Environment): Unit = {
     value match {
       case "true" | "false" => 
-          JavaScriptBinding.bind(name, value, env)
+          JSBinding.bind(name, value, env)
       case _ =>
         env.topScope.set(name, value)
     }

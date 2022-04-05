@@ -22,7 +22,8 @@ import gwen.core.eval.binding.AttributeBinding
 import gwen.core.eval.binding.AttributeBinding
 import gwen.core.eval.binding.BindingType
 import gwen.core.eval.binding.FileBinding
-import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.JSBinding
+import gwen.core.eval.binding.JSFunctionBinding
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.binding.SysprocBinding
 import gwen.core.eval.lambda.UnitStep
@@ -32,13 +33,14 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, delimiter: Option[String]) extends UnitStep[T] {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
-        case BindingType.javascript => JavaScriptBinding.bind(target, value, ctx) 
+        case BindingType.javascript => JSBinding.bind(target, value, ctx) 
+        case BindingType.function => JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter.getOrElse(","), ctx) 
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
@@ -47,7 +49,8 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
         val value = {
           if (strategy == LoadStrategy.Eager) Option(
             bindingType match {
-              case BindingType.javascript => new JavaScriptBinding(target, ctx).resolve()
+              case BindingType.javascript => new JSBinding(target, Nil, ctx).resolve()
+              case BindingType.function => new JSFunctionBinding(target, ctx).resolve()
               case BindingType.sysproc => new SysprocBinding(target, ctx).resolve()
               case BindingType.file => new FileBinding(target, ctx).resolve()
               case _ => null

@@ -41,14 +41,16 @@ class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Str
   private val key = FileBinding.key(name)
 
   override def resolve(): String = {
-    resolveValue(key) { filePath =>
-      ctx.evaluate(s"$$[dryRun:${BindingType.file}]") {
-        val file = new File(filePath)
-        if (file.exists()) {
-          ctx.interpolate(Source.fromFile(file).mkString)
-        } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
+    bindIfLazy(
+      resolveValue(key) { filePath =>
+        ctx.evaluate(s"$$[dryRun:${BindingType.file}]") {
+          val file = new File(filePath)
+          if (file.exists()) {
+            ctx.interpolate(Source.fromFile(file).mkString)
+          } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
+        }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

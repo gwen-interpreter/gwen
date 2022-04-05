@@ -19,6 +19,8 @@ package gwen.core.eval.binding
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 
+import util.chaining.scalaUtilChainingOps
+
 /** 
  * Defines a named binding and provides access to its evaluated value. 
  */
@@ -75,6 +77,12 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
       resolver(value)
     } getOrElse {
       Errors.unboundAttributeError(name)
+    }
+  }
+
+  private [binding] def bindIfLazy(value: String): String = {
+    value tap { _ =>
+      LoadStrategyBinding.bindIfLazy(name, value, ctx)
     }
   }
   

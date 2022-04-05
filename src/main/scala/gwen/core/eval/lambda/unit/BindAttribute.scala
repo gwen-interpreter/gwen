@@ -17,7 +17,7 @@
 package gwen.core.eval.lambda.unit
 
 import gwen.core.eval.EvalContext
-import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step

@@ -45,15 +45,17 @@ class XPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
   val sourceKey = XPathBinding.sourceKey(name)
 
   override def resolve(): String = {
-    resolveValue(xpathKey) { xpath =>
-      resolveValue(targetKey) { target =>
-        resolveRef(sourceKey) { source =>
-          ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
-            ctx.evaluateXPath(xpath, source, XMLNodeType.valueOf(target))
+    bindIfLazy(
+      resolveValue(xpathKey) { xpath =>
+        resolveValue(targetKey) { target =>
+          resolveRef(sourceKey) { source =>
+            ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
+              ctx.evaluateXPath(xpath, source, XMLNodeType.valueOf(target))
+            }
           }
         }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

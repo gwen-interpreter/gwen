@@ -26,7 +26,7 @@ import java.io.File
 
 class AdhocFeatureTest extends BaseTest {
 
-  val feature = "src/test/features/load/LoadStrategies.feature"
+  val feature = "src/test/features/bindings/JSFunctionBindings.feature"
 
   val interpreter = GwenInterpreter()
 

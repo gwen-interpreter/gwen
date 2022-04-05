@@ -42,13 +42,15 @@ class SQLBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Stri
   private val selectKey = SQLBinding.selectKey(name)
 
   override def resolve(): String = {
-    resolveValue(databaseKey) { database => 
-      resolveValue(selectKey) { selectStmt =>
-        ctx.evaluate(s"$$[dryRun:${BindingType.sql}]") {
-          ctx.executeSQLQuery(selectStmt, database)
+    bindIfLazy(
+      resolveValue(databaseKey) { database => 
+        resolveValue(selectKey) { selectStmt =>
+          ctx.evaluate(s"$$[dryRun:${BindingType.sql}]") {
+            ctx.executeSQLQuery(selectStmt, database)
+          }
         }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

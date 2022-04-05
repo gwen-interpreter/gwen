@@ -20,7 +20,7 @@ import gwen.core._
 import gwen.core.Formatting.DurationFormatter
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
-import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Annotations
@@ -67,7 +67,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
               iterationStep.evalStatus match {
                 case Failed(_, e) => throw e
                 case _ =>
-                  val javascript = ctx.interpolate(ctx.scopes.get(JavaScriptBinding.key(condition)))
+                  val javascript = ctx.interpolate(ctx.scopes.get(JSBinding.key(condition)))
                   ctx.evaluateJSPredicate(javascript) tap { result =>
                     if (!result) {
                       logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
@@ -78,7 +78,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   }
               }
             case "while" =>
-              val javascript = ctx.interpolate(ctx.scopes.get(JavaScriptBinding.key(condition)))
+              val javascript = ctx.interpolate(ctx.scopes.get(JSBinding.key(condition)))
               val result = ctx.evaluateJSPredicate(javascript)
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
@@ -118,9 +118,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
         operation match {
           case "until" =>
             evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-            ctx.scopes.get(JavaScriptBinding.key(condition))
+            ctx.scopes.get(JSBinding.key(condition))
           case _ =>
-            ctx.scopes.get(JavaScriptBinding.key(condition))
+            ctx.scopes.get(JSBinding.key(condition))
             evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
         }
       } catch {

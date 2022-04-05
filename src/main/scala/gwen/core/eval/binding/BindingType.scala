@@ -21,7 +21,7 @@ import scala.util.Success
 import scala.util.Try
 
 enum BindingType:
-  case text, javascript, xpath, regex, sysproc, property, setting, file, sql, `json path`, loading
+  case text, javascript, function, xpath, regex, sysproc, property, setting, file, sql, `json path`, loading
 
 object BindingType {
 

@@ -76,9 +76,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
    *  @param name the name of the attribute or value
    */
   def getBoundReferenceValue(name: String): String = {
-    getBinding(name).resolve() tap { value => 
-      LoadStrategyBinding.bindIfLazy(name, value, this)
-    }
+    getBinding(name).resolve()
   }
 
   /**

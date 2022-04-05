@@ -18,7 +18,7 @@ package gwen.core.eval.lambda.composite
 
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
-import gwen.core.eval.binding.JavaScriptBinding
+import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.engine.StepDefEngine
@@ -75,7 +75,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
   }
 
   private def getBinding(cond: String, ctx: T): Binding[T, String] = {
-    JavaScriptBinding(cond, ctx)
+    JSBinding(cond, Nil, ctx)
   }
 
 }

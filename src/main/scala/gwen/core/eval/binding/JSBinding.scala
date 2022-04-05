@@ -21,7 +21,7 @@ import gwen.core.state.Environment
 
 import scala.util.Try
 
-object JavaScriptBinding {
+object JSBinding {
   
   def key(name: String) = s"$name/${BindingType.javascript}"
 
@@ -32,16 +32,18 @@ object JavaScriptBinding {
 
 }
 
-class JavaScriptBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
+class JSBinding[T <: EvalContext](name: String, params: List[String], ctx: T) extends Binding[T, String](name, ctx) {
 
-  val key = JavaScriptBinding.key(name)
+  val key = JSBinding.key(name)
 
   override def resolve(): String = {
-    resolveValue(key) { javascript =>
-      ctx.evaluate(s"$$[dryRun:${BindingType.javascript}]") {
-        Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("")
+    bindIfLazy(
+      resolveValue(key) { javascript =>
+        ctx.evaluate(s"$$[dryRun:${BindingType.javascript}]") {
+          Option(ctx.evaluateJS(ctx.formatJSReturn(javascript), params*)).map(_.toString).getOrElse("")
+        }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

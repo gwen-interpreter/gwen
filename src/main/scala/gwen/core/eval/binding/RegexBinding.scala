@@ -41,13 +41,15 @@ class RegexBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
   val sourceKey = RegexBinding.sourceKey(name)
 
   override def resolve(): String = {
-    resolveValue(regexKey) { regex =>
-      resolveRef(sourceKey) { source =>
-        ctx.evaluate(s"$$[dryRun:${BindingType.regex}]") {
-          ctx.extractByRegex(regex, source)
+    bindIfLazy(
+      resolveValue(regexKey) { regex =>
+        resolveRef(sourceKey) { source =>
+          ctx.evaluate(s"$$[dryRun:${BindingType.regex}]") {
+            ctx.extractByRegex(regex, source)
+          }
         }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

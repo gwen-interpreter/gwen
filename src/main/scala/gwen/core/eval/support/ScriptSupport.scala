@@ -64,7 +64,11 @@ trait ScriptSupport {
     */
   private def evaluateScript[T](language: String, script: String, params: Any*): T = {
     try {
-      SensitiveData.withValue(script) { js =>
+      val javascript = params.map(_.toString).zipWithIndex.foldLeft(script) { (js, paramAndIndex) => 
+        val (param, index) = paramAndIndex
+        js.replaceAll(s"arguments\\[$index\\]", if (param.contains('\'')) s""""$param"""" else s"'$param'")
+      }
+      SensitiveData.withValue(javascript) { js =>
         new ScriptEngineManager(null).getEngineByName(language).eval(s"(function() { return $js })()").asInstanceOf[T]
       }
     } catch {

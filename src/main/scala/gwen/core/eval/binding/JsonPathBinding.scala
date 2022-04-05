@@ -41,13 +41,15 @@ class JsonPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T,
   val sourceKey = JsonPathBinding.sourceKey(name)
 
   override def resolve(): String = {
-    resolveValue(pathKey) { jsonPath => 
-      resolveRef(sourceKey) { source =>
-        ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
-          ctx.evaluateJsonPath(jsonPath, source)
+    bindIfLazy(
+      resolveValue(pathKey) { jsonPath => 
+        resolveRef(sourceKey) { source =>
+          ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
+            ctx.evaluateJsonPath(jsonPath, source)
+          }
         }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

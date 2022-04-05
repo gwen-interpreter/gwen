@@ -44,14 +44,16 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
 
   override def resolve(): String = {
     val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
-    lookupValue(key) { sysproc => 
-      ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
-        delimiter match {
-          case Some(delim) => sysproc.split(delim).toSeq.!!.trim
-          case None => sysproc.!!.trim
+    bindIfLazy(
+      lookupValue(key) { sysproc => 
+        ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
+          delimiter match {
+            case Some(delim) => sysproc.split(delim).toSeq.!!.trim
+            case None => sysproc.!!.trim
+          }
         }
       }
-    }
+    )
   }
 
   override def toString: String = Try {

@@ -128,9 +128,13 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), Some(delimiter))
+        new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), None, Some(delimiter))
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$expression""" =>
-        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None)
+        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.+?)"$delimiter""" =>
+        new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args""" =>
+        new BindAsType(attribute, BindingType.function, function, Some(args), Some(","))
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$expression""" =>
