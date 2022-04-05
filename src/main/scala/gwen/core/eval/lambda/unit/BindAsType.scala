@@ -40,7 +40,7 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
         case BindingType.javascript => JSBinding.bind(target, value, ctx) 
-        case BindingType.function => JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter.getOrElse(","), ctx) 
+        case BindingType.function => JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, ctx)
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))

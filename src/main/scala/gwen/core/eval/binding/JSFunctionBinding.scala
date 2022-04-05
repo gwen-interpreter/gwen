@@ -28,11 +28,13 @@ object JSFunctionBinding {
   def argsKey(name: String) = s"${baseKey(name)}/args"
   def delimiterKey(name: String) = s"${baseKey(name)}/delimiter"
 
-  def bind(name: String, javascriptRef: String, argsString: String, delimiter: String, env: Environment): Unit = {
+  def bind(name: String, javascriptRef: String, argsString: String, delimiter: Option[String], env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(jsRefKey(name), javascriptRef)
     env.scopes.set(argsKey(name), argsString)
-    env.scopes.set(delimiterKey(name), delimiter)
+    delimiter foreach { delim =>
+      env.scopes.set(delimiterKey(name), delim)
+    }
   }
 
 }
@@ -47,8 +49,12 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
     bindIfLazy(
       resolveValue(jsRefKey) { jsRef =>
         resolveValue(argsKey) { argsString =>
-          resolveValue(delimiterKey) { delimiter =>
-            new JSBinding(jsRef, argsString.split(delimiter).toList, ctx).resolve()
+          if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
+            resolveValue(delimiterKey) { delimiter =>
+              new JSBinding(jsRef, argsString.split(delimiter).toList, ctx).resolve()
+            }
+          } else {
+            new JSBinding(jsRef, List(argsString), ctx).resolve()
           }
         }
       }
@@ -58,8 +64,12 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
   override def toString: String = Try {
     resolveValue(jsRefKey) { jsRef =>
       resolveValue(argsKey) { argsString =>
-        resolveValue(delimiterKey) { delimiter =>
-          s"$name [${BindingType.function}: $jsRef, args: $argsString, delimiter: $delimiter]"
+        if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
+          resolveValue(delimiterKey) { delimiter =>
+            s"$name [${BindingType.function}: $jsRef, args: $argsString, delimiter: $delimiter]"
+          }
+        } else {
+          s"$name [${BindingType.function}: $jsRef, arg: $argsString]"
         }
       }
     }

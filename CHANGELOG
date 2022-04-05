@@ -1,3 +1,9 @@
+3.9.1
+=====
+Apr 5, 2022
+- JS function application binding without delimiter takes single argument only
+  - `<name> is defined by <javascriptRef> applied to "<argument>"`
+
 3.9.0
 =====
 Apr 5, 2022

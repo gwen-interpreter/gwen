@@ -133,8 +133,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.+?)"$delimiter""" =>
         new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args""" =>
-        new BindAsType(attribute, BindingType.function, function, Some(args), Some(","))
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$arg""" =>
+        new BindAsType(attribute, BindingType.function, function, Some(arg), None)
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$expression""" =>
