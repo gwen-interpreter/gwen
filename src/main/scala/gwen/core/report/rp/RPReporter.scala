@@ -28,6 +28,7 @@ import gwen.core.state.ScopedDataStack
 import gwen.core.status.Disabled
 import gwen.core.status.EvalStatus
 import gwen.core.status.Ignored
+import gwen.core.status.StatusKeyword
 import gwen.core.status.Skipped
 
 import scala.concurrent.duration.Duration
@@ -289,8 +290,8 @@ class RPReporter(rpClient: RPClient)
   private def logNonErrorMessage(step: Step): Unit = {
     val evalStatus = step.evalStatus
     val message = {
-      if (evalStatus == Disabled) Some(Disabled.keyword.toString)
-      else if (evalStatus == Ignored) Some(Ignored.keyword.toString)
+      if (evalStatus == Disabled) Some(StatusKeyword.Disabled.toString)
+      else if (evalStatus == Ignored) Some(StatusKeyword.Ignored.toString)
       else if (evalStatus.cause.nonEmpty) Some(evalStatus.message)
       else None
     }

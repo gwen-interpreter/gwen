@@ -1,3 +1,8 @@
+3.10.1
+======
+Apr 6, 2022
+- Add duration to `Ignored` status and render ignored stepdef links in grey
+
 3.10.0
 ======
 Apr 6, 2022

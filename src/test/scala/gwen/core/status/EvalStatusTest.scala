@@ -518,7 +518,7 @@ Background: The tester
     Passed(1).isEvaluated should be (true)
     Failed(1, new Exception()).isEvaluated should be (true)
     Disabled.isEvaluated should be (true)
-    Ignored.isEvaluated should be (true)
+    Ignored(5).isEvaluated should be (true)
     Sustained(1, new Exception()).isEvaluated should be (true)
     Skipped.isEvaluated should be (false)
     Pending.isEvaluated should be (false)
@@ -533,9 +533,9 @@ Background: The tester
   }
 
   "Passed statuses with one Ignored" should "be Passed" in {
-    EvalStatus(List(Ignored, Passed(10), Passed(10))).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Passed(10), Ignored, Passed(10))).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Passed(10), Passed(10), Ignored)).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Ignored(5), Passed(10), Passed(10))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Ignored(5), Passed(10))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Ignored(5))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10), Passed(10), Passed(10, true))).keyword should be (StatusKeyword.Passed)
   }
 
@@ -546,15 +546,15 @@ Background: The tester
   }
 
   "Passed statuses with some Ignored" should "be Passed" in {
-    EvalStatus(List(Ignored, Passed(10), Passed(10), Ignored, Ignored)).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Passed(10), Ignored, Passed(10), Ignored, Ignored)).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Passed(10), Passed(10), Ignored, Ignored, Disabled)).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Ignored(5), Passed(10), Passed(10), Ignored(5), Ignored(5))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Ignored(5), Passed(10), Ignored(5), Ignored(5))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Passed(10), Ignored(5), Ignored(5), Disabled)).keyword should be (StatusKeyword.Passed)
   }
 
   "Passed statuses with some Abstained" should "be Passed" in {
     EvalStatus(List(Passed(10, true), Passed(10), Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10), Disabled, Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Passed(10), Ignored, Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Passed(10), Ignored(5), Passed(10), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10), Passed(10), Passed(10, true), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
   }
 
@@ -564,10 +564,10 @@ Background: The tester
     EvalStatus(List(Disabled, Disabled, Disabled)).keyword should be (StatusKeyword.Skipped)
   }
 
-  "All ignored statuses" should "be Passed" in {
-    EvalStatus(List(Ignored)).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Ignored, Ignored)).keyword should be (StatusKeyword.Passed)
-    EvalStatus(List(Ignored, Ignored, Ignored)).keyword should be (StatusKeyword.Passed)
+  "All Ignored statuses" should "be Passed" in {
+    EvalStatus(List(Ignored(5))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Ignored(5), Ignored(5))).keyword should be (StatusKeyword.Passed)
+    EvalStatus(List(Ignored(5), Ignored(5), Ignored(5))).keyword should be (StatusKeyword.Passed)
   }
 
   "All abstained statuses" should "be Passed" in {

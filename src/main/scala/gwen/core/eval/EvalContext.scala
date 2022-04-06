@@ -204,7 +204,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
           eStep.evalStatus match {
             case Failed(_, error) => Failed(System.nanoTime - start, error)
             case Disabled => Disabled
-            case Ignored => Ignored
+            case _: Ignored => Ignored(System.nanoTime - start)
             case p: Passed => Passed(System.nanoTime - start, p.abstained)
             case _ => Passed(System.nanoTime - start)
           }

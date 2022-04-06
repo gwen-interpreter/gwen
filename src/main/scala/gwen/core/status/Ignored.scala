@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package gwen.core.status
 
-/** Defines the ignored status. */
-case object Ignored extends EvalStatus {
+/**
+  * Defines an Passed status.
+  * 
+  * @param nanos the duration in nanoseconds
+  */
+case class Ignored(nanos: Long) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Ignored
-  override val nanos = 0L
   override def exitCode = 0
   override def emoticon = "[:)]"
 }

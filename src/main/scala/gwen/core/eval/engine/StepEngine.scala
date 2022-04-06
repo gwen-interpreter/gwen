@@ -252,7 +252,7 @@ trait StepEngine[T <: EvalContext] {
         if (status.isDisabledError) {
           fStep.copy(withEvalStatus = Disabled)
         } else if (fStep.isTry) {
-          fStep.copy(withEvalStatus = Ignored)
+          fStep.copy(withEvalStatus = Ignored(nanos))
         } else if (status.isSustainedError) {
           fStep.copy(withEvalStatus = Sustained(nanos, error))
         } else {

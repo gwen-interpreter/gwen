@@ -458,7 +458,7 @@ trait DetaiFormatter {
         ),
         " ",
         if (step.printableTags.nonEmpty) formatTags(step.printableTags, true) else "",
-        if (stepDef.nonEmpty && status == StatusKeyword.Passed) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
+        if (stepDef.nonEmpty && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" \u00a0 "),
         formatParams(step.params, status),
         raw(" \u00a0 "),
@@ -526,7 +526,7 @@ trait DetaiFormatter {
   }
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword): TypedTag[String] = {
-    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
+    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed && status != StatusKeyword.Ignored) " in" else ""}", role := "tabpanel",
       formatScenario(stepDef)
     )
   }
