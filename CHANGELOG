@@ -1,3 +1,10 @@
+3.10.0
+======
+Apr 6, 2022
+- Introduced `@Try` annotation and `Ignored` status
+  - Steps annotated with `@Try` that fail will be reported as `Ignored`
+- Fix: Accept blank arguments into JS function application bindings
+
 3.9.1
 =====
 Apr 5, 2022

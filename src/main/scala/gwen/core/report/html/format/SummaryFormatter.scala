@@ -110,9 +110,9 @@ trait SummaryFormatter {
       total = summary.results.size
       countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
     } yield {
-      div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
-          li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style :="padding: 10px 10px; margin-right: 10px;",
+          li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style :="padding: 10px 10px; margin-right: 10px;",
             span(`class` := s"label label-${cssStatus(status)}",
               status.toString
             ),
@@ -131,7 +131,7 @@ trait SummaryFormatter {
         ),
         div(`class` := "panel-body",
           ul(`class` := "list-group",
-            li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
+            li(`class` := s"list-group-item list-group-item-${bgStatus(status)}",
               div(`class` := "container-fluid", style := "padding: 0px 0px",
                 for {
                   ((result, resultIndex), rowIndex) <- results.zipWithIndex

@@ -131,9 +131,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), None, Some(delimiter))
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.+?)"$delimiter""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
         new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$arg""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.*)"$arg""" =>
         new BindAsType(attribute, BindingType.function, function, Some(arg), None)
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source)

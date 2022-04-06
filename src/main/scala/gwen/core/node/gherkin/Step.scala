@@ -87,7 +87,10 @@ case class Step(
   }
 
   def deepAttachments: List[(String, File)] = {
-    deepSteps.flatMap(_.attachments)
+    val dSteps = deepSteps
+    if (deepSteps.size > 1) {
+      deepSteps.filter(!_.evalStatus.isIgnored).flatMap(_.attachments)
+    } else this.attachments
   }
 
   /** Returns the given value if the step has no docString or the docString content otherwise. */
@@ -220,6 +223,7 @@ case class Step(
   }
   def isEager: Boolean = hasTag(Annotations.Eager)
   def isLazy: Boolean = hasTag(Annotations.Lazy)
+  def isTry: Boolean = hasTag(Annotations.Try)
   private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
 }

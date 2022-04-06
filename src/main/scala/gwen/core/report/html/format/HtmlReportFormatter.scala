@@ -131,7 +131,19 @@ object HtmlReportFormatter {
     StatusKeyword.Skipped -> "warning",
     StatusKeyword.Pending -> "info",
     StatusKeyword.Loaded -> "success",
-    StatusKeyword.Disabled -> "default"
+    StatusKeyword.Disabled -> "default",
+    StatusKeyword.Ignored -> "default"
+  )
+
+  private [format] val bgStatus = Map(
+    StatusKeyword.Passed -> "success", 
+    StatusKeyword.Failed -> "danger",
+    StatusKeyword.Sustained -> "danger",
+    StatusKeyword.Skipped -> "warning",
+    StatusKeyword.Pending -> "info",
+    StatusKeyword.Loaded -> "success",
+    StatusKeyword.Disabled -> "default",
+    StatusKeyword.Ignored -> "success"
   )
 
   private [format] val linkColor = Map(
@@ -141,7 +153,8 @@ object HtmlReportFormatter {
     StatusKeyword.Skipped -> "#8a6d3b",
     StatusKeyword.Pending -> "#31708f",
     StatusKeyword.Loaded -> "#3c763d",
-    StatusKeyword.Disabled -> "grey"
+    StatusKeyword.Disabled -> "grey",
+    StatusKeyword.Ignored -> "grey"
   )
 
   private [format] def formatHtmlHead(pageTitle: String, rootPath: String): TypedTag[String] = {

@@ -17,7 +17,7 @@
 package gwen.core.status
 
 enum StatusKeyword:
-  case Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled
+  case Passed, Failed, Sustained, Skipped, Pending, Loaded, Disabled, Ignored
 
 object StatusKeyword {
 

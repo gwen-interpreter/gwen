@@ -135,9 +135,9 @@ trait DetaiFormatter {
       val count = metaResults.size
       val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
       val status = metaStatus.keyword
-      div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
-          li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+          li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
             span(`class` := s"label label-${cssStatus(status)}",
               "Meta"
             ),
@@ -154,7 +154,7 @@ trait DetaiFormatter {
         div(id := "meta", `class` :="panel-collapse collapse",
           div(`class` := "panel-body",
             ul(`class` := "list-group",
-              li(`class` := s"list-group-item list-group-item-${cssStatus(status)}",
+              li(`class` := s"list-group-item list-group-item-${bgStatus(status)}",
                 div(`class` := "container-fluid", style := "padding: 0px 0px",
                   for {
                     (res, rowIndex) <- metaResults.zipWithIndex
@@ -175,7 +175,7 @@ trait DetaiFormatter {
     val status = scenario.evalStatus.keyword
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
-    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
       for {
         background <- scenario.background
       } yield {
@@ -185,7 +185,7 @@ trait DetaiFormatter {
         formatScenarioHeader(scenario)
       ),
       div(`class` := "panel-body",
-        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
+        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
           ul(`class` := "list-group",
             for {
               step <- scenario.steps
@@ -210,7 +210,7 @@ trait DetaiFormatter {
   private def formatScenarioHeader(scenario: Scenario): TypedTag[String] = {
     val status = scenario.evalStatus.keyword
     val tags = scenario.tags
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+    li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
       for {
         opt <- Option(scenario.isStepDef)
         if opt
@@ -262,9 +262,9 @@ trait DetaiFormatter {
   private def formatBackground(parent: GherkinNode, background: Background): TypedTag[String] = {
     val status = background.evalStatus.keyword
     val keywordPixels = noOfKeywordPixels(background.steps)
-    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}", style := "border-top: none; border-left:none; border-right: none; border-radius: 4px 4px 0 0",
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}", style := "border-top: none; border-left:none; border-right: none; border-radius: 4px 4px 0 0",
       ul(`class` := "list-group",
-        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+        li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
           span(`class` := s"label label-${cssStatus(status)}",
             background.keyword
           ),
@@ -302,9 +302,9 @@ trait DetaiFormatter {
       (exs, index) <- examples.zipWithIndex
       status = exs.evalStatus.keyword
     } yield {
-      div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
-          li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+          li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
             span(`class` := s"label label-${cssStatus(status)}",
               exs.keyword
             ),
@@ -342,8 +342,8 @@ trait DetaiFormatter {
   private def formatExampleHeader(evalStatus: EvalStatus, table: List[(Long, List[String])], keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
     val line = table.head._1
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)}",
+    li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
+      div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
             if (line > 0) line.toString else ""
@@ -361,8 +361,8 @@ trait DetaiFormatter {
     val line = table(rowIndex)._1
     val status = evalStatus.keyword
     val rowHtml = formatDataRow(table, rowIndex, evalStatus, isExpanded)
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)}",
+    li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
+      div(`class` := s"bg-${bgStatus(status)}",
         span(`class` := "pull-right",
           small(
             durationOrStatus(evalStatus).toString
@@ -397,14 +397,14 @@ trait DetaiFormatter {
   private def formatRule(rule: Rule): TypedTag[String] = {
     val status = rule.evalStatus.keyword
     val conflict = rule.scenarios.map(_.evalStatus.keyword).exists(_ != status)
-    div(`class` := s"panel panel-${cssStatus(status)} bg-${cssStatus(status)}",
+    div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
       for {
         background <- rule.background
       } yield {
         formatBackground(rule, background)
       },
       ul(`class` := "list-group",
-        li(`class` := s"list-group-item list-group-item-${cssStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+        li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
           span(`class` := s"label label-${cssStatus(status)}",
             rule.keyword
           ),
@@ -423,7 +423,7 @@ trait DetaiFormatter {
         )
       ),
       div(`class` := "panel-body",
-        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${cssStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
+        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
           ul(`class` := "list-group",
             for {
               scenario <- rule.scenarios
@@ -439,8 +439,8 @@ trait DetaiFormatter {
   private def formatStepLine(step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
     val stepDef = step.stepDef
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)} ${if (evalStatus.isDisabled || evalStatus.isAbstained) "text-muted" else ""}",
+    li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${bgStatus(status)}" else ""}",
+      div(`class` := s"bg-${bgStatus(status)} ${if (evalStatus.isDisabled || evalStatus.isAbstained || evalStatus.isIgnored) "text-muted" else ""}",
         span(`class` := "pull-right",
           small(
             durationOrStatus(step.evalStatus).toString
@@ -481,8 +481,8 @@ trait DetaiFormatter {
         if opt
       } yield {
         ul(
-          li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
-            div(`class` := s"bg-${cssStatus(status)}",
+          li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
+            div(`class` := s"bg-${bgStatus(status)}",
               span(`class` := s"badge badge-${cssStatus(status)}${if(status != StatusKeyword.Passed && status != StatusKeyword.Loaded) s""" badge-${status.toString.toLowerCase}-issue""" else ""}",
                 status.toString
               ),
@@ -500,8 +500,8 @@ trait DetaiFormatter {
 
   private def formatRawStepLine(step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
-    li(`class` := s"list-group-item list-group-item-${cssStatus(status)} ${if (evalStatus.isError) s"bg-${cssStatus(status)}" else ""}",
-      div(`class` := s"bg-${cssStatus(status)}",
+    li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
+      div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
             step.sourceRef.map(_.line).getOrElse("").toString
@@ -538,7 +538,7 @@ trait DetaiFormatter {
       rowIndex <- step.table.indices
       line = step.table(rowIndex)._1
     } yield {
-      div(`class` := s"bg-${cssStatus(status)}",
+      div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
             if (line > 0) line.toString else ""
@@ -560,7 +560,7 @@ trait DetaiFormatter {
       (contentLine, index) <- formatDocString(docString, false).split("""\r?\n""").toList.zipWithIndex
       line = if (docString._1 > 0) docString._1 + index else 0
     } yield {
-      div(`class` := s"bg-${cssStatus(status)}",
+      div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
             if (line > 0) line.toString else ""
@@ -569,14 +569,14 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " "
         ),
-        code(`class` := s"bg-${cssStatus(status)} doc-string",
+        code(`class` := s"bg-${bgStatus(status)} doc-string",
           raw(escapeHtml(contentLine))
         ),
         for {
           cType <- contentType
           if (index == 0)
         } yield {
-          code(`class` := s"bg-${cssStatus(status)} doc-string-type",
+          code(`class` := s"bg-${bgStatus(status)} doc-string-type",
             cType
           )
         }
@@ -585,7 +585,7 @@ trait DetaiFormatter {
   }
 
   private def formatDataRow(table: List[(Long, List[String])], rowIndex: Int, status: EvalStatus, isExample: Boolean): TypedTag[String] = {
-    code(`class` := s"bg-${cssStatus(status.keyword)} ${if (rowIndex == 0 || status.isFailed || !isExample) "data-table" else s"text-${cssStatus(status.keyword)}"}",
+    code(`class` := s"bg-${bgStatus(status.keyword)} ${if (rowIndex == 0 || status.isFailed || !isExample) "data-table" else s"text-${cssStatus(status.keyword)}"}",
       raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
     )
   }
@@ -612,7 +612,7 @@ trait DetaiFormatter {
   def formatParams(params: List[(String, String)], status: StatusKeyword): Option[TypedTag[String]] = {
     if (params.size > 0) {
       Some(
-        div(`class` := s"dropdown bg-${cssStatus(status)}",
+        div(`class` := s"dropdown bg-${bgStatus(status)}",
           button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
             strong(
               "parameters "
@@ -775,8 +775,8 @@ object DetailFormatter {
 
   private def videoHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/videos/${file.getName}"
 
-  private [format] def formatAttachmentsDropdown(name: String, attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = {
-    div(`class` := s"dropdown bg-${cssStatus(status)}",
+  private [format] def formatAttachmentsDropdown(name: String, attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
+    div(`class` := s"dropdown bg-${bgStatus(status)}",
       button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
         strong(
           name
