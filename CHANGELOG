@@ -2,6 +2,7 @@
 ======
 Apr 6, 2022
 - Add duration to `Ignored` status and render ignored stepdef links in grey
+- Change CSV record number label suffux from ' (plus input data record n)' to ' + Input data record n'
 
 3.10.0
 ======

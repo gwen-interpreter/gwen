@@ -95,7 +95,7 @@ trait SpecNormaliser extends BehaviorRules {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${bg.name} (plus input data record ${dataRecord.recordNo})",
+          s"${bg.name} + Input data record ${dataRecord.recordNo}",
           bg.description ++ description,
           steps ++ bgSteps
         )

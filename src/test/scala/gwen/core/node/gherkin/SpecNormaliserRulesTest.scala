@@ -201,7 +201,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
     result.background should be (None)
     result.feature.name should be ("About me [1]")
     result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be (s"${background.name} (plus input data record 1)")
+    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record 1")
     result.scenarios(0).background.get.description should be (List("Input data file: AboutMe.csv"))
     result.scenarios(0).background.get.steps.size should be (4)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
