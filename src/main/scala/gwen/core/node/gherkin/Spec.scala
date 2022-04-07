@@ -75,7 +75,7 @@ case class Spec(
   def evalScenarios = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
 
   /** Gets all attachments. */
-  def attachments: List[(String, File)] = steps.flatMap(_.deepAttachments)
+  def attachments: List[(String, File)] = steps.flatMap(_.deepSteps.flatMap(_.attachments))
 
   /** Gets the number of sustained errors. */
   def sustainedCount: Int = {
