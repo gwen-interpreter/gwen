@@ -119,6 +119,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureByRegex(name, expression, source)
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByJsonPath(name, expression, source)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2( ignoring case)?$ignoringCase as (.+?)$name""" =>
+        new CaptureSimilarity(name, attribute1, None, Some(value2), Option(ignoringCase).isDefined)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2( ignoring case)?$ignoringCase as (.+?)$name""" =>
+        new CaptureSimilarity(name, attribute1, Some(attribute2), None, Option(ignoringCase).isDefined)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2( ignoring case)?$ignoringCase""" =>
+        new CaptureSimilarity("similarity score", attribute1, None, Some(value2), Option(ignoringCase).isDefined)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
+        new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None, Option(ignoringCase).isDefined)
       case r"""I capture (.+?)$source as (.+?)$attribute""" =>
         new Capture(attribute, source)
       case r"""I capture (.+?)$attribute""" =>
@@ -149,6 +157,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
         new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
+      case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2( ignoring case)?$ignoringCase""" =>
+        new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
+      case r"""(.+?)$attribute1 should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
+        new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should be absent""" =>

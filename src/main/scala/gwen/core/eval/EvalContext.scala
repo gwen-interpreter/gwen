@@ -43,7 +43,7 @@ import java.net.URL
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
-    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport {
+    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
@@ -159,6 +159,32 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
         }
     }
     if (!negate) res else !res
+  }
+
+  def checkSimilarity(value1: String, value2: String, operator: SimilarityOperator, percentage: Double, negate: Boolean): Try[(Boolean, Option[Double])] = Try {
+    val percentageBD =  BigDecimal(percentage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+    dscSimilarity(value1, value2) map { score => 
+      topScope.set("similarity score", score.toString)
+      val percentageScoreBD = BigDecimal(score * 100).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+      val res = operator match {
+        case SimilarityOperator.be =>
+          percentageScoreBD == percentageBD
+        case SimilarityOperator.`be less than` =>
+          percentageScoreBD < percentageBD
+        case SimilarityOperator.`be at most` =>
+          percentageScoreBD <= percentageBD
+        case SimilarityOperator.`be more than` =>
+          percentageScoreBD > percentageBD
+        case SimilarityOperator.`be at least` =>
+          percentageScoreBD >= percentageBD
+      }
+      (if (!negate) res else !res, Some(score))
+    } getOrElse {
+      if (topScope.getOpt("similarity score").nonEmpty) {
+        topScope.set("similarity score", null)
+      }
+      (negate, None)
+    }
   }
 
   def parseExpression(operator: ComparisonOperator, expression: String): String = {

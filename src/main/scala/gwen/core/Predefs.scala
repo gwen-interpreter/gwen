@@ -277,6 +277,7 @@ object Formatting {
   def rightPad(str: String, size: Int): String = s"$str${" " * (size - str.length)}"
   def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
   def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
+  def upTo2DecimalPlaces(number: Double): String = new DecimalFormat("#.##").format(number)
 
   def formatTable(table: List[(Long, List[String])]): String = {
     (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")
