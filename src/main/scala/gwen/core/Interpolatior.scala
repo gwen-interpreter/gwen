@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Branko Juric, Brady Wood
+ * Copyright 2015-2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwen.core.eval.support
-
-import gwen.core._
+package gwen.core
 
 import com.typesafe.scalalogging.LazyLogging
 
@@ -25,7 +23,7 @@ import scala.util.Success
 /**
  * Provides support for string interpolation.
  */
-trait InterpolationSupport extends LazyLogging {
+trait Interpolator extends LazyLogging {
 
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r

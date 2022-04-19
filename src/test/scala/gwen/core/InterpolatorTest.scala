@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.eval.support
+package gwen.core
 
 import gwen.core.BaseTest
 import gwen.core.Settings
@@ -22,7 +22,7 @@ import gwen.core.Settings
 import gwen.core.Errors
 import org.scalatest.matchers.should.Matchers
 
-class InterpolationSupportTest extends BaseTest with Matchers with InterpolationSupport {
+class InterpolatorTest extends BaseTest with Matchers with Interpolator {
 
   """interpolate using property syntax: prefix "${property}"""" should "resolve" in {
     interpolateString("""hello "${property}"""") { _ => "you" } should be ("""hello "you"""")

@@ -36,7 +36,7 @@ import java.util.regex.Matcher
   *
   * @author Branko Juric
   */
-trait SpecNormaliser extends BehaviorRules {
+trait SpecNormaliser extends BehaviorRules with Interpolator {
 
   /**
     * Normalises a parsed feature.
@@ -49,8 +49,15 @@ trait SpecNormaliser extends BehaviorRules {
     validate(spec.background, scenarios, spec.specType)
     Spec(
       dataRecord map { record =>
+        val interpolator: String => String = item => record.data.filter(_._1 == item).headOption.map(_._2).getOrElse(s"$$[$item]")
+        val name = interpolateString(spec.feature.name) { interpolator }
+        val desc = spec.feature.description map { line => 
+          interpolateString(line) { interpolator }
+        }
         spec.feature.copy(
-          withName = s"${spec.feature.name} [${record.recordNo}]")
+          withName = s"$name [${record.recordNo}]",
+          withDescription = desc
+        )
       } getOrElse spec.feature,
       None,
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),

@@ -20,7 +20,12 @@ import HtmlReportFormatter._
 import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.node._
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.SpecType
+
+import gwen.core.report.ReportFormat
 import gwen.core.report.ReportFormatter
+import gwen.core.report.html.HtmlReportConfig
 import gwen.core.status._
 import gwen.core.result.SpecResult
 
@@ -33,10 +38,6 @@ import java.text.DecimalFormat
 import java.util.Date
 import java.io.File
 import scala.io.Source
-import gwen.core.node.gherkin.Step
-import gwen.core.report.html.HtmlReportConfig
-import gwen.core.report.ReportFormat
-import gwen.core.node.gherkin.SpecType
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with DetaiFormatter {
@@ -78,7 +79,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
-    val reportBase = result.reports.get(ReportFormat.html).headOption map { reportFile => 
+    val reportBase = result.reports.flatMap(_.get(ReportFormat.html).flatMap(_.headOption)) map { reportFile => 
       val reportDir = HtmlReportConfig.reportDir(options).get
       Some(relativePath(reportFile.getParentFile, reportDir).replace(File.separatorChar, '/'))
     } getOrElse None
@@ -100,7 +101,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           )
         )
       ),
-      div(`class` := "col-md-2",
+      div(`class` := "col-md-3",
         reportPath match {
           case Some(rpath) =>
             a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
@@ -134,7 +135,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           } else "",
         )
       },
-      div(`class` := "col-md-5",
+      div(`class` := "col-md-4",
         span(`class` := "pull-right",
           small(
             formatDuration(result.elapsedTime)
@@ -147,8 +148,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
         val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
         List(
           div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
-            div(`class` := "col-md-5"),
-            div(`class` := "col-md-7",
+            div(`class` := "col-md-6"),
+            div(`class` := "col-md-6",
               reportPath match {
                 case Some(rpath) =>
                   a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",

@@ -42,7 +42,7 @@ import java.net.URL
   * Provides all evaluation capabilities.
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
-    extends Environment(envState) with InterpolationSupport with RegexSupport with XPathSupport with JsonPathSupport
+    extends Environment(envState) with Interpolator with RegexSupport with XPathSupport with JsonPathSupport
     with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport {
 
   // resolves locator bindings
