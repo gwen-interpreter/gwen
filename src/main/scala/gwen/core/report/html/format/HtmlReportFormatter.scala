@@ -234,7 +234,7 @@ object HtmlReportFormatter {
       tr(
         td(width := "100px",
           a(href := info.gwenHome,
-            img(src := s"${rootPath}resources/img/gwen-logo.png", border := "0", width := "82px")
+            img(src := s"${rootPath}resources/img/gwen-logo.svg", border := "0", width := "78px")
           )
         ),
         td(
