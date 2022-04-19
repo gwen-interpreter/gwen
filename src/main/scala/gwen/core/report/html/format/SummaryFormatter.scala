@@ -137,7 +137,7 @@ trait SummaryFormatter {
                   ((result, resultIndex), rowIndex) <- results.zipWithIndex
                   reportFile = result.reports.get(ReportFormat.html).head
                 } yield {
-                  formatSummaryLine(result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
+                  formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
                 }
               )
             )

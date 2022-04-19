@@ -31,6 +31,12 @@ import scalatags.Text.TypedTag
 
 import java.text.DecimalFormat
 import java.util.Date
+import java.io.File
+import scala.io.Source
+import gwen.core.node.gherkin.Step
+import gwen.core.report.html.HtmlReportConfig
+import gwen.core.report.ReportFormat
+import gwen.core.node.gherkin.SpecType
 
 /** Formats the feature summary and detail reports in HTML. */
 trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with DetaiFormatter {
@@ -66,12 +72,17 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
     }
   }
   
-  private [format] def formatSummaryLine(result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
+  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): List[TypedTag[String]] = {
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
       case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
     }
+    val reportBase = result.reports.get(ReportFormat.html).headOption map { reportFile => 
+      val reportDir = HtmlReportConfig.reportDir(options).get
+      Some(relativePath(reportFile.getParentFile, reportDir).replace(File.separatorChar, '/'))
+    } getOrElse None
+    val videos = result.videos
     div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
       div(`class` := "col-md-3", style := "padding-left: 0px",
         for {
@@ -89,7 +100,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           )
         )
       ),
-      div(`class` := "col-md-4",
+      div(`class` := "col-md-2",
         reportPath match {
           case Some(rpath) =>
             a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
@@ -101,6 +112,28 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
             raw(escapeHtml(featureName))
         }
       ),
+      if (!result.spec.isMeta && result.evalStatus.isError) {
+        val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
+        div(`class` := "col-md-2",
+          if (attachments.nonEmpty || videos.nonEmpty) {
+            div(
+              if (videos.nonEmpty) {
+                formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
+              } else "",
+              " ",
+              if (attachments.nonEmpty) {
+                formatAttachments(reportBase, attachments, result.evalStatus.keyword)
+              } else ""
+            )
+          } else ""
+        )
+      } else {
+        div(`class` := "col-md-2",
+          if (!result.spec.isMeta && videos.nonEmpty) {
+            formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
+          } else "",
+        )
+      },
       div(`class` := "col-md-5",
         span(`class` := "pull-right",
           small(
@@ -108,7 +141,32 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           )
         ),
         result.spec.specFile.map(_.getPath()).getOrElse("").toString
-      )
+      ),
+    ) :: (
+      if (!result.spec.isMeta && result.evalStatus.isError) {
+        val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
+        List(
+          div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
+            div(`class` := "col-md-5"),
+            div(`class` := "col-md-7",
+              reportPath match {
+                case Some(rpath) =>
+                  a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
+                    span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
+                      small(
+                        raw(escapeHtml(result.evalStatus.message))
+                      )
+                    )
+                  )
+                case None =>
+                  small(
+                    raw(escapeHtml(result.evalStatus.message))
+                  )
+              }
+            )
+          )
+        )
+      } else Nil
     )
   }
 
@@ -208,10 +266,9 @@ object HtmlReportFormatter {
       span(`class` := s"badge badge-${cssStatus(status)}",
         if (renderErrorLink && status == StatusKeyword.Failed) {
           Seq(
-            a(`class` := s"inverted", id := "failed-link", href := "#", style := "color:white;",
+            a(`class` := s"inverted", id := "failed-link", href := s"#$status", style := "color:white;",
               status.toString
-            ),
-            formatFailedLinkScript("failed")
+            )
           )
         } else {
           status.toString
@@ -228,10 +285,9 @@ object HtmlReportFormatter {
           span(`class` := "badge badge-danger",
             if (renderErrorLink) {
               Seq(
-                a(`class` := s"inverted", id := "sustained-link", href := "#", style := "color:white;",
+                a(`class` := s"inverted", id := "sustained-link", href := s"#$status", style := "color:white;",
                   sustainedError
-                ),
-                formatFailedLinkScript("sustained")
+                )
               )
             } else {
               sustainedError
@@ -257,21 +313,64 @@ object HtmlReportFormatter {
     )
   }
 
-  private def formatFailedLinkScript(statusType: String): TypedTag[String] = {
-    script(
-      raw(
-        s"""|  
-            |  $$(document).ready(function() {
-            |    $$('#${statusType}-link').click(
-            |      function(e) {
-            |        e.preventDefault();
-            |        $$('html, body').animate({scrollTop:$$('.badge-${statusType}-issue').closest('.panel').offset().top}, 500);
-            |      }
-            |    );
-            |  });
-            |""".stripMargin
+  private [format] def formatAttachments(baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword): Option[TypedTag[String]] = {
+    if (attachments.size > 1) {
+      Some(
+        formatAttachmentsDropdown("Attachments", baseDir, attachments, status, attachmentHref)
+      )
+    } else if (attachments.size == 1)  {
+      val (name, file) = attachments(0)
+      Some(
+        a(href := s"${baseDir.map(d => s"$d/").getOrElse("")}${attachmentHref(file)}", target := "_blank", `class` := s"inverted-${cssStatus(status)}",
+          strong(style := "font-size: 12px;",
+            name
+          )
+        )
+      )
+    } else {
+      None
+    }
+  }
+
+  private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
+    div(`class` := s"dropdown bg-${bgStatus(status)}",
+      button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
+        strong(
+          name
+        ),
+        span(`class` :="caret")
+      ),
+      ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
+        for {
+          ((name, file), index) <- attachments.zipWithIndex
+        } yield {
+          li(role := "presentation", `class` := s"text-${cssStatus(status)}",
+            a(`class` := "inverted", role := "menuitem", tabindex := "-1", href := s"${baseDir.map(d => s"$d/").getOrElse("")}${hrefFormatter(file)}", target := "_blank",
+              span(`class` := "line-no", style := "width: 0px;",
+                raw(s"${index + 1}. \u00a0 ")
+              ),
+              name,
+              span(`class` := "line-no", style := "width: 0px;",
+                raw(" \u00a0 ")
+              )
+            )
+          )
+        }
       )
     )
   }
+
+  private [format] def formatVideoAttachments(reportBase: Option[String], videos: List[File], status: Option[StatusKeyword]): TypedTag[String] = {
+    if (videos.size > 1) {
+      formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), status.getOrElse(Disabled.keyword), videoHref)
+    } else {
+      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');",
+        "Video"
+      )
+    }
+  }
+  
+  private [format] def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
+  private [format] def videoHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/videos/${file.getName}"
           
 }

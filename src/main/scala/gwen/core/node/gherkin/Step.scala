@@ -265,6 +265,7 @@ object Step {
       message)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {
+    case s: Spec => s.steps.flatMap(_.errorTrails)
     case b: Background => b.steps.flatMap(_.errorTrails)
     case s: Scenario => s.allSteps.flatMap(_.errorTrails)
     case e: Examples => e.allSteps.flatMap(_.errorTrails)

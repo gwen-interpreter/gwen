@@ -67,7 +67,7 @@ trait DetaiFormatter {
           formatReportHeader(title, featureName, rootPath, info),
           DetailFormatter.formatDetailStatusBar(unit, result, rootPath, breadcrumbs, result.screenshots, true),
           formatDetailMetrics(result, result.summary),
-          formatMetaResults(result.metaResults, reportFiles),
+          formatMetaResults(options, result.metaResults, reportFiles),
           for {
             scenario <- result.spec.scenarios
           } yield {
@@ -127,7 +127,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatMetaResults(metaResults: List[SpecResult], reportFiles: List[File]): Option[TypedTag[String]] = {
+  private def formatMetaResults(options: GwenOptions, metaResults: List[SpecResult], reportFiles: List[File]): Option[TypedTag[String]] = {
     for {
       opt <- Option(metaResults.nonEmpty)
       if opt
@@ -160,7 +160,7 @@ trait DetaiFormatter {
                     (res, rowIndex) <- metaResults.zipWithIndex
                     reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
                   } yield {
-                    formatSummaryLine(res, reportPath, None, rowIndex)
+                    formatSummaryLine(options, res, reportPath, None, rowIndex)
                   }
                 )
               )
@@ -171,37 +171,40 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatScenario(scenario: Scenario): TypedTag[String] = {
+  private def formatScenario(scenario: Scenario): List[TypedTag[String]] = {
     val status = scenario.evalStatus.keyword
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
-    div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
-      for {
-        background <- scenario.background
-      } yield {
-        formatBackground(scenario, background)
-      },
-      ul(`class` := "list-group",
-        formatScenarioHeader(scenario)
-      ),
-      div(`class` := "panel-body",
-        div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
-          ul(`class` := "list-group",
-            for {
-              step <- scenario.steps
-            } yield {
-              Seq(
-                if (!scenario.isOutline) {
-                  Some(formatStepLine(step, step.evalStatus, scenarioKeywordPixels))
-                } else if (!scenario.isExpanded) {
-                  Some(formatRawStepLine(step, scenario.evalStatus, scenarioKeywordPixels))
-                } else {
-                  None
-                }
-              ).flatten
-            }
-          ),
-          formatExamples(scenario.examples, scenarioKeywordPixels)
+    List(
+      a(name := scenario.evalStatus.keyword.toString),
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
+        for {
+          background <- scenario.background
+        } yield {
+          formatBackground(scenario, background)
+        },
+        ul(`class` := "list-group",
+          formatScenarioHeader(scenario)
+        ),
+        div(`class` := "panel-body",
+          div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
+            ul(`class` := "list-group",
+              for {
+                step <- scenario.steps
+              } yield {
+                Seq(
+                  if (!scenario.isOutline) {
+                    Some(formatStepLine(step, step.evalStatus, scenarioKeywordPixels))
+                  } else if (!scenario.isExpanded) {
+                    Some(formatRawStepLine(step, scenario.evalStatus, scenarioKeywordPixels))
+                  } else {
+                    None
+                  }
+                ).flatten
+              }
+            ),
+            formatExamples(scenario.examples, scenarioKeywordPixels)
+          )
         )
       )
     )
@@ -382,7 +385,7 @@ trait DetaiFormatter {
             rowHtml
           )
         } else rowHtml,
-        scenarioOpt.flatMap(scenario => formatAttachments(scenario.attachments, status)),
+        scenarioOpt.flatMap(scenario => formatAttachments(None, scenario.attachments, status)),
         scenarioOpt.map(scenario => formatExampleDiv(scenario, status)).getOrElse(span())
       )
     )
@@ -462,7 +465,7 @@ trait DetaiFormatter {
         raw(" \u00a0 "),
         formatParams(step.params, status),
         raw(" \u00a0 "),
-        formatAttachments(step.deepAttachments, status),
+        formatAttachments(None, step.deepAttachments, status),
         for {
           sd <- stepDef
           if (evalStatus.isEvaluated)  
@@ -589,25 +592,6 @@ trait DetaiFormatter {
       raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
     )
   }
-    
-  private def formatAttachments(attachments: List[(String, File)], status: StatusKeyword): Option[TypedTag[String]] = {
-    if (attachments.size > 1) {
-      Some(
-        DetailFormatter.formatAttachmentsDropdown("attachments", attachments, status, attachmentHref)
-      )
-    } else if (attachments.size == 1)  {
-      val (name, file) = attachments(0)
-      Some(
-        a(href := s"${attachmentHref(file)}", target := "_blank", `class` := s"inverted-${cssStatus(status)}",
-          strong(style := "font-size: 12px;",
-            name
-          )
-        )
-      )
-    } else {
-      None
-    }
-  }
 
   def formatParams(params: List[(String, String)], status: StatusKeyword): Option[TypedTag[String]] = {
     if (params.size > 0) {
@@ -648,8 +632,6 @@ trait DetaiFormatter {
     }
   }
 
-  private def attachmentHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/${file.getName}"
-      
   private def formatTags(tags: List[gwen.core.node.gherkin.Tag], inline: Boolean): Option[TypedTag[String]] = {
     if (tags.nonEmpty) {
       Some(
@@ -757,13 +739,7 @@ object DetailFormatter {
           if (result.videos.nonEmpty) {
             Some(
               li(
-                if (result.videos.size > 1) {
-                  formatAttachmentsDropdown("Videos", result.videos.map(f => ("Video", f)), Disabled.keyword, videoHref)
-                } else {
-                  button(attr("type") := "button", `class` := "btn btn-default btn-lg", onclick := s"window.open('${videoHref(result.videos.head)}', '_blank');",
-                    "Video"
-                  )
-                }
+                formatVideoAttachments(None, result.videos, None)
               )
             )
           } else None
@@ -771,36 +747,6 @@ object DetailFormatter {
       )
     )
 
-  }
-
-  private def videoHref(file: File) = if (FileIO.hasFileExtension("url", file)) Source.fromFile(file).mkString.trim else s"attachments/videos/${file.getName}"
-
-  private [format] def formatAttachmentsDropdown(name: String, attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
-    div(`class` := s"dropdown bg-${bgStatus(status)}",
-      button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
-        strong(
-          name
-        ),
-        span(`class` :="caret")
-      ),
-      ul(`class` := "dropdown-menu pull-right", role := "menu", style := "padding-left:0; max-width: 500px; width: max-content !important;",
-        for {
-          ((name, file), index) <- attachments.zipWithIndex
-        } yield {
-          li(role := "presentation", `class` := s"text-${cssStatus(status)}",
-            a(`class` := "inverted", role := "menuitem", tabindex := "-1", href := s"${hrefFormatter(file)}", target := "_blank",
-              span(`class` := "line-no", style := "width: 0px;",
-                raw(s"${index + 1}. \u00a0 ")
-              ),
-              name,
-              span(`class` := "line-no", style := "width: 0px;",
-                raw(" \u00a0 ")
-              )
-            )
-          )
-        }
-      )
-    )
   }
 
 }

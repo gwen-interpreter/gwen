@@ -39,15 +39,22 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
     val value2 = sourceValue2.getOrElse(binding2.get.resolve())
     var similarityScore: Option[Double] = None
     ctx.perform {
-      if (ctx.topScope.getOpt("similarity score").nonEmpty) {
-        ctx.topScope.set("similarity score", null)
-      }
       ctx.checkSimilarity(if (ignoreCase) value1.toUpperCase else value1, if (ignoreCase) value2.toUpperCase else value2, operator, percentage, negate) match {
         case Success((passed, score)) =>
           similarityScore = score
-          ctx.topScope.set("similarity score", score.toString)
+          score match {
+            case Some (s) =>
+              ctx.topScope.set("similarity score", s.toString)
+            case _ =>
+              if (ctx.topScope.getOpt("similarity score").nonEmpty) {
+                ctx.topScope.set("similarity score", null)
+              }    
+          }
           assert(passed, message getOrElse s"Expected $binding1 '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" $b").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
         case Failure(error) =>
+          if (ctx.topScope.getOpt("similarity score").nonEmpty) {
+            ctx.topScope.set("similarity score", null)
+          }
           assert(assertion = false, message getOrElse error.getMessage)
       }
     }
