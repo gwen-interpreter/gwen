@@ -48,7 +48,7 @@ class HtmlReportGenerator(options: GwenOptions, info: GwenInfo) extends ReportGe
 
     // copy in image files (if they don't already exist)
     new File(rdir, "resources/img") tap { dir =>
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo.png", dir)
+      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo-78x110.png", dir)
     }
 
     // copy in index file
