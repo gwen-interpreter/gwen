@@ -154,14 +154,16 @@ trait DetaiFormatter {
         div(id := "meta", `class` :="panel-collapse collapse",
           div(`class` := "panel-body",
             ul(`class` := "list-group",
-              li(`class` := s"list-group-item list-group-item-${bgStatus(status)}",
-                div(`class` := "container-fluid", style := "padding: 0px 0px",
-                  for {
-                    (res, rowIndex) <- metaResults.zipWithIndex
-                    reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
-                  } yield {
-                    formatSummaryLine(options, res, reportPath, None, rowIndex)
-                  }
+              li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding-left:0px; padding-right:0px",
+                table(`class` := "table table-responsive",
+                  tbody(
+                    for {
+                      (res, rowIndex) <- metaResults.zipWithIndex
+                      reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
+                    } yield {
+                      formatSummaryLine(options, res, reportPath, None, rowIndex)
+                    }
+                  )
                 )
               )
             )

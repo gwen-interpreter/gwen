@@ -131,14 +131,16 @@ trait SummaryFormatter {
         ),
         div(`class` := "panel-body",
           ul(`class` := "list-group",
-            li(`class` := s"list-group-item list-group-item-${bgStatus(status)}",
-              div(`class` := "container-fluid", style := "padding: 0px 0px",
-                for {
-                  ((result, resultIndex), rowIndex) <- results.zipWithIndex
-                  reportFile = result.reports.get(ReportFormat.html).head
-                } yield {
-                  formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
-                }
+            li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding-left:0px; padding-right:0px",
+              table(`class` := "table table-responsive",
+                tbody(
+                  for {
+                    ((result, resultIndex), rowIndex) <- results.zipWithIndex
+                    reportFile = result.reports.get(ReportFormat.html).head
+                  } yield {
+                    formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
+                  }
+                )
               )
             )
           )

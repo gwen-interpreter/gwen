@@ -2,8 +2,9 @@
 ======
 Apr 20, 2022
 - Add video, attachments, and error message to HTML report summary lines
-- Use SVG instead of PNG Gwen logo image in HTML reports
 - Support CSV data interpolation in feature name and description
+- Improve summary layout in HTML reports
+- Use higher resolution Gwen logo image in HTML reports
 
 3.11.0
 ======

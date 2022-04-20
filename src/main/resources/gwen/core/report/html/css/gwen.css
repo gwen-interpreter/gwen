@@ -322,3 +322,8 @@ table tbody.summary td {
 .doc-string-type {
   color: gray;
 }
+
+.summary-line {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}

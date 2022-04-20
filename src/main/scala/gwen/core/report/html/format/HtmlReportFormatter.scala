@@ -73,7 +73,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
     }
   }
   
-  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): List[TypedTag[String]] = {
+  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
       case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
@@ -84,8 +84,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       Some(relativePath(reportFile.getParentFile, reportDir).replace(File.separatorChar, '/'))
     } getOrElse None
     val videos = result.videos
-    div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
-      div(`class` := "col-md-3", style := "padding-left: 0px",
+    tr(`class` := s"summary-line ${if (rowIndex % 2 == 1) s"bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }", style := "border-top: hidden;",
+      td(`class` := "summary-line", style := "padding-left: 0px",
         for {
           seq <- sequenceNo
         } yield {
@@ -101,7 +101,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           )
         )
       ),
-      div(`class` := "col-md-3",
+      td(`class` := "summary-line", 
         reportPath match {
           case Some(rpath) =>
             a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
@@ -113,9 +113,9 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
             raw(escapeHtml(featureName))
         }
       ),
-      if (!result.spec.isMeta && result.evalStatus.isError) {
-        val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
-        div(`class` := "col-md-2",
+      td(`class` := "summary-line", 
+        if (!result.spec.isMeta && result.evalStatus.isError) {
+          val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
           if (attachments.nonEmpty || videos.nonEmpty) {
             div(
               if (videos.nonEmpty) {
@@ -124,32 +124,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
               " ",
               if (attachments.nonEmpty) {
                 formatAttachments(reportBase, attachments, result.evalStatus.keyword)
-              } else ""
-            )
-          } else ""
-        )
-      } else {
-        div(`class` := "col-md-2",
-          if (!result.spec.isMeta && videos.nonEmpty) {
-            formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
-          } else "",
-        )
-      },
-      div(`class` := "col-md-4",
-        span(`class` := "pull-right",
-          small(
-            formatDuration(result.elapsedTime)
-          )
-        ),
-        result.spec.specFile.map(_.getPath()).getOrElse("").toString
-      ),
-    ) :: (
-      if (!result.spec.isMeta && result.evalStatus.isError) {
-        val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
-        List(
-          div(`class` := s"row${if (rowIndex % 2 == 1) s" bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }",
-            div(`class` := "col-md-6"),
-            div(`class` := "col-md-6",
+              } else "",
+              " ",
               reportPath match {
                 case Some(rpath) =>
                   a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
@@ -165,9 +141,21 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
                   )
               }
             )
+          } else ""
+        } else {
+          if (!result.spec.isMeta && videos.nonEmpty) {
+            formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
+          } else "",
+        }
+      ),
+      td(`class` := "summary-line", 
+        span(`class` := "pull-right",
+          small(
+            formatDuration(result.elapsedTime)
           )
-        )
-      } else Nil
+        ),
+        result.spec.specFile.map(_.getPath()).getOrElse("").toString
+      ),
     )
   }
 
@@ -235,7 +223,7 @@ object HtmlReportFormatter {
       tr(
         td(width := "100px",
           a(href := info.gwenHome,
-            img(src := s"${rootPath}resources/img/gwen-logo.svg", border := "0", width := "78px")
+            img(src := s"${rootPath}resources/img/gwen-logo.png", border := "0", width := "78px")
           )
         ),
         td(
@@ -365,7 +353,7 @@ object HtmlReportFormatter {
     if (videos.size > 1) {
       formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), status.getOrElse(Disabled.keyword), videoHref)
     } else {
-      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');",
+      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "vertical-align: text-top",
         "Video"
       )
     }
