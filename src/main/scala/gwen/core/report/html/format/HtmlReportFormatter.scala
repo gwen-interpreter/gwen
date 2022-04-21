@@ -323,7 +323,7 @@ object HtmlReportFormatter {
 
   private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
     div(`class` := s"dropdown bg-${bgStatus(status)}",
-      button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "vertical-align: text-top",
+      button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
         strong(
           name
         ),
@@ -353,7 +353,7 @@ object HtmlReportFormatter {
     if (videos.size > 1) {
       formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), status.getOrElse(Disabled.keyword), videoHref)
     } else {
-      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "vertical-align: text-top",
+      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "position: relative; top: -1px;",
         "Video"
       )
     }
