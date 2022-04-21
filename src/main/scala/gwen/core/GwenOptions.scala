@@ -18,7 +18,6 @@ package gwen.core
 
 import gwen.core.Deprecation
 import gwen.core.FileIO
-import gwen.core.OS
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
@@ -76,7 +75,7 @@ case class GwenOptions(
     * Gets the command string used to invoke gwen.
     */
   def commandString: String = args match {
-    case (Some(params)) => s"gwen.${if(OS.isWindows) "bat" else "sh"} ${params.mkString(" ")}"
+    case (Some(params)) => s"gwen ${params.mkString(" ")}"
     case _ => ""
   }
 
