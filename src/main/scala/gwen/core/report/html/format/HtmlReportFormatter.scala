@@ -26,6 +26,7 @@ import gwen.core.node.gherkin.SpecType
 import gwen.core.report.ReportFormat
 import gwen.core.report.ReportFormatter
 import gwen.core.report.html.HtmlReportConfig
+import gwen.core.result.ResultsSummary
 import gwen.core.status._
 import gwen.core.result.SpecResult
 
@@ -73,7 +74,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
     }
   }
   
-  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
+  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, widths: List[String]): TypedTag[String] = {
+    val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
     val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
     val reportingStatus = result.evalStatus match {
       case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
@@ -84,24 +86,41 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       Some(relativePath(reportFile.getParentFile, reportDir).replace(File.separatorChar, '/'))
     } getOrElse None
     val videos = result.videos
-    tr(`class` := s"summary-line ${if (rowIndex % 2 == 1) s"bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }", style := "border-top: hidden;",
-      td(`class` := "summary-line", style := "padding-left: 0px",
-        for {
-          seq <- sequenceNo
-        } yield {
-          div(`class` := "line-no",
-            small(
-              seq.toString
-            )
-          )
-        },
-        span(style := "padding-left: 15px; white-space: nowrap;",
-          small(
-            result.finished.toString
-          )
+    tr(`class` := s"summary-line-2 ${if (rowIndex % 2 == 1) s"bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }", style := "border-top: hidden;",
+      td(`class` := "summary-line-2", style := "padding-left: 0px;", width := widths(0),
+        table(`class` := "table-responsive",
+          tbody(
+            tr(`class` := "summary-line-0", style := "border-top: hidden;",
+              td(`class` := "summary-line-0", style := "vertical-align:top; padding-right: 15px;",
+                for {
+                  seq <- sequenceNo
+                } yield {
+                  div(`class` := "line-no",
+                    small(
+                      seq.toString
+                    )
+                  )
+                },
+              ),
+              td(`class` := "summary-line-0", style := "vertical-align:top;",
+                span(
+                  small(
+                    result.finished.toString
+                  )
+                )
+              ),
+            ),
+          ),
         )
       ),
-      td(`class` := "summary-line", 
+      if (widths(1) != "0") {
+        td(`class` := "summary-line-2", width := widths(1),
+          if (videos.nonEmpty) {
+            formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
+          } else ""
+        )
+      } else "",
+      td(`class` := "summary-line-2", width := widths(2),
         reportPath match {
           case Some(rpath) =>
             a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
@@ -113,49 +132,64 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
             raw(escapeHtml(featureName))
         }
       ),
-      td(`class` := "summary-line", 
-        if (!result.spec.isMeta && result.evalStatus.isError) {
-          val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
-          if (attachments.nonEmpty || videos.nonEmpty) {
-            div(
-              if (videos.nonEmpty) {
-                formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
-              } else "",
-              " ",
-              if (attachments.nonEmpty) {
-                formatAttachments(reportBase, attachments, result.evalStatus.keyword)
-              } else "",
-              " ",
-              reportPath match {
-                case Some(rpath) =>
-                  a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
-                    span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
-                      small(
-                        raw(escapeHtml(result.evalStatus.message))
-                      )
-                    )
+      if (widths(3) != "0") {
+        td(`class` := "summary-line-2", width := widths(3),
+          if (attachments.nonEmpty) {
+            table(`class` := "table-responsive",
+              tbody(
+                tr(`class` := "summary-line-0", style := "border-top: hidden;",
+                  td(`class` := "summary-line-0", style := "vertical-align:top;",
+                    if (result.evalStatus.isError && attachments.nonEmpty) {
+                      formatAttachments(reportBase, attachments, result.evalStatus.keyword)
+                    } else "",
+                    " "
+                  ),
+                  td(`class` := "summary-line-0",
+                    if (result.evalStatus.isError) {
+                      reportPath match {
+                        case Some(rpath) =>
+                          a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
+                            span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
+                              small(
+                                raw(escapeHtml(result.evalStatus.message))
+                              )
+                            )
+                          )
+                        case None =>
+                          small(
+                            raw(escapeHtml(result.evalStatus.message))
+                          )
+                      }
+                    } else ""
                   )
-                case None =>
-                  small(
-                    raw(escapeHtml(result.evalStatus.message))
-                  )
-              }
+                )
+              )
             )
           } else ""
-        } else {
-          if (!result.spec.isMeta && videos.nonEmpty) {
-            formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
-          } else "",
-        }
-      ),
-      td(`class` := "summary-line", 
+        )
+      } else "",
+      td(`class` := "summary-line-2", width := widths(4),
         span(`class` := "pull-right",
           small(
             formatDuration(result.elapsedTime)
           )
         ),
         result.spec.specFile.map(_.getPath()).getOrElse("").toString
-      ),
+      )
+    )
+  }
+
+  private [format] def calcColWidths(allResults: List[SpecResult], filteredResults: List[SpecResult]): List[String] = {
+    val hasVideos = allResults.flatMap(_.videos).nonEmpty
+    List("250px", if (hasVideos) "90px" else "0") ++ (
+      if (EvalStatus(allResults.map(_.evalStatus)).isError && EvalStatus(filteredResults.map(_.evalStatus)).isError) {
+        if (hasVideos) List("19%", "auto", "26%")
+        else List("23%", "auto", "26%")
+      }
+      else {
+        if (hasVideos) List("35%", "0", "auto")
+        else List("39%", "0", "auto")
+      }
     )
   }
 
