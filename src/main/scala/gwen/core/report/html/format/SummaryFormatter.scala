@@ -43,7 +43,7 @@ trait SummaryFormatter {
     * @param summary the accumulated feature results summary
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = {
-    val title = "Feature Summary"
+    val title = "Results Summary"
     val path = if (options.args.isDefined) options.commandString else ""
     val htmlPage = 
       html(lang := "en",

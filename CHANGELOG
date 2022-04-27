@@ -1,3 +1,9 @@
+3.11.4
+======
+Apr 27, 2022
+- Change summary HTML report heading from Feature Summary to Results Summary
+- Change detail HTML report heading from Feature Detail to Feature Specification
+
 3.11.3
 ======
 Apr 22, 2022

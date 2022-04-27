@@ -57,7 +57,7 @@ trait DetaiFormatter {
 
     val reportDir = HtmlReportConfig.reportDir(options).get
     val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
-    val title = s"${result.spec.specType} Detail"
+    val title = s"${result.spec.specType} Specification"
     val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
 
     val htmlPage = 
