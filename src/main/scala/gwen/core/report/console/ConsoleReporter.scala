@@ -41,7 +41,7 @@ class ConsoleReporter(options: GwenOptions)
                              |""".stripMargin)
     } else {
       System.out.println(("""|   _
-                             |  { \," """ + action + " " + SpecType.Feature.toString.toLowerCase + """:
+                             |  { \," """ + action + " " + SpecType.Feature.toString.toLowerCase + """ specification:
                              | {_`/   """ + unit.name + """
                              |    `
                              |""").stripMargin)
