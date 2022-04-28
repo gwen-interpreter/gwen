@@ -494,7 +494,10 @@ trait DetaiFormatter {
               ),
               span(`class` := s"text-${cssStatus(status)}",
                 small(
-                  s" ${step.evalStatus.timestamp.toString} - ${step.evalStatus.message}"
+                  " ",
+                  raw(escapeHtml(step.evalStatus.timestamp.toString)),
+                  " - ",
+                  raw(escapeHtml(step.evalStatus.message))
                 )
               )
             )

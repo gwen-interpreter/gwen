@@ -1,3 +1,8 @@
+3.11.5
+======
+Apr 28, 2022
+- HTML encode error messages in HTML detail reports
+
 3.11.4
 ======
 Apr 27, 2022
