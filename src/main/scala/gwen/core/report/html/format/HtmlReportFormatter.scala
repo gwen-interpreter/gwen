@@ -357,7 +357,7 @@ object HtmlReportFormatter {
 
   private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
     div(`class` := s"dropdown",
-      button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
+      button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} ${if (status == StatusKeyword.Ignored) "grayed " else ""}dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
         strong(
           name
         ),
