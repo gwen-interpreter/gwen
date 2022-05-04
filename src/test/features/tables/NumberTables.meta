@@ -81,7 +81,7 @@ Feature: Number tables meta
   @Context
   Scenario: each row contains a number and its square and cube
     Given condition is defined by javascript "true"
-      And number is "${number}" for each data record if condition
+      And the number is "${number}" for each data record if condition
 
   @StepDef
   @DataTable(header="left")

@@ -1,3 +1,9 @@
+3.11.7
+======
+May 04, 2022
+- Auto expand low level single step links in HTHML reports
+- Include `not` prefix when naming negated synthetic If stepDefs
+
 3.11.6
 ======
 May 03, 2022

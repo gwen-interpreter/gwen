@@ -18,11 +18,14 @@ package gwen.core.report.html.format
 import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.node.FeatureUnit
+import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.gherkin.Background
 import gwen.core.node.gherkin.Examples
+import gwen.core.node.gherkin.GherkinNode
 import gwen.core.node.gherkin.Rule
 import gwen.core.node.gherkin.Scenario
+import gwen.core.node.gherkin.SpecType
 import gwen.core.node.gherkin.Step
 import gwen.core.report.html.HtmlReportConfig
 import gwen.core.result.ResultsSummary
@@ -34,8 +37,6 @@ import scalatags.Text.all._
 import scalatags.Text.TypedTag
 
 import java.io.File
-import gwen.core.node.gherkin.SpecType
-import gwen.core.node.gherkin.GherkinNode
 
 /** Formats the feature summary and detail reports in HTML. */
 trait DetaiFormatter {
@@ -197,7 +198,7 @@ trait DetaiFormatter {
               } yield {
                 Seq(
                   if (!scenario.isOutline) {
-                    Some(formatStepLine(step, step.evalStatus, scenarioKeywordPixels))
+                    Some(formatStepLine(scenario, step, step.evalStatus, scenarioKeywordPixels))
                   } else if (!scenario.isExpanded) {
                     Some(formatRawStepLine(step, scenario.evalStatus, scenarioKeywordPixels))
                   } else {
@@ -293,7 +294,7 @@ trait DetaiFormatter {
                 for {
                   step <- background.steps
                 } yield {
-                  formatStepLine(step, step.evalStatus, keywordPixels)
+                  formatStepLine(background, step, step.evalStatus, keywordPixels)
                 }
               )
             )
@@ -442,7 +443,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatStepLine(step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
+  private def formatStepLine(parent: GwenNode, step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
     val stepDef = step.stepDef
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${bgStatus(status)}" else ""}",
@@ -471,9 +472,11 @@ trait DetaiFormatter {
         formatAttachments(None, step.deepAttachments, status),
         for {
           sd <- stepDef
-          if (evalStatus.isEvaluated)  
+          if (evalStatus.isEvaluated)
+          topLevel = if (parent.isInstanceOf[Scenario]) !parent.asInstanceOf[Scenario].isStepDef else parent.isInstanceOf[Background]
+          collapse = (status != StatusKeyword.Passed && status != StatusKeyword.Ignored) || (!topLevel && step.siblingsIn(parent).size == 1)
         } yield {
-          formatStepDefDiv(sd, status)
+          formatStepDefDiv(sd, status, collapse)
         },
         for {
           docString <- step.docString
@@ -534,8 +537,8 @@ trait DetaiFormatter {
     )
   }
                   
-  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword): TypedTag[String] = {
-    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed && status != StatusKeyword.Ignored) " in" else ""}", role := "tabpanel",
+  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
+    div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (collapse) " in" else ""}", role := "tabpanel",
       formatScenario(stepDef)
     )
   }
