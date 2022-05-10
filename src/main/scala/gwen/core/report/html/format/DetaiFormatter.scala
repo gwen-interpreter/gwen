@@ -704,7 +704,7 @@ trait DetaiFormatter {
     case Nil => 9
     case _ => 
       val max = steps.map(_.keyword.length).max
-      val factor = if (max < 4) 10 else 9
+      val factor = if (max < 5) 10 else 9
       max * factor
   }
         
