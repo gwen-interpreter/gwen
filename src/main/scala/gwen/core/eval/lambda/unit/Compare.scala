@@ -46,7 +46,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
-            assert(assertion, message getOrElse s"Expected $binding to ${if(negate) "not " else ""}$op '$expected' but got '$actualValue'")
+            assert(assertion, message getOrElse s"Expected $binding to ${if(negate) "not " else ""}$op '$expected'${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
           case Failure(error) =>
             assert(assertion = false, message getOrElse error.getMessage)
         }
