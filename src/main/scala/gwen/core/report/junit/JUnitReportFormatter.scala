@@ -119,7 +119,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
         val s = if (scenario.evalStatus.isEvaluated) {
           scenario
         } else {
-          normaliseScenarioOutline(scenario, scenario.background)
+          normaliseScenarioOutline(scenario, scenario.background, None)
         }
         s.examples.flatMap(_.scenarios)
       }

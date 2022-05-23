@@ -51,13 +51,13 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     ctx.topScope.set("gwen.eval.status.message", "")
     Dialect.withLanguage(spec.feature.language) {
       val nspec = normaliseSpec(spec, dataRecord)
-      evaluateSpec(parent, nspec, metaResults, ctx)
+      evaluateSpec(parent, nspec, metaResults, dataRecord, ctx)
     }
   }
 
   private [engine] def evaluateMeta(parent: GwenNode, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normaliseSpec(meta, dataRecord)
-    val metaResult = evaluateSpec(parent, nmeta, metaResults, ctx)
+    val metaResult = evaluateSpec(parent, nmeta, metaResults, dataRecord, ctx)
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
       case _: Passed | Loaded =>
@@ -72,7 +72,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   /**
     * Evaluates a specification.
     */
-  private def evaluateSpec(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], ctx: T): SpecResult = {
+  private def evaluateSpec(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val specType = spec.specType
     ctx.topScope.pushObject(SpecType.toString, specType)
     try {
@@ -84,8 +84,8 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       }
       val resultSpec = spec.copy(
         withBackground = None,
-        withScenarios = evaluateScenarios(spec, spec.scenarios, ctx, spec.feature.language),
-        withRules = evaluateRules(spec, spec.rules, ctx, spec.feature.language),
+        withScenarios = evaluateScenarios(spec, spec.scenarios, dataRecord, ctx, spec.feature.language),
+        withRules = evaluateRules(spec, spec.rules, dataRecord, ctx, spec.feature.language),
         withMetaSpecs = metaResults.map(_.spec)
       )
       resultSpec.specFile foreach { _ =>

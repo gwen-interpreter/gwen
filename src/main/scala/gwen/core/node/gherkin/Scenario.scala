@@ -93,7 +93,7 @@ case class Scenario(
     else List(this)
   }
   
-  def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name == Annotations.Examples.toString)
+  def isOutline: Boolean = examples.nonEmpty || tags.exists(_.name.startsWith(Annotations.Examples.toString))
   def isExpanded: Boolean = examples.flatMap(_.scenarios).nonEmpty 
   def isStepDef: Boolean = tags.exists(_.name == Annotations.StepDef.toString)
   def isForEach: Boolean = tags.exists(_.name == Annotations.ForEach.toString)

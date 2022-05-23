@@ -22,6 +22,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Rule
 import gwen.core.node.gherkin.Spec
+import gwen.core.state.DataRecord
 import gwen.core.status._
 
 import scala.util.chaining._
@@ -34,14 +35,14 @@ import com.typesafe.scalalogging.LazyLogging
 trait RuleEngine[T <: EvalContext] extends LazyLogging {
   engine: EvalEngine[T] =>
 
-  private [engine] def evaluateRules(spec: Spec, rules: List[Rule], ctx: T, language: String): List[Rule] = {
+  private [engine] def evaluateRules(spec: Spec, rules: List[Rule], dataRecord: Option[DataRecord], ctx: T, language: String): List[Rule] = {
     rules.foldLeft(List[Rule]()) {
       (acc: List[Rule], rule: Rule) =>
-        evaluateOrTransitionRule(spec, rule, ctx, language, acc) :: acc
+        evaluateOrTransitionRule(spec, rule, dataRecord, ctx, language, acc) :: acc
     } reverse
   }
 
-  private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, ctx: T, language: String, acc: List[Rule]): Rule = {
+  private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, dataRecord: Option[DataRecord], ctx: T, language: String, acc: List[Rule]): Rule = {
     ctx.topScope.set("gwen.rule.name", rule.name)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
@@ -57,7 +58,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
           beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
-            withScenarios = evaluateScenarios(rule, rule.scenarios, ctx, language)
+            withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx, language)
           ) tap { r =>
             logStatus(ctx.options, r)
             afterRule(r, ctx)
@@ -67,7 +68,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
         beforeRule(rule, ctx)
         logger.info(s"Evaluating ${rule.keyword}: $rule")
         rule.copy(
-          withScenarios = evaluateScenarios(rule, rule.scenarios, ctx, language)
+          withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx, language)
         ) tap { r =>
           logStatus(ctx.options, r)
           afterRule(r, ctx)

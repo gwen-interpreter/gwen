@@ -27,4 +27,7 @@ import java.io.File
   */
 class DataRecord(val dataFile: File, val recordNo: Int, val data: List[(String, String)]) {
   override def toString = s"DataRecord(${dataFile.getPath}[$recordNo])"
+  def interpolator: String => String = name => {
+    data.filter(_._1 == name).headOption.map(_._2).getOrElse(s"$$[$name]")
+  }
 }

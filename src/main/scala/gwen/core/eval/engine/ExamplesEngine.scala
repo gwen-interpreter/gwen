@@ -26,6 +26,7 @@ import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Tag
+import gwen.core.state.DataRecord
 
 import scala.util.chaining._
 
@@ -61,24 +62,45 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     * @return a new scenario outline containing the loaded examples data
     *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
     */
-  private [engine] def expandCSVExamples(outline: Scenario, ctx: T): Scenario = {
-    val csvExamples = outline.tags.flatMap { tag =>
-      tag match {
-        case Tag(_, name, Some(fileValue)) =>
-          if (name == Annotations.Examples.toString) {
-            val filepath = ctx.interpolate(fileValue)
-            val examplesTag = tag.copy(withValue = Some(filepath))
-            val file = new File(filepath)
-            if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
-            if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
-            val table = CSVReader.open(file).iterator.toList.zipWithIndex map { case (row, idx) => (idx + 1L, row.toList) }
-            Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath", Nil, table, Nil))
-          } else if (name.equalsIgnoreCase(Annotations.Examples.toString)) {
-            Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv")""")
-          } else {
-            None
+  private [engine] def expandCSVExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
+    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
+    val iTags = outline.tags map { tag => 
+      Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+    }
+    val csvExamples = iTags flatMap { tag =>
+      if (tag.name.startsWith(Annotations.Examples.toString)) {
+        val (filepath, where) = tag.name match {
+          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, Some(where))
+          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None)
+          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
+        }
+        val examplesTag = tag.copy(withValue = Some(filepath))
+        val file = new File(filepath)
+        if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
+        if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
+        val table0 = CSVReader.open(file).iterator.toList.zipWithIndex map { (row, idx) => 
+          (idx + 1L, row.toList) 
+        }
+        val header = table0.headOption map { (_, headings) => headings }
+        val table = table0 filter { (rowNo, row) => 
+          if (rowNo == 1) true else {
+            where map { clause => 
+              clause match {
+                case r"(.+?)$name=(.+?)$value" => 
+                  header.map(_.indexOf(name)) map { idx => 
+                    row(idx) == value
+                  } getOrElse false
+                case _ => true
+              }
+            } getOrElse true
           }
-        case _ => None
+        }
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath", Nil, table, Nil))
+      } 
+      else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
+        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
+      } else {
+        None
       }
     }
     csvExamples match {
@@ -86,9 +108,15 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       case _ =>
         val examples = normaliseScenarioOutline(
             outline.copy(withExamples = csvExamples),
-            outline.background
+            outline.background,
+            dataRecord
           ).examples
         outline.copy(
+          withTags = iTags,
+          withName = interpolateString(outline.name) { interpolator },
+          withDescription = outline.description map { line => 
+            interpolateString(line) { interpolator }
+          },
           withExamples = outline.examples ++ examples
         )
     }

@@ -45,27 +45,33 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     * @param dataRecord optional feature level data record
     */
   def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord]): Spec = {
+    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
     Spec(
       dataRecord map { record =>
-        val interpolator: String => String = item => record.data.filter(_._1 == item).headOption.map(_._2).getOrElse(s"$$[$item]")
-        val name = interpolateString(spec.feature.name) { interpolator }
-        val desc = spec.feature.description map { line => 
-          interpolateString(line) { interpolator }
-        }
         spec.feature.copy(
-          withName = s"$name [${record.recordNo}]",
-          withDescription = desc
+          withTags = spec.feature.tags map { tag => 
+            Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+          },
+          withName = s"${interpolateString(spec.feature.name) { interpolator }} [${record.recordNo}]",
+          withDescription = spec.feature.description map { line => 
+            interpolateString(line) { interpolator }
+          }
         )
       } getOrElse spec.feature,
       None,
-      dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background)),
+      dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord)),
       spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
+          withName = interpolateString(rule.name) { interpolator },
+          withDescription = rule.description map { line => 
+            interpolateString(line) { interpolator }
+          },
           withBackground = None,
-          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background)))
+          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord)
+        )
       },
       Nil
     )
@@ -83,6 +89,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   }
 
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
+    val interpolator = dataRecord.interpolator
     val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, Nil, None)
@@ -102,8 +109,10 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${bg.name} + Input data record ${dataRecord.recordNo}",
-          bg.description ++ description,
+          s"${interpolateString(bg.name) { interpolator }} + Input data record ${dataRecord.recordNo}",
+          (bg.description map { line =>
+            interpolateString(line) { interpolator }
+          }) ++ description,
           steps ++ bgSteps
         )
       case None =>
@@ -114,22 +123,38 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
           description,
           steps.map(_.copy()))
     }
-    expandScenarios(scenarios, Some(dataBackground))
+    expandScenarios(scenarios, Some(dataBackground), Some(dataRecord))
   }
 
-  private def expandScenarios(scenarios: List[Scenario], background: Option[Background]): List[Scenario] =
+  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord]): List[Scenario] =
     scenarios.map { scenario =>
-      if (scenario.isOutline) normaliseScenarioOutline(scenario, background)
-      else expandScenario(scenario, background)
+      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord)
+      else expandScenario(scenario, background, dataRecord)
     }
 
-  private def expandScenario(scenario: Scenario, background: Option[Background]): Scenario = {
+  private def expandScenario(scenario: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
+    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     background.map { _ =>
       scenario.copy(
+        withTags = scenario.tags map { tag => 
+          Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+        },
+        withName = interpolateString(scenario.name) { interpolator },
+        withDescription = scenario.description map { line => 
+          interpolateString(line) { interpolator }
+        },
         withBackground = if (scenario.isStepDef) {
           None
         } else {
-          background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy())))
+          background map { bg => 
+            bg.copy(
+              withName = interpolateString(bg.name) { interpolator },
+              withDescription = bg.description map { line => 
+                interpolateString(line) { interpolator }
+              },
+              withSteps = bg.steps.map(_.copy())
+            )
+          }
         },
         withExamples = Nil
       )
@@ -137,24 +162,52 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   }
 
 
-  def normaliseScenarioOutline(outline: Scenario, background: Option[Background]): Scenario = {
+  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
+    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     outline.copy(
+      withTags = outline.tags map { tag => 
+        Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+      },
+      withName = interpolateString(outline.name) { interpolator },
+      withDescription = outline.description map { line => 
+        interpolateString(line) { interpolator }
+      },
       withBackground = None,
       withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
         exs.copy(
-          withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), rowIndex) =>
+          withTags = exs.tags map { tag => 
+            Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+          },
+          withName = interpolateString(exs.name) { interpolator },
+          withDescription = exs.description map { line => 
+            interpolateString(line) { interpolator }
+          },
+          withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), tableIndex) =>
             val params: List[(String, String)] = names zip values
             new Scenario(
               outline.sourceRef map { sref =>
                 SourceRef(sref.file, rowLineNo)
               },
-              outline.tags.filter(t => t.name != Annotations.StepDef.toString && t.name != Annotations.Examples.toString),
+              outline.tags.filter(t => t.name != Annotations.StepDef.toString && !t.name.startsWith(Annotations.Examples.toString)) map { tag => 
+                Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+              },
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${resolveParams(outline.name, params)._1}${if (exs.name.length > 0) s" -- ${exs.name}" else ""}",
-              outline.description.map(line => resolveParams(line, params)._1),
+              s"${resolveParams(interpolateString(outline.name) { interpolator }, params)._1}${if (exs.name.length > 0) s" -- ${interpolateString(exs.name) { interpolator }}" else ""}",
+              outline.description map { line =>
+                val iLine = interpolateString(line) { interpolator }
+                resolveParams(iLine, params)._1
+              },
               if (outline.isStepDef) None
-              else background.map(bg => bg.copy(withSteps = bg.steps.map(_.copy()))),
+              else background map { bg => 
+                bg.copy(
+                  withName = interpolateString(bg.name) { interpolator },
+                  withDescription = bg.description map { line => 
+                    interpolateString(line) { interpolator }
+                  },
+                  withSteps = bg.steps.map(_.copy())
+                )
+              },
               outline.steps.map { s =>
                 val (name, resolvedParams) = resolveParams(s.name, params)
                 s.copy(

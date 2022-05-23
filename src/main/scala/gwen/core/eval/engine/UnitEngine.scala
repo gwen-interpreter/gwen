@@ -113,7 +113,7 @@ trait UnitEngine[T <: EvalContext]
     metaFiles filter { file =>
       !loadedMeta.contains(file)
     } flatMap { file =>
-      val metaUnit = FeatureUnit(unit, file, Nil, None, unit.tagFilter)
+      val metaUnit = FeatureUnit(unit, file, Nil, unit.dataRecord, unit.tagFilter)
       evaluateUnit(metaUnit, loadedMeta, ctx)
     }
   }

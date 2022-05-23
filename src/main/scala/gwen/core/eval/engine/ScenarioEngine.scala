@@ -28,6 +28,7 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.SpecType
 import gwen.core.node.gherkin.Step
+import gwen.core.state.DataRecord
 import gwen.core.state.StateLevel
 import gwen.core.status._
 
@@ -48,8 +49,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T, language: String): List[Scenario] = {
-    val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, ctx) else s)
+  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], dataRecord: Option[DataRecord], ctx: T, language: String): List[Scenario] = {
+    val input = scenarios.map(s => if (s.isOutline) expandCSVExamples(s, dataRecord, ctx) else s)
     if (ctx.options.isParallelScenarios(ctx.stateLevel) && ctx.specType.isFeature) {
       evaluateParallelScenarios(parent, input, ctx, language)
     } else {
