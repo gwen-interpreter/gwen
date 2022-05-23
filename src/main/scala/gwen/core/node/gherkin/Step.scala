@@ -283,7 +283,7 @@ object Step {
       }
     }
     steps.filter(s => s.isEager || s.isLazy) foreach { step => 
-      if (!step.name.matches(".+ (is|will be) defined .*by ((?!property|setting).)+"))  {
+      if (!step.name.matches(".+ (is|will be) defined .*by .+"))  {
         val annotation = { 
           if (step.isEager) Annotations.Eager
           else if (step.isLazy) Annotations.Lazy
