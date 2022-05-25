@@ -350,7 +350,7 @@ trait DetaiFormatter {
     val status = evalStatus.keyword
     val line = table.head._1
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
-      div(`class` := s"bg-${bgStatus(status)}",
+      div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
         div(`class` := "line-no",
           small(
             if (line > 0) line.toString else ""
@@ -369,7 +369,7 @@ trait DetaiFormatter {
     val status = evalStatus.keyword
     val rowHtml = formatDataRow(table, rowIndex, evalStatus, isExpanded)
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
-      div(`class` := s"bg-${bgStatus(status)}",
+      div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
         span(`class` := "pull-right",
           small(
             durationOrStatus(evalStatus).toString
@@ -550,7 +550,7 @@ trait DetaiFormatter {
       rowIndex <- step.table.indices
       line = step.table(rowIndex)._1
     } yield {
-      div(`class` := s"bg-${bgStatus(status)}",
+      div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
         div(`class` := "line-no",
           small(
             if (line > 0) line.toString else ""

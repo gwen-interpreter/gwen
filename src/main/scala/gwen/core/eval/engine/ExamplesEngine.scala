@@ -95,7 +95,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             } getOrElse true
           }
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath", Nil, table, Nil))
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table, Nil))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
