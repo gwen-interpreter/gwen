@@ -22,6 +22,7 @@ import gwen.core.node.SourceRef
 import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 
 import io.cucumber.messages.{ types => cucumber }
 
@@ -87,8 +88,8 @@ object Rule {
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      rule.getChildren.asScala.toList.filter(_.getBackground != null).headOption.map(x => Background(file, x.getBackground)),
-      rule.getChildren.asScala.toList.filter(_.getScenario != null).map { case x => Scenario(file, x.getScenario) }
+      rule.getChildren.asScala.toList.flatMap(_.getBackground.toScala).headOption map { b => Background(file, b) },
+      rule.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s) }
     )
   }
 }

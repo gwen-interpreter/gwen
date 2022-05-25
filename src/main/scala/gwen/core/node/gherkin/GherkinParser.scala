@@ -22,12 +22,13 @@ import gwen.core.node.SourceRef
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
 
-import io.cucumber.gherkin.Gherkin
-import io.cucumber.messages.IdGenerator
+import io.cucumber.gherkin.{GherkinParser => CucumberParser}
 import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
 import java.{util => ju}
+
+import scala.jdk.OptionConverters._
 
 /**
   *  Parses a Gherkin feature specification.
@@ -67,7 +68,7 @@ trait GherkinParser {
   
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
   def parseSpec(feature: String, specFile: Option[File] = None): Try[Spec] = Try {
-    Spec(specFile, parseDocument(feature))
+    Spec(specFile, parseDocument(feature, specFile))
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */
@@ -79,12 +80,13 @@ trait GherkinParser {
     }
     Try {
       Dialect.withLanguage(language) {
-        Try(parseDocument(s"${if (language != "en") s"# language: ${language}\n${FeatureKeyword.nameOf(FeatureKeyword.Feature)}" else FeatureKeyword.Feature.toString}:\n${FeatureKeyword.nameOf(FeatureKeyword.Scenario)}:\n$step")) match {
+        Try(parseDocument(s"${if (language != "en") s"# language: ${language}\n${FeatureKeyword.nameOf(FeatureKeyword.Feature)}" else FeatureKeyword.Feature.toString}:\n${FeatureKeyword.nameOf(FeatureKeyword.Scenario)}:\n$step", None)) match {
           case Success(ast) =>
-            Option(ast.getFeature)
+            ast.getFeature.toScala
             .map(_.getChildren)
             .filter(!_.isEmpty)
-            .map(_.get(0).getScenario.getSteps)
+            .flatMap(_.get(0).getScenario.toScala)
+            .map(_.getSteps)
             .filter(!_.isEmpty)
             .map(steps => Step(None, steps.get(0)))
             .map(_.copy(withSourceRef = None))
@@ -96,16 +98,23 @@ trait GherkinParser {
     }
   }
 
-  private def parseDocument(feature: String): cucumber.GherkinDocument = {
-    val idGenerator = new IdGenerator.Incrementing()
-    val envelope = Gherkin.makeSourceEnvelope(feature, "")
-    val envelopes = Gherkin.fromSources(ju.Collections.singletonList(envelope), false, true, false, idGenerator).collect(ju.stream.Collectors.toList())
-    val result = envelopes.get(0)
-    val parseError = result.getParseError
-    if (parseError != null) {
-      throw new RuntimeException(s"Parser errors:\n${result.getParseError.getMessage}");
-    } else {
-      result.getGherkinDocument()
+  private def parseDocument(feature: String, file: Option[File]): cucumber.GherkinDocument = {
+    val input = cucumber.Envelope.of(
+      new cucumber.Source(
+        file.map(_.getPath).getOrElse(""), 
+        feature, 
+        cucumber.SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN)
+    )
+    val result = CucumberParser.builder
+        .includeSource(false)
+        .includePickles(false)
+        .build
+        .parse(input)
+        .findFirst.get
+    result.getParseError.toScala map { error => 
+      Errors.parseError(error)
+    } getOrElse {
+      result.getGherkinDocument.get
     }
   }
 

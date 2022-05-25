@@ -81,7 +81,7 @@ trait UnitEngine[T <: EvalContext]
           }
         case Failure(e) =>
           e match {
-            case pe: ParserException => Errors.syntaxError(unit.featureFile, pe)
+            case pe: Errors.ParserException => Errors.syntaxError(unit.featureFile, pe.parseError)
             case _ => Errors.syntaxError(e.getMessage)
           }
       }

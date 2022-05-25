@@ -24,6 +24,7 @@ import gwen.core.state.EnvState
 import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 
 import io.cucumber.messages.{ types => cucumber }
 
@@ -230,13 +231,13 @@ case class Step(
 
 object Step {
   def apply(file: Option[File], step: cucumber.Step): Step = {
-    val dataTable = Option(step.getDataTable).map { dt =>
+    val dataTable = step.getDataTable.toScala map { dt =>
       dt.getRows.asScala.toList map { row =>
         (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
       }
     } getOrElse Nil
-    val docString = Option(step.getDocString()).filter(_.getContent().trim.length > 0) map { ds =>
-      (Long2long(ds.getLocation.getLine), ds.getContent, Option(ds.getMediaType).filter(_.trim.length > 0))
+    val docString = step.getDocString.toScala.filter(_.getContent().trim.length > 0) map { ds =>
+      (Long2long(ds.getLocation.getLine), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
     }
     val (name, tagList, message): (String, List[Tag], Option[String]) = {
       val (n, t) = step.getText.trim match {

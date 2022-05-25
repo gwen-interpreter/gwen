@@ -17,16 +17,17 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
+import gwen.core.node.FeatureUnit
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.status._
 
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 
 import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
-import gwen.core.node.FeatureUnit
 
 /**
  * A Gherkin feature specification.
@@ -115,10 +116,11 @@ case class Spec(
 
 object Spec {
   def apply(file: Option[File], spec: cucumber.GherkinDocument): Spec = {
-    val feature = Feature(file, spec.getFeature)
-    val background = spec.getFeature.getChildren.asScala.toList.filter(_.getBackground != null).headOption.map(x => Background(file, x.getBackground))
-    val scenarios = spec.getFeature.getChildren.asScala.toList.filter(_.getScenario != null).map { x => Scenario(file, x.getScenario) }
-    val rules = spec.getFeature.getChildren.asScala.toList.filter(_.getRule != null).map { case x => Rule(file, x.getRule) }
+    val cFeature = spec.getFeature.toScala.get
+    val feature = Feature(file, cFeature)
+    val background = cFeature.getChildren.asScala.toList.flatMap(_.getBackground.toScala).headOption map { b => Background(file, b) }
+    val scenarios = cFeature.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s) }
+    val rules = cFeature.getChildren.asScala.toList.flatMap(_.getRule.toScala).map { case r => Rule(file, r) }
     Spec(feature, background, scenarios, rules, Nil)
   }
 }

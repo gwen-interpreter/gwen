@@ -25,18 +25,21 @@ import gwen.core.eval.binding.BindingType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin._
 
-import io.cucumber.gherkin.ParserException
+import io.cucumber.messages.types.ParseError
 
 import java.io.File
 
+import scala.jdk.OptionConverters._
+
 object Errors {
 
+  def parseError(parseError: ParseError) = throw new ParserException(parseError)
   def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None, None)
   def syntaxError(msg: String, line: Long) = throw new GherkinSyntaxError(msg, None, Some(line), None)
-  def syntaxError(msg: String, file: Option[File], line: Long, col: Long) = throw new GherkinSyntaxError(msg, file, Some(line), Some(col))
-  def syntaxError(file: File, cause: ParserException) = Option(cause.location) match {
+  def syntaxError(msg: String, file: Option[File], line: Long, col: Option[Long]) = throw new GherkinSyntaxError(msg, file, Some(line), col)
+  def syntaxError(file: File, cause: ParseError) = cause.getSource.getLocation.toScala match {
     case Some(loc) =>
-      throw new GherkinSyntaxError(cause.getMessage, Some(file), Some(loc.getLine), Some(loc.getColumn))
+      throw new GherkinSyntaxError(cause.getMessage, Some(file), Some(loc.getLine), loc.getColumn.toScala.map(_.toLong))
     case _ => throw new GherkinSyntaxError(cause.getMessage, Some(file), None, None)
   }
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
@@ -107,6 +110,8 @@ object Errors {
 
   /** Thrown when a Gherkin parsing error occurs. */
   class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Long], col: Option[Long]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
+
+  class ParserException(val parseError: ParseError) extends GwenException(s"Parser errors:\n${parseError.getMessage}")
 
   /** Thrown when an ambiguous condition is detected. */
   class AmbiguousCaseException(msg: String) extends GwenException(msg)

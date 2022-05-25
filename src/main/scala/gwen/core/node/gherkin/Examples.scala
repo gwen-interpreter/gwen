@@ -23,6 +23,7 @@ import gwen.core.node.SourceRef
 import gwen.core.status.EvalStatus
 
 import scala.jdk.CollectionConverters._
+import scala.jdk.OptionConverters._
 
 import io.cucumber.messages.{ types => cucumber }
 
@@ -83,13 +84,12 @@ case class Examples(
 
 object Examples {
   def apply(file: Option[File], examples: cucumber.Examples): Examples = {
-    val header = examples.getTableHeader
-    if (header == null) {
+    val header = examples.getTableHeader.toScala getOrElse {
       Errors.syntaxError(
         s"Failed to read table body. Possible syntax error or missing column delimiter in table",
         file,
         examples.getLocation.getLine,
-        examples.getLocation.getColumn)
+        examples.getLocation.getColumn.toScala.map(_.toLong))
     }
     val body = examples.getTableBody
     if (body == null) {
@@ -97,7 +97,7 @@ object Examples {
         s"Failed to read table header. Possible syntax error or missing column delimiter in table",
         file,
         examples.getLocation.getLine,
-        examples.getLocation.getColumn)
+        examples.getLocation.getColumn.toScala.map(_.toLong))
     }
     Examples(
       Option(examples.getLocation).map(loc => SourceRef(file, loc)),
