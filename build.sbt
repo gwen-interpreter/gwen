@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.12.2"
+val gwenVersion = "3.12.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -14,11 +14,11 @@ lazy val gwen = (project in file("."))
 
 lazy val projectSettings = Seq(
   name := "gwen",
-  description := "A Given-When-Then interpreter for Gherkin",
+  description := "Automation and Robotics for Gherkin",
   scalaVersion := "3.1.2",
   organization := "org.gweninterpreter",
-  homepage := Some(url("https://github.com/gwen-interpreter/gwen")),
-  organizationHomepage := Some(url("http://gweninterpreter.org")),
+  homepage := Some(url("https://gweninterpreter.org")),
+  organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
   startYear := Some(2014),
   licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
   versionScheme := Some("semver-spec"),

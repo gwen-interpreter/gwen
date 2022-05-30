@@ -259,14 +259,14 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     val status = summary.evalStatus.keyword
     pw.println("Summary:")
     pw.println()
+    val results = summary.results
+    val widths = List(
+      Try(results.map(r => printStatus(r.spec, withMessage = false)).map(_.length).max).getOrElse(0),
+      Try(results.map(_.spec.feature.name).map(_.length).max).getOrElse(0),
+      Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
+    )
     StatusKeyword.reportables.reverse foreach { keyword => 
-      val results = summary.results filter { _.evalStatus.keyword == keyword }
-      val widths = List(
-        Try(results.map(r => printStatus(r.spec, withMessage = false)).map(_.length).max).getOrElse(0),
-        Try(results.map(_.spec.feature.name).map(_.length).max).getOrElse(0),
-        Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
-      )
-      results foreach { result =>
+      results filter { _.evalStatus.keyword == keyword } foreach { result =>
         val spec = result.spec
         pw.println(s"  ${Formatting.leftPad(printStatus(spec, withMessage = false), widths(0))}  ${Formatting.rightPad(spec.feature.name, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
       }
