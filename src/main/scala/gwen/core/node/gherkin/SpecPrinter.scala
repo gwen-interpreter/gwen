@@ -27,11 +27,12 @@ import org.fusesource.jansi.Ansi._
 
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
+import scala.util.Try
+
 
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.Date
-
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
   * each node to a string and can be invoked as a function.  For example,
@@ -259,9 +260,15 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     pw.println("Summary:")
     pw.println()
     StatusKeyword.reportables.reverse foreach { keyword => 
-      summary.results filter { _.evalStatus.keyword == keyword } foreach { result =>
+      val results = summary.results filter { _.evalStatus.keyword == keyword }
+      val widths = List(
+        Try(results.map(r => printStatus(r.spec, withMessage = false)).map(_.length).max).getOrElse(0),
+        Try(results.map(_.spec.feature.name).map(_.length).max).getOrElse(0),
+        Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
+      )
+      results foreach { result =>
         val spec = result.spec
-        pw.println(s"  ${spec.uri} ${printStatus(spec, withMessage = false)}")
+        pw.println(s"  ${Formatting.leftPad(printStatus(spec, withMessage = false), widths(0))}  ${Formatting.rightPad(spec.feature.name, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
       }
     }
     pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false)))
