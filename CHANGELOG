@@ -1,3 +1,8 @@
+3.13.0
+======
+May 31, 2022
+- Remove concatenation syntax in favor of interpolation/substitution
+
 3.12.3
 ======
 May 30, 2022

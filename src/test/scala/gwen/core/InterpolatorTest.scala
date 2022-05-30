@@ -120,14 +120,6 @@ class InterpolatorTest extends BaseTest with Matchers with Interpolator {
     } should be ("""Go you $[param:param-0]$[param:param-1] thing!""")
   }
   
-  """interpolate using concatentation syntax: prefix "" + binding + " suffix""" should "resolve" in {
-    interpolateString("""hello "" + binding + " good thing"""") { _ => "you" } should be ("""hello "you good thing"""")
-  }
- 
-  """interpolate using concatentation syntax: "prefix" + binding""" should "resolve" in {
-    interpolateString("""hello "" + binding""") { _ => "you" } should be ("""hello "you"""")
-  }
-  
   """embedded + literal in string""" should "not be treated as a concatenation operator" in {
     interpolateString("""I enter "+6149265587" in the phone field""") { _ => throw new Exception("should not throw this") } should be ("""I enter "+6149265587" in the phone field""")
   }

@@ -39,16 +39,6 @@ trait Interpolator extends LazyLogging {
         val resolved = resolve(s"<${param}>")
         val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
         interpolateString(s"$prefix${substitution}$suffix") { resolve }
-      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*\+\s*"(.+?)$suffix""" =>
-        logger.debug(s"Resolving concat-syntax binding: + $binding +")
-        interpolateString(s"$prefix${resolve(binding)}$suffix") { resolve }
-      case r"""(.+?)$prefix"\s*\+\s*(.+?)$binding\s*""" =>
-        if(binding.contains('"')) {
-          source
-        } else {
-          logger.debug(s"""Resolving concat-syntax binding: "" + $binding""")
-          interpolateString(s"""$prefix${resolve(binding)}"""") { resolve }
-        }
       case _ => source
     }
   }
