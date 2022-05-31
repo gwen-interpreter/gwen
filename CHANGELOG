@@ -2,6 +2,7 @@
 ======
 May 31, 2022
 - Remove concatenation syntax in favor of interpolation/substitution
+- Add line break between each status group in console report summary
 
 3.12.3
 ======
