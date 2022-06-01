@@ -22,6 +22,7 @@ import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
+import gwen.core.state.SensitiveData
 
 import scala.sys.process.stringToProcess
 import scala.sys.process.stringSeqToProcess
@@ -33,12 +34,17 @@ class ExecuteSysProc[T <: EvalContext](systemproc: String, delimiter: Option[Str
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.perform {
-        delimiter match {
-          case None => systemproc.!
-          case Some(delim) => systemproc.split(delim).toSeq.!
-        } match {
-          case 0 =>
-          case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
+        SensitiveData.withValue(systemproc) { sproc =>
+          delimiter match {
+            case None => sproc.!
+            case Some(delim) => 
+              SensitiveData.withValue(delim) { d =>
+                sproc.split(d).toSeq.!
+              }
+          } match {
+            case 0 =>
+            case _ => Errors.systemProcessError(s"The call to system process '$systemproc' has failed.")
+          }
         }
       }
     }

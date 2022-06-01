@@ -18,6 +18,7 @@ package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.sys.process._
 import scala.util.Try
@@ -46,10 +47,15 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
     val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
     bindIfLazy(
       lookupValue(key) { sysproc => 
-        ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
-          delimiter match {
-            case Some(delim) => sysproc.split(delim).toSeq.!!.trim
-            case None => sysproc.!!.trim
+        SensitiveData.withValue(sysproc) { sproc =>
+          ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
+            delimiter match {
+              case Some(delim) => 
+                SensitiveData.withValue(delim) { d =>
+                  sproc.split(d).toSeq.!!.trim
+                }
+              case None => sproc.!!.trim
+            }
           }
         }
       }

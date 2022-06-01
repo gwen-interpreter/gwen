@@ -136,7 +136,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.sysproc, step.orDocString(expression), None, Some(delimiter))
+        new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter))
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
