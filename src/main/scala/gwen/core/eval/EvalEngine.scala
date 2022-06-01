@@ -105,9 +105,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new ExecuteSysProc(systemproc, Some(delimiter))
       case r"""I execute system process "(.+?)"$systemproc""" =>
         new ExecuteSysProc(step.orDocString(systemproc), None)
-      case r"""I execute a unix system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
+      case r"""I execute (?:a )?unix system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
         new ExecuteSysProcUnix(systemproc, Some(delimiter))
-      case r"""I execute a unix system process "(.+?)"$systemproc""" =>
+      case r"""I execute (?:a )?unix system process "(.+?)"$systemproc""" =>
         new ExecuteSysProcUnix(step.orDocString(systemproc), None)
       case r"""I execute (?:javascript|js) "(.+?)$javascript"""" =>
         new ExecuteJS(step.orDocString(javascript))
