@@ -65,20 +65,20 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new ForEachTableRecord(doStep, this))
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$delimiter""" =>
         Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
-      case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if !condition.contains('"') =>
         Some(new Repeat(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" if condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" if !condition.contains('"') =>
         Some(new Repeat(doStep, operation, condition, Duration.Zero, defaultRepeatTimeout(defaultRepeatDelay), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" && condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" && !condition.contains('"') =>
         Some(new Repeat(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" && condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" && !condition.contains('"') =>
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
         Some(new Repeat(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" && condition.count(_ == '"') % 2 == 0 =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" && !condition.contains('"') =>
         Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && condition.count(_ == '"') % 2 == 0 && !step.expression.matches(""".*".*(until|while).*".*""")) =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && !condition.contains('"') && !step.expression.matches(""".*".*(until|while).*".*""")) =>
         Some(new Repeat(doStep, operation, condition, defaultRepeatDelay, defaultRepeatTimeout(defaultRepeatDelay), this))
       case _ =>
         None

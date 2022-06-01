@@ -1,3 +1,8 @@
+3.13.1
+======
+Jun 1, 2022
+- Do not allow quotes in if condition reference names
+
 3.13.0
 ======
 May 31, 2022
