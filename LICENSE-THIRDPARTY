@@ -38,7 +38,7 @@ org.apache.commons              commons-lang3            | 3.11        | [Apache
 org.apache.commons              commons-text             | 1.9         | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.apache.log4j                log4j-core               | 2.17.1      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.apache.log4j                log4j-slf4j-impl         | 2.17.1      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.apache.tika                 tika-core                | 1.28.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+org.apache.tika                 tika-core                | 1.28.3      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.checkerframework            checker-qual             | 3.12.0      | [MIT License](http://www.slf4j.org/license.html)
 org.fusesource.jansi            jansi                    | 2.4.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 org.jdom                        jdom2                    | 2.0.6.1     | [Similar to Apache License but with the acknowledgment clause removed](https://raw.githubusercontent.com/hunterhacker/jdom/master/LICENSE.txt)

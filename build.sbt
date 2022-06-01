@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.13.2"
+val gwenVersion = "3.13.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -83,7 +83,7 @@ lazy val mainDependencies = {
 
 lazy val mainOverrides = {
   val jacksonDataBind = "2.13.3"
-  val tikaCore = "1.28.2"
+  val tikaCore = "1.28.3"
   val guava = "31.1-jre"
 
   Seq(

@@ -1,9 +1,14 @@
+3.13.3
+======
+Jun 2, 2022
+- Update tikaCore from v1.28.2 to v1.28.3
+
 3.13.2
 ======
 Jun 1, 2022
 - Add overloaded DSLs:
   - `I execute unix system process "<process>"`
-  - `I execute unix system process "<process>" delmited by "<delimiter>"`
+  - `I execute unix system process "<process>" delimited by "<delimiter>"`
 
 3.13.1
 ======
