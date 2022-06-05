@@ -333,3 +333,9 @@ table tbody.summary td {
   padding-bottom: 0px !important;
   padding-left: 0px !important;
 }
+
+div.horizontal-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}

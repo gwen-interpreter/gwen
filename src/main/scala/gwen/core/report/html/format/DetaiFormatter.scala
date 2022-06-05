@@ -325,21 +325,23 @@ trait DetaiFormatter {
           )
         ),
         div(`class` := "panel-body",
-          ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
-            formatExampleHeader(exs.evalStatus, exs.table, keywordPixels),
-            if (exs.isExpanded) {
-              for {
-                (scenario, subindex) <- exs.scenarios.zipWithIndex
-              } yield {
-                formatExampleRow(Some(scenario), scenario.evalStatus, exs.table, subindex + 1, keywordPixels, true)
+          div(`class` := "horizontal-scroll",
+            ul(`class` := "list-group", style := "margin-right: -10px; margin-left: -10px",
+              formatExampleHeader(exs.evalStatus, exs.table, keywordPixels),
+              if (exs.isExpanded) {
+                for {
+                  (scenario, subindex) <- exs.scenarios.zipWithIndex
+                } yield {
+                  formatExampleRow(Some(scenario), scenario.evalStatus, exs.table, subindex + 1, keywordPixels, true)
+                }
+              } else {
+                for {
+                  rowIndex <- exs.table.tail.zipWithIndex.map(_._2 + 1)
+                } yield {
+                  formatExampleRow(None, exs.evalStatus, exs.table, rowIndex, keywordPixels, false)
+                }
               }
-            } else {
-              for {
-                rowIndex <- exs.table.tail.zipWithIndex.map(_._2 + 1)
-              } yield {
-                formatExampleRow(None, exs.evalStatus, exs.table, rowIndex, keywordPixels, false)
-              }
-            }
+            )
           )
         )
       )
@@ -543,24 +545,32 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatStepDataTable(step: Step, keywordPixels: Int): Seq[TypedTag[String]] = {
+  private def formatStepDataTable(step: Step, keywordPixels: Int): Option[TypedTag[String]] = {
     val evalStatus = step.evalStatus
     val status = evalStatus.keyword
-    for {
-      rowIndex <- step.table.indices
-      line = step.table(rowIndex)._1
-    } yield {
-      div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
-        div(`class` := "line-no",
-          small(
-            if (line > 0) line.toString else ""
-          )
-        ),
-        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
-          " "
-        ),
-        formatDataRow(step.table, rowIndex, evalStatus, false)
+    if (step.table.nonEmpty) {
+      Some(
+        div(`class` := "horizontal-scroll",
+          for {
+            rowIndex <- step.table.indices
+            line = step.table(rowIndex)._1
+          } yield {
+            div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
+              div(`class` := "line-no",
+                small(
+                  if (line > 0) line.toString else ""
+                )
+              ),
+              div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+                " "
+              ),
+              formatDataRow(step.table, rowIndex, evalStatus, false)
+            )
+          }
+        )
       )
+    } else {
+      None
     }
   }
 
