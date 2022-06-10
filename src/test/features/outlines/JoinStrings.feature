@@ -1,6 +1,6 @@
 Feature: Join Strings
 
-  Scenario Outline: Joining <string 1> and <string 2> should yield <result>
+  Scenario Outline: Joining <string 1> and <string 2> should yield <result> 1
 
     This scenario is evaluated at the point where the outline is declared.
     Joining <string 1> and <string 2> should yield <result>
@@ -23,3 +23,21 @@ Feature: Join Strings
     Given result is ""
      When I join two strings in meta
      Then the result should not be ""
+
+  Scenario Outline: Joining <text 1> and <text 2> should yield <result> with impilictly bound cells
+
+    This scenario is evaluated at the point where the outline is declared.
+    Joining <text 1> and <text 2> should yield <result>
+
+    Given the result is "${text 1}${text 2}"
+     Then the result should be "<result>"
+      And the result should be "${result}"
+
+    Examples: Basic string concatenation
+
+      The header row contains the placeholder names. The body rows that
+      follow contain the data that is bound to each scenario that is evaluated.
+
+        | text 1 | text 2 | result     |
+        | butter | fly    | butterfly  |
+        | basket | ball   | basketball |

@@ -1,3 +1,12 @@
+3.14.0
+======
+Jun 10, 2022
+- Introduce new setting to bind row data in outline examples tables to same 
+  named attributes in the current scope:
+  - `gwen.auto.bind.tableData.outline.examples = true|false`
+    - `true` (default) to make each cell in each row accessible as `${name}` in the current scope and `<name>` in the template
+    - `false` to make each cell in each row accessible as `<name>` in the template only
+
 3.13.6
 ======
 Jun 5, 2022

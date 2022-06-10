@@ -177,12 +177,12 @@ object GwenSettings {
     FeatureMode.valueOf(Settings.get("gwen.feature.mode"))
   }
 
-    /**
-    * Provides access to the `gwen.associative.meta` setting used to control whether or
-    * not meta files having the same name (excluding file extension) and same location as feature
-    * files are only loaded for that feature and loaded last (default value is true).
-    * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
-    */
+  /**
+  * Provides access to the `gwen.associative.meta` setting used to control whether or
+  * not meta files having the same name (excluding file extension) and same location as feature
+  * files are only loaded for that feature and loaded last (default value is true).
+  * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
+  */
   def `gwen.associative.meta`: Boolean = {
     `gwen.auto.discover.meta` && Settings.getBoolean("gwen.associative.meta")
   }
@@ -277,6 +277,14 @@ object GwenSettings {
    */
   def `gwen.video.timeoutSecs`: Int = {
     Settings.getIntOpt("gwen.video.timeoutSecs").getOrElse(10)
+  }
+
+  /**
+  * Provides access to the `gwen.auto.bind.tableData.outline.examples` setting used to control whether or
+  * not to bind row data in outline examples tables to same named attributes at runitme (default value is true).
+  */
+  def `gwen.auto.bind.tableData.outline.examples`: Boolean = {
+    Settings.getBoolean("gwen.auto.bind.tableData.outline.examples")
   }
 
 }

@@ -34,6 +34,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
     Settings.exclusively {
       GwenSettings.`gwen.assertion.mode` should be (AssertionMode.hard)
       GwenSettings.`gwen.associative.meta` should be (true)
+      GwenSettings.`gwen.auto.bind.tableData.outline.examples` should be (true)
       GwenSettings.`gwen.auto.discover.data.csv` should be (true)
       GwenSettings.`gwen.auto.discover.meta` should be (true)
       GwenSettings.`gwen.behavior.rules` should be (BehaviorMode.lenient)

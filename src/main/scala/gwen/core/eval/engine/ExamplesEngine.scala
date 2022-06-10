@@ -47,6 +47,14 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       beforeExamples(exs, ctx)
       exs.copy(
         withScenarios = exs.scenarios map { scenario =>
+          if (GwenSettings.`gwen.auto.bind.tableData.outline.examples`) {
+            val tNames = exs.table.headOption.map(_._2).getOrElse(Nil)
+            scenario.params foreach { (pName, pValue) => 
+              if (tNames.contains(pName)) {
+                ctx.scopes.set(pName, pValue)
+              }
+            }
+          }
           evaluateScenario(exs, scenario, ctx)
         }
       ) tap { exs =>
