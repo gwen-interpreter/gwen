@@ -22,17 +22,32 @@ import gwen.core.node._
 import gwen.core.node.gherkin._
 import gwen.core.node.event.NodeEvent
 import gwen.core.node.event.NodeEventListener
+import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 
-import gwen.core.status.StatusKeyword
-import gwen.core.result.ResultsSummary
+import java.io.PrintStream
+import java.io.ByteArrayOutputStream
 
 class ConsoleReporter(options: GwenOptions)
-    extends NodeEventListener("Console Reporter", Set(NodeType.Meta, NodeType.StepDef)) {
+    extends NodeEventListener("Console Reporter", Set(NodeType.Meta)) {
 
   private val parallel = options.parallel || options.parallelFeatures
-  private val printer = new SpecPrinter(parallel, ConsoleColors.isEnabled)
+  private val printer = new SpecPrinter(false, ConsoleColors.isEnabled)
+  
+  private var depth = ThreadLocal.withInitial[Int] { () => 0 }
+  private val parallelOut = {
+    if (parallel) {
+      Some(
+        ThreadLocal.withInitial[(ByteArrayOutputStream, PrintStream)] { () => 
+          val baos = new ByteArrayOutputStream()
+          (baos, new PrintStream(baos))
+        }
+      )
+    } else None
+  }
 
+  private def out: PrintStream = parallelOut.map(_.get._2).getOrElse(System.out)
+  
   override def beforeUnit(event: NodeEvent[FeatureUnit]): Unit = { 
     val unit = event.source
     val action = if (options.dryRun) "Checking" else "Executing"
@@ -56,60 +71,69 @@ class ConsoleReporter(options: GwenOptions)
       val parent = event.callChain.previous
       val action = if (options.dryRun) "Checked" else "Executed"
       unit.result foreach { result =>
-        System.out.println(
-          ("""|   _
-              |  { \," [""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + """ specification:
-              | {_`/   """ + unit.name + """
-              |    `
-              |
-              |""").stripMargin + printer.prettyPrint(parent, result.spec) + printer.printSpecResult(result)
-        )
+        parallelOut foreach { threadLocal =>
+          val (outBuffer, outStream) = threadLocal.get
+          outStream.println(" ")
+          outStream.flush()
+          try {
+            System.out.println(
+              ("""|   _
+                  |  { \," [""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + """ specification:
+                  | {_`/   """ + unit.name + """
+                  |    `
+                  |
+                  |""").stripMargin + outBuffer.toString
+            )
+          } finally {
+            outStream.close()
+          }
+          val baos = new ByteArrayOutputStream()
+          threadLocal.set((baos, new PrintStream(baos)))
+        }
       }
     }
   }
     
   override def beforeSpec(event: NodeEvent[Spec]): Unit = {
-    if (!parallel) {
-      val spec = event.source
-      val parent = event.callChain.previous
-      System.out.println(printer.prettyPrint(parent, spec.feature))
-    }
+    val spec = event.source
+    val parent = event.callChain.previous
+    out.println(printer.prettyPrint(parent, spec.feature))
   }
 
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
-    if (!parallel) {
-      val result = event.source
-      System.out.print(printer.printSpecResult(result))
-    }
+    val result = event.source
+    out.print(printer.printSpecResult(result))
   }
 
   override def beforeBackground(event: NodeEvent[Background]): Unit = {
-    if (!parallel) {
+    if (depth.get == 0) {
       val background = event.source
       val parent = event.callChain.previous
-      System.out.println(printer.prettyPrint(parent, background))
+      out.println(printer.prettyPrint(parent, background))
     }
   }
 
   override def afterBackground(event: NodeEvent[Background]): Unit = {
-    if (!parallel) {
+    if (depth.get == 0) {
       event.callChain.nodes.reverse.find { node => 
         node.isInstanceOf[Scenario]
       } map { node => 
         node.asInstanceOf[Scenario]
       } foreach { scenario =>
-        val parent = event.callChain.previous
-        System.out.println(printer.prettyPrint(parent, scenario))
+        if (!scenario.isExpanded) {
+          val parent = event.callChain.previous
+          out.println(printer.prettyPrint(parent, scenario))
+        }
       }
     }
   }
 
   override def beforeScenario(event: NodeEvent[Scenario]): Unit = {
-    if (!parallel) {
+    if (depth.get == 0) {
       val scenario = event.source
-      if (scenario.background.isEmpty) {
+      if (scenario.background.isEmpty && !scenario.isExpanded) {
         val parent = event.callChain.previous
-        System.out.println(printer.prettyPrint(parent, scenario))
+        out.println(printer.prettyPrint(parent, scenario))
       }
     }
   }
@@ -117,46 +141,49 @@ class ConsoleReporter(options: GwenOptions)
   override def afterScenario(event: NodeEvent[Scenario]): Unit = {  }
 
   override def beforeExamples(event: NodeEvent[Examples]): Unit = {
-    if (!parallel) {
+    if (depth.get == 0) {
       val examples = event.source
       val parent = event.callChain.previous
-      System.out.println(printer.prettyPrint(parent, examples))
+      out.print(printer.prettyPrint(parent, examples))
     }
   }
 
   override def afterExamples(event: NodeEvent[Examples]): Unit = {  }
 
   override def beforeRule(event: NodeEvent[Rule]): Unit = {
-    if (!parallel) {
-      val rule = event.source
-      val parent = event.callChain.previous
-      System.out.println(printer.prettyPrint(parent, rule))
-    }
+    val rule = event.source
+    val parent = event.callChain.previous
+    out.println(printer.prettyPrint(parent, rule))
   }
 
   override def afterRule(event: NodeEvent[Rule]): Unit = {  }
 
-  override def beforeStepDef(event: NodeEvent[Scenario]): Unit = { }
-  override def afterStepDef(event: NodeEvent[Scenario]): Unit = { }
+  override def beforeStepDef(event: NodeEvent[Scenario]): Unit = {  }
+  override def afterStepDef(event: NodeEvent[Scenario]): Unit = {  }
 
   override def beforeStep(event: NodeEvent[Step]): Unit = {
-    if (!parallel) {
+    depth.set(depth.get + 1)
+    if (depth.get <= GwenSettings.`gwen.console.log.depth`) {
       val step = event.source
       val parent = event.callChain.previous
-      if (!parent.isInstanceOf[Step]) {
-        System.out.print(printer.prettyPrint(parent, step))
+      if (step.indexIn(parent).getOrElse(0) == 0) { 
+        out.println()
       }
+      val indent = s"${" " * ((depth.get  - 1) * (StepKeyword.maxLength + 1))}"
+      val stepString = printer.prettyPrint(parent, step).linesIterator.map(line => s"$indent$line") mkString(System.lineSeparator)
+      out.print(stepString)
     }
   }
 
   override def afterStep(event: NodeEvent[Step]): Unit = {
-    if (!parallel) {
+    if (depth.get <= GwenSettings.`gwen.console.log.depth`) {
       val step = event.source
       val parent = event.callChain.previous
-      if (!parent.isInstanceOf[Step]) {
-        System.out.println(printer.printStatus(step, withMessage = true))
+      if (depth.get == GwenSettings.`gwen.console.log.depth` || step.stepDef.isEmpty) {
+        out.println(printer.printStatus(step, withMessage = true))
       }
     }
+    depth.set(depth.get - 1)
   }
 
   def printSummary(summary: ResultsSummary): Unit = {
@@ -165,6 +192,7 @@ class ConsoleReporter(options: GwenOptions)
     }
     val reports = summary.reports
     if (reports.nonEmpty) {
+      System.out.println()
       val maxWidh = (reports map { (format, _) => format.toString.length }).max
       reports foreach { (format, report) => 
         System.out.println(s"${Formatting.leftPad(s"${format.toString.toUpperCase} report", maxWidh + 7)}  $report")

@@ -124,6 +124,14 @@ object GwenSettings {
   }
 
   /**
+  * Provides access to the `gwen.auto.bind.tableData.outline.examples` setting used to control whether or
+  * not to bind row data in outline examples tables to same named attributes at runitme (default value is true).
+  */
+  def `gwen.auto.bind.tableData.outline.examples`: Boolean = {
+    Settings.getBoolean("gwen.auto.bind.tableData.outline.examples")
+  }
+
+  /**
     * Provides access to the `gwen.auto.discover.meta` setting used to enable
     * or disable automatic discovery of meta files (default value is `true` for enabled).
     * Disabling this will prevent Gwen from automatically discovering and loading meta files in the path of an
@@ -244,6 +252,12 @@ object GwenSettings {
   def `gwen.console.log.colors`: Boolean = Settings.getBoolean("gwen.console.log.colors")
 
   /**
+    * Provides access to the `gwen.console.log.depth` setting used to control the depth level of steps to log
+    (default is 1 for top level steps only).
+    */
+  def `gwen.console.log.depth`: Int = Settings.getInt("gwen.console.log.depth")
+
+  /**
     * Provides access to the `gwen.console.log.stepDefs` setting used to control whether or to log StepDefs
     * to all console outputs.
     */
@@ -277,14 +291,6 @@ object GwenSettings {
    */
   def `gwen.video.timeoutSecs`: Int = {
     Settings.getIntOpt("gwen.video.timeoutSecs").getOrElse(10)
-  }
-
-  /**
-  * Provides access to the `gwen.auto.bind.tableData.outline.examples` setting used to control whether or
-  * not to bind row data in outline examples tables to same named attributes at runitme (default value is true).
-  */
-  def `gwen.auto.bind.tableData.outline.examples`: Boolean = {
-    Settings.getBoolean("gwen.auto.bind.tableData.outline.examples")
   }
 
 }

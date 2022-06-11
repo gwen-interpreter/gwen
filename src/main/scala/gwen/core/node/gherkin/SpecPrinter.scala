@@ -94,7 +94,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""} ${scenario.name}")
       if (deep || scenario.description.nonEmpty) out.println()
       printDescription(s"$indent  ", scenario.description, out)
-      if (scenario.description.nonEmpty && scenario.steps.nonEmpty) {
+      if (deep && scenario.description.nonEmpty && scenario.steps.nonEmpty) {
         out.println()
       }
     }
