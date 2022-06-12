@@ -79,7 +79,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""} ${background.name}")
     if (deep || background.description.nonEmpty) out.println()
     printDescription(s"$indent  ", background.description, out)
-    if (background.description.nonEmpty && background.steps.nonEmpty) {
+    if (deep && background.description.nonEmpty && background.steps.nonEmpty) {
       out.println()
     }
     out
@@ -249,7 +249,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
     pw.println()
     printStatus("  ", evalStatus, withMessage = false, pw)
-    pw.println()
+    if (deep) pw.println()
     sw.toString
   }
 
@@ -257,6 +257,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
     val status = summary.evalStatus.keyword
+    pw.println()
     pw.println("Summary:")
     pw.println()
     val resultsByStatus = StatusKeyword.reportables.reverse flatMap { keyword => 

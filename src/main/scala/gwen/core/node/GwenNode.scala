@@ -51,7 +51,8 @@ trait GwenNode {
 
   private def indexIn(nodes: List[GwenNode]): Option[Int] = {
     nodes.zipWithIndex.collectFirst {
-      case (that, idx) if that.sourceRef == this.sourceRef => Some(idx)
+      case (that, idx) if (that == this) || (that.sourceRef.nonEmpty && that.sourceRef == this.sourceRef) => 
+        Some(idx)
     } getOrElse None
   }
 

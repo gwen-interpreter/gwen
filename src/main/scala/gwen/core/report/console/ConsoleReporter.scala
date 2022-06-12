@@ -73,7 +73,6 @@ class ConsoleReporter(options: GwenOptions)
       unit.result foreach { result =>
         parallelOut foreach { threadLocal =>
           val (outBuffer, outStream) = threadLocal.get
-          outStream.println(" ")
           outStream.flush()
           try {
             System.out.println(
