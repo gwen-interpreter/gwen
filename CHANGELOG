@@ -407,7 +407,7 @@ Nov 16, 2021
 - Gwen 3 release
   - Refactor and migrate codebase to Scala 3
   - Update Gherkin parser and all dependencies
-  - Introduce pretty console logger
+  - Introduce pretty console logger ( supports [NO_COLOR](https://no-color.org/) )
   - Settings changes:
     - Support *.conf (HOCON), and *.json settings files in addition to *.properties files
     - Renamed settings:
