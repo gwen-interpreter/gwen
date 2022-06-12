@@ -253,9 +253,12 @@ object GwenSettings {
 
   /**
     * Provides access to the `gwen.console.log.depth` setting used to control the depth level of steps to log
-    (default is 1 for top level steps only).
+    (default is 1 for top level steps only). Can be set to 'infinity' to log all levels.
     */
-  def `gwen.console.log.depth`: Int = Settings.getInt("gwen.console.log.depth")
+  def `gwen.console.log.depth`: Int = { 
+    if (Settings.getOpt("gwen.console.log.depth").map(_ == "infinity").getOrElse(false)) Int.MaxValue
+    else Settings.getInt("gwen.console.log.depth")
+  }
 
   /**
     * Provides access to the `gwen.console.log.stepDefs` setting used to control whether or to log StepDefs
