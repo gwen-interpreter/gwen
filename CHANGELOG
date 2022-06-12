@@ -1,6 +1,6 @@
 3.14.0
 ======
-Jun 12, 2022
+Jun 14, 2022
 - Introduce new setting to bind row data in outline examples tables to same 
   named attributes in the current scope:
   - `gwen.auto.bind.tableData.outline.examples = true|false`
