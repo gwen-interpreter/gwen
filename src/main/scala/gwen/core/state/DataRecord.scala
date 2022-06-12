@@ -23,11 +23,14 @@ import java.io.File
   * 
   *  @param dataFile the source data file
   *  @param recordNo the current data record number
+  *  @param totalRecs the total number of records
   *  @param data the current data  
   */
-class DataRecord(val dataFile: File, val recordNo: Int, val data: List[(String, String)]) {
+class DataRecord(val dataFile: File, val recordNo: Int, val totalRecs: Int, val data: List[(String, String)]) {
   override def toString = s"DataRecord(${dataFile.getPath}[$recordNo])"
   def interpolator: String => String = name => {
     data.filter(_._1 == name).headOption.map(_._2).getOrElse(s"$$[$name]")
   }
+  def descriptor: String = s"${recordNo} of ${totalRecs}"
+
 }

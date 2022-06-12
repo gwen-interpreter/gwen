@@ -50,7 +50,7 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
   }
 
     "Node path" should "be generated on chain with Unit with data record" in {
-    val dataRecord = new DataRecord(new File("data.csv"), 2, Nil)
+    val dataRecord = new DataRecord(new File("data.csv"), 2, 2, Nil)
     val unit = FeatureUnit(Root, new File("path/to/file.feature"), Nil, Some(dataRecord), mockTagFilter, None)
     val builder = new NodeChainBuilder()
     val chain = builder.push(unit)

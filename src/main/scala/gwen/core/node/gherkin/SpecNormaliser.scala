@@ -54,7 +54,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
           withTags = spec.feature.tags map { tag => 
             Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
           },
-          withName = s"${interpolateString(spec.feature.name) { interpolator }} [${record.recordNo}]",
+          withName = s"${interpolateString(spec.feature.name) { interpolator }} [${record.descriptor}]",
           withDescription = spec.feature.description map { line => 
             interpolateString(line) { interpolator }
           }
@@ -109,7 +109,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${interpolateString(bg.name) { interpolator }} + Input data record ${dataRecord.recordNo}",
+          s"${interpolateString(bg.name) { interpolator }} + Input data record ${dataRecord.descriptor}",
           (bg.description map { line =>
             interpolateString(line) { interpolator }
           }) ++ description,
@@ -119,7 +119,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           None,
           FeatureKeyword.nameOf(FeatureKeyword.Background),
-          s"Input data record ${dataRecord.recordNo}",
+          s"Input data record ${dataRecord.descriptor}",
           description,
           steps.map(_.copy()))
     }

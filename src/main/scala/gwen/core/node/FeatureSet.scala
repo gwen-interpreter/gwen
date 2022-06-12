@@ -32,6 +32,7 @@ import java.io.File
  */
 class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit] with LazyLogging  {
 
+  private val totalRecs = CSVReader.open(dataFile).all().size - 1
   private val dataFeed = CSVReader.open(dataFile).iterator.zipWithIndex
   private val headers = if (dataFeed.hasNext) dataFeed.next()._1 else Nil
 
@@ -42,7 +43,7 @@ class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit
   override def next(): FeatureUnit = {
     val (values, index) = dataFeed.next()
     val data = headers zip values
-    val dataRecord = new DataRecord(dataFile, index, data.toList)
+    val dataRecord = new DataRecord(dataFile, index, totalRecs, data.toList)
     logger.debug(s"$dataRecord: $data")
     FeatureUnit(Root, unit.featureFile, unit.metaFiles, Some(dataRecord), unit.tagFilter) tap { unit =>
       logger.info(s"Mapped $unit")
