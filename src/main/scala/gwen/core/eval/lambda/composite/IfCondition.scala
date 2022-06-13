@@ -50,9 +50,8 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     val iStepDef = Scenario(None, tags, ifTag.toString, s"${if (negate) "not " else ""}$condition", Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {
-      val boolResult = jsCondition.evaluate()
-      LoadStrategyBinding.bindIfLazy(jsCondition.name, boolResult.toString, ctx)
-      val satisfied = if (jsCondition.negated) !boolResult else boolResult
+      val satisfied = jsCondition.evaluate()
+      LoadStrategyBinding.bindIfLazy(jsCondition.name, satisfied.toString, ctx)
       if (satisfied) {
         logger.info(s"Processing conditional step (${if (jsCondition.negated) "not " else ""}${jsCondition.name} = true): ${step.keyword} $doStep")
         sdCall()
