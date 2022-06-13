@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.lambda.CompositeStep
+import gwen.core.eval.support.JSCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
@@ -67,8 +68,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
               iterationStep.evalStatus match {
                 case Failed(_, e) => throw e
                 case _ =>
-                  val javascript = ctx.interpolate(ctx.scopes.get(JSBinding.key(condition)))
-                  ctx.evaluateJSPredicate(javascript) tap { result =>
+                  JSCondition(condition, false, ctx).evaluate() tap { result =>
                     if (!result) {
                       logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
                       if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
@@ -78,8 +78,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   }
               }
             case "while" =>
-              val javascript = ctx.interpolate(ctx.scopes.get(JSBinding.key(condition)))
-              val result = ctx.evaluateJSPredicate(javascript)
+              val result = JSCondition(condition, false, ctx).evaluate()
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {

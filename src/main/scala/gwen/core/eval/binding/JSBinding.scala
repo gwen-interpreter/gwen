@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,11 @@ object JSBinding {
   def bind(name: String, javascript: String, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(key(name), javascript)
+  }
+
+  def find[T <: EvalContext](name: String, ctx: T): Try[JSBinding[T]] = Try {
+    ctx.scopes.get(key(name))
+    new JSBinding(name, Nil, ctx)
   }
 
 }

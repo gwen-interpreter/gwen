@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
+ * Copyright 2017-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,6 @@ class ScriptSupportTest extends BaseTest with Matchers with ScriptSupport {
         |  return d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();
         |})();""".stripMargin)
     date should be ("8/6/2017")
-  }
-
-  "JavaScript predicate" should "execute" in {
-
-    evaluateJSPredicate("1 == 2") should be(false)
-    evaluateJSPredicate("1 == 1") should be(true)
-
   }
 
   "JavaScript explicit conversion" should "work" in {

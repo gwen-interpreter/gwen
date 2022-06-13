@@ -24,7 +24,7 @@ import util.chaining.scalaUtilChainingOps
 /** 
  * Defines a named binding and provides access to its evaluated value. 
  */
-abstract class Binding[T <: EvalContext, U](val name: String, ctx: T) {
+abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
 
   /**
     * Resolves the bound value

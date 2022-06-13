@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,12 @@ object JSFunctionBinding {
     delimiter foreach { delim =>
       env.scopes.set(delimiterKey(name), delim)
     }
+  }
+
+  def find[T <: EvalContext](name: String, ctx: T): Try[JSFunctionBinding[T]] = Try {
+    ctx.scopes.get(jsRefKey(name))
+    ctx.scopes.get(argsKey(name))
+    new JSFunctionBinding(name, ctx)
   }
 
 }

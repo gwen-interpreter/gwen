@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
+ * Copyright 2017-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,6 @@ trait ScriptSupport {
     */
   def evaluateJS(javascript: String, params: Any*): Any =
     evaluateScript("JavaScript", javascript, params.map(_.asInstanceOf[AnyRef])*)
-
-  /**
-    * Evaluates a javascript predicate.
-    *
-    * @param javascript the script predicate expression to execute (must evaluate to true or false)
-    * @param params optional parameters to the script
-    */
-  def evaluateJSPredicate(javascript: String, params: Any*): Boolean = {
-    evaluateJS(formatJSReturn(javascript), params.map(_.asInstanceOf[AnyRef])*).asInstanceOf[Boolean]
-  }
 
   /**
     * Formats the given javascript expression in preparation for execute and return
