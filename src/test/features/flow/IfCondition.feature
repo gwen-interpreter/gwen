@@ -66,3 +66,11 @@ Feature: If Conditionals
      When I perform this if this condition
       And I perform that if not this condition
      Then the called step should be "this step"  
+
+  Scenario: Perform this using applied function as conditional (negated)
+    Given the target is "this"
+      And toBoolean is defined by js "arguments[0]"
+      And this condition is defined by toBoolean applied to "false"
+     When I perform this if not this condition
+      And I perform that if this condition
+     Then the called step should be "this step" 
