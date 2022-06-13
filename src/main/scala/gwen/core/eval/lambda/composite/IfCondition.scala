@@ -35,6 +35,7 @@ import scala.util.Success
 import scala.util.Failure
 
 import util.chaining.scalaUtilChainingOps
+import gwen.core.eval.binding.JSFunctionBinding
 
 class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
@@ -44,12 +45,12 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     }
     val (cond, javascript, isNegated) = {
       if (negate) {
-        Try(getBinding(s"not $condition", ctx).resolve()) match { 
+        Try(resolve(getBinding(s"not $condition", ctx), ctx)) match { 
           case Success(js) => (s"not $condition", js, false)
-          case Failure(_) => (condition, getBinding(condition, ctx).resolve(), true)
+          case Failure(_) => (condition, resolve(getBinding(condition, ctx), ctx), true)
         }
       } else {
-        (condition, getBinding(condition, ctx).resolve(), false)
+        (condition, resolve(getBinding(condition, ctx), ctx), false)
       }
     }
     ctx.getStepDef(doStep, None) foreach { stepDef =>
@@ -76,6 +77,14 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
 
   private def getBinding(cond: String, ctx: T): Binding[T, String] = {
     JSBinding(cond, Nil, ctx)
+  }
+
+  private def resolve(binding: Binding[T, String], ctx: T) = {
+    Try {
+      binding.resolve()
+    } getOrElse {
+      JSFunctionBinding(binding.name, ctx).resolve()
+    }
   }
 
 }

@@ -220,7 +220,7 @@ class ConsoleReporter(options: GwenOptions)
       if (depth.get <= GwenSettings.`gwen.console.log.depth`) {
         val step = event.source
         val parent = event.callChain.previous
-        if (depth.get == GwenSettings.`gwen.console.log.depth` || step.stepDef.isEmpty) {
+        if (depth.get == GwenSettings.`gwen.console.log.depth` || step.stepDef.isEmpty || step.stepDef.map(_.steps.isEmpty).getOrElse(false)) {
           out.println(printer.printStatus(step, withMessage = true))
         }
       }

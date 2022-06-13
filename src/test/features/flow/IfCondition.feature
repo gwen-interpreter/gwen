@@ -40,21 +40,29 @@ Feature: If Conditionals
      When I perform that if that condition
      Then the called step should be "that step"
 
-   Scenario: Do not perform this
+  Scenario: Do not perform this
     Given the target is "that"
       And the called step is "none"
       And this condition is defined by javascript ""${the target}" === "this""
      When I perform this if this condition
      Then the called step should be "none"
 
-   Scenario: Do perform this (negated)
+  Scenario: Do perform this (negated)
     Given the called step is "none"
       And this condition is "true"
      When I perform this if not this condition
      Then the called step should be "none"
 
-   Scenario: Do not perform this (negated)
+  Scenario: Do not perform this (negated)
     Given the called step is "none"
       And this condition is "false"
      When I perform this if not this condition
      Then the called step should be "this step"
+
+  Scenario: Perform this using applied function as conditional
+    Given the target is "this"
+      And toBoolean is defined by js "arguments[0]"
+      And this condition is defined by toBoolean applied to "true"
+     When I perform this if this condition
+      And I perform that if not this condition
+     Then the called step should be "this step"  
