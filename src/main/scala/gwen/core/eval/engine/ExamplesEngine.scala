@@ -67,7 +67,6 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val iTags = outline.tags map { tag => 
       Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
     }
-    var tableDataFile: Option[File] = None
     val csvExamples = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
         val (filepath, where) = tag.name match {
@@ -79,7 +78,6 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
         if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
-        tableDataFile = Some(file)
         val table0 = CSVReader.open(file).iterator.toList.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
@@ -97,7 +95,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             } getOrElse true
           }
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table, Nil))
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table, Some(file), Nil))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
@@ -111,8 +109,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val examples = normaliseScenarioOutline(
             outline.copy(withExamples = csvExamples),
             outline.background,
-            dataRecord,
-            tableDataFile
+            dataRecord
           ).examples
         outline.copy(
           withTags = iTags,

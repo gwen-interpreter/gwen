@@ -38,6 +38,7 @@ import java.io.File
   * @param name the example name
   * @param description option description lines
   * @param table header and body data (tuple of line position and rows of data)
+  * @param dataFile optional data input file
   * @param scenarios list of expanded scenarios
   */
 case class Examples(
@@ -47,6 +48,7 @@ case class Examples(
     name: String, 
     description: List[String], 
     table: List[(Long, List[String])], 
+    dataFile: Option[File],
     scenarios: List[Scenario]) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Examples
@@ -76,8 +78,9 @@ case class Examples(
       withName: String = name, 
       withDescription: List[String] = description, 
       withTable: List[(Long, List[String])] = table, 
+      withDataFile: Option[File] = dataFile,
       withScenarios: List[Scenario] = scenarios): Examples = {
-    Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withScenarios)
+    Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withDataFile, withScenarios)
   }
 
 }
@@ -109,6 +112,7 @@ object Examples {
         body.iterator.asScala.toList.map { row =>
           (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
         },
+      None,
       Nil
     )
   }

@@ -96,7 +96,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
 
   private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord]): List[Scenario] =
     scenarios.map { scenario =>
-      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, None)
+      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord)
       else expandScenario(scenario, background, dataRecord)
     }
 
@@ -130,7 +130,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   }
 
 
-  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], examplesDataFile: Option[File]): Scenario = {
+  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
     val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     outline.copy(
       withTags = outline.tags map { tag => 
@@ -155,7 +155,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
             val params: List[(String, String)] = names zip values
             val normalisedBackground = {
               if (GwenSettings`gwen.auto.bind.tableData.outline.examples`) {
-                Some(dataBackground(params, background, tableIndex + 1, exs.table.tail.size, examplesDataFile, interpolator))
+                Some(dataBackground(params, background, tableIndex + 1, exs.table.tail.size, exs.dataFile, interpolator))
               } else background
             }
             new Scenario(
