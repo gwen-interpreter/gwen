@@ -164,12 +164,15 @@ Feature: Gwen
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-    Background: A butterfly might impact a tornado
+    Background: A butterfly might impact a tornado + Data table record 1 of 2
 
       The change in atmosphere when a butterfly flaps
       its wings could alter the path of a tornado
 
-      Given a butterfly
+      Given @Data string 1 is "howdy"
+        And @Data string 2 is "doo"
+        And @Data result is "howdydoo"
+        And a butterfly
         And a tornado
        When the butterfly flaps its wings
        Then the change in atmosphere might seam neglibile
@@ -184,12 +187,15 @@ Feature: Gwen
        When I join the two strings
        Then the result should be "howdydoo"
 
-    Background: A butterfly might impact a tornado
+    Background: A butterfly might impact a tornado + Data table record 2 of 2
 
       The change in atmosphere when a butterfly flaps
       its wings could alter the path of a tornado
 
-      Given a butterfly
+      Given @Data string 1 is "any"
+        And @Data string 2 is "thing"
+        And @Data result is "anything"
+        And a butterfly
         And a tornado
        When the butterfly flaps its wings
        Then the change in atmosphere might seam neglibile

@@ -143,13 +143,22 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.push(scenario1)
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.background.get)
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]""")
     chain = builder.push(scenario1.background.get.steps(0))
-    chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]/background step 1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]/string 1 is "basket"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background[1]""")
+    chain = builder.push(scenario1.background.get.steps(1))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]/string 2 is "ball"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
+    chain = builder.push(scenario1.background.get.steps(2))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]/result is "basketball"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario1.background.get.steps(3))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]/background step 1[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/background + Data table record 1 of 2[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]""")
     chain = builder.push(scenario1.steps(0))
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining basket and ball should yield basketball -- Compound words[1]/string 1 is "basket"[1]""")
     chain = builder.pop()._2
@@ -173,11 +182,20 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.push(scenario2)
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.background.get)
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]""")
     chain = builder.push(scenario2.background.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]/background step 1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]/string 1 is "any"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background[1]""")
+    chain = builder.push(scenario2.background.get.steps(1))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]/string 2 is "thing"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario2.background.get.steps(2))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]/result is "anything"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario2.background.get.steps(3))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]/background step 1[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]/background + Data table record 2 of 2[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Compound words[1]/Joining any and thing should yield anything -- Compound words[1]""")
     chain = builder.push(scenario2.steps(0))
@@ -209,11 +227,20 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.push(scenario3)
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.background.get)
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]""")
     chain = builder.push(scenario3.background.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]/background step 1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]/string 1 is "howdy"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background[1]""")
+    chain = builder.push(scenario3.background.get.steps(1))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]/string 2 is "doo"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario3.background.get.steps(2))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]/result is "howdydoo"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario3.background.get.steps(3))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]/background step 1[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]/background + Data table record 1 of 2[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining howdy and doo should yield howdydoo -- Nonsensical compound words[1]""")
     chain = builder.push(scenario3.steps(0))
@@ -239,11 +266,20 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.push(scenario4)
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.background.get)
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]""")
     chain = builder.push(scenario4.background.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]/background step 1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]/string 1 is "yep"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background[1]""")
+    chain = builder.push(scenario4.background.get.steps(1))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]/string 2 is "ok"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario4.background.get.steps(2))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]/result is "yepok"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario4.background.get.steps(3))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]/background step 1[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]/background + Data table record 2 of 2[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]/Nonsensical compound words[1]/Joining yep and ok should yield yepok -- Nonsensical compound words[1]""")
     chain = builder.push(scenario4.steps(0))
@@ -275,11 +311,20 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.push(scenario5)
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.background.get)
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]""")
     chain = builder.push(scenario5.background.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]/background step 1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]/string 1 is "ding"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background[1]""")
+    chain = builder.push(scenario5.background.get.steps(1))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]/string 2 is "dong"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario5.background.get.steps(2))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]/result is "dingdong"[1]""")
+    chain = builder.pop()._2
+    chain = builder.push(scenario5.background.get.steps(3))
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]/background step 1[1]""")
+    chain = builder.pop()._2
+    chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]/background + Data table record 1 of 1[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/outline.feature/Outline[1]/Joining <string 1> and <string 2> should yield <result>[1]//Joining ding and dong should yield dingdong[1]""")
     chain = builder.push(scenario5.steps(0))

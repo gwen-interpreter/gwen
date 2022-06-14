@@ -139,11 +139,14 @@ Feature: Gwen
      When expressed in Gherkin
      Then Gwen can evaluate it
 
-  Background: The butterfly effect
+  Background: The butterfly effect + Data table record 1 of 2
 
     Sensitivity to initial conditions
 
-    Given a deterministic nonlinear system
+    Given @Data string 1 is "howdy"
+      And @Data string 2 is "doo"
+      And @Data result is "howdydoo"
+      And a deterministic nonlinear system
      When a small change is initially applied
      Then a large change will eventually result
 
@@ -157,11 +160,14 @@ Feature: Gwen
      When I join the two strings
      Then the result should be "howdydoo"
 
-  Background: The butterfly effect
+  Background: The butterfly effect + Data table record 2 of 2
 
     Sensitivity to initial conditions
 
-    Given a deterministic nonlinear system
+    Given @Data string 1 is "any"
+      And @Data string 2 is "thing"
+      And @Data result is "anything"
+      And a deterministic nonlinear system
      When a small change is initially applied
      Then a large change will eventually result
 

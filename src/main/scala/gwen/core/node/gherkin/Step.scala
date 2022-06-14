@@ -225,6 +225,7 @@ case class Step(
   def isEager: Boolean = hasTag(Annotations.Eager)
   def isLazy: Boolean = hasTag(Annotations.Lazy)
   def isTry: Boolean = hasTag(Annotations.Try)
+  def isData: Boolean = hasTag(Annotations.Data)
   private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
 }

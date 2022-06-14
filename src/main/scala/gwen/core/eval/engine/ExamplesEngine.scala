@@ -47,14 +47,6 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       beforeExamples(exs, ctx)
       exs.copy(
         withScenarios = exs.scenarios map { scenario =>
-          if (GwenSettings.`gwen.auto.bind.tableData.outline.examples`) {
-            val tNames = exs.table.headOption.map(_._2).getOrElse(Nil)
-            scenario.params foreach { (pName, pValue) => 
-              if (tNames.contains(pName)) {
-                ctx.scopes.set(pName, pValue)
-              }
-            }
-          }
           evaluateScenario(exs, scenario, ctx)
         }
       ) tap { exs =>
@@ -75,6 +67,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val iTags = outline.tags map { tag => 
       Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
     }
+    var tableDataFile: Option[File] = None
     val csvExamples = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
         val (filepath, where) = tag.name match {
@@ -86,6 +79,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
         if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
+        tableDataFile = Some(file)
         val table0 = CSVReader.open(file).iterator.toList.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
@@ -117,7 +111,8 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val examples = normaliseScenarioOutline(
             outline.copy(withExamples = csvExamples),
             outline.background,
-            dataRecord
+            dataRecord,
+            tableDataFile
           ).examples
         outline.copy(
           withTags = iTags,

@@ -90,45 +90,13 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
 
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
     val interpolator = dataRecord.interpolator
-    val steps = dataRecord.data.zipWithIndex map { case ((name, value), index) =>
-      val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, Nil, None)
-    }
-    val description = List(s"Input data file: ${dataRecord.dataFile.getPath}")
-    val dataBackground = background match {
-      case Some(bg) =>
-        val bgSteps = bg.steps match {
-          case head :: tail if steps.size > 0 =>
-            if (StepKeyword.isGiven(head.keyword)) {
-              head.copy(withKeyword = StepKeyword.nameOf(StepKeyword.And)) :: tail
-            } else {
-              bg.steps
-            }
-          case _ => bg.steps
-        }
-        Background(
-          bg.sourceRef,
-          bg.keyword,
-          s"${interpolateString(bg.name) { interpolator }} + Input data record ${dataRecord.descriptor}",
-          (bg.description map { line =>
-            interpolateString(line) { interpolator }
-          }) ++ description,
-          steps ++ bgSteps
-        )
-      case None =>
-        Background(
-          None,
-          FeatureKeyword.nameOf(FeatureKeyword.Background),
-          s"Input data record ${dataRecord.descriptor}",
-          description,
-          steps.map(_.copy()))
-    }
-    expandScenarios(scenarios, Some(dataBackground), Some(dataRecord))
+    val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataFile), interpolator)
+    expandScenarios(scenarios, Some(dataBg), Some(dataRecord))
   }
 
   private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord]): List[Scenario] =
     scenarios.map { scenario =>
-      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord)
+      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, None)
       else expandScenario(scenario, background, dataRecord)
     }
 
@@ -162,7 +130,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   }
 
 
-  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
+  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], examplesDataFile: Option[File]): Scenario = {
     val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     outline.copy(
       withTags = outline.tags map { tag => 
@@ -185,6 +153,11 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
           },
           withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), tableIndex) =>
             val params: List[(String, String)] = names zip values
+            val normalisedBackground = {
+              if (GwenSettings`gwen.auto.bind.tableData.outline.examples`) {
+                Some(dataBackground(params, background, tableIndex + 1, exs.table.tail.size, examplesDataFile, interpolator))
+              } else background
+            }
             new Scenario(
               outline.sourceRef map { sref =>
                 SourceRef(sref.file, rowLineNo)
@@ -198,16 +171,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
                 val iLine = interpolateString(line) { interpolator }
                 resolveParams(iLine, params)._1
               },
-              if (outline.isStepDef) None
-              else background map { bg => 
-                bg.copy(
-                  withName = interpolateString(bg.name) { interpolator },
-                  withDescription = bg.description map { line => 
-                    interpolateString(line) { interpolator }
-                  },
-                  withSteps = bg.steps.map(_.copy())
-                )
-              },
+              normalisedBackground,
               outline.steps.map { s =>
                 val (name, resolvedParams) = resolveParams(s.name, params)
                 s.copy(
@@ -255,6 +219,45 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         val msg = s"Ambiguous condition${if (dupCount > 1) "s" else ""}${specFile.map(f => s" in file $f").getOrElse("")}"
         Errors.ambiguousCaseError(s"$msg: ${duplicates.map { case (name, stepDefs) => s"StepDef '$name' defined ${stepDefs.size} times" }.mkString}")
       }
+    }
+  }
+
+  private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
+    val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
+      val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.Data)), None)
+    }
+    val description = dataFile map { file => 
+      List(s"Input data file: ${file.getPath}")
+    } getOrElse Nil
+    val descriptor = s"${if (dataFile.nonEmpty) "Input data" else "Data table"} record $recordNo of $totalRecords"
+    background match {
+      case Some(bg) =>
+        val bgSteps = bg.steps match {
+          case head :: tail if dataSteps.size > 0 =>
+            if (StepKeyword.isGiven(head.keyword)) {
+              head.copy(withKeyword = StepKeyword.nameOf(StepKeyword.And)) :: tail
+            } else {
+              bg.steps
+            }
+          case _ => bg.steps
+        }
+        Background(
+          bg.sourceRef,
+          bg.keyword,
+          s"${interpolateString(bg.name) { interpolator }} + $descriptor",
+          (bg.description map { line =>
+            interpolateString(line) { interpolator }
+          }) ++ description,
+          dataSteps ++ bgSteps
+        )
+      case None =>
+        Background(
+          None,
+          FeatureKeyword.nameOf(FeatureKeyword.Background),
+          descriptor,
+          description,
+          dataSteps.map(_.copy()))
     }
   }
 
