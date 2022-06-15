@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2022 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.status.EvalStatus
+import gwen.core.status.Passed
 
 import scala.jdk.CollectionConverters._
 import scala.jdk.OptionConverters._
@@ -69,7 +70,13 @@ case class Examples(
   def allSteps: List[Step] = scenarios.flatMap(_.allSteps)
 
   /** Returns the evaluation status of this examples group. */
-  override val evalStatus: EvalStatus = EvalStatus(scenarios.map(_.evalStatus))
+  override val evalStatus: EvalStatus = {
+    if (scenarios.isEmpty) {
+      Passed(0, abstained = true)
+    } else {
+      EvalStatus(scenarios.map(_.evalStatus))
+    }
+  }
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,

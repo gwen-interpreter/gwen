@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Tag
 import gwen.core.state.DataRecord
+import gwen.core.status.Passed
 
 import scala.util.chaining._
 
@@ -45,11 +46,15 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {
     examples map { exs =>
       beforeExamples(exs, ctx)
-      exs.copy(
-        withScenarios = exs.scenarios map { scenario =>
-          evaluateScenario(exs, scenario, ctx)
-        }
-      ) tap { exs =>
+      if (exs.scenarios.isEmpty) {
+        transitionExamples(exs, Passed(0, abstained = true), ctx)
+      } else {
+        exs.copy(
+          withScenarios = exs.scenarios map { scenario =>
+            evaluateScenario(exs, scenario, ctx)
+          }
+        )
+      } tap { exs =>
         afterExamples(exs, ctx)
       }
     }

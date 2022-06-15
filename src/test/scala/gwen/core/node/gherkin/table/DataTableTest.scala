@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
+ * Copyright 2017-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,42 +363,36 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   }
 
-  "Zero item horizontal table with top header" should "error" in {
+  "Zero item horizontal table with top header" should "return empty table" in {
 
-    intercept[DataTableException] {
-      DataTable(
-        Tag("""@DataTable(header="top")"""), parse(
-        """
-          |Given a zero item horizontal table with a top header
-          |      |  a  |
-        """.stripMargin)).asInstanceOf[MatrixTable]
-    }
+    DataTable(
+      Tag("""@DataTable(header="top")"""), parse(
+      """
+        |Given a zero item horizontal table with a top header
+        |      |  a  |
+      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
 
   }
 
-  "Zero item horizontal table with implicit top header" should "error" in {
+  "Zero item horizontal table with implicit top header" should "return emtpy table" in {
 
-    intercept[DataTableException] {
-      DataTable(
-        Tag("""@DataTable"""), parse(
-        """
-          |Given a zero item horizontal table with a top header
-          |      |  a  |
-        """.stripMargin)).asInstanceOf[MatrixTable]
-    }
+    DataTable(
+      Tag("""@DataTable"""), parse(
+      """
+        |Given a zero item horizontal table with a top header
+        |      |  a  |
+      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
 
   }
 
-  "Zero item vertical table with left header" should "error" in {
+  "Zero item vertical table with left header" should "return empty table" in {
 
-    intercept[DataTableException] {
-      DataTable(
-        Tag("""@DataTable(header="left")"""), parse(
-        """
-          |Given a zero item vertical table with a left header
-          |      |  a  |
-        """.stripMargin)).asInstanceOf[MatrixTable]
-    }
+    DataTable(
+      Tag("""@DataTable(header="left")"""), parse(
+      """
+        |Given a zero item vertical table with a left header
+        |      |  a  |
+      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
 
   }
 
@@ -514,24 +508,20 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser {
 
   }
 
-  "Zero item matrix table" should "error" in {
+  "Zero item matrix table" should "return empty table" in {
 
-    intercept[DataTableException] {
-      DataTable(
-        Tag("""@DataTable(type="matrix")"""), parse(
-        """
-          |Given a single item matrix table
-          |      |  x  |
-        """.stripMargin)).asInstanceOf[MatrixTable]
-    }
+    DataTable(
+      Tag("""@DataTable(type="matrix")"""), parse(
+      """
+        |Given a single item matrix table
+        |      |  x  |
+      """.stripMargin)).asInstanceOf[MatrixTable].records.isEmpty should be (true)
 
   }
 
-  "Zero table" should "error" in {
+  "Zero table" should "return empty table" in {
 
-    intercept[DataTableException] {
-      DataTable(Tag("""@DataTable(horizontal="none")"""), parse("Given no table")).asInstanceOf[MatrixTable]
-    }
+    DataTable(Tag("""@DataTable(horizontal="none")"""), parse("Given no table")).asInstanceOf[FlatTable].records.isEmpty should be (true)
 
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2022 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
 import gwen.core.node.gherkin.Annotations
+import gwen.core.status.Passed
 
 /**
   * StepDef evaluation engine.
@@ -97,13 +98,18 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       ctx.paramScope.push(stepDef.name, stepDef.params)
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
-        dataTableOpt foreach { table =>
+        val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
+        nonEmptyDataTableOpt foreach { table =>
           ctx.topScope.pushObject(DataTable.tableKey, table)
         }
         try {
-          evaluateStepDef(parent, stepDef, step, ctx)
+          if (dataTableOpt.nonEmpty && nonEmptyDataTableOpt.isEmpty) {
+            transitionStep(step, Passed(0, abstained = true), ctx)
+          } else {
+            evaluateStepDef(parent, stepDef, step, ctx)
+          }
         } finally {
-          dataTableOpt foreach { _ =>
+          nonEmptyDataTableOpt foreach { _ =>
             ctx.topScope.popObject(DataTable.tableKey)
           }
         }

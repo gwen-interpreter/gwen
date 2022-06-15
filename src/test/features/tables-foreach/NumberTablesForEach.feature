@@ -45,3 +45,8 @@ Feature: Number tables (for each)
           | ${four in binary}  | ${five in binary}  | ${six in binary}  |
      When tables are nested in stepdefs
      Then everything should be "ok"
+
+  Scenario: Do nothing on empty table with header only
+    Given empty table with header only
+          | item |
+     Then z should be absent

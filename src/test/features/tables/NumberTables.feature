@@ -51,3 +51,5 @@ Feature: Number tables
           | ${four in binary}  | ${five in binary}  | ${six in binary}  |
      When tables are nested in stepdefs
      Then everything should be "ok"
+      And empty number table should do nothing
+          | number |

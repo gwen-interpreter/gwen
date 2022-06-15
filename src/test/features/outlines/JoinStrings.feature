@@ -41,3 +41,15 @@ Feature: Join Strings
         | text 1 | text 2 | result     |
         | butter | fly    | butterfly  |
         | basket | ball   | basketball |
+
+  Scenario Outline: Empty examples tables should do nothing
+
+    Given the result is "${text 1}${text 2}"
+     Then the result should be "<result>"
+      And the result should be "${result}"
+
+    Examples: Empty examples table
+
+      The header row contains the placeholder names. The body is empty.
+
+        | text 1 | text 2 | result     |
