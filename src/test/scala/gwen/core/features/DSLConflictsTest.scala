@@ -36,8 +36,7 @@ class DSLConflictsTest extends BaseTest {
       batch = true,
       reportDir = Some(new File(s"target/reports/dsl-conflicts")), 
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File(feature)),
-      settingsFiles = List(new File("src/test/resources/gwen.conf"))
+      features = List(new File(feature))
     )
         
     Settings.init(options.settingsFiles*)

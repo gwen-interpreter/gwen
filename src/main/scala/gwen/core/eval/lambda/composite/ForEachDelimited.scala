@@ -26,7 +26,11 @@ class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     val sourceValue = ctx.getBoundReferenceValue(source)
     val values = () => {
-      sourceValue.split(delimiter).toSeq
+      if (sourceValue.nonEmpty) {
+        sourceValue.split(delimiter).toSeq
+      } else {
+        Nil
+      }
     }
     evaluateForEach(values, entry, parent, step, ctx)
   }

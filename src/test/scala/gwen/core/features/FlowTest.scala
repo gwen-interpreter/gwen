@@ -1,12 +1,12 @@
 /*
- * Copyright 2016-2021 Branko Juric, Brady Wood
- * 
+ * Copyright 2017-2021 Branko Juric, Brady Wood
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,27 +18,42 @@ package gwen.core.features
 import gwen.GwenInterpreter
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
-import gwen.core.Settings
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
+
 import java.io.File
 
-class LoadStrategiesTest extends BaseTest {
-
-  val feature = "src/test/features/load/LoadStrategies.feature"
+class FlowTest extends BaseTest {
 
   val interpreter = GwenInterpreter()
-
-  s"Feature should" should "execute" in {
+  
+  "Flow features" should "evaluate without error" in {
+    
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File(s"target/reports/load")), 
+      reportDir = Some(new File("target/report/flow")),
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File(feature))
+      features = List(new File("src/test/features/flow"))
     )
-        
-    Settings.init(options.settingsFiles*)
+      
+    interpreter.run(options, None) match {
+      case _: Passed => // excellent :)
+      case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+      case _ => fail("evaluation expected but got noop")
+    }
+  }
+  
+  "Flow features" should "pass --dry-run test" in {
+    
+    val options = GwenOptions(
+      batch = true,
+      reportDir = Some(new File("target/report/flow-dry-run")),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+      features = List(new File("src/test/features/flow")),
+      dryRun = true
+    )
+      
     interpreter.run(options, None) match {
       case _: Passed => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
