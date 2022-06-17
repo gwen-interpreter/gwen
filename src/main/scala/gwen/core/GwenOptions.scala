@@ -116,14 +116,14 @@ object GwenOptions {
 
       opt[Unit]("parallel") action {
         (_, c) => {
-          c.copy(parallel = true, batch = true)
+          c.copy(parallel = true)
         }
       } text """|Execute features or scenarios in parallel
                 |- depending on gwen.state.level (default is feature)""".stripMargin
 
       opt[Unit]("parallel-features") action {
         (_, c) => {
-          c.copy(parallelFeatures = true, batch = true)
+          c.copy(parallelFeatures = true)
         }
       } text "Execute features in parallel (unconditionally)"
 
@@ -252,6 +252,9 @@ object GwenOptions {
         Some(args),
         options.init,
         options.initDir)
+      } map { options =>
+        if (options.parallel || options.parallelFeatures) options.copy(batch = true)
+        else options
       } tap { options =>
         options foreach { opt =>
           if (opt.batch && opt.features.isEmpty) {

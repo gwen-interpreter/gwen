@@ -1,3 +1,13 @@
+3.15.0
+======
+Jun 17, 2022
+- Add total CSV record count to record descriptor suffix to console report output
+- Ignore empty CSV records
+- Add ability to enable or disable the following CLI options with environment variables:
+  - `GWEN_DRY_RUN=true|fase` to set default `-n|--dry-run` option
+  - `GWEN_PARALLEL=true|fase` to set default `--parallel` option
+  - `GWEN_PARALLEL_FEATURES=true|fase` to set default `--parallel-features` option
+
 3.14.3
 ======
 Jun 17, 2022
