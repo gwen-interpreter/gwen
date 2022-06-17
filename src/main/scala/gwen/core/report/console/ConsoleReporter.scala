@@ -61,11 +61,11 @@ class ConsoleReporter(options: GwenOptions)
     val unit = event.source
     val action = if (options.dryRun) "Checking" else "Executing"
     if (parallel) {
-      System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase} specification: ${unit.name}")
+      System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase} specification: ${unit.displayName}")
     } else {
       System.out.println(("""|   _
                              |  { \," """ + action + " " + SpecType.Feature.toString.toLowerCase + """ specification:
-                             | {_`/   """ + unit.name + """
+                             | {_`/   """ + unit.displayName + """
                              |    `
                              |""").stripMargin)
     }
@@ -86,7 +86,7 @@ class ConsoleReporter(options: GwenOptions)
             System.out.println(
               ("""|   _
                   |  { \," [""" + Thread.currentThread.getName + "] " + action + " " + SpecType.Feature.toString.toLowerCase + """ specification:
-                  | {_`/   """ + unit.name + """
+                  | {_`/   """ + unit.displayName + """
                   |    `
                   |
                   |""").stripMargin + outBuffer.toString

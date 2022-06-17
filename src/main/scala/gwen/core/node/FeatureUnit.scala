@@ -42,6 +42,7 @@ case class FeatureUnit(
 
   override val sourceRef: Option[SourceRef] = None
   override val name: String = featureFile.uri
+  val displayName: String = s"$name${dataRecord.map(rec => s" [${rec.descriptor}]").getOrElse("")}"
   override val nodeType: NodeType = NodeType.Unit
   override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
 
