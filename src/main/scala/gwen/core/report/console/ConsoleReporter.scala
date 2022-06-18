@@ -146,6 +146,13 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeScenario(event: NodeEvent[Scenario]): Unit = {
     if (depth.get == 0) {
       val scenario = event.source
+      parallelScenarioCache foreach {_ =>
+        val action = if (options.dryRun) "Checking" else "Executing"
+        val unit = event.callChain.nodes.find(_.isInstanceOf[FeatureUnit]).map(_.asInstanceOf[FeatureUnit])
+        val parent = event.callChain.previous
+        val scenarioNo = scenario.indexIn(parent).map(_ + 1)
+        System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase}${unit.map(u => s" specification: ${u.displayName}").getOrElse("")} scenario${scenarioNo.map(n => s"[$n]").getOrElse("")}: ${scenario.name}")
+      }
       if (scenario.background.isEmpty && !scenario.isExpanded) {
         val parent = event.callChain.previous
         out.println(printer.prettyPrint(parent, scenario))

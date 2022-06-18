@@ -8,6 +8,7 @@ Jun 17, 2022
   - `GWEN_PARALLEL=true|false` to set default `--parallel` option
 - Drop `--parallelFeatures` CLI option and `gwen.cli.options.parallelFeatures` setting
   - Feature or scenarios run in parallel based on `--parallel` option and state level only
+- Log scenarion worker thread to console report when running scenarios in parallel
 
 3.14.3
 ======
