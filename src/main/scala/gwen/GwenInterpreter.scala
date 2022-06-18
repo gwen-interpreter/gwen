@@ -57,6 +57,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     printBanner("Welcome to ")
     val start = System.nanoTime
     try {
+      initDefaultEnvSettings()
       val options = GwenOptions(args)
       logger.info("Initialising settings")
       Settings.init(options.settingsFiles*)
@@ -74,6 +75,25 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         }
         println()
         System.exit(1)
+    }
+  }
+
+  def initDefaultEnvSettings(): Unit = {
+    applyEnvSettings(
+      List(
+        ("gwen.cli.options.dryRun", "GWEN_DRY_RUN"), 
+        ("gwen.cli.options.parallel", "GWEN_PARALLEL")
+      )
+    )
+  }
+
+  def applyEnvSettings(defaultEnvSettings: List[(String, String)]) = {
+    defaultEnvSettings foreach { (name, envVar) =>
+      sys.env.get(envVar) foreach { value => 
+        if (sys.props.get(name).isEmpty) {
+          sys.props.put(name, value)
+        }
+      }
     }
   }
 
