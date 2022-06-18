@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentMap
 class ConsoleReporter(options: GwenOptions)
     extends NodeEventListener("Console Reporter", Set(NodeType.Meta)) {
 
-  private val parallel = options.parallel || options.parallelFeatures
+  private val parallel = options.parallel
   private val printer = new SpecPrinter(false, ConsoleColors.isEnabled)
   
   private var loadingStepDef = ThreadLocal.withInitial[Boolean] { () => false }
@@ -50,7 +50,7 @@ class ConsoleReporter(options: GwenOptions)
     } else None
   }
   private val parallelScenarioCache: Option[ConcurrentMap[String, List[(Long, String)]]] = {
-    if (options.parallel && StateLevel.isScenario && !options.parallelFeatures) {
+    if (parallel && StateLevel.isScenario) {
       Some(new ConcurrentHashMap[String, List[(Long, String)]]())
     } else None
   }

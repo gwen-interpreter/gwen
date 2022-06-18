@@ -679,7 +679,6 @@ class GwenOptionsTest extends BaseTest with Matchers {
           options,
           batch = true,
           parallel = true,
-          parallelFeatures = false,
           verbose = true,
           debug = false,
           Some(reportDir),
@@ -695,35 +694,12 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected options but failed")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--parallel-features", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
       case Success(options) => {
         assertOptions(
           options,
           batch = true,
           parallel = true,
-          parallelFeatures = true,
-          verbose = true,
-          debug = false,
-          Some(reportDir),
-          List(ReportFormat.html, ReportFormat.junit),
-          List(confFile),
-          List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true)),
-          dryRun = false,
-          Some(dataFile),
-          List(metaFile),
-          List(dir5, feature5, dir6))
-      }
-      case _ =>
-        fail("expected options but failed")
-    }
-
-    parseOptions(Array("--batch", "--parallel-features", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
-      case Success(options) => {
-        assertOptions(
-          options,
-          batch = true,
-          parallel = false,
-          parallelFeatures = true,
           verbose = true,
           debug = false,
           Some(reportDir),
@@ -771,7 +747,6 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              options: GwenOptions,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
-                             parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
                              verbose: Boolean = GwenOptions.Defaults.verbose,
                              debug: Boolean = GwenOptions.Defaults.debug,
                              reportDir: Option[File] = GwenOptions.Defaults.report,
@@ -787,7 +762,6 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
     options.batch should be (batch)
     options.parallel should be (parallel)
-    options.parallelFeatures should be (parallelFeatures)
     options.verbose should be (verbose)
     options.debug should be (debug)
     options.reportDir should be (reportDir)

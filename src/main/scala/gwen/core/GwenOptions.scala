@@ -34,7 +34,6 @@ import java.io.File
   *
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
-  * @param parallelFeatures true to run features in parallel regardless of state level (default is false)
   * @param verbose true for verbose log output, false for pretty log output
   * @param debug true to enable debug mode, false otherwise
   * @param reportDir optional directory to generate evaluation report into
@@ -52,7 +51,6 @@ import java.io.File
 case class GwenOptions(
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
-    parallelFeatures: Boolean = GwenOptions.Defaults.parallelFeatures,
     verbose: Boolean = GwenOptions.Defaults.verbose,
     debug: Boolean = GwenOptions.Defaults.debug,
     reportDir: Option[File] = GwenOptions.Defaults.report,
@@ -67,7 +65,7 @@ case class GwenOptions(
     init: Boolean = false,
     initDir: File = GwenOptions.Defaults.initDir) {
 
-  def isParallelScenarios(stateLevel: StateLevel) = stateLevel == StateLevel.scenario && parallel && !parallelFeatures
+  def parallelScenarios(stateLevel: StateLevel) = parallel && stateLevel == StateLevel.scenario
 
   def tagFilter = new TagFilter(tags)
 
@@ -92,7 +90,6 @@ object GwenOptions {
     val initDir = new File("gwen")
     val inputData = CLISettings.`gwen.cli.options.inputData`
     val parallel = CLISettings.`gwen.cli.options.parallel`
-    val parallelFeatures = CLISettings.`gwen.cli.options.parallelFeatures`
     val meta = CLISettings.`gwen.cli.options.meta`
     val report = CLISettings.`gwen.cli.options.report`
     val tags = CLISettings.`gwen.cli.options.tags`
@@ -119,13 +116,8 @@ object GwenOptions {
           c.copy(parallel = true)
         }
       } text """|Execute features or scenarios in parallel
-                |- depending on gwen.state.level (default is feature)""".stripMargin
-
-      opt[Unit]("parallel-features") action {
-        (_, c) => {
-          c.copy(parallelFeatures = true)
-        }
-      } text "Execute features in parallel (unconditionally)"
+                |- features if gwen.state.level = feature (default)
+                |- scenarios if gwen.state.level = scenario""".stripMargin
 
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
@@ -238,7 +230,6 @@ object GwenOptions {
       new GwenOptions(
         options.batch,
         options.parallel,
-        options.parallelFeatures,
         options.verbose,
         options.debug,
         options.reportDir,
@@ -253,7 +244,7 @@ object GwenOptions {
         options.init,
         options.initDir)
       } map { options =>
-        if (options.parallel || options.parallelFeatures) options.copy(batch = true)
+        if (options.parallel) options.copy(batch = true)
         else options
       } tap { options =>
         options foreach { opt =>
@@ -264,7 +255,7 @@ object GwenOptions {
             val reportables = opt.reportFormats.filter(_.isFileSystemReport)
             Errors.invocationError(s"Required -r|--report option not provided for -f|--formats option${if (reportables.size > 1) "s" else ""}: ${reportables.mkString(",")}")
           }
-          if (opt.debug && (opt.parallel || opt.parallelFeatures)) {
+          if (opt.debug && opt.parallel) {
             Errors.invocationError("Debug mode not supported for parallel executions")
           }
         }

@@ -32,7 +32,6 @@ class CLISettingsTest extends BaseTest with Matchers {
       CLISettings.`gwen.cli.options.inputData` should be (None)
       CLISettings.`gwen.cli.options.meta` should be (Nil)
       CLISettings.`gwen.cli.options.parallel` should be (false)
-      CLISettings.`gwen.cli.options.parallelFeatures` should be (false)
       CLISettings.`gwen.cli.options.report`.map(_.getPath) should be (Some("output/reports"))
       CLISettings.`gwen.cli.options.tags` should be (Nil)
       CLISettings.`gwen.cli.options.verbose` should be (false)

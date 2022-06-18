@@ -46,7 +46,6 @@ object CLISettings extends LazyLogging {
     `gwen.cli.options.features`
     `gwen.cli.options.inputData`
     `gwen.cli.options.parallel`
-    `gwen.cli.options.parallelFeatures`
     `gwen.cli.options.meta`
     `gwen.cli.options.report`
     `gwen.cli.options.tags`
@@ -130,14 +129,6 @@ object CLISettings extends LazyLogging {
     */
   def `gwen.cli.options.parallel`: Boolean = {
     Settings.getBoolean("gwen.cli.options.parallel", None, Some(conf))
-  }
-
-  /**
-    * Provides access to the `gwen.cli.options.parallel` setting used to set the default
-    * --parallel-features CLI switch.
-    */
-  def `gwen.cli.options.parallelFeatures`: Boolean = {
-    Settings.getBoolean("gwen.cli.options.parallelFeatures", None, Some(conf))
   }
 
   /**
