@@ -21,6 +21,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.GwenLauncher
 import gwen.core.eval.GwenREPL
+import gwen.core.init.NoopProjectInitialiser
 import gwen.core.node.gherkin.Dialect
 import gwen.core.state.EnvState
 import gwen.core.status.Failed
@@ -51,7 +52,7 @@ object GwenInterpreter {
   *
   * @param engine the evaluation engine
   */
-class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging {
+class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging with NoopProjectInitialiser {
 
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")

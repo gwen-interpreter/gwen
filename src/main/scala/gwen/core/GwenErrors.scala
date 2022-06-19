@@ -94,6 +94,7 @@ object Errors {
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
   def initProjectError(msg: String) = throw new InitProjectException(msg)
+  def copyResourceError(msg: String) = throw new CopyResourceException(msg)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -261,4 +262,7 @@ object Errors {
 
   /** Throw when there is an error tryig to initialise a Gwen project directory. */
   class InitProjectException(msg: String) extends GwenException(msg)
+
+  /** Throw when there is an error tryig to copy a resource. */
+  class CopyResourceException(msg: String) extends GwenException(msg)
 }

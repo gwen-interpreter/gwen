@@ -44,6 +44,8 @@ import java.io.File
   * @param metas optional list of meta file and/or directories
   * @param features optional list of feature file and/or directories
   * @param init true to initialise a working directory
+  * @param docker true to init docker files, false to not
+  * @param jenkins true to init jenkins files, false to not
   * @param initDir working diretory to initialise
   *
   * @author Branko Juric
@@ -63,6 +65,8 @@ case class GwenOptions(
     features: List[File] = GwenOptions.Defaults.features,
     args: Option[Array[String]] = None,
     init: Boolean = false,
+    docker: Boolean = false,
+    jenkins: Boolean = false,
     initDir: File = GwenOptions.Defaults.initDir) {
 
   def parallelScenarios(stateLevel: StateLevel) = parallel && stateLevel == StateLevel.scenario
@@ -87,7 +91,6 @@ object GwenOptions {
     val conf = CLISettings.`gwen.cli.options.conf`
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`
-    val initDir = new File("gwen")
     val inputData = CLISettings.`gwen.cli.options.inputData`
     val parallel = CLISettings.`gwen.cli.options.parallel`
     val meta = CLISettings.`gwen.cli.options.meta`
@@ -95,6 +98,9 @@ object GwenOptions {
     val tags = CLISettings.`gwen.cli.options.tags`
     val verbose = CLISettings.`gwen.cli.options.verbose`
     val debug = false
+    val docker = false
+    val jenkins = false
+    val initDir = new File("gwen")
   }
 
   /**
@@ -217,11 +223,26 @@ object GwenOptions {
       cmd("init").action { 
         (_, c) => 
           c.copy(init = true) 
+
       } children {
+          
+          opt[Unit]("docker") action {
+            (_, c) => {
+              c.copy(docker = true)
+            }
+          } text "Generate files in project for running Gwen in Docker"
+
+          opt[Unit]("jenkins") action {
+            (_, c) => {
+              c.copy(jenkins = true)
+            }
+          } text "Generate files in project for running Gwen on Jenkins"
+
           arg[File]("dir").optional().action {
             (d, c) =>
               c.copy(initDir = d)
           } text s"Project directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
+
       } 
 
     }
@@ -242,6 +263,8 @@ object GwenOptions {
         options.features,
         Some(args),
         options.init,
+        options.docker,
+        options.jenkins,
         options.initDir)
       } map { options =>
         if (options.parallel) options.copy(batch = true)

@@ -18,6 +18,7 @@ package gwen.core.eval
 
 import gwen.core._
 import gwen.core.eval._
+import gwen.core.init.NoopProjectInitialiser
 import gwen.core.node._
 import gwen.core.node.gherkin._
 import gwen.core.report.ReportFormat
@@ -55,7 +56,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
   val result = new SpecResult(feature, None, Nil, Nil, new ju.Date(), new ju.Date())
 
   private def launcher(mockEngine: EvalEngine[EvalContext]) = {
-    new GwenLauncher(mockEngine)
+    new GwenLauncher(mockEngine) with NoopProjectInitialiser
   }
 
   "test launcher with no given env context" should "create one and close it but not reset it" in {

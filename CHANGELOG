@@ -1,6 +1,6 @@
 3.15.0
 ======
-Jun 17, 2022
+Jun 19, 2022
 - Add total CSV record count to record descriptor suffix to console report output
 - Ignore empty CSV records
 - Add ability to enable or disable the following CLI options with environment variables:
@@ -9,6 +9,7 @@ Jun 17, 2022
 - Drop `--parallelFeatures` CLI option and `gwen.cli.options.parallelFeatures` setting
   - Feature or scenarios run in parallel based on `--parallel` option and state level only
 - Log scenarion worker thread to console report when running scenarios in parallel
+- Add docker and Jenkins files to gwen init
 
 3.14.3
 ======

@@ -18,6 +18,7 @@ package gwen.core.eval
 
 import gwen.core._
 import gwen.core.Settings
+import gwen.core.init.ProjectInitialiser
 import gwen.core.node.FeatureStream
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
@@ -40,8 +41,6 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-import java.io.File
-import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -49,32 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger
   *
   * @param engine the engine to launch
   */
-class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging {
-
-  /**
-    * Initialises a new Gwen project.
-    *
-    * @param dir the directory to initialise
-    */
-  def initProject(dir: File): Unit = {
-    if (dir.exists) {
-      if (dir.isFile) {
-        Errors.initProjectError(s"Cannot initialise ${dir} because it is a file that already exists")
-      } else if (Files.newDirectoryStream(dir.toPath).iterator.hasNext) {
-        if (dir.isSame(new File("."))) {
-          Errors.initProjectError("Cannot initialise current directory because it is not empty")
-        } else {
-          Errors.initProjectError(s"Cannot initialise ${dir} directory because it exists and is not empty")
-        }              
-      }
-    }
-    logger.info(("""|
-                    |   _
-                    |  { \," Initialising project directory: """ + dir.getPath + """
-                    | {_`/   
-                    |    `   """).stripMargin)
-    dir.mkdirs()
-  }
+abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging with ProjectInitialiser {
 
   /**
     * Interprets a features unit (feaature + meta).
@@ -101,8 +75,7 @@ class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging 
     val startNanos = System.nanoTime
     try {
       if (options.init) {
-        initProject(options.initDir)
-        logger.info(s"Project directory initialised")
+        initProject(options)
         Passed(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.filter(_.exists).flatMap { m => 

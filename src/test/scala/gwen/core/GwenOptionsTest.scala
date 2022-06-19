@@ -739,6 +739,28 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with init --docker command" should "parse" in {
+
+    parseOptions(Array("init", "--docker")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, docker = true, initDir = new File("gwen"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
+  "Options with init --jenkins command" should "parse" in {
+
+    parseOptions(Array("init", "--jenkins")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, jenkins = true, initDir = new File("gwen"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
     GwenOptions(args)
   }
@@ -758,6 +780,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              metaFiles: List[File] = GwenOptions.Defaults.meta,
                              features: List[File] = GwenOptions.Defaults.features,
                              init: Boolean = false,
+                             docker: Boolean = false,
+                             jenkins: Boolean = false,
                              initDir: File = GwenOptions.Defaults.initDir): Unit = {
 
     options.batch should be (batch)
@@ -773,6 +797,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.metas should be (FileIO.appendFile(metaFiles, Settings.UserMeta))
     options.features should be (features)
     options.init should be (init)
+    options.docker should be (docker)
+    options.jenkins should be (jenkins)
     options.initDir should be (initDir)
 
   }

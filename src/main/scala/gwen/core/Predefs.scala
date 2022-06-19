@@ -55,7 +55,7 @@ import javax.xml.transform.OutputKeys
 
 /** Extension File IO functions. */
 extension [F <: File](file: F) {
-
+  
   def writeText(text: String): File =
     file tap { f =>
       if (f.getParentFile != null && !f.getParentFile.exists()) {
@@ -147,6 +147,9 @@ extension [F <: File](file: F) {
 
   def isSame(other: File): Boolean = isSame(Option(other))
   def isSame(other: Option[File]): Boolean = other.exists(_.getCanonicalPath == file.getCanonicalPath)
+  def containsDir(dirName: String ) = {
+    Option(new File(file, dirName)).exists(f => f.exists && f.isDirectory)
+  }
 
   def simpleName: String = file.getName.replaceFirst("[.][^.]+$", "")
 
@@ -188,14 +191,22 @@ object FileIO {
   def getFileOpt(filepath: String): Option[File] = Option(new File(filepath)).filter(_.exists())
   def appendFile(files: List[File], file: File): List[File] = appendFile(files, Option(file))
   def appendFile(files: List[File], file: Option[File]): List[File] = (files.filter(!_.isSame(file)) ++ file).distinct
-  def copyClasspathTextResourceToFile(resource: String, targetDir: File, targetFilename: Option[String] = None): File = {
-    new File(targetDir, targetFilename.getOrElse(new File(resource).getName)) tap { file =>
-      file.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
+  def copyClasspathTextResourceToFile(resource: String, targetDir: File, targetFilename: Option[String] = None, allowExists: Boolean = true): File = {
+    new File(targetDir, targetFilename.getOrElse(new File(resource).getName)) tap { targetFile =>
+      val exists = targetFile.exists
+      if (!allowExists && exists) Errors.copyResourceError("Cannot create or overwrite existing file: " + targetFile)
+      if (!exists) {
+        targetFile.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
+      }
     }
   }
-  def copyClasspathBinaryResourceToFile(resource: String, targetDir: File) = {
-    new File(targetDir, new File(resource).getName) tap { file =>
-      file.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
+  def copyClasspathBinaryResourceToFile(resource: String, targetDir: File, allowExists: Boolean = true): File = {
+    new File(targetDir, new File(resource).getName) tap { targetFile =>
+      val exists = targetFile.exists
+      if (!allowExists && exists) Errors.copyResourceError("Cannot create or overwrite existing file: " + targetFile)
+      if (!exists) {
+        targetFile.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
+      }
     }
   }
 }
