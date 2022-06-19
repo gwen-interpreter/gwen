@@ -29,16 +29,16 @@ import java.nio.file.Files
   */
 trait ProjectInitialiser {
 
-  private val CurrentDir = new File(".")
+  val CurrentDir = new File(".")
 
   /**
     * Subclasses must implement this to perform project initialisation.
     *
     * @param isNew true if the project is new, false otherwise
-    * @param standalone true if initialising a standalone project, false otherwise
+    * @param flat true if initialising in current or nested directory
     * @param options Gwen options
     */
-  def init(isNew: Boolean, standalone: Boolean, options: GwenOptions): Unit
+  def init(isNew: Boolean, flat: Boolean, options: GwenOptions): Unit
 
   /** Initialises a project direcotry given the user options */
   final def initProject(options: GwenOptions): Unit = {
@@ -51,12 +51,12 @@ trait ProjectInitialiser {
                     | {_`/   
                     |    `   
                     |""").stripMargin)
-        val standalone = isCurrentDir(dir)
+        val flat = isCurrentDir(dir)
         if (isNew) dir.mkdirs()
         if (dir.isSame(options.initDir)) {
-          init(isNew, standalone, options)
+          init(isNew, flat, options)
         } else {
-          init(isNew, standalone, options.copy(initDir = dir))
+          init(isNew, flat, options.copy(initDir = dir))
         }
       }
     } getOrElse {
@@ -71,9 +71,7 @@ trait ProjectInitialiser {
       if(dir.exists) {
         if (dir.isFile) {
           Errors.initProjectError(s"Cannot initialise ${dirName(dir)} because a file of that name already exists")
-        } else if (Files.newDirectoryStream(dir.toPath).iterator.hasNext) {
-          Errors.initProjectError(s"Cannot initialise ${dirName(dir)} because it is not empty")
-        } 
+        }
       }
       Some(dir)
     } else if (options.docker || options.jenkins) {

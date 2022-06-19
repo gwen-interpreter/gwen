@@ -1,3 +1,9 @@
+3.15.1
+======
+Jun 20, 2022
+- Term initiasling project in current directory as a flat project
+- Allow project init in non empty directory
+
 3.15.0
 ======
 Jun 19, 2022
