@@ -27,6 +27,7 @@ import scala.util.chaining._
 
 import java.io.File
 import org.scalatest.matchers.should.Matchers
+import gwen.core.init.InitOption
 
 class GwenOptionsTest extends BaseTest with Matchers {
 
@@ -761,6 +762,17 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with init --jenkins and --force command" should "parse" in {
+
+    parseOptions(Array("init", "--jenkins", "--force")) match {
+      case Success(options) => {
+        assertOptions(options, init = true, jenkins = true, force = true, initDir = new File("gwen"))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
     GwenOptions(args)
   }
@@ -782,6 +794,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              init: Boolean = false,
                              docker: Boolean = false,
                              jenkins: Boolean = false,
+                             force: Boolean = false,
                              initDir: File = GwenOptions.Defaults.initDir): Unit = {
 
     options.batch should be (batch)
@@ -797,8 +810,21 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.metas should be (FileIO.appendFile(metaFiles, Settings.UserMeta))
     options.features should be (features)
     options.init should be (init)
-    options.docker should be (docker)
-    options.jenkins should be (jenkins)
+    if (docker) {
+      options.initOptions should contain (InitOption.docker)
+    } else {
+      options.initOptions should not contain (InitOption.docker)
+    }
+    if (jenkins) {
+      options.initOptions should contain (InitOption.jenkins)
+    } else {
+      options.initOptions should not contain (InitOption.jenkins)
+    }
+    if (force) {
+      options.initOptions should contain (InitOption.force)
+    } else {
+      options.initOptions should not contain (InitOption.force)
+    }
     options.initDir should be (initDir)
 
   }

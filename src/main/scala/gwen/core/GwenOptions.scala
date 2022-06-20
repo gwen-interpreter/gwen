@@ -18,6 +18,7 @@ package gwen.core
 
 import gwen.core.Deprecation
 import gwen.core.FileIO
+import gwen.core.init.InitOption
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
@@ -65,8 +66,7 @@ case class GwenOptions(
     features: List[File] = GwenOptions.Defaults.features,
     args: Option[Array[String]] = None,
     init: Boolean = false,
-    docker: Boolean = false,
-    jenkins: Boolean = false,
+    initOptions: List[InitOption] = Nil,
     initDir: File = GwenOptions.Defaults.initDir) {
 
   def parallelScenarios(stateLevel: StateLevel) = parallel && stateLevel == StateLevel.scenario
@@ -228,15 +228,21 @@ object GwenOptions {
           
           opt[Unit]("docker") action {
             (_, c) => {
-              c.copy(docker = true)
+              c.copy(initOptions = InitOption.docker :: c.initOptions)
             }
           } text "Generate files in project for running Gwen in Docker"
 
           opt[Unit]("jenkins") action {
             (_, c) => {
-              c.copy(jenkins = true)
+              c.copy(initOptions = InitOption.jenkins :: c.initOptions)
             }
           } text "Generate files in project for running Gwen on Jenkins"
+
+          opt[Unit]("force") action {
+            (_, c) => {
+              c.copy(initOptions = InitOption.force :: c.initOptions)
+            }
+          } text "Regenerate and overwrite previously initialised files"
 
           arg[File]("dir").optional().action {
             (d, c) =>
@@ -263,8 +269,7 @@ object GwenOptions {
         options.features,
         Some(args),
         options.init,
-        options.docker,
-        options.jenkins,
+        options.initOptions,
         options.initDir)
       } map { options =>
         if (options.parallel) options.copy(batch = true)

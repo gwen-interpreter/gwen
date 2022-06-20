@@ -191,20 +191,20 @@ object FileIO {
   def getFileOpt(filepath: String): Option[File] = Option(new File(filepath)).filter(_.exists())
   def appendFile(files: List[File], file: File): List[File] = appendFile(files, Option(file))
   def appendFile(files: List[File], file: Option[File]): List[File] = (files.filter(!_.isSame(file)) ++ file).distinct
-  def copyClasspathTextResourceToFile(resource: String, targetDir: File, targetFilename: Option[String] = None, allowExists: Boolean = true): File = {
+  def copyClasspathTextResourceToFile(resource: String, targetDir: File, targetFilename: Option[String] = None, allowReplace: Boolean = true): File = {
     new File(targetDir, targetFilename.getOrElse(new File(resource).getName)) tap { targetFile =>
       val exists = targetFile.exists
-      if (!allowExists && exists) Errors.copyResourceError("Cannot create or overwrite existing file: " + targetFile)
-      if (!exists) {
+      if (!allowReplace && exists) Errors.copyResourceError(s"File already exists: $targetFile (use --force option to replace).")
+      if (!exists || allowReplace) {
         targetFile.writeText(Source.fromInputStream(getClass.getResourceAsStream(resource)).mkString)
       }
     }
   }
-  def copyClasspathBinaryResourceToFile(resource: String, targetDir: File, allowExists: Boolean = true): File = {
+  def copyClasspathBinaryResourceToFile(resource: String, targetDir: File, allowReplace: Boolean = true): File = {
     new File(targetDir, new File(resource).getName) tap { targetFile =>
       val exists = targetFile.exists
-      if (!allowExists && exists) Errors.copyResourceError("Cannot create or overwrite existing file: " + targetFile)
-      if (!exists) {
+      if (!allowReplace && exists) Errors.copyResourceError(s"File already exists: $targetFile (use --force option to replace).")
+      if (!exists || allowReplace) {
         targetFile.writeBinary(new BufferedInputStream(getClass.getResourceAsStream(resource)))
       }
     }

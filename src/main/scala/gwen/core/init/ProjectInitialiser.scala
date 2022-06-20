@@ -46,8 +46,9 @@ trait ProjectInitialiser {
     val isNew = gwenConf.isEmpty
     parseInitDirectory(isNew, gwenConf, options) flatMap { dir =>
       operation(dir, isNew, options) map { op =>
+        val action = s"Initialising"
         println(("""|   _
-                    |  { \," Initialising """ + op + """
+                    |  { \," """ + action + " " + op + s"${if (options.initOptions.contains(InitOption.force)) " (forced)" else ""}" + """
                     | {_`/   
                     |    `   
                     |""").stripMargin)
@@ -60,31 +61,39 @@ trait ProjectInitialiser {
         }
       }
     } getOrElse {
-      println("No operation performed (the project may not have been initialised).")
+      println("No operation performed. The project may not have been initialised.")
       println()
     }
   }
 
   private def parseInitDirectory(isNew: Boolean, gwenConf: Option[File], options: GwenOptions): Option[File] = {
-    val dir = options.initDir
-    if (isNew) {
-      if(dir.exists) {
-        if (dir.isFile) {
-          Errors.initProjectError(s"Cannot initialise ${dirName(dir)} because a file of that name already exists")
-        }
-      }
-      Some(dir)
-    } else if (options.docker || options.jenkins) {
+
+    def okIfHasFeaturesDir(dir: File): Option[File] = {
       if (dir.containsDir("features")) {
         Some(dir)
       } else {
-        Errors.initProjectError(s"Cannot initialise ${operation(dir, false, options).getOrElse(dirName(dir))} (project may not have been pre-initialised there: try with trailing dot or a subdirectory)")
+        Errors.initProjectError(s"Cannot initialise ${operation(dir, false, options).getOrElse(dirName(dir))}. The project may not have been first initialised there.")
       }
+    }
+
+    val dir = options.initDir
+    val force = options.initOptions.contains(InitOption.force)
+    if (isNew) {
+      if(dir.exists && dir.isFile) {
+        Errors.initProjectError(s"Cannot initialise ${dirName(dir)} because a file of that name already exists")
+      }
+      Some(dir)
+    } else if (options.initOptions.contains(InitOption.docker) || options.initOptions.contains(InitOption.jenkins)) {
+      okIfHasFeaturesDir(dir)
     } else {
-      gwenConf.map(_.getPath) foreach { confFile =>
-        Errors.initProjectError(s"$confFile file found in current directory. The project may already have been initialised.")
+      if (force) {
+        okIfHasFeaturesDir(dir)
+      } else {
+        gwenConf.map(_.getPath) foreach { confFile =>
+          Errors.initProjectError(s"$confFile file found. This may be an existing project (use --force option to replace).")
+        }
+        None
       }
-      None
     }
   }
 
@@ -95,12 +104,16 @@ trait ProjectInitialiser {
   private def operation(dir: File, isNew: Boolean, options: GwenOptions): Option[String] = {
     if (isNew) {
       Some(s"project in ${dirName(dir)}")
-    } else if (options.docker) {
-      Some(s"Docker files in ${dirName(dir)}")
-    } else if (options.jenkins) {
+    } else if (options.initOptions.contains(InitOption.docker)) {
+      Some(s"Docker${if (options.initOptions.contains(InitOption.jenkins)) " and Jenkins" else ""} files in ${dirName(dir)}")
+    } else if (options.initOptions.contains(InitOption.jenkins)) {
       Some(s"Jenkinsfile in ${dirName(dir)}")
     } else {
-      None
+      if (options.initOptions.contains(InitOption.force)) {
+        Some(s"project in ${dirName(dir)}")
+      } else {
+        None
+      }
     }
   }
   
