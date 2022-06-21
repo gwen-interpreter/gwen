@@ -113,7 +113,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           ),
         )
       ),
-      td(`class` := "summary-line-2",
+      td(`class` := "summary-line-2", width := s"${if (videos.nonEmpty) "60px" else "0px"}",
         if (videos.nonEmpty) {
           formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
         } else ""

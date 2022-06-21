@@ -1,3 +1,8 @@
+3.16.2
+======
+Jun 20, 2022
+- Make video button column width in HTML report 60px or 0px if there no vidoes
+
 3.16.1
 ======
 Jun 20, 2022
