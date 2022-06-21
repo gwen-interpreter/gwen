@@ -109,7 +109,6 @@ trait SummaryFormatter {
       count = results.size
       total = summary.results.size
       countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
-      summaryColWidhts = calcColWidths(summary.results, results.map(_._1))
     } yield {
       div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
@@ -139,7 +138,7 @@ trait SummaryFormatter {
                     ((result, resultIndex), rowIndex) <- results.zipWithIndex
                     reportFile = result.reports.get(ReportFormat.html).head
                   } yield {
-                    formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex, summaryColWidhts)
+                    formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
                   }
                 )
               )
