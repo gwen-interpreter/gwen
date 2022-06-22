@@ -25,7 +25,7 @@ Jun 19, 2022
 - Drop `--parallelFeatures` CLI option and `gwen.cli.options.parallelFeatures` setting
   - Feature or scenarios run in parallel based on `--parallel` option and state level only
 - Log scenario worker thread to console report when running scenarios in parallel
-- Add docker and Jenkins files to gwen init
+- Add `--docker` and `jenkins` options to gwen init do generate docker and Jenkins files
 
 3.14.3
 ======
