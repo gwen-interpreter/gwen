@@ -165,12 +165,10 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
         } else ""
       ),
       td(`class` := "summary-line-2",
-        span(`class` := "pull-right",
-          small(
-            formatDuration(result.elapsedTime)
-          )
-        ),
-        result.spec.specFile.map(_.getPath()).getOrElse("").toString
+        raw(escapeHtml(result.spec.specFile.map(_.getPath()).getOrElse("").toString))
+      ),
+      td(`class` := "summary-line-2", attr("align") := "right", style := "white-space: nowrap;",
+        formatDuration(result.elapsedTime)
       )
     )
   }

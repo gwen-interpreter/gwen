@@ -1,3 +1,8 @@
+3.16.3
+======
+Jun 22, 2022
+- Fix last (feature file) column in html summary report
+
 3.16.2
 ======
 Jun 20, 2022
