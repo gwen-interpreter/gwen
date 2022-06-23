@@ -162,7 +162,7 @@ trait DetaiFormatter {
                       (res, rowIndex) <- metaResults.zipWithIndex
                       reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
                     } yield {
-                      formatSummaryLine(options, res, reportPath, None, rowIndex)
+                      formatSummaryLine(options, res, reportPath, None, rowIndex, 0)
                     }
                   )
                 )

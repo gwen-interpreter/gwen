@@ -19,8 +19,10 @@ import gwen.core._
 import gwen.core.Formatting._
 import gwen.core.GwenOptions
 import gwen.core.node._
+import gwen.core.node.gherkin.Step
 import gwen.core.report.ReportFormat
 import gwen.core.report.html.HtmlReportConfig
+import gwen.core.result.SpecResult
 import gwen.core.status._
 import gwen.core.result.ResultsSummary
 
@@ -109,6 +111,8 @@ trait SummaryFormatter {
       count = results.size
       total = summary.results.size
       countOfTotal = s"""$count ${if (count != total) s" of $total features" else s"feature${if (total > 1) "s" else ""}"}"""
+      names = results.filter { (result, _) => result.evalStatus.isError } map { (result, _) => result.displayName }
+      maxNameLength = if (names.nonEmpty) names.map(_.length).max else 0
     } yield {
       div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
@@ -138,7 +142,7 @@ trait SummaryFormatter {
                     ((result, resultIndex), rowIndex) <- results.zipWithIndex
                     reportFile = result.reports.get(ReportFormat.html).head
                   } yield {
-                    formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex)
+                    formatSummaryLine(options, result, Some(s"${relativePath(reportFile, reportDir).replace(File.separatorChar, '/')}"), Some(resultIndex + 1), rowIndex, maxNameLength)
                   }
                 )
               )

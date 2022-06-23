@@ -31,7 +31,6 @@ import gwen.core.status._
 import gwen.core.result.SpecResult
 
 import scala.concurrent.duration.Duration
-import scala.util.Try
 import scalatags.Text.all._
 import scalatags.Text.TypedTag
 
@@ -74,9 +73,17 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
     }
   }
   
-  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int): TypedTag[String] = {
-    val attachments = Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
-    val featureName = Option(result.spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(result.spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
+  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, maxNameLength: Int): TypedTag[String] = {
+    val videos = result.videos
+    val featureName = result.displayName
+    val inError = result.evalStatus.isError
+    val featureColPercentage = {
+      if (inError) {
+        Some(Option(Option((maxNameLength / 2) + 2).filter(_ < 25).getOrElse(24)).filter(_ > 7).getOrElse(6) + (if (videos.isEmpty) 1 else 0))
+      } else {
+        None
+      }
+    }
     val reportingStatus = result.evalStatus match {
       case Passed(nanos, _) if result.sustainedCount > 0 => Sustained(nanos, null)
       case status => status
@@ -85,7 +92,6 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       val reportDir = HtmlReportConfig.reportDir(options).get
       Some(relativePath(reportFile.getParentFile, reportDir).replace(File.separatorChar, '/'))
     } getOrElse None
-    val videos = result.videos
     tr(`class` := s"summary-line-2 ${if (rowIndex % 2 == 1) s"bg-altrow-${cssStatus(result.evalStatus.keyword)}" else "" }", style := "border-top: hidden;",
       td(`class` := "summary-line-2", style := "padding-left: 0px; white-space: nowrap",
         table(`class` := "table-responsive",
@@ -118,7 +124,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
           formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
         } else ""
       ),
-      td(`class` := "summary-line-2",
+      td(`class` := "summary-line-2", featureColPercentage.map(percentage => (attr("width") := s"$percentage%")),
         reportPath match {
           case Some(rpath) =>
             a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := rpath,
@@ -130,40 +136,42 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
             raw(escapeHtml(featureName))
         }
       ),
-      td(`class` := "summary-line-2",
-        if (attachments.nonEmpty) {
+      if (inError) {
+        val errorAttachments = {
+          if (inError) Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
+          else Nil
+        }
+        td(`class` := "summary-line-2",
           table(`class` := "table-responsive",
             tbody(
               tr(`class` := "summary-line-0", style := "border-top: hidden;",
                 td(`class` := "summary-line-0", style := "vertical-align:top;",
-                  if (result.evalStatus.isError && attachments.nonEmpty) {
-                    formatAttachments(reportBase, attachments, result.evalStatus.keyword)
+                  if (errorAttachments.nonEmpty) {
+                    formatAttachments(reportBase, errorAttachments, result.evalStatus.keyword)
                   } else "",
                   " "
                 ),
                 td(`class` := "summary-line-0",
-                  if (result.evalStatus.isError) {
-                    reportPath match {
-                      case Some(rpath) =>
-                        a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
-                          span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
-                            small(
-                              raw(escapeHtml(result.evalStatus.message))
-                            )
+                  reportPath match {
+                    case Some(rpath) =>
+                      a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
+                        span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
+                          small(
+                            raw(escapeHtml(result.evalStatus.message))
                           )
                         )
-                      case None =>
-                        small(
-                          raw(escapeHtml(result.evalStatus.message))
-                        )
-                    }
-                  } else ""
+                      )
+                    case None =>
+                      small(
+                        raw(escapeHtml(result.evalStatus.message))
+                      )
+                  }
                 )
               )
             )
           )
-        } else ""
-      ),
+        )
+      } else "",
       td(`class` := "summary-line-2",
         raw(escapeHtml(result.spec.specFile.map(_.getPath()).getOrElse("").toString))
       ),
