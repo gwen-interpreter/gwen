@@ -1,7 +1,16 @@
+3.17.0
+======
+Jun 26, 2022
+- `gwen.parallel.maxThreads` 
+  - can be set to `auto` for one thread per available core
+  - can be set to a number that exceeds total available cores (multiple threads per core)
+- Add ability to override `gwen.parallel.maxThreads` setting with an environment variable:
+  - `GWEN_THREADS=auto|number` to set the maxium number of parallel threads
+
 3.16.4
 ======
 Jun 23, 2022
-- Ajdust feature column in HTML summary report for best fit
+- Adjust feature column in HTML summary report for best fit
 
 3.16.3
 ======
@@ -29,9 +38,10 @@ Jun 20, 2022
 Jun 19, 2022
 - Add total CSV record count to record descriptor suffix to console report output
 - Ignore empty CSV records
-- Add ability to enable or disable the following CLI options with environment variables:
-  - `GWEN_DRY_RUN=true|false` to set default `-n|--dry-run` option
-  - `GWEN_PARALLEL=true|false` to set default `--parallel` option
+- Add ability to overrdie `gwen.cli.options.dryRun` setting with an environment variable:
+    - `GWEN_DRY_RUN=true|false`
+  - Add ability to overrdie `gwen.cli.options.parallel` setting with an environment variable:
+    - `GWEN_PARALLEL=true|false` to set default `--parallel` option
 - Drop `--parallelFeatures` CLI option and `gwen.cli.options.parallelFeatures` setting
   - Feature or scenarios run in parallel based on `--parallel` option and state level only
 - Log scenario worker thread to console report when running scenarios in parallel

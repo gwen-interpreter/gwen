@@ -222,10 +222,12 @@ object GwenSettings {
     * that value.
     */
   def `gwen.parallel.maxThreads`: Int = {
-    val maxThreads = Settings.getInt("gwen.parallel.maxThreads")
+    val maxThreads = Settings.getOpt("gwen.parallel.maxThreads") map { n => 
+      if (n == "auto") 0 else Settings.getInt("gwen.parallel.maxThreads")
+    } getOrElse 0
     if (maxThreads < 0) {
       Errors.propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 0")
-    } else if (maxThreads == 0 || maxThreads > availableProcessors) {
+    } else if (maxThreads == 0) {
       availableProcessors
     } else {
       maxThreads

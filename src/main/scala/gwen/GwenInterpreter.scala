@@ -83,7 +83,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     applyEnvSettings(
       List(
         ("gwen.cli.options.dryRun", "GWEN_DRY_RUN"), 
-        ("gwen.cli.options.parallel", "GWEN_PARALLEL")
+        ("gwen.cli.options.parallel", "GWEN_PARALLEL"),
+        ("gwen.parallel.maxThreads", "GWEN_THREADS")
       )
     )
   }
