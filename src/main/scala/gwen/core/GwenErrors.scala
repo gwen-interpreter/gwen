@@ -59,7 +59,7 @@ object Errors {
   def licenseError(msg: String) = throw new LicenseException(msg)
   def invalidTagError(msg: String) = throw new InvalidTagException(msg)
   def regexError(msg: String) = throw new RegexException(msg)
-  def systemProcessError(msg: String) = throw new SystemProcessException(msg)
+  def systemProcessError(msg: String, cause: Throwable) = throw new SystemProcessException(msg, cause)
   def xPathError(msg: String) = throw new XPathException(msg)
   def jsonPathError(msg: String) = throw new JsonPathException(msg)
   def evaluationError(msg: String) = throw new EvaluationException(msg)
@@ -160,7 +160,7 @@ object Errors {
   class RegexException(msg: String) extends GwenException(msg)
 
   /** Thrown when a system process fails. */
-  class SystemProcessException(msg: String) extends GwenException(msg)
+  class SystemProcessException(msg: String, cause: Throwable) extends GwenException(s"$msg: ${cause.getMessage}", cause)
 
   /** Thrown when a xpath evaluation fails. */
   class XPathException(msg: String) extends GwenException(msg)

@@ -17,6 +17,7 @@
 package gwen.core.eval
 
 import gwen.core._
+import gwen.core.Errors
 import gwen.core.node._
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
@@ -102,13 +103,13 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
   }
   
   "Execute system process 'undefined'" should "fail with IOException" in {
-    intercept[IOException] {
+    intercept[Errors.SystemProcessException] {
       val result = engine.evaluateStep(Root, Step(StepKeyword.Given.toString, """I execute system process "undefined""""), ctx)
       result.evalStatus match {
         case Failed(_, e) if e.getCause != null => 
           throw e.getCause
         case _ => 
-          fail("expected IOException")
+          fail("expected SystemProcessException")
       }
     }
   }

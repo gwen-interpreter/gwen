@@ -21,7 +21,10 @@ import gwen.core.state.Environment
 import gwen.core.state.SensitiveData
 
 import scala.sys.process._
+import scala.util.Failure
+import scala.util.Success
 import scala.util.Try
+import gwen.core.Errors
 
 object SysprocBinding {
   
@@ -49,12 +52,17 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
       lookupValue(key) { sysproc => 
         SensitiveData.withValue(sysproc) { sproc =>
           ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
-            delimiter match {
-              case Some(delim) => 
-                SensitiveData.withValue(delim) { d =>
-                  sproc.split(d).toSeq.!!.trim
-                }
-              case None => sproc.!!.trim
+            Try {
+              delimiter match {
+                case Some(delim) => 
+                  SensitiveData.withValue(delim) { d =>
+                    sproc.split(d).toSeq.!!.trim
+                  }
+                case None => sproc.!!.trim
+              }
+            } match {
+              case Success(output) => output
+              case Failure(e) => Errors.systemProcessError(s"The call to system process '$sysproc' failed", e)
             }
           }
         }

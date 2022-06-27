@@ -1,3 +1,8 @@
+3.17.1
+======
+Jun 27, 2022
+- Capture cause in exception when a system process call fails
+
 3.17.0
 ======
 Jun 26, 2022
