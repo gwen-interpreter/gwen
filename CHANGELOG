@@ -1,3 +1,8 @@
+3.18.1
+======
+Jun 28, 2022
+- Fix dry run for system process bindings
+
 3.18.0
 ======
 Jun 28, 2022
