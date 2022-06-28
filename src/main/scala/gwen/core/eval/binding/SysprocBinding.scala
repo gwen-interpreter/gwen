@@ -30,13 +30,15 @@ object SysprocBinding {
   
   def key(name: String) = s"$name/${BindingType.sysproc}"
   def delimiterKey(name: String) = s"$name/delimiter"
+  def unixKey(name: String) = s"$name/unix"
 
-  def bind(name: String, sysproc: String, delimiter: Option[String], env: Environment): Unit = {
+  def bind(name: String, sysproc: String, delimiter: Option[String], unix: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(key(name), sysproc)
     delimiter foreach { delim => 
       env.scopes.set(delimiterKey(name), delim)
     }
+    env.scopes.set(unixKey(name), unix.toString)
   }
 
 }
@@ -45,35 +47,23 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
 
   private val key = SysprocBinding.key(name)
   private val delimiterKey = SysprocBinding.delimiterKey(name)
+  private val unixKey = SysprocBinding.unixKey(name)
 
   override def resolve(): String = {
     val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
+    val unix = ctx.scopes.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
     bindIfLazy(
       lookupValue(key) { sysproc => 
-        SensitiveData.withValue(sysproc) { sproc =>
-          ctx.evaluate(s"$$[dryRun:${BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
-            Try {
-              delimiter match {
-                case Some(delim) => 
-                  SensitiveData.withValue(delim) { d =>
-                    sproc.split(d).toSeq.!!.trim
-                  }
-                case None => sproc.!!.trim
-              }
-            } match {
-              case Success(output) => output
-              case Failure(e) => Errors.systemProcessError(s"The call to system process '$sysproc' failed", e)
-            }
-          }
-        }
+        ctx.callSysProc(sysproc, delimiter, unix)
       }
     )
   }
 
   override def toString: String = Try {
     val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
+    val unix = ctx.scopes.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
     lookupValue(key) { sysproc => 
-      s"$name [${BindingType.sysproc}: $sysproc${delimiter.map(d => s", delimiter: $d").getOrElse("")}]"
+      s"$name [${if (unix) BindingType.unixsysproc else BindingType.sysproc}: $sysproc${delimiter.map(d => s", delimiter: $d").getOrElse("")}]"
     }
   } getOrElse name
 

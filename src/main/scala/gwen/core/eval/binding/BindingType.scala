@@ -21,7 +21,7 @@ import scala.util.Success
 import scala.util.Try
 
 enum BindingType:
-  case text, javascript, function, xpath, regex, sysproc, property, setting, file, sql, `json path`, loading
+  case text, javascript, function, xpath, regex, sysproc, unixsysproc, property, setting, file, sql, `json path`, loading
 
 object BindingType {
 
@@ -31,6 +31,7 @@ object BindingType {
       case Failure(error) => bType match {
         case "js" => javascript
         case "system process" => sysproc
+        case "unix system process" => unixsysproc
         case _ => throw error
       }
     }

@@ -43,7 +43,7 @@ import java.net.URL
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with Interpolator with RegexSupport with XPathSupport with JsonPathSupport
-    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport {
+    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport with SysProcSupport {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)

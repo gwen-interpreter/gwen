@@ -105,8 +105,6 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new ExecuteSysProc(systemproc, Some(delimiter))
       case r"""I execute system process "(.+?)"$systemproc""" =>
         new ExecuteSysProc(step.orDocString(systemproc), None)
-      case r"""I execute (?:a )?unix system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
-        new ExecuteSysProcUnix(systemproc, Some(delimiter))
       case r"""I execute (?:a )?unix system process "(.+?)"$systemproc""" =>
         new ExecuteSysProcUnix(step.orDocString(systemproc), None)
       case r"""I execute (?:javascript|js) "(.+?)$javascript"""" =>
@@ -137,7 +135,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
         new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter))
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|property|setting|file)$attrType "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|unix system process|property|setting|file)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
         new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))

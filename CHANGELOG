@@ -1,3 +1,11 @@
+3.18.0
+======
+Jun 28, 2022
+- Add DSL for defining bindings by unix system process
+  - `<attribute> <is|will be> defined by unix system process "<expression>"`
+- Dropped DSL for executing delimited unix system process
+  - `I execute unix system process "<process>" delimited by "<delimiter>"`
+
 3.17.1
 ======
 Jun 27, 2022
@@ -566,9 +574,9 @@ July 31, 2021
 ======
 July 2, 2021
 - Add new DSLs to support invoking system processes with quoted strings and other special cases
-  - I execute system process "<process>" delmited by "<delimiter>"
-  - I execute a unix system process "<process>" delmited by "<delimiter>"
-  - <attribute> <is|will be> defined by system process "<expression>" delmited by "<delimiter>"
+  - `I execute system process "<process>" delmited by "<delimiter>"`
+  - `I execute a unix system process "<process>" delmited by "<delimiter>"`
+  - `<attribute> <is|will be> defined by system process "<expression>" delmited by "<delimiter>"`
 - Support passing DocStrings as parameters to StepDefs (addresses issue gwen-interpreter/gwen#60)
 - Update report portal client-java from v5.0.21 to v5.0.22
   - Long name trunctation fix

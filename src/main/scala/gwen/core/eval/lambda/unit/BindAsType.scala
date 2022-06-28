@@ -41,7 +41,8 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
       bindingType match {
         case BindingType.javascript => JSBinding.bind(target, value, ctx) 
         case BindingType.function => JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, ctx)
-        case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, ctx)
+        case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, false, ctx)
+        case BindingType.unixsysproc => SysprocBinding.bind(target, value, delimiter, true, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
       }
@@ -51,7 +52,7 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
             bindingType match {
               case BindingType.javascript => new JSBinding(target, Nil, ctx).resolve()
               case BindingType.function => new JSFunctionBinding(target, ctx).resolve()
-              case BindingType.sysproc => new SysprocBinding(target, ctx).resolve()
+              case BindingType.sysproc | BindingType.unixsysproc => new SysprocBinding(target, ctx).resolve()
               case BindingType.file => new FileBinding(target, ctx).resolve()
               case _ => null
             }
