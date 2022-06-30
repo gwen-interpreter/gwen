@@ -1,3 +1,12 @@
+3.19.0
+======
+Jun 30, 2022
+- Add optional `required` attriubte to `Examples` tag 
+  - If `true`, raise error if no data is found and tag background steps with `NoData` annotation
+  - If `false` (default), no erorr is raised
+- Include deep nested attachemnts in outlines in html reports
+- Override assertion exceptions with custom messages if specified
+
 3.18.1
 ======
 Jun 28, 2022

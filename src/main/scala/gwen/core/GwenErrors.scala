@@ -95,6 +95,13 @@ object Errors {
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
   def initProjectError(msg: String) = throw new InitProjectException(msg)
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
+  def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
+    customError map { msg => 
+      if (!assertion) throw new CustomFailureException(msg)
+    } getOrElse {
+      assert(assertion, assertError)
+    }
+  }
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -265,4 +272,7 @@ object Errors {
 
   /** Throw when there is an error tryig to copy a resource. */
   class CopyResourceException(msg: String) extends GwenException(msg)
+
+  /** Thrown when cursom error @Message is thrown. */
+  class CustomFailureException(msg: String) extends GwenException(msg)
 }

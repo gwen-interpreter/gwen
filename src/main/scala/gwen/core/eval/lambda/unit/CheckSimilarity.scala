@@ -16,6 +16,8 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Errors
+import gwen.core.Formatting
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.SimilarityOperator
 import gwen.core.eval.EvalContext
@@ -27,7 +29,6 @@ import gwen.core.behavior.BehaviorType
 import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
-import gwen.core.Formatting
 
 class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String], sourceValue2: Option[String], operator: SimilarityOperator, percentage: Double, ignoreCase: Boolean, negate: Boolean, message: Option[String]) extends UnitStep[T] {
 
@@ -50,12 +51,12 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
                 ctx.topScope.set("similarity score", null)
               }    
           }
-          assert(passed, message getOrElse s"Expected $binding1 '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" $b").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
+          Errors.assertWithError(passed, message, s"Expected $binding1 '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" $b").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
         case Failure(error) =>
           if (ctx.topScope.getOpt("similarity score").nonEmpty) {
             ctx.topScope.set("similarity score", null)
           }
-          assert(assertion = false, message getOrElse error.getMessage)
+          Errors.assertWithError(assertion = false, message, error.getMessage)
       }
     }
     similarityScore map { score =>

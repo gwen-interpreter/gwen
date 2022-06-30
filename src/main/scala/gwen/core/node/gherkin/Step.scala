@@ -83,7 +83,7 @@ case class Step(
 
   def deepSteps: List[Step] = {
     List(this) ++ (stepDef map { sd => 
-      sd.steps.flatMap(_.deepSteps)
+      sd.allSteps.flatMap(_.deepSteps)
     } getOrElse Nil)
   }
 
@@ -226,6 +226,7 @@ case class Step(
   def isLazy: Boolean = hasTag(Annotations.Lazy)
   def isTry: Boolean = hasTag(Annotations.Try)
   def isData: Boolean = hasTag(Annotations.Data)
+  def isNoData: Boolean = hasTag(Annotations.NoData)
   private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
 }

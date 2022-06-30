@@ -223,14 +223,23 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   }
 
   private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
+    val noData = background.map(_.isNoData).getOrElse(false)
+    val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.Data)), None)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None)
     }
     val description = dataFile map { file => 
       List(s"Input data file: ${file.getPath}")
     } getOrElse Nil
-    val descriptor = s"${if (dataFile.nonEmpty) "Input data" else "Data table"} record $recordNo of $totalRecords"
+    val descriptor = {
+      if (noData) {
+        None 
+      }
+      else {
+        Some(s"${if (dataFile.nonEmpty) "Input data" else "Data table"} record $recordNo of $totalRecords")
+      }
+    }
     background match {
       case Some(bg) =>
         val bgSteps = bg.steps match {
@@ -245,7 +254,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${interpolateString(bg.name) { interpolator }} + $descriptor",
+          s"${interpolateString(bg.name) { interpolator }}${descriptor.map(d => s" + $d").getOrElse("")}",
           (bg.description map { line =>
             interpolateString(line) { interpolator }
           }) ++ description,
@@ -255,7 +264,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           None,
           FeatureKeyword.nameOf(FeatureKeyword.Background),
-          descriptor,
+          descriptor.getOrElse("No data"),
           description,
           dataSteps.map(_.copy()))
     }

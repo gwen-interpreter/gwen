@@ -23,11 +23,15 @@ import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.FeatureKeyword
 import gwen.core.node.gherkin.Examples
 import gwen.core.node.gherkin.Annotations
+import gwen.core.node.gherkin.Background
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
 import gwen.core.state.DataRecord
 import gwen.core.status.Passed
+import gwen.core.status.Pending
 
 import scala.util.chaining._
 
@@ -72,12 +76,15 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val iTags = outline.tags map { tag => 
       Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
     }
+    var noDataBackground: Option[Background] = None
     val csvExamples = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
-        val (filepath, where) = tag.name match {
-          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, Some(where))
-          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None)
-          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
+        val (filepath, where, required) = tag.name match {
+          case r"""Examples\(file="(.+?)$file",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(where), required.toBoolean)
+          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, Some(where), false)
+          case r"""Examples\(file="(.+?)$file",required=(true|false)$required\)""" => (file, None, required.toBoolean)
+          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, false)
+          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="name=value"][,required=true|false])""")
         }
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
@@ -87,7 +94,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           (idx + 1L, row.toList) 
         }
         val header = table0.headOption map { (_, headings) => headings }
-        val table = table0 filter { (rowNo, row) => 
+        val table1 = table0 filter { (rowNo, row) => 
           if (rowNo == 1) true else {
             where map { clause => 
               clause match {
@@ -100,7 +107,25 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             } getOrElse true
           }
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table, Some(file), Nil))
+        val table2 = if (table1.size < 2 && required) {
+          val msg = s"No data record(s) found in $file${where.map(w => s" where $w").getOrElse("")}"
+          val table3 = table1 ++ List((2L, table1.flatMap((_, items) => items.map(_ => ""))))
+          val step = Step(None, StepKeyword.Given.toString, s"""${header.flatMap(_.headOption).getOrElse("Data")} should not be """"", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
+          noDataBackground = outline.background map { bg =>
+            Some(
+              bg.copy(
+                withName = s"${bg.name} + No data",
+                withSteps = step.copy(withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword) :: bg.steps
+              )
+            )
+          } getOrElse {
+            Some(Background(None, Background.toString, "No data", Nil, List(step)))
+          }
+          table3
+        } else {
+          table1
+        }
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
@@ -113,7 +138,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       case _ =>
         val examples = normaliseScenarioOutline(
             outline.copy(withExamples = csvExamples),
-            outline.background,
+            noDataBackground.map(bg => Some(bg)).getOrElse(outline.background),
             dataRecord
           ).examples
         outline.copy(

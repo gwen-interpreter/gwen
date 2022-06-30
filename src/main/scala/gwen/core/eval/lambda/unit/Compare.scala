@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Errors
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
@@ -46,9 +47,9 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
-            assert(assertion, message getOrElse s"Expected $binding to ${if(negate) "not " else ""}$op '$expected'${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
+            Errors.assertWithError(assertion, message, s"Expected $binding to ${if(negate) "not " else ""}$op '$expected'${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
           case Failure(error) =>
-            assert(assertion = false, message getOrElse error.getMessage)
+            Errors.assertWithError(assertion = false, message, error.getMessage)
         }
       }
     }

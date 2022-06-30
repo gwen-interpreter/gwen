@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -31,7 +32,7 @@ class IsAbsent[T <: EvalContext](source: String, message: Option[String]) extend
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       ctx.perform {
-        assert(Try(ctx.getBoundReferenceValue(source)).isFailure, message getOrElse s"Expected $source to be absent")
+        Errors.assertWithError(Try(ctx.getBoundReferenceValue(source)).isFailure, message, s"Expected $source to be absent")
       }
     }
   }

@@ -46,6 +46,8 @@ case class Background(
   override val nodeType: NodeType = NodeType.Background
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
 
+  def isNoData = steps.exists(_.isNoData)
+
   override def siblingsIn(parent: GwenNode): List[GwenNode] = {
     parent match {
       case spec: Spec => spec.background.toList
