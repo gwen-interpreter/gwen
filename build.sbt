@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.19.0"
+val gwenVersion = "3.19.1"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -14,7 +14,7 @@ lazy val gwen = (project in file("."))
 
 lazy val projectSettings = Seq(
   name := "gwen",
-  description := "Automation and Robotics for Gherkin",
+  description := "Declarative automation & robotics for Gherkin",
   scalaVersion := "3.1.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),

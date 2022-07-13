@@ -89,7 +89,7 @@ trait BehaviorRules {
     * @param env the environment context
     */
   def checkStepRules(step: Step, actualBehavior: BehaviorType, env: Environment): Unit = {
-    if (env.specType.isFeature && env.isEvaluatingTopLevelStep) {
+    if (env.specType.isFeature && env.isEvaluatingTopLevelStep && !(step.isData || step.isNoData)) {
       if (FeatureMode.isDeclarative && step.stepDef.isEmpty) {
         Errors.imperativeStepError(step)
       }
