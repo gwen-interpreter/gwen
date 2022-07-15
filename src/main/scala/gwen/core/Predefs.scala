@@ -96,6 +96,11 @@ extension [F <: File](file: F) {
     case idx => file.getName.substring(idx + 1)
   }
 
+  def dropExtension = file.getName.lastIndexOf(".") match {
+    case -1 => file.getName
+    case idx => file.getName.substring(0, idx)
+  }
+
   def writeFile(source: File): Unit = {
     file.writeBinary(new BufferedInputStream(new FileInputStream(source)))
   }

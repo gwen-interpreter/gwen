@@ -31,7 +31,7 @@ import java.io.File
   */
 object CLISettings extends LazyLogging {
 
-  private val (conf, _) =  Settings.load()
+  private val conf =  Settings.BootstrapConf
 
   check()
 
@@ -41,7 +41,6 @@ object CLISettings extends LazyLogging {
   def check(): Unit = {
     `gwen.cli.options.batch`
     `gwen.cli.options.format`
-    `gwen.cli.options.conf`
     `gwen.cli.options.dryRun`
     `gwen.cli.options.features`
     `gwen.cli.options.inputData`
@@ -74,16 +73,6 @@ object CLISettings extends LazyLogging {
   }
 
   /**
-    * Provides access to the `gwen.cli.options.conf` setting used to set the default
-    * -c/--conf CLI option.
-    */
-  def `gwen.cli.options.conf`: List[File] = {
-    Settings.getList("gwen.cli.options.conf", None, Some(conf)) map { filepath => 
-      Settings.toFile(filepath)
-    }
-  }
-
-  /**
     * Provides access to the `gwen.cli.options.dryRun` setting used to set the default
     * --n/--dry-run CLI switch.
     */
@@ -94,7 +83,7 @@ object CLISettings extends LazyLogging {
   }
   
   /**
-    * Provides access to the `gwen.cli.options.conf` setting used to set the default
+    * Provides access to the `gwen.cli.options.features` setting used to set the default
     * features CLI argument.
     */
   def `gwen.cli.options.features`: List[File] = {

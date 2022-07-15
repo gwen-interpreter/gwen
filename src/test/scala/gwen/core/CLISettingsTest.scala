@@ -26,7 +26,6 @@ class CLISettingsTest extends BaseTest with Matchers {
     Settings.exclusively {
       CLISettings.`gwen.cli.options.batch` should be (false)
       CLISettings.`gwen.cli.options.format` should be (Nil)
-      CLISettings.`gwen.cli.options.conf` should be (Nil)
       CLISettings.`gwen.cli.options.dryRun` should be (false)
       CLISettings.`gwen.cli.options.features` should be (Nil)
       CLISettings.`gwen.cli.options.inputData` should be (None)

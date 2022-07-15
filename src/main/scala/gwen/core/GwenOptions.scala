@@ -58,7 +58,7 @@ case class GwenOptions(
     debug: Boolean = GwenOptions.Defaults.debug,
     reportDir: Option[File] = GwenOptions.Defaults.report,
     reportFormats: List[ReportFormat] = GwenOptions.Defaults.format,
-    settingsFiles: List[File] = GwenOptions.Defaults.conf,
+    settingsFiles: List[File] = Nil,
     tags: List[(Tag, Boolean)] = GwenOptions.Defaults.tags,
     dryRun: Boolean = GwenOptions.Defaults.dryRun,
     dataFile: Option[File] = GwenOptions.Defaults.inputData,
@@ -88,7 +88,7 @@ object GwenOptions {
   object Defaults {
     val batch = CLISettings.`gwen.cli.options.batch`
     val format = List(ReportFormat.html)
-    val conf = CLISettings.`gwen.cli.options.conf`
+    val conf = Nil
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`
     val inputData = CLISettings.`gwen.cli.options.inputData`

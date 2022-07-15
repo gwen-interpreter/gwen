@@ -40,6 +40,8 @@ import java.util.Properties
   */
 object Settings extends LazyLogging {
 
+  val BootstrapConf: Config = Settings.load()._1
+
   object Lock
 
   private val InlineProperty = """.*\$\{(.+?)\}.*""".r
