@@ -321,7 +321,7 @@ object Settings extends LazyLogging {
     }
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
       (n.substring(singleName.length + 1), v)
-    } ++ Settings.findAll(_.startsWith(s"$multiName.")).filter((_, v) => !v.contains("=")).map { case (n, v) =>
+    } ++ Settings.findAll(_.startsWith(s"$multiName.")).filter((_, v) => !v.contains(",")).map { case (n, v) =>
       (n.substring(multiName.length + 1), v)
     }).toMap
   }
