@@ -315,13 +315,14 @@ object Settings extends LazyLogging {
    * See: https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
    */
   def getMap(multiName: String, singleName: String): Map[String, String] = {
-    val nvps: Seq[(String, String)] = Settings.getList(multiName).map(_.split('=')).map { nvp =>
-      if (nvp.length == 2) (nvp(0), nvp(1))
-      else if (nvp.length == 1) (nvp(0), "")
-      else Errors.propertyLoadError(nvp(0), "name-value pair expected")
+    val nvps: Seq[(String, String)] = Settings.getList(multiName).map(_.split('=')).flatMap { nvp =>
+      if (nvp.length == 2) Some((nvp(0), nvp(1)))
+      else None
     }
     (nvps ++ Settings.findAll(_.startsWith(s"$singleName.")).map { case (n, v) =>
       (n.substring(singleName.length + 1), v)
+    } ++ Settings.findAll(_.startsWith(s"$multiName.")).filter((_, v) => !v.contains("=")).map { case (n, v) =>
+      (n.substring(multiName.length + 1), v)
     }).toMap
   }
 
