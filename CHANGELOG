@@ -1,3 +1,11 @@
+3.21.0
+======
+Jul 20, 2022
+- Add DSLs to support writing to files
+  - `I write "<text>" to "<filepath>" file`
+  - `I write <textRef> to "<filepath>" file`
+  - `I write new line to "<filepath>" file`
+
 3.20.1
 ======
 Jul 20, 2022

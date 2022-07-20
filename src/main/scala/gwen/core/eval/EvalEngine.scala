@@ -167,6 +167,12 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new AttachFile(name, filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>
         new AttachFile(name, filepath)
+      case r"""I write "(.+?)"$content to "(.+?)"$filepath file""" =>
+        new AppendTextToFile(Some(content), None, filepath)
+      case r"""I write new line to "(.+?)"$filepath file""" =>
+        new AppendNewLineToFile(filepath)
+      case r"""I write (.+?)$contentRef to "(.+?)"$filepath file""" =>
+        new AppendTextToFile(None, Some(contentRef), filepath)
       case _ =>
         Errors.undefinedStepError(step)
         

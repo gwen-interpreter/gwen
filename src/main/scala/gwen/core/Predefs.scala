@@ -56,12 +56,11 @@ import javax.xml.transform.OutputKeys
 /** Extension File IO functions. */
 extension [F <: File](file: F) {
   
-  def writeText(text: String): File =
+  def writeText(text: String): File = writeTextToFile(text, append = false)
+  def appendText(text: String): File = writeTextToFile(text, append = true)
+  private def writeTextToFile(text: String, append: Boolean): File =
     file tap { f =>
-      if (f.getParentFile != null && !f.getParentFile.exists()) {
-        f.getParentFile.mkdirs()
-      }
-      new FileWriter(f) tap { fw =>
+      f.newFileWriter(append) tap { fw =>
         try {
           fw.write(text)
         } finally {
@@ -69,6 +68,32 @@ extension [F <: File](file: F) {
         }
       }
     }
+
+  def writeNewLine(): File = writeNewLineToFile(append = false)
+  def appendNewLine(): File = writeNewLineToFile(append = true)
+  private def writeNewLineToFile(append: Boolean): File =
+    file tap { f =>
+      f.newFileWriter(append) tap { fw =>
+        try {
+          new PrintWriter(fw) tap { pw =>
+            try {
+              pw.println()
+            } finally {
+              pw.close()
+            }
+          }
+        } finally {
+          fw.close()
+        }
+      }
+    }
+
+  private def newFileWriter(append: Boolean): FileWriter = {
+    if (file.getParentFile != null && !file.getParentFile.exists()) {
+      file.getParentFile.mkdirs()
+    }
+    new FileWriter(file, append)
+  }
 
   def writeBinary(bis: BufferedInputStream): File =
     file tap { f =>
