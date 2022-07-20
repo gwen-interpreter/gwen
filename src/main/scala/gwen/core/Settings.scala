@@ -432,7 +432,9 @@ object Settings extends LazyLogging {
       getOpt(name, deprecatedName, config).map(_.split(",").toList.map(_.trim).filter(_.length > 0)).getOrElse(Nil)
     }) ++ (
       if (config.isEmpty) {
-        Settings.findAll(_.startsWith(s"$name.")).map { case (n, v) => v }
+        Settings.findAll(_.startsWith(s"$name.")) filter { case (n, _) => 
+          n.substring(name.length() + 1).count(_ == '.') < 2
+        } map { case (n, v) => v }
       } else {
         Nil
       }
