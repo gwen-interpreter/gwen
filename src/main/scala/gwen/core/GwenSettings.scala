@@ -39,6 +39,7 @@ object GwenSettings {
     `gwen.associative.meta`
     `gwen.auto.discover.data.csv`
     `gwen.auto.discover.meta`
+    `gwen.auto.trim.data.csv`
     `gwen.behavior.rules`
     `gwen.feature.dialect`
     `gwen.feature.failfast.enabled`
@@ -150,6 +151,14 @@ object GwenSettings {
     */
   def `gwen.auto.discover.data.csv`: Boolean = {
     Settings.getBoolean("gwen.auto.discover.data.csv")
+  }
+
+  /**
+    * Provides access to the `gwen.auto.trim.data.csv` setting used to enable
+    * or disable automatic trimming of CSV data (default value is `false` for no triming).
+    */
+  def `gwen.auto.trim.data.csv`: Boolean = {
+    Settings.getBooleanOpt("gwen.auto.trim.data.csv").getOrElse(false)
   }
 
   /**

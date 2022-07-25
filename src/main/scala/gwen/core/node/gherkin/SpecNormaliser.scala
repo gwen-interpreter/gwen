@@ -225,7 +225,9 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
   private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
     val noData = background.map(_.isNoData).getOrElse(false)
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
-    val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
+    val dataSteps = (data map { case (name, value) => 
+        (name, if (GwenSettings.`gwen.auto.trim.data.csv`) value.trim else value)
+      }).zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None)
     }
