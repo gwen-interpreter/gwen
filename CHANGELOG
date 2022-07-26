@@ -2,6 +2,10 @@
 ======
 Jul 26, 2022
 - Introduce `gwen.auto.trim.data.csv=true|false` to control whether or not to trim csv data (default is `false`)
+- Add new DSLs to compare blank strings
+  - `<textRef> should[ not] be blank`
+  - `<jsonRef> at json xpath "<path>" should[ not] be blank`
+  - `<xmlRef> at xpath "<path>" should[ not] be blank`
 
 3.22.0
 ======

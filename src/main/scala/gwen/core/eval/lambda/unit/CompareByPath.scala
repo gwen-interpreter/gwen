@@ -54,7 +54,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
         }
         result match {
           case Success(assertion) =>
-            Errors.assertWithError(assertion, message, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op '$expected'${if (op == ComparisonOperator.be && actual == expected) "" else s" but got '$actual'"}")
+            Errors.assertWithError(assertion, message, s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actual == expected) "" else s" but got '$actual'"}")
           case Failure(error) =>
             Errors.assertWithError(assertion = false, message, error.getMessage)
         }
