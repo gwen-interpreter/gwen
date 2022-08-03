@@ -29,21 +29,24 @@ trait Interpolator extends LazyLogging {
   private val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
 
-  final def interpolateString(source: String)(resolve: String => String): String = interpolateString(source, false) { resolve }
-  final def interpolateStringPreserveUnresolved(source: String)(resolve: String => String): String = interpolateString(source, true) { resolve }
+  final def interpolateString(source: String)(resolve: String => Option[String]): String = interpolateString(source, false) { resolve }
   
-  private final def interpolateString(source: String, preserveUnresolved: Boolean)(resolve: String => String): String = {
+  final def interpolateString(source: String, preserveUnresolved: Boolean)(resolve: String => Option[String]): String = {
     source match {
       case propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
         val iProperty = interpolateString(property, preserveUnresolved) { resolve }
-        val resolved = resolve(iProperty)
-        interpolateString(s"$prefix${if (preserveUnresolved && resolved == iProperty) s"$$!{$property}" else resolved}$suffix", preserveUnresolved) { resolve }
+        val resolved = resolve(iProperty) getOrElse {
+          if (preserveUnresolved) s"$$!{$property}"
+          else Errors.unboundAttributeError(property)
+        }
+        interpolateString(s"$prefix$resolved$suffix", preserveUnresolved) { resolve }
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
-        val resolved = resolve(s"<${param}>")
-        val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
-        interpolateString(s"$prefix${substitution}$suffix", preserveUnresolved) { resolve }
+        val resolved = resolve(s"<${param}>") getOrElse {
+          s"$$[param:$param]"
+        }
+        interpolateString(s"$prefix$resolved$suffix", preserveUnresolved) { resolve }
       case _ => 
         if (preserveUnresolved) restoreUnresolved(source)
         else source
@@ -58,13 +61,13 @@ trait Interpolator extends LazyLogging {
     }
   }
 
-  final def interpolateParams(source: String)(resolve: String => String): String = {
+  final def interpolateParams(source: String)(resolve: String => Option[String]): String = {
     source match {
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         Try(resolve(s"<${param}>")) match {
           case Success(resolved) => 
-            val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
+            val substitution = resolved.getOrElse(s"$$[param:$param]")
             interpolateParams(s"$prefix${substitution}$suffix") { resolve }
           case _ =>
             s"${interpolateParams(prefix)(resolve)}$$<$param>${interpolateParams(suffix)(resolve)}"

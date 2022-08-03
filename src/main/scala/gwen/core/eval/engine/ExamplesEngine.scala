@@ -74,9 +74,9 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
     */
   private [engine] def expandCSVExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
-    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
+    val interpolator: String => Option[String] = dataRecord.map(_.interpolator).getOrElse(String => None)
     val iTags = outline.tags map { tag => 
-      Tag(tag.sourceRef, interpolateStringPreserveUnresolved(tag.toString) { interpolator })
+      Tag(tag.sourceRef, interpolateString(tag.toString, true) { interpolator })
     }
     var noDataBackground: Option[Background] = None
     val csvExamples = iTags flatMap { tag =>
@@ -104,7 +104,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table1 = (1L, header.get) :: (table0.tail filter { (rowNo, row) => 
           where map { js => 
             val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
-            val js0 = ctx.interpolateStringPreserveUnresolved(js) { dataRecord.interpolator }
+            val js0 = ctx.interpolateString(js) { dataRecord.interpolator }
             val javascript = ctx.interpolate(js0)
             (ctx.evaluate("true") {
               Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("")

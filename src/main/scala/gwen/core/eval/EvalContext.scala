@@ -87,7 +87,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     */
   def getBinding(name: String): Binding[EvalContext, String] = bindingResolver.getBinding(name)
 
-  def interpolate(value: String): String = interpolateString(value)(getBoundReferenceValue)
+  def interpolate(value: String): String = interpolateString(value)((n: String) => Try(getBoundReferenceValue(n)).toOption)
 
   /**
     * Interpolate all parameters in the given step before it is evaluated.
@@ -117,8 +117,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     */
   def interpolate(step: Step): Step = interpolate(step, interpolateString)
 
-  private def interpolate(step: Step, interpolator: String => (String => String) => String): Step = {
-    val resolver: String => String = name => Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))
+  private def interpolate(step: Step, interpolator: String => (String => Option[String]) => String): Step = {
+    val resolver: String => Option[String] = name => Try(Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))).toOption
     val iName = interpolator(step.name) { resolver }
     val iMessage = step.message.map(msg => interpolator(msg) { resolver })
     val iTable = step.table map { case (line, record) =>

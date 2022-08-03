@@ -45,7 +45,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     * @param dataRecord optional feature level data record
     */
   def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord]): Spec = {
-    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
+    val interpolator: String => Option[String] = dataRecord.map(_.interpolator).getOrElse(String => None)
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
     Spec(
@@ -101,7 +101,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     }
 
   private def expandScenario(scenario: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
-    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
+    val interpolator: String => Option[String] = dataRecord.map(_.interpolator).getOrElse(String => None)
     background.map { _ =>
       scenario.copy(
         withTags = scenario.tags map { tag => 
@@ -131,10 +131,10 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
 
 
   def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
-    val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
+    val interpolator: String => Option[String] = dataRecord.map(_.interpolator) getOrElse { String => None }
     outline.copy(
       withTags = outline.tags map { tag => 
-        Tag(tag.sourceRef, interpolateStringPreserveUnresolved(tag.toString) { interpolator })
+        Tag(tag.sourceRef, interpolateString(tag.toString, true) { interpolator })
       },
       withName = interpolateString(outline.name) { interpolator },
       withDescription = outline.description map { line => 
@@ -147,7 +147,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
           withTags = exs.tags map { tag => 
             Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
           },
-          withName = interpolateString(exs.name) { interpolator },
+          withName = interpolateString(exs.name, true) { interpolator },
           withDescription = exs.description map { line => 
             interpolateString(line) { interpolator }
           },
@@ -166,7 +166,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
                 Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
               },
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${resolveParams(interpolateString(outline.name) { interpolator }, params)._1}${if (exs.name.length > 0) s" -- ${interpolateString(exs.name) { interpolator }}" else ""}",
+              s"${resolveParams(interpolateString(outline.name) { interpolator }, params)._1}${if (exs.name.length > 0) s" -- ${interpolateString(exs.name, true) { interpolator }}" else ""}",
               outline.description map { line =>
                 val iLine = interpolateString(line) { interpolator }
                 resolveParams(iLine, params)._1
@@ -222,7 +222,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     }
   }
 
-  private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
+  private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => Option[String]): Background = {
     val noData = background.map(_.isNoData).getOrElse(false)
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = (data map { case (name, value) => 

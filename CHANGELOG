@@ -3,6 +3,8 @@
 Aug 3, 2022
 - Add configurable name `prefix` to `@Examples` annotation
 - Make `where` filter in `@Examples` annotation a JavaScript expression
+- Internal enhancement for better handling of unresolved references
+  - Use `String => Option[String]` instead of `String => String` interpolator signature (internal enhancement)
 
 3.23.0
 ======
