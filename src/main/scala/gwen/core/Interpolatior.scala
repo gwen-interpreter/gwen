@@ -26,19 +26,34 @@ import scala.util.Success
 trait Interpolator extends LazyLogging {
 
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
+  private val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
 
-  final def interpolateString(source: String)(resolve: String => String): String = {
+  final def interpolateString(source: String)(resolve: String => String): String = interpolateString(source, false) { resolve }
+  final def interpolateStringPreserveUnresolved(source: String)(resolve: String => String): String = interpolateString(source, true) { resolve }
+  
+  private final def interpolateString(source: String, preserveUnresolved: Boolean)(resolve: String => String): String = {
     source match {
       case propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
-        val iProperty = interpolateString(property) { resolve }
-        interpolateString(s"$prefix${resolve(iProperty)}$suffix") { resolve }
+        val iProperty = interpolateString(property, preserveUnresolved) { resolve }
+        val resolved = resolve(iProperty)
+        interpolateString(s"$prefix${if (preserveUnresolved && resolved == iProperty) s"$$!{$property}" else resolved}$suffix", preserveUnresolved) { resolve }
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         val resolved = resolve(s"<${param}>")
         val substitution = if (resolved == s"$$<$param>") s"$$[param:$param]" else resolved
-        interpolateString(s"$prefix${substitution}$suffix") { resolve }
+        interpolateString(s"$prefix${substitution}$suffix", preserveUnresolved) { resolve }
+      case _ => 
+        if (preserveUnresolved) restoreUnresolved(source)
+        else source
+    }
+  }
+
+  private def restoreUnresolved(source: String): String = {
+    source match {
+      case unresolvedPropertySyntax(prefix, property, suffix) => 
+        restoreUnresolved(s"$prefix$${$property}$suffix")
       case _ => source
     }
   }

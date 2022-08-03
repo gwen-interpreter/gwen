@@ -19,6 +19,7 @@ package gwen.core.eval.engine
 import gwen.core._
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.eval.support.JSCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.FeatureKeyword
 import gwen.core.node.gherkin.Examples
@@ -40,6 +41,7 @@ import com.github.tototoshi.csv.defaultCSVFormat
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
+import gwen.core.eval.binding.BindingType
 
 /**
   * Examples evaluation engine.
@@ -74,17 +76,22 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   private [engine] def expandCSVExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
     val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     val iTags = outline.tags map { tag => 
-      Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+      Tag(tag.sourceRef, interpolateStringPreserveUnresolved(tag.toString) { interpolator })
     }
     var noDataBackground: Option[Background] = None
     val csvExamples = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
-        val (filepath, where, required) = tag.name match {
-          case r"""Examples\(file="(.+?)$file",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(where), required.toBoolean)
-          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, Some(where), false)
-          case r"""Examples\(file="(.+?)$file",required=(true|false)$required\)""" => (file, None, required.toBoolean)
-          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, false)
-          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="name=value"][,required=true|false])""")
+        val (filepath, prefix,where, required) = tag.name match {
+          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(prefix), Some(where), required.toBoolean)
+          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where"\)""" => (file, Some(prefix), Some(where), false)
+          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",required=(true|false)$required\)""" => (file, Some(prefix), None, required.toBoolean)
+          case r"""Examples\(file="(.+?)$file",where="(.+?)$where",required=(true|false)$required\)""" => (file, None, Some(where), required.toBoolean)
+          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, None, Some(where), false)
+          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",required=(true|false)$required\)""" => (file, Some(prefix), None, required.toBoolean)
+          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix"\)""" => (file, Some(prefix), None, false)
+          case r"""Examples\(file="(.+?)$file",required=(true|false)$required\)""" => (file, None, None, required.toBoolean)
+          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
+          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="javascript expression"][,required=true|false])""")
         }
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
@@ -93,20 +100,17 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table0 = CSVReader.open(file).iterator.toList.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
-        val header = table0.headOption map { (_, headings) => headings }
-        val table1 = table0 filter { (rowNo, row) => 
-          if (rowNo == 1) true else {
-            where map { clause => 
-              clause match {
-                case r"(.+?)$name=(.+?)$value" => 
-                  header.map(_.indexOf(name)) map { idx => 
-                    row(idx) == value
-                  } getOrElse false
-                case _ => true
-              }
-            } getOrElse true
-          }
-        }
+        val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h"} getOrElse h }"} }
+        val table1 = (1L, header.get) :: (table0.tail filter { (rowNo, row) => 
+          where map { js => 
+            val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
+            val js0 = ctx.interpolateStringPreserveUnresolved(js) { dataRecord.interpolator }
+            val javascript = ctx.interpolate(js0)
+            (ctx.evaluate("true") {
+              Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("")
+            }).toBoolean
+          } getOrElse true
+        })
         val table2 = if (table1.size < 2 && required) {
           val msg = s"No data record(s) found in $file${where.map(w => s" where $w").getOrElse("")}"
           val table3 = table1 ++ List((2L, table1.flatMap((_, items) => items.map(_ => ""))))
@@ -125,10 +129,10 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         } else {
           table1
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${where map { clause => s", where $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${where map { clause => s", where: $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
-        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="name=value")""")
+        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="javascript expression")""")
       } else {
         None
       }

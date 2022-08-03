@@ -134,7 +134,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     val interpolator: String => String = dataRecord.map(_.interpolator) getOrElse { identity }
     outline.copy(
       withTags = outline.tags map { tag => 
-        Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+        Tag(tag.sourceRef, interpolateStringPreserveUnresolved(tag.toString) { interpolator })
       },
       withName = interpolateString(outline.name) { interpolator },
       withDescription = outline.description map { line => 
