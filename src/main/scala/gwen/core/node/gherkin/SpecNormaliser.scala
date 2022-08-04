@@ -52,11 +52,11 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
       dataRecord map { record =>
         spec.feature.copy(
           withTags = spec.feature.tags map { tag => 
-            Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+            Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
           },
-          withName = s"${interpolateString(spec.feature.name) { interpolator }} [${record.descriptor}]",
+          withName = s"${interpolateStringLenient(spec.feature.name) { interpolator }} [${record.descriptor}]",
           withDescription = spec.feature.description map { line => 
-            interpolateString(line) { interpolator }
+            interpolateStringLenient(line) { interpolator }
           }
         )
       } getOrElse spec.feature,
@@ -65,9 +65,9 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
       spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
-          withName = interpolateString(rule.name) { interpolator },
+          withName = interpolateStringLenient(rule.name) { interpolator },
           withDescription = rule.description map { line => 
-            interpolateString(line) { interpolator }
+            interpolateStringLenient(line) { interpolator }
           },
           withBackground = None,
           withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord)
@@ -105,20 +105,20 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     background.map { _ =>
       scenario.copy(
         withTags = scenario.tags map { tag => 
-          Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+          Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
         },
-        withName = interpolateString(scenario.name) { interpolator },
+        withName = interpolateStringLenient(scenario.name) { interpolator },
         withDescription = scenario.description map { line => 
-          interpolateString(line) { interpolator }
+          interpolateStringLenient(line) { interpolator }
         },
         withBackground = if (scenario.isStepDef) {
           None
         } else {
           background map { bg => 
             bg.copy(
-              withName = interpolateString(bg.name) { interpolator },
+              withName = interpolateStringLenient(bg.name) { interpolator },
               withDescription = bg.description map { line => 
-                interpolateString(line) { interpolator }
+                interpolateStringLenient(line) { interpolator }
               },
               withSteps = bg.steps.map(_.copy())
             )
@@ -134,22 +134,22 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     val interpolator: String => Option[String] = dataRecord.map(_.interpolator) getOrElse { String => None }
     outline.copy(
       withTags = outline.tags map { tag => 
-        Tag(tag.sourceRef, interpolateString(tag.toString, true) { interpolator })
+        Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
       },
-      withName = interpolateString(outline.name) { interpolator },
+      withName = interpolateStringLenient(outline.name) { interpolator },
       withDescription = outline.description map { line => 
-        interpolateString(line) { interpolator }
+        interpolateStringLenient(line) { interpolator }
       },
       withBackground = None,
       withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
         exs.copy(
           withTags = exs.tags map { tag => 
-            Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+            Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
           },
-          withName = interpolateString(exs.name, true) { interpolator },
+          withName = interpolateStringLenient(exs.name) { interpolator },
           withDescription = exs.description map { line => 
-            interpolateString(line) { interpolator }
+            interpolateStringLenient(line) { interpolator }
           },
           withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), tableIndex) =>
             val params: List[(String, String)] = names zip values
@@ -163,12 +163,12 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
                 SourceRef(sref.file, rowLineNo)
               },
               outline.tags.filter(t => t.name != Annotations.StepDef.toString && !t.name.startsWith(Annotations.Examples.toString)) map { tag => 
-                Tag(tag.sourceRef, interpolateString(tag.toString) { interpolator })
+                Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
               },
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${resolveParams(interpolateString(outline.name) { interpolator }, params)._1}${if (exs.name.length > 0) s" -- ${interpolateString(exs.name, true) { interpolator }}" else ""}",
+              s"${resolveParams(interpolateStringLenient(outline.name) { interpolator }, params)._1}${if (exs.name.length > 0) s" -- ${interpolateStringLenient(exs.name) { interpolator }}" else ""}",
               outline.description map { line =>
-                val iLine = interpolateString(line) { interpolator }
+                val iLine = interpolateStringLenient(line) { interpolator }
                 resolveParams(iLine, params)._1
               },
               normalisedBackground,
@@ -256,9 +256,9 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
         Background(
           bg.sourceRef,
           bg.keyword,
-          s"${interpolateString(bg.name) { interpolator }}${descriptor.map(d => s" + $d").getOrElse("")}",
+          s"${interpolateStringLenient(bg.name) { interpolator }}${descriptor.map(d => s" + $d").getOrElse("")}",
           (bg.description map { line =>
-            interpolateString(line) { interpolator }
+            interpolateStringLenient(line) { interpolator }
           }) ++ description,
           dataSteps ++ bgSteps
         )

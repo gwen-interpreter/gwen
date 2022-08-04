@@ -88,6 +88,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def getBinding(name: String): Binding[EvalContext, String] = bindingResolver.getBinding(name)
 
   def interpolate(value: String): String = interpolateString(value)((n: String) => Try(getBoundReferenceValue(n)).toOption)
+  def interpolateLenient(value: String): String = interpolateStringLenient(value)((n: String) => Try(getBoundReferenceValue(n)).toOption)
 
   /**
     * Interpolate all parameters in the given step before it is evaluated.
