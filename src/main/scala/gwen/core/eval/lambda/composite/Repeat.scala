@@ -35,7 +35,7 @@ import gwen.core.status._
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
+class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
@@ -68,7 +68,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
               iterationStep.evalStatus match {
                 case Failed(_, e) => throw e
                 case _ =>
-                  JSCondition(condition, false, ctx).evaluate() tap { result =>
+                  JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate() tap { result =>
                     if (!result) {
                       logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
                       if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
@@ -78,7 +78,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   }
               }
             case "while" =>
-              val result = JSCondition(condition, false, ctx).evaluate()
+              val result = JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate()
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {

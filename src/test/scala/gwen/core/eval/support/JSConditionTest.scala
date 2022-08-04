@@ -26,44 +26,48 @@ import gwen.core.state.EnvState
 
 import org.scalatest.matchers.should.Matchers
 
+import scala.concurrent.duration._
+
 class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
+
+  val timeout = 1
 
   "JUnbound JS condition" should "fail" in {
     val ctx = newCtx
     intercept[UnboundAttributeException] {
-      JSCondition("condition", false, ctx).evaluate()
+      JSCondition("condition", false, timeout, ctx).evaluate()
     }
   }
 
   "Bound true JS condition" should "evaluate" in {
     val ctx = newCtx
     ctx.scopes.set(JSBinding.key("condition"), "1 === 1")
-    JSCondition("condition", false, ctx).evaluate() should be (true)
+    JSCondition("condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound false JS condition" should "evaluate" in {
     val ctx = newCtx
     ctx.scopes.set(JSBinding.key("condition"), "1 === 2")
-    JSCondition("condition", false, ctx).evaluate() should be (false)
+    JSCondition("condition", false, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound true JS condition" should "invert when negated" in {
     val ctx = newCtx
     ctx.scopes.set(JSBinding.key("condition"), "1 === 1")
-    JSCondition("condition", true, ctx).evaluate() should be (false)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound false JS condition" should "invert when negated" in {
     val ctx = newCtx
     ctx.scopes.set(JSBinding.key("condition"), "1 === 2")
-    JSCondition("condition", true, ctx).evaluate() should be (true)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound JS condition with not prefix" should "evaluate" in {
     val ctx = newCtx
     ctx.scopes.set(JSBinding.key("not condition"), "1 === 1")
-    JSCondition("condition", true, ctx).evaluate() should be (true)
-    JSCondition("not condition", false, ctx).evaluate() should be (true)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (true)
+    JSCondition("not condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound true JS function as condition" should "evaluate" in {
@@ -71,7 +75,7 @@ class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
     ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
     ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "true")
     ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
-    JSCondition("condition", false, ctx).evaluate() should be (true)
+    JSCondition("condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound false JS function as condition" should "evaluate" in {
@@ -79,7 +83,7 @@ class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
     ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
     ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "false")
     ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
-    JSCondition("condition", false, ctx).evaluate() should be (false)
+    JSCondition("condition", false, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound true JS function as condition" should "invert when negated" in {
@@ -87,7 +91,7 @@ class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
     ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
     ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "true")
     ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
-    JSCondition("condition", true, ctx).evaluate() should be (false)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound false JS function as condition" should "invert when negated" in {
@@ -95,7 +99,7 @@ class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
     ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
     ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "false")
     ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
-    JSCondition("condition", true, ctx).evaluate() should be (true)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound JS function as condition with not prefix" should "evaluate" in {
@@ -103,8 +107,8 @@ class JSConditionTest extends BaseTest with Matchers with ScriptSupport {
     ctx.scopes.set(JSFunctionBinding.jsRefKey("not condition"), "toBoolean")
     ctx.scopes.set(JSFunctionBinding.argsKey("not condition"), "true")
     ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
-    JSCondition("condition", true, ctx).evaluate() should be (true)
-    JSCondition("not condition", false, ctx).evaluate() should be (true)
+    JSCondition("condition", true, timeout, ctx).evaluate() should be (true)
+    JSCondition("not condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   private def newCtx = new EvalContext(GwenOptions(), EnvState())

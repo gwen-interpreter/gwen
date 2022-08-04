@@ -34,13 +34,13 @@ import gwen.core.status._
 
 import util.chaining.scalaUtilChainingOps
 
-class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
+class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, conditionTimeoutSecs: Long, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
-    val jsCondition = new JSCondition(condition, negate, ctx)
+    val jsCondition = new JSCondition(condition, negate, conditionTimeoutSecs, ctx)
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }

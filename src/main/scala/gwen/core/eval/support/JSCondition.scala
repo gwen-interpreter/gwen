@@ -16,6 +16,7 @@
 
 package gwen.core.eval.support
 
+import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.Binding
 import gwen.core.eval.binding.JSBinding
@@ -25,8 +26,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-
-class JSCondition[T <: EvalContext](condition: String, negate: Boolean, ctx: T) {
+class JSCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutSecs: Long, ctx: T) {
   
   val (name, binding, negated) = {
     if (negate) {
@@ -52,8 +52,33 @@ class JSCondition[T <: EvalContext](condition: String, negate: Boolean, ctx: T) 
   }
 
   def evaluate(): Boolean = {
-    val result = binding.resolve().toBoolean
-    if (negated) !result else result
+    var result: Option[Boolean] = None
+    var error: Option[Throwable] = None
+    try {
+      ctx.waitUntil(timeoutSecs, s"waiting for condition: $condition") {
+        try {
+          val res = binding.resolve().toBoolean
+          result = Option(if (negated) !res else res)
+        } catch {
+          case e: Throwable => 
+            error = Some(e)
+        }
+        result.nonEmpty
+      }
+    } catch {
+      case e: Throwable =>
+        result getOrElse {
+          error map { err => 
+            throw err
+          } getOrElse {
+            throw e
+          }
+        }
+    }
+    result getOrElse {
+      Errors.waitTimeoutError(timeoutSecs, s"Timed out waiting for condition: $condition")
+    }
+    
   }
 
 }
