@@ -99,7 +99,9 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
         if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
-        val table0 = CSVReader.open(file).iterator.toList.zipWithIndex map { (row, idx) => 
+        val allRecords = CSVReader.open(file).iterator.toList
+        val records = if(ctx.options.dryRun) allRecords.take(11) else allRecords
+        val table0 = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
         val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h"} getOrElse h }"} }
@@ -109,7 +111,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             val js0 = ctx.interpolateStringLenient(js) { dataRecord.interpolator }
             val javascript = ctx.interpolate(js0)
             (ctx.evaluate("true") {
-              Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("")
+              Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("false")
             }).toBoolean
           } getOrElse true
         })
