@@ -272,6 +272,15 @@ object GwenSettings {
   }
 
   /**
+    * Provides access to the `gwen.dryRun.limit.tableData.outline.examples.records` setting used to control the number of 
+    * records in examples tables to include in dry runs (default is infinity for all steps).
+    */
+  def `gwen.dryRun.limit.tableData.outline.examples.records`: Int = {
+    if (Settings.getOpt("gwen.dryRun.limit.tableData.outline.examples.records").map(_ == "infinity").getOrElse(false)) Int.MaxValue
+    else Settings.getInt("gwen.dryRun.limit.tableData.outline.examples.records")
+  }
+
+  /**
     * Provides access to the `gwen.console.log.stepDefs` setting used to control whether or to log StepDefs
     * to all console outputs.
     */

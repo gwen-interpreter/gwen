@@ -1,8 +1,9 @@
-3.24.2
+3.25.0
 ======
 Aug 8, 2022
 - Preserve table binding name when reporting on `Examples` `where` filter 
 - Do not interpolate step message with `NoData` annotation
+- Introduce `gwen.dryRun.limit.tableData.outline.examples.records` setting to control the maximum number of outline examples records to include in dry runs
 
 3.24.1
 ======

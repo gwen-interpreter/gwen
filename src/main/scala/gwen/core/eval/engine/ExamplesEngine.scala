@@ -101,7 +101,13 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
         if (!file.getName.toLowerCase.endsWith(".csv")) Errors.unsupportedDataFileError(examplesTag)
         val allRecords = CSVReader.open(file).iterator.toList
-        val records = if(ctx.options.dryRun) allRecords.take(11) else allRecords
+        val records = if(ctx.options.dryRun) {
+          val limit = GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records`
+          if (limit == Int.MaxValue) allRecords
+          else allRecords.take(limit + 1) // + 1 to include header record
+        } else {
+          allRecords
+        }
         val table0 = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
