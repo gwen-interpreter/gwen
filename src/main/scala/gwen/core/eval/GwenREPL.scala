@@ -57,7 +57,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   private val colors = ConsoleColors.isEnabled
   private val printer = new SpecPrinter(deep = false, colors)
-  private val prompt = s"${if (colors) ansi.bold else ""}gwen> ${if (colors) ansi.reset else ""}"
+  private def prompt = s"${if (colors) ansi.bold else ""}gwen${if (debug) s"@Breakpoint" else ""}> ${if (colors) ansi.reset else ""}"
   
   private lazy val reader = {
     new ConsoleReader() tap { reader =>
