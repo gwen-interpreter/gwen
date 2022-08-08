@@ -95,6 +95,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
           case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="javascript expression"][,required=true|false])""")
         }
+        val whereFilter = where.map(w => ctx.interpolateLenient(w))
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
@@ -106,7 +107,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         }
         val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h"} getOrElse h }"} }
         val table1 = (1L, header.get) :: (table0.tail filter { (rowNo, row) => 
-          where map { js => 
+          whereFilter map { js => 
             val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
             val js0 = ctx.interpolateStringLenient(js) { dataRecord.interpolator }
             val javascript = ctx.interpolate(js0)
@@ -116,14 +117,16 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           } getOrElse true
         })
         val table2 = if (table1.size < 2 && required) {
-          val msg = s"No data record(s) found in $file${where.map(w => s" where $w").getOrElse("")}"
+          val msg = s"No data record(s) found in $file${whereFilter.map(w => s" where $w").getOrElse("")}"
           val table3 = table1 ++ List((2L, table1.flatMap((_, items) => items.map(_ => ""))))
           val step = Step(None, StepKeyword.Given.toString, s"""${header.flatMap(_.headOption).getOrElse("Data")} should not be """"", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
           noDataBackground = outline.background map { bg =>
             Some(
               bg.copy(
                 withName = s"${bg.name} + No data",
-                withSteps = step.copy(withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword) :: bg.steps
+                withSteps = step.copy(
+                  withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword
+                ) :: bg.steps
               )
             )
           } getOrElse {
@@ -133,7 +136,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         } else {
           table1
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${where map { clause => s", where: $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
+        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="javascript expression")""")

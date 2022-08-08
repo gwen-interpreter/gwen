@@ -121,7 +121,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   private def interpolate(step: Step, interpolator: String => (String => Option[String]) => String): Step = {
     val resolver: String => Option[String] = name => Try(Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))).toOption
     val iName = interpolator(step.name) { resolver }
-    val iMessage = step.message.map(msg => interpolator(msg) { resolver })
+    val iMessage = if (step.isNoData) step.message else step.message.map(msg => interpolator(msg) { resolver })
     val iTable = step.table map { case (line, record) =>
       (line, record.map(cell => interpolator(cell) { resolver }))
     }
