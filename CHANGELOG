@@ -1,3 +1,8 @@
+3.25.2
+======
+Aug 9, 2022
+- Resolve parameters when evaluating `where` filters in `Examples` annotations
+
 3.25.1
 ======
 Aug 9, 2022

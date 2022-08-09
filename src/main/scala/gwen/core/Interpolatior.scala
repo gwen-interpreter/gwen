@@ -26,8 +26,11 @@ import scala.util.Success
 trait Interpolator extends LazyLogging {
 
   private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
-  private val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
   private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
+
+  private val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
+  private val unresolvedParamSyntax = """^(?s)(.*)\$\!<(.+?)>(.*)$""".r
+
 
   final def interpolateString(source: String)(resolve: String => Option[String]): String = interpolateString(source, false) { resolve }
   final def interpolateStringLenient(source: String)(resolve: String => Option[String]): String = interpolateString(source, true) { resolve }
@@ -45,12 +48,11 @@ trait Interpolator extends LazyLogging {
       case paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         val resolved = resolve(s"<${param}>") getOrElse {
-          s"$$[param:$param]"
+          s"$$!<$param>"
         }
         interpolateString(s"$prefix$resolved$suffix", lenient) { resolve }
       case _ => 
-        if (lenient) restoreUnresolved(source)
-        else source
+        restoreUnresolved(source)
     }
   }
 
@@ -58,6 +60,8 @@ trait Interpolator extends LazyLogging {
     source match {
       case unresolvedPropertySyntax(prefix, property, suffix) => 
         restoreUnresolved(s"$prefix$${$property}$suffix")
+      case unresolvedParamSyntax(prefix, param, suffix) => 
+        restoreUnresolved(s"$prefix$$<$param>$suffix")
       case _ => source
     }
   }
@@ -68,13 +72,13 @@ trait Interpolator extends LazyLogging {
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         Try(resolve(s"<${param}>")) match {
           case Success(resolved) => 
-            val substitution = resolved.getOrElse(s"$$[param:$param]")
+            val substitution = resolved.getOrElse(s"$$!<$param>")
             interpolateParams(s"$prefix${substitution}$suffix") { resolve }
           case _ =>
             s"${interpolateParams(prefix)(resolve)}$$<$param>${interpolateParams(suffix)(resolve)}"
         }
         
-      case _ => source
+      case _ => restoreUnresolved(source)
     } 
   }
 

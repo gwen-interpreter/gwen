@@ -112,10 +112,10 @@ class InterpolatorTest extends BaseTest with Matchers with Interpolator {
     } should be ("""Go you good thing!""")
   }
   
-  """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "decorate parameters" in {
+  """interpolating stepdef in dry run mode: $<param-0>$<param-1>"""" should "preserve parameter placeholders" in {
     interpolateString("""Go you $<param-0>$<param-1> thing!""") {
       case _ => None
-    } should be ("""Go you $[param:param-0]$[param:param-1] thing!""")
+    } should be ("""Go you $<param-0>$<param-1> thing!""")
   }
   
   """embedded + literal in string""" should "not be treated as a concatenation operator" in {

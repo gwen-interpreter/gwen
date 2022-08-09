@@ -95,7 +95,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
           case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="javascript expression"][,required=true|false])""")
         }
-        val whereFilter = where.map(w => ctx.interpolateLenient(w))
+        val whereFilter = where.map(w => ctx.interpolateParams(w) { name => ctx.paramScope.getOpt(name) }).map(w => ctx.interpolateLenient(w))
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
@@ -116,7 +116,8 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           whereFilter map { js => 
             val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
             val js0 = ctx.interpolateStringLenient(js) { dataRecord.interpolator }
-            val javascript = ctx.interpolate(js0)
+            val js1 = ctx.interpolateParams(js0) { name => ctx.paramScope.getOpt(name) }
+            val javascript = ctx.interpolate(js1)
             (ctx.evaluate("true") {
               Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("false")
             }).toBoolean
