@@ -49,7 +49,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
           case Success(assertion) =>
             Errors.assertWithError(assertion, message, s"Expected $binding to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
           case Failure(error) =>
-            Errors.assertWithError(assertion = false, message, error.getMessage)
+            throw error;
         }
       }
     }

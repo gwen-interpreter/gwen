@@ -56,7 +56,7 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
           if (ctx.topScope.getOpt("similarity score").nonEmpty) {
             ctx.topScope.set("similarity score", null)
           }
-          Errors.assertWithError(assertion = false, message, error.getMessage)
+          throw error
       }
     }
     similarityScore map { score =>

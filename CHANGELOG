@@ -1,3 +1,12 @@
+3.26.0
+======
+Aug 17, 2022
+- Add optional root cause unboud attribute errors
+- Throw root cause instead of overriding error message when exceptions occur during assertion checks
+- Add new DSLs for checking presence or absence of bindings
+  - `<name> should be defined`
+  - `<name> should not be defined`
+ 
 3.25.2
 ======
 Aug 9, 2022

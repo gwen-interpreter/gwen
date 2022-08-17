@@ -166,7 +166,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should be absent""" =>
-        new IsAbsent(attribute, step.message)
+        new IsDefined(attribute, true, step.message)
+      case r"""(.+?)$attribute should( not)?$negation be defined""" =>
+        new IsDefined(attribute, Option(negation).isDefined, step.message)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(name, filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>

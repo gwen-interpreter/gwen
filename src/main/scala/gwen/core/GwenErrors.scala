@@ -46,8 +46,9 @@ object Errors {
   def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
   def illegalStepError(msg: String) = throw new IllegalStepException(msg)
   def disabledStepError(step: Step) = throw new DisabledStepException(step)
-  def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None)
-  def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope))
+  def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None, None)
+  def unboundAttributeError(name: String, cause: Throwable) = throw new UnboundAttributeException(name, None, Some(cause))
+  def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope), None)
   def missingSettingError(name: String) = throw new MissingSettingException(name)
   def settingsNotFound(files: List[File]) = throw new SettingsNotFoundException(files)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
@@ -134,7 +135,7 @@ object Errors {
   class DisabledStepException(step: Step) extends StepException(step, "Step is disabled")
 
   /** Thrown when an attribute cannot be found in a scope. */
-  class UnboundAttributeException(name: String, scope: Option[String]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name")
+  class UnboundAttributeException(name: String, scope: Option[String], cause: Option[Throwable]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name", cause.orNull)
   
   /** Thrown when a setting is not found. */
   class MissingSettingException(name: String) extends GwenException(s"Setting not found: $name")
