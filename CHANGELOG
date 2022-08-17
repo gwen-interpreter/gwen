@@ -1,7 +1,7 @@
 3.26.0
 ======
 Aug 17, 2022
-- Add optional root cause unboud attribute errors
+- Include root cause in nested unbound attribute errors
 - Throw root cause instead of overriding error message when exceptions occur during assertion checks
 - Add new DSLs for checking presence or absence of bindings
   - `<name> should be defined`
