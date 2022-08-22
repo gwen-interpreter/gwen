@@ -57,7 +57,8 @@ class JSCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutS
     try {
       ctx.waitUntil(timeoutSecs, s"waiting for condition: $condition") {
         try {
-          val res = binding.resolve().toBoolean
+          val raw = binding.resolve()
+          val res = Try(raw.toBoolean).getOrElse(Errors.invalidTypeError(s"Boolean expected but got '$raw' for condition: $condition"))
           result = Option(if (negated) !res else res)
         } catch {
           case e: Throwable => 

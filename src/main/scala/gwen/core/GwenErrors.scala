@@ -80,6 +80,7 @@ object Errors {
   def templateMatchError(msg: String) = throw new TemplateMatchException(msg)
   def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
   def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
+  def invalidTypeError(msg: String) = throw new InvalidTypeException(msg)
   def imperativeStepError(step: Step) = throw new ImperativeStepException(step)
   def imperativeStepDefError(stepDef: Scenario) = throw new ImperativeStepDefException(stepDef)
   def improperBehaviorError(node: GherkinNode) = throw new ImproperBehaviorException(node)
@@ -225,6 +226,9 @@ object Errors {
 
   /** Thrown when an invalid setting is provided. */
   class InvalidSettingException(name: String, value: String, msg: String) extends GwenException(s"Invalid setting $name=$value: $msg")
+
+  /** Thrown when an invalid type conversion is detected. */
+  class InvalidTypeException(msg: String) extends GwenException(msg)
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
   class ImperativeStepException(step: Step) extends StepException(step, "Declarative feature mode violation: DSL step not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)")
