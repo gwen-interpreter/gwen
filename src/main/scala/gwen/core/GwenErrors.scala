@@ -70,8 +70,11 @@ object Errors {
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
   def missingOrInvalidImportFileError(importAnnotation: Tag) = throw new MissingOrInvalidImportFileException(importAnnotation)
+  def missingFileError(file: File) = throw new MissingFileException(file)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
   def unsupportedDataFileError(dataAnnotation: Tag) = throw new UnsupportedDataFileException(dataAnnotation)
+  def unsupportedLookupFileError(file: File, expectedExtension: String) = throw new UnsupportedLookupFileException(file, expectedExtension)
+  def csvLookupError(file: File, name: String) = throw new CSVLookupException(file, name)
   def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
@@ -195,6 +198,9 @@ object Errors {
   /** Thrown when an invalid StepDef is detected. */
   class InvalidStepDefException(stepDef: Scenario, msg: String) extends StepDefException(stepDef, s"Invalid StepDef: $msg")
   
+  /** Thrown when an expected file is missing. */
+  class MissingFileException(file: File) extends GwenException(s"File not found $file")
+
   /** Thrown when an import file is not found. */
   class MissingOrInvalidImportFileException(importAnnotation: Tag) extends GwenException(s"Missing or invalid file detected in $importAnnotation annotation${at(importAnnotation.sourceRef)}")
 
@@ -203,6 +209,12 @@ object Errors {
 
   /** Thrown when an unsupported data table file is detected. */
   class UnsupportedDataFileException(dataAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $dataAnnotation annotation${at(dataAnnotation.sourceRef)}: only .csv data files supported")
+
+  /** Thrown when an unsupported lookup file type is detected. */
+  class UnsupportedLookupFileException(file: File, expectedExtenstion: String) extends GwenException(s"Expected $expectedExtenstion file but got $file")
+
+  /** Thrown when a CSV lookup fails. */
+  class CSVLookupException(file: File, name: String) extends GwenException(s"No such column in CSV file $file having name: $name")
   
   /** Thrown when a recursive import is detected. */
   class RecursiveImportException(importAnnotation: Tag) extends GwenException(s"Recursive (cyclic) $importAnnotation detected${at(importAnnotation.sourceRef)}") {

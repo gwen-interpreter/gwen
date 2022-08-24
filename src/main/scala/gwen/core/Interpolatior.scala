@@ -41,7 +41,7 @@ trait Interpolator extends LazyLogging {
         logger.debug(s"Resolving property-syntax binding: $${$property}")
         val iProperty = interpolateString(property, lenient) { resolve }
         val resolved = resolve(iProperty) getOrElse {
-          if (lenient) s"$$!{$property}"
+          if (lenient || property.startsWith("csv.record.")) s"$$!{$property}"
           else Errors.unboundAttributeError(property)
         }
         interpolateString(s"$prefix$resolved$suffix", lenient) { resolve }

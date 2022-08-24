@@ -185,6 +185,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new WriteNewLineToFile(None, Some(filepathRef), mode == "write")
       case r"""I (write|append)$mode (.+?)$contentRef to (.+?)$filepathRef file""" =>
         new WriteTextToFile(None, Some(contentRef), None, Some(filepathRef), mode == "write")
+      case r"""I lookup (.+?)$column in the "(.+?)$filepath" file where "(.+)"$predicate""" =>
+        new CSVLookup(column, column, Some(filepath), None, step.orDocString(predicate))
+      case r"""I lookup (.+?)$column in (.+?)$filepathRef file where "(.+)"$predicate""" =>
+        new CSVLookup(column, column, None, Some(filepathRef), step.orDocString(predicate))
+      case r"""I lookup (.+?)$column in the "(.+?)$filepath" file as (.+?)$name where "(.+)"$predicate""" =>
+        new CSVLookup(column, name, Some(filepath), None, step.orDocString(predicate))
+      case r"""I lookup (.+?)$column in (.+?)$filepathRef file as (.+?)$name where "(.+)"$predicate""" =>
+        new CSVLookup(column, name, None, Some(filepathRef), step.orDocString(predicate))
       case _ =>
         Errors.undefinedStepError(step)
         
