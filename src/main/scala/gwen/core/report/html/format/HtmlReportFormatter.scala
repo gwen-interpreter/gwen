@@ -291,7 +291,7 @@ object HtmlReportFormatter {
       } yield {
         small(
           span(`class` := "grayed", 
-            " with "
+            " "
           ),
           span(`class` := "badge badge-danger",
             if (renderErrorLink) {
