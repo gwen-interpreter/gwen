@@ -316,4 +316,12 @@ object GwenSettings {
     Settings.getIntOpt("gwen.video.timeoutSecs").getOrElse(10)
   }
 
+  /**
+    * Provides access to the `gwen.error.messages.inline.locators` setting used to control whether or to inline 
+    * locator binding info in reported error messages (default is false).
+    */
+  def `gwen.error.messages.inline.locators`: Boolean = {
+      Settings.getBoolean("gwen.error.messages.inline.locators")
+  }
+
 }

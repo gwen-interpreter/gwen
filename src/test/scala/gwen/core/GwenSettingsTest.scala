@@ -58,6 +58,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.video.dir`.getPath should be ("output/.video")
       GwenSettings.`gwen.video.timeoutSecs` should be (10)
       GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records` should be (Integer.MAX_VALUE)
+      GwenSettings.`gwen.error.messages.inline.locators` should be (false)
     }
   }
 

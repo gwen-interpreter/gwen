@@ -16,6 +16,7 @@
 
 package gwen.core.eval.binding
 
+import gwen.core.GwenSettings
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 
@@ -84,6 +85,11 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     value tap { _ =>
       LoadStrategyBinding.bindIfLazy(name, value, ctx)
     }
+  }
+
+  def displayName: String = {
+    if (GwenSettings.`gwen.error.messages.inline.locators`) this.toString
+    else name
   }
   
 }
