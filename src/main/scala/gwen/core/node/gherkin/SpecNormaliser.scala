@@ -54,7 +54,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
           withTags = spec.feature.tags map { tag => 
             Tag(tag.sourceRef, interpolateStringLenient(tag.toString) { interpolator })
           },
-          withName = s"${interpolateStringLenient(spec.feature.name) { interpolator }} [${record.descriptor}]",
+          withName = s"${interpolateStringLenient(spec.feature.name) { interpolator }}${if (spec.isMeta) "" else s" [${record.descriptor}]"}",
           withDescription = spec.feature.description map { line => 
             interpolateStringLenient(line) { interpolator }
           }
