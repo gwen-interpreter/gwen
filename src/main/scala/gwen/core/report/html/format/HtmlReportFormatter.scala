@@ -289,10 +289,8 @@ object HtmlReportFormatter {
         opt <- Option(sustainedCount > 0)
         if opt
       } yield {
-        small(
-          span(`class` := "grayed", 
-            " "
-          ),
+        Seq(
+          span(" "),
           span(`class` := "badge badge-danger",
             if (renderErrorLink) {
               Seq(

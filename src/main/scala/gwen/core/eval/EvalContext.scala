@@ -22,6 +22,7 @@ import gwen.core.eval.binding.Binding
 import gwen.core.eval.binding.BindingResolver
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.support._
+import gwen.core.Errors.UnboundAttributeException
 import gwen.core.node.gherkin.Step
 import gwen.core.state.Environment
 import gwen.core.state.EnvState
@@ -119,7 +120,10 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def interpolate(step: Step): Step = interpolate(step, interpolateString)
 
   private def interpolate(step: Step, interpolator: String => (String => Option[String]) => String): Step = {
-    val resolver: String => Option[String] = name => Try(Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))).toOption
+    val resolver: String => Option[String] = name => Try(Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))) match {
+      case Success(value) => Option(value)
+      case Failure(e) => if (e.isInstanceOf[UnboundAttributeException]) None else throw e
+    }
     val iName = interpolator(step.name) { resolver }
     val iMessage = if (step.isNoData) {
       step.message 

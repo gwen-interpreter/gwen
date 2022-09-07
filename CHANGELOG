@@ -1,3 +1,8 @@
+3.28.1
+======
+Sep 7, 2022
+- Treat failed interplations as unresolved if the name is not bound otherwise throw underlying error.
+
 3.28.0
 ======
 Sep 6, 2022
