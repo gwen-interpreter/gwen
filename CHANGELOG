@@ -1,7 +1,7 @@
 3.28.1
 ======
 Sep 7, 2022
-- Treat failed interplotions as unresolved if the name is not bound otherwise throw underlying error.
+- Treat failed interpolations as unresolved if the name is not bound otherwise throw underlying error.
 
 3.28.0
 ======
