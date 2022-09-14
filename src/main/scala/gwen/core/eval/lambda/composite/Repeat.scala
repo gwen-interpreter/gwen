@@ -71,7 +71,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate() tap { result =>
                     if (!result) {
                       logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
-                      if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
+                      if (delay.gt(Duration.Zero)) {
+                        condSteps = delayStep(delay, ctx) :: condSteps
+                      }
                     } else {
                       logger.info(s"repeat-until $condition: completed")
                     }
@@ -90,7 +92,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   case Failed(_, e) => throw e
                   case _ =>
                     logger.info(s"repeat-while $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
-                    if (delay.gt(Duration.Zero)) Thread.sleep(delay.toMillis)
+                    if (delay.gt(Duration.Zero)) {
+                      condSteps = delayStep(delay, ctx) :: condSteps
+                    }
                 }
               } else {
                 logger.info(s"repeat-while $condition: completed")
@@ -157,6 +161,16 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
       )
     } else {
       evaluatedStep
+    }
+  }
+
+  private def delayStep(delay: Duration, ctx: T): Step = {
+    val preWaitStep = Step(None, StepKeyword.And.toString, s"delay", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.Synthetic)), None)
+    engine.beforeStep(preWaitStep, ctx)
+    val start = System.nanoTime()
+    Thread.sleep(delay.toMillis)
+    preWaitStep.copy(withEvalStatus = Passed(System.nanoTime() - start)) tap { postWaitStep =>
+      engine.afterStep(postWaitStep, ctx)
     }
   }
 
