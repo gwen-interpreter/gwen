@@ -42,6 +42,9 @@ import scala.util.Failure
 import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
+import gwen.core.node.FeatureSet
+import java.io.File
+import gwen.core.node.gherkin.TagFilter
 
 /**
   * Launches a gwen engine.
@@ -87,16 +90,26 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
             executeFeatureUnits(options, stream.flatten, ctxOpt)
           case _ =>
             (EvalStatus {
-              if (metaFiles.nonEmpty) {
-                val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, None, options.tagFilter)
+              val replUnitOpt = if (!options.batch && options.features.isEmpty) {
+                ctxOpt flatMap { ctx =>
+                  options.dataFile flatMap { file => 
+                    Some(FeatureSet(FeatureUnit(Root, new File("."), Nil, None, new TagFilter(Nil)), file).next)
+                  }
+                }
+              } else None
+              val unitOpt = if (metaFiles.nonEmpty) {
+                Some(FeatureUnit(Root, metaFiles.head, metaFiles.tail, replUnitOpt.flatMap(_.dataRecord), options.tagFilter))
+              } else {
+                replUnitOpt
+              }
+              unitOpt map { unit => 
+                val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, replUnitOpt.flatMap(_.dataRecord), options.tagFilter)
                 ctxOpt flatMap { ctx =>
                   interpretUnit(unit, ctx) map { result =>
                     result.evalStatus
                   }
-                } toList
-              } else {
-                Nil
-              }
+                } toList 
+              } getOrElse Nil
             }) tap { _ =>
               if (options.features.nonEmpty) {
                 logger.warn("No features found in specified files and/or directories!")

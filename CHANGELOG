@@ -1,3 +1,8 @@
+3.28.3
+======
+Sep 28, 2022
+- Load first record of CSV file passed into `-i/--input-data` option when launching Gwen in REPL mode
+
 3.28.2
 ======
 Sep 14, 2022

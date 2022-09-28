@@ -66,7 +66,7 @@ trait UnitEngine[T <: EvalContext]
     * @param ctx the evaluation context
     */
   private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[SpecResult] = {
-    Option(unit.featureFile).filter(_.exists()) map { file =>
+    Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
           unit.tagFilter.filter(pspec) match {
@@ -86,7 +86,9 @@ trait UnitEngine[T <: EvalContext]
           }
       }
     } getOrElse {
-      logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}")
+      if (unit.featureFile.isFile) {
+        logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}")
+      }
       None
     }
   }
