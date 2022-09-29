@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.28.4"
+val gwenVersion = "3.28.5"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Automation and robotics for Gherkin",
-  scalaVersion := "3.1.2",
+  scalaVersion := "3.2.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -75,7 +75,8 @@ lazy val mainDependencies = {
     "com.epam.reportportal" % "commons-model" % rpCommon,
     "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
       ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
-      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
+      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver"),
+      ExclusionRule(organization = "org.scala-lang", name = "scala-library")
     ),
     "org.fusesource.jansi" % "jansi" % jansi
   ) ++ mainOverrides

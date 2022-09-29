@@ -282,9 +282,9 @@ trait DetaiFormatter {
           if (!background.evalStatus.isFailed) {
             a(`class` := s"inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${parent.uuid}-${background.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := s"${parent.uuid}-${background.uuid}",
               raw(escapeHtml(background.name)),
-            ),
+            )
           } else {
-            raw(escapeHtml(background.name)),
+            raw(escapeHtml(background.name))
           },
           div(id := s"${parent.uuid}-${background.uuid}", `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
             formatDescriptionLines(background.description, Some(status)),
