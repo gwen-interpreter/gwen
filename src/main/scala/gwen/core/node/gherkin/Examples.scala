@@ -17,6 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core.Errors
+import gwen.core.Formatting
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
@@ -115,9 +116,9 @@ object Examples {
       examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      (header.getLocation.getLine, header.getCells.asScala.toList.map(_.getValue)) ::
+      (header.getLocation.getLine, header.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue))) ::
         body.iterator.asScala.toList.map { row =>
-          (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
+          (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
         },
       None,
       Nil
