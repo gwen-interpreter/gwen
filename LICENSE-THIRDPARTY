@@ -3,8 +3,8 @@ LICENSE-THIRDPARTY
 
 Dependency                                               | Version     | License
 -------------------------------------------------------- | ----------- | -----------------------------------------------------------------------------
-com.epam.reportportal           client-java              | 5.1.11      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.epam.reportportal           commons-model            | 5.7.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.epam.reportportal           client-java              | 5.0.22      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+com.epam.reportportal           commons-model            | 5.3.3       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.fasterxml.jackson.core      jackson-annotations      | 2.13.4      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.fasterxml.jackson.core      jackson-core             | 2.13.4      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.fasterxml.jackson.core      jackson-databind         | 2.13.4      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -20,13 +20,6 @@ com.jayway.jsonpath             json-path                | 2.7.0       | [Apache
 com.lihaoyi                     geny_3                   | 1.0.0       | [MIT](https://github.com/com-lihaoyi/geny/blob/master/LICENSE)
 com.lihaoyi                     scalatags_3              | 0.12.0      | [MIT](https://github.com/com-lihaoyi/scalatags/blob/master/LICENSE)
 com.lihaoyi                     sourcecode_3             | 0.3.0       | [MIT](https://github.com/com-lihaoyi/sourcecode/blob/master/LICENSE)
-com.squareup.okhttp3            logging-interceptor      | 3.14.9      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.okhttp3            okhttp                   | 3.14.9      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.okio               okio                     | 1.17.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          adapter-rxjava2          | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          converter-jackson        | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          converter-scalars        | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          retrofit                 | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.typesafe                    config                   | 1.4.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 com.typesafe.scala-logging      scala-logging_3          | 3.9.5       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 commons-codec                   commons-codec            | 1.15        | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)

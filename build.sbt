@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.28.6"
+val gwenVersion = "3.28.7"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -52,8 +52,8 @@ lazy val mainDependencies = {
   val jodaTime = "2.11.2"
   val scalaTags = "0.12.0"
   val htmlCleaner = "2.26"
-  val rpCommon = "5.7.0"
-  val rpClientJava = "5.1.11"
+  val rpCommon = "5.3.3"
+  val rpClientJava = "5.0.22"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 

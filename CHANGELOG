@@ -1,4 +1,4 @@
-3.28.6
+3.28.7
 ======
 Sep 29, 2022
 - Update runtime dependencies
@@ -9,8 +9,6 @@ Sep 29, 2022
   - Update scopt from v4.0.1 to 4.1.0
   - Update jodaTime v2.10.14 to v2.11.2
   - Update scalatags from v0.11.1 to v0.12.0
-  - Update rpCommon from v5.3.3 to v5.7.0
-  - Update rpClientJava from v5.0.22 to 5.1.11
   - Update jackson-databind from v2.13.3 to v2.13.4
   - Update tika-core from v1.28.4 to v1.28.5
 - Update test dependencies
