@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.28.5"
+val gwenVersion = "3.28.6"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -39,21 +39,21 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "23.0.1"
+  val cucumberGherkin = "24.0.0"
   val scalaLogging = "3.9.5"
-  val slf4j = "1.7.32"
-  val slf4jLog4j = "2.17.1"
-  val scopt = "4.0.1"
+  val slf4j = "1.7.36"
+  val slf4jLog4j = "2.19.0"
+  val scopt = "4.1.0"
   val jline = "2.14.6"
   val commonCodec = "1.15"
   val commonsText = "1.9"
   val scalaCSV = "1.3.10"
   val jsonPath = "2.7.0"
-  val jodaTime = "2.10.14"
-  val scalaTags = "0.11.1"
+  val jodaTime = "2.11.2"
+  val scalaTags = "0.12.0"
   val htmlCleaner = "2.26"
-  val rpCommon = "5.3.3"
-  val rpClientJava = "5.0.22"
+  val rpCommon = "5.7.0"
+  val rpClientJava = "5.1.11"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 
@@ -75,35 +75,36 @@ lazy val mainDependencies = {
     "com.epam.reportportal" % "commons-model" % rpCommon,
     "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
       ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
-      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver"),
-      ExclusionRule(organization = "org.scala-lang", name = "scala-library")
+      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
     ),
     "org.fusesource.jansi" % "jansi" % jansi
   ) ++ mainOverrides
 }
 
 lazy val mainOverrides = {
-  val jacksonDataBind = "2.13.3"
-  val tikaCore = "1.28.4"
+  val jacksonDataBind = "2.13.4"
+  val tikaCore = "1.28.5"
   val guava = "31.1-jre"
+  val scala2 = "2.13.9"
 
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
     "org.apache.tika" % "tika-core" % tikaCore,
-    "com.google.guava" % "guava" % guava
+    "com.google.guava" % "guava" % guava,
+    "org.scala-lang" % "scala-library" % scala2
   )
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.11"
-  val scalaTestPlusMockito = "3.2.10.0"
-  val mockitoCore = "3.12.4"
-  val h2 = "1.4.200"
+  val scalaTest = "3.2.14"
+  val scalaTestPlusMockito = "3.2.11.0"
+  val mockitoCore = "4.8.0"
+  val h2 = "2.1.214"
   // val slick = "3.3.3"
 
   Seq(
     "org.scalatest" %% "scalatest" % scalaTest,
-    "org.scalatestplus" %% "mockito-3-4" % scalaTestPlusMockito,
+    "org.scalatestplus" %% "mockito-4-2" % scalaTestPlusMockito,
     "org.mockito" % "mockito-core" % mockitoCore,
     "com.h2database" % "h2" % h2,
     // TODO: uncomment and re-enable SQLSupportTest once slick releases a Scala 3-compatible version
