@@ -39,7 +39,7 @@ class CSVLookup[T <: EvalContext](column: String, name: String, filepath: Option
       val file = new File(filepath.getOrElse(s"${ctx.getBoundReferenceValue(s"${filpathRef.get} file")}"))
       if (FileIO.isCsvFile(file)) {
         if (!file.exists()) Errors.missingFileError(file)
-        val records = CSVReader.open(file).iterator.toList
+        val records = CSVRecords.list(file)
         val table = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }

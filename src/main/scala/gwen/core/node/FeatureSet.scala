@@ -16,12 +16,11 @@
 
 package gwen.core.node
 
+import gwen.core.CSVRecords
 import gwen.core.state.DataRecord
 
 import scala.util.chaining._
 
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.defaultCSVFormat
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
@@ -32,9 +31,8 @@ import java.io.File
  */
 class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit] with LazyLogging  {
 
-  private def ignoreEmpty(rec: Seq[String]) = rec.filter(_.trim.nonEmpty).nonEmpty
-  private val totalRecs = CSVReader.open(dataFile).all().filter(ignoreEmpty).size - 1
-  private val dataFeed = CSVReader.open(dataFile).iterator.filter(ignoreEmpty).zipWithIndex
+  private val totalRecs = CSVRecords.list(dataFile).size - 1
+  private val dataFeed = CSVRecords.iterator(dataFile).zipWithIndex
   private val headers = if (dataFeed.hasNext) dataFeed.next()._1 else Nil
 
   /** Checks if there are more records in the data feed. */

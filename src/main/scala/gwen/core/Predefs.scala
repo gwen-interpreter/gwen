@@ -26,6 +26,8 @@ import com.typesafe.scalalogging.Logger
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
+import com.github.tototoshi.csv.CSVReader
+import com.github.tototoshi.csv.defaultCSVFormat
 import org.htmlcleaner.HtmlCleaner
 import org.htmlcleaner.PrettyHtmlSerializer
 
@@ -464,4 +466,14 @@ object Wait {
       lock.release()
     }
   }
+}
+
+/** CSV record access */
+object CSVRecords {
+
+  private def ignoreEmpty(rec: Seq[String]) = rec.filter(_.trim.nonEmpty).nonEmpty
+
+  def list(dataFile: File): List[List[String]] = CSVReader.open(dataFile).all().filter(ignoreEmpty)
+  def iterator(dataFile: File): Iterator[Seq[String]] = CSVReader.open(dataFile).iterator.filter(ignoreEmpty)
+
 }

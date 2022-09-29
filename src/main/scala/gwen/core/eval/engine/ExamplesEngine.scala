@@ -36,8 +36,6 @@ import gwen.core.status.Pending
 
 import scala.util.chaining._
 
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.defaultCSVFormat
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
@@ -100,7 +98,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
         if (!FileIO.isCsvFile(file)) Errors.unsupportedDataFileError(examplesTag)
-        val allRecords = CSVReader.open(file).iterator.toList
+        val allRecords = CSVRecords.iterator(file).toList
         val records = if(ctx.options.dryRun) {
           val limit = GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records`
           if (limit == Int.MaxValue) allRecords

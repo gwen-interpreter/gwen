@@ -1,3 +1,8 @@
+3.28.4
+======
+Sep 29, 2022
+- Ignore empty CSV records in examples and lookups
+
 3.28.3
 ======
 Sep 28, 2022
