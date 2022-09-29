@@ -1,3 +1,8 @@
+3.28.8
+Sep 30, 2022
+- Fix issue gwen-interpreter/gwen-web#96:
+  - Escape new line characters from data table cells
+
 3.28.7
 ======
 Sep 29, 2022

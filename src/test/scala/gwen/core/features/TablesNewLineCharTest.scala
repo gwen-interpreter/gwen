@@ -24,7 +24,7 @@ import gwen.core.status._
 
 import java.io.File
 
-class AdhocFeatureTest extends BaseTest {
+class TablesNewLineCharTest extends BaseTest {
 
   val feature = "src/test/features/tables/NewLineCharTable.feature"
 

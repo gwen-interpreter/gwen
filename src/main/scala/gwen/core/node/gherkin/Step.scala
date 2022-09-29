@@ -235,7 +235,7 @@ object Step {
   def apply(file: Option[File], step: cucumber.Step): Step = {
     val dataTable = step.getDataTable.toScala map { dt =>
       dt.getRows.asScala.toList map { row =>
-        (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(_.getValue))
+        (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
       }
     } getOrElse Nil
     val docString = step.getDocString.toScala.filter(_.getContent().trim.length > 0) map { ds =>
