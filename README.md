@@ -59,26 +59,22 @@ Maintainers
 - [Brady Wood](https://github.com/bradywood)
 - [Jacob Juric](https://github.com/Sorixelle)
 
-Contributors
-------------
+Credits
+-------
 
-We thank the following contributors and active users for helping to make Gwen better.
+We thank the following people and projects for helping to make Gwen better.
 
 ### Supporters
 
-- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback advice
+- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback and advice
 - [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/img/gwen-logo.png)
 
-### Code Contributors
-
-The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests that have been merged:
+### Code contributors
 
 - [Jacob Juric](https://github.com/TheReturningVoid)
 | [Alexandru Cuciureanu](https://github.com/acuciureanu)
 
-### Active Users
-
-The following users raised issues or requests that have been addressed:
+### Users who raised issues
 
 - [Chris Leong](https://github.com/aztheque)
 | [Martino Turturiello](https://github.com/martino-jelli)
@@ -89,12 +85,12 @@ The following users raised issues or requests that have been addressed:
 | [Rahul9844](https://github.com/Rahul9844)
 | [rkevin99](https://github.com/rkevin99)
 | [dfriquet](https://github.com/dfriquet)
+| [sse2ebdd](https://github.com/sse2ebdd)
 
-Credits
--------
+### Projects we heavily rely on
+
 - [Cucumber/Gherkin](https://docs.cucumber.io/gherkin/reference/)
 - [Scopt](https://github.com/scopt/scopt)
 - [JLine](https://github.com/jline/jline2)
+- [Scalatags](https://github.com/com-lihaoyi/scalatags)
 - [Bootstrap](https://getbootstrap.com/)
-- [JQuery](https://jquery.com/)
-- [Reel](https://github.com/pisi/Reel)
