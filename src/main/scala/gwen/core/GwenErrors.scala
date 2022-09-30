@@ -250,15 +250,15 @@ object Errors {
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 
-    extends GwenException(s"Strict behavior rules violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)} (set your gwen.behaviour.rules setting to lenient to disable this check)")
+    extends GwenException(s"Strict behavior rules violation: Given-When-Then order not satisfied by steps in ${node.nodeType.toString}${at(node.sourceRef)} (set your gwen.behavior.rules setting to lenient to disable this check)")
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends StepException(step, s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected. StepDef has @$actual annotation${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))}. (set your gwen.behaviour.rules setting to lenient to disable this check)")
+    extends StepException(step, s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected. StepDef has @$actual annotation${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))}. (set your gwen.behavior.rules setting to lenient to disable this check)")
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 
-    extends StepDefException(stepDef, s"Strict behavior rules violation: Missing @Context, @Action, or @Assertion annotation on StepDef (set your gwen.behaviour.rules setting to lenient to disable this check)")
+    extends StepDefException(stepDef, s"Strict behavior rules violation: Missing @Context, @Action, or @Assertion annotation on StepDef (set your gwen.behavior.rules setting to lenient to disable this check)")
 
   /** Thrown when a keyword is unknown for a given language dialect. */
   class KeywordDialectException(language: String, keyword: String) extends GwenException(s"Unsupported or unknown keyword: $keyword (language=$language)")
