@@ -66,7 +66,7 @@ We thank the following contributors and active users for helping to make Gwen be
 
 ### Supporters
 
-- [Arun Datta](https://github.com/SAINFY) gave us valuable advice before we open sourcedg
+- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback advice
 - [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/img/gwen-logo.png)
 
 ### Code Contributors
