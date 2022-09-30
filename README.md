@@ -57,6 +57,7 @@ Maintainers
 
 - [Branko Juric](https://github.com/bjuric)
 - [Brady Wood](https://github.com/bradywood)
+- [Jacob Juric](https://github.com/Sorixelle)
 
 Contributors
 ------------
