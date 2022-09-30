@@ -64,6 +64,10 @@ Contributors
 
 We thank the following contributors and active users for helping to make Gwen better.
 
+### Supporters
+
+[Arun Datta](https://github.com/SAINFY) gave us valuable advice before we open sourced.
+
 ### Code Contributors
 
 The following [contributors](https://github.com/gwen-interpreter/gwen/graphs/contributors) submitted pull requests that have been merged:
