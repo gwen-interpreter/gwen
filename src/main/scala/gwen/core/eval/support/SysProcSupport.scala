@@ -30,15 +30,14 @@ trait SysProcSupport {
   def callSysProc(sysproc: String, delimiter: Option[String], unix: Boolean): String = {
     Try {
       SensitiveData.withValue(sysproc) { sproc =>
-        val cmd = delimiter match {
+        delimiter match {
           case None => 
-              if (unix) Seq("/bin/sh", "-c", sproc) else Seq(sproc)
+              if (unix) Seq("/bin/sh", "-c", sproc).!! else sproc.!!
           case Some(delim) => 
             SensitiveData.withValue(delim) { d =>
-              if (unix) (Seq("/bin/sh", "-c") ++ sproc.split(d).toSeq) else sproc.split(d).toSeq
+              if (unix) (Seq("/bin/sh", "-c") ++ sproc.split(d).toSeq).!! else sproc.split(d).toSeq.!!
             }
         }
-        cmd.!!
       }
     } match {
       case Success(output) => Option(output).map(_.trim).getOrElse("")
