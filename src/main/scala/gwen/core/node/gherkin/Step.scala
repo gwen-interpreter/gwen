@@ -242,10 +242,10 @@ object Step {
       (Long2long(ds.getLocation.getLine), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
     }
     val (name, tagList, message): (String, List[Tag], Option[String]) = {
-      val (n, t) = step.getText.trim match {
+      val (n, t) = Formatting.escapeNewLineChars(step.getText.trim) match {
         case r"""((?:@\w+\s+)+)$ts(.*)$name""" => 
           (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
-        case _ => (step.getText, Nil)
+        case _ => (Formatting.escapeNewLineChars(step.getText), Nil)
       }
       n match {
         case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
