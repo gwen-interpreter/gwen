@@ -14,7 +14,7 @@ lazy val gwen = (project in file("."))
 
 lazy val projectSettings = Seq(
   name := "gwen",
-  description := "Automation and robotics for Gherkin",
+  description := "Core Gwen interpreter",
   scalaVersion := "3.2.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
