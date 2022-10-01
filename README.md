@@ -1,7 +1,7 @@
 Gwen
 ====
 
-[Documentation](https://gweninterpreter.org)
+[Documentation](https://gweninterpreter.org/docs)
 
 Gwen is a [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with behaviour defined in feature specifications. Automation is achieved through Gherkin bindings called meta specs which you compose with the Gwen DSL and maintain alongside your feature files. 
 
