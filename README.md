@@ -62,11 +62,6 @@ Maintainers
 Credits
 -------
 
-### Supporters
-
-- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback and advice
-- [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/img/gwen-logo.png)
-
 ### Code contributors
 
 - [Jacob Juric](https://github.com/TheReturningVoid)
@@ -83,7 +78,20 @@ Credits
 | [Rahul9844](https://github.com/Rahul9844)
 | [rkevin99](https://github.com/rkevin99)
 | [dfriquet](https://github.com/dfriquet)
+| [Priyanka Chaturvedi](https://github.com/priyankachaturvedi30)
+| [Jacob Juric](https://github.com/Sorixelle)
+| [Alban Minassian](https://github.com/AlbanMinassian)
+| [DK-India](https://github.com/DK-India)
 | [sse2ebdd](https://github.com/sse2ebdd)
+
+### Supporters
+
+- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback and advice
+- [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/docs/logo)
+
+### Sponsors
+
+- [Origin RetailX](https://github.com/origin-retailx)
 
 ### Projects we heavily rely on
 
