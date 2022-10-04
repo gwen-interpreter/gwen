@@ -26,7 +26,7 @@ import java.io.File
 
 class AdhocFeatureTest extends BaseTest {
 
-  val feature = "src/test/features/tables/NewLineCharTable.feature"
+  val feature = "src/test/features/escaping/NewLineEscapes.feature"
 
   val interpreter = GwenInterpreter()
 
