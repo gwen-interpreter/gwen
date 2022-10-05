@@ -84,15 +84,6 @@ Credits
 | [DK-India](https://github.com/DK-India)
 | [sse2ebdd](https://github.com/sse2ebdd)
 
-### Supporters
-
-- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback and advice
-- [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/docs/logo)
-
-### Sponsors
-
-- [Origin RetailX](https://github.com/origin-retailx)
-
 ### Projects we heavily rely on
 
 - [Cucumber/Gherkin](https://docs.cucumber.io/gherkin/reference/)
@@ -100,3 +91,8 @@ Credits
 - [JLine](https://github.com/jline/jline2)
 - [Scalatags](https://github.com/com-lihaoyi/scalatags)
 - [Bootstrap](https://getbootstrap.com/)
+
+### Supporters
+
+- [Arun Datta](https://github.com/SAINFY) for giving us valuable feedback and advice
+- [Nascent Creative](https://nascentcreative.com.au/) for developing our [logo](https://gweninterpreter.org/docs/logo)
