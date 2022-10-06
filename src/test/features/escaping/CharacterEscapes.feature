@@ -1,4 +1,4 @@
-Feature: New line escapes
+Feature: Characters escapes
 
   @DataTable(header="top")
   @StepDef
@@ -77,3 +77,12 @@ Feature: New line escapes
       And value2 should be "a\nb"
       And value3 should be "a\nb"
       And value4 should be "a\nb"
+
+  Scenario: Java escape chars
+    Given value is "\t\b\n\r\f\'\"\\"
+     Then value should be "\t\b\n\r\f\'\"\\"
+
+  Scenario: Java double escape chars
+    Given value is "\\t\\b\\n\\r\\f\\'\\"\\\\"
+     Then value should be "\\t\\b\\n\\r\\f\\'\\"\\\\"
+
