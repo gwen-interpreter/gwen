@@ -1,3 +1,8 @@
+3.28.11
+=======
+Oct 6, 2022
+- Remove scala2 v2.13.9 override which breaks system process on directories with trailing slashes on windows (pick up v2.13.8 instead). Fixes issue gwen-interpreter/gwen-web#98
+
 3.28.10
 =======
 Sep 30, 2022

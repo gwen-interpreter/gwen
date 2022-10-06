@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.28.10"
+val gwenVersion = "3.28.11"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -85,13 +85,11 @@ lazy val mainOverrides = {
   val jacksonDataBind = "2.13.4"
   val tikaCore = "1.28.5"
   val guava = "31.1-jre"
-  val scala2 = "2.13.9"
 
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
     "org.apache.tika" % "tika-core" % tikaCore,
-    "com.google.guava" % "guava" % guava,
-    "org.scala-lang" % "scala-library" % scala2
+    "com.google.guava" % "guava" % guava
   )
 }
 
