@@ -245,14 +245,15 @@ object HtmlReportFormatter {
       tr(
         td(width := "100px",
           a(href := info.gwenHome,
-            img(src := s"${rootPath}resources/img/gwen-logo-78x110.png", border := "0")
+            img(src := s"${rootPath}resources/img/gwen-logo.png", border := "0", width := "120px")
           )
         ),
         td(
           h3(
             raw(escapeHtml(heading))
           ),
-          path
+          escapeHtml(path),
+          raw("&nbsp;")
         ),
         td(attr("align") := "right",
           h3(" "),

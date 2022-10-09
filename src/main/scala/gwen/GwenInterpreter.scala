@@ -180,7 +180,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
          |  \__, | \_/\_/ \___|_| |_|   `    
          |  |___/                            
          |
-             |""".stripMargin + intro + engine.implName + " v" + engine.implVersion + engine.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
+         |""".stripMargin + intro + engine.implName + " v" + engine.implVersion + engine.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
          |gweninterpreter.org
          |""".stripMargin
       )
@@ -191,9 +191,9 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
            | ╭──────────────────────────────────────────────────────────╮
            | │  Gwen Workspaces DEPRECATED!                             │
            | │                                                          │
-           | │  Gwen Workspaces are deprecated in favor of JS projects  │
-           | │  in Gwen 3. Please visit the migration page for options  │
-           | │  at https://gweninterpreter.org/docs/migration/gwen3     │
+           | │  Gwen Workspaces are deprecated in favor of projects in  │
+           | │  Gwen 3. Please visit the migration page for options at  │
+           | │  - https://gweninterpreter.org/docs/migration/gwen3      │
            | ╰──────────────────────────────────────────────────────────╯""".stripMargin
       )
     }
