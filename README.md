@@ -1,6 +1,8 @@
 Gwen
 ====
 
+<img src="https://gweninterpreter.org/img/gwen-logo-cw--rc.png" width="170"/> <br />
+
 Core [Gherkin](https://cucumber.io/docs/gherkin/reference/) interpreter for driving automation with behaviour defined in feature specifications.
 
 See also: 
