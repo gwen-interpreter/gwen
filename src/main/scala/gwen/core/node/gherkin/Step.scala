@@ -249,7 +249,6 @@ object Step {
       }
       n match {
         case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
-        case r"""(.+)$s1: "(.+)$m"\s*(.*)?$s2""" if !m.contains('"') => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
         case _ => (n, t, None)
       }
     }

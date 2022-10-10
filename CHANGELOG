@@ -1,3 +1,8 @@
+3.28.13
+=======
+Oct 10, 2022
+- Remove experimental `: "<message>"` syntax for custom assertion messages. Use `@Message("<message>")` annotation instead. Fixes issue gwen-interpreter/gwen-web#99
+  
 3.28.12
 =======
 Oct 9, 2022

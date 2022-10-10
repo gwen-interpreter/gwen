@@ -41,6 +41,7 @@ class StepTest extends BaseTest with Matchers with GherkinParser with TestModel 
       parse(s"$keyword I contain a trailing space ").get                            should be (Step(keyword, "I contain a trailing space"))
       parse(s"$keyword I contain an embedded double  space").get                    should be (Step(keyword, "I contain an embedded double  space"))
       parse(s"$keyword I contain an embedded double  space and triple   space").get should be (Step(keyword, "I contain an embedded double  space and triple   space"))
+      parse(s"""$keyword INFO: "Testing"""").get                                    should be (Step(keyword, """INFO: "Testing""""))
     }
     
   }

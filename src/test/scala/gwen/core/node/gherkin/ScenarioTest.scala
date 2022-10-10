@@ -51,6 +51,7 @@ class ScenarioTest extends BaseTest with Matchers with GherkinParser with TestMo
       
       parse(s"Scenario:name\n$step1").get   should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
       parse(s"Scenario: name\n$step1").get  should be (Scenario(List[Tag](), "name", Nil, None, List(step1)))
+      parse(s"Scenario: INFO:<info>\n$step1").get   should be (Scenario(List[Tag](), "INFO:<info>", Nil, None, List(step1)))
       
       parse(s"Scenario:name\nI am a test scenario\n$step1").get   should be (Scenario(List[Tag](), "name", List("I am a test scenario"), None, List(step1)))
       parse(s"Scenario: name\nI am another\nmultiline\n\nscenario\n$step1").get  should be (Scenario(List[Tag](), "name", List("I am another", "multiline", "", "scenario"), None, List(step1)))
