@@ -42,6 +42,7 @@ trait GherkinParser {
   def parseSpec(specFile: File): Try[Spec] = {
     try {
       val spec = Source.fromFile(specFile).mkString
+      if (spec.trim.isEmpty) Errors.syntaxError(s"Empty specification in file: $specFile")
       val isMeta = FileIO.isMetaFile(specFile)
       val featureStr = spec match {
         case languageSyntax(lang) =>

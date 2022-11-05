@@ -1,3 +1,8 @@
+3.28.15
+=======
+Nov 5, 2022
+- Raise error when attempt is name to parse empty feature file
+
 3.28.14
 =======
 Oct 14, 2022
