@@ -2,6 +2,7 @@
 =======
 Nov 5, 2022
 - Raise error when attempt is name to parse empty feature file
+- Raise error when attempt is made to process feature with no steps
 
 3.28.14
 =======

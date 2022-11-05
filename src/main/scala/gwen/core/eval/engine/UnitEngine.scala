@@ -69,6 +69,7 @@ trait UnitEngine[T <: EvalContext]
     Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
+          if (pspec.steps.isEmpty) Errors.syntaxError(s"No steps found in feature file: $file")
           unit.tagFilter.filter(pspec) match {
             case Some(spec) =>
               Some(evaluateSpec(unit, spec, loadedMeta, ctx))
