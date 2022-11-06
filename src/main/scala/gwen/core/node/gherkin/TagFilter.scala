@@ -45,7 +45,7 @@ class TagFilter(tagFilters: List[(Tag, Boolean)]) {
       def rules = spec.rules map { rule =>
         rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
       }
-      if (scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
+      if (spec.steps.nonEmpty && scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
         None
       } else {
         Some(spec.copy(

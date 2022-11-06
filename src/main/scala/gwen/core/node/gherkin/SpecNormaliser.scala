@@ -48,7 +48,7 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
     val interpolator: String => Option[String] = dataRecord.map(_.interpolator).getOrElse(String => None)
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
-    Spec(
+    val normalisedSpec = Spec(
       dataRecord map { record =>
         spec.feature.copy(
           withTags = spec.feature.tags map { tag => 
@@ -75,6 +75,8 @@ trait SpecNormaliser extends BehaviorRules with Interpolator {
       },
       Nil
     )
+    if (!normalisedSpec.isMeta && normalisedSpec.steps.isEmpty) Errors.syntaxError(s"No steps found in feature${normalisedSpec.specFile.map(f => s" file: $f").getOrElse("")}")
+    normalisedSpec
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType): Unit = {

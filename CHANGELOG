@@ -1,9 +1,15 @@
-3.28.15
+3.28.16
 =======
 Nov 6, 2022
-- Raise error when attempt is name to parse empty feature file
+- Raise error when attempt is made to parse empty feature file
 - Raise error when attempt is made to process feature with no steps
 - Fix resolve of nested masked settings
+- At least one input required for dry run
+
+3.28.15
+=======
+Oct 17, 2022
+- Align Gwen logo in HTML reports
 
 3.28.14
 =======

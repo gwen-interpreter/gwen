@@ -87,7 +87,11 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
         val featureStream = new FeatureStream(metaFiles, options.tagFilter)
         featureStream.readAll(options.features, options.dataFile) match {
           case stream @ _ #:: _ =>
-            executeFeatureUnits(options, stream.flatten, ctxOpt)
+            val flatStream = stream.flatten
+            if (options.dryRun && flatStream.isEmpty) {
+              Errors.invocationError("At least one input required for dry run")
+            }
+            executeFeatureUnits(options, flatStream, ctxOpt)
           case _ =>
             (EvalStatus {
               val replUnitOpt = if (!options.batch && options.features.isEmpty) {
