@@ -34,6 +34,7 @@ import scala.util.chaining._
 import java.io.File
 import java.io.FileReader
 import java.util.Properties
+import java.util.Map.Entry
 
 /**
   * Provides access to enviornment variables and system properties loaded from JSON, HOCON or properties files. 
@@ -147,21 +148,26 @@ object Settings extends LazyLogging {
     }
 
     // resolve and store all settings
-    props.entrySet.asScala.foreach { entry =>
-      val name = entry.getKey.asInstanceOf[String]
-      if (prime || !sys.props.contains(name)) {
-        val rawValue = entry.getValue.toString
-        val value = SensitiveData.parse(name, resolve(rawValue, props)) map { (_, mValue) => 
-          sys.props -= name
-          mValue
-        } getOrElse {
-          rawValue
-        }
-        val rValue = resolve(value, props)
-        Settings.add(name, rValue, overrideIfExists = true)
-      }
+    props.entrySet.asScala.flatMap { entry =>
+      Try(resolveAndStore(prime, entry, props)).map(_ => None).getOrElse(Some(entry))
+    } foreach { entry => 
+      resolveAndStore(prime, entry, props)
     }
-    
+  }
+
+  private def resolveAndStore(prime: Boolean, entry: Entry[Object, Object], props: Properties): Unit = {
+    val name = entry.getKey.asInstanceOf[String]
+    if (prime || !sys.props.contains(name)) {
+      val rawValue = entry.getValue.toString
+      val value = SensitiveData.parse(name, resolve(rawValue, props)) map { (_, mValue) => 
+        sys.props -= name
+        mValue
+      } getOrElse {
+        rawValue
+      }
+      val rValue = resolve(value, props)
+      Settings.add(name, rValue, overrideIfExists = true)
+    }
   }
 
    /**

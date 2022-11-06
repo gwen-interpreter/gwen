@@ -202,6 +202,25 @@ class SettingsTest extends BaseTest with Matchers {
     }
   }
 
+  "nested masked conf setting" should "should resolve" in {
+    val confFile = new File(targetDir, "nested-masked.conf")
+    confFile.delete()
+    confFile.writeText(
+      """|my {
+         |  website {
+         |    "token:masked" = "secret"
+         |    url = "https://host?token=${my.website.token}"
+         |  }
+         |}
+         |""".stripMargin
+    )
+    Settings.exclusively {
+      Settings.init(confFile)
+      Settings.get("my.website.token").contains("*****") should be (true)
+      Settings.get("my.website.url").contains("https://host?token=*****") should be (true)
+    }
+  }
+
   "masked json setting" should "yield masked value" in {
     val confFile = new File(targetDir, "masked.json")
     confFile.delete()
