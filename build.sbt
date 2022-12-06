@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.28.16"
+val gwenVersion = "3.28.17"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.2.0",
+  scalaVersion := "3.2.1",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -39,17 +39,17 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "24.0.0"
+  val cucumberGherkin = "25.0.2"
+  val scopt = "4.1.0"
   val scalaLogging = "3.9.5"
+  val jline = "2.14.6"
   val slf4j = "1.7.36"
   val slf4jLog4j = "2.19.0"
-  val scopt = "4.1.0"
-  val jline = "2.14.6"
   val commonCodec = "1.15"
-  val commonsText = "1.9"
+  val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
   val jsonPath = "2.7.0"
-  val jodaTime = "2.11.2"
+  val jodaTime = "2.12.2"
   val scalaTags = "0.12.0"
   val htmlCleaner = "2.26"
   val rpCommon = "5.3.3"
@@ -96,7 +96,7 @@ lazy val mainOverrides = {
 lazy val testDependencies = {
   val scalaTest = "3.2.14"
   val scalaTestPlusMockito = "3.2.11.0"
-  val mockitoCore = "4.8.0"
+  val mockitoCore = "4.9.0"
   val h2 = "2.1.214"
   // val slick = "3.3.3"
 
