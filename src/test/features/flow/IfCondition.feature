@@ -31,7 +31,7 @@ Feature: If Conditionals
   Scenario: Perform this 2
     Given the target is "this"
       And this condition is defined by javascript ""${the target}" === "this""
-     When I conditionally perform this
+     When I conditionally perform this if that condition is not defined
      Then the called step should be "this step"
 
   Scenario: Perform that
@@ -49,7 +49,7 @@ Feature: If Conditionals
 
   Scenario: Do perform this (negated)
     Given the called step is "none"
-      And this condition is "true"
+      And this condition is "true" if the called step is defined
      When I perform this if not this condition
      Then the called step should be "none"
 

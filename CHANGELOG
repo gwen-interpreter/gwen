@@ -1,3 +1,9 @@
+3.29.0
+======
+Dec 9, 2022
+- Add new DSL for conditionally evaluating steps based on whether or not a binding is defined
+  - `<step> if <attribute> is[ not] defined`
+
 3.28.17
 =======
 Dec 6, 2022

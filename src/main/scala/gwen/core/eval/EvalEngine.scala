@@ -65,6 +65,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new ForEachTableRecord(doStep, this))
       case r"""(.+?)$doStep for each (.+?)$entry in (.+?)$source delimited by "(.+?)"$delimiter""" =>
         Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
+      case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation defined""" =>
+        Some(new IfDefinedCondition(doStep, attribute, Option(negation).isDefined, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if !condition.contains('"') =>
