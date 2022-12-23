@@ -86,9 +86,9 @@ trait SummaryFormatter {
           "Results"
         ),
         div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
-          span(`class` := "pull-right grayed", style := "padding-right: 10px;",
+          span(`class` := "pull-right", style := "padding-right: 10px;",
             small(
-              s"Overhead: ${formatDuration(summary.overhead)}"
+              formatDuration(DurationOps.sum(summary.results.map(_.elapsedTime)))
             )
           ),
           table(width := "100%", attr("cellpadding") := "5",

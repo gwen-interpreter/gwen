@@ -59,7 +59,6 @@ class SpecResult(
   lazy val isMeta: Boolean = spec.specFile.exists(_.getName.endsWith(".meta"))
   lazy val summary = ResultsSummary(this)
   lazy val duration: Duration = evalStatus.duration
-  lazy val overhead: Duration = elapsedTime - duration - DurationOps.sum(metaResults.map(_.overhead))
   lazy val sustainedCount: Int = spec.sustainedCount
 
   def displayName: String = Option(spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
@@ -92,7 +91,7 @@ class SpecResult(
 
   private [result] lazy val stepCounts = EvalStatus.countsByType(spec.evalScenarios.flatMap(_.allSteps.map(_.evalStatus)))
 
-  override def toString: String = s"""[${Formatting.formatDuration(duration)}] ${evalStatus.keyword}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${Formatting.formatDuration(overhead)}] Overhead, [${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
+  override def toString: String = s"""[${Formatting.formatDuration(duration)}] ${evalStatus.keyword}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}, [${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
 
 }
 

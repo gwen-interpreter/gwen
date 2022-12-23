@@ -113,9 +113,9 @@ trait DetaiFormatter {
         raw(escapeHtml(result.spec.feature.name)),
         formatDescriptionLines(result.spec.feature.description, None),
         div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
-          span(`class` := "pull-right grayed", style := "padding-right: 10px;",
+          span(`class` := "pull-right", style := "padding-right: 10px;",
             small(
-              s"Overhead: ${formatDuration(result.overhead)}"
+              formatDuration(result.elapsedTime)
             )
           ),
           table(width := "100%", attr("cellpadding") := "5",

@@ -1,3 +1,8 @@
+3.29.1
+======
+Dec 23, 2022
+- Include lapsed time in HTML summaries and remove overhead times
+
 3.29.0
 ======
 Dec 9, 2022

@@ -48,7 +48,6 @@ case class ResultsSummary(
   private lazy val statuses = results.map(_.spec.evalStatus)
   lazy val evalStatus: EvalStatus = if (results.nonEmpty) EvalStatus(statuses) else Passed(0)
   lazy val resultsElapsedTime: Duration = DurationOps.sum(results.map(_.elapsedTime))
-  lazy val overhead: Duration = DurationOps.sum(results.map(_.overhead))
   lazy val featureCounts: Map[StatusKeyword, Int] = EvalStatus.countsByType(statuses)
   lazy val sustainedCount: Int = results.map(_.sustainedCount).sum
   
@@ -83,7 +82,6 @@ case class ResultsSummary(
 
   def statusString: String = {
     s"""|[${Formatting.formatDuration(resultsElapsedTime)}] ${evalStatus.keyword}${if (sustainedCount > 0) s" with ${sustainedCount} sustained error${if (sustainedCount > 1) "s" else ""}" else ""} ${evalStatus.emoticon}
-        |[${Formatting.formatDuration(overhead)}] Overhead
         |[${Formatting.formatDuration(elapsedTime)}] Elapsed, Started: $started, Finished: $finished""".stripMargin
   }
 
