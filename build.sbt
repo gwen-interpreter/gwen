@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.29.2"
+val gwenVersion = "3.29.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.2.1",
+  scalaVersion := "3.2.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -39,7 +39,7 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "25.0.2"
+  val cucumberGherkin = "26.0.3"
   val scopt = "4.1.0"
   val scalaLogging = "3.9.5"
   val jline = "2.14.6"
@@ -52,8 +52,8 @@ lazy val mainDependencies = {
   val jodaTime = "2.12.2"
   val scalaTags = "0.12.0"
   val htmlCleaner = "2.26"
-  val rpCommon = "5.3.3"
-  val rpClientJava = "5.0.22"
+  val rpCommon = "5.7.3"
+  val rpClientJava = "5.1.15"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 
@@ -82,13 +82,10 @@ lazy val mainDependencies = {
 }
 
 lazy val mainOverrides = {
-  val jacksonDataBind = "2.14.1"
-  val tikaCore = "1.28.5"
+  val jacksonDataBind = "2.14.2"
   val guava = "31.1-jre"
-
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
-    "org.apache.tika" % "tika-core" % tikaCore,
     "com.google.guava" % "guava" % guava
   )
 }
