@@ -17,6 +17,7 @@
 package gwen.core.report.html
 
 import gwen.core._
+import gwen.core.node.event.NodeEventDispatcher
 import gwen.core.report.ReportGenerator
 import gwen.core.report.html.format.SlideshowFormatter
 
@@ -31,22 +32,27 @@ import java.io.File
   */
 class HtmlSlideshowGenerator(options: GwenOptions, info: GwenInfo) extends ReportGenerator(HtmlSlideshowConfig, options, info) with SlideshowFormatter {
 
-  reportDir foreach { rdir =>
+  override def init(lifecycle: NodeEventDispatcher): Unit = {
 
-    // copy in JS files (if they don't already exist)
-    new File(rdir, "resources/js") tap { dir =>
-      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.reel-min.js", dir)
+    super.init(lifecycle)
+    
+    reportDir foreach { rdir =>
+
+      // copy in JS files (if they don't already exist)
+      new File(rdir, "resources/js") tap { dir =>
+        FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.reel-min.js", dir)
+      }
+
+      // copy in font files (if they don't already exist)
+      new File(rdir, "resources/fonts") tap { dir =>
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.eot", dir)
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.svg", dir)
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.ttf", dir)
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.woff", dir)
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
+      }
+
     }
-
-    // copy in font files (if they don't already exist)
-    new File(rdir, "resources/fonts") tap { dir =>
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.eot", dir)
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.svg", dir)
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.ttf", dir)
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.woff", dir)
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/fonts/glyphicons-halflings-regular.woff2", dir)
-    }
-
   }
 
 }

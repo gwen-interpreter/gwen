@@ -17,6 +17,7 @@
 package gwen.core.report.html
 
 import gwen.core._
+import gwen.core.node.event.NodeEventDispatcher
 import gwen.core.report.ReportGenerator
 import gwen.core.report.html.format.HtmlReportFormatter
 
@@ -32,28 +33,34 @@ import java.io.File
   */
 class HtmlReportGenerator(options: GwenOptions, info: GwenInfo) extends ReportGenerator(HtmlReportConfig, options, info) with HtmlReportFormatter {
 
-  reportDir foreach { rdir =>
+  override def init(lifecycle: NodeEventDispatcher): Unit = {
 
-    // copy in CSS files (if they don't already exist)
-    new File(rdir, "resources/css") tap { dir =>
-      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/gwen.css", dir)
-      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/bootstrap.min.css", dir)
-    }
+    super.init(lifecycle)
+    
+    reportDir foreach { rdir =>
 
-    // copy in JS files (if they don't already exist)
-    new File(rdir, "resources/js") tap { dir =>
-      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.min.js", dir)
-      FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/bootstrap.min.js", dir)
-    }
+      // copy in CSS files (if they don't already exist)
+      new File(rdir, "resources/css") tap { dir =>
+        FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/gwen.css", dir)
+        FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/css/bootstrap.min.css", dir)
+      }
 
-    // copy in image files (if they don't already exist)
-    new File(rdir, "resources/img") tap { dir =>
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo.png", dir)
-    }
+      // copy in JS files (if they don't already exist)
+      new File(rdir, "resources/js") tap { dir =>
+        FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/jquery.min.js", dir)
+        FileIO.copyClasspathTextResourceToFile("/gwen/core/report/html/js/bootstrap.min.js", dir)
+      }
 
-    // copy in index file
-    options.reportDir foreach { dir =>
-      FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/index.html", dir)
+      // copy in image files (if they don't already exist)
+      new File(rdir, "resources/img") tap { dir =>
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/img/gwen-logo.png", dir)
+      }
+
+      // copy in index file
+      options.reportDir foreach { dir =>
+        FileIO.copyClasspathBinaryResourceToFile("/gwen/core/report/html/index.html", dir)
+      }
+
     }
 
   }

@@ -1,3 +1,8 @@
+3.29.4
+======
+Feb 17, 2023
+- Defer initialisation of HTML report file resources until needed
+
 3.29.3
 ======
 Feb 16, 2023
