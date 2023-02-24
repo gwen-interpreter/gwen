@@ -1,3 +1,8 @@
+3.29.5
+======
+Feb 25, 2023
+- Only require at least one input for dry run when data input file is specified
+
 3.29.4
 ======
 Feb 17, 2023

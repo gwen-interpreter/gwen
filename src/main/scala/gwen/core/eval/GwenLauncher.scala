@@ -88,8 +88,8 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
         featureStream.readAll(options.features, options.dataFile) match {
           case stream @ _ #:: _ =>
             val flatStream = stream.flatten
-            if (options.dryRun && flatStream.isEmpty) {
-              Errors.invocationError("At least one input required for dry run")
+            if (options.dryRun && options.dataFile.nonEmpty && flatStream.isEmpty) {
+              Errors.invocationError("At least one input record required for dry run with data file")
             }
             executeFeatureUnits(options, flatStream, ctxOpt)
           case _ =>
