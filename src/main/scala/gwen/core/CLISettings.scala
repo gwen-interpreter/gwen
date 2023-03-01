@@ -97,7 +97,7 @@ object CLISettings extends LazyLogging {
     * -i/--input-data CLI option.
     */
   def `gwen.cli.options.inputData`: Option[File] = {
-    Settings.getList("gwen.cli.options.inputData", None, Some(conf)).headOption map { filepath => 
+    Settings.getOpt("gwen.cli.options.inputData", None, Some(conf)).headOption.filter(_.trim().size > 0) map { filepath => 
       Settings.toFile(filepath)
     }
   }
