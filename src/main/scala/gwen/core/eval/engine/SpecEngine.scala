@@ -60,7 +60,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     val metaResult = evaluateSpec(parent, nmeta, metaResults, dataRecord, ctx)
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
-      case _: Passed | Loaded =>
+      case _: Passed | Loaded | Skipped =>
         metaResult
       case Failed(_, error) =>
         Errors.evaluationError(s"Failed to load meta: $metaSpec: ${error.getMessage}")
