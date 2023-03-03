@@ -59,14 +59,14 @@ Maintainers
 
 - [Branko Juric](https://github.com/bjuric)
 - [Brady Wood](https://github.com/bradywood)
-- [Jacob Juric](https://github.com/Sorixelle)
+- [Ruby Juric](https://github.com/Sorixelle)
 
 Credits
 -------
 
 ### Code contributors
 
-- [Jacob Juric](https://github.com/TheReturningVoid)
+- [Ruby Juric](https://github.com/Sorixelle)
 | [Alexandru Cuciureanu](https://github.com/acuciureanu)
 
 ### Users who raised issues
@@ -81,7 +81,7 @@ Credits
 | [rkevin99](https://github.com/rkevin99)
 | [dfriquet](https://github.com/dfriquet)
 | [Priyanka Chaturvedi](https://github.com/priyankachaturvedi30)
-| [Jacob Juric](https://github.com/Sorixelle)
+| [Ruby Juric](https://github.com/Sorixelle)
 | [Alban Minassian](https://github.com/AlbanMinassian)
 | [DK-India](https://github.com/DK-India)
 | [sse2ebdd](https://github.com/sse2ebdd)

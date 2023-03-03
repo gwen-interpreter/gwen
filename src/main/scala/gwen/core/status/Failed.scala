@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import gwen.core._
 
 object Failed {
   val customMessage = s".*${Formatting.ZeroChar}(.+?)${Formatting.ZeroChar}".r
+  def apply(nanos: Long, msg: String): Failed = new Failed(0, new Exception(msg))
 }
 
 /**

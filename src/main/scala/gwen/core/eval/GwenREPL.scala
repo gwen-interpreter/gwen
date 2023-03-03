@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,25 @@ package gwen.core.eval
 import gwen.core._
 import gwen.core.behavior.FeatureMode
 import gwen.core.node.GwenNode
+import gwen.core.node.FeatureUnit
+import gwen.core.node.Root
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Step
+import gwen.core.report.console.ConsoleReporter
 import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
+import gwen.core.status.Failed
+import gwen.core.status.EvalStatus
+import gwen.core.status.Loaded
+import gwen.core.status.Passed
 
 import scala.jdk.CollectionConverters._
 import scala.util.Failure
 import scala.util.Success
+import scala.util.Try
 import scala.util.chaining._
 
 import jline.console.completer.AggregateCompleter
@@ -73,128 +81,6 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   // repl always runs in imperative mode
   Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
 
-  /** Reads an input string or command from the command line. */
-  private def read(): String = {
-    if (paste.isEmpty) System.out.println()
-    reader.readLine() tap { _ => if (paste.isEmpty) System.out.println() }
-  }
-
-  /**
-    * Evaluates a given input string or command.
-    *
-    * @param input an input step or command
-    * @return optional result of the command as a string
-    */
-  private def eval(input: String): Option[String] = {
-    Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
-      case "" if paste.isEmpty =>
-        Some("[noop]")
-      case "help" if paste.isEmpty =>
-        Some(helpText())
-      case r"""env(.+?)?$$$options""" if paste.isEmpty => Option(options) match {
-        case None => Some(ctx.visibleScopes.asString)
-        case _ => options.trim match {
-          case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
-            case "-f" => Some(ScopedDataStack(ctx.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString)
-            case "-a" => Some(ctx.filterAtts(GwenREPL.attrFilter(filter)).asString)
-          }
-          case r"""(-f|-a)$$$switch""" => switch match {
-            case "-f" => Some(ctx.topScope.asString())
-            case "-a" => Some(ctx.asString)
-          }
-          case r""""(.+?)"$$$filter""" =>
-            Some(ctx.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString)
-          case _ =>
-            Some("""Try again using: env [-a|-f] ["filter"]""")
-        }
-      }
-      case "history" if paste.isEmpty =>
-        Some(history.toString)
-      case r"""!(\d+)$$$historyValue""" if paste.isEmpty =>
-        val num = historyValue.toInt
-        if (num < (history.size() - 1)) {
-          history.get(num).toString match {
-            case x if input.trim.equals(x) =>
-              Some(s"Unable to refer to self history - !$historyValue")
-            case s => System.out.println(s"--> $s\n"); eval(s)
-          }
-        } else {
-          Some(s"No such history: !$historyValue")
-        }
-      case "paste" | ":paste" =>
-        if (paste.isEmpty) {
-          paste = Some(List())
-          reader.setPrompt("")
-          System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
-          Some("")
-        } else {
-          paste foreach { steps =>
-            System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
-            steps.reverse map { step =>
-              System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
-              evaluateInput(step) tap { output => System.out.println(output) }
-            }
-          }
-          reader.setPrompt(prompt)
-          paste = None
-          pastingDocString = false
-          Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
-        }
-      case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
-        reader.getHistory.asInstanceOf[FileHistory].flush()
-        None
-      case "c" | "continue" | "resume" if debug =>
-        reader.getHistory.asInstanceOf[FileHistory].flush()
-        Some("continue")
-      case _ =>
-        if (paste.isEmpty) {
-          Some(evaluateInput(input))
-        } else {
-          if (!pastingDocString) pastingDocString = input.trim.startsWith("\"\"\"")
-          else pastingDocString = input.trim != "\"\"\""
-          paste = paste map { entries =>
-            if (GherkinKeyword.literals.exists(reserved => input.trim.startsWith(reserved)) && !pastingDocString) {
-              input :: entries
-            } else {
-              entries match {
-                case Nil => if (input.trim.nonEmpty) List(input) else Nil
-                case head :: tail => s"$head${System.lineSeparator}$input" :: tail
-              }
-            }
-          }
-          Some(input)
-        }
-    }
-  }
-
-  private def evaluateInput(input: String): String = {
-    input.trim match {
-      case r"^Feature:(.*)$$$name" =>
-        ctx.topScope.set("gwen.feature.name", name.trim)
-        s"[gwen.feature.name = ${name.trim}]"
-      case r"^Rule:(.*)$$$name" =>
-        ctx.topScope.set("gwen.rule.name", name.trim)
-        s"[gwen.rule.name = ${name.trim}]"
-      case r"^(Scenario|Example):(.*)$$$name" =>
-        if (StateLevel.scenario.equals(ctx.stateLevel)) {
-          ctx.reset(StateLevel.scenario)
-        }
-        ctx.topScope.set("gwen.scenario.name", name.trim)
-        s"[gwen.scenario.name = ${name.trim}]"
-      case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
-        ctx.topScope.set("gwen.scenario.name", name.trim)
-        s"[gwen.scenario.name = ${name.trim}]"
-      case r"""^#\s*language:\s*(\S+)$$$language""" =>
-        Dialect.setLanguage(language)
-        s"# language: $language"
-      case _ =>
-        engine.interpretStep(input, ctx) match {
-          case Success(step) => printer.printStatus(step, withMessage = true)
-          case Failure(error) => s"${if (colors) ansi.fg(Color.RED) else ""}$error\n\n[non-step]${if (colors) ansi.reset else ""}"
-        }
-    }
-  }
-
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
     debug = false
@@ -218,6 +104,46 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       } filter { output => output != "continue" } nonEmpty
     ) { }
     continue
+  }
+
+
+  /** Reads an input string or command from the command line. */
+  private def read(): String = {
+    if (paste.isEmpty) System.out.println()
+    reader.readLine() tap { _ => if (paste.isEmpty) System.out.println() }
+  }
+
+  /**
+    * Evaluates a given input string or command.
+    *
+    * @param input an input step or command
+    * @return optional result of the command as a string
+    */
+  private def eval(input: String): Option[String] = {
+    Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
+      case "" if paste.isEmpty =>
+        Some("[noop]")
+      case "help" if paste.isEmpty =>
+        Some(helpText())
+      case r"""env(.+?)?$$$options""" if paste.isEmpty => 
+        Some(env(options))
+      case "history" if paste.isEmpty =>
+        Some(history.toString)
+      case r"""!(\d+)$$$historyValue""" if paste.isEmpty =>
+        history(historyValue, input)
+      case "paste" | ":paste" =>
+        pasteMode()
+      case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
+        reader.getHistory.asInstanceOf[FileHistory].flush()
+        None
+      case "c" | "continue" | "resume" if debug =>
+        reader.getHistory.asInstanceOf[FileHistory].flush()
+        Some("continue")
+      case r"""load(.*)$meta""" if paste.isEmpty =>
+        loadMeta(meta.trim)
+      case _ =>
+        evalInput(input)
+    }
   }
 
   private def helpText() = { 
@@ -245,6 +171,10 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       |   Executes a previously entered command (history bang operator)
       |     # : the history command number
       |
+      | load <meta-file>
+      |  Loads a meta file to pick up any changes
+      |    meta-file : the path to the meta file relative to project root
+      | 
       | Given|When|Then|And|But <step>
       |   Evaluates a step
       |     step : the step expression
@@ -264,6 +194,151 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       |   Continue executing from current step (debug mode only)
       | """.stripMargin
   }
+
+  private def env(options: String): String = {
+    Option(options) match {
+      case None => ctx.visibleScopes.asString
+      case _ => options.trim match {
+        case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
+          case "-f" => ScopedDataStack(ctx.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString
+          case "-a" => ctx.filterAtts(GwenREPL.attrFilter(filter)).asString
+        }
+        case r"""(-f|-a)$$$switch""" => switch match {
+          case "-f" => ctx.topScope.asString()
+          case "-a" => ctx.asString
+        }
+        case r""""(.+?)"$$$filter""" =>
+          ctx.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString
+        case _ =>
+          """Try again using: env [-a|-f] ["filter"]"""
+      }
+    }
+  }
+
+  private def history(historyValue: String, input: String): Option[String] = {
+    val num = historyValue.toInt
+    if (num < (history.size() - 1)) {
+      history.get(num).toString match {
+        case x if input.trim.equals(x) =>
+          Some(s"Unable to refer to self history - !$historyValue")
+        case s => 
+          System.out.println(s"--> $s\n"); 
+          eval(s)
+      }
+    } else {
+      Some(s"No such history: !$historyValue")
+    }
+  }
+
+  private def pasteMode(): Option[String] = {
+    if (paste.isEmpty) {
+      paste = Some(List())
+      reader.setPrompt("")
+      System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
+      Some("")
+    } else {
+      paste foreach { steps =>
+        System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
+        steps.reverse map { step =>
+          System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
+          evaluate(step) tap { output => System.out.println(output) }
+        }
+      }
+      reader.setPrompt(prompt)
+      paste = None
+      pastingDocString = false
+      Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
+    }
+  }
+
+  private def loadMeta(metaPath: String): Option[String] = {
+    val path = metaPath match {
+      case r""""(.+?)$meta"""" => meta
+      case _ => metaPath
+    }
+    val file = new File(path)
+    if (path.isEmpty || !FileIO.isMetaFile(file)) Some(printError("Please specify a file with a .meta extension (one only)"))
+    else if(!file.exists()) Some(printError("File not found. Please specify an existing meta file (one only)."))
+    else {
+      val started = System.nanoTime()
+      val metaUnit = FeatureUnit(Root, file, Nil, None, ctx.options.tagFilter)
+      Try(engine.evaluateUnit(metaUnit, ctx)) match {
+        case Success(spec) => 
+          spec.map(_.evalStatus) map { status =>
+            status match {
+              case _: Passed => printStatus(Loaded)
+              case _ => printStatus(status)
+            }
+          }
+        case Failure(e) => Some(printError(started, e))
+      }
+    }
+  }
+
+  private def evalInput(input: String): Option[String] = {
+    if (paste.isEmpty) {
+      Some(evaluate(input))
+    } else {
+      if (!pastingDocString) pastingDocString = input.trim.startsWith("\"\"\"")
+      else pastingDocString = input.trim != "\"\"\""
+      paste = paste map { entries =>
+        if (GherkinKeyword.literals.exists(reserved => input.trim.startsWith(reserved)) && !pastingDocString) {
+          input :: entries
+        } else {
+          entries match {
+            case Nil => if (input.trim.nonEmpty) List(input) else Nil
+            case head :: tail => s"$head${System.lineSeparator}$input" :: tail
+          }
+        }
+      }
+      Some(input)
+    }
+  }
+
+  private def evaluate(input: String): String = {
+    input.trim match {
+      case r"^Feature:(.*)$$$name" =>
+        ctx.topScope.set("gwen.feature.name", name.trim)
+        s"[gwen.feature.name = ${name.trim}]"
+      case r"^Rule:(.*)$$$name" =>
+        ctx.topScope.set("gwen.rule.name", name.trim)
+        s"[gwen.rule.name = ${name.trim}]"
+      case r"^(Scenario|Example):(.*)$$$name" =>
+        if (StateLevel.scenario.equals(ctx.stateLevel)) {
+          ctx.reset(StateLevel.scenario)
+        }
+        ctx.topScope.set("gwen.scenario.name", name.trim)
+        s"[gwen.scenario.name = ${name.trim}]"
+      case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
+        ctx.topScope.set("gwen.scenario.name", name.trim)
+        s"[gwen.scenario.name = ${name.trim}]"
+      case r"""^#\s*language:\s*(\S+)$$$language""" =>
+        Dialect.setLanguage(language)
+        s"# language: $language"
+      case _ =>
+        val started = System.nanoTime()
+        engine.interpretStep(input, ctx) match {
+          case Success(step) => 
+            printStatus(step.evalStatus)
+          case Failure(error) => 
+            printError(started, s"$error\n\n[non-step]")
+        }
+    }
+  }
+
+  private def printError(msg: String): String = {
+    printer.printStatus("  ", Failed(0, msg), withMessage = true)
+  }
+  private def printError(started: Long, error: Throwable): String = {
+    printError(started, error.getMessage)
+  }
+  private def printError(started: Long, msg: String): String = {
+    printer.printStatus("  ", Failed(System.nanoTime() - started, msg), withMessage = true)
+  }
+  private def printStatus(status: EvalStatus): String = {
+    printer.printStatus("  ", status, withMessage = true)
+  } 
+
 }
 
 object GwenREPL {

@@ -1,3 +1,9 @@
+3.30.0
+======
+Mar 3, 2023
+- New feature request gwen-interpreter/gwen-web#103
+  - Introduce `load` command in REPL console for reloading changed meta
+
 3.29.7
 ======
 Mar 1, 2023

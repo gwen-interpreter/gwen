@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,10 +190,15 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   }
 
   def printStatus(node: GwenNode, withMessage: Boolean): String = {
+    val indent = indentForStatus(node)
+    printStatus(indent, node.evalStatus, withMessage)
+    
+  }
+
+  def printStatus(indent: String, status: EvalStatus, withMessage: Boolean): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
-    val indent = indentForStatus(node)
-    printStatus(indent, node.evalStatus, withMessage, pw)
+    printStatus(indent, status, withMessage, pw)
     sw.toString
   }
 
