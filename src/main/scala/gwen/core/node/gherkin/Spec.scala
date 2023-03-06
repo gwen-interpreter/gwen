@@ -79,15 +79,7 @@ case class Spec(
   def attachments: List[(String, File)] = steps.flatMap(_.deepSteps.flatMap(_.attachments))
 
   /** Gets the number of sustained errors. */
-  def sustainedCount: Int = {
-    steps.flatMap { s1 =>
-      s1.stepDef.map { s2 =>
-        s2.allSteps.flatMap { s3 =>
-          s3.stepDef map { s4 => s4.allSteps } getOrElse List(s3)
-        }
-      } getOrElse List(s1)
-    } count(_.evalStatus.isSustained)
-  }
+  def sustainedCount: Int = Step.errorTrails(this).flatMap(_.lastOption).count(_.evalStatus.isSustained)
   
   /** Returns the evaluation status of this feature spec. */
   override val evalStatus: EvalStatus = {

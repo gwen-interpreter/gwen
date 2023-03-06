@@ -3,6 +3,7 @@
 Mar 6, 2023
 - Fix soft and sustained assertions
 - List all errors at summary level in HTML report
+- Fix sustained assertion count
 
 3.30.0 
 ======
