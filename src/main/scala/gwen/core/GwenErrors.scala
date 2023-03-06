@@ -102,7 +102,7 @@ object Errors {
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
   def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
     customError map { msg => 
-      if (!assertion) throw new CustomFailureException(msg)
+      if (!assertion) throw new CustomAssertionError(msg)
     } getOrElse {
       assert(assertion, assertError)
     }
@@ -291,5 +291,5 @@ object Errors {
   class CopyResourceException(msg: String) extends GwenException(msg)
 
   /** Thrown when cursom error @Message is thrown. */
-  class CustomFailureException(msg: String) extends GwenException(msg)
+  class CustomAssertionError(msg: String) extends AssertionError(msg)
 }
