@@ -1,4 +1,10 @@
-3.30.0
+3.30.1
+======
+Mar 6, 2023
+- Fix soft and sustained assertions
+- List all errors at summary level in HTML report
+
+3.30.0 
 ======
 Mar 3, 2023
 - New feature request gwen-interpreter/gwen-web#103

@@ -137,37 +137,39 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
         }
       ),
       if (inError) {
-        val errorAttachments = {
-          if (inError) Step.errorTrails(result.spec).flatMap(_.lastOption.map(_.attachments)).headOption.getOrElse(Nil)
-          else Nil
-        }
+        val eSteps = Step.errorTrails(result.spec).flatMap(_.lastOption)
         td(`class` := "summary-line-2",
           table(`class` := "table-responsive",
             tbody(
-              tr(`class` := "summary-line-0", style := "border-top: hidden;",
-                td(`class` := "summary-line-0", style := "vertical-align:top;",
-                  if (errorAttachments.nonEmpty) {
-                    formatAttachments(reportBase, errorAttachments, result.evalStatus.keyword)
-                  } else "",
-                  " "
-                ),
-                td(`class` := "summary-line-0",
-                  reportPath match {
-                    case Some(rpath) =>
-                      a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${result.evalStatus.keyword}",
-                        span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
-                          small(
-                            raw(escapeHtml(result.evalStatus.message))
+              for {
+                eStep <- eSteps
+                eAttachments = eStep.attachments
+              } yield {
+                tr(`class` := "summary-line-0", style := "border-top: hidden;",
+                  td(`class` := "summary-line-0", style := "vertical-align:top;",
+                    if (eAttachments.nonEmpty) {
+                      formatAttachments(reportBase, eAttachments, result.evalStatus.keyword)
+                    } else "",
+                    " "
+                  ),
+                  td(`class` := "summary-line-0",
+                    reportPath match {
+                      case Some(rpath) =>
+                        a(`class` := s"inverted-${cssStatus(reportingStatus.keyword)}", style := s"color: ${linkColor(reportingStatus.keyword)};", href := s"$rpath#${eStep.evalStatus.keyword}-${eStep.uuid}",
+                          span(`class` := s"text-${cssStatus(reportingStatus.keyword)}",
+                            small(
+                              raw(escapeHtml(eStep.evalStatus.message))
+                            )
                           )
                         )
-                      )
-                    case None =>
-                      small(
-                        raw(escapeHtml(result.evalStatus.message))
-                      )
-                  }
+                      case None =>
+                        small(
+                          raw(escapeHtml(eStep.evalStatus.message))
+                        )
+                    }
+                  )
                 )
-              )
+              }
             )
           )
         )
