@@ -98,6 +98,14 @@ object GwenSettings {
   }
 
   /**
+    * Provides access to the `gwen.report.stepDef.indent.pixels` setting used to the 
+    * indent size of StepDefs in HTML reports (default is 40 pixels).
+    */
+  def `gwen.report.stepDef.indent.pixels`: Int = {
+    Settings.getInt("gwen.report.stepDef.indent.pixels")
+  }
+
+  /**
    * Provides access to the `gwen.rampup.interval.seconds` setting used
    * to set the ramp up interval (in seconds) for staggering parallel feature executions
    * (this setting is optional and only used in for parallel execution options).

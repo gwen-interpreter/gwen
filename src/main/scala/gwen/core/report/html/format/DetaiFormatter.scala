@@ -72,7 +72,7 @@ trait DetaiFormatter {
           for {
             scenario <- result.spec.scenarios
           } yield {
-            formatScenario(scenario)
+            formatScenario(scenario, true)
           },
           for {
             rule <- result.spec.rules
@@ -174,13 +174,13 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatScenario(scenario: Scenario): List[TypedTag[String]] = {
+  private def formatScenario(scenario: Scenario, topLevel: Boolean): List[TypedTag[String]] = {
     val status = scenario.evalStatus.keyword
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
     List(
       a(name := scenario.evalStatus.keyword.toString),
-      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
+      div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}", style := s"${if (!topLevel) s"margin-left: ${GwenSettings.`gwen.report.stepDef.indent.pixels`}px" else ""}",
         for {
           background <- scenario.background
         } yield {
@@ -398,7 +398,7 @@ trait DetaiFormatter {
 
   private def formatExampleDiv(scenario: Scenario, status: StatusKeyword): TypedTag[String] = {
     div(id := scenario.uuid, `class` := s"panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}", role := "tabpanel",
-      formatScenario(scenario)
+      formatScenario(scenario, false)
     )
   }
 
@@ -436,7 +436,7 @@ trait DetaiFormatter {
             for {
               scenario <- rule.scenarios
             } yield {
-              formatScenario(scenario)
+              formatScenario(scenario, false)
             }
           )
         )
@@ -541,7 +541,7 @@ trait DetaiFormatter {
                   
   private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
     div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (collapse) " in" else ""}", role := "tabpanel",
-      formatScenario(stepDef)
+      formatScenario(stepDef, false)
     )
   }
 
