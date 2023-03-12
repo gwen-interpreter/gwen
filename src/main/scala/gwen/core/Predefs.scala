@@ -20,6 +20,7 @@ import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.matching.Regex
 import scala.util.chaining._
+import scala.util.Try
 
 import com.typesafe.scalalogging.LazyLogging
 import com.typesafe.scalalogging.Logger
@@ -253,6 +254,10 @@ extension [T <: Throwable](error: T) {
     pw.flush()
     pw.close()
     sw.toString
+  }
+
+  def getMessageLine1: String = {
+    Try(Source.fromString(error.getMessage).getLines().next()).getOrElse(error.getMessage)
   }
 
 }

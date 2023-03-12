@@ -228,7 +228,7 @@ object Errors {
   class DataTableException(msg: String) extends GwenException(msg)
 
   /** Thrown when a script evaluation error is detected. */
-  class ScriptException(language: String, script: String, cause: Throwable) extends GwenException(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script}", cause)
+  class ScriptException(language: String, script: String, cause: Throwable) extends GwenException(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script} (cause: ${cause.getMessageLine1})", cause)
 
   /** Thrown when a template match error is detected. */
   class TemplateMatchException(msg: String) extends GwenException(msg)
