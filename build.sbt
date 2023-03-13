@@ -44,7 +44,7 @@ lazy val mainDependencies = {
   val scalaLogging = "3.9.5"
   val jline = "3.23.0"
   val slf4j = "1.7.36"
-  val slf4jLog4j = "2.19.0"
+  val slf4jLog4j = "2.20.0"
   val commonCodec = "1.15"
   val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
@@ -91,9 +91,9 @@ lazy val mainOverrides = {
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.14"
+  val scalaTest = "3.2.15"
   val scalaTestPlusMockito = "3.2.11.0"
-  val mockitoCore = "4.9.0"
+  val mockitoCore = "4.11.0"
   val h2 = "2.1.214"
   // val slick = "3.3.3"
 
