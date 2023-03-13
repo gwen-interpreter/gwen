@@ -3,6 +3,8 @@
 Mar 14, 2023
 - Include exception cause in reported javascript errors
 - Update jline from v2.14.6 to v3.23.0
+- Reload tab completer when meta is loaded in REPL
+- Disable tab completion in REPL when in paste mode
 
 3.31.0
 ======

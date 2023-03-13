@@ -58,6 +58,9 @@ import java.io.File
   */
 class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
+  // repl always runs in imperative mode
+  Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
+
   private var paste: Option[List[String]] = None
   private var pastingDocString: Boolean = false
   private var debug: Boolean = false
@@ -73,7 +76,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     .system(true)
     .build
 
-  // do not escpae space separated inputs
+  // do not escape space separated inputs
   private val parser = new DefaultParser() {
     override def isDelimiterChar(charSeqBuffer: CharSequence, position: Int): Boolean = {
       val isWhiteSpaceChar = Character.isWhitespace(charSeqBuffer.charAt(position))
@@ -84,41 +87,38 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     }
   }
 
-  private val tabCompletion = new TreeCompleter(
-    (
-      List(
-        TreeCompleter.node("help"),
-        TreeCompleter.node("env", TreeCompleter.node("-a", "-f", """-a "<filter>"""", """-f "<filter>"""", """"<filter>"""")),
-        TreeCompleter.node("history"),
-        TreeCompleter.node("paste"),
-        TreeCompleter.node("load", TreeCompleter.node("<meta-file>")),
-        TreeCompleter.node("bye", "exit", "quit", "q"),
-      ) ++ (
-        ctx.dsl.distinct match {
-          case Nil => Nil
-          case dsl => 
-            val dslCompleter = TreeCompleter.node(dsl:_*)
-            StepKeyword.names map { keyword =>
-              TreeCompleter.node(keyword.toString, dslCompleter)
-            }
-      })
-    ).asJava
-  )
+  private var reader: LineReader = createReader()
 
-  private val reader: LineReader = {
+  def createReader(): LineReader = {
+    val tabCompletion = new TreeCompleter(
+      (
+        List(
+          TreeCompleter.node("help"),
+          TreeCompleter.node("env", TreeCompleter.node("-a", "-f", """-a "<filter>"""", """-f "<filter>"""", """"<filter>"""")),
+          TreeCompleter.node("history"),
+          TreeCompleter.node("paste"),
+          TreeCompleter.node("load", TreeCompleter.node("<meta-file>")),
+          TreeCompleter.node("bye", "exit", "quit", "q"),
+        ) ++ (
+          ctx.dsl.distinct match {
+            case Nil => Nil
+            case dsl => 
+              val dslCompleter = TreeCompleter.node(dsl:_*)
+              StepKeyword.names map { keyword =>
+                TreeCompleter.node(keyword.toString, dslCompleter)
+              }
+        })
+      ).asJava
+    )
     LineReaderBuilder.builder()
       .terminal(terminal)
       .parser(parser)
       .variable(LineReader.HISTORY_FILE, historyFile)
-      .variable(LineReader.LIST_MAX, 100)
       .completer(tabCompletion)
       .option(LineReader.Option.HISTORY_TIMESTAMPED, false)
       .option(LineReader.Option.DISABLE_EVENT_EXPANSION, false)
       .build()
   }
-  
-  // repl always runs in imperative mode
-  Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
 
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
@@ -275,6 +275,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     if (paste.isEmpty) {
       paste = Some(List())
       System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D on empty line to evaluate..\n")
+      reader.setVariable(LineReader.DISABLE_COMPLETION, true)
       Some("")
     } else {
       paste foreach { steps =>
@@ -286,6 +287,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       }
       paste = None
       pastingDocString = false
+      reader.setVariable(LineReader.DISABLE_COMPLETION, false)
       Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
     }
   }
@@ -303,6 +305,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       val metaUnit = FeatureUnit(Root, file, Nil, None, ctx.options.tagFilter)
       Try(engine.evaluateUnit(metaUnit, ctx)) match {
         case Success(spec) => 
+          reader = createReader()
           spec.map(_.evalStatus) map { status =>
             status match {
               case _: Passed => printStatus(Loaded)
