@@ -45,6 +45,14 @@ class NodeEventDispatcher extends LazyLogging {
     logger.debug(s"Node event listener removed: ${listener.name}")
   }
 
+  def pauseListeners(parent: GwenNode): Unit = {
+    listeners.foreach(_.pause(parent))
+  }
+
+  def resumeListeners(): Unit = {
+    listeners.foreach(_.resume())
+  }
+
   def beforeUnit(unit: FeatureUnit, env: Environment): Unit =
     dispatchBeforeEvent(unit, env) { (listener, event) => listener.beforeUnit(event) }
   def afterUnit(unit: FeatureUnit, env: Environment): Unit =

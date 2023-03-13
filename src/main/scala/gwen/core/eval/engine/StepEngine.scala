@@ -103,7 +103,10 @@ trait StepEngine[T <: EvalContext] {
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     val continue = if (step.isBreakpoint && ctx.options.debug) {
-       new GwenREPL(engine, ctx).debug(parent, step)
+       pauseListeners(parent)
+       new GwenREPL(engine, ctx).debug(parent, step) tap { _ =>
+         resumeListeners()
+       }
     } else {
       true
     }

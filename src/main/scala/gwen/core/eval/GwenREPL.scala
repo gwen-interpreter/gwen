@@ -21,6 +21,7 @@ import gwen.core.behavior.FeatureMode
 import gwen.core.node.GwenNode
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
@@ -51,6 +52,29 @@ import org.jline.terminal.Terminal
 
 import java.io.File
 
+object GwenREPL {
+
+  lazy val terminal = TerminalBuilder.builder.system(true).build
+
+  // do not escape space separated inputs
+  lazy val parser = new DefaultParser() {
+    override def isDelimiterChar(charSeqBuffer: CharSequence, position: Int): Boolean = {
+      val isWhiteSpaceChar = Character.isWhitespace(charSeqBuffer.charAt(position))
+      if (isWhiteSpaceChar && position + 1 < charSeqBuffer.length()
+          && !Character.isWhitespace(charSeqBuffer.charAt(position + 1))) {
+        false
+      } else isWhiteSpaceChar
+    }
+  }
+
+  val historyFile = new File(GwenSettings.`gwen.outDir`, ".history")
+
+  /** Filters attributes containing or matching given expression (both names and values are checked). */
+  def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = {
+    case (n, v) => n.contains(filter) || n.matches(filter) || (v != null && (v.contains(filter) || v.matches(filter)))
+  }
+}
+
 /**
   * Read-Eval-Print-Loop console.
   *
@@ -68,24 +92,6 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private val colors = ConsoleColors.isEnabled
   private val printer = new SpecPrinter(deep = false, colors)
   private def prompt = if (paste.isEmpty) s"${if (colors) ansi.bold else ""}gwen${if (debug) s"@Breakpoint" else ""}> ${if (colors) ansi.reset else ""}" else ""
-
-  private val outDir = GwenSettings.`gwen.outDir`
-  private val historyFile = new File(outDir, ".history")
-  
-  val terminal = TerminalBuilder.builder
-    .system(true)
-    .build
-
-  // do not escape space separated inputs
-  private val parser = new DefaultParser() {
-    override def isDelimiterChar(charSeqBuffer: CharSequence, position: Int): Boolean = {
-      val isWhiteSpaceChar = Character.isWhitespace(charSeqBuffer.charAt(position))
-      if (isWhiteSpaceChar && position + 1 < charSeqBuffer.length()
-          && !Character.isWhitespace(charSeqBuffer.charAt(position + 1))) {
-        false
-      } else isWhiteSpaceChar
-    }
-  }
 
   private var reader: LineReader = createReader()
 
@@ -111,9 +117,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       ).asJava
     )
     LineReaderBuilder.builder()
-      .terminal(terminal)
-      .parser(parser)
-      .variable(LineReader.HISTORY_FILE, historyFile)
+      .terminal(GwenREPL.terminal)
+      .parser(GwenREPL.parser)
+      .variable(LineReader.HISTORY_FILE, GwenREPL.historyFile)
       .completer(tabCompletion)
       .option(LineReader.Option.HISTORY_TIMESTAMPED, false)
       .option(LineReader.Option.DISABLE_EVENT_EXPANSION, false)
@@ -132,9 +138,12 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   def debug(parent: GwenNode, step: Step): Boolean = {
     var continue: Boolean = false
     debug = true
-    System.out.println(s"\nPaused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
-    System.out.println(printer.prettyPrint(parent, step))
-    System.out.println("\nEnter c to continue or q to quit (or type help for more options)..")
+    var stepStr = printer.prettyPrint(parent, step)
+    var breakpointTag = s"${if (colors) ansi.fg(Color.CYAN) else ""}@${Annotations.Breakpoint.toString}${if (colors) ansi.reset else ""} "
+    System.out.println(stepStr.patch(stepStr.indexOf(" ", stepStr.indexOf(step.keyword)) + 1, breakpointTag, 0))
+    System.out.println()
+    System.out.println(s"Paused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
+    System.out.println("Enter c to continue or q to quit (or type help for more options)..")
     while(
       eval(read()) map { output => 
         continue = output == "continue"
@@ -164,15 +173,15 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private def eval(input: String): Option[String] = {
     Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
       case "" if paste.isEmpty =>
-        Some(printWarn("[noop]"))
+        Some("  [noop]")
       case "help" if paste.isEmpty =>
-        Some(helpText())
+        Some(help)
       case r"""env(.+?)?$$$options""" if paste.isEmpty => 
         Some(env(options))
       case "history" if paste.isEmpty =>
-        Some(dumpHistory)
+        Some(history)
       case r"""!(\d+)$$$historyValue""" if paste.isEmpty =>
-        history(historyValue, input)
+        verifyHistory(historyValue, input)
       case "paste" | ":paste" =>
         pasteMode()
       case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
@@ -186,7 +195,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     }
   }
 
-  private def helpText() = { 
+  private def help = { 
     val help = """
       | Gwen REPL commands:
       |
@@ -255,13 +264,13 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     }
   }
 
-  private def dumpHistory: String = {
+  private def history: String = {
     reader.getHistory().iterator().asScala.toList map { entry => 
       s"${entry.index() + 1}: ${entry.line()}"
     } mkString System.lineSeparator()
   }
 
-  private def history(historyValue: String, input: String): Option[String] = {
+  private def verifyHistory(historyValue: String, input: String): Option[String] = {
     val history = reader.getHistory()
     val num = historyValue.toInt
     if (num < 1 || num >= history.size()) {
@@ -307,10 +316,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         case Success(spec) => 
           reader = createReader()
           spec.map(_.evalStatus) map { status =>
-            status match {
-              case _: Passed => printStatus(Loaded)
-              case _ => printStatus(status)
-            }
+            printStatus(status)
           }
         case Failure(e) => Some(printError(started, e))
       }
@@ -357,13 +363,17 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       case r"""^#\s*language:\s*(\S+)$$$language""" =>
         Dialect.setLanguage(language)
         s"# language: $language"
-      case _ =>
+      case trimmedInput =>
         val started = System.nanoTime()
-        engine.interpretStep(input, ctx) match {
-          case Success(step) => 
-            printStatus(step.evalStatus)
-          case Failure(error) => 
-            printError(started, s"$error\n\n[non-step]")
+        if (StepKeyword.names.exists(name => trimmedInput.toLowerCase.startsWith(name.toLowerCase))) {
+          engine.interpretStep(trimmedInput, ctx) match {
+            case Success(step) => 
+              printStatus(step.evalStatus)
+            case Failure(error) => 
+              printError(started, error)
+          }
+        } else {
+          printError(started, s"Unknown input or command")
         }
     }
   }
@@ -372,23 +382,13 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     printer.printStatus("  ", Failed(0, msg), withMessage = true)
   }
   private def printError(started: Long, error: Throwable): String = {
-    printError(started, error.getMessage)
+    printError(started, error.toString)
   }
   private def printError(started: Long, msg: String): String = {
     printer.printStatus("  ", Failed(System.nanoTime() - started, msg), withMessage = true)
   }
   private def printStatus(status: EvalStatus): String = {
     printer.printStatus("  ", status, withMessage = true)
-  } 
-  private def printWarn(msg: String): String = {
-    s"  ${if (colors) ansi.fg(Color.YELLOW) else ""}$msg${if (colors) ansi.reset else ""}"
-  } 
+  }  
 
-}
-
-object GwenREPL {
-  /** Filters attributes containing or matching given expression (both names and values are checked). */
-  def attrFilter(filter: String): PartialFunction[(String, String), Boolean] = {
-    case (n, v) => n.contains(filter) || n.matches(filter) || (v != null && (v.contains(filter) || v.matches(filter)))
-  }
 }
