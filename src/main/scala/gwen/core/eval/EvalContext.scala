@@ -128,16 +128,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     val iMessage = if (step.isNoData) {
       step.message 
     } else { 
-      Try(step.message.map(msg => interpolator(msg) { resolver })) match {
-        case Success(result) => result
-        case Failure(e) =>
-          evaluate(throw e) {
-            if (e.isInstanceOf[Errors.UnboundAttributeException]) None
-            else throw e
-          }
-      }
       evaluate(step.message.map(msg => interpolator(msg) { resolver })) {
-        Try(step.message.map(msg => interpolator(msg) { resolver })).getOrElse(None)
+        Try(step.message.map(msg => interpolator(msg) { resolver })).getOrElse(step.message)
       }
     }
     val iTable = step.table map { case (line, record) =>
