@@ -42,7 +42,7 @@ lazy val mainDependencies = {
   val cucumberGherkin = "26.0.3"
   val scopt = "4.1.0"
   val scalaLogging = "3.9.5"
-  val jline = "2.14.6"
+  val jline = "3.23.0"
   val slf4j = "1.7.36"
   val slf4jLog4j = "2.19.0"
   val commonCodec = "1.15"
@@ -61,7 +61,7 @@ lazy val mainDependencies = {
     "io.cucumber" % "gherkin" % cucumberGherkin,
     "com.github.scopt" %% "scopt" % scopt,
     "com.typesafe.scala-logging" %% "scala-logging" % scalaLogging,
-    "jline" % "jline" % jline,
+    "org.jline" % "jline" % jline,
     "org.apache.logging.log4j" % "log4j-slf4j-impl" % slf4jLog4j,
     "org.slf4j" % "jul-to-slf4j" % slf4j,
     "commons-codec" % "commons-codec" % commonCodec,

@@ -1,7 +1,8 @@
 3.31.1
 ======
-Mar 8, 2023
+Mar 14, 2023
 - Include exception cause in reported javascript errors
+- Update jline from v2.14.6 to v3.23.0
 
 3.31.0
 ======

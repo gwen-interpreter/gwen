@@ -26,7 +26,6 @@ import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Step
-import gwen.core.report.console.ConsoleReporter
 import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
 import gwen.core.status.Failed
@@ -40,14 +39,17 @@ import scala.util.Success
 import scala.util.Try
 import scala.util.chaining._
 
-import jline.console.completer.AggregateCompleter
-import jline.console.ConsoleReader
-import jline.console.completer.StringsCompleter
-import jline.console.history.FileHistory
 import org.fusesource.jansi.Ansi._
+import org.jline.builtins.Completers.TreeCompleter
+import org.jline.reader.EndOfFileException
+import org.jline.reader.LineReader
+import org.jline.reader.LineReaderBuilder
+import org.jline.reader.impl.DefaultParser
+import org.jline.reader.impl.history.DefaultHistory
+import org.jline.terminal.TerminalBuilder
+import org.jline.terminal.Terminal
 
 import java.io.File
-import java.io.PrintWriter
 
 /**
   * Read-Eval-Print-Loop console.
@@ -56,28 +58,65 @@ import java.io.PrintWriter
   */
 class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
-  private val outDir = GwenSettings.`gwen.outDir`
-  private val history = new FileHistory(new File(outDir, ".history").getAbsoluteFile)
-
   private var paste: Option[List[String]] = None
   private var pastingDocString: Boolean = false
   private var debug: Boolean = false
 
   private val colors = ConsoleColors.isEnabled
   private val printer = new SpecPrinter(deep = false, colors)
-  private def prompt = s"${if (colors) ansi.bold else ""}gwen${if (debug) s"@Breakpoint" else ""}> ${if (colors) ansi.reset else ""}"
+  private def prompt = if (paste.isEmpty) s"${if (colors) ansi.bold else ""}gwen${if (debug) s"@Breakpoint" else ""}> ${if (colors) ansi.reset else ""}" else ""
+
+  private val outDir = GwenSettings.`gwen.outDir`
+  private val historyFile = new File(outDir, ".history")
   
-  private lazy val reader = {
-    new ConsoleReader() tap { reader =>
-      reader.setHistory(history)
-      reader.setBellEnabled(false)
-      reader.setExpandEvents(false)
-      reader.setPrompt(prompt)
-      reader.addCompleter(new StringsCompleter((StepKeyword.names ++ List("help", "env", "history", "exit")).asJava))
-      reader.addCompleter(new AggregateCompleter(new StringsCompleter(StepKeyword.names.flatMap(x => ctx.dsl.distinct.map(y => s"$x $y")).asJava)))
+  val terminal = TerminalBuilder.builder
+    .system(true)
+    .build
+
+  // do not escpae space separated inputs
+  private val parser = new DefaultParser() {
+    override def isDelimiterChar(charSeqBuffer: CharSequence, position: Int): Boolean = {
+      val isWhiteSpaceChar = Character.isWhitespace(charSeqBuffer.charAt(position))
+      if (isWhiteSpaceChar && position + 1 < charSeqBuffer.length()
+          && !Character.isWhitespace(charSeqBuffer.charAt(position + 1))) {
+        false
+      } else isWhiteSpaceChar
     }
   }
 
+  private val tabCompletion = new TreeCompleter(
+    (
+      List(
+        TreeCompleter.node("help"),
+        TreeCompleter.node("env", TreeCompleter.node("-a", "-f", """-a "<filter>"""", """-f "<filter>"""", """"<filter>"""")),
+        TreeCompleter.node("history"),
+        TreeCompleter.node("paste"),
+        TreeCompleter.node("load", TreeCompleter.node("<meta-file>")),
+        TreeCompleter.node("bye", "exit", "quit", "q"),
+      ) ++ (
+        ctx.dsl.distinct match {
+          case Nil => Nil
+          case dsl => 
+            val dslCompleter = TreeCompleter.node(dsl:_*)
+            StepKeyword.names map { keyword =>
+              TreeCompleter.node(keyword.toString, dslCompleter)
+            }
+      })
+    ).asJava
+  )
+
+  private val reader: LineReader = {
+    LineReaderBuilder.builder()
+      .terminal(terminal)
+      .parser(parser)
+      .variable(LineReader.HISTORY_FILE, historyFile)
+      .variable(LineReader.LIST_MAX, 100)
+      .completer(tabCompletion)
+      .option(LineReader.Option.HISTORY_TIMESTAMPED, false)
+      .option(LineReader.Option.DISABLE_EVENT_EXPANSION, false)
+      .build()
+  }
+  
   // repl always runs in imperative mode
   Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
 
@@ -106,11 +145,14 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     continue
   }
 
-
   /** Reads an input string or command from the command line. */
   private def read(): String = {
     if (paste.isEmpty) System.out.println()
-    reader.readLine() tap { _ => if (paste.isEmpty) System.out.println() }
+    try {
+      reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
+    } catch {
+      case _: EndOfFileException if paste.nonEmpty => "paste"
+    }
   }
 
   /**
@@ -122,22 +164,20 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private def eval(input: String): Option[String] = {
     Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
       case "" if paste.isEmpty =>
-        Some("[noop]")
+        Some(printWarn("[noop]"))
       case "help" if paste.isEmpty =>
         Some(helpText())
       case r"""env(.+?)?$$$options""" if paste.isEmpty => 
         Some(env(options))
       case "history" if paste.isEmpty =>
-        Some(history.toString)
+        Some(dumpHistory)
       case r"""!(\d+)$$$historyValue""" if paste.isEmpty =>
         history(historyValue, input)
       case "paste" | ":paste" =>
         pasteMode()
       case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
-        reader.getHistory.asInstanceOf[FileHistory].flush()
         None
       case "c" | "continue" | "resume" if debug =>
-        reader.getHistory.asInstanceOf[FileHistory].flush()
         Some("continue")
       case r"""load(.*)$meta""" if paste.isEmpty =>
         loadMeta(meta.trim)
@@ -183,7 +223,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       |   Closes the REPL session and exits
       |
       | ctrl-D
-      |   If in past mode: exits paste mode and interprets provided steps
+      |   If in paste mode: exits paste mode and interprets provided steps
       |   Otherwise: Closes REPL session and exits
       |
       | <tab>
@@ -215,36 +255,35 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     }
   }
 
+  private def dumpHistory: String = {
+    reader.getHistory().iterator().asScala.toList map { entry => 
+      s"${entry.index() + 1}: ${entry.line()}"
+    } mkString System.lineSeparator()
+  }
+
   private def history(historyValue: String, input: String): Option[String] = {
+    val history = reader.getHistory()
     val num = historyValue.toInt
-    if (num < (history.size() - 1)) {
-      history.get(num).toString match {
-        case x if input.trim.equals(x) =>
-          Some(s"Unable to refer to self history - !$historyValue")
-        case s => 
-          System.out.println(s"--> $s\n"); 
-          eval(s)
-      }
+    if (num < 1 || num >= history.size()) {
+      Some(printError(s"No such history: $input"))
     } else {
-      Some(s"No such history: !$historyValue")
+      Some(input)
     }
   }
 
   private def pasteMode(): Option[String] = {
     if (paste.isEmpty) {
       paste = Some(List())
-      reader.setPrompt("")
-      System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D to evaluate..\n")
+      System.out.println("REPL Console (paste mode)\n\nEnter or paste steps and press ctrl-D on empty line to evaluate..\n")
       Some("")
     } else {
       paste foreach { steps =>
-        System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "interpreting now.." else "nothing pasted"}")
+        System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "evaluating.." else "nothing pasted"}")
         steps.reverse map { step =>
           System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
           evaluate(step) tap { output => System.out.println(output) }
         }
       }
-      reader.setPrompt(prompt)
       paste = None
       pastingDocString = false
       Some("\nREPL Console\n\nEnter steps to evaluate or type exit to quit..")
@@ -337,6 +376,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   }
   private def printStatus(status: EvalStatus): String = {
     printer.printStatus("  ", status, withMessage = true)
+  } 
+  private def printWarn(msg: String): String = {
+    s"  ${if (colors) ansi.fg(Color.YELLOW) else ""}$msg${if (colors) ansi.reset else ""}"
   } 
 
 }
