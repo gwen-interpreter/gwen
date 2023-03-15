@@ -20,9 +20,13 @@ import gwen.core._
 import gwen.core.Settings
 import gwen.core.init.ProjectInitialiser
 import gwen.core.node.FeatureStream
+import gwen.core.node.FeatureSet
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
+import gwen.core.node.gherkin.GherkinParser
+import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.SpecType
+import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.console.ConsoleReporter
 import gwen.core.report.ReportGenerator
 import gwen.core.result.SpecResult
@@ -42,16 +46,14 @@ import scala.util.Failure
 import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
-import gwen.core.node.FeatureSet
 import java.io.File
-import gwen.core.node.gherkin.TagFilter
 
 /**
   * Launches a gwen engine.
   *
   * @param engine the engine to launch
   */
-abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging with ProjectInitialiser {
+abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging with ProjectInitialiser with GherkinParser {
 
   /**
     * Interprets a features unit (feaature + meta).
@@ -80,9 +82,12 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       if (options.init) {
         initProject(options)
         Passed(System.nanoTime - startNanos)
+      } else if (options.pretty) {
+        prettyFormat(options.formatFiles)
+        Passed(System.nanoTime - startNanos)
       } else {
         val metaFiles = options.metas.filter(_.exists).flatMap { m => 
-          if (m.isFile) List(m) else FileIO.recursiveScan(m, "meta") 
+          if (m.isFile) List(m) else FileIO.recursiveScan(m) { FileIO.isMetaFile } 
         }
         val featureStream = new FeatureStream(metaFiles, options.tagFilter)
         featureStream.readAll(options.features, options.dataFile) match {
@@ -282,6 +287,40 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
     logger.info("")
     StatusLogger.log(options, logger, summary.evalStatus, summary.statusString)
     logger.info("")
+  }
+
+  private def prettyFormat(locations: List[File]): Unit = {
+    val printer = new SpecPrinter(deep = true, verbatim = true, colors = false)
+    val files =
+      (locations.filter(FileIO.isFeatureOrMetaFile)) ++ 
+        (locations.filter(_.isDirectory) flatMap { dir =>
+          FileIO.recursiveScan(dir) { 
+            FileIO.isFeatureOrMetaFile 
+          }
+        }).filter(_.exists)
+    if (files.nonEmpty) {
+      println("Pretty formatting..")
+    }
+    val prettied = files flatMap { file =>
+      try {
+        parseSpec(file, verbatim = true) map { spec => 
+          val prettySpec = printer.prettyPrint(Root, spec)
+          println(s"- $file")
+          file.writeText(prettySpec)
+          Some(file)
+        } getOrElse(None)
+      } catch {
+        case _: Throwable => None
+      }
+    }
+    if (prettied.nonEmpty) {
+        println()
+        println(s"${prettied.size} file(s) formatted")
+        println()
+    } else {
+      println("No feature or meta files found to format")
+      println()
+    }
   }
   
 }

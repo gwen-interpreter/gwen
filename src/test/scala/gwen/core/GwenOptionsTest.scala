@@ -689,7 +689,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
           dryRun = false,
           Some(dataFile),
           List(metaFile),
-          List(dir5, feature5, dir6))
+          List(dir5, feature5, dir6),
+          pretty = false)
       }
       case _ =>
         fail("expected options but failed")
@@ -710,7 +711,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
           dryRun = false,
           Some(dataFile),
           List(metaFile),
-          List(dir5, feature5, dir6))
+          List(dir5, feature5, dir6),
+          pretty = false)
       }
       case _ =>
         fail("expected options but failed")
@@ -773,6 +775,35 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with pretty format command without switch or dir" should "fail" in {
+    parseOptions(Array("format")) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(e) => 
+        e.getMessage should be ("Gwen invocation failed (see log for details)")
+    }
+  }
+
+  "Options with pretty format command without dir" should "parse" in {
+    parseOptions(Array("format", "--pretty")) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(e) => 
+        e.getMessage should be ("Gwen invocation failed (see log for details)")
+    }
+  }
+
+  "Options with pretty format command with dir" should "parse" in {
+    parseOptions(Array("format", "--pretty", "src/test/features")) match {
+      case Success(options) => {
+        assertOptions(options, pretty = true, formatFiles = List(new File("src/test/features")))
+      }
+      case _ => fail("expected options but failed")
+    }
+  }
+
   private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
     GwenOptions(args)
   }
@@ -795,7 +826,9 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              docker: Boolean = false,
                              jenkins: Boolean = false,
                              force: Boolean = false,
-                             initDir: File = GwenOptions.Defaults.initDir): Unit = {
+                             initDir: File = GwenOptions.Defaults.initDir,
+                             pretty: Boolean = GwenOptions.Defaults.pretty,
+                             formatFiles: List[File] = Nil): Unit = {
 
     options.batch should be (batch)
     options.parallel should be (parallel)
@@ -826,6 +859,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
       options.initOptions should not contain (InitOption.force)
     }
     options.initDir should be (initDir)
+    options.pretty should be (pretty)
+    options.formatFiles should be (formatFiles)
 
   }
 

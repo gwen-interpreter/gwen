@@ -209,14 +209,15 @@ object FileIO {
   def hasParentDirectory(location: File): Boolean = location != null && isDirectory(location.getParentFile)
   def isFeatureFile(file: File): Boolean = hasFileExtension("feature", file)
   def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
+  def isFeatureOrMetaFile(file: File): Boolean = isFeatureFile(file) || isMetaFile(file)
   def isCsvFile(file: File): Boolean = hasFileExtension("csv", file)
   def hasFileExtension(extension: String, file: File): Boolean = !file.isDirectory && file.getName.endsWith(s".$extension")
-  def recursiveScan(dir: File, extension: String): List[File] = {
+  def recursiveScan(dir: File)(filter: File => Boolean): List[File] = {
     val files = dir.listFiles
-    val metas = files.filter(file => hasFileExtension(extension, file)).toList
+    val filtered = files.filter(filter).toList
     files.filter(isDirectory).toList match {
-      case Nil => metas
-      case dirs => metas ::: dirs.flatMap(dir => recursiveScan(dir, extension))
+      case Nil => filtered
+      case dirs => filtered ::: dirs.flatMap(dir => recursiveScan(dir)(filter))
     }
   }
   def getUserFile(filename: String): Option[File] =

@@ -39,7 +39,7 @@ trait GherkinParser {
   private val languageSyntax = """(?s)\s*#\s*language:\s*(\S+).*""".r
 
   /** Parses a Gherkin feature specification */
-  def parseSpec(specFile: File): Try[Spec] = {
+  def parseSpec(specFile: File, verbatim: Boolean = false): Try[Spec] = {
     try {
       val spec = Source.fromFile(specFile).mkString
       if (spec.trim.isEmpty) Errors.syntaxError(s"Empty specification in file: $specFile")
@@ -61,15 +61,20 @@ trait GherkinParser {
             spec
           }
       }
-      parseSpec(featureStr, Some(specFile))
+      parseSpec(featureStr, Some(specFile), verbatim)
     } finally {
       SourceRef.setLineOffset(0)
     }
   }
   
   /** Produces a complete feature spec tree (this method is used to parse entire features). */
-  def parseSpec(feature: String, specFile: Option[File] = None): Try[Spec] = Try {
-    Spec(specFile, parseDocument(feature, specFile))
+  def parseSpec(feature: String): Try[Spec] = {
+    parseSpec(feature, None, verbatim = false)
+  }
+
+  /** Produces a complete feature spec tree (this method is used to parse entire features). */
+  private def parseSpec(feature: String, specFile: Option[File], verbatim: Boolean): Try[Spec] = Try {
+    Spec(specFile, parseDocument(feature, specFile), verbatim)
   }
 
   /** Produces a step node (this method is used by the REPL to read in invididual steps only) */

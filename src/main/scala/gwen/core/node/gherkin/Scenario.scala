@@ -153,12 +153,12 @@ case class Scenario(
 }
 
 object Scenario {
-  def apply(file: Option[File], scenario: cucumber.Scenario): Scenario = {
+  def apply(file: Option[File], scenario: cucumber.Scenario, verbatim: Boolean): Scenario = {
     def tags = Option(scenario.getTags).map(_.asScala.toList).getOrElse(Nil).distinct map { t => Tag(file, t) }
     Scenario(
       Option(scenario.getLocation).map(loc => SourceRef(file, loc)),
       tags,
-      keywordFor(tags, scenario.getKeyword),
+      if (verbatim) scenario.getKeyword else keywordFor(tags, scenario.getKeyword),
       scenario.getName,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,

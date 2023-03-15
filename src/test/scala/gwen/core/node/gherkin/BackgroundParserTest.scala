@@ -26,7 +26,7 @@ import org.scalatest.matchers.should.Matchers
 class BackgroundParserTest extends BaseTest with Matchers with GherkinParser with TestModel {
 
   private def parse(input: String) = {
-    val background = parseSpec(s"Feature: ftest\n$input").filter(_.background.nonEmpty).map(_.background.get)
+    val background = parseSpec(s"Feature: test\n$input").filter(_.background.nonEmpty).map(_.background.get)
     background.map { bg => 
       bg.copy(
         withSourceRef = None,

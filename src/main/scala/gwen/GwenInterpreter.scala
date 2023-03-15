@@ -105,7 +105,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     * @return 0 if successful; 1 otherwise
     */
   private [gwen] def run(options: GwenOptions): Int = {
-    val ctxOpt = if (options.batch || options.init) None else Some(engine.init(options, EnvState()))
+    val ctxOpt = if (options.batch || options.init || options.pretty) None else Some(engine.init(options, EnvState()))
     try {
       val evalStatus = run(options, ctxOpt)
       if (!options.init) {

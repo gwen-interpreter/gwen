@@ -1,5 +1,5 @@
 Feature: Meta bindings
-      
+
   @StepDef
   @Action
   Scenario: I bind more properties

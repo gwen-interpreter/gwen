@@ -26,7 +26,7 @@ import org.scalatest.matchers.should.Matchers
 class ScenarioTest extends BaseTest with Matchers with GherkinParser with TestModel {
 
   private def parse(input: String, clearPos: Boolean = true) = { 
-    val scenario = parseSpec(s"Feature: ftest\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
+    val scenario = parseSpec(s"Feature: test\n$input").filter(_.scenarios.nonEmpty).map(_.scenarios.head)
     if (clearPos) { 
       scenario.map { sc => 
         sc.copy(

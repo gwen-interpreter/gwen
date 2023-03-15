@@ -3,12 +3,13 @@ Feature: String rules
   Rule: Joining two strings together should result in a string containing both
 
     Background: Reset strings
+
       Howdy doo
+
       Given string 1 is ""
         And string 2 is ""
        When I join the two strings
        Then the result should be ""
-
 
     Scenario Template: Joining <string 1> and <string 2> should yield <result>
 

@@ -49,7 +49,7 @@ object SpecPrinter {
 
 }
 
-class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter](deep) {
+class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends SpecWalker[PrintWriter](deep, verbatim) {
 
   private val inRule = ThreadLocal.withInitial[Boolean] { () => false }
 
@@ -67,7 +67,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       out.println()
     }
     printTags("", feature.tags, out)
-    out.print(s"${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${feature.keyword}:${if (colors) ansi.reset else ""} ${feature.name}")
+    out.print(s"${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${feature.keyword}:${if (colors) ansi.reset else ""}${if(feature.name.isEmpty) "" else s" ${feature.name}"}")
     if (deep || feature.description.nonEmpty) out.println()
     printDescription("  ", feature.description, out)
     out
@@ -76,7 +76,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = {
     val indent = indentFor(background)
     out.println()
-    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""} ${background.name}")
+    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""}${if(background.name.isEmpty) "" else s" ${background.name}"}")
     if (deep || background.description.nonEmpty) out.println()
     printDescription(s"$indent  ", background.description, out)
     if (deep && background.description.nonEmpty && background.steps.nonEmpty) {
@@ -91,7 +91,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val keyword = scenario.keyword
       out.println()
       printTags(indent, scenario.tags, out)
-      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""} ${scenario.name}")
+      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""}${if(scenario.name.isEmpty) "" else s" ${scenario.name}"}")
       if (deep || scenario.description.nonEmpty) out.println()
       printDescription(s"$indent  ", scenario.description, out)
       if (deep && scenario.description.nonEmpty && scenario.steps.nonEmpty) {
@@ -104,12 +104,10 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onStep(parent: GwenNode, step: Step, out: PrintWriter): PrintWriter = {
     if (!step.isExpanded(parent)) {
       val keyword = step.keyword
-      val keywordMaxLength = step.siblingsIn(parent) match { 
-        case Nil => keyword.size
-        case siblings => siblings.map(_.asInstanceOf[Step].keyword.length).max
-      }
+      val keywordMaxLength = StepKeyword.maxLength
       val indent = indentFor(step)
-      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (step.printableTags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${step.printableTags.map(_.toString).mkString(" ")} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
+      val tags = if (verbatim) step.tags.filter(_.name != Annotations.Message.toString) else step.printableTags
+      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${tags.map(_.toString).mkString(" ")} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
       if (step.table.nonEmpty) {
         out.println()
         printTable(s"$indent ${" " * keywordMaxLength}", step.table, out)
@@ -117,6 +115,21 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
         step.docString foreach { docString =>
           out.println()
           printDocString(s"$indent ${" " * keywordMaxLength}", docString, out)
+        }
+      }
+      if (verbatim) {
+        step.message foreach { message =>
+          message match {
+            case Failed.customMessage(msg) => 
+              val max = step.siblingsIn(parent) match { 
+                case Nil => 0
+                case siblings => siblings.map(_.asInstanceOf[Step]).filter(_.message.nonEmpty).map(_.name.length).max
+              }
+              val padding = " " * (max - step.name.length)
+              val msgTag = Tag(Annotations.Message, msg)
+              out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
+            case _ => // noop
+          }
         }
       }
       if (deep) out.println(printStatus(step, withMessage = true))
@@ -127,7 +140,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
   override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
     val indent = indentFor(rule)
     if (deep) out.println()
-    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${rule.keyword}:${if (colors) ansi.reset else ""} ${rule.name}")
+    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${rule.keyword}:${if (colors) ansi.reset else ""}${if(rule.name.isEmpty) "" else s" ${rule.name}"}")
     if (deep || rule.description.nonEmpty) out.println()
     printDescription(s"$indent  ", rule.description, out)
     inRule.set(true)
@@ -139,7 +152,7 @@ class SpecPrinter(deep: Boolean, colors: Boolean) extends SpecWalker[PrintWriter
       val indent = indentFor(examples)
       if (deep) out.println()
       printTags(indent, examples.tags, out)
-      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${examples.keyword}:${if (colors) ansi.reset else ""} ${examples.name}")
+      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${examples.keyword}:${if (colors) ansi.reset else ""}${if(examples.name.isEmpty) "" else s" ${examples.name}"}")
       if (deep || examples.description.nonEmpty) out.println()
       printDescription(s"$indent  ", examples.description, out)
       if (examples.description.nonEmpty && examples.table.nonEmpty) {

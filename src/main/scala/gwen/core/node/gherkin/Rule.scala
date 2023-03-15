@@ -82,14 +82,14 @@ case class Rule(
 }
 
 object Rule {
-  def apply(file: Option[File], rule: cucumber.Rule): Rule = {
+  def apply(file: Option[File], rule: cucumber.Rule, verbatim: Boolean): Rule = {
     Rule(
       Option(rule.getLocation).map(loc => SourceRef(file, loc)),
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       rule.getChildren.asScala.toList.flatMap(_.getBackground.toScala).headOption map { b => Background(file, b) },
-      rule.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s) }
+      rule.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s, verbatim) }
     )
   }
 }

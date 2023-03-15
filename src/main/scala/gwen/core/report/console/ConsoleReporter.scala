@@ -35,7 +35,7 @@ class ConsoleReporter(options: GwenOptions)
     extends NodeEventListener("Console Reporter", Set(NodeType.Meta)) {
 
   private val parallel = options.parallel
-  private val printer = new SpecPrinter(false, ConsoleColors.isEnabled)
+  private val printer = new SpecPrinter(deep = false, verbatim = false, ConsoleColors.isEnabled)
   
   private var loadingStepDef = ThreadLocal.withInitial[Boolean] { () => false }
   private var depth = ThreadLocal.withInitial[Int] { () => 0 }

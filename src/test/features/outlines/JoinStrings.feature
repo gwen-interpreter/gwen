@@ -43,7 +43,6 @@ Feature: Join Strings
         | basket | ball   | basketball |
 
   Scenario Outline: Empty examples tables should do nothing
-
     Given the result is "${text 1}${text 2}"
      Then the result should be "<result>"
       And the result should be "${result}"
@@ -52,4 +51,4 @@ Feature: Join Strings
 
       The header row contains the placeholder names. The body is empty.
 
-        | text 1 | text 2 | result     |
+        | text 1 | text 2 | result |

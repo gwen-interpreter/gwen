@@ -68,7 +68,7 @@ Feature: Load Strategies
       And @Eager time is defined by js "new Date().getTime()"
       And @Eager time 0 is defined by js "new Date().getTime()"
      When I capture time as time 1
-      And I capture time as time 2 
+      And I capture time as time 2
      Then time should not be "0"
       And time 1 should be "${time 2}"
       And time 1 is less than time 0 is defined by js "${time 1} < ${time 0}"
@@ -79,7 +79,7 @@ Feature: Load Strategies
       And @Lazy time is defined by js "new Date().getTime()"
       And @Eager time 0 is defined by js "new Date().getTime()"
      When I capture time as time 1
-      And I capture time as time 2 
+      And I capture time as time 2
      Then time should not be "0"
       And time 1 should be "${time 2}"
       And time 1 is greater than time 0 is defined by js "${time 1} > ${time 0}"
@@ -90,7 +90,7 @@ Feature: Load Strategies
       And time is defined by js "new Date().getTime()"
       And @Eager time 0 is defined by js "new Date().getTime()"
      When I capture time as time 1
-      And I capture time as time 2 
+      And I capture time as time 2
      Then time should not be "0"
       And time 1 should not be "${time 2}"
       And time 1 is greater than time 0 is defined by js "${time 1} > ${time 0}"
@@ -147,9 +147,9 @@ Feature: Load Strategies
      Then status 1 should be "passed"
       And status 2 should be "sustained"
       And status 3 should be "sustained"
-      And the json should be "{ "status": "sustained" }"  @Message("sustained status expected") if condition
-      And the json should be "{ "status": "sustained" }" if condition  @Message("sustained status expected")
-      And the json should be "{ "status": "sustained" }"  @Message("sustained status expected")
+      And the json should be "{ "status": "sustained" }" @Message("sustained status expected") if condition
+      And the json should be "{ "status": "sustained" }" if condition    @Message("sustained status expected")
+      And the json should be "{ "status": "sustained" }"                 @Message("sustained status expected")
 
   Scenario: Eager, lazy and ephemeral system process dates
     Given date 1a is "0"
@@ -181,4 +181,3 @@ Feature: Load Strategies
       And date 1a should be "${date 1b}"
       And date 2a should be "${date 2b}"
       And date 3a should not be "${date 3b}"
-      

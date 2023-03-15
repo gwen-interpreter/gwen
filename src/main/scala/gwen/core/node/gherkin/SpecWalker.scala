@@ -21,7 +21,7 @@ import gwen.core.node.GwenNode
 /**
   * Walks the nodes of a specification and accumuates a result of type T.
   */
-abstract class SpecWalker[T](deep: Boolean) {
+abstract class SpecWalker[T](deep: Boolean, verbatim: Boolean) {
 
   // overridable callbacks
   def onSpec(parent: GwenNode, spec: Spec, acc: T): T = acc
@@ -85,7 +85,7 @@ abstract class SpecWalker[T](deep: Boolean) {
             acc = walk(scenario, background, acc)
           }
         }
-        if (!scenario.isStepDef) {
+        if (verbatim || !scenario.isStepDef) {
           acc = onScenario(parent, scenario, acc)
           if (deep) {
             scenario.steps foreach { step => 

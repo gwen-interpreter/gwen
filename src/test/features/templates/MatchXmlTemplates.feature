@@ -12,14 +12,14 @@ Feature: Match and extract XML templates
           """
      When I capture my value
      Then my value should match template "<result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>"
-     And my value should match template
+      And my value should match template
           """
           <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
           """
-     And my value should match template file "src/test/features/templates/xml/StaticSingleLineTemplate.xml"
+      And my value should match template file "src/test/features/templates/xml/StaticSingleLineTemplate.xml"
 
- Scenario: Match static multi line XML template
-     Given my value is
+  Scenario: Match static multi line XML template
+    Given my value is
           """
           <result>
               <id>42</id>
@@ -45,8 +45,8 @@ Feature: Match and extract XML templates
           """
       And my value should match template file "src/test/features/templates/xml/StaticMultiLineTemplate.xml"
 
- Scenario: Match dynamic single line XML template (1 ignore, 1 extract, 1 inject)
-     Given my value is
+  Scenario: Match dynamic single line XML template (1 ignore, 1 extract, 1 inject)
+    Given my value is
           """
           <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
           """
@@ -56,8 +56,8 @@ Feature: Match and extract XML templates
       And pet id should be absent
       And pet name should be "tiger"
 
- Scenario: Match dynamic multi line XML template (2 extracts, 1 ignore, 1 inject)
-     Given my value is
+  Scenario: Match dynamic multi line XML template (2 extracts, 1 ignore, 1 inject)
+    Given my value is
           """
           <result>
               <id>42</id>
@@ -87,8 +87,8 @@ Feature: Match and extract XML templates
       And the pet name should be "tiger"
       And the pet status should be "available"
 
- Scenario: Match dynamic single line XML template file (1 ignore, 1 extract, 1 inject)
-     Given my value is
+  Scenario: Match dynamic single line XML template file (1 ignore, 1 extract, 1 inject)
+    Given my value is
           """
           <result><id>42</id><category><name>pet</name></category><name>tiger</name><status>available</status></result>
           """
@@ -99,7 +99,7 @@ Feature: Match and extract XML templates
       And pet name 1 should be "tiger"
 
   Scenario: Match dynamic multi line XML template file (2 extracts, 1 ignore, 1 inject)
-     Given my value is
+    Given my value is
           """
           <result>
               <id>42</id>

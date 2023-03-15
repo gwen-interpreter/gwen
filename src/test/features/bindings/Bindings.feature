@@ -1,5 +1,5 @@
 Feature: Binding tests
-	    
+
   Scenario: Check bindings
     Given a1 is "${property.a}"
       And a2 is "${a1}"
@@ -12,4 +12,3 @@ Feature: Binding tests
       And b2 should be "B"
       And b3 should be "B"
       And j1 should be "true"
-	

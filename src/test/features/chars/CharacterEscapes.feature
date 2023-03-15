@@ -12,28 +12,28 @@ Feature: Characters escapes
 
   Scenario: New line escapes
     Given value1 is defined by javascript "'a\nb'"
-      And value2 is 
+      And value2 is
           """
           ${value1}
           """
-      And value3 is defined by javascript 
-         """
-         (function() {
-           
-           // escaped new line
-           return 'a\nb'
-
-         })();
-         """
+      And value3 is defined by javascript
+          """
+          (function() {
+            
+            // escaped new line
+            return 'a\nb'
+          
+          })();
+          """
       And value4 is
           """
           ${value3}
           """
      When I run a step def test with "value with \n character" value
       And I run a data table test
-          | value                            |
-          | value with \n character          |
-          | value with escaped \\n character |
+          | value                           |
+          | value with \n character         |
+          | value with escaped \n character |
      Then value1 should be
           """
           a
@@ -58,21 +58,21 @@ Feature: Characters escapes
   Scenario: New line double escapes
     Given value1 is defined by javascript "'a\\nb'"
       And value2 is "${value1}"
-      And value3 is defined by javascript 
-         """
-         (function() {
-           
-           // escaped new line
-           return 'a\\nb'
-
-         })();
-         """
+      And value3 is defined by javascript
+          """
+          (function() {
+            
+            // escaped new line
+            return 'a\\nb'
+          
+          })();
+          """
       And value4 is "${value3}"
      When I run a step def test with "value with \\n character" value
       And I run a data table test
-          | value                              |
-          | value with \\n character           |
-          | value with escaped \\\\n character |
+          | value                           |
+          | value with \n character         |
+          | value with escaped \n character |
      Then value1 should be "a\nb"
       And value2 should be "a\nb"
       And value3 should be "a\nb"
@@ -85,4 +85,3 @@ Feature: Characters escapes
   Scenario: Java double escape chars
     Given value is "\\t\\b\\n\\r\\f\\'\\"\\\\"
      Then value should be "\\t\\b\\n\\r\\f\\'\\"\\\\"
-

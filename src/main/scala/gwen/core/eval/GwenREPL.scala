@@ -90,7 +90,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private var debug: Boolean = false
 
   private val colors = ConsoleColors.isEnabled
-  private val printer = new SpecPrinter(deep = false, colors)
+  private val printer = new SpecPrinter(deep = false, verbatim = false, colors)
   private def prompt = if (paste.isEmpty) s"${if (colors) ansi.bold else ""}gwen${if (debug) s"@Breakpoint" else ""}> ${if (colors) ansi.reset else ""}" else ""
 
   private var reader: LineReader = createReader()

@@ -26,8 +26,8 @@ Feature: Number tables (for each)
           | square | 1 | 4 | 9  |
           | cube   | 1 | 8 | 27 |
       And each column contains a number in decimal and binary form
-          | 4   | 5    | 6   |
-          | 100 | 101  | 110 |
+          | 4   | 5   | 6   |
+          | 100 | 101 | 110 |
       And each row contains two numbers that sum to a Fibonacci number in the third
           | 0 | 1 | 1 |
           | 1 | 1 | 2 |

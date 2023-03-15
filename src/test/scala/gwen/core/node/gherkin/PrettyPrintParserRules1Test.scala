@@ -26,7 +26,7 @@ import org.scalatest.matchers.should.Matchers
 class PrettyPrintParserRules1Test extends BaseTest with Matchers with SpecNormaliser with GherkinParser {
 
   private val parse = parseSpec(_: String)
-  private val printer = new SpecPrinter(deep = true, false)
+  private val printer = new SpecPrinter(deep = true, verbatim = false, false)
 
   private val featureString = s"""@wip
 Feature: Gwen

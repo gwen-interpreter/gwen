@@ -99,8 +99,8 @@ Feature: Number tables meta (for each)
   @StepDef
   Scenario: the nested table should match against its table
     Given each column contains a number in decimal and binary form
-          | 4   | 5    | 6   |
-          | 100 | 101  | 110 |
+          | 4   | 5   | 6   |
+          | 100 | 101 | 110 |
      Then everything is "ok"
 
   @StepDef
@@ -109,4 +109,3 @@ Feature: Number tables meta (for each)
   @Context
   Scenario: empty table with header only
      Then z is "${item}"
-

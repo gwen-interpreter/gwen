@@ -48,6 +48,8 @@ import java.io.File
   * @param docker true to init docker files, false to not
   * @param jenkins true to init jenkins files, false to not
   * @param initDir working diretory to initialise
+  * @param pretty option boolean to pretty format given feature and meta files
+  * @param formatFiles list of files/directories to format
   *
   * @author Branko Juric
   */
@@ -67,7 +69,9 @@ case class GwenOptions(
     args: Option[Array[String]] = None,
     init: Boolean = false,
     initOptions: List[InitOption] = Nil,
-    initDir: File = GwenOptions.Defaults.initDir) {
+    initDir: File = GwenOptions.Defaults.initDir,
+    pretty: Boolean = GwenOptions.Defaults.pretty,
+    formatFiles: List[File] = Nil) {
 
   def parallelScenarios(stateLevel: StateLevel) = parallel && stateLevel == StateLevel.scenario
 
@@ -101,6 +105,7 @@ object GwenOptions {
     val docker = false
     val jenkins = false
     val initDir = new File("gwen")
+    val pretty = false
   }
 
   /**
@@ -249,7 +254,28 @@ object GwenOptions {
               c.copy(initDir = d)
           } text s"Project directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
 
-      } 
+      } text "Initialise project directory"
+
+      cmd("format").action { 
+        (_, c) => 
+          c.copy(pretty = true) 
+
+      } children {
+          
+        opt[Unit]("pretty") action {
+            (_, c) => {
+              c.copy(pretty = true)
+            }
+          } text "Pretty Gherkin format (default)"
+
+        arg[File]("files|dirs").unbounded().required().action {
+          (f, c) =>
+            c.copy(formatFiles = c.formatFiles :+ f)
+        } validate {
+          f => if (f.exists) success else failure(s"File/dir not found: $f")
+        } text s"Feature/meta files or dirs to format (space separated)"
+
+      } text "Format feature and meta files"
 
     }
 
@@ -270,13 +296,15 @@ object GwenOptions {
         Some(args),
         options.init,
         options.initOptions,
-        options.initDir)
+        options.initDir,
+        options.pretty,
+        options.formatFiles)
       } map { options =>
         if (options.parallel) options.copy(batch = true)
         else options
       } tap { options =>
         options foreach { opt =>
-          if (opt.batch && opt.features.isEmpty) {
+          if ((opt.batch) && opt.features.isEmpty) {
             Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {

@@ -107,12 +107,12 @@ case class Spec(
 }
 
 object Spec {
-  def apply(file: Option[File], spec: cucumber.GherkinDocument): Spec = {
+  def apply(file: Option[File], spec: cucumber.GherkinDocument, verbatim: Boolean): Spec = {
     val cFeature = spec.getFeature.toScala.get
     val feature = Feature(file, cFeature)
     val background = cFeature.getChildren.asScala.toList.flatMap(_.getBackground.toScala).headOption map { b => Background(file, b) }
-    val scenarios = cFeature.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s) }
-    val rules = cFeature.getChildren.asScala.toList.flatMap(_.getRule.toScala).map { case r => Rule(file, r) }
+    val scenarios = cFeature.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s, verbatim) }
+    val rules = cFeature.getChildren.asScala.toList.flatMap(_.getRule.toScala).map { case r => Rule(file, r, verbatim) }
     Spec(feature, background, scenarios, rules, Nil)
   }
 }

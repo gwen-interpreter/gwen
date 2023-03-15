@@ -24,7 +24,7 @@ import scala.util.Success
 
 class RuleTest extends BaseTest with Matchers with GherkinParser {
 
-  private def parse(input: String) = parseSpec(s"Feature: ftest\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
+  private def parse(input: String) = parseSpec(s"Feature: test\n$input").filter(_.rules.nonEmpty).map(_.rules.head)
   
   private def background = """
     Background: The butterfly effect
