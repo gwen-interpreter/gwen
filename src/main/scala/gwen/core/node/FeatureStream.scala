@@ -115,9 +115,6 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     * 
     * @param dir the directory to scan in
     * @param inputs tuple of accumulated meta files and one optional data file
-    * @throws gwen.Errors.AmbiguousCaseException if more than one data 
-    *         file is found in the given directory or more than one data file is 
-    *         found in the directory path.
     */
   private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
     val (metaFiles, dataFile) = inputs

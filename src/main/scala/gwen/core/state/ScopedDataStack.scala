@@ -183,8 +183,6 @@ class ScopedDataStack() {
     *
     * @param name the name of the attribute to find
     * @return the attribute value
-    * @throws gwen.Errors.UnboundAttributeException if the attribute is
-    *         not bound to the given name
     */
   def get(name: String): String =
     getOpt(name).getOrElse(Errors.unboundAttributeError(name, current.scope))
@@ -272,8 +270,6 @@ class ScopedDataStack() {
     *
     * @param scope the scope name to scan
     * @param name the name of the attribute to find
-    * @throws gwen.Errors.UnboundAttributeException if the attribute is bound
-    *         to the given name in the given scope
     */
   def getIn(scope: String, name: String): String =
     getInOpt(scope, name).getOrElse(Errors.unboundAttributeError(name, scope))

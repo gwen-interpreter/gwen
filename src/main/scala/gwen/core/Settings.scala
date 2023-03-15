@@ -209,8 +209,6 @@ object Settings extends LazyLogging {
    * 
    * @param value the value to resolve
    * @param props the properties already read (candidates for substitution)
-   * @throws MissingPropertyException if a property cannot be substituted 
-   *         because it is missing from the given props
    */
   private [core] def resolve(value: String, props: Properties): String = value match {
     case InlineProperty(key) =>
@@ -232,8 +230,6 @@ object Settings extends LazyLogging {
    * 
    * @param value the value to resolve
    * @param conf the config already read (candidates for substitution)
-   * @throws MissingPropertyException if a property cannot be substituted 
-   *         because it is missing from the given props
    */
   private [core] def resolve(value: String, conf: Config): String = {
     value match {

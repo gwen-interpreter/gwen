@@ -112,7 +112,6 @@ object GwenOptions {
     * Creates a new options object from the given command line arguments.
     *
     * @param args the command line arguments
-    * @throws gwen.Errors.InvocationException if the given arguments fail to parse
     */
   def apply(args: Array[String]): GwenOptions = {
 
