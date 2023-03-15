@@ -19,21 +19,22 @@ package gwen.core.eval.engine
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.table.DataTable
 import gwen.core.status.Loaded
+import gwen.core.status.Passed
 
 import scala.util.chaining._
+import scala.util.Try
 
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
-import gwen.core.node.gherkin.Annotations
-import gwen.core.status.Passed
 
 /**
   * StepDef evaluation engine.
@@ -96,6 +97,8 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       )
       checkStepDefRules(sdStep, ctx)
       ctx.paramScope.push(stepDef.name, stepDef.params)
+      val prevSDName = ctx.topScope.getOpt("gwen.stepDef.name")
+      ctx.topScope.set("gwen.stepDef.name", stepDef.name)
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
@@ -114,6 +117,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           }
         }
       } finally {
+        ctx.topScope.set("gwen.stepDef.name", prevSDName.orNull)
         ctx.paramScope.pop()
       }
     } finally {
