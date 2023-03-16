@@ -17,6 +17,7 @@
 package gwen.core.eval
 
 import gwen.core._
+import gwen.core.behavior.BehaviorMode
 import gwen.core.behavior.FeatureMode
 import gwen.core.node.GwenNode
 import gwen.core.node.FeatureUnit
@@ -82,9 +83,6 @@ object GwenREPL {
   */
 class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
-  // repl always runs in imperative mode
-  Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
-
   private var paste: Option[List[String]] = None
   private var pastingDocString: Boolean = false
   private var debug: Boolean = false
@@ -131,7 +129,13 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     debug = false
     System.out.println("\nREPL Console")
     System.out.println("\nEnter steps to evaluate or type help for more options..")
-    while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) System.out.println(output) } ).nonEmpty) { }
+    enteringLoop()
+    try {
+      while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) System.out.println(output) } ).nonEmpty) { }
+    } finally {
+      exitingLoop()
+    }
+
   }
 
   /** Runs the read-eval-print-loop in debug mode. */
@@ -144,14 +148,31 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     System.out.println()
     System.out.println(s"Paused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
     System.out.println("Enter c to continue or q to quit (or type help for more options)..")
-    while(
-      eval(read()) map { output => 
-        continue = output == "continue"
-        output tap { _ => if (paste.isEmpty && !continue) System.out.println(output) } 
-        output
-      } filter { output => output != "continue" } nonEmpty
-    ) { }
+    enteringLoop()
+    try {
+      while(
+        eval(read()) map { output => 
+          continue = output == "continue"
+          output tap { _ => if (paste.isEmpty && !continue) System.out.println(output) } 
+          output
+        } filter { output => output != "continue" } nonEmpty
+      ) { }
+    } finally {
+      exitingLoop()
+    }
     continue
+  }
+
+  private def enteringLoop(): Unit = {
+    // repl always runs in imperative and lenient mode
+    Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
+    Settings.setLocal("gwen.behavior.rules", BehaviorMode.lenient.toString)
+
+  }
+  private def exitingLoop(): Unit = {
+    // remove local imperative and lenient mode overrides
+    Settings.clearLocal("gwen.feature.mode")
+    Settings.clearLocal("gwen.behavior.rules")
   }
 
   /** Reads an input string or command from the command line. */

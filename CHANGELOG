@@ -1,5 +1,11 @@
+3.33.1
+======
+Mar 16, 2023
+- Relax strict and declarative rules when in REPL
+
 3.33.0
 ======
+Mar 15, 2023
 - Bind implicit `gwen.stepDef.name` attribute to the currently executing StepDef name
 
 3.32.0
