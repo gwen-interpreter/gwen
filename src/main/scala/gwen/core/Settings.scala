@@ -41,6 +41,12 @@ import java.util.Map.Entry
   */
 object Settings extends LazyLogging {
 
+  private val envOverrides = mutable.Map[String, String]()
+
+  def addEnvOverrides(overrides: (String, String)*): Unit = {
+    envOverrides ++= overrides
+  }
+
   val BootstrapConf: Config = Settings.load()._1
 
   object Lock
@@ -286,7 +292,9 @@ object Settings extends LazyLogging {
     if (name.startsWith("env.") && name.length() > 4) {
       sys.env.get(name.substring(4))
     } else {
-      sys.env.get(name)
+      envOverrides.get(name) map { envName =>
+        sys.env.get(envName)
+      } getOrElse sys.env.get(name)
     }
   }
 

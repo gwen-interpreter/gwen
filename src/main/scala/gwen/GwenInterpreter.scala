@@ -54,11 +54,17 @@ object GwenInterpreter {
   */
 class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging with NoopProjectInitialiser {
 
+  Settings.addEnvOverrides(
+    "gwen.cli.options.dryRun" -> "GWEN_DRY_RUN", 
+    "gwen.cli.options.parallel" ->"GWEN_PARALLEL",
+    "gwen.parallel.maxThreads" ->"GWEN_THREADS"
+  )
+
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     val start = System.nanoTime
     try {
-      val options = initDefaultSettings(GwenOptions(args))
+      val options = init(GwenOptions(args))
       logger.info("Initialising settings")
       Settings.init(options.settingsFiles*)
       GwenSettings.check()
@@ -78,24 +84,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
   }
 
-  def initDefaultSettings(options: GwenOptions): GwenOptions = {
-    applyEnvOverrides(
-      List(
-        ("gwen.cli.options.dryRun", "GWEN_DRY_RUN"), 
-        ("gwen.cli.options.parallel", "GWEN_PARALLEL"),
-        ("gwen.parallel.maxThreads", "GWEN_THREADS")
-      )
-    )
-    options
-  }
-
-  def applyEnvOverrides(defaultEnvSettings: List[(String, String)]) = {
-    defaultEnvSettings foreach { (name, envVar) =>
-      sys.env.get(envVar) foreach { value => 
-        sys.props.put(name, value)
-      }
-    }
-  }
+  def init(options: GwenOptions): GwenOptions = options
 
   /**
     * Runs the interpreter with the given options
