@@ -99,7 +99,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       val evalStatus = run(options, ctxOpt)
       if (!options.init) {
         ctxOpt foreach { ctx =>
-          if (evalStatus.isEvaluated || evalStatus.isLoaded) {
+          if (evalStatus.isEvaluated || (evalStatus.isLoaded && options.verbose)) {
             printBanner("")
           }
           createRepl(ctx).run()
