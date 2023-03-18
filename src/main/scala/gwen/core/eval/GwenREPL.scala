@@ -142,9 +142,10 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     debug = true
     var continue: Boolean = false
     val verbatimPrinter = new SpecPrinter(deep = false, verbatim = true, colors)
-    System.out.println(verbatimPrinter.printStep(parent, step))
+    if (!ctx.isEvaluatingTopLevelStep) System.out.println()
     System.out.println()
     System.out.println(s"Paused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
+    System.out.println(verbatimPrinter.prettyPrint(parent, step))
     System.out.println("Enter c to continue or q to quit (or type help for more options)..")
     enteringLoop()
     try {
