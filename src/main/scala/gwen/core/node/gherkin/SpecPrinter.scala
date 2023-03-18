@@ -137,6 +137,13 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
     out
   }
 
+  def printStep(parent: GwenNode, step: Step): String = {
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+    onStep(parent, step, pw)
+    sw.toString
+  }
+
   override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
     val indent = indentFor(rule)
     if (deep) out.println()

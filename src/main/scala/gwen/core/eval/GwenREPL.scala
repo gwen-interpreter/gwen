@@ -22,7 +22,6 @@ import gwen.core.behavior.FeatureMode
 import gwen.core.node.GwenNode
 import gwen.core.node.FeatureUnit
 import gwen.core.node.Root
-import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
@@ -140,11 +139,10 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
 
   /** Runs the read-eval-print-loop in debug mode. */
   def debug(parent: GwenNode, step: Step): Boolean = {
-    var continue: Boolean = false
     debug = true
-    var stepStr = printer.prettyPrint(parent, step)
-    var breakpointTag = s"${if (colors) ansi.fg(Color.CYAN) else ""}@${Annotations.Breakpoint.toString}${if (colors) ansi.reset else ""} "
-    System.out.println(stepStr.patch(stepStr.indexOf(" ", stepStr.indexOf(step.keyword)) + 1, breakpointTag, 0))
+    var continue: Boolean = false
+    val verbatimPrinter = new SpecPrinter(deep = false, verbatim = true, colors)
+    System.out.println(verbatimPrinter.printStep(parent, step))
     System.out.println()
     System.out.println(s"Paused at${step.sourceRef.map(sref => s" $sref").getOrElse("")}")
     System.out.println("Enter c to continue or q to quit (or type help for more options)..")
