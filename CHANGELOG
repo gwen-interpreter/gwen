@@ -1,3 +1,8 @@
+3.33.3
+======
+Mar 21, 2023
+- Allow cntl-d to exit REPL quietly
+
 3.33.2
 ======
 Mar 18, 2023

@@ -180,7 +180,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     try {
       reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
     } catch {
-      case _: EndOfFileException if paste.nonEmpty => "paste"
+      case _: EndOfFileException => 
+        paste.map(_ => "paste").getOrElse("exit")
     }
   }
 
