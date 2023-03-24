@@ -56,17 +56,6 @@ object GwenREPL {
 
   lazy val terminal = TerminalBuilder.builder.system(true).build
 
-  // do not escape space separated inputs
-  lazy val parser = new DefaultParser() {
-    override def isDelimiterChar(charSeqBuffer: CharSequence, position: Int): Boolean = {
-      val isWhiteSpaceChar = Character.isWhitespace(charSeqBuffer.charAt(position))
-      if (isWhiteSpaceChar && position + 1 < charSeqBuffer.length()
-          && !Character.isWhitespace(charSeqBuffer.charAt(position + 1))) {
-        false
-      } else isWhiteSpaceChar
-    }
-  }
-
   val historyFile = new File(GwenSettings.`gwen.outDir`, ".history")
 
   /** Filters attributes containing or matching given expression (both names and values are checked). */
@@ -93,6 +82,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private var reader: LineReader = createReader()
 
   def createReader(): LineReader = {
+    val parser = new DefaultParser() {
+      setEscapeChars(Array[Char]())
+    }
     val tabCompletion = new TreeCompleter(
       (
         List(
