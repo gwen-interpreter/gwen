@@ -47,7 +47,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.outDir`.getPath should be ("output")
       GwenSettings.`gwen.parallel.maxThreads` should be (GwenSettings.availableProcessors)
       GwenSettings.`gwen.rampup.interval.seconds` should be (None)
-      GwenSettings.`gwen.report.stepDef.indent.pixels` should be (30)
+      GwenSettings.`gwen.report.stepDef.indent.pixels` should be (20)
       GwenSettings.`gwen.report.overwrite` should be (false)
       GwenSettings.`gwen.report.suppress.meta` should be (true)
       GwenSettings.`gwen.report.slideshow.create` should be (false)

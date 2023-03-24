@@ -1,3 +1,10 @@
+3.33.4
+======
+Mar 25, 2023
+- Do not escape inputs in REPL
+- Smaller StepDef indents in HTML reports
+  - New default of 20 pixels for `gwen.report.stepDef.indent.pixels` setting
+
 3.33.3
 ======
 Mar 21, 2023

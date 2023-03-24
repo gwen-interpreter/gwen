@@ -99,7 +99,7 @@ object GwenSettings {
 
   /**
     * Provides access to the `gwen.report.stepDef.indent.pixels` setting used to the 
-    * indent size of StepDefs in HTML reports (default is 40 pixels).
+    * indent size of StepDefs in HTML reports.
     */
   def `gwen.report.stepDef.indent.pixels`: Int = {
     Settings.getInt("gwen.report.stepDef.indent.pixels")
