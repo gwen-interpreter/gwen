@@ -107,7 +107,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     )
     LineReaderBuilder.builder()
       .terminal(GwenREPL.terminal)
-      .parser(GwenREPL.parser)
+      .parser(parser)
       .variable(LineReader.HISTORY_FILE, GwenREPL.historyFile)
       .completer(tabCompletion)
       .option(LineReader.Option.HISTORY_TIMESTAMPED, false)
