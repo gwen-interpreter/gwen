@@ -1,3 +1,11 @@
+3.34.0
+======
+Mar 25, 2023
+- Introduce auto suggestions in the REPL console
+- Introduce new settings to enable or disable auto suggestions and tab completion
+  - `gwen.console.repl.autoSuggestions=true|false` (default is true for enabled)
+  - `gwen.console.repl.tabCompletion=true|false` (default is true for enabled)
+
 3.33.4
 ======
 Mar 25, 2023

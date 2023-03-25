@@ -49,8 +49,10 @@ import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.terminal.TerminalBuilder
 import org.jline.terminal.Terminal
+import org.jline.widget.AutosuggestionWidgets
 
 import java.io.File
+import org.jline.reader.impl.completer.NullCompleter
 
 object GwenREPL {
 
@@ -85,34 +87,42 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     val parser = new DefaultParser() {
       setEscapeChars(Array[Char]())
     }
-    val tabCompletion = new TreeCompleter(
-      (
-        List(
-          TreeCompleter.node("help"),
-          TreeCompleter.node("env", TreeCompleter.node("-a", "-f", """-a "<filter>"""", """-f "<filter>"""", """"<filter>"""")),
-          TreeCompleter.node("history"),
-          TreeCompleter.node("paste"),
-          TreeCompleter.node("load", TreeCompleter.node("<meta-file>")),
-          TreeCompleter.node("bye", "exit", "quit", "q"),
-        ) ++ (
-          ctx.dsl.distinct match {
-            case Nil => Nil
-            case dsl => 
-              val dslCompleter = TreeCompleter.node(dsl:_*)
-              StepKeyword.names map { keyword =>
-                TreeCompleter.node(keyword.toString, dslCompleter)
-              }
-        })
-      ).asJava
-    )
+    val tabCompletion = 
+      if (GwenSettings.`gwen.console.repl.tabCompletion`) {
+        new TreeCompleter(
+          (
+            List(
+              TreeCompleter.node("help"),
+              TreeCompleter.node("env", TreeCompleter.node("-a", "-f", """-a "<filter>"""", """-f "<filter>"""", """"<filter>"""")),
+              TreeCompleter.node("history"),
+              TreeCompleter.node("paste"),
+              TreeCompleter.node("load", TreeCompleter.node("<meta-file>")),
+              TreeCompleter.node("bye", "exit", "quit", "q"),
+            ) ++ (
+              ctx.dsl.distinct match {
+                case Nil => Nil
+                case dsl => 
+                  val dslCompleter = TreeCompleter.node(dsl:_*)
+                  StepKeyword.names map { keyword =>
+                    TreeCompleter.node(keyword.toString, dslCompleter)
+                  }
+            })
+          ).asJava
+        )
+      } else NullCompleter.INSTANCE
     LineReaderBuilder.builder()
       .terminal(GwenREPL.terminal)
       .parser(parser)
       .variable(LineReader.HISTORY_FILE, GwenREPL.historyFile)
       .completer(tabCompletion)
       .option(LineReader.Option.HISTORY_TIMESTAMPED, false)
-      .option(LineReader.Option.DISABLE_EVENT_EXPANSION, false)
-      .build()
+      .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true)
+      .build() tap { reader => 
+        if (GwenSettings.`gwen.console.repl.autoSuggestions`) {
+          val autoSuggest = new AutosuggestionWidgets(reader)
+          autoSuggest.enable()
+        }
+    }
   }
 
   /** Runs the read-eval-print-loop. */
@@ -209,7 +219,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   }
 
   private def help = { 
-    val help = """
+    s"""
       | Gwen REPL commands:
       |
       | help
@@ -246,14 +256,16 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       |
       | ctrl-D
       |   If in paste mode: exits paste mode and interprets provided steps
-      |   Otherwise: Closes REPL session and exits
+      |   Otherwise: Closes REPL session and exits${if (GwenSettings.`gwen.console.repl.autoSuggestions`) s"""
       |
-      | <tab>
-      |   Press tab key at any time for tab completion
-      | """.stripMargin
-    if (!debug) help else help ++ s"""
+      | right-arrow
+      |   Press right arrow to accept auto suggestion""".stripMargin else ""}${if (GwenSettings.`gwen.console.repl.tabCompletion`) s"""
+      |
+      | tab
+      |   Press tab key at any time for tab completion""".stripMargin else ""}${if (debug) s"""
+      |
       | c|continue|resume
-      |   Continue executing from current step (debug mode only)
+      |   Continue executing from current step (debug mode only)""".stripMargin else ""}
       | """.stripMargin
   }
 

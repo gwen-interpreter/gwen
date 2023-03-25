@@ -56,6 +56,8 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.console.log.colors` should be (true)
       GwenSettings.`gwen.console.log.depth` should be (1)
       GwenSettings.`gwen.console.log.stepDefs` should be (true)
+      GwenSettings.`gwen.console.repl.autoSuggestions` should be (true)
+      GwenSettings.`gwen.console.repl.tabCompletion` should be (true)
       GwenSettings.`gwen.video.dir`.getPath should be ("output/.video")
       GwenSettings.`gwen.video.timeoutSecs` should be (10)
       GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records` should be (Integer.MAX_VALUE)

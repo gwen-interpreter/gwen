@@ -280,6 +280,18 @@ object GwenSettings {
   }
 
   /**
+    * Provides access to the `gwen.console.repl.autoSuggestions` setting used to control whether or not auto
+    * suggestions are enabled in the repl.
+    */
+  def `gwen.console.repl.autoSuggestions`: Boolean = Settings.getBoolean("gwen.console.repl.autoSuggestions")
+
+  /**
+    * Provides access to the `gwen.console.repl.tabCompletion` setting used to control whether or not tab
+    * completion is enabled in the repl.
+    */
+  def `gwen.console.repl.tabCompletion`: Boolean = Settings.getBoolean("gwen.console.repl.tabCompletion")
+
+  /**
     * Provides access to the `gwen.dryRun.limit.tableData.outline.examples.records` setting used to control the number of 
     * records in examples tables to include in dry runs (default is infinity for all steps).
     */
