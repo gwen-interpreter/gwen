@@ -72,6 +72,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       Dialect.instance
       System.exit(run(options))
     } catch {
+      case _: Errors.GwenInterruptException =>
+        System.exit(1) // user cntl-c initiated exit
       case e: Throwable =>
         val errMsg = s"${Failed(System.nanoTime - start, e).message}"
         if (e.isInstanceOf[Errors.GwenException]) {
@@ -107,7 +109,14 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       }
       evalStatus.exitCode
     } finally {
-      ctxOpt.foreach(_.close())
+      ctxOpt foreach { ctx =>
+        try {
+          ctx.close()
+        } catch {
+          case e: Throwable => 
+            logger.warn(s"Could not close context: $e")
+        }
+      }
     }
   }
 

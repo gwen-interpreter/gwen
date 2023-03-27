@@ -1,3 +1,9 @@
+
+3.34.3
+======
+Mar 27, 2023
+- Log warning and return code 1 if context fails to close on exit
+
 3.34.2
 ======
 Mar 27, 2023

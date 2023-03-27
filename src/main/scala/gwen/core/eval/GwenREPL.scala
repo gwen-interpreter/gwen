@@ -183,7 +183,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
     } catch {
       case _: EndOfFileException => paste.map(_ => "paste").getOrElse("exit")
-      case _: Throwable => "exit"
+      case e: Throwable => Errors.interruptException(e)
     }
   }
 
@@ -207,7 +207,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         verifyHistory(historyValue, input)
       case "paste" | ":paste" =>
         pasteMode()
-      case "q" | "exit" | "bye" | "quit" =>
+      case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
         None
       case "c" | "continue" | "resume" if debug =>
         Some("continue")

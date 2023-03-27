@@ -107,6 +107,7 @@ object Errors {
       assert(assertion, assertError)
     }
   }
+  def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -292,4 +293,7 @@ object Errors {
 
   /** Thrown when cursom error @Message is thrown. */
   class CustomAssertionError(msg: String) extends AssertionError(msg)
+
+  /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
+  class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)
 }
