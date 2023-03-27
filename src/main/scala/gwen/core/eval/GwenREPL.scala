@@ -45,14 +45,15 @@ import org.jline.builtins.Completers.TreeCompleter
 import org.jline.reader.EndOfFileException
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
+import org.jline.reader.UserInterruptException
 import org.jline.reader.impl.DefaultParser
+import org.jline.reader.impl.completer.NullCompleter
 import org.jline.reader.impl.history.DefaultHistory
 import org.jline.terminal.TerminalBuilder
 import org.jline.terminal.Terminal
 import org.jline.widget.AutosuggestionWidgets
 
 import java.io.File
-import org.jline.reader.impl.completer.NullCompleter
 
 object GwenREPL {
 
@@ -182,8 +183,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     try {
       reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
     } catch {
-      case _: EndOfFileException => 
-        paste.map(_ => "paste").getOrElse("exit")
+      case _: EndOfFileException => paste.map(_ => "paste").getOrElse("exit")
+      case _: UserInterruptException => "exit"
     }
   }
 

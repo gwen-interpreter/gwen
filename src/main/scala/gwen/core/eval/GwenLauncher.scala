@@ -112,7 +112,6 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
                 replUnitOpt
               }
               unitOpt map { unit => 
-                val unit = FeatureUnit(Root, metaFiles.head, metaFiles.tail, replUnitOpt.flatMap(_.dataRecord), options.tagFilter)
                 ctxOpt flatMap { ctx =>
                   interpretUnit(unit, ctx) map { result =>
                     result.evalStatus

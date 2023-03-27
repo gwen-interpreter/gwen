@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       val evalStatus = run(options, ctxOpt)
       if (!options.init) {
         ctxOpt foreach { ctx =>
-          if (evalStatus.isEvaluated || (evalStatus.isLoaded && options.verbose)) {
+          if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
             printBanner("")
           }
           createRepl(ctx).run()
