@@ -45,7 +45,6 @@ import org.jline.builtins.Completers.TreeCompleter
 import org.jline.reader.EndOfFileException
 import org.jline.reader.LineReader
 import org.jline.reader.LineReaderBuilder
-import org.jline.reader.UserInterruptException
 import org.jline.reader.impl.DefaultParser
 import org.jline.reader.impl.completer.NullCompleter
 import org.jline.reader.impl.history.DefaultHistory
@@ -184,7 +183,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
     } catch {
       case _: EndOfFileException => paste.map(_ => "paste").getOrElse("exit")
-      case _: UserInterruptException => "exit"
+      case _: Throwable => "exit"
     }
   }
 
@@ -208,7 +207,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         verifyHistory(historyValue, input)
       case "paste" | ":paste" =>
         pasteMode()
-      case "q" | "exit" | "bye" | "quit" if paste.isEmpty =>
+      case "q" | "exit" | "bye" | "quit" =>
         None
       case "c" | "continue" | "resume" if debug =>
         Some("continue")

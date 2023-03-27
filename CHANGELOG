@@ -1,3 +1,8 @@
+3.34.2
+======
+Mar 27, 2023
+- Allow all interrupts resulting from cntl-c to exit REPL quietly
+
 3.34.1
 ======
 Mar 27, 2023
