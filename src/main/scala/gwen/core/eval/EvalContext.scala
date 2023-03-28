@@ -120,9 +120,12 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def interpolate(step: Step): Step = interpolate(step, interpolateString)
 
   private def interpolate(step: Step, interpolator: String => (String => Option[String]) => String): Step = {
-    val resolver: String => Option[String] = name => Try(Try(paramScope.get(name)).getOrElse(getBoundReferenceValue(name))) match {
-      case Success(value) => Option(value)
-      case Failure(e) => if (e.isInstanceOf[UnboundAttributeException]) None else throw e
+    val resolver: String => Option[String] = name => { 
+      val paramValue = Try(paramScope.get(name))
+      Try(paramValue.getOrElse(getBoundReferenceValue(name))) match {
+        case Success(value) => Option(value)
+        case Failure(e) => if (e.isInstanceOf[UnboundAttributeException] && (paramValue.isSuccess || name.startsWith("csv.record."))) None else throw e
+      }
     }
     val iName = interpolator(step.name) { resolver }
     val iMessage = if (step.isNoData) {
