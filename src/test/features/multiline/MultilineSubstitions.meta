@@ -1,0 +1,6 @@
+Feature: Multiline substitutions meta
+
+  @Action
+  @StepDef
+  Scenario: <name> is assigned to "<value>"
+    Given $<name> is "$<value>"

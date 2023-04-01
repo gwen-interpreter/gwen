@@ -141,12 +141,27 @@ case class Scenario(
       case _ => this
     }
   }
+
   def cumulativeParams: List[(String, String)] = {
     val names = params map { case (n, _) => n }
     params ++ (
       callerParams filter { case (name, _) => 
         !names.contains(name)
       }
+    )
+  }
+
+  /**
+    * Interpolate placeholder references in this scenario.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Scenario = {
+    copy(
+      withTags = tags.map(_.interpolate(interpolator)),
+      withName = interpolator.apply(name),
+      withDescription = description.map(interpolator)
     )
   }
 

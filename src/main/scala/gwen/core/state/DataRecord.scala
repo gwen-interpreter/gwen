@@ -16,6 +16,8 @@
 
 package gwen.core.state
 
+import gwen.core.Interpolator
+
 import java.io.File
 
 /**
@@ -27,10 +29,16 @@ import java.io.File
   *  @param data the current data  
   */
 class DataRecord(val dataFile: File, val recordNo: Int, val totalRecs: Int, val data: List[(String, String)]) {
+  val descriptor: String = s"${recordNo} of ${totalRecs}"
+  private lazy val interpolator = new Interpolator( name => data.filter(_._1 == name).headOption.map(_._2) )
+  def interpolate(source: String): String = interpolator.interpolate(source)
+  def interpolateLenient(source: String): String = interpolator.lenient.interpolate(source)
+  def interpolateStrict(source: String): String = interpolator.strict.interpolate(source)
   override def toString = s"DataRecord(${dataFile.getPath}[$recordNo])"
-  def interpolator: String => Option[String] = name => {
-    data.filter(_._1 == name).headOption.map(_._2)
-  }
-  def descriptor: String = s"${recordNo} of ${totalRecs}"
+}
 
+object DataRecord {
+  def interpolateLenient(dataRecord: Option[DataRecord])(source: String): String = {
+    dataRecord.map(_.interpolateLenient(source)).getOrElse(source)
+  }
 }

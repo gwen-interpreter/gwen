@@ -72,9 +72,9 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
     */
   private [engine] def expandCSVExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
-    val interpolator: String => Option[String] = dataRecord.map(_.interpolator).getOrElse(String => None)
+    val interpolator = DataRecord.interpolateLenient(dataRecord)
     val iTags = outline.tags map { tag => 
-      val iValue0 = interpolateStringLenient(tag.toString) { interpolator }
+      val iValue0 = interpolator.apply(tag.toString)
       val iValue1 = ctx.interpolateLenient(iValue0)
       Tag(tag.sourceRef, iValue1)
     }
@@ -93,7 +93,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
           case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="javascript expression"][,required=true|false])""")
         }
-        val whereFilter = where.map(w => ctx.interpolateParams(w) { name => ctx.paramScope.getOpt(name) }).map(w => ctx.interpolateLenient(w))
+        val whereFilter = where.map(ctx.interpolateParams).map(ctx.interpolateLenient)
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
@@ -113,8 +113,8 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table1 = (1L, header.get) :: (table0.tail filter { (rowNo, row) => 
           whereFilter map { js => 
             val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
-            val js0 = ctx.interpolateStringLenient(js) { dataRecord.interpolator }
-            val js1 = ctx.interpolateParams(js0) { name => ctx.paramScope.getOpt(name) }
+            val js0 = dataRecord.interpolate(js)
+            val js1 = ctx.interpolateParams(js0)
             val javascript = ctx.interpolate(js1)
             (ctx.evaluate("true") {
               Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("false")
@@ -159,10 +159,8 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           ).examples
         outline.copy(
           withTags = iTags,
-          withName = interpolateString(outline.name) { interpolator },
-          withDescription = outline.description map { line => 
-            interpolateString(line) { interpolator }
-          },
+          withName = interpolator.apply(outline.name),
+          withDescription = outline.description map { interpolator },
           withExamples = outline.examples ++ examples
         )
     }

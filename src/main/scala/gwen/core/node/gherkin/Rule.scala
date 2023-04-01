@@ -79,6 +79,19 @@ case class Rule(
     Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
   }
 
+  /**
+    * Interpolate placeholder references in this rule.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Rule = {
+    copy(
+      withName = interpolator.apply(name),
+      withDescription = description.map(interpolator)
+    )
+  }
+
 }
 
 object Rule {

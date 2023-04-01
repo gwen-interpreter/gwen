@@ -43,11 +43,40 @@ import java.net.URL
   * Provides all evaluation capabilities.
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
-    extends Environment(envState) with Interpolator with RegexSupport with XPathSupport with JsonPathSupport
+    extends Environment(envState) with RegexSupport with XPathSupport with JsonPathSupport
     with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport with SysProcSupport {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
+
+  // Interpolator for resolving $<param> and ${property} references
+  private def interpolator: Interpolator = new Interpolator(name => {
+    paramScope.getOpt(name).orElse(Try(getBoundReferenceValue(name)).toOption)
+  })
+
+  // Interpolator for resolving $<param> references only
+  private def paramInterpolator: Interpolator = new Interpolator(paramScope.getOpt)
+
+  /** 
+   * Interpolates a given string by resolving all $<param> and ${property} references. 
+   * 
+   * @param source the string to interpolate
+   */
+  def interpolate(source: String): String = interpolator.interpolate(source)
+
+  /** 
+   * Interpolates a given string by resolving all $<param> and ${property} references. 
+   * 
+   * @param source the string to interpolate
+   */
+  def interpolateLenient(source: String): String = interpolator.lenient.interpolate(source)
+
+  /** 
+   * Interpolates a given string by resolving all $<param> references only. 
+   * 
+   * @param source the string to interpolate
+   */
+  def interpolateParams(source: String): String = paramInterpolator.interpolateParams(source)
 
   /**
    * Gets the list of DSL steps supported by this context.  This implementation
@@ -87,73 +116,6 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     * @return a binding
     */
   def getBinding(name: String): Binding[EvalContext, String] = bindingResolver.getBinding(name)
-
-  def interpolate(value: String): String = interpolateString(value)((n: String) => Try(getBoundReferenceValue(n)).toOption)
-  def interpolateLenient(value: String): String = interpolateStringLenient(value)((n: String) => Try(getBoundReferenceValue(n)).toOption)
-
-  /**
-    * Interpolate all parameters in the given step before it is evaluated.
-    * 
-    * @param step the step to interpolate
-    * @return the interpolated step
-    */
-  def interpolateParams(step: Step): Step = {
-    val iStep = interpolate(step, interpolateParams)
-    if (Source.fromString(iStep.name).getLines().size > 1) {
-      step.docStringify match {
-        case Some(dsStep) =>
-          interpolateParams(dsStep)
-        case _ => 
-          Errors.multilineParamError("Illegal multline parameter substitution in step detected")
-      }
-    } else {
-      iStep
-    }
-  }
-
-  /**
-    * Interpolate all references in the given step.
-    *
-    * @param step the step to interpolate
-    * @return the interpolated step
-    */
-  def interpolate(step: Step): Step = interpolate(step, interpolateString)
-
-  private def interpolate(step: Step, interpolator: String => (String => Option[String]) => String): Step = {
-    val resolver: String => Option[String] = name => { 
-      val paramValue = Try(paramScope.get(name))
-      Try(paramValue.getOrElse(getBoundReferenceValue(name))) match {
-        case Success(value) => Option(value)
-        case Failure(e) => if (e.isInstanceOf[UnboundAttributeException] && (paramValue.isSuccess || name.startsWith("csv.record."))) None else throw e
-      }
-    }
-    val iName = interpolator(step.name) { resolver }
-    val iMessage = if (step.isNoData) {
-      step.message 
-    } else { 
-      evaluate(step.message.map(msg => interpolator(msg) { resolver })) {
-        Try(step.message.map(msg => interpolator(msg) { resolver })).getOrElse(step.message)
-      }
-    }
-    val iTable = step.table map { case (line, record) =>
-      (line, record.map(cell => interpolator(cell) { resolver }))
-    }
-    val iDocString = step.docString map { case (line, content, contentType) =>
-      (line, interpolator(content) { resolver }, contentType)
-    }
-    val iParams = step.params map { (name, value) => (name, interpolator(value) { resolver }) }
-    if (iName != step.name || iTable != step.table || iDocString != step.docString || iParams.mkString != step.params.mkString || iMessage.flatMap(im => step.message.map(m => im != m)).getOrElse(false)) {
-      step.copy(
-        withName = iName,
-        withTable = iTable,
-        withDocString = iDocString,
-        withParams = iParams,
-        withMessage = iMessage
-      ) tap { iStep =>
-        logger.debug(s"Interpolated ${step.name} to: ${iStep.expression}${if (iTable.nonEmpty) ", () => dataTable" else ""}")
-      }
-    } else step
-  }
 
   def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator, negate: Boolean): Try[Boolean] = Try {
     val res = operator match {

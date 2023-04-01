@@ -67,6 +67,19 @@ case class Background(
       withSteps: List[Step] = steps): Background = {
     Background(withSourceRef, withKeyword, withName, withDescription, withSteps)
   }
+
+  /**
+    * Interpolate placeholder references in this background.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Background = {
+    copy(
+      withName = interpolator.apply(name),
+      withDescription = description.map(interpolator)
+    )
+  }
   
 }
 

@@ -69,6 +69,19 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
     Tag(withSourceRef, withName, withValue)
   }
 
+  /**
+    * Interpolate placeholder references in this tag.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Tag = {
+    copy(
+      withName = interpolator.apply(name),
+      withValue = value.map(interpolator)
+    )
+  }
+
 }
 
 object Tag {

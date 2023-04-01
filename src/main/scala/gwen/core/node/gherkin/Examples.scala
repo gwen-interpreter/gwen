@@ -91,6 +91,20 @@ case class Examples(
     Examples(withSourceRef, withTags, withKeyword, withName, withDescription, withTable, withDataFile, withScenarios)
   }
 
+  /**
+    * Interpolate placeholder references in this examples object.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Examples = {
+    copy(
+      withTags = tags.map(_.interpolate(interpolator)),
+      withName = interpolator.apply(name),
+      withDescription = description.map(interpolator)
+    )
+  }
+
 }
 
 object Examples {

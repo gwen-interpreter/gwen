@@ -21,8 +21,10 @@ import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.state.EnvState
+import gwen.core.state.ParameterStack
 import gwen.core.status._
 
+import scala.io.Source
 import scala.jdk.CollectionConverters._
 import scala.jdk.OptionConverters._
 
@@ -97,13 +99,22 @@ case class Step(
   /** Returns the given value if the step has no docString or the docString content otherwise. */
   def orDocString(value: String): String = docString.map(_._2).getOrElse(value)
 
+  /** If step expression ends with a quoted parameter or property, move that into a docstring to 
+   * support mutliline interpolation. */
   def docStringify: Option[Step] = {
     name match {
       case r"""^(?s)(.*)$prefix"\$$<(.+?)$param>"$$""" if docString.isEmpty =>
         Some(
           this.copy(
             withName = prefix.trim,
-            withDocString = Some((0, s"<$param>", None))
+            withDocString = Some((0, s"$$<$param>", None))
+          )
+        )
+      case r"""^(?s)(.*)$prefix"\$$\{(.+?)$property\}"$$""" if docString.isEmpty =>
+        Some(
+          this.copy(
+            withName = prefix.trim,
+            withDocString = Some((0, s"$${$property}", None))
           )
         )
       case _ => None
@@ -228,6 +239,42 @@ case class Step(
   def isData: Boolean = hasTag(Annotations.Data)
   def isNoData: Boolean = hasTag(Annotations.NoData)
   private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
+
+  /**
+    * Interpolate placeholder references in this step.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Step = {
+    val iName = interpolator.apply(name)
+    val iMessage = if (isNoData) { message } else { message.map(msg => interpolator.apply(msg)) }
+    val iTable = table map { case (line, record) =>
+      (line, record.map(cell => interpolator.apply(cell)))
+    }
+    val iDocString = docString map { case (line, content, contentType) =>
+      (line, interpolator.apply(content), contentType)
+    }
+    val iParams = params map { (name, value) => (name, interpolator.apply(value)) }
+    val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString || iMessage.flatMap(im => message.map(m => im != m)).getOrElse(false)) {
+      copy(
+        withName = iName,
+        withTable = iTable,
+        withDocString = iDocString,
+        withParams = iParams,
+        withMessage = iMessage
+      )
+    } else this
+    
+    /* if the interplotion resulted in multi line step expression and the step has a trailing and quoted parameter
+       or property, then move that into a docString and interpolate again, otherwise report illegal substitution */
+    
+    if (Source.fromString(iStep.name).getLines().size > 1) {
+      docStringify.map(_.interpolate(interpolator)) getOrElse {
+        Errors.multilineSubstitutionError("Illegal multline placehoder substitution in step detected")
+      }
+    } else iStep
+  }
 
 }
 

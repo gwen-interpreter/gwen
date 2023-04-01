@@ -26,7 +26,7 @@ import java.io.File
 
 class AdhocFeatureTest extends BaseTest {
 
-  val feature = "src/test/features/chars/ColonInStepDefName.feature"
+  val feature = "src/test/features/multiline"
 
   val interpreter = GwenInterpreter()
 

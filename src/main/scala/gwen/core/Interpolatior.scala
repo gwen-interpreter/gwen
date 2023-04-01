@@ -17,69 +17,82 @@ package gwen.core
 
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.util.Try
-import scala.util.Success
+object Interpolator {
+
+  val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
+  val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
+
+  val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
+  val unresolvedParamSyntax = """^(?s)(.*)\$\!<(.+?)>(.*)$""".r
+
+  val reservedPlaeholder: String => Boolean = name => {
+    name.startsWith(CSVRecords.lookupPrefix)
+  }
+}
 
 /**
  * Provides support for string interpolation.
  */
-trait Interpolator extends LazyLogging {
+class Interpolator(resolver: String => Option[String]) extends LazyLogging {
 
-  private val propertySyntax = """^(?s)(.*)\$\{(.+?)\}(.*)$""".r
-  private val paramSyntax = """^(?s)(.*)\$<(.+?)>(.*)$""".r
-
-  private val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
-  private val unresolvedParamSyntax = """^(?s)(.*)\$\!<(.+?)>(.*)$""".r
-
-
-  final def interpolateString(source: String)(resolve: String => Option[String]): String = interpolateString(source, false) { resolve }
-  final def interpolateStringLenient(source: String)(resolve: String => Option[String]): String = interpolateString(source, true) { resolve }
-  
-  private def interpolateString(source: String, lenient: Boolean)(resolve: String => Option[String]): String = {
+  /** Resolves all ${property} and $<param> references in the given string.*/
+  def interpolate(source: String): String = {
     source match {
-      case propertySyntax(prefix, property, suffix) =>
+      case Interpolator.propertySyntax(prefix, property, suffix) =>
         logger.debug(s"Resolving property-syntax binding: $${$property}")
-        val iProperty = interpolateString(property, lenient) { resolve }
-        val resolved = resolve(iProperty) getOrElse {
-          if (lenient || property.startsWith("csv.record.")) s"$$!{$property}"
-          else Errors.unboundAttributeError(property)
-        }
-        interpolateString(s"$prefix$resolved$suffix", lenient) { resolve }
-      case paramSyntax(prefix, param, suffix) =>
+        interpolate(s"$prefix${resolveProperty(interpolate(property))}$suffix")
+      case _ => interpolateParameters(source, interpolate)
+    }
+  }
+
+  /** Resolves all $<param> references in the given string.*/
+  def interpolateParams(source: String): String = interpolateParameters(source, interpolateParams)
+
+  private def interpolateParameters(source: String, interpolator: String => String): String = {
+    source match {
+      case Interpolator.paramSyntax(prefix, param, suffix) =>
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
-        val resolved = resolve(s"<${param}>") getOrElse {
-          s"$$!<$param>"
-        }
-        interpolateString(s"$prefix$resolved$suffix", lenient) { resolve }
-      case _ => 
-        restoreUnresolved(source)
+        interpolator.apply(s"$prefix${resolveParam(s"<${interpolator.apply(param)}>")}$suffix")
+      case _ => restoreUnresolved(source)
+    }
+  }
+
+  private[core] def resolveProperty(name: String): String = {
+    Option(name).filterNot(Interpolator.reservedPlaeholder).map(resolveStrict) getOrElse {
+      resolveLenient(name)
+    }
+  }
+  private[core] def resolveParam(name: String): String = resolveStrict(name)
+
+  private final def resolveStrict(name: String): String = {
+    resolver.apply(name) getOrElse { Errors.unboundAttributeError(name) }
+  }
+
+  private final def resolveLenient(name: String): String = {
+    resolver.apply(name) getOrElse { 
+      if (name.startsWith("<") && name.endsWith(">")) s"$$!$name"
+      else s"$$!{$name}"
     }
   }
 
   private def restoreUnresolved(source: String): String = {
     source match {
-      case unresolvedPropertySyntax(prefix, property, suffix) => 
+      case Interpolator.unresolvedPropertySyntax(prefix, property, suffix) => 
         restoreUnresolved(s"$prefix$${$property}$suffix")
-      case unresolvedParamSyntax(prefix, param, suffix) => 
+      case Interpolator.unresolvedParamSyntax(prefix, param, suffix) => 
         restoreUnresolved(s"$prefix$$<$param>$suffix")
       case _ => source
     }
   }
 
-  final def interpolateParams(source: String)(resolve: String => Option[String]): String = {
-    source match {
-      case paramSyntax(prefix, param, suffix) =>
-        logger.debug(s"Resolving param-syntax binding: $$<$param>")
-        Try(resolve(s"<${param}>")) match {
-          case Success(resolved) => 
-            val substitution = resolved.getOrElse(s"$$!<$param>")
-            interpolateParams(s"$prefix${substitution}$suffix") { resolve }
-          case _ =>
-            s"${interpolateParams(prefix)(resolve)}$$<$param>${interpolateParams(suffix)(resolve)}"
-        }
-        
-      case _ => restoreUnresolved(source)
-    } 
+  lazy val lenient: Interpolator = new Interpolator(resolver) {
+    override private[core] def resolveProperty(name: String): String = resolveLenient(name)
+    override private[core] def resolveParam(name: String): String = resolveLenient(name)
+  }
+
+  lazy val strict: Interpolator = new Interpolator(resolver) {
+    override private[core] def resolveProperty(name: String): String = resolveStrict(name)
+    override private[core] def resolveParam(name: String): String = resolveStrict(name)
   }
 
 }

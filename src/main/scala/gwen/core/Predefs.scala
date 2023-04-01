@@ -478,6 +478,8 @@ object Wait {
 /** CSV record access */
 object CSVRecords {
 
+  val lookupPrefix = "csv.record."
+
   private def ignoreEmpty(rec: Seq[String]) = rec.filter(_.trim.nonEmpty).nonEmpty
 
   def list(dataFile: File): List[List[String]] = CSVReader.open(dataFile).all().filter(ignoreEmpty)

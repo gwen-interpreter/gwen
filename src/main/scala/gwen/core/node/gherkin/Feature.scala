@@ -66,6 +66,20 @@ case class Feature(
     Feature(withLanguage, withSourceRef, withTags, withKeyword, withName, withDescription)
   }
 
+  /**
+    * Interpolate placeholder references in this feature.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated step
+    */
+  override def interpolate(interpolator: String => String): Feature = {
+    copy(
+      withTags = tags.map(_.interpolate(interpolator)),
+      withName = interpolator.apply(name),
+      withDescription = description.map(interpolator)
+    )
+  }
+
 }
 
 object Feature {

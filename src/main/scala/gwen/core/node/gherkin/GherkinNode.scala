@@ -21,4 +21,14 @@ import gwen.core.node.GwenNode
 /**
   * Base trait for all Gherkin nodes.  
   */
-trait GherkinNode extends GwenNode
+trait GherkinNode extends GwenNode {
+
+  /**
+    * Interpolate placeholder references in this NODE.
+    *
+    * @param interpolator the interpolator to use
+    * @return the interpolated NODE
+    */
+  def interpolate(interpolator: String => String): GwenNode = this
+
+}

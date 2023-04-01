@@ -111,11 +111,11 @@ trait StepEngine[T <: EvalContext] {
       true
     }
     if (continue) {
-      val pStep = interpolateStep(step, ctx) { ctx.interpolateParams }
+      val pStep = ctx.withStep(step) { _.interpolate(ctx.interpolateParams) }
       val eStep = pStep.evalStatus match {
-        case Failed(_, e) if e.isInstanceOf[Errors.MultilineParamException] => pStep
+        case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => pStep
         case _ =>
-          val iStep = interpolateStep(pStep, ctx) { ctx.interpolate }
+          val iStep = if (pStep.isData) pStep else ctx.withStep(pStep) { _.interpolate(ctx.interpolate) }
           logger.info(s"Evaluating Step: $iStep")
           beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
           ctx.withStep(iStep) { s =>
@@ -133,14 +133,6 @@ trait StepEngine[T <: EvalContext] {
       ctx.close()
       System.exit(0)
       step
-    }
-  }
-
-  private def interpolateStep(step: Step, ctx: T)(interpolator: Step => Step): Step = {
-    if (step.isData) {
-      step 
-    } else {
-      ctx.withStep(step) { interpolator }
     }
   }
 
