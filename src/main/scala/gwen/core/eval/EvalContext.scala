@@ -51,7 +51,13 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
 
   // Interpolator for resolving $<param> and ${property} references
   private def interpolator: Interpolator = new Interpolator(name => {
-    paramScope.getOpt(name).orElse(Try(getBoundReferenceValue(name)).toOption)
+    paramScope.getOpt(name) orElse { 
+      try {
+        Option(getBoundReferenceValue(name))
+      } catch {
+        case _: UnboundAttributeException => None
+      }
+    }
   })
 
   // Interpolator for resolving $<param> references only

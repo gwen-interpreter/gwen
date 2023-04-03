@@ -20,6 +20,7 @@ import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.Errors._
 import gwen.core.TestModel
+import gwen.core.eval.binding.JSBinding
 import gwen.core.state.EnvState
 import gwen.core.state.ScopedData
 import gwen.core.state.StateLevel
@@ -87,6 +88,20 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
     ctx.topScope.set("x", null)
     intercept[UnboundAttributeException] {
       ctx.getBoundReferenceValue("x")
+    }
+  }
+
+  """Property that's bound to a good javascript""" should "should pass interpolation" in {
+    val ctx = newCtx
+    JSBinding.bind("length", "'Good length function'.length()", ctx)
+    ctx.interpolate("""${length} chars""") should be ("20 chars")
+  }
+
+  """Property that's bound to a bad javascript""" should "should fail interpolation" in {
+    val ctx = newCtx
+    JSBinding.bind("length", "'Bad length function'.len()", ctx)
+    intercept[ScriptException] {
+      ctx.interpolate("""${length} chars""")
     }
   }
   
