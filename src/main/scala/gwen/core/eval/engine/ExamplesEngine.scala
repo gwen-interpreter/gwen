@@ -78,10 +78,9 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       val iValue1 = ctx.interpolateLenient(iValue0)
       Tag(tag.sourceRef, iValue1)
     }
-    var noDataBackground: Option[Background] = None
-    val csvExamples = iTags flatMap { tag =>
+    val csvExamplesAndBackgrouds = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
-        val (filepath, prefix,where, required) = tag.name match {
+        val (filepath, prefix, where, required) = tag.name match {
           case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(prefix), Some(where), required.toBoolean)
           case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where"\)""" => (file, Some(prefix), Some(where), false)
           case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",required=(true|false)$required\)""" => (file, Some(prefix), None, required.toBoolean)
@@ -109,11 +108,13 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table0 = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
-        val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h"} getOrElse h }"} }
-        val table1 = (1L, header.get) :: (table0.tail filter { (rowNo, row) => 
+        val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h" } getOrElse h }" } } getOrElse {
+          Errors.csvHeaderNotFoundError(file)
+        }
+        val resultTable = (1L, header) :: (table0.tail filter { (rowNo, row) => 
           whereFilter map { js => 
-            val dataRecord = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header.get zip row)
-            val js0 = dataRecord.interpolate(js)
+            val dataRec = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header zip row)
+            val js0 = dataRec.interpolate(js)
             val js1 = ctx.interpolateParams(js0)
             val javascript = ctx.interpolate(js1)
             (ctx.evaluate("true") {
@@ -121,27 +122,13 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             }).toBoolean
           } getOrElse true
         })
-        val table2 = if (table1.size < 2 && required) {
-          val msg = s"No data record(s) found in $file${whereFilter.map(w => s" where $w").getOrElse("")}"
-          val table3 = table1 ++ List((2L, table1.flatMap((_, items) => items.map(_ => ""))))
-          val step = Step(None, StepKeyword.Given.toString, s"""${header.flatMap(_.headOption).getOrElse("Data")} should not be """"", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
-          noDataBackground = outline.background map { bg =>
-            Some(
-              bg.copy(
-                withName = s"${bg.name} + No data",
-                withSteps = step.copy(
-                  withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword
-                ) :: bg.steps
-              )
-            )
-          } getOrElse {
-            Some(Background(None, Background.toString, "No data", Nil, List(step)))
-          }
-          table3
+        val (finalTable, background) = if (resultTable.size < 2 && required) {
+          val msg = s"No data record(s) found in ${file.getName}${whereFilter.map(w => s" where $w").getOrElse("")}"
+          csvTableFail(msg, header, outline)
         } else {
-          table1
+          (resultTable, None)
         }
-        Some(Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, table2, Some(file), Nil))
+        Some((Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="javascript expression")""")
@@ -149,14 +136,18 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         None
       }
     }
-    csvExamples match {
+    csvExamplesAndBackgrouds match {
       case Nil => outline
       case _ =>
-        val examples = normaliseScenarioOutline(
-            outline.copy(withExamples = csvExamples),
-            noDataBackground.map(bg => Some(bg)).getOrElse(outline.background),
+        val csvExamples = csvExamplesAndBackgrouds map { (examples, _) => examples }
+        val backgrounds = csvExamplesAndBackgrouds map { (_, background) => background }
+        val examples = csvExamples zip backgrounds map { (exs, background) => 
+          normaliseScenarioOutline(
+            outline.copy(withExamples = List(exs)),
+            background,
             dataRecord
-          ).examples
+          )
+        } flatMap (_.examples)
         outline.copy(
           withTags = iTags,
           withName = interpolator.apply(outline.name),
@@ -164,6 +155,22 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           withExamples = outline.examples ++ examples
         )
     }
+  }
+
+  private def csvTableFail(msg: String, header: List[String], outline: Scenario): (List[(Long, List[String])], Option[Background]) = {
+    val emptyTable = (1L, header) :: List((2L, header.map(_ => "")))
+    val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should not be """"", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
+    val noDataBackground = outline.background map { bg =>
+      bg.copy(
+        withName = s"${bg.name} + No data",
+        withSteps = step.copy(
+          withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword
+        ) :: bg.steps
+      )
+    } getOrElse {
+      Background(None, Background.toString, "No data", Nil, List(step))
+    }
+    (emptyTable, Some(noDataBackground))
   }
 
 }

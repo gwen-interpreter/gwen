@@ -75,6 +75,7 @@ object Errors {
   def unsupportedDataFileError(dataAnnotation: Tag) = throw new UnsupportedDataFileException(dataAnnotation)
   def unsupportedLookupFileError(file: File, expectedExtension: String) = throw new UnsupportedLookupFileException(file, expectedExtension)
   def csvLookupError(file: File, name: String) = throw new CSVLookupException(file, name)
+  def csvHeaderNotFoundError(file: File) = throw new CSVHeaderNotFoundException(file)
   def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
@@ -216,6 +217,9 @@ object Errors {
 
   /** Thrown when a CSV lookup fails. */
   class CSVLookupException(file: File, name: String) extends GwenException(s"No such column in CSV file $file having name: $name")
+
+    /** Thrown when a CSV file doesn't have a header record. */
+  class CSVHeaderNotFoundException(file: File) extends GwenException(s"Header record not found in CSV file: $file)")
   
   /** Thrown when a recursive import is detected. */
   class RecursiveImportException(importAnnotation: Tag) extends GwenException(s"Recursive (cyclic) $importAnnotation detected${at(importAnnotation.sourceRef)}") {
