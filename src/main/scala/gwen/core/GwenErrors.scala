@@ -156,7 +156,7 @@ object Errors {
   class LicenseException(msg: String) extends GwenException(msg)
   
   /** Thrown when a property file setting is invalid. */
-  class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid property entry '$entry' found in file: $propertyFile (name=value expected)")
+  class InvalidPropertyException(entry: String, propertyFile: File) extends GwenException(s"Invalid setting entry '$entry' found in file: $propertyFile (name=value expected)")
 
   /** Thrown when a property file setting contains an invalid or unspported value. */
   class IllegalSettingException(name: String, value: String, validValues: String) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: $validValues)")
@@ -165,7 +165,7 @@ object Errors {
   class IllegalStepAnnotationException(step: Step, msg: String) extends GwenException(s"Invalid or illegal step annotation${at(step.sourceRef)}: $msg")
   
   /** Thrown when a property setting fails to load. */
-  class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load property setting: $name", cause)
+  class PropertyLoadException(name: String, cause: Throwable) extends GwenException(s"Failed to load setting: $name", cause)
 
   /** Thrown when an invalid tag is detected. */
   class InvalidTagException(annotation: String) extends GwenException(s"Invalid annotation: $annotation")
