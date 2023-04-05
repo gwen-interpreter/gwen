@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package gwen.core.eval.lambda.unit
 
-import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
@@ -34,7 +33,7 @@ class IsDefined[T <: EvalContext](source: String, negate: Boolean, message: Opti
       ctx.perform {
         val value = Try(ctx.getBoundReferenceValue(source))
         val result = if (negate) value.isFailure else value.isSuccess
-        Errors.assertWithError(result, message, s"Expected $source to${if (negate) " not" else ""} be defined")
+        ctx.assertWithError(result, message, s"Expected $source to${if (negate) " not" else ""} be defined")
       }
     }
   }

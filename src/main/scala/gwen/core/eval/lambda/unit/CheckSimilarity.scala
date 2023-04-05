@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Branko Juric, Brady Wood
+ * Copyright 2022-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package gwen.core.eval.lambda.unit
 
-import gwen.core.Errors
 import gwen.core.Formatting
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.SimilarityOperator
@@ -51,7 +50,7 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
                 ctx.topScope.set("similarity score", null)
               }    
           }
-          Errors.assertWithError(passed, message, s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
+          ctx.assertWithError(passed, message, s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
         case Failure(error) =>
           if (ctx.topScope.getOpt("similarity score").nonEmpty) {
             ctx.topScope.set("similarity score", null)

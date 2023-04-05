@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,7 +248,6 @@ case class Step(
     */
   override def interpolate(interpolator: String => String): Step = {
     val iName = interpolator.apply(name)
-    val iMessage = if (isNoData) { message } else { message.map(msg => interpolator.apply(msg)) }
     val iTable = table map { case (line, record) =>
       (line, record.map(cell => interpolator.apply(cell)))
     }
@@ -256,13 +255,12 @@ case class Step(
       (line, interpolator.apply(content), contentType)
     }
     val iParams = params map { (name, value) => (name, interpolator.apply(value)) }
-    val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString || iMessage.flatMap(im => message.map(m => im != m)).getOrElse(false)) {
+    val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString) {
       copy(
         withName = iName,
         withTable = iTable,
         withDocString = iDocString,
         withParams = iParams,
-        withMessage = iMessage
       )
     } else this
     
@@ -274,6 +272,13 @@ case class Step(
         Errors.multilineSubstitutionError("Illegal multline placehoder substitution in step detected")
       }
     } else iStep
+  }
+
+  def interpolateMessage(interpolator: String => String): Step = {
+    message map { msg => 
+      val iMessage = interpolator.apply(msg)
+      if (iMessage != msg) copy(withMessage = Some(iMessage)) else this
+    } getOrElse (this)
   }
 
 }

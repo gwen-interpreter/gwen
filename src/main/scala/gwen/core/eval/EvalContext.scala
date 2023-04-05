@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Branko Juric, Brady Wood
+ * Copyright 2015-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,5 +235,12 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       .addAttachment("Error details", "txt", failure.error.writeStackTrace())
       .addAttachment(s"Environment", "txt", scopes.visible.asString)
   }
+
+  def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
+    val iCustomError = if (!assertion) Try(customError.map(interpolateLenient)).getOrElse(customError) else customError
+    Errors.assertWithError(assertion, iCustomError, assertError)
+  }
+
+  
 
 }

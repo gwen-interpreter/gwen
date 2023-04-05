@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package gwen.core.eval.lambda.unit
 
-import gwen.core.Errors
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
@@ -47,7 +46,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
-            Errors.assertWithError(assertion, message, s"Expected ${binding.displayName} to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
+            ctx.assertWithError(assertion, message, s"Expected ${binding.displayName} to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
           case Failure(error) =>
             throw error;
         }

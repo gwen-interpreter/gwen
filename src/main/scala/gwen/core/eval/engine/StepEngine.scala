@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,9 +116,10 @@ trait StepEngine[T <: EvalContext] {
         case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => pStep
         case _ =>
           val iStep = if (pStep.isData) pStep else ctx.withStep(pStep) { _.interpolate(ctx.interpolate) }
-          logger.info(s"Evaluating Step: $iStep")
-          beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
-          ctx.withStep(iStep) { s =>
+          val iiStep = ctx.evaluate(iStep.interpolateMessage(ctx.interpolate)) { iStep }
+          logger.info(s"Evaluating Step: $iiStep")
+          beforeStep(iiStep.copy(withEvalStatus = Pending), ctx)
+          ctx.withStep(iiStep) { s =>
             Try(healthCheck(parent, s, ctx)) match {
               case Failure(e) => throw e
               case _ => translateAndEvaluate(parent, s, ctx)
