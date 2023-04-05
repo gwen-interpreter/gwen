@@ -237,10 +237,11 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   }
 
   def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
-    val iCustomError = if (!assertion) Try(customError.map(interpolateLenient)).getOrElse(customError) else customError
-    Errors.assertWithError(assertion, iCustomError, assertError)
+    customError map { msg => 
+      if (!assertion) Errors.customAssertionError(Try(interpolateLenient(msg)).getOrElse(msg))
+    } getOrElse {
+      assert(assertion, assertError)
+    }
   }
-
-  
 
 }

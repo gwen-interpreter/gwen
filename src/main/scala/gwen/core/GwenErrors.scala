@@ -101,13 +101,7 @@ object Errors {
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
   def initProjectError(msg: String) = throw new InitProjectException(msg)
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
-  def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
-    customError map { msg => 
-      if (!assertion) throw new CustomAssertionError(msg)
-    } getOrElse {
-      assert(assertion, assertError)
-    }
-  }
+  def customAssertionError(msg: String) = throw new CustomAssertionError(msg)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
