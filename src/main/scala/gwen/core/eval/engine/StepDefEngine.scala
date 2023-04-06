@@ -107,7 +107,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         }
         try {
           if (dataTableOpt.nonEmpty && nonEmptyDataTableOpt.isEmpty) {
-            transitionStep(step, Passed(0, abstained = true), ctx)
+            transitionStep(step, Passed(0, abstained = !ctx.options.dryRun), ctx)
           } else {
             evaluateStepDef(parent, stepDef, step, ctx)
           }

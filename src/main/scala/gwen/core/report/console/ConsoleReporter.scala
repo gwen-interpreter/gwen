@@ -55,6 +55,11 @@ class ConsoleReporter(options: GwenOptions)
     } else None
   }
 
+  private val logDepth: Int = {
+    if (options.dryRun) Int.MaxValue
+    else GwenSettings.`gwen.console.log.depth`
+  }
+
   private def out: PrintStream = parallelOut.map(_.get._2).getOrElse(System.out)
   
   override def beforeUnit(event: NodeEvent[FeatureUnit]): Unit = { 
@@ -209,7 +214,7 @@ class ConsoleReporter(options: GwenOptions)
   override def beforeStep(event: NodeEvent[Step]): Unit = {
     if (!loadingStepDef.get) {
       depth.set(depth.get + 1)
-      if (depth.get <= GwenSettings.`gwen.console.log.depth`) {
+      if (depth.get <= logDepth) {
         val step = event.source
         val parent = event.callChain.previous
         if (step.indexIn(parent).getOrElse(0) == 0) { 
@@ -224,10 +229,10 @@ class ConsoleReporter(options: GwenOptions)
 
   override def afterStep(event: NodeEvent[Step]): Unit = {
     if (!loadingStepDef.get) {
-      if (depth.get <= GwenSettings.`gwen.console.log.depth`) {
+      if (depth.get <= logDepth) {
         val step = event.source
         val parent = event.callChain.previous
-        if (depth.get == GwenSettings.`gwen.console.log.depth` || step.stepDef.isEmpty || step.stepDef.map(_.steps.isEmpty).getOrElse(false)) {
+        if (depth.get == logDepth || step.stepDef.isEmpty || step.stepDef.map(_.steps.isEmpty).getOrElse(false)) {
           out.println(printer.printStatus(step, withMessage = true))
         }
       }

@@ -101,7 +101,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
       engine.afterStepDef(foreachStepDef, ctx)
       step.copy(withStepDef = Some(foreachStepDef))
     } else {
-      engine.transitionStep(step, Passed(0, abstained = true), ctx)
+      engine.transitionStep(step, Passed(0, abstained = !ctx.options.dryRun), ctx)
     }
   }
 

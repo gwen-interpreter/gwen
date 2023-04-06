@@ -57,7 +57,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
         sdCall()
       } else {
         logger.info(s"Skipping conditional step (${if (jsCondition.negated) "not " else ""}${jsCondition.name} = false): ${step.keyword} $doStep")
-        step.copy(withEvalStatus = Passed(0, abstained = true))
+        step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
       }
     }
   }
