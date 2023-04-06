@@ -105,7 +105,9 @@ trait StepEngine[T <: EvalContext] {
     if (resume(parent, step, ctx)) {
       val pStep = interpolateParams(step, ctx)
       val eStep = pStep.evalStatus match {
-        case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => pStep
+        case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
+          beforeStep(pStep.copy(withEvalStatus = Pending), ctx)
+          pStep
         case _ =>
           val iStep = interpolateAll(pStep, ctx)
           logger.info(s"Evaluating Step: $iStep")
