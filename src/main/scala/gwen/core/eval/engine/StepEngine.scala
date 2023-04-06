@@ -102,36 +102,15 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
-    val continue = if (step.isBreakpoint && ctx.options.debug) {
-       pauseListeners(parent)
-       new GwenREPL(engine, ctx).debug(parent, step) tap { _ =>
-         resumeListeners()
-       }
-    } else {
-      true
-    }
-    if (continue) {
-      val pStep = ctx.withStep(step) { s => 
-        val interpolator = ctx.interpolateParams
-        s.interpolate(interpolator).interpolateMessage(interpolator) 
-      }
+    if (resume(parent, step, ctx)) {
+      val pStep = interpolateParams(step, ctx)
       val eStep = pStep.evalStatus match {
         case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => pStep
         case _ =>
-          val interpolator = ctx.interpolate
-          val iStep = if (pStep.isData) {
-            pStep
-          } else {
-            ctx.withStep(pStep) { _.interpolate(interpolator) }
-          }
-          val iiStep = if (ctx.options.dryRun) {
-            ctx.withStep(iStep) { _.interpolateMessage(interpolator) }
-          } else {
-            iStep
-          }
-          logger.info(s"Evaluating Step: $iiStep")
-          beforeStep(iiStep.copy(withEvalStatus = Pending), ctx)
-          ctx.withStep(iiStep) { s =>
+          val iStep = interpolateAll(pStep, ctx)
+          logger.info(s"Evaluating Step: $iStep")
+          beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
+          ctx.withStep(iStep) { s =>
             Try(healthCheck(parent, s, ctx)) match {
               case Failure(e) => throw e
               case _ => translateAndEvaluate(parent, s, ctx)
@@ -146,6 +125,38 @@ trait StepEngine[T <: EvalContext] {
       ctx.close()
       System.exit(0)
       step
+    }
+  }
+
+  private def resume(parent: GwenNode, step: Step, ctx: T): Boolean = {
+    if (step.isBreakpoint && ctx.options.debug) {
+      pauseListeners(parent)
+      new GwenREPL(engine, ctx).debug(parent, step) tap { _ =>
+        resumeListeners()
+      }
+    } else {
+      true
+    }
+  }
+
+  private def interpolateParams(step: Step, ctx: T): Step = {
+    ctx.withStep(step) { s => 
+      val interpolator = ctx.interpolateParams
+      s.interpolate(interpolator).interpolateMessage(interpolator) 
+    }
+  }
+
+  private def interpolateAll(step: Step, ctx: T): Step = {
+    val interpolator = ctx.interpolate
+    val iStep = if (step.isData) {
+      step
+    } else {
+      ctx.withStep(step) { _.interpolate(interpolator) }
+    }
+    if (ctx.options.dryRun) {
+      ctx.withStep(iStep) { _.interpolateMessage(interpolator) }
+    } else {
+      iStep
     }
   }
 
