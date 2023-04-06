@@ -76,10 +76,12 @@ trait EvalStatus {
 
   def message: String = cause.map(_.getMessage).getOrElse(keyword.toString)
 
-  override def toString: String =
+  override def toString: String = asString(keyword.toString)
+
+  def asString(statusName: String): String =
     if (nanos > 0) {
-      s"[${Formatting.formatDuration(duration)}] $keyword"
-    } else keyword.toString
+      s"[${Formatting.formatDuration(duration)}] $statusName"
+    } else statusName
 }
 
 object EvalStatus {
@@ -114,7 +116,7 @@ object EvalStatus {
               } else {
                 fStatuses.filter(_ != Loaded).lastOption match {
                   case Some(lastStatus) => lastStatus match {
-                    case _: Passed => Passed(duration.toNanos, false)
+                    case p: Passed => Passed(duration.toNanos, false)
                     case _: Ignored => Passed(duration.toNanos, false)
                     case _ => Pending
                   }

@@ -219,7 +219,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
     status match {
       case _: Failed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${status.message}" else ""}${if (colors) ansi.reset else ""}")
       case _: Sustained => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (withMessage) s": ${status.message}" else ""}${if (colors) ansi.reset else ""}")
-      case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
+      case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}${if (status.isAbstained) status.asString("Abstained") else status}${if (colors) ansi.reset else ""}")
       case Loaded => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
       case Pending => // noop
       case _ => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$status${if (colors) ansi.reset else ""}")
@@ -318,7 +318,10 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   }
 
   private def colorFor(status: EvalStatus): Color = {
-    colorFor(status.keyword)
+    status match {
+      case _: Passed if status.isAbstained => Color.CYAN
+      case _ => colorFor(status.keyword)
+    }
   }
 
   private def colorFor(keyword: StatusKeyword): Color = {
