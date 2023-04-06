@@ -1,10 +1,10 @@
-3.34.5
+3.35.0
 ======
-Apr 6, 2023
+Apr 7, 2023
 - Refactored string interpolation
 - Improved error reporting in CSV lookup DSL
 - Improved Examples annotation CSV processing and error reporting
-- Print Abstained status to standard out for steps that pass but were not executed due to negative if condition
+- Print Abstained status to standard out for steps that pass but were not executed due to negative guards or empty iteration conditions
 - Implicitly log steps to console at inifite depth for dry runs
 
 3.34.4
