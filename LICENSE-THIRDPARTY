@@ -1,579 +1,278 @@
-LICENSE-THIRDPARTY
-==================
-
-Dependency                                               | Version     | License
--------------------------------------------------------- | ----------- | -----------------------------------------------------------------------------
-com.epam.reportportal           client-java              | 5.1.15      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.epam.reportportal           commons-model            | 5.7.3       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core      jackson-annotations      | 2.14.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core      jackson-core             | 2.14.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.fasterxml.jackson.core      jackson-databind         | 2.14.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.github.scopt                scopt_3                  | 4.1.0       | [MIT License](http://www.opensource.org/licenses/mit-license)
-com.github.tototoshi            scala-csv_3              | 1.3.10      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.code.findbugs        jsr305                   | 3.0.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.errorprone           error_prone_annotations  | 2.11.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.guava                failureaccess            | 1.0.1       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.guava                guava                    | 31.1-jre    | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.guava                listenablefuture         | 9999.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.google.j2objc               j2objc-annotations       | 1.3         | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.jayway.jsonpath             json-path                | 2.7.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.lihaoyi                     geny_3                   | 1.0.0       | [MIT](https://github.com/com-lihaoyi/geny/blob/master/LICENSE)
-com.lihaoyi                     scalatags_3              | 0.12.0      | [MIT](https://github.com/com-lihaoyi/scalatags/blob/master/LICENSE)
-com.lihaoyi                     sourcecode_3             | 0.3.0       | [MIT](https://github.com/com-lihaoyi/sourcecode/blob/master/LICENSE)
-com.squareup.okhttp3            logging-interceptor      | 3.14.9      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.okhttp3            okhttp                   | 3.14.9      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.okio               okio                     | 1.17.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          adapter-rxjava2          | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          converter-jackson        | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          converter-scalars        | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.squareup.retrofit2          retrofit                 | 2.9.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe                    config                   | 1.4.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-com.typesafe.scala-logging      scala-logging_3          | 3.9.5       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-commons-codec                   commons-codec            | 1.15        | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-io.cucumber                     gherkin                  | 26.0.3      | [MIT License](http://www.opensource.org/licenses/mit-license)
-io.cucumber                     messages                 | 21.0.1      | [MIT License](http://www.opensource.org/licenses/mit-license)
-io.reactivex.rxjava2            rxjava                   | 2.2.10      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-io.swagger                      swagger-annotations      | 1.6.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-javax.validation                validation-api           | 2.0.1-Final | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-joda-time                       joda-time                | 2.12.2      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-net.minidev                     accessors-smart          | 2.4.7       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-net.minidev                     json-smart               | 2.4.7       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-net.sourceforge.htmlcleaner     htmlcleaner              | 2.26        | [BSD License] (http://www.opensource.org/licenses/bsd-license.php)
-org.apache.commons              commons-lang3            | 3.12.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.apache.commons              commons-text             | 1.10.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.apache.log4j                log4j-api                | 2.20.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.apache.log4j                log4j-core               | 2.20.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.apache.log4j                log4j-slf4j-impl         | 2.20.0      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.checkerframework            checker-qual             | 3.12.0      | [MIT License](http://www.slf4j.org/license.html)
-org.fusesource.jansi            jansi                    | 2.4.0       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.jdom                        jdom2                    | 2.0.6.1     | [Similar to Apache License but with the acknowledgment clause removed](https://raw.githubusercontent.com/hunterhacker/jdom/master/LICENSE.txt)
-org.jline                       jline                    | 3.23.0      | [The BSD License](http://www.opensource.org/licenses/bsd-license.php)
-org.ow2.asm                     asm                      | 9.1         | [BSD License](http://asm.objectweb.org/license.html)
-org.reactivestreams             reactive-streams         | 1.0.3       | [MIT No Attribution (SPDX: MIT-0)](https://spdx.org/licenses/MIT-0.html)
-org.scala-lang                  scala-library            | 2.13.10     | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.scala-lang                  scala3-library_3         | 3.2.2       | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.slf4j                       jul-to-slf4j             | 1.7.36      | [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-org.slf4j                       slf4j-api                | 1.7.36      | [MIT License](http://www.slf4j.org/license.html)
-Twitter, Inc                    Bootstrap                | 3.3.6       | [MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)
-The jQuery Foundation           JQuery                   | 2.1.4       | [MIT License](https://jquery.org/license)
-Petr Vostřel                    Reel                     | 1.3         | [MIT License](https://github.com/pisi/Reel/blob/master/LICENSE.txt)
-
-LICENSES
---------
-
-#[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
-
-```
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-   1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-   END OF TERMS AND CONDITIONS
-
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-```
-
-# [BSD](https://github.com/nbronson/scala-stm/blob/master/LICENSE.txt)
-
-```
-Copyright (c) 2009-2012 Stanford University, unless otherwise specified.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of the Stanford University nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL STANFORD UNIVERSITY BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
-# [BSD 3-Clause](http://www.scala-lang.org/license.html)
-
-```
-Copyright (c) 2002-2017 EPFL
-Copyright (c) 2011-2017 Lightbend, Inc.
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are 
-permitted provided that the following conditions are met:
-
-- Redistributions of source code must retain the above copyright notice, this list of 
-  conditions and the following disclaimer.
-- Redistributions in binary form must reproduce the above copyright notice, this list of 
-  conditions and the following disclaimer in the documentation and/or other materials 
-  provided with the distribution.
-- Neither the name of the EPFL nor the names of its contributors may be used to endorse or 
-  promote products derived from this software without specific prior written permission.
-  
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
-# [The BSD License](https://github.com/jline/jline3/blob/master/LICENSE.txt)
-
-```
-Copyright (c) 2002-2016, the original author or authors.
-All rights reserved.
-
-http://www.opensource.org/licenses/bsd-license.php
-
-Redistribution and use in source and binary forms, with or
-without modification, are permitted provided that the following
-conditions are met:
-
-Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with
-the distribution.
-
-Neither the name of JLine nor the names of its contributors
-may be used to endorse or promote products derived from this
-software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
-OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
-# [MIT License](http://www.opensource.org/licenses/mit-license)
-
-```
-The MIT License (MIT)
-Copyright (c) <year> <copyright holders>
-
-Permission is hereby granted, free of charge, to any person obtaining a 
-copy of this software and associated documentation files (the "Software"), 
-to deal in the Software without restriction, including without limitation 
-the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-and/or sell copies of the Software, and to permit persons to whom the 
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included 
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
-THE SOFTWARE.
-```
-
-# [MIT License](http://www.slf4j.org/license.html)
-
-```
- Copyright (c) 2004-2013 QOS.ch
- All rights reserved.
-
- Permission is hereby granted, free  of charge, to any person obtaining
- a  copy  of this  software  and  associated  documentation files  (the
- "Software"), to  deal in  the Software without  restriction, including
- without limitation  the rights to  use, copy, modify,  merge, publish,
- distribute,  sublicense, and/or sell  copies of  the Software,  and to
- permit persons to whom the Software  is furnished to do so, subject to
- the following conditions:
- 
- The  above  copyright  notice  and  this permission  notice  shall  be
- included in all copies or substantial portions of the Software.
- 
- THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
-
-# [MIT License](https://github.com/twbs/bootstrap/blob/master/LICENSE)
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2011-2016 Twitter, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
-
-# [MIT License](https://jquery.org/license)
-
-```
-The MIT License (MIT)
-
-Copyright 2016 The jQuery Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-```
-
-# [MIT License](https://github.com/pisi/Reel/blob/master/LICENSE.txt)
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2009-2013 Petr Vostřel, http://reel360.org
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
-
-[MIT](https://github.com/com-lihaoyi/geny/blob/master/LICENSE)
-[MIT](https://github.com/com-lihaoyi/scalatags/blob/master/LICENSE)
-[MIT](https://github.com/com-lihaoyi/sourcecode/blob/master/LICENSE)
-
-```
-The MIT License (MIT)
-
-Copyright (c) 2016 Li Haoyi (haoyi.sg@gmail.com)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-DEALINGS IN THE SOFTWARE.
-```
-
-[Similar to Apache License but with the acknowledgment clause removed](https://raw.githubusercontent.com/hunterhacker/jdom/master/LICENSE.txt)
-
-```
- Copyright (C) 2000-2012 Jason Hunter & Brett McLaughlin.
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions, and the following disclaimer.
- 
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions, and the disclaimer that follows 
-    these conditions in the documentation and/or other materials 
-    provided with the distribution.
-
- 3. The name "JDOM" must not be used to endorse or promote products
-    derived from this software without prior written permission.  For
-    written permission, please contact <request_AT_jdom_DOT_org>.
- 
- 4. Products derived from this software may not be called "JDOM", nor
-    may "JDOM" appear in their name, without prior written permission
-    from the JDOM Project Management <request_AT_jdom_DOT_org>.
- 
- In addition, we request (but do not require) that you include in the 
- end-user documentation provided with the redistribution and/or in the 
- software itself an acknowledgement equivalent to the following:
-     "This product includes software developed by the
-      JDOM Project (http://www.jdom.org/)."
- Alternatively, the acknowledgment may be graphical using the logos 
- available at http://www.jdom.org/images/logos.
-
- THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
- WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED.  IN NO EVENT SHALL THE JDOM AUTHORS OR THE PROJECT
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
- USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
-
- This software consists of voluntary contributions made by many 
- individuals on behalf of the JDOM Project and was originally 
- created by Jason Hunter <jhunter_AT_jdom_DOT_org> and
- Brett McLaughlin <brett_AT_jdom_DOT_org>.  For more information
- on the JDOM Project, please see <http://www.jdom.org/>. 
-```
+net.sourceforge.htmlcleaner
+  +-htmlcleaner:2.26
+  | +-BSD License - http://www.opensource.org/licenses/bsd-license.php
+com.fasterxml.jackson.datatype
+  +-jackson-datatype-jsr310:2.12.1
+  | +-no license specified
+com.google.code.findbugs
+  +-jsr305:3.0.2
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.scala-lang
+  +-scala-library:2.13.10
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-scala3-library_3:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-scaladoc_3:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-tasty-core_3:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-scala3-compiler_3:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-scala3-interfaces:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+  +-scala3-tasty-inspector_3:3.2.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+com.jayway.jsonpath
+  +-json-path:2.7.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.ow2.asm
+  +-asm:9.1
+  | +-BSD-3-Clause - https://asm.ow2.io/license.html
+org.fusesource.jansi
+  +-jansi:2.4.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+com.typesafe
+  +-config:1.4.2
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+com.google.protobuf
+  +-protobuf-java:3.7.0
+  | +-no license specified
+com.github.tototoshi
+  +-scala-csv_3:1.3.10
+  | +-Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.html
+org.apache.logging.log4j
+  +-log4j-slf4j-impl:2.20.0
+  | +-no license specified
+  +-log4j-core:2.20.0
+  | +-no license specified
+  +-log4j-api:2.20.0
+  | +-no license specified
+com.github.scopt
+  +-scopt_3:4.1.0
+  | +-MIT - http://www.opensource.org/licenses/mit-license.php
+org.slf4j
+  +-jul-to-slf4j:1.7.36
+  | +-no license specified
+  +-slf4j-api:1.7.36
+  | +-no license specified
+org.checkerframework
+  +-checker-qual:3.12.0
+  | +-The MIT License - http://opensource.org/licenses/MIT
+org.nibor.autolink
+  +-autolink:0.6.0
+  | +-MIT License - http://www.opensource.org/licenses/mit-license.php
+org.jsoup
+  +-jsoup:1.14.3
+  | +-The MIT License - https://jsoup.org/license
+com.google.errorprone
+  +-error_prone_annotations:2.11.0
+  | +-Apache 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+com.epam.reportportal
+  +-commons-model:5.7.3
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-client-java:5.1.15
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.objenesis
+  +-objenesis:3.3
+  | +-no license specified
+org.jline
+  +-jline:3.23.0
+  | +-no license specified
+  +-jline-terminal-jna:3.19.0
+  | +-no license specified
+  +-jline-terminal:3.19.0
+  | +-no license specified
+  +-jline-reader:3.19.0
+  | +-no license specified
+net.minidev
+  +-json-smart:2.4.7
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-accessors-smart:2.4.7
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.scala-sbt
+  +-util-interface:1.3.0
+  | +-BSD New - https://github.com/sbt/sbt/blob/0.13/LICENSE
+  +-compiler-interface:1.3.5
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+com.fasterxml.jackson.core
+  +-jackson-annotations:2.14.2
+  | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
+  +-jackson-core:2.14.2
+  | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
+  +-jackson-databind:2.14.2
+  | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
+  +-jackson-annotations:2.13.3
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-jackson-core:2.13.3
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-jackson-databind:2.13.3
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+net.java.dev.jna
+  +-jna:5.3.1
+  | +-Apache License v2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.scalactic
+  +-scalactic_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+com.squareup.retrofit2
+  +-adapter-rxjava2:2.9.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-retrofit:2.9.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-converter-scalars:2.9.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+  +-converter-jackson:2.9.0
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+joda-time
+  +-joda-time:2.12.2
+  | +-Apache License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
+org.yaml
+  +-snakeyaml:1.30
+  | +-Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+nl.big-o
+  +-liqp:0.8.2
+  | +-MIT License - http://www.opensource.org/licenses/mit-license.php
+com.squareup.okio
+  +-okio:1.17.2
+  | +-no license specified
+com.squareup.okhttp3
+  +-logging-interceptor:3.14.9
+  | +-no license specified
+  +-okhttp:3.14.9
+  | +-no license specified
+com.lihaoyi
+  +-scalatags_3:0.12.0
+  | +-MIT - https://spdx.org/licenses/MIT.html
+  +-geny_3:1.0.0
+  | +-MIT - https://spdx.org/licenses/MIT.html
+  +-sourcecode_3:0.3.0
+  | +-MIT - https://spdx.org/licenses/MIT.html
+org.antlr
+  +-antlr4-runtime:4.7.2
+  | +-no license specified
+org.jdom
+  +-jdom2:2.0.6.1
+  | +-Similar to Apache License but with the acknowledgment clause removed - https://raw.github.com/hunterhacker/jdom/master/LICENSE.txt
+org.scalatestplus
+  +-mockito-4-2_3:3.2.11.0
+  | +-Apache-2.0 - http://www.apache.org/licenses/LICENSE-2.0
+io.reactivex.rxjava2
+  +-rxjava:2.2.10
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+net.bytebuddy
+  +-byte-buddy:1.12.19
+  | +-no license specified
+  +-byte-buddy-agent:1.12.19
+  | +-no license specified
+com.fasterxml.jackson.dataformat
+  +-jackson-dataformat-yaml:2.13.3
+  | +-no license specified
+org.apache.commons
+  +-commons-lang3:3.12.0
+  | +-no license specified
+  +-commons-text:1.10.0
+  | +-no license specified
+com.google.j2objc
+  +-j2objc-annotations:1.3
+  | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+javax.validation
+  +-validation-api:2.0.1.Final
+  | +-Apache License 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
+org.scalatest
+  +-scalatest-refspec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-funsuite_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-diagrams_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-funspec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-propspec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-compatible:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-flatspec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-mustmatchers_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-core_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-featurespec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-freespec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-matchers-core_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-wordspec_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+  +-scalatest-shouldmatchers_3:3.2.15
+  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+io.swagger
+  +-swagger-annotations:1.6.0
+  | +-no license specified
+com.vladsch.flexmark
+  +-flexmark-ext-superscript:0.42.12
+  | +-no license specified
+  +-flexmark-jira-converter:0.42.12
+  | +-no license specified
+  +-flexmark-util:0.42.12
+  | +-no license specified
+  +-flexmark-ext-yaml-front-matter:0.42.12
+  | +-no license specified
+  +-flexmark-ext-emoji:0.42.12
+  | +-no license specified
+  +-flexmark-html-parser:0.42.12
+  | +-no license specified
+  +-flexmark-ext-autolink:0.42.12
+  | +-no license specified
+  +-flexmark-ext-wikilink:0.42.12
+  | +-no license specified
+  +-flexmark-ext-ins:0.42.12
+  | +-no license specified
+  +-flexmark-ext-gfm-strikethrough:0.42.12
+  | +-no license specified
+  +-flexmark:0.42.12
+  | +-no license specified
+  +-flexmark-ext-gfm-tasklist:0.42.12
+  | +-no license specified
+  +-flexmark-formatter:0.42.12
+  | +-no license specified
+  +-flexmark-ext-anchorlink:0.42.12
+  | +-no license specified
+  +-flexmark-ext-tables:0.42.12
+  | +-no license specified
+  +-flexmark-ext-gfm-tables:0.42.12
+  | +-no license specified
+com.google.guava
+  +-listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+  | +-no license specified
+  +-guava:31.1-jre
+  | +-no license specified
+  +-failureaccess:1.0.1
+  | +-no license specified
+org.scala-lang.modules
+  +-scala-asm:9.3.0-scala-1
+  | +-BSD 3-clause - http://opensource.org/licenses/BSD-3-Clause
+  +-scala-xml_3:2.1.0
+  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
+ua.co.k
+  +-strftime4j:1.0.5
+  | +-MIT License - http://www.opensource.org/licenses/mit-license.php
+org.mockito
+  +-mockito-core:4.11.0
+  | +-The MIT License - https://github.com/mockito/mockito/blob/main/LICENSE
+io.cucumber
+  +-gherkin:26.0.3
+  | +-no license specified
+  +-messages:21.0.1
+  | +-no license specified
+org.reactivestreams
+  +-reactive-streams:1.0.3
+  | +-MIT No Attribution SPDX: MIT-0 - https://spdx.org/licenses/MIT-0.html
+commons-codec
+  +-commons-codec:1.15
+  | +-no license specified
+com.typesafe.scala-logging
+  +-scala-logging_3:3.9.5
+  | +-Apache 2.0 License - http://www.apache.org/licenses/LICENSE-2.0.html
