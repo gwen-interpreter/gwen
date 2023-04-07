@@ -247,38 +247,42 @@ case class Step(
     * @return the interpolated step
     */
   override def interpolate(interpolator: String => String): Step = {
-    val iName = interpolator.apply(name)
-    val iTable = table map { case (line, record) =>
-      (line, record.map(cell => interpolator.apply(cell)))
-    }
-    val iDocString = docString map { case (line, content, contentType) =>
-      (line, interpolator.apply(content), contentType)
-    }
-    val iParams = params map { (name, value) => (name, interpolator.apply(value)) }
-    val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString) {
-      copy(
-        withName = iName,
-        withTable = iTable,
-        withDocString = iDocString,
-        withParams = iParams,
-      )
-    } else this
-    
-    /* if the interplotion resulted in multi line step expression and the step has a trailing and quoted parameter
-       or property, then move that into a docString and interpolate again, otherwise report illegal substitution */
-    
-    if (Source.fromString(iStep.name).getLines().size > 1) {
-      docStringify.map(_.interpolate(interpolator)) getOrElse {
-        Errors.multilineSubstitutionError("Illegal multiline placehoder substitution in step detected")
+    if (isData || isNoData) this else {
+      val iName = interpolator.apply(name)
+      val iTable = table map { case (line, record) =>
+        (line, record.map(cell => interpolator.apply(cell)))
       }
-    } else iStep
+      val iDocString = docString map { case (line, content, contentType) =>
+        (line, interpolator.apply(content), contentType)
+      }
+      val iParams = params map { (name, value) => (name, interpolator.apply(value)) }
+      val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString) {
+        copy(
+          withName = iName,
+          withTable = iTable,
+          withDocString = iDocString,
+          withParams = iParams,
+        )
+      } else this
+    
+      /* if the interplotion resulted in multi line step expression and the step has a trailing and quoted parameter
+        or property, then move that into a docString and interpolate again, otherwise report illegal substitution */
+      
+      if (Source.fromString(iStep.name).getLines().size > 1) {
+        docStringify.map(_.interpolate(interpolator)) getOrElse {
+          Errors.multilineSubstitutionError("Illegal multiline placehoder substitution in step detected")
+        }
+      } else iStep
+    }
   }
 
   def interpolateMessage(interpolator: String => String): Step = {
-    message map { msg => 
-      val iMessage = interpolator.apply(msg)
-      if (iMessage != msg) copy(withMessage = Some(iMessage)) else this
-    } getOrElse (this)
+    if (isData || isNoData) this else {
+      message map { msg => 
+        val iMessage = interpolator.apply(msg)
+        if (iMessage != msg) copy(withMessage = Some(iMessage)) else this
+      } getOrElse (this)
+    }
   }
 
 }

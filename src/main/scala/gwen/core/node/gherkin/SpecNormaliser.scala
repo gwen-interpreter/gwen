@@ -194,7 +194,7 @@ trait SpecNormaliser extends BehaviorRules {
     val dataSteps = (data map { case (name, value) => 
         (name, if (GwenSettings.`gwen.auto.trim.data.csv`) value.trim else value)
       }).zipWithIndex map { case ((name, value), index) =>
-      val keyword = if (index == 0) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
+      val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None)
     }
     val description = dataFile map { file => 
@@ -211,7 +211,7 @@ trait SpecNormaliser extends BehaviorRules {
     background match {
       case Some(bg) =>
         val bgSteps = bg.steps match {
-          case head :: tail if dataSteps.size > 0 =>
+          case head :: tail if dataSteps.size > 0 && !noData =>
             if (StepKeyword.isGiven(head.keyword)) {
               head.copy(withKeyword = StepKeyword.nameOf(StepKeyword.And)) :: tail
             } else {
@@ -224,7 +224,7 @@ trait SpecNormaliser extends BehaviorRules {
           bg.keyword,
           s"${bg.name}${descriptor.map(d => s" + $d").getOrElse("")}",
           bg.description ++ description,
-          dataSteps ++ bgSteps
+          if (noData) bgSteps ++ dataSteps else dataSteps ++ bgSteps
         ).interpolate(interpolator)
       case None =>
         Background(

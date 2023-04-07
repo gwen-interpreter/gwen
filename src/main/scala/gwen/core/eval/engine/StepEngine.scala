@@ -103,16 +103,16 @@ trait StepEngine[T <: EvalContext] {
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     if (resume(parent, step, ctx)) {
-      val pStep = interpolateParams(step, ctx)
+      val pStep = resolveParamPlaceholders(step, ctx)
       val eStep = pStep.evalStatus match {
         case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
           beforeStep(pStep.copy(withEvalStatus = Pending), ctx)
           pStep
         case _ =>
-          val iStep = interpolateAll(pStep, ctx)
-          logger.info(s"Evaluating Step: $iStep")
-          beforeStep(iStep.copy(withEvalStatus = Pending), ctx)
-          ctx.withStep(iStep) { s =>
+          val rStep = resolveAllPlaceholders(pStep, ctx)
+          logger.info(s"Evaluating Step: $rStep")
+          beforeStep(rStep.copy(withEvalStatus = Pending), ctx)
+          ctx.withStep(rStep) { s =>
             Try(healthCheck(parent, s, ctx)) match {
               case Failure(e) => throw e
               case _ => translateAndEvaluate(parent, s, ctx)
@@ -141,24 +141,18 @@ trait StepEngine[T <: EvalContext] {
     }
   }
 
-  private def interpolateParams(step: Step, ctx: T): Step = {
-    ctx.withStep(step) { s => 
-      val interpolator = ctx.interpolateParams
-      s.interpolate(interpolator).interpolateMessage(interpolator) 
-    }
+  // resolves all $<param> placeholders only
+  private def resolveParamPlaceholders(step: Step, ctx: T): Step = {
+    val interpolator = ctx.interpolateParams
+    ctx.withStep(step) { _.interpolate(interpolator).interpolateMessage(interpolator) }
   }
 
-  private def interpolateAll(step: Step, ctx: T): Step = {
+  // resolves all $<param> and ${property} placeholders
+  private def resolveAllPlaceholders(step: Step, ctx: T): Step = {
     val interpolator = ctx.interpolate
-    val iStep = if (step.isData) {
-      step
-    } else {
-      ctx.withStep(step) { _.interpolate(interpolator) }
-    }
-    if (ctx.options.dryRun) {
-      ctx.withStep(iStep) { _.interpolateMessage(interpolator) }
-    } else {
-      iStep
+    ctx.withStep(step) { s => 
+      val iStep = s.interpolate(interpolator)
+      ctx.evaluate(iStep.interpolateMessage(interpolator)) { iStep }
     }
   }
 

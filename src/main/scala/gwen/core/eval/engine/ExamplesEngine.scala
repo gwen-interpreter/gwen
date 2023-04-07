@@ -158,14 +158,12 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   private def csvTableFail(msg: String, header: List[String], outline: Scenario): (List[(Long, List[String])], Option[Background]) = {
-    val emptyTable = (1L, header) :: List((2L, header.map(_ => "")))
-    val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should not be """"", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
+    val emptyTable = (1L, header) :: List((2L, header map { _ => "" }))
+    val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should be defined""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
     val noDataBackground = outline.background map { bg =>
       bg.copy(
         withName = s"${bg.name} + No data",
-        withSteps = step.copy(
-          withKeyword = if (bg.steps.nonEmpty) StepKeyword.And.toString else step.keyword
-        ) :: bg.steps
+        withSteps = step :: bg.steps
       )
     } getOrElse {
       Background(None, Background.toString, "No data", Nil, List(step))
