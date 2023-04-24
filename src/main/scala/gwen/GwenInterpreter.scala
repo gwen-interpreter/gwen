@@ -145,7 +145,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
 
     }
 
-    // load user provided lo4j configuration
+    // load user provided log4j configuration
     Settings.getOpt("log4j2.configurationFile")
       .orElse(Settings.getOpt("log4j2.configuration"))
       .orElse(Settings.getOpt("log4j.configurationFile"))

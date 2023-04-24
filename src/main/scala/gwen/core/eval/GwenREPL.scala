@@ -132,7 +132,20 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     System.out.println("\nEnter steps to evaluate or type help for more options..")
     enteringLoop()
     try {
-      while(eval(read()).map(output => output tap { _ => if (paste.isEmpty) System.out.println(output) } ).nonEmpty) { }
+      while(
+        (read() map { line => 
+          eval(line) map { output => 
+            output tap { _ => 
+              if (paste.isEmpty) { 
+                System.out.println(s"${prompt}${line}") 
+                System.out.println()
+                System.out.println(output) 
+                System.out.println()
+              } 
+            } 
+          }
+        }).lastOption.map(_.nonEmpty).getOrElse(false)
+      ) { }
     } finally {
       exitingLoop()
     }
@@ -143,6 +156,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   def debug(parent: GwenNode, step: Step): Boolean = {
     debug = true
     var continue: Boolean = false
+    var quit: Boolean = false
     val verbatimPrinter = new SpecPrinter(deep = false, verbatim = true, colors)
     if (!ctx.isEvaluatingTopLevelStep) System.out.println()
     System.out.println()
@@ -152,11 +166,31 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     enteringLoop()
     try {
       while(
-        eval(read()) map { output => 
-          continue = output == "continue"
-          output tap { _ => if (paste.isEmpty && !continue) System.out.println(output) } 
-          output
-        } filter { output => output != "continue" } nonEmpty
+        (read() flatMap { line => 
+          if (continue || quit) None
+          else {
+            eval(line) match {
+              case None => 
+                quit = true
+                Some("exit")
+              case result =>
+                result map { output => 
+                  output tap { _ => 
+                    if (paste.isEmpty) { 
+                      if (output == "continue") {
+                        continue = true
+                      } else {
+                        System.out.println(s"${prompt}${line}") 
+                        System.out.println()
+                        System.out.println(output) 
+                        System.out.println()
+                      }
+                    } 
+                  }
+                }
+            }
+          }
+        }) filter { output => output == "continue" || output == "exit" } isEmpty
       ) { }
     } finally {
       exitingLoop()
@@ -177,12 +211,12 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   }
 
   /** Reads an input string or command from the command line. */
-  private def read(): String = {
+  private def read(): List[String] = {
     if (paste.isEmpty) System.out.println()
     try {
-      reader.readLine(prompt) tap { _ => if (paste.isEmpty) System.out.println() }
+      scala.io.Source.fromString(reader.readLine(prompt)).getLines.toList tap { _ => if (paste.isEmpty) System.out.println() }
     } catch {
-      case _: EndOfFileException => paste.map(_ => "paste").getOrElse("exit")
+      case _: EndOfFileException => paste.map(_ => List("paste")).getOrElse(List("exit"))
       case e: Throwable => Errors.interruptException(e)
     }
   }
