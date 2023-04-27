@@ -131,20 +131,28 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     System.out.println("\nREPL Console")
     System.out.println("\nEnter steps to evaluate or type help for more options..")
     enteringLoop()
+    var lines: List[String] = Nil
     try {
       while(
-        (read() map { line => 
+        ((read() tap { ls => lines = ls } zipWithIndex) map { (line, idx) => 
           eval(line) map { output => 
             output tap { _ => 
               if (paste.isEmpty) { 
-                System.out.println(s"${prompt}${line}") 
-                System.out.println()
+                if (lines.length > 1) {
+                  System.out.println(s"${prompt}${line}") 
+                  System.out.println()
+                }
                 System.out.println(output) 
-                System.out.println()
+                if (lines.length > 1 && idx < (lines.length - 1)) {
+                  System.out.println()
+                }
               } 
             } 
           }
-        }).lastOption.map(_.nonEmpty).getOrElse(false)
+        }).lastOption.map(_.nonEmpty).getOrElse { 
+          System.out.println("  [noop]")
+          true 
+        }
       ) { }
     } finally {
       exitingLoop()
@@ -164,9 +172,10 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     System.out.println(verbatimPrinter.prettyPrint(parent, step))
     System.out.println("Enter c to continue or q to quit (or type help for more options)..")
     enteringLoop()
+    var lines: List[String] = Nil
     try {
       while(
-        (read() flatMap { line => 
+        ((read() tap { ls => lines = ls } zipWithIndex) flatMap { (line, idx) => 
           if (continue || quit) None
           else {
             eval(line) match {
@@ -180,17 +189,25 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
                       if (output == "continue") {
                         continue = true
                       } else {
-                        System.out.println(s"${prompt}${line}") 
-                        System.out.println()
+                        if (lines.length > 1) {
+                          System.out.println(s"${prompt}${line}") 
+                          System.out.println()
+                        }
                         System.out.println(output) 
-                        System.out.println()
+                        if (lines.length > 1 && idx < (lines.length - 1)) {
+                          System.out.println()
+                        }
                       }
                     } 
                   }
                 }
             }
           }
-        }) filter { output => output == "continue" || output == "exit" } isEmpty
+        }) tap { outputs => 
+          if (outputs.isEmpty) println("  [noop]")
+        } filter { output => 
+          output == "continue" || output == "exit" 
+        } isEmpty
       ) { }
     } finally {
       exitingLoop()
@@ -347,7 +364,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       Some("")
     } else {
       paste foreach { steps =>
-        System.out.println(s"\nExiting paste mode, ${if (steps.nonEmpty) "evaluating.." else "nothing pasted"}")
+        System.out.println(s"Exiting paste mode, ${if (steps.nonEmpty) "evaluating.." else "nothing pasted"}")
         steps.reverse map { step =>
           System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
           evaluate(step) tap { output => System.out.println(output) }
