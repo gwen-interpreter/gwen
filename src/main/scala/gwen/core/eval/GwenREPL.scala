@@ -150,7 +150,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
             } 
           }
         }).lastOption.map(_.nonEmpty).getOrElse { 
-          System.out.println("  [noop]")
+          if (paste.isEmpty) {
+            System.out.println("  [noop]")
+          }
           true 
         }
       ) { }
@@ -204,7 +206,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
             }
           }
         }) tap { outputs => 
-          if (outputs.isEmpty) println("  [noop]")
+          if (outputs.isEmpty && paste.isEmpty) println("  [noop]")
         } filter { output => 
           output == "continue" || output == "exit" 
         } isEmpty
