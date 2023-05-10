@@ -33,7 +33,7 @@ class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit
 
   private val totalRecs = CSVRecords.list(dataFile).size - 1
   private val dataFeed = CSVRecords.iterator(dataFile).zipWithIndex
-  private val headers = if (dataFeed.hasNext) dataFeed.next()._1 else Nil
+  private val headers = if (dataFeed.hasNext) dataFeed.next()._1.map(_.trim) else Nil
 
   /** Checks if there are more records in the data feed. */
   override def hasNext: Boolean = dataFeed.hasNext

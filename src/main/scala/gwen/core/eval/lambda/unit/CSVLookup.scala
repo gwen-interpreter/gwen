@@ -43,7 +43,7 @@ class CSVLookup[T <: EvalContext](column: String, name: String, filepath: Option
         val table = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
-        val header = table.headOption map { (_, headings) => headings map { h => s"${CSVRecords.lookupPrefix}$h" } }
+        val header = table.headOption map { (_, headings) => headings.map(_.trim) map { h => s"${CSVRecords.lookupPrefix}$h" } }
         val idx = header.map(_.indexOf(s"${CSVRecords.lookupPrefix}$column")).getOrElse(-1)
         if (idx < 0) Errors.csvLookupError(file, column)
         val record = table.tail find { (rowNo, row) =>   

@@ -108,7 +108,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table0 = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
-        val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h" } getOrElse h }" } } getOrElse {
+        val header = table0.headOption map { (_, headings) => headings.map(_.trim) map { h => s"${prefix map { p => s"$p$h" } getOrElse h }" } } getOrElse {
           Errors.csvHeaderNotFoundError(file)
         }
         val resultTable = (1L, header) :: (table0.tail filter { (rowNo, row) => 
