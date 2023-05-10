@@ -149,12 +149,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
               } 
             } 
           }
-        }).lastOption.map(_.nonEmpty).getOrElse { 
-          if (paste.isEmpty) {
-            System.out.println("  [noop]")
-          }
-          true 
-        }
+        }).lastOption.map(_.nonEmpty).getOrElse(true)
       ) { }
     } finally {
       exitingLoop()
@@ -205,9 +200,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
                 }
             }
           }
-        }) tap { outputs => 
-          if (outputs.isEmpty && paste.isEmpty) println("  [noop]")
-        } filter { output => 
+        }) filter { output => 
           output == "continue" || output == "exit" 
         } isEmpty
       ) { }
@@ -229,11 +222,14 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
     Settings.clearLocal("gwen.behavior.rules")
   }
 
-  /** Reads an input string or command from the command line. */
+  /** Reads all input lines from the command line. */
   private def read(): List[String] = {
     if (paste.isEmpty) System.out.println()
     try {
-      scala.io.Source.fromString(reader.readLine(prompt)).getLines.toList tap { _ => if (paste.isEmpty) System.out.println() }
+      val lines = scala.io.Source.fromString(reader.readLine(prompt)).getLines
+      (if (lines.hasNext) lines.toList else List("")) tap { _ => 
+        if (paste.isEmpty) System.out.println() 
+      }
     } catch {
       case _: EndOfFileException => paste.map(_ => List("paste")).getOrElse(List("exit"))
       case e: Throwable => Errors.interruptException(e)
