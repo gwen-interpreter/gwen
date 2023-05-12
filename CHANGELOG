@@ -1,6 +1,11 @@
+3.35.5
+======
+May 12, 2023
+- Do not pause at breakpoints twice on guarded steps
+
 3.35.4
 ======
-May 20, 2023
+May 10, 2023
 - Trim headers from CSV data feeds
 
 3.35.3

@@ -131,7 +131,7 @@ trait StepEngine[T <: EvalContext] {
   }
 
   private def resume(parent: GwenNode, step: Step, ctx: T): Boolean = {
-    if (step.isBreakpoint && ctx.options.debug) {
+    if (step.isBreakpoint && ctx.options.debug && !(parent.isInstanceOf[Scenario] && parent.asInstanceOf[Scenario].isGuarded)) {
       pauseListeners(parent)
       new GwenREPL(engine, ctx).debug(parent, step) tap { _ =>
         resumeListeners()

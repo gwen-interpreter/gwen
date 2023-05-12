@@ -100,6 +100,7 @@ case class Scenario(
   def isIfCondition: Boolean = tags.exists(_.name == Annotations.If.toString)
   def isWhileCondition: Boolean = tags.exists(_.name == Annotations.While.toString)
   def isUntilCondition: Boolean = tags.exists(_.name == Annotations.Until.toString)
+  def isGuarded: Boolean = isIfCondition || isWhileCondition || isUntilCondition
   def isDataTable: Boolean = tags.exists(_.name.startsWith(Annotations.DataTable.toString))
   def isSynchronized: Boolean = tags.map(_.name).exists { 
     name => name == Annotations.Synchronized.toString || name == Annotations.Synchronised.toString
