@@ -32,6 +32,8 @@ import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
+import scala.util.Success
+import scala.util.Failure
 
 class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String]) extends UnitStep[T] {
 
@@ -40,7 +42,12 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
         case BindingType.javascript => JSBinding.bind(target, value, ctx) 
-        case BindingType.function => JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, ctx)
+        case BindingType.function => 
+          JSBinding.find(value, ctx) match {
+            case Success(_) => 
+              JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, ctx)
+            case Failure(e) => throw e
+          }
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, false, ctx)
         case BindingType.unixsysproc => SysprocBinding.bind(target, value, delimiter, true, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
