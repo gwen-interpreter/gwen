@@ -37,6 +37,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.auto.bind.tableData.outline.examples` should be (true)
       GwenSettings.`gwen.auto.discover.data.csv` should be (true)
       GwenSettings.`gwen.auto.discover.meta` should be (true)
+      GwenSettings.`gwen.auto.trim.data.csv` should be (false)
       GwenSettings.`gwen.behavior.rules` should be (BehaviorMode.lenient)
       GwenSettings.`gwen.feature.dialect` should be ("en")
       GwenSettings.`gwen.feature.failfast.enabled` should be (true)

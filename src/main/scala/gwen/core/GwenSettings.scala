@@ -166,7 +166,7 @@ object GwenSettings {
     * or disable automatic trimming of CSV data (default value is `false` for no triming).
     */
   def `gwen.auto.trim.data.csv`: Boolean = {
-    Settings.getBooleanOpt("gwen.auto.trim.data.csv").getOrElse(false)
+    Settings.getBoolean("gwen.auto.trim.data.csv")
   }
 
   /**
