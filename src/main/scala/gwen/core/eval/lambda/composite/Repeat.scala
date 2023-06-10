@@ -20,9 +20,7 @@ import gwen.core._
 import gwen.core.Formatting.DurationFormatter
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
-import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.lambda.CompositeStep
-import gwen.core.eval.support.JSCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
@@ -35,7 +33,9 @@ import gwen.core.status._
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
+abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
+
+  def evaluteCondition(ctx: T): Boolean
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
@@ -68,7 +68,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
               iterationStep.evalStatus match {
                 case Failed(_, e) => throw e
                 case _ =>
-                  JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate() tap { result =>
+                  evaluteCondition(ctx) tap { result =>
                     if (!result) {
                       logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
                       if (delay.gt(Duration.Zero)) {
@@ -80,7 +80,7 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
                   }
               }
             case "while" =>
-              val result = JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate()
+              val result = evaluteCondition(ctx)
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {
@@ -121,9 +121,9 @@ class Repeat[T <: EvalContext](doStep: String, operation: String, condition: Str
         operation match {
           case "until" =>
             evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-            ctx.scopes.get(JSBinding.key(condition))
+            evaluteCondition(ctx)
           case _ =>
-            ctx.scopes.get(JSBinding.key(condition))
+            evaluteCondition(ctx)
             evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
         }
       } catch {
