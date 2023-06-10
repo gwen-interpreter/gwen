@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
     ctx.topScope.set("gwen.rule.name", rule.name)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
-        val isAssertionError = status.isAssertionError
-        val isSoftAssert = ctx.evaluate(false) { isAssertionError && AssertionMode.isSoft }
+        val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
         val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
         val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
         if (failfast && !exitOnFail && !isSoftAssert) {

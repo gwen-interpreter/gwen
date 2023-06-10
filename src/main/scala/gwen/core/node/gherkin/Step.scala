@@ -238,6 +238,13 @@ case class Step(
   def isTry: Boolean = hasTag(Annotations.Try)
   def isData: Boolean = hasTag(Annotations.Data)
   def isNoData: Boolean = hasTag(Annotations.NoData)
+  
+  def assertionMode: AssertionMode = {
+    AssertionMode.values find { mode => 
+      hasTag(mode.annotation)
+    } getOrElse GwenSettings.`gwen.assertion.mode`
+  }
+
   private def hasTag(tag: Annotations) = tags.exists(_.name.toLowerCase == tag.toString.toLowerCase)
 
   /**

@@ -87,7 +87,7 @@ trait StepEngine[T <: EvalContext] {
       case status @ Failed(_, error) if !step.isFinally =>
         ctx.evaluate(evaluateStep(parent, step, ctx)) {
           val isAssertionError = status.isAssertionError
-          val isHardAssert = ctx.evaluate(false) { AssertionMode.isHard }
+          val isHardAssert = ctx.evaluate(false) { status.isHardAssertionError }
           if (!isAssertionError || isHardAssert) {
             transitionStep(step, Skipped, ctx)
           } else {
@@ -276,7 +276,7 @@ trait StepEngine[T <: EvalContext] {
           fStep.copy(withEvalStatus = Disabled)
         } else if (fStep.isTry) {
           fStep.copy(withEvalStatus = Ignored(nanos))
-        } else if (status.isSustainedError) {
+        } else if (status.isSustainedAssertionError) {
           fStep.copy(withEvalStatus = Sustained(nanos, error))
         } else {
           fStep

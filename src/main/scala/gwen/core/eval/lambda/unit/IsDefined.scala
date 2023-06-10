@@ -33,7 +33,11 @@ class IsDefined[T <: EvalContext](source: String, negate: Boolean, message: Opti
       ctx.perform {
         val value = Try(ctx.getBoundReferenceValue(source))
         val result = if (negate) value.isFailure else value.isSuccess
-        ctx.assertWithError(result, message, s"Expected $source to${if (negate) " not" else ""} be defined")
+        ctx.assertWithError(
+          result, 
+          message, 
+          s"Expected $source to${if (negate) " not" else ""} be defined",
+          step.assertionMode)
       }
     }
   }

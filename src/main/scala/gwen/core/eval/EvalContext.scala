@@ -236,11 +236,11 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       .addAttachment(s"Environment", "txt", scopes.visible.asString)
   }
 
-  def assertWithError(assertion: Boolean, customError: Option[String], assertError: String): Unit = {
+  def assertWithError(assertion: Boolean, customError: Option[String], assertError: String, mode: AssertionMode): Unit = {
     customError map { msg => 
       if (!assertion) Errors.customAssertionError(Try(interpolateLenient(msg)).getOrElse(msg))
     } getOrElse {
-      assert(assertion, assertError)
+      mode.assertWithError(assertion, assertError)
     }
   }
 

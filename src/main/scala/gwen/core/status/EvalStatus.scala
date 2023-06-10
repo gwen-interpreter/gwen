@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +62,12 @@ trait EvalStatus {
 
   /** Determines whether or not this status is due to an assertion error. */
   def isAssertionError: Boolean =
-    cause.exists(c => c != null && c.isInstanceOf[AssertionError])
+    cause.exists(c => c != null && c.isInstanceOf[Errors.GwenAssertionError])
 
-  def isSustainedError = isAssertionError && AssertionMode.isSustained
+  def isHardAssertionError = isAssertionError(AssertionMode.hard)
+  def isSoftAssertionError = isAssertionError(AssertionMode.soft)
+  def isSustainedAssertionError = isAssertionError(AssertionMode.sustained)
+  def isAssertionError(mode: AssertionMode): Boolean = isAssertionError && cause.map(_.asInstanceOf[Errors.GwenAssertionError].mode == mode).getOrElse(false)
 
   /** Determines whether or not this status is due to an disabled step error. */
   def isDisabledError: Boolean =
@@ -103,25 +106,29 @@ object EvalStatus {
     val fStatuses = statuses.filter(s => !s.isDisabled && !s.isSkipped)
     if (fStatuses.nonEmpty) {
       val duration = DurationOps.sum(fStatuses.map(_.duration))
-      fStatuses.collectFirst { case failed @ Failed(_, _) => failed } match {
+      fStatuses.collectFirst { case failed @ Failed(_, _) if failed.isHardAssertionError => failed } match {
         case Some(failed) => Failed(duration.toNanos, failed.error)
         case None =>
-          fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
-            case Some(sustained) =>
-              if (ignoreSustained) Passed(duration.toNanos, false)
-              else Sustained(duration.toNanos, sustained.error)
+          fStatuses.collectFirst { case failed @ Failed(_, _) if !failed.isHardAssertionError => failed } match {
+            case Some(failed) => Failed(duration.toNanos, failed.error)
             case None =>
-              if (fStatuses.forall(_.isLoaded)) {
-                Loaded
-              } else {
-                fStatuses.filter(_ != Loaded).lastOption match {
-                  case Some(lastStatus) => lastStatus match {
-                    case p: Passed => Passed(duration.toNanos, false)
-                    case _: Ignored => Passed(duration.toNanos, false)
-                    case _ => Pending
+              fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
+                case Some(sustained) =>
+                  if (ignoreSustained) Passed(duration.toNanos, false)
+                  else Sustained(duration.toNanos, sustained.error)
+                case None =>
+                  if (fStatuses.forall(_.isLoaded)) {
+                    Loaded
+                  } else {
+                    fStatuses.filter(_ != Loaded).lastOption match {
+                      case Some(lastStatus) => lastStatus match {
+                        case p: Passed => Passed(duration.toNanos, false)
+                        case _: Ignored => Passed(duration.toNanos, false)
+                        case _ => Pending
+                      }
+                      case None => Pending
+                    }
                   }
-                  case None => Pending
-                }
               }
           }
       }

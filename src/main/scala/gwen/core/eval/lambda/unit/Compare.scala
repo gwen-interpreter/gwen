@@ -46,7 +46,11 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
-            ctx.assertWithError(assertion, message, s"Expected ${binding.displayName} to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}")
+            ctx.assertWithError(
+              assertion, 
+              message, 
+              s"Expected ${binding.displayName} to ${if(negate) "not " else ""}$op ${if (expected.isEmpty()) "blank" else s"'$expected'"}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got '$actualValue'"}",
+              step.assertionMode)
           case Failure(error) =>
             throw error;
         }

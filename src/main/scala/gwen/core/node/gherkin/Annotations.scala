@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
+ * Copyright 2021-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,4 +17,4 @@
 package gwen.core.node.gherkin
 
 enum Annotations:
-  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData
+  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData, Hard, Soft, Sustained

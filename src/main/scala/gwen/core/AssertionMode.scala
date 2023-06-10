@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Branko Juric, Brady Wood
+ * Copyright 2017-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,20 @@
 
 package gwen.core
 
+import gwen.core.Errors.GwenAssertionError
+import gwen.core.node.gherkin.Annotations
+
 enum AssertionMode:
   case hard, soft, sustained
-
-object AssertionMode {
-  def isHard = GwenSettings.`gwen.assertion.mode` == hard
-  def isSoft = GwenSettings.`gwen.assertion.mode` == soft
-  def isSustained = GwenSettings.`gwen.assertion.mode` == sustained
-}
+  def annotation: Annotations = {
+    if (this == hard) Annotations.Hard
+    else if (this == soft) Annotations.Soft
+    else Annotations.Sustained
+  }
+  def assertWithError(assertion: Boolean, assertError: String): Unit = {
+    try {
+      assert(assertion, assertError)
+    } catch {
+      case error: AssertionError => throw new GwenAssertionError(error, this)
+    }
+  }

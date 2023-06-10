@@ -50,7 +50,11 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
                 ctx.topScope.set("similarity score", null)
               }    
           }
-          ctx.assertWithError(passed, message, s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}")
+          ctx.assertWithError(
+            passed, 
+            message, 
+            s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}",
+            step.assertionMode)
         case Failure(error) =>
           if (ctx.topScope.getOpt("similarity score").nonEmpty) {
             ctx.topScope.set("similarity score", null)

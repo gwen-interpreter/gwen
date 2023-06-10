@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2023 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -289,8 +289,11 @@ object Errors {
   /** Throw when there is an error tryig to copy a resource. */
   class CopyResourceException(msg: String) extends GwenException(msg)
 
-  /** Thrown when cursom error @Message is thrown. */
+  /** Thrown when cursom error @Message is specified for an assertion. */
   class CustomAssertionError(msg: String) extends AssertionError(msg)
+
+  /** Thrown when an assertion fails. */
+  class GwenAssertionError(error: AssertionError, val mode: AssertionMode) extends AssertionError(error.getMessage)
 
   /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
   class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)
