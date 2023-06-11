@@ -26,7 +26,7 @@ import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
 class RepeatJS[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T])
-    extends Repeat(doStep, operation, condition, delay, timeout, conditionTimeoutSecs, engine) {
+    extends Repeat(doStep, operation, condition, delay, timeout, engine) {
 
   override def evaluteCondition(ctx: T): Boolean = {
     ctx.evaluate(ctx.scopes.get(JSBinding.key(condition)).nonEmpty) {

@@ -33,7 +33,7 @@ import gwen.core.status._
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
+abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
 
   def evaluteCondition(ctx: T): Boolean
 
@@ -117,44 +117,45 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
           )
       }
     } getOrElse {
-      try {
-        operation match {
-          case "until" =>
-            evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-            evaluteCondition(ctx)
-          case _ =>
-            evaluteCondition(ctx)
-            evaluatedStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-        }
-      } catch {
-        case _: Throwable =>
-          // ignore in dry run mode
+      operation match {
+        case "until" =>
+          val iterationStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
+          evaluteCondition(ctx)
+          condSteps = iterationStep :: condSteps
+        case _ =>
+          evaluteCondition(ctx)
+          val iterationStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
+          condSteps = iterationStep :: condSteps
       }
     }
     if (condSteps.nonEmpty) {
-      val steps = evaluatedStep.evalStatus match {
-        case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) =>
-          val preStep = condSteps.head.copy(
-            withKeyword = StepKeyword.And.toString,
-            withName = doStep,
-            withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
-          )
-          engine.beforeStep(preStep, ctx)
-          val fStep = engine.finaliseStep(
-            preStep.copy(
-              withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
-              withStepDef = None
-            ),
-            ctx
-          )
-          engine.afterStep(fStep, ctx)
-          fStep :: condSteps
-        case _ =>
-          condSteps
+      val steps = ctx.evaluate(condSteps) {
+        evaluatedStep.evalStatus match {
+          case Failed(nanos, error) if (EvalStatus(condSteps.map(_.evalStatus)).isPassed) =>
+            val preStep = condSteps.head.copy(
+              withKeyword = StepKeyword.And.toString,
+              withName = doStep,
+              withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
+            )
+            engine.beforeStep(preStep, ctx)
+            val fStep = engine.finaliseStep(
+              preStep.copy(
+                withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
+                withStepDef = None
+              ),
+              ctx
+            )
+            engine.afterStep(fStep, ctx)
+            fStep :: condSteps
+          case _ =>
+            condSteps
 
+        }
       }
       val condStepDef = preCondStepDef.copy(withSteps = steps.reverse)
-      engine.afterStepDef(condStepDef, ctx)
+      ctx.perform {
+        engine.afterStepDef(condStepDef, ctx)
+      }
       evaluatedStep.copy(
         withEvalStatus = condStepDef.evalStatus,
         withStepDef = Some(condStepDef)

@@ -1,12 +1,17 @@
+3.37.1
+======
+June 11, 2023
+- Fix dry run for while/until steps
+
 3.37.0
 ======
 June 10, 2023
-  - Abstract condition out of Repeat class
+- Abstract condition out of Repeat class
 
 3.36.0
 ======
 June 10, 2023
-  - Add Hard, Soft, and Sustained annotations for overriding the default assertion mode at the step level
+- Add Hard, Soft, and Sustained annotations for overriding the default assertion mode at the step level
 
 3.35.6
 ======
