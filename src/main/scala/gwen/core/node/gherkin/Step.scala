@@ -311,7 +311,7 @@ object Step {
         case _ => (Formatting.escapeNewLineChars(step.getText), Nil)
       }
       n match {
-        case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(s"${Formatting.ZeroChar}$m${Formatting.ZeroChar}"))
+        case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(m))
         case _ => (n, t, None)
       }
     }

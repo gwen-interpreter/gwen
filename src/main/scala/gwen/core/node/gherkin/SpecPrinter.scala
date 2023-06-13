@@ -118,18 +118,14 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
         }
       }
       if (verbatim) {
-        step.message foreach { message =>
-          message match {
-            case Failed.customMessage(msg) => 
-              val max = step.siblingsIn(parent) match { 
-                case Nil => 0
-                case siblings => siblings.map(_.asInstanceOf[Step]).filter(_.message.nonEmpty).map(_.name.length).max
-              }
-              val padding = " " * (max - step.name.length)
-              val msgTag = Tag(Annotations.Message, msg)
-              out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
-            case _ => // noop
+        step.message foreach { msg =>
+          val max = step.siblingsIn(parent) match { 
+            case Nil => 0
+            case siblings => siblings.map(_.asInstanceOf[Step]).filter(_.message.nonEmpty).map(_.name.length).max
           }
+          val padding = " " * (max - step.name.length)
+          val msgTag = Tag(Annotations.Message, msg)
+          out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
         }
       }
       if (deep) out.println(printStatus(step, withMessage = true))

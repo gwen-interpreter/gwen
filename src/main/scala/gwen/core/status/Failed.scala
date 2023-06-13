@@ -19,7 +19,6 @@ package gwen.core.status
 import gwen.core._
 
 object Failed {
-  val customMessage = s".*${Formatting.ZeroChar}(.+?)${Formatting.ZeroChar}".r
   def apply(nanos: Long, msg: String): Failed = new Failed(0, new Exception(msg))
 }
 
@@ -37,10 +36,5 @@ case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override def message: String = {
     cause.map(getErrorMessage).orElse(Option(getErrorMessage(error))).getOrElse(error.getClass.getSimpleName)
   }
-  private def getErrorMessage(err: Throwable): String = {
-    err.getMessage match { 
-      case Failed.customMessage(msg) => msg // custom assertion message
-      case msg => msg
-    }
-  }
+  private def getErrorMessage(err: Throwable): String = err.getMessage
 }
