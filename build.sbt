@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.2.2",
+  scalaVersion := "3.3.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -39,7 +39,7 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "26.0.3"
+  val cucumberGherkin = "26.2.0"
   val scopt = "4.1.0"
   val scalaLogging = "3.9.5"
   val jline = "3.23.0"
@@ -48,12 +48,12 @@ lazy val mainDependencies = {
   val commonCodec = "1.15"
   val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
-  val jsonPath = "2.7.0"
-  val jodaTime = "2.12.2"
+  val jsonPath = "2.8.0"
+  val jodaTime = "2.12.5"
   val scalaTags = "0.12.0"
-  val htmlCleaner = "2.26"
-  val rpCommon = "5.7.3"
-  val rpClientJava = "5.1.15"
+  val htmlCleaner = "2.28"
+  val rpCommon = "5.8.0"
+  val rpClientJava = "5.1.20"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 
@@ -82,8 +82,8 @@ lazy val mainDependencies = {
 }
 
 lazy val mainOverrides = {
-  val jacksonDataBind = "2.14.2"
-  val guava = "31.1-jre"
+  val jacksonDataBind = "2.15.2"
+  val guava = "32.0.1-jre"
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
     "com.google.guava" % "guava" % guava
@@ -91,7 +91,7 @@ lazy val mainOverrides = {
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.15"
+  val scalaTest = "3.2.16"
   val scalaTestPlusMockito = "3.2.11.0"
   val mockitoCore = "4.11.0"
   val h2 = "2.1.214"
