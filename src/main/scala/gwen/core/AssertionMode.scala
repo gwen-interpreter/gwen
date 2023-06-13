@@ -26,10 +26,3 @@ enum AssertionMode:
     else if (this == soft) Annotations.Soft
     else Annotations.Sustained
   }
-  def assertWithError(assertion: Boolean, assertError: String): Unit = {
-    try {
-      assert(assertion, assertError)
-    } catch {
-      case error: AssertionError => throw new GwenAssertionError(error, this)
-    }
-  }

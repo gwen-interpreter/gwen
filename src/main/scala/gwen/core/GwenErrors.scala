@@ -101,7 +101,7 @@ object Errors {
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
   def initProjectError(msg: String) = throw new InitProjectException(msg)
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
-  def customAssertionError(msg: String) = throw new CustomAssertionError(msg)
+  def assertionError(msg: String, mode: AssertionMode) = throw new GwenAssertionError(msg, mode)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
@@ -289,11 +289,8 @@ object Errors {
   /** Throw when there is an error tryig to copy a resource. */
   class CopyResourceException(msg: String) extends GwenException(msg)
 
-  /** Thrown when cursom error @Message is specified for an assertion. */
-  class CustomAssertionError(msg: String) extends AssertionError(msg)
-
   /** Thrown when an assertion fails. */
-  class GwenAssertionError(error: AssertionError, val mode: AssertionMode) extends AssertionError(error.getMessage)
+  class GwenAssertionError(msg: String, val mode: AssertionMode) extends AssertionError(msg)
 
   /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
   class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)

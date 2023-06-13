@@ -1,3 +1,8 @@
+3.37.2
+======
+June 13, 2023
+- Honor assertion mode in custom assertion errors
+
 3.37.1
 ======
 June 11, 2023
