@@ -5,14 +5,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
-    - name: Setup Scala
-      uses: olafurpg/setup-scala@v12
+      uses: actions/checkout@v2
+    - name: Setup JDK
+      uses: actions/setup-java@v3
       with:
-        java-version: "adopt@1.8"
+        distribution: temurin
+        java-version: 11
+        cache: sbt
     - name: Build and Test
-      run: sbt -v -Dfile.encoding=UTF-8 +test
+      run: sbt -v +test
