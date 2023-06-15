@@ -24,7 +24,7 @@ Current Status
 System Requirements
 -------------------
 
-- Java 8 (version 1.8) or higher
+- Java 11 or higher
 
 License
 -------

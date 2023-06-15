@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.37.3"
+val gwenVersion = "3.38.0"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -27,14 +27,13 @@ lazy val projectSettings = Seq(
   scalacOptions ++= Seq(
     "-feature",
     "-language:postfixOps",
-    "-deprecation",
-    "-Xtarget:8"
+    "-deprecation"
   ),
   initialize := {
     val _ = initialize.value
     val javaVersion = sys.props("java.specification.version")
-    if (javaVersion != "1.8")
-      sys.error(s"JDK 8 is required to build this project. Found $javaVersion instead")
+    if (javaVersion != "11")
+      sys.error(s"JDK 11 is required to build this project. Found $javaVersion instead")
   }
 )
 
