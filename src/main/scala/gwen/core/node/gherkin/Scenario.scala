@@ -81,9 +81,18 @@ case class Scenario(
   /**
     * Returns a list containing all steps.
     */
-  def allSteps: List[Step] = { 
+  def allSteps: List[Step] = allSteps(expanded = true)
+
+  /**
+    * Returns a list containing all steps.
+    */
+  def allSteps(expanded: Boolean): List[Step] = { 
     background.map(_.steps).getOrElse(Nil) ++ (
-      if (!isOutline) steps else examples.flatMap(_.allSteps)
+      if (expanded) {
+        if (!isOutline) steps else examples.flatMap(_.allSteps)
+      } else {
+        steps
+      }
     )
   }
   

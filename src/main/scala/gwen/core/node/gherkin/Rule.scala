@@ -62,7 +62,17 @@ case class Rule(
     * 
     * @return a list containing all the steps (or an empty list if none exist)
     */
-  def allSteps: List[Step] = background.map(_.steps).getOrElse(Nil) ++ scenarios.flatMap(_.allSteps)
+  def allSteps: List[Step] = allSteps(expanded = true)
+
+  /**
+    * Gets the list of all steps contained in the rule. The list includes
+    * all meta steps (if any) and all scenario steps (including any background 
+    * steps).
+    * 
+    * @param expanded true if all outlines are expanded; false otherwise
+    * @return a list containing all the steps (or an empty list if none exist)
+    */
+  def allSteps(expanded: Boolean): List[Step] = background.map(_.steps).getOrElse(Nil) ++ scenarios.flatMap(_.allSteps(expanded))
 
   def evalScenarios: List[Scenario] = scenarios.flatMap(_.evalScenarios)
   

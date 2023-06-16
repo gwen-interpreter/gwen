@@ -67,7 +67,7 @@ trait SpecNormaliser extends BehaviorRules {
       },
       Nil
     )
-    if (!normalisedSpec.isMeta && normalisedSpec.steps.isEmpty) Errors.syntaxError(s"No steps found in feature${normalisedSpec.specFile.map(f => s" file: $f").getOrElse("")}")
+    if (!normalisedSpec.isMeta && normalisedSpec.steps(expanded = false).isEmpty) Errors.syntaxError(s"No steps found in feature${normalisedSpec.specFile.map(f => s" file: $f").getOrElse("")}")
     normalisedSpec
   }
 

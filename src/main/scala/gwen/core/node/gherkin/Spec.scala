@@ -71,7 +71,17 @@ case class Spec(
     * 
     * @return a list containing all the steps (or an empty list if none exist)
     */
-  def steps: List[Step] = scenarios.flatMap(_.allSteps) ++ rules.flatMap(_.allSteps)
+  def steps: List[Step] = steps(expanded = true)
+
+  /**
+    * Gets the list of all steps contained in the feature spec. The list includes
+    * all meta steps (if any) and all scenario steps (including any background 
+    * steps).
+    * 
+    * @param expanded true if all outlines are expanded; false otherwise
+    * @return a list containing all the steps (or an empty list if none exist)
+    */
+  def steps(expanded: Boolean): List[Step] = scenarios.flatMap(_.allSteps(expanded)) ++ rules.flatMap(_.allSteps(expanded))
 
   def evalScenarios = scenarios.flatMap(_.evalScenarios) ++ rules.flatMap(_.evalScenarios)
 

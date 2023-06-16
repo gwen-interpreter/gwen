@@ -1,3 +1,9 @@
+3.38.2
+======
+June 16, 2023
+- Fix for gwen-interpreter/gwen-web#105
+  - Do not raise missing steps error if feature only contains an example annotated scenario outline
+
 3.38.1
 ======
 June 15, 2023
