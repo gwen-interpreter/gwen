@@ -31,6 +31,7 @@ object Passed {
 case class Passed(nanos: Long, abstained: Boolean) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Passed
   override def exitCode = 0
+  override def icon = Some("✔")
   override def emoticon = "[:)]"
 
   override def isAbstained: Boolean = abstained

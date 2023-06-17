@@ -51,7 +51,10 @@ trait EvalStatus {
   /** Must be overriden to return exit code. */
   def exitCode: Int
 
-  /** Must be overriden to return an emoticon. */
+  /** Should be overriden to return an icon. */
+  def icon: Option[String] = None
+
+  /** Must be overriden to return an emoticon (legacy). */
   def emoticon: String
 
   /** Optional error cause. */
@@ -81,9 +84,12 @@ trait EvalStatus {
 
   override def toString: String = asString(keyword.toString)
 
-  def asString(statusName: String): String =
+  def asString(statusName: String): String = asString(statusName, statusName)
+  def asIconString(statusName: String): String = asString(icon.getOrElse(statusName), statusName)
+
+  private def asString(evalName: String, statusName: String): String =
     if (nanos > 0) {
-      s"[${Formatting.formatDuration(duration)}] $statusName"
+      s"[${Formatting.formatDuration(duration)}] $evalName"
     } else statusName
 }
 

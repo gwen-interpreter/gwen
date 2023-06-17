@@ -1,3 +1,8 @@
+3.39.0
+======
+June 17, 2023
+- Use checkmark icon ✔ for passed steps in console and REPL output
+
 3.38.2
 ======
 June 16, 2023
