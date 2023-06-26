@@ -280,6 +280,33 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with JSON input data file" should "parse" in {
+    createFile("data.json")
+    parseOptions(Array("-i", "target/props/data.json")) match {
+      case Success(options) => {
+        assertOptions(options, dataFile = Some(new File("target/props/data.json")))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+    parseOptions(Array("--input-data", "target/props/data.json")) match {
+      case Success(options) => {
+        assertOptions(options, dataFile = Some(new File("target/props/data.json")))
+      }
+      case _ =>
+        fail("expected options but failed")
+    }
+  }
+
+  "Options with non existing JSON input data file" should "error" in {
+    parseOptions(Array("-i", "missing.json")) match {
+      case Success(_) => {
+        fail("missing json file should result in error")
+      }
+      case _ =>
+    }
+  }
+
   "Options with conf option with no file" should "not parse" in {
     parseOptions(Array("-c")) match {
       case Success(_) => {

@@ -18,6 +18,7 @@ package gwen.core.eval
 
 import gwen.core._
 import gwen.core.Settings
+import gwen.core.data.DataSource
 import gwen.core.init.ProjectInitialiser
 import gwen.core.node.FeatureStream
 import gwen.core.node.FeatureSet
@@ -102,7 +103,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
               val replUnitOpt = if (!options.batch && options.features.isEmpty) {
                 ctxOpt flatMap { ctx =>
                   options.dataFile flatMap { file => 
-                    Some(FeatureSet(FeatureUnit(Root, new File("."), Nil, None, new TagFilter(Nil)), file).next)
+                    Some(FeatureSet(FeatureUnit(Root, new File("."), Nil, None, new TagFilter(Nil)), DataSource(file)).next)
                   }
                 }
               } else None

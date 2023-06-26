@@ -49,6 +49,7 @@ object Errors {
   def unboundAttributeError(name: String) = throw new UnboundAttributeException(name, None, None)
   def unboundAttributeError(name: String, cause: Throwable) = throw new UnboundAttributeException(name, None, Some(cause))
   def unboundAttributeError(name: String, scope: String) = throw new UnboundAttributeException(name, Some(scope), None)
+  def unboundAttributeError(name: String, scope: Option[String], cause: Option[Throwable]) = throw new UnboundAttributeException(name, scope, cause)
   def missingSettingError(name: String) = throw new MissingSettingException(name)
   def settingsNotFound(files: List[File]) = throw new SettingsNotFoundException(files)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
@@ -72,10 +73,8 @@ object Errors {
   def missingOrInvalidImportFileError(importAnnotation: Tag) = throw new MissingOrInvalidImportFileException(importAnnotation)
   def missingFileError(file: File) = throw new MissingFileException(file)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
-  def unsupportedDataFileError(dataAnnotation: Tag) = throw new UnsupportedDataFileException(dataAnnotation)
-  def unsupportedLookupFileError(file: File, expectedExtension: String) = throw new UnsupportedLookupFileException(file, expectedExtension)
-  def csvLookupError(file: File, name: String) = throw new CSVLookupException(file, name)
-  def csvHeaderNotFoundError(file: File) = throw new CSVHeaderNotFoundException(file)
+  def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
+  def dataHeaderNotFoundError(file: File) = throw new DataHeaderNotFoundException(file)
   def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
@@ -103,6 +102,8 @@ object Errors {
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
   def assertionError(msg: String, mode: AssertionMode) = throw new GwenAssertionError(msg, mode)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
+  def unsupportedDataFileError(dataFile: File) = throw new UnsupportedDataFileException(dataFile)
+  def unsupportedJsonStructureError(dataFile: File, cause: Throwable) = throw new UnsupportedJsonStructureException(dataFile, cause)
 
   private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -135,7 +136,7 @@ object Errors {
   class DisabledStepException(step: Step) extends StepException(step, "Step is disabled")
 
   /** Thrown when an attribute cannot be found in a scope. */
-  class UnboundAttributeException(name: String, scope: Option[String], cause: Option[Throwable]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name", cause.orNull)
+  class UnboundAttributeException(val name: String, val scope: Option[String], val cause: Option[Throwable]) extends GwenException(s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name", cause.orNull)
   
   /** Thrown when a setting is not found. */
   class MissingSettingException(name: String) extends GwenException(s"Setting not found: $name")
@@ -203,17 +204,11 @@ object Errors {
   /** Thrown when an unsupported import file is detected. */
   class UnsupportedImportException(importAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $importAnnotation annotation${at(importAnnotation.sourceRef)} (only .meta files can be imported)")
 
-  /** Thrown when an unsupported data table file is detected. */
-  class UnsupportedDataFileException(dataAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $dataAnnotation annotation${at(dataAnnotation.sourceRef)}: only .csv data files supported")
+  /** Thrown when a data lookup fails. */
+  class DataLookupException(file: File, name: String) extends GwenException(s"No such data in file $file having name: $name")
 
-  /** Thrown when an unsupported lookup file type is detected. */
-  class UnsupportedLookupFileException(file: File, expectedExtenstion: String) extends GwenException(s"Expected $expectedExtenstion file but got $file")
-
-  /** Thrown when a CSV lookup fails. */
-  class CSVLookupException(file: File, name: String) extends GwenException(s"No such column in CSV file $file having name: $name")
-
-    /** Thrown when a CSV file doesn't have a header record. */
-  class CSVHeaderNotFoundException(file: File) extends GwenException(s"Header record not found in CSV file: $file)")
+    /** Thrown when a data file doesn't have a header record. */
+  class DataHeaderNotFoundException(file: File) extends GwenException(s"Header not found in data file: $file)")
   
   /** Thrown when a recursive import is detected. */
   class RecursiveImportException(importAnnotation: Tag) extends GwenException(s"Recursive (cyclic) $importAnnotation detected${at(importAnnotation.sourceRef)}") {
@@ -294,4 +289,11 @@ object Errors {
 
   /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
   class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)
+
+  /** Thrown when a data file is not supported. */
+  class UnsupportedDataFileException(dataFile: File) extends GwenException(s"Unsupported data file (csv or json expected): $dataFile")
+
+  /** Thrown when a JSON data error is detected. */
+  class UnsupportedJsonStructureException(dataFile: File, cause: Throwable) extends GwenException(s"Unsupported JSON data structure in file (array of mapped data expected): $dataFile", cause)
+
 }

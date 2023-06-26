@@ -319,6 +319,78 @@ class InterpolatorTest extends BaseTest with Matchers {
     }
   }
 
+  """Property that starts with json.record.""" should "not resolve in default interpolator" in {
+    interpolate("""Hello ${json.record.Name}!""") {
+      case _ => None
+    } should be ("""Hello ${json.record.Name}!""")
+  }
+
+  """Property that starts with json.record.""" should "not resolve in lenient interpolator" in {
+    interpolate("""Hello ${json.record.Name}!""", lenient = true) {
+      case _ => None
+    } should be ("""Hello ${json.record.Name}!""")
+  }
+
+  """Property that starts with json.record.""" should "resolve in strict interpolator" in {
+    interpolateStrict("""Hello ${json.record.Name}!""") {
+      case "json.record.Name" => Some("Gwen")
+      case _ => None
+    } should be ("""Hello Gwen!""")
+  }
+
+  """Property that starts with json.record.""" should "fail in strict interpolator if not bound at all" in {
+    intercept[UnboundAttributeException] {
+      interpolateStrict("""Hello ${json.record.Name}!""") {
+        case _ => None
+      }
+    }
+  }
+
+  """Property that starts with json.record.""" should "fail in strict interpolator if not bound" in {
+    intercept[UnboundAttributeException] {
+      interpolateStrict("""Hello ${json.record.Name}!""") {
+        case "json.record.Namex" => Some("Gwen")
+        case _ => None
+      }
+    }
+  }
+
+  """Property that starts with data.record.""" should "not resolve in default interpolator" in {
+    interpolate("""Hello ${data.record.Name}!""") {
+      case _ => None
+    } should be ("""Hello ${data.record.Name}!""")
+  }
+
+  """Property that starts with data.record.""" should "not resolve in lenient interpolator" in {
+    interpolate("""Hello ${data.record.Name}!""", lenient = true) {
+      case _ => None
+    } should be ("""Hello ${data.record.Name}!""")
+  }
+
+  """Property that starts with data.record.""" should "resolve in strict interpolator" in {
+    interpolateStrict("""Hello ${data.record.Name}!""") {
+      case "data.record.Name" => Some("Gwen")
+      case _ => None
+    } should be ("""Hello Gwen!""")
+  }
+
+  """Property that starts with data.record.""" should "fail in strict interpolator if not bound at all" in {
+    intercept[UnboundAttributeException] {
+      interpolateStrict("""Hello ${data.record.Name}!""") {
+        case _ => None
+      }
+    }
+  }
+
+  """Property that starts with data.record.""" should "fail in strict interpolator if not bound" in {
+    intercept[UnboundAttributeException] {
+      interpolateStrict("""Hello ${data.record.Name}!""") {
+        case "data.record.Namex" => Some("Gwen")
+        case _ => None
+      }
+    }
+  }
+
   private def interpolate(source: String, lenient: Boolean = false)(resolver: String => Option[String]): String = {
     createInterpolator(lenient, resolver).interpolate(source)
   }

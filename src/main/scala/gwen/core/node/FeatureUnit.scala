@@ -17,9 +17,9 @@
 package gwen.core.node
 
 import gwen.core._
+import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.result.SpecResult
-import gwen.core.state.DataRecord
 
 import java.io.File
 

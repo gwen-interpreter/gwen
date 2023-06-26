@@ -17,10 +17,10 @@
 package gwen.core.report.rp
 
 import gwen.core.GwenOptions
+import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.Spec
 import gwen.core.report.ReportConfig
 import gwen.core.report.ReportFormat
-import gwen.core.state.DataRecord
 
 import java.io.File
 

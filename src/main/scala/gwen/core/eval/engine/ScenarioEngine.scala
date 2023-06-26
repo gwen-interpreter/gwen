@@ -17,6 +17,7 @@
 package gwen.core.eval.engine
 
 import gwen.core._
+import gwen.core.data.DataRecord
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.ParallelExecutors
@@ -29,7 +30,6 @@ import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.SpecType
 import gwen.core.node.gherkin.Step
-import gwen.core.state.DataRecord
 import gwen.core.state.StateLevel
 import gwen.core.status._
 
@@ -56,7 +56,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     } else {
       false
     }
-    val input = scenarios.map(s => if (s.isOutline && (!loadingMeta || !s.isStepDef)) expandCSVExamples(s, dataRecord, ctx) else s)
+    val input = scenarios.map(s => if (s.isOutline && (!loadingMeta || !s.isStepDef)) expandExamples(s, dataRecord, ctx) else s)
     if (ctx.options.parallelScenarios(ctx.stateLevel) && ctx.specType.isFeature) {
       evaluateParallelScenarios(parent, input, ctx, language)
     } else {

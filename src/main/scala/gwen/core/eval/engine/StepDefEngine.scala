@@ -144,7 +144,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
     val examples = if (stepDef.isOutline) {
       val exs = if (!stepDef.isExpanded) {
-        expandCSVExamples(stepDef, None, ctx).examples
+        expandExamples(stepDef, None, ctx).examples
       } else {
         stepDef.examples
       }

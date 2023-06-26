@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Branko Juric, Brady Wood
+ * Copyright 2020-2023 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import com.typesafe.scalalogging.Logger
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.lang3.SystemUtils
 import org.apache.commons.text.StringEscapeUtils
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.defaultCSVFormat
 import org.htmlcleaner.HtmlCleaner
 import org.htmlcleaner.PrettyHtmlSerializer
 
@@ -211,6 +209,7 @@ object FileIO {
   def isMetaFile(file: File): Boolean = hasFileExtension("meta", file)
   def isFeatureOrMetaFile(file: File): Boolean = isFeatureFile(file) || isMetaFile(file)
   def isCsvFile(file: File): Boolean = hasFileExtension("csv", file)
+  def isJsonFile(file: File): Boolean = hasFileExtension("json", file)
   def hasFileExtension(extension: String, file: File): Boolean = !file.isDirectory && file.getName.endsWith(s".$extension")
   def recursiveScan(dir: File)(filter: File => Boolean): List[File] = {
     val files = dir.listFiles
@@ -473,16 +472,4 @@ object Wait {
       lock.release()
     }
   }
-}
-
-/** CSV record access */
-object CSVRecords {
-
-  val lookupPrefix = "csv.record."
-
-  private def ignoreEmpty(rec: Seq[String]) = rec.filter(_.trim.nonEmpty).nonEmpty
-
-  def list(dataFile: File): List[List[String]] = CSVReader.open(dataFile).all().filter(ignoreEmpty)
-  def iterator(dataFile: File): Iterator[Seq[String]] = CSVReader.open(dataFile).iterator.filter(ignoreEmpty)
-
 }

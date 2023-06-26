@@ -15,6 +15,8 @@
  */
 package gwen.core
 
+import gwen.core.data.DataSource
+
 import com.typesafe.scalalogging.LazyLogging
 
 object Interpolator {
@@ -25,9 +27,7 @@ object Interpolator {
   val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
   val unresolvedParamSyntax = """^(?s)(.*)\$\!<(.+?)>(.*)$""".r
 
-  val reservedPlaeholder: String => Boolean = name => {
-    name.startsWith(CSVRecords.lookupPrefix)
-  }
+  val reservedPlaeholder: String => Boolean = DataSource.hasLookupPrefix
 }
 
 /**

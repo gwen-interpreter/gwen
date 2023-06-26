@@ -38,8 +38,10 @@ object GwenSettings {
     `gwen.assertion.mode`
     `gwen.associative.meta`
     `gwen.auto.discover.data.csv`
+    `gwen.auto.discover.data.json`
     `gwen.auto.discover.meta`
     `gwen.auto.trim.data.csv`
+    `gwen.auto.trim.data.json`
     `gwen.behavior.rules`
     `gwen.feature.dialect`
     `gwen.feature.failfast.enabled`
@@ -162,11 +164,29 @@ object GwenSettings {
   }
 
   /**
+    * Provides access to the `gwen.auto.discover.data.json` setting used to enable
+    * or disable automatic discovery of JSON data files (default value is `false` for enabled).
+    * Disabling this will prevent Gwen from automatically discovering and loading JSON files in the path of an executing
+    * feature, forcing the user to control explicitly through the -i/--input command line option which JSON files to load.
+    */
+  def `gwen.auto.discover.data.json`: Boolean = {
+    Settings.getBoolean("gwen.auto.discover.data.json")
+  }
+
+  /**
     * Provides access to the `gwen.auto.trim.data.csv` setting used to enable
     * or disable automatic trimming of CSV data (default value is `false` for no triming).
     */
   def `gwen.auto.trim.data.csv`: Boolean = {
     Settings.getBoolean("gwen.auto.trim.data.csv")
+  }
+
+  /**
+    * Provides access to the `gwen.auto.trim.data.json` setting used to enable
+    * or disable automatic trimming of JSON data (default value is `false` for no triming).
+    */
+  def `gwen.auto.trim.data.json`: Boolean = {
+    Settings.getBoolean("gwen.auto.trim.data.json")
   }
 
   /**

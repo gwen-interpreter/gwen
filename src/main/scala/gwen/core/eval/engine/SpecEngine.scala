@@ -17,6 +17,7 @@
 package gwen.core.eval.engine
 
 import gwen.core._
+import gwen.core.data.DataRecord
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node._
@@ -25,7 +26,6 @@ import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecType
 import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.result.SpecResult
-import gwen.core.state.DataRecord
 import gwen.core.status._
 
 import scala.util.chaining._

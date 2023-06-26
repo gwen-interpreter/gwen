@@ -16,8 +16,8 @@
 
 package gwen.core.node
 
-import gwen.core.CSVRecords
-import gwen.core.state.DataRecord
+import gwen.core.data.DataRecord
+import gwen.core.data.DataSource
 
 import scala.util.chaining._
 
@@ -29,11 +29,11 @@ import java.io.File
  * Returns an iteration of feature units for each entry in a given
  * data file.
  */
-class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit] with LazyLogging  {
+class FeatureSet(unit: FeatureUnit, dataSource: DataSource) extends Iterator[FeatureUnit] with LazyLogging  {
 
-  private val totalRecs = CSVRecords.list(dataFile).size - 1
-  private val dataFeed = CSVRecords.iterator(dataFile).zipWithIndex
-  private val headers = if (dataFeed.hasNext) dataFeed.next()._1.map(_.trim) else Nil
+  private val totalRecs = dataSource.data.size
+  private val dataFeed = dataSource.data.iterator.zipWithIndex.map((record, idx) => (record, idx+1))
+  private val header = dataSource.header
 
   /** Checks if there are more records in the data feed. */
   override def hasNext: Boolean = dataFeed.hasNext
@@ -41,8 +41,8 @@ class FeatureSet(unit: FeatureUnit, dataFile: File) extends Iterator[FeatureUnit
   /** Creates a new feature unit for the next record of data. */
   override def next(): FeatureUnit = {
     val (values, index) = dataFeed.next()
-    val data = headers zip values
-    val dataRecord = new DataRecord(dataFile, index, totalRecs, data.toList)
+    val data = header zip values
+    val dataRecord = new DataRecord(dataSource, index, totalRecs, data.toList)
     logger.debug(s"$dataRecord: $data")
     FeatureUnit(Root, unit.featureFile, unit.metaFiles, Some(dataRecord), unit.tagFilter) tap { unit =>
       logger.info(s"Mapped $unit")

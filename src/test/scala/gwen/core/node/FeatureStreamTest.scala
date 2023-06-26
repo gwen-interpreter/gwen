@@ -83,13 +83,13 @@ class FeatureStreamTest extends BaseTest with Matchers {
   "1 input feature file with one data file in same dir" should "return the 1 feature and 1 data file" in {
     val dir         = createDir("dir5a")
     val featureFile = createFile("dir5a/file.feature")
-    val dataFile    = createDataFile("dir5a/file.csv")
+    val dataFile    = createCsvDataFile("dir5a/file.csv")
     val suite = featureStream.read(dir, None)
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(Nil, unit.metaFiles)
-        assertFile(dataFile, unit.dataRecord.get.dataFile)
+        assertFile(dataFile, unit.dataRecord.get.dataSource.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -100,16 +100,18 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val dir         = createDir("dir5b")
     val featureFile = createFile("dir5b/file.feature")
     val metaFile    = createFile("dir5b/file.meta")
-    val dataFile    = createDataFile("dir5b/file.csv")
-    val suite = featureStream.read(dir, None)
-    suite.toList match {
-      case unit :: Nil =>
-        assertFile(featureFile, unit.featureFile)
-        assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile, unit.dataRecord.get.dataFile)
-        unit.dataRecord should not be None
-      case _ =>
-        fail(s"1 feature unit expected but ${suite.size} found")
+    val dataFile    = createJsonDataFile("dir5b/file.json")
+    withSetting("gwen.auto.discover.data.json", "true") {
+      val suite = featureStream.read(dir, None)
+      suite.toList match {
+        case unit :: Nil =>
+          assertFile(featureFile, unit.featureFile)
+          assertMetaFiles(List(metaFile), unit.metaFiles)
+          assertFile(dataFile, unit.dataRecord.get.dataSource.dataFile)
+          unit.dataRecord should not be None
+        case _ =>
+          fail(s"1 feature unit expected but ${suite.size} found")
+      }
     }
   }
 
@@ -117,13 +119,13 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val dir         = createDir("dir5c")
     val featureFile = createFile("dir5c/file.feature")
     val metaFile    = createFile("dir5c/file.meta")
-    val dataFile    = createDataFile("dir5c/file.csv")
+    val dataFile    = createCsvDataFile("dir5c/file.csv")
     val suite = featureStream.read(dir, Some(dataFile))
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile, unit.dataRecord.get.dataFile)
+        assertFile(dataFile, unit.dataRecord.get.dataSource.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -134,29 +136,45 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val dir          = createDir("dir5d")
     val featureFile  = createFile("dir5d/file.feature")
     val metaFile     = createFile("dir5d/file.meta")
-    val dataFile1    = createDataFile("dir5d/file1.csv")
-    val suite = featureStream.read(dir, Some(dataFile1))
-    suite.toList match {
-      case unit :: Nil =>
-        assertFile(featureFile, unit.featureFile)
-        assertMetaFiles(List(metaFile), unit.metaFiles)
-        assertFile(dataFile1, unit.dataRecord.get.dataFile)
-        unit.dataRecord should not be None
-      case _ =>
-        fail(s"1 feature unit expected but ${suite.size} found")
+    val dataFile1    = createJsonDataFile("dir5d/file1.json")
+    withSetting("gwen.auto.discover.data.json", "true") {
+      val suite = featureStream.read(dir, Some(dataFile1))
+      suite.toList match {
+        case unit :: Nil =>
+          assertFile(featureFile, unit.featureFile)
+          assertMetaFiles(List(metaFile), unit.metaFiles)
+          assertFile(dataFile1, unit.dataRecord.get.dataSource.dataFile)
+          unit.dataRecord should not be None
+        case _ =>
+          fail(s"1 feature unit expected but ${suite.size} found")
+      }
     }
   }
 
-  "1 input feature file with one meta and two data files in same dir" should "error" in {
+  "1 input feature file with one meta and two CSV data files in same dir" should "error" in {
     val dir = createDir("dir5e")
     createFile("dir5e/file.feature")
     createFile("dir5e/file.meta")
-    createDataFile("dir5e/file1.csv")
-    createDataFile("dir5e/file2.csv")
+    createCsvDataFile("dir5e/file1.csv")
+    createCsvDataFile("dir5e/file2.csv")
     intercept[AmbiguousCaseException] {
       featureStream.read(dir, None)
     }
   }
+
+  "1 input feature file with one meta and two JSON data files in same dir" should "error" in {
+    val dir = createDir("dir5e")
+    createFile("dir5e/file.feature")
+    createFile("dir5e/file.meta")
+    createJsonDataFile("dir5e/file1.json")
+    createJsonDataFile("dir5e/file2.json")
+    intercept[AmbiguousCaseException] {
+      withSetting("gwen.auto.discover.data.json", "true") {
+        featureStream.read(dir, None)
+      }
+    }
+  }
+
 
   "1 input feature file with 1 meta in same dir and 1 meta in parent" should "return the 1 feature and 2 meta" in {
     val dir6 = createDir("dir6")
@@ -164,45 +182,67 @@ class FeatureStreamTest extends BaseTest with Matchers {
     val metaFile1   = createFile("dir6/file1.meta")
     val metaFile2   = createFile("dir6/dir7/file2.meta")
     val featureFile = createFile("dir6/dir7/file.feature")
-    val dataFile    = createDataFile("dir6/dir7/file.csv")
+    val dataFile    = createCsvDataFile("dir6/dir7/file.csv")
     val suite = featureStream.read(dir6, None)
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile, unit.dataRecord.get.dataFile)
+        assertFile(dataFile, unit.dataRecord.get.dataSource.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
 
-  "1 input feature file in bottom dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
+  "1 input feature file in bottom dir with 1 meta in same dir and 1 meta in parent and 1 CSV data file in same dir and another in sub dir" should "be ok" in {
     val dir61       =  createDir("dir61")
     createDir("dir61/dir71")
-    createDataFile("dir61/file.csv")
+    createCsvDataFile("dir61/file.csv")
     val metaFile1   = createFile("dir61/file1.meta")
     val metaFile2   = createFile("dir61/dir71/file2.meta")
     val featureFile = createFile("dir61/dir71/file.feature")
-    val dataFile2   = createDataFile("dir61/dir71/file.csv")
+    val dataFile2   = createCsvDataFile("dir61/dir71/file.csv")
     val suite = featureStream.read(dir61, None)
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile2, unit.dataRecord.get.dataFile)
+        assertFile(dataFile2, unit.dataRecord.get.dataSource.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
     }
   }
 
-  "1 input feature file in top dir with 1 meta in same dir and 1 meta in parent and 1 data file in same dir and another in sub dir" should "be ok" in {
+  "1 input feature file in bottom dir with 1 meta in same dir and 1 meta in parent and 1 JSON data file in same dir and another in sub dir" should "be ok" in {
+    val dir61       =  createDir("dir61")
+    createDir("dir61/dir71")
+    createJsonDataFile("dir61/file.json")
+    val metaFile1   = createFile("dir61/file1.meta")
+    val metaFile2   = createFile("dir61/dir71/file2.meta")
+    val featureFile = createFile("dir61/dir71/file.feature")
+    val dataFile2   = createJsonDataFile("dir61/dir71/file.json")
+    withSetting("gwen.auto.discover.data.json", "true") {
+      val suite = featureStream.read(dir61, None)
+      suite.toList match {
+        case unit :: Nil =>
+          assertFile(featureFile, unit.featureFile)
+          assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+          assertFile(dataFile2, unit.dataRecord.get.dataSource.dataFile)
+          unit.dataRecord should not be None
+        case _ =>
+          fail(s"1 feature unit expected but ${suite.size} found")
+      }
+    }
+  }
+
+  "1 input feature file in top dir with 1 meta in same dir and 1 meta in parent and 1 CSV data file in same dir and another in sub dir" should "be ok" in {
     val dir62       =  createDir("dir62")
     createDir("dir62/dir72")
-    createDataFile("dir62/dir72/file.csv")
+    createCsvDataFile("dir62/dir72/file.csv")
     val featureFile = createFile("dir62/file.feature")
-    val dataFile1   = createDataFile("dir62/file.csv")
+    val dataFile1   = createCsvDataFile("dir62/file.csv")
     val metaFile1 = createFile("dir62/file1.meta")
     val metaFile2   = createFile("dir62/dir72/file2.meta")
     val suite = featureStream.read(dir62, None)
@@ -210,10 +250,32 @@ class FeatureStreamTest extends BaseTest with Matchers {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
         assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
-        assertFile(dataFile1, unit.dataRecord.get.dataFile)
+        assertFile(dataFile1, unit.dataRecord.get.dataSource.dataFile)
         unit.dataRecord should not be None
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
+    }
+  }
+
+  "1 input feature file in top dir with 1 meta in same dir and 1 meta in parent and 1 JSON data file in same dir and another in sub dir" should "be ok" in {
+    val dir62       =  createDir("dir62")
+    createDir("dir62/dir72")
+    createJsonDataFile("dir62/dir72/file.json")
+    val featureFile = createFile("dir62/file.feature")
+    val dataFile1   = createJsonDataFile("dir62/file.json")
+    val metaFile1 = createFile("dir62/file1.meta")
+    val metaFile2   = createFile("dir62/dir72/file2.meta")
+    withSetting("gwen.auto.discover.data.json", "true") {
+      val suite = featureStream.read(dir62, None)
+      suite.toList match {
+        case unit :: Nil =>
+          assertFile(featureFile, unit.featureFile)
+          assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+          assertFile(dataFile1, unit.dataRecord.get.dataSource.dataFile)
+          unit.dataRecord should not be None
+        case _ =>
+          fail(s"1 feature unit expected but ${suite.size} found")
+      }
     }
   }
 
@@ -534,8 +596,12 @@ class FeatureStreamTest extends BaseTest with Matchers {
     file
   }
 
-  private def createDataFile(filepath: String): File = createFile(filepath) tap { file =>
-    file.writeText("col1,col1\ndata1,data2");
+  private def createCsvDataFile(filepath: String): File = createFile(filepath) tap { file =>
+    file.writeText("col1,col2\ndata1,data2");
+  }
+
+  private def createJsonDataFile(filepath: String): File = createFile(filepath) tap { file =>
+    file.writeText("""[{"col1":"data1","col2":"data2"}]""");
   }
 
   private def createDir(dirname: String): File = {

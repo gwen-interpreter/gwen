@@ -18,11 +18,11 @@ package gwen.core.report
 
 import gwen.core._
 import gwen.core.Errors.WaitTimeoutException
+import gwen.core.data.DataRecord
 import gwen.core.node.FeatureUnit
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecType
 import gwen.core.node.event.NodeEventDispatcher
-import gwen.core.state.DataRecord
 import gwen.core.status._
 
 import gwen.core.report.html.HtmlReportConfig

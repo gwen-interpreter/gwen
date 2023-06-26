@@ -17,6 +17,7 @@
 package gwen.core.node
 
 import gwen.core.BaseTest
+import gwen.core.data.DataSource
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.TagFilter
@@ -30,11 +31,20 @@ import java.io.File
 
 class FeatureSetTest extends BaseTest with Matchers with GherkinParser with SpecNormaliser {
   
-  "Data driven feature with csv file" should "normalise without error" in {
+  "Data driven feature with csv data file" should "normalise without error" in {
+    verify("/gwen/datadriven/AboutMe.csv")
+  }
+
+  "Data driven feature with json data file" should "normalise without error" in {
+    verify("/gwen/datadriven/AboutMe.json")
+  }
+
+  private def verify(dataFilePath: String): Unit = {
+
     val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
-    val dataFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.csv").getFile)
-    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), dataFile)
-    
+    val dataFile = new File(getClass.getResource(dataFilePath).getFile)
+    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), DataSource(dataFile))
+
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next()
     val feature1 = parseSpec(unit1.featureFile) match {

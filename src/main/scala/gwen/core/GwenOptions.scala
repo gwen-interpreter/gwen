@@ -41,7 +41,7 @@ import java.io.File
   * @param settingsFiles list of settings files to load
   * @param tags list of tags to include and exclude, list of (tag, true=include|false=exclude)
   * @param dryRun true to not evaluate steps on engine (and validate for correctness only)
-  * @param dataFile optional CSV file for data driven testing (must include column headers in 1st line)
+  * @param dataFile optional CSV or JSON file for data driven testing (CSV must include column headers in 1st line)
   * @param metas optional list of meta file and/or directories
   * @param features optional list of feature file and/or directories
   * @param init true to initialise a working directory
@@ -203,7 +203,7 @@ object GwenOptions {
       } validate { d =>
         if (!d.exists) failure(s"Specified data file not found: $d")
         else success
-      } valueName "file" text "Input data feed (CSV file with column headers)"
+      } valueName "file" text "Input data feed (csv or json file)"
 
       opt[String]('m', "meta") action {
         (ms, c) =>

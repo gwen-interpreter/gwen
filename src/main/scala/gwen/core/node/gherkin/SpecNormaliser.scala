@@ -19,7 +19,7 @@ package gwen.core.node.gherkin
 import gwen.core._
 import gwen.core.node._
 import gwen.core.behavior.BehaviorRules
-import gwen.core.state.DataRecord
+import gwen.core.data.DataRecord
 import gwen.core.status.Pending
 
 import scala.util.chaining._
@@ -30,7 +30,7 @@ import java.util.regex.Matcher
 /**
   * Normalises a parsed feature spec by expanding scenarios and scenario outlines in preparation for evaluation.
   * If the feature has a background, then the background is copied to each expanded scenario and removed from the
-  * top level. Positional information is preserved. The source feature file is also bound (if provided). If a CSV
+  * top level. Positional information is preserved. The source feature file is also bound (if provided). If a data
   * file is provided, initialisation scenarios are created to initialise each row and the entire feature replicated
   * under each (inline data-driven approach)
   *
@@ -83,7 +83,7 @@ trait SpecNormaliser extends BehaviorRules {
   }
 
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
-    val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataFile), dataRecord.interpolateLenient)
+    val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
     expandScenarios(scenarios, Some(dataBg), Some(dataRecord))
   }
 
@@ -191,9 +191,7 @@ trait SpecNormaliser extends BehaviorRules {
   private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
     val noData = background.map(_.isNoData).getOrElse(false)
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
-    val dataSteps = (data map { case (name, value) => 
-        (name, if (GwenSettings.`gwen.auto.trim.data.csv`) value.trim else value)
-      }).zipWithIndex map { case ((name, value), index) =>
+    val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None)
     }

@@ -94,7 +94,7 @@ class NodeEventDispatcher extends LazyLogging {
     dispatchHealthCheckEvent(step, env) { (listener, event) =>
       Try(listener.healthCheck(event)) match {
         case Failure(e) =>
-          Settings.setLocal("gwen.feature.failfast", "true")
+          Settings.setLocal("gwen.feature.failfast.enabled", "true")
           Settings.setLocal("gwen.feature.failfast.exit", "false")
           throw e
         case _ => // noop

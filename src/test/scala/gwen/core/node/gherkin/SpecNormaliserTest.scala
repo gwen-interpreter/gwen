@@ -17,10 +17,10 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
+import gwen.core.data.DataRecord
+import gwen.core.data.DataSource
 import gwen.core.node.gherkin._
-import gwen.core.state.DataRecord
 import gwen.core.status._
-
 
 import java.io.File
 import org.scalatest.matchers.should.Matchers
@@ -194,13 +194,41 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(new File("AboutMe.csv"), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
     val result = normaliseSpec(feature, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
     result.scenarios(0).background.get.name should be (s"${background.name} + Input data record 1 of 1")
     result.scenarios(0).background.get.description should be (List("Initialise", "Input data file: AboutMe.csv"))
+    result.scenarios(0).background.get.steps.size should be (4)
+    result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
+    result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
+    result.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
+    result.scenarios(0).background.get.steps(3).toString should be ("""And background step 1""")
+    result.scenarios(0).name should be ("What am I?")
+    result.scenarios(0).description should be (Nil)
+    result.scenarios(0).steps(0).toString should be ("""Given I am ${my age} year(s) old""")
+    result.scenarios(0).steps(1).toString should be ("""When I am a ${my gender}""")
+    result.scenarios(0).steps(2).toString should be ("""Then I am a ${my age} year old ${my title}""")
+  }
+
+  "Data driven feature with json file and background" should "normalise without error" in {
+    val feature = Spec(
+    Feature(None, "About me", Nil), Some(background), List(
+      Scenario(List[Tag](), "What am I?", Nil, None, List(
+        Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
+        Step(StepKeyword.When.toString, "I am a ${my gender}"),
+        Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
+      )), Nil, Nil)
+    val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
+    val result = normaliseSpec(feature, Some(dataRecord))
+    result.background should be (None)
+    result.feature.name should be ("About me [1 of 1]")
+    result.scenarios.length should be (1)
+    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record 1 of 1")
+    result.scenarios(0).background.get.description should be (List("Initialise", "Input data file: AboutMe.json"))
     result.scenarios(0).background.get.steps.size should be (4)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
     result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
@@ -222,13 +250,40 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(new File("AboutMe.csv"), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
     val result = normaliseSpec(feature, Some(dataRecord))
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
     result.scenarios(0).background.get.name should be ("Input data record 1 of 1")
     result.scenarios(0).background.get.description should be (List("Input data file: AboutMe.csv"))
+    result.scenarios(0).background.get.steps.size should be (3)
+    result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
+    result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
+    result.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
+    result.scenarios(0).name should be ("What am I?")
+    result.scenarios(0).description should be (Nil)
+    result.scenarios(0).steps(0).toString should be ("""Given I am ${my age} year(s) old""")
+    result.scenarios(0).steps(1).toString should be ("""When I am a ${my gender}""")
+    result.scenarios(0).steps(2).toString should be ("""Then I am a ${my age} year old ${my title}""")
+  }
+
+  "Data driven feature with json file and no background" should "normalise without error" in {
+    val feature = Spec(
+    Feature(None, "About me", Nil), None, List(
+      Scenario(List[Tag](), "What am I?", Nil, None, List(
+        Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
+        Step(StepKeyword.When.toString, "I am a ${my gender}"),
+        Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
+      )), Nil, Nil)
+    val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
+    val result = normaliseSpec(feature, Some(dataRecord))
+    result.background should be (None)
+    result.feature.name should be ("About me [1 of 1]")
+    result.scenarios.length should be (1)
+    result.scenarios(0).background.get.name should be ("Input data record 1 of 1")
+    result.scenarios(0).background.get.description should be (List("Input data file: AboutMe.json"))
     result.scenarios(0).background.get.steps.size should be (3)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
     result.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")

@@ -17,6 +17,8 @@
 package gwen.core.eval.engine
 
 import gwen.core._
+import gwen.core.data.DataRecord
+import gwen.core.data.DataSource
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.support.JSCondition
@@ -30,7 +32,6 @@ import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
-import gwen.core.state.DataRecord
 import gwen.core.status.Passed
 import gwen.core.status.Pending
 
@@ -39,7 +40,6 @@ import scala.util.chaining._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.io.File
-import gwen.core.eval.binding.BindingType
 
 /**
   * Examples evaluation engine.
@@ -65,20 +65,20 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   /**
-    * Loads the CSV examples for every Examples(file.csv) tag on the given outline and expands them.
+    * Loads the examples for every Examples(file) annotation on the given outline and expands them.
     *
     * @param outline the scenario outline
     * @return a new scenario outline containing the loaded examples data
-    *         or the unchanged outline if no csv data is specified or if incoming scenario is not an outline
+    *         or the unchanged outline if no data is specified or if incoming scenario is not an outline
     */
-  private [engine] def expandCSVExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
+  private [engine] def expandExamples(outline: Scenario, dataRecord: Option[DataRecord], ctx: T): Scenario = {
     val interpolator = DataRecord.interpolateLenient(dataRecord)
     val iTags = outline.tags map { tag => 
       val iValue0 = interpolator.apply(tag.toString)
       val iValue1 = ctx.interpolateLenient(iValue0)
       Tag(tag.sourceRef, iValue1)
     }
-    val csvExamplesAndBackgrouds = iTags flatMap { tag =>
+    val dataExamplesAndBackgrouds = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
         val (filepath, prefix, where, required) = tag.name match {
           case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(prefix), Some(where), required.toBoolean)
@@ -90,14 +90,14 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix"\)""" => (file, Some(prefix), None, false)
           case r"""Examples\(file="(.+?)$file",required=(true|false)$required\)""" => (file, None, None, required.toBoolean)
           case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
-          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv"[,where="javascript expression"][,required=true|false])""")
+          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.(csv|json)"[,where="javascript expression"][,required=true|false])""")
         }
         val whereFilter = where.map(ctx.interpolateParams).map(ctx.interpolateLenient)
         val examplesTag = tag.copy(withValue = Some(filepath))
         val file = new File(filepath)
         if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
-        if (!FileIO.isCsvFile(file)) Errors.unsupportedDataFileError(examplesTag)
-        val allRecords = CSVRecords.iterator(file).toList
+        val dataSource = DataSource(file)
+        val allRecords = dataSource.table
         val records = if(ctx.options.dryRun) {
           val limit = GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records`
           if (limit == Int.MaxValue) allRecords
@@ -108,12 +108,12 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         val table0 = records.zipWithIndex map { (row, idx) => 
           (idx + 1L, row.toList) 
         }
-        val header = table0.headOption map { (_, headings) => headings.map(_.trim) map { h => s"${prefix map { p => s"$p$h" } getOrElse h }" } } getOrElse {
-          Errors.csvHeaderNotFoundError(file)
+        val header = table0.headOption map { (_, headings) => headings map { h => s"${prefix map { p => s"$p$h" } getOrElse h }" } } getOrElse {
+          Errors.dataHeaderNotFoundError(file)
         }
         val resultTable = (1L, header) :: (table0.tail filter { (rowNo, row) => 
           whereFilter map { js => 
-            val dataRec = DataRecord(file, rowNo.toInt - 1, table0.size - 1, header zip row)
+            val dataRec = DataRecord(dataSource, rowNo.toInt - 1, table0.size - 1, header zip row)
             val js0 = dataRec.interpolate(js)
             val js1 = ctx.interpolateParams(js0)
             val javascript = ctx.interpolate(js1)
@@ -124,24 +124,24 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         })
         val (finalTable, background) = if (resultTable.size < 2 && required) {
           val msg = s"No data record(s) found in ${file.getName}${whereFilter.map(w => s" where $w").getOrElse("")}"
-          csvTableFail(msg, header, outline)
+          examplesTableFail(msg, header, outline)
         } else {
           (resultTable, None)
         }
         Some((Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
-        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.csv") or @Examples(file="path/file.csv",where="javascript expression")""")
+        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.(csv|json)") or @Examples(file="path/file.(csv|json)",where="javascript expression")""")
       } else {
         None
       }
     }
-    csvExamplesAndBackgrouds match {
+    dataExamplesAndBackgrouds match {
       case Nil => outline
       case _ =>
-        val csvExamples = csvExamplesAndBackgrouds map { (examples, _) => examples }
-        val backgrounds = csvExamplesAndBackgrouds map { (_, background) => background }
-        val examples = csvExamples zip backgrounds map { (exs, background) => 
+        val dataExamples = dataExamplesAndBackgrouds map { (examples, _) => examples }
+        val backgrounds = dataExamplesAndBackgrouds map { (_, background) => background }
+        val examples = dataExamples zip backgrounds map { (exs, background) => 
           normaliseScenarioOutline(
             outline.copy(withExamples = List(exs)),
             background,
@@ -157,7 +157,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     }
   }
 
-  private def csvTableFail(msg: String, header: List[String], outline: Scenario): (List[(Long, List[String])], Option[Background]) = {
+  private def examplesTableFail(msg: String, header: List[String], outline: Scenario): (List[(Long, List[String])], Option[Background]) = {
     val emptyTable = (1L, header) :: List((2L, header map { _ => "" }))
     val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should be defined""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
     val noDataBackground = outline.background map { bg =>

@@ -17,6 +17,7 @@
 package gwen.core.node
 
 import gwen.core._
+import gwen.core.data.DataSource
 import gwen.core.node.gherkin.TagFilter
 
 import scala.annotation.tailrec
@@ -97,7 +98,7 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
         None,
         tagFilter)
       dataFile match {
-        case Some(file) => new FeatureSet(unit, file).to(LazyList)
+        case Some(file) => new FeatureSet(unit, DataSource(file)).to(LazyList)
         case None =>
           logger.info(s"Found $unit")
           LazyList(unit)
@@ -121,7 +122,12 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     val files = Option(dir.listFiles).getOrElse(Array[File]())
     val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(FileIO.isMetaFile).toList else Nil
     val inputs1 = (metaFiles ::: metas, dataFile)
-    val datas = if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(FileIO.isCsvFile).toList else Nil
+    val datas = {
+      (if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(FileIO.isCsvFile).toList else Nil) match {
+        case Nil => if (GwenSettings.`gwen.auto.discover.data.json`) files.filter(FileIO.isJsonFile).toList else Nil
+        case ls => ls
+      }
+    }
     datas match {
       case Nil => inputs1
       case data :: Nil => (inputs1._1, Some(data))

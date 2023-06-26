@@ -17,11 +17,12 @@
 package gwen.core.node
 
 import gwen.core._
+import gwen.core.data.DataRecord
+import gwen.core.data.DataSource
 import gwen.core.eval.EvalEngine
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.TagFilter
-import gwen.core.state.DataRecord
 import gwen.core.state.EnvState
 
 import org.scalatest.matchers.should.Matchers
@@ -49,8 +50,16 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain.nodePath should be ("/path/to/file.feature")
   }
 
-    "Node path" should "be generated on chain with Unit with data record" in {
-    val dataRecord = new DataRecord(new File("data.csv"), 2, 2, Nil)
+  "Node path" should "be generated on chain with Unit with CSV data record" in {
+    val dataRecord = new DataRecord(DataSource(new File("data.csv")), 2, 2, Nil)
+    val unit = FeatureUnit(Root, new File("path/to/file.feature"), Nil, Some(dataRecord), mockTagFilter, None)
+    val builder = new NodeChainBuilder()
+    val chain = builder.push(unit)
+    chain.nodePath should be ("/path/to/file.feature")
+  }
+
+  "Node path" should "be generated on chain with Unit with JSON data record" in {
+    val dataRecord = new DataRecord(DataSource(new File("data.json")), 2, 2, Nil)
     val unit = FeatureUnit(Root, new File("path/to/file.feature"), Nil, Some(dataRecord), mockTagFilter, None)
     val builder = new NodeChainBuilder()
     val chain = builder.push(unit)

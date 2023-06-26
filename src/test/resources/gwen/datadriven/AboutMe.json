@@ -1,0 +1,17 @@
+[
+  {
+    "my age": 18,
+    "my gender": "male",
+    "my title": "Mr"
+  },
+  {
+    "my age": 18,
+    "my gender": "female",
+    "my title": "Miss"
+  },
+  {
+    "my age": 22,
+    "my gender": "female",
+    "my title": "Ms"
+  }
+]
