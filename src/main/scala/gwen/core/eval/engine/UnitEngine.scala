@@ -96,6 +96,8 @@ trait UnitEngine[T <: EvalContext]
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
     unit.dataRecord foreach { rec =>
       ctx.topScope.set("data record number", rec.recordNo.toString)
+      ctx.topScope.set("data.record.number", rec.recordNo.toString)
+      ctx.topScope.set("data.record.index", (rec.recordNo - 1).toString)
     }
     val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
     val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)

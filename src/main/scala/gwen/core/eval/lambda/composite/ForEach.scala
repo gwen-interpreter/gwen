@@ -72,6 +72,10 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     ctx.topScope.pushObject(name, currentElement)
                     List((name, s"$name $itemNo"))
                 }
+                val prevIndex = ctx.topScope.getOpt("iteration.index")
+                val prevNumber = ctx.topScope.getOpt("iteration.number")
+                ctx.topScope.set("iteration.index", index.toString)
+                ctx.topScope.set("iteration.number", itemNo.toString)
                 (try {
                   EvalStatus(acc.map(_.evalStatus)) match {
                     case status @ Failed(_, error)  =>
@@ -90,6 +94,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                   }
                 } finally {
                   ctx.topScope.popObject(name)
+                  ctx.topScope.set("iteration.number", prevNumber.orNull)
+                  ctx.topScope.set("iteration.index", prevIndex.orNull)
                 }) :: acc
               } reverse
             } finally {
