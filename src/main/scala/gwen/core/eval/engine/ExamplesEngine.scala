@@ -49,17 +49,17 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
 
   def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {
     examples map { exs =>
-      beforeExamples(exs, ctx)
       if (exs.scenarios.isEmpty) {
         transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
       } else {
+        beforeExamples(exs, ctx)
         exs.copy(
           withScenarios = exs.scenarios map { scenario =>
             evaluateScenario(exs, scenario, ctx)
           }
-        )
-      } tap { exs =>
-        afterExamples(exs, ctx)
+        ) tap { exs =>
+          afterExamples(exs, ctx)
+        }
       }
     }
   }

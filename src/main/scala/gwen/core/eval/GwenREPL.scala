@@ -453,16 +453,16 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   }
 
   private def printError(msg: String): String = {
-    printer.printStatus("  ", Failed(0, msg), withMessage = true, withIcon = true)
+    printer.printStatus("  ", Failed(0, msg), withMessage = true, withIcon = true, withStatusIcon = false)
   }
   private def printError(started: Long, error: Throwable): String = {
     printError(started, error.toString)
   }
   private def printError(started: Long, msg: String): String = {
-    printer.printStatus("  ", Failed(System.nanoTime() - started, msg), withMessage = true, withIcon = true)
+    printer.printStatus("  ", Failed(System.nanoTime() - started, msg), withMessage = true, withIcon = true, withStatusIcon = false)
   }
   private def printStatus(status: EvalStatus): String = {
-    printer.printStatus("  ", status, withMessage = true, withIcon = true)
+    printer.printStatus("  ", status, withMessage = true, withIcon = true, withStatusIcon = false)
   }  
 
 }

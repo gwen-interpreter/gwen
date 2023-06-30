@@ -86,8 +86,12 @@ trait EvalStatus {
 
   def asString(statusName: String): String = asString(statusName, statusName)
   def asIconString(statusName: String): String = asString(icon.getOrElse(statusName), statusName)
+  def asStatusIconString(statusName: String): String = {
+    val statusStr = s"$statusName${icon.map(i => s" $i").getOrElse("")}"
+    asString(statusStr, statusStr)
+  }
 
-  private def asString(evalName: String, statusName: String): String =
+  def asString(evalName: String, statusName: String): String =
     if (nanos > 0) {
       s"[${Formatting.formatDuration(duration)}] $evalName"
     } else statusName

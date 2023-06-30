@@ -31,10 +31,12 @@ object Failed {
 case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Failed
   override def exitCode = 1
+  override def icon = Some("✘")
   override def emoticon = "[:(]"
   override def cause = Option(error.getCause)
   override def message: String = {
     cause.map(getErrorMessage).orElse(Option(getErrorMessage(error))).getOrElse(error.getClass.getSimpleName)
   }
   private def getErrorMessage(err: Throwable): String = err.getMessage
+  override def asIconString(statusName: String): String = asStatusIconString(statusName)
 }

@@ -233,7 +233,7 @@ class ConsoleReporter(options: GwenOptions)
         val step = event.source
         val parent = event.callChain.previous
         if (depth.get == logDepth || step.stepDef.isEmpty || step.stepDef.map(_.steps.isEmpty).getOrElse(false)) {
-          out.println(printer.printStatus(step, withMessage = true, withIcon = true))
+          out.println(printer.printStatus(step, withMessage = true, withIcon = true, withStatusIcon = false))
         }
       }
       depth.set(depth.get - 1)
