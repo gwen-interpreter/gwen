@@ -52,6 +52,7 @@ Feature: String rules
         And string 3 is "<string 3>"
        When I substitute string 1 for string 2 in string 3
        Then the result should be "<result>"
+        And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"
 
       Examples: Basic string concatenation
 

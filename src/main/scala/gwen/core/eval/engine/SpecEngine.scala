@@ -43,6 +43,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   private [engine] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     spec.specFile foreach { file =>
       ctx.topScope.set("gwen.feature.file.name", file.getName)
+      ctx.topScope.set("gwen.feature.file.simpleName", file.simpleName)
       ctx.topScope.set("gwen.feature.file.path", file.getPath)
       ctx.topScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
     }

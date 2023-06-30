@@ -106,6 +106,6 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
 
   /** Gets all implicit attributes. */
   def implicitAtts: Seq[(String, String)] =
-    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|path|absolutePath))|rule\.name)$""")}
+    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name)$""")}
 
 }
