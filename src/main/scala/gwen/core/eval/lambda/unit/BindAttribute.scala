@@ -24,14 +24,13 @@ import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
-import gwen.core.eval.binding.AttributeBinding
 
 class BindAttribute[T <: EvalContext](target: String, value: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      AttributeBinding.bind(target, value, ctx)
+      ctx.topScope.set(target, value)
     }
   }
 

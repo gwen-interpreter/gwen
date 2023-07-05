@@ -98,7 +98,9 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       checkStepDefRules(sdStep, ctx)
       ctx.paramScope.push(stepDef.name, stepDef.params)
       val prevSDName = ctx.topScope.getOpt("gwen.stepDef.name")
-      ctx.topScope.set("gwen.stepDef.name", stepDef.name)
+      if (!iStepDef.isSynthetic) {
+        ctx.topScope.set("gwen.stepDef.name", stepDef.name)
+      }
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
@@ -117,7 +119,9 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           }
         }
       } finally {
-        ctx.topScope.set("gwen.stepDef.name", prevSDName.orNull)
+        if (!iStepDef.isSynthetic) {
+          ctx.topScope.set("gwen.stepDef.name", prevSDName.orNull)
+        }
         ctx.paramScope.pop()
       }
     } finally {

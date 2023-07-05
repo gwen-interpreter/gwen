@@ -32,11 +32,14 @@ import org.apache.logging.log4j.core.LoggerContext
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.bridge.SLF4JBridgeHandler
 
+import scala.util.chaining._
+
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
 import java.net.URL
 import java.util.{ logging => jul}
+
 
 /**
   * Default Gwen interpreter application.
@@ -96,7 +99,11 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     * @return 0 if successful; 1 otherwise
     */
   private [gwen] def run(options: GwenOptions): Int = {
-    val ctxOpt = if (options.batch || options.init || options.pretty) None else Some(engine.init(options, EnvState()))
+    val ctxOpt = if (options.batch || options.init || options.pretty) {
+      None 
+    } else {
+      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.initImplicitAtts(None, None) } )
+    }
     try {
       val evalStatus = run(options, ctxOpt)
       if (!options.init) {

@@ -321,6 +321,7 @@ object Formatting {
   def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " \u00a0")
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
+  def escapeJava(text: String): String = StringEscapeUtils.escapeJava(text)
   def leftPad(str: String, size: Int): String = s"${" " * (size - str.length)}$str"
   def rightPad(str: String, size: Int): String = s"$str${" " * (size - str.length)}"
   def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")
@@ -438,6 +439,7 @@ object Booleans {
       || value.trim == "0"
       || value.trim.toLowerCase == "false"
   }
+  def isBoolean(value: String): Boolean = value == "true" || value == "false"
 }
 
 object ConsoleColors {

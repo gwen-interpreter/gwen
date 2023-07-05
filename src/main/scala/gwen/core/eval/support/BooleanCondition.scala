@@ -16,17 +16,19 @@
 
 package gwen.core.eval.support
 
+import gwen.core.Booleans
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.Binding
 import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.binding.JSFunctionBinding
+import gwen.core.eval.binding.SimpleBinding
 
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-class JSCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutSecs: Long, ctx: T) {
+class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutSecs: Long, ctx: T) {
   
   val (name, binding, negated) = {
     if (negate) {
@@ -43,11 +45,22 @@ class JSCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutS
   }
     
   private def find (name: String): Try[Binding[T, String]] = Try {
-    JSBinding.find(name, ctx) match {
+    val literalBinding = ctx.scopes.getOpt(name).filter(Booleans.isBoolean).map(v => Try(new SimpleBinding[T](name, ctx)))
+    val binding = literalBinding.getOrElse(JSBinding.find(name, ctx))
+    binding match {
       case Success(binding) => 
         binding
       case Failure(e) => 
-        JSFunctionBinding.find(name, ctx) getOrElse { throw e }
+        if (e.isInstanceOf[Errors.UnboundAttributeException]) {
+          JSFunctionBinding.find(name, ctx) getOrElse { 
+            ctx.scopes.getOpt(name) foreach { value =>
+              Errors.unboundBooleanAttributeError(name, Some(value))
+            }
+            Errors.unboundBooleanAttributeError(name, None)
+          }
+        } else {
+          throw e
+        }
     }
   }
 

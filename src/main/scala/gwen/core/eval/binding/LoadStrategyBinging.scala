@@ -28,10 +28,10 @@ object LoadStrategyBinding {
     value match {
       case Some(v) =>
         if (strategy == LoadStrategy.Eager) {
-          AttributeBinding.bind(name, v, ctx)
+          ctx.topScope.set(name, v)
         }
         else if (strategy == LoadStrategy.Lazy) {
-          AttributeBinding.bind(name, v, ctx)
+          ctx.topScope.set(name, v)
           val nKey = key(name)
           if (ctx.topScope.getOpt(nKey).nonEmpty) {
             ctx.topScope.set(key(name), null)

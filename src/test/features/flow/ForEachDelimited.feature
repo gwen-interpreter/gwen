@@ -19,8 +19,11 @@ Feature: For each delimited value
       And gwen.feature.file.simpleName should be "ForEachDelimited"
       And gwen.feature.name should be "For each delimited value"
       And gwen.scenario.name should be "Process each delimited value for data record in table"
-      And gwen.eval.status.keyword should be "Pending"
+      And gwen.eval.status.keyword should be "Passed"
+      And gwen.eval.status.isPassed should be "true"
+      And gwen.eval.status.isFailed should be "false"
       And gwen.eval.status.message should be ""
+      And gwen.eval.status.message.escaped should be ""
 
   @StepDef
   Scenario: I process user roles

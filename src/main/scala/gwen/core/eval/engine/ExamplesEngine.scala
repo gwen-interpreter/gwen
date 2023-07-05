@@ -21,7 +21,6 @@ import gwen.core.data.DataRecord
 import gwen.core.data.DataSource
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
-import gwen.core.eval.support.JSCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.FeatureKeyword
 import gwen.core.node.gherkin.Examples

@@ -18,8 +18,6 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core._
 import gwen.core.eval.EvalContext
-import gwen.core.eval.binding.AttributeBinding
-import gwen.core.eval.binding.AttributeBinding
 import gwen.core.eval.binding.BindingType
 import gwen.core.eval.binding.FileBinding
 import gwen.core.eval.binding.JSBinding

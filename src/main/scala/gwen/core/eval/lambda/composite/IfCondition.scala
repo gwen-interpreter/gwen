@@ -24,7 +24,7 @@ import gwen.core.eval.binding.JSFunctionBinding
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.engine.StepDefEngine
-import gwen.core.eval.support.JSCondition
+import gwen.core.eval.support.BooleanCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
@@ -40,7 +40,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
-    val jsCondition = new JSCondition(condition, negate, conditionTimeoutSecs, ctx)
+    val bCondition = new BooleanCondition(condition, negate, conditionTimeoutSecs, ctx)
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
@@ -50,13 +50,13 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     val iStepDef = Scenario(None, tags, ifTag.toString, s"${if (negate) "not " else ""}$condition", Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     ctx.evaluate(sdCall()) {
-      val satisfied = jsCondition.evaluate()
-      LoadStrategyBinding.bindIfLazy(jsCondition.name, satisfied.toString, ctx)
+      val satisfied = bCondition.evaluate()
+      LoadStrategyBinding.bindIfLazy(bCondition.name, satisfied.toString, ctx)
       if (satisfied) {
-        logger.info(s"Processing conditional step (${if (jsCondition.negated) "not " else ""}${jsCondition.name} = true): ${step.keyword} $doStep")
+        logger.info(s"Processing conditional step (${if (bCondition.negated) "not " else ""}${bCondition.name} = true): ${step.keyword} $doStep")
         sdCall()
       } else {
-        logger.info(s"Skipping conditional step (${if (jsCondition.negated) "not " else ""}${jsCondition.name} = false): ${step.keyword} $doStep")
+        logger.info(s"Skipping conditional step (${if (bCondition.negated) "not " else ""}${bCondition.name} = false): ${step.keyword} $doStep")
         step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
       }
     }

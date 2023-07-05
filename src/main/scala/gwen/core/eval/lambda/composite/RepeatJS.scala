@@ -19,7 +19,7 @@ package gwen.core.eval.lambda.composite
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.binding.JSBinding
-import gwen.core.eval.support.JSCondition
+import gwen.core.eval.support.BooleanCondition
 
 
 import scala.concurrent.duration.Duration
@@ -30,7 +30,7 @@ class RepeatJS[T <: EvalContext](doStep: String, operation: String, condition: S
 
   override def evaluteCondition(ctx: T): Boolean = {
     ctx.evaluate(ctx.scopes.get(JSBinding.key(condition)).nonEmpty) {
-      JSCondition(condition, false, conditionTimeoutSecs, ctx).evaluate()
+      BooleanCondition(condition, false, conditionTimeoutSecs, ctx).evaluate()
     }
   }
 

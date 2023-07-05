@@ -41,6 +41,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 import scala.util.chaining._
+import scala.io.Source
 
 /**
   * Step evaluation engine.
@@ -245,8 +246,7 @@ trait StepEngine[T <: EvalContext] {
                 }
                 logger.error(failure.error.getMessage)
               }
-              ctx.topScope.set("gwen.eval.status.keyword", failure.keyword.toString)
-              ctx.topScope.set("gwen.eval.status.message", failure.message)
+              ctx.topScope.initImplicitAtts(None, Some(failure))
               ctx.addErrorAttachments(step, failure)
             } else {
               step
