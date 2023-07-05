@@ -95,7 +95,7 @@ trait UnitEngine[T <: EvalContext]
   }
 
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
-    ctx.topScope.setImplicitAtts(Some(spec), Pending)
+    ctx.topScope.setImplicitAtts(Some(spec), Pending, true)
     unit.dataRecord foreach { rec =>
       ctx.topScope.set("data record number", rec.recordNo.toString)
       ctx.topScope.set("data.record.number", rec.recordNo.toString)

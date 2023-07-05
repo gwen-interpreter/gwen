@@ -112,7 +112,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   def implicitAtts: Seq[(String, String)] =
     findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name)$""")}
 
-  def setImplicitAtts(spec: Option[Spec], status: EvalStatus): Unit = {
+  def setImplicitAtts(spec: Option[Spec], status: EvalStatus, force: Boolean): Unit = {
     spec foreach { s => 
       set("gwen.feature.name", s.feature.name)
       s.specFile foreach { file =>
@@ -124,7 +124,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     }
     val keyword = if(status.isPending || status.isFailed) status.keyword else StatusKeyword.Passed
     val message = if (status.isFailed) status.message else ""
-    if (status.isFailed || get("gwen.eval.status.keyword") != StatusKeyword.Failed.toString) {
+    if (status.isFailed || get("gwen.eval.status.keyword") != StatusKeyword.Failed.toString || force) {
       set("gwen.eval.status.keyword", keyword.toString)
       set("gwen.eval.status.message", message)
     }

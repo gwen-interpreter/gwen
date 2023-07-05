@@ -103,7 +103,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
-      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.setImplicitAtts(None, Pending) } )
+      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.setImplicitAtts(None, Pending, true) } )
     }
     try {
       val evalStatus = run(options, ctxOpt)
