@@ -246,7 +246,6 @@ trait StepEngine[T <: EvalContext] {
                 }
                 logger.error(failure.error.getMessage)
               }
-              ctx.topScope.initImplicitAtts(None, Some(failure))
               ctx.addErrorAttachments(step, failure)
             } else {
               step
@@ -283,6 +282,8 @@ trait StepEngine[T <: EvalContext] {
         }
       case _ =>
         fStep
+    } tap { s => 
+      ctx.topScope.setImplicitAtts(None, s.evalStatus)
     }
 
   }

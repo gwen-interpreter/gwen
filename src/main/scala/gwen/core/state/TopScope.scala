@@ -22,6 +22,7 @@ import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
 
 import scala.util.chaining._
+import gwen.core.status.Pending
 
 /**
   * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
@@ -111,7 +112,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   def implicitAtts: Seq[(String, String)] =
     findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name)$""")}
 
-  def initImplicitAtts(spec: Option[Spec], status: Option[EvalStatus]): Unit = {
+  def setImplicitAtts(spec: Option[Spec], status: EvalStatus): Unit = {
     spec foreach { s => 
       set("gwen.feature.name", s.feature.name)
       s.specFile foreach { file =>
@@ -121,19 +122,26 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
         set("gwen.feature.file.absolutePath", file.getAbsolutePath)
       }
     }
-    val msg = status.map(_.message).getOrElse("")
-    set("gwen.eval.status.keyword", status.filter(_.isFailed).map(_.keyword).getOrElse(StatusKeyword.Passed).toString)
-    set("gwen.eval.status.message", msg)
+    val keyword = if(status.isPending || status.isFailed) status.keyword else StatusKeyword.Passed
+    val message = if (status.isFailed) status.message else ""
+    if (status.isFailed || get("gwen.eval.status.keyword") != StatusKeyword.Failed.toString) {
+      set("gwen.eval.status.keyword", keyword.toString)
+      set("gwen.eval.status.message", message)
+    }
   }
 
-  override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))
-  override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
+  override def get(name: String): String = getDerivedImplicitOpt(name).getOrElse(super.get(name))
+  override def getOpt(name: String): Option[String] = getDerivedImplicitOpt(name).orElse(super.getOpt(name))
 
-  private def getImplicitOpt(name: String): Option[String] = {
+  private def getDerivedImplicitOpt(name: String): Option[String] = {
     if (name.startsWith("gwen.eval.")) {
-      if (name == "gwen.eval.status.message.escaped") super.getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
-      else if (name == "gwen.eval.status.isFailed") super.getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
-      else if (name == "gwen.eval.status.isPassed") super.getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
+      if (name == "gwen.eval.status.keyword") super.getOpt("gwen.eval.status.keyword").orElse(Some(StatusKeyword.Pending.toString))
+      else if (name == "gwen.eval.status.keyword.upperCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toUpperCase)
+      else if (name == "gwen.eval.status.keyword.lowerCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toLowerCase)
+      else if (name == "gwen.eval.status.message") super.getOpt("gwen.eval.status.message").orElse(Some(""))
+      else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
+      else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
+      else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
       else None
     }
     else None

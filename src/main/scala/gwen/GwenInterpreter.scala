@@ -39,6 +39,7 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.net.URL
 import java.util.{ logging => jul}
+import gwen.core.status.Pending
 
 
 /**
@@ -102,7 +103,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
-      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.initImplicitAtts(None, None) } )
+      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.setImplicitAtts(None, Pending) } )
     }
     try {
       val evalStatus = run(options, ctxOpt)

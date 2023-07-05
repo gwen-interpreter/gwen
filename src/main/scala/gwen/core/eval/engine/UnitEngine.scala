@@ -21,6 +21,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node._
 import gwen.core.node.gherkin._
+import gwen.core.status.Pending
 import gwen.core.result.SpecResult
 
 import scala.util.Success
@@ -94,6 +95,7 @@ trait UnitEngine[T <: EvalContext]
   }
 
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
+    ctx.topScope.setImplicitAtts(Some(spec), Pending)
     unit.dataRecord foreach { rec =>
       ctx.topScope.set("data record number", rec.recordNo.toString)
       ctx.topScope.set("data.record.number", rec.recordNo.toString)

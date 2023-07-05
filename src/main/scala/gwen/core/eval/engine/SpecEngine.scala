@@ -41,7 +41,6 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   engine: EvalEngine[T] =>
 
   private [engine] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    ctx.topScope.initImplicitAtts(Some(spec), None)
     Dialect.withLanguage(spec.feature.language) {
       val nspec = normaliseSpec(spec, dataRecord)
       evaluateSpec(parent, nspec, metaResults, dataRecord, ctx)

@@ -1,7 +1,15 @@
+3.44.0
+======
+July 5, 2023
+- Fixed implicit `gwen.eval.status.keyword` and `gwen.eval.status.message` for steps having Try annotation
+- Introduced new implicit attributes:
+  - `gwen.eval.status.keyword.upperCased` = Value of `gwen.eval.status.keyword` in upper case
+  - `gwen.eval.status.keyword.lowerCased` = Value of `gwen.eval.status.keyword` in lower case
+
 3.43.0
 ======
 July 5, 2023
-- Introduced new impilict attributes:
+- Introduced new implicit attributes:
   - `gwen.eval.status.message.escaped` = Java escaped equivalent of `gwen.eval.status.message`
   - `gwen.eval.status.isFailed` = `true` if current feature evaluation is in error, `false` otherwise
   - `gwen.eval.status.isPassed` = `true` if current feature evaluation is not in error, `false` otherwise
