@@ -1,3 +1,8 @@
+3.44.2
+======
+July 5, 2023
+- Preserve previous implicit `gwen.eval.status.keyword` and `gwen.eval.status.message` state for steps and StepDefs called with Try annotation
+
 3.44.1
 ======
 July 5, 2023

@@ -104,6 +104,7 @@ trait StepEngine[T <: EvalContext] {
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
     if (resume(parent, step, ctx)) {
+      val prevStatus = if (step.isTry) Some(ctx.currentStatus) else None
       val pStep = resolveParamPlaceholders(step, ctx)
       val eStep = pStep.evalStatus match {
         case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
@@ -120,7 +121,7 @@ trait StepEngine[T <: EvalContext] {
             }
           }
       }
-      finaliseStep(eStep, ctx) tap { fStep =>
+      finaliseStep(eStep, prevStatus, ctx) tap { fStep =>
         logStatus(ctx.options, fStep)
         afterStep(fStep, ctx)
       }
@@ -234,7 +235,7 @@ trait StepEngine[T <: EvalContext] {
     * @param step the step to bind attachments to
     * @return the step with accumulated attachments
     */
-  def finaliseStep(step: Step, ctx: T): Step = {
+  def finaliseStep(step: Step, tryStatus: Option[EvalStatus], ctx: T): Step = {
     val eStep = {
       if (step.stepDef.isEmpty) {
         step.evalStatus match {
@@ -283,7 +284,7 @@ trait StepEngine[T <: EvalContext] {
       case _ =>
         fStep
     } tap { s => 
-      ctx.topScope.setImplicitAtts(None, s.evalStatus, force = s.isTry)
+      ctx.topScope.setImplicitAtts(None, tryStatus.getOrElse(s.evalStatus), force = s.isTry)
     }
 
   }

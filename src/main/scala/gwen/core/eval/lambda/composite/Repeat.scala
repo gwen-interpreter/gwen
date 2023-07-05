@@ -143,6 +143,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
                 withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
                 withStepDef = None
               ),
+              None,
               ctx
             )
             engine.afterStep(fStep, ctx)
