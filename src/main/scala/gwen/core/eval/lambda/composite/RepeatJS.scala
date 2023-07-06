@@ -29,8 +29,9 @@ class RepeatJS[T <: EvalContext](doStep: String, operation: String, condition: S
     extends Repeat(doStep, operation, condition, delay, timeout, engine) {
 
   override def evaluteCondition(ctx: T): Boolean = {
-    ctx.evaluate(ctx.scopes.get(JSBinding.key(condition)).nonEmpty) {
-      BooleanCondition(condition, false, conditionTimeoutSecs, ctx).evaluate()
+    val bCond = BooleanCondition(condition, false, conditionTimeoutSecs, ctx)
+    ctx.evaluate(true) {
+      bCond.evaluate()
     }
   }
 

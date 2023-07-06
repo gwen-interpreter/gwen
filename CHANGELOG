@@ -1,3 +1,8 @@
+3.44.3
+======
+July 6, 2023
+- Fix dry run for literal boolean conditions used in while-until DSLs
+
 3.44.2
 ======
 July 5, 2023
