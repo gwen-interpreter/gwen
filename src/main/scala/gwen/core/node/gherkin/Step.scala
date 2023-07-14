@@ -277,7 +277,7 @@ case class Step(
       
       if (Source.fromString(iStep.name).getLines().size > 1) {
         docStringify.map(_.interpolate(interpolator)) getOrElse {
-          Errors.multilineSubstitutionError("Illegal multiline placehoder substitution detected")
+          Errors.multilineSubstitutionError("Illegal multiline placeholder substitution detected")
         }
       } else iStep
     }
