@@ -20,6 +20,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.state.Environment
 
 import scala.util.Try
+import gwen.core.Errors
 
 object JSFunctionBinding {
   
@@ -57,14 +58,27 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
         resolveValue(argsKey) { argsString =>
           if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
             resolveValue(delimiterKey) { delimiter =>
-              new JSBinding(jsRef, argsString.split(delimiter).toList, ctx).resolve()
+              new JSBinding(jsRef, parseArgs(jsRef, argsString.split(delimiter).toList), ctx).resolve()
             }
           } else {
-            new JSBinding(jsRef, List(argsString), ctx).resolve()
+            new JSBinding(jsRef, parseArgs(jsRef, List(argsString)), ctx).resolve()
           }
         }
       }
     )
+  }
+
+  private def parseArgs(jsRef: String, args: List[String]): List[String] = {
+    if (!args.contains("$[dryRun:javascript]")) {
+      val jsKey = JSBinding.key(jsRef)
+      val js = ctx.scopes.get(jsKey)
+      0 to (args.size - 1) foreach { idx =>
+        if (!js.contains(s"arguments[$idx]")) {
+          Errors.missingJSArgumentError(jsRef, idx)
+        }
+      }
+    }
+    args
   }
 
   override def toString: String = Try {

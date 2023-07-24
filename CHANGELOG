@@ -1,3 +1,8 @@
+3.44.5
+======
+July 24, 2023
+- Check that arguments[index] placholders are defined for all parameters passed to JS function bindings
+
 3.44.4
 ======
 July 14, 2023
