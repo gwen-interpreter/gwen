@@ -45,7 +45,7 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
   }
     
   private def find (name: String): Try[Binding[T, String]] = Try {
-    val literalBinding = ctx.scopes.getOpt(name).filter(Booleans.isBoolean).map(v => Try(new SimpleBinding[T](name, ctx)))
+    val literalBinding = ctx.scopes.getOpt(name).filter(v => Booleans.isBoolean(v) || isDryRunJSValue(v) ).map(v => Try(new SimpleBinding[T](name, ctx)))
     val binding = literalBinding.getOrElse(JSBinding.find(name, ctx))
     binding match {
       case Success(binding) => 
@@ -63,6 +63,8 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
         }
     }
   }
+
+  private def isDryRunJSValue(value: String): Boolean = ctx.options.dryRun && value.contains("$[dryRun:javascript]")
 
   def evaluate(): Boolean = {
     var result: Option[Boolean] = None
