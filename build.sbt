@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.44.6"
+val gwenVersion = "3.44.7"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -44,15 +44,15 @@ lazy val mainDependencies = {
   val jline = "3.23.0"
   val slf4j = "1.7.36"
   val slf4jLog4j = "2.20.0"
-  val commonCodec = "1.15"
+  val commonCodec = "1.16.0"
   val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
   val jsonPath = "2.8.0"
   val jodaTime = "2.12.5"
   val scalaTags = "0.12.0"
-  val htmlCleaner = "2.28"
-  val rpCommon = "5.8.0"
-  val rpClientJava = "5.1.20"
+  val htmlCleaner = "2.29"
+  val rpCommon = "5.8.1"
+  val rpClientJava = "5.1.22"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
 
@@ -74,7 +74,8 @@ lazy val mainDependencies = {
     "com.epam.reportportal" % "commons-model" % rpCommon,
     "com.epam.reportportal" % "client-java" % rpClientJava excludeAll(
       ExclusionRule(organization = "org.aspectj", name = "aspectjrt"),
-      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver")
+      ExclusionRule(organization = "org.aspectj", name = "aspectjweaver"),
+      ExclusionRule(organization = "org.slf4j", name = "slf4j-api")
     ),
     "org.fusesource.jansi" % "jansi" % jansi
   ) ++ mainOverrides
@@ -93,7 +94,7 @@ lazy val testDependencies = {
   val scalaTest = "3.2.16"
   val scalaTestPlusMockito = "3.2.11.0"
   val mockitoCore = "4.11.0"
-  val h2 = "2.1.214"
+  val h2 = "2.2.220"
   // val slick = "3.3.3"
 
   Seq(
