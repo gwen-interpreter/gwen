@@ -475,3 +475,6 @@ object Wait {
     }
   }
 }
+
+enum LocationType:
+    case file,url

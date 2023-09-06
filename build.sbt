@@ -55,6 +55,7 @@ lazy val mainDependencies = {
   val rpClientJava = "5.1.22"
   val tsConfig = "1.4.2"
   val jansi = "2.4.0"
+  val pdfBox = "3.0.0"
 
   Seq(
     "io.cucumber" % "gherkin" % cucumberGherkin,
@@ -77,7 +78,9 @@ lazy val mainDependencies = {
       ExclusionRule(organization = "org.aspectj", name = "aspectjweaver"),
       ExclusionRule(organization = "org.slf4j", name = "slf4j-api")
     ),
-    "org.fusesource.jansi" % "jansi" % jansi
+    "org.fusesource.jansi" % "jansi" % jansi,
+    "org.apache.pdfbox" % "pdfbox" % pdfBox,
+    "org.apache.pdfbox" % "pdfbox-io" % pdfBox
   ) ++ mainOverrides
 }
 

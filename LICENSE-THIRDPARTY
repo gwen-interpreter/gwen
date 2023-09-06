@@ -208,6 +208,9 @@ org.scalatest
   | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
   +-scalatest-shouldmatchers_3:3.2.16
   | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+commons-logging
+  +-commons-logging:1.2
+  | +-no license specified
 io.swagger
   +-swagger-annotations:1.6.0
   | +-no license specified
@@ -259,6 +262,13 @@ org.scala-lang.modules
 ua.co.k
   +-strftime4j:1.0.5
   | +-MIT License - http://www.opensource.org/licenses/mit-license.php
+org.apache.pdfbox
+  +-pdfbox-io:3.0.0
+  | +-no license specified
+  +-fontbox:3.0.0
+  | +-no license specified
+  +-pdfbox:3.0.0
+  | +-no license specified
 org.mockito
   +-mockito-core:4.11.0
   | +-The MIT License - https://github.com/mockito/mockito/blob/main/LICENSE
