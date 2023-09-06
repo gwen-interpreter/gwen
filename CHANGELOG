@@ -1,3 +1,18 @@
+3.45.0
+======
+Aug 6, 2023
+- Introduce JSONArray notation for accessing multi valued settings as a JSON array literal.
+  - Example: Given the following setting, then `${my.list:JSONArray}` will resolve to `["one", "two", "three"]` in features and meta
+    ```
+    my {
+      list = [
+        "one", 
+        "two", 
+        "three"
+      ]
+    }
+    ```
+
 3.44.7
 ======
 Sep 28, 2023

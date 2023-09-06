@@ -36,6 +36,8 @@ import java.io.FileReader
 import java.util.Properties
 import java.util.Map.Entry
 
+import net.minidev.json.JSONArray
+
 /**
   * Provides access to enviornment variables and system properties loaded from JSON, HOCON or properties files. 
   */
@@ -121,8 +123,8 @@ object Settings extends LazyLogging {
         val name = entry.getKey.asInstanceOf[String].replace("\\", "").replace("\"", "")
         val cValue = entry.getValue
         if (ConfigValueType.LIST == cValue.valueType()) {
-          config.getAnyRefList(entry.getKey).asScala.map(_.toString) foreach { value => 
-            properties.setProperty(s"$name.${System.nanoTime()}", value)
+          config.getAnyRefList(entry.getKey).asScala.map(_.toString).zipWithIndex foreach { (value, idx) => 
+            properties.setProperty(s"$name.${Formatting.padWithZeroes(idx, 10)}", value)
           }
         } else {
           val value = cValue.unwrapped().toString
@@ -271,12 +273,25 @@ object Settings extends LazyLogging {
     } orElse {
       getEnvOpt(name) match {
         case None => 
-          Option(localSettings.get.getProperty(name)) orElse {
-            config flatMap { conf => 
-              if (conf.hasPath(name)) Option(resolve(conf.getString(name), conf)) else None
-            } orElse {
-              sys.props.get(name)
-            }
+          name match {
+            case r"(.+?)$n:JSONArray" => 
+              config map { conf => 
+                if (conf.hasPath(n)) getList(conf.getString(n), conf) else Nil
+              } orElse {
+                Option(getList(n))
+              } map { lv => 
+                val lv = getList(n)
+                if (lv.isEmpty) Errors.missingSettingError(n)
+                JSONArray.toJSONString(lv.asJava)
+              }
+            case _ =>
+              Option(localSettings.get.getProperty(name)) orElse {
+                config flatMap { conf => 
+                  if (conf.hasPath(name)) Option(resolve(conf.getString(name), conf)) else None
+                } orElse {
+                  sys.props.get(name)
+                }
+              }
           }
         case res @ _ => res
       }
@@ -442,9 +457,13 @@ object Settings extends LazyLogging {
       getOpt(name, deprecatedName, config).map(_.split(",").toList.map(_.trim).filter(_.length > 0)).getOrElse(Nil)
     }) ++ (
       if (config.isEmpty) {
-        Settings.findAll(_.startsWith(s"$name.")) filter { case (n, _) => 
+        Settings.findAll(_.startsWith(s"$name.")).toList filter { case (n, _) => 
           n.substring(name.length() + 1).count(_ == '.') < 2
-        } map { case (n, v) => v }
+        } sortBy { case (n, v) => 
+          n 
+        } map { case (_, v) => 
+          v 
+        }
       } else {
         Nil
       }
