@@ -20,13 +20,13 @@ import gwen.core.Booleans
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.Binding
-import gwen.core.eval.binding.JSBinding
-import gwen.core.eval.binding.JSFunctionBinding
-import gwen.core.eval.binding.SimpleBinding
 
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+
+import util.chaining.scalaUtilChainingOps
+import gwen.core.eval.binding.SimpleBinding
 
 class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutSecs: Long, ctx: T) {
   
@@ -44,27 +44,20 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
     }
   }
     
-  private def find (name: String): Try[Binding[T, String]] = Try {
-    val literalBinding = ctx.scopes.getOpt(name).filter(v => Booleans.isBoolean(v) || isDryRunJSValue(v) ).map(v => Try(new SimpleBinding[T](name, ctx)))
-    val binding = literalBinding.getOrElse(JSBinding.find(name, ctx))
-    binding match {
-      case Success(binding) => 
-        binding
-      case Failure(e) => 
-        if (e.isInstanceOf[Errors.UnboundAttributeException]) {
-          JSFunctionBinding.find(name, ctx) getOrElse { 
-            ctx.scopes.getOpt(name) foreach { value =>
-              Errors.unboundBooleanAttributeError(name, Some(value))
-            }
-            Errors.unboundBooleanAttributeError(name, None)
+  private def find (name: String): Try[Binding[T, String]] = {
+    Try(ctx.getBinding(name).asInstanceOf[Binding[T, String]]) map { binding => 
+      binding tap { _ =>
+        if (binding.isInstanceOf[SimpleBinding[T]]) {
+          val v = binding.asInstanceOf[SimpleBinding[T]].resolve()
+          if (!Booleans.isBoolean(v) && !isDryRunValue(v)) {
+            Errors.unboundBooleanAttributeError(name, v)
           }
-        } else {
-          throw e
         }
+      }
     }
   }
 
-  private def isDryRunJSValue(value: String): Boolean = ctx.options.dryRun && value.contains("$[dryRun:javascript]")
+  private def isDryRunValue(value: String): Boolean = ctx.options.dryRun && value.contains("$[dryRun:")
 
   def evaluate(): Boolean = {
     var result: Option[Boolean] = None
