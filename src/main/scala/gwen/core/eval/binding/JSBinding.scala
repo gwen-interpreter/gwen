@@ -44,7 +44,7 @@ class JSBinding[T <: EvalContext](name: String, params: List[String], ctx: T) ex
   override def resolve(): String = {
     bindIfLazy(
       resolveValue(key) { javascript =>
-        ctx.evaluate(s"$$[dryRun:${BindingType.javascript}]") {
+        ctx.evaluate(resolveDryValue(BindingType.javascript.toString)) {
           Option(ctx.evaluateJS(ctx.formatJSReturn(javascript), params*)).map(_.toString).getOrElse("")
         }
       }

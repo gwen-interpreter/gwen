@@ -22,6 +22,7 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.GwenREPL
 import gwen.core.behavior.BehaviorType
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.eval.lambda.StepLambda
 import gwen.core.eval.lambda.composite.ForEachTableRecord
@@ -103,6 +104,11 @@ trait StepEngine[T <: EvalContext] {
     * Evaluates a step.
     */
   def evaluateStep(parent: GwenNode, step: Step, ctx: T): Step = {
+    if (ctx.options.dryRun) {
+      step.dryValues map { (n, v) =>
+        DryValueBinding.bind(n, v, ctx)
+      }
+    }
     if (resume(parent, step, ctx)) {
       val prevStatus = if (step.isTry) Some(ctx.currentStatus) else None
       val pStep = resolveParamPlaceholders(step, ctx)

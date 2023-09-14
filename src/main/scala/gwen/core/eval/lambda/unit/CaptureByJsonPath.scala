@@ -18,6 +18,7 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.BindingType
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
@@ -28,7 +29,7 @@ class CaptureByJsonPath[T <: EvalContext](target: String, jsonPath: String, sour
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
-    val content = ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
+    val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved(BindingType.`json path`))) {
       ctx.evaluateJsonPath(jsonPath, sourceValue)
     }
     ctx.topScope.set(target, content)

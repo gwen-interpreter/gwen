@@ -144,7 +144,8 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           normaliseScenarioOutline(
             outline.copy(withExamples = List(exs)),
             background,
-            dataRecord
+            dataRecord,
+            ctx.options.dryRun
           )
         } flatMap (_.examples)
         outline.copy(
@@ -158,7 +159,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
 
   private def examplesTableFail(msg: String, header: List[String], outline: Scenario): (List[(Long, List[String])], Option[Background]) = {
     val emptyTable = (1L, header) :: List((2L, header map { _ => "" }))
-    val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should be defined""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg))
+    val step = Step(None, StepKeyword.Given.toString, s"""${header.headOption.getOrElse("Data")} should be defined""", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.NoData)), Some(msg), Nil)
     val noDataBackground = outline.background map { bg =>
       bg.copy(
         withName = s"${bg.name} + No data",

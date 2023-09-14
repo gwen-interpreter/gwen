@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2023 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,37 +25,38 @@ import scala.util.Try
 import java.io.File
 import java.io.FileNotFoundException
 
-object FileBinding {
+object DryValueBinding {
   
-  def key(name: String) = s"$name/${BindingType.file}"
+  def key(name: String) = s"$name/${BindingType.dryValue}"
 
-  def bind(name: String, filepath: String, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(key(name), filepath)
+  def bind(name: String, value: String, env: Environment): Unit = {
+    env.scopes.set(key(name), value)
   }
+
+  def unresolved(bindingType: BindingType): String = unresolved(bindingType.toString)
+  def unresolved(value: String): String = s"$$[${BindingType.dryValue}:$value]"
 
 }
 
-class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
+class DryValueBinding[T <: EvalContext](name: String, defaultValue: String, ctx: T) extends Binding[T, String](name, ctx) {
 
-  private val key = FileBinding.key(name)
+  private val key = DryValueBinding.key(name)
 
   override def resolve(): String = {
     bindIfLazy(
-      resolveValue(key) { filePath =>
-        ctx.evaluate(resolveDryValue(BindingType.file.toString)) {
-          val file = new File(filePath)
-          if (file.exists()) {
-            ctx.interpolate(Source.fromFile(file).mkString)
-          } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
+      resolveOpt getOrElse {
+        Try(SimpleBinding(name, ctx).resolve()) getOrElse {
+          DryValueBinding.unresolved(defaultValue)
         }
       }
     )
   }
 
+  def resolveOpt: Option[String] = ctx.scopes.getOpt(key)
+
   override def toString: String = Try {
-    resolveValue(key) { filePath =>
-      s"$name [${BindingType.file}: $filePath]"
+    resolveValue(key) { value =>
+      s"$name [${BindingType.dryValue}: $value]"
     }
   } getOrElse name
 

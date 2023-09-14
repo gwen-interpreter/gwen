@@ -51,7 +51,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       Nil,
       Nil)
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(Nil)
@@ -76,7 +76,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Nil,
         Nil)
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     result.background should be (None)
 
@@ -100,7 +100,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None)
+    val result = normaliseSpec(meta, None, false)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(List(Tag("@StepDef")))
@@ -121,7 +121,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None)
+    val result = normaliseSpec(meta, None, false)
     result.background should be (None)
 
     val scenario = result.scenarios(0)
@@ -147,7 +147,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-    normaliseSpec(meta, None)
+    normaliseSpec(meta, None , false)
   }
 
   "Meta with duplicate step def" should "error" in {
@@ -165,7 +165,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
 
     intercept[AmbiguousCaseException] {
-      normaliseSpec(meta, None)
+      normaliseSpec(meta, None, false)
     }
   }
 
@@ -184,7 +184,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
 
     intercept[AmbiguousCaseException] {
-      normaliseSpec(meta, None)
+      normaliseSpec(meta, None , false)
     }
   }
 
@@ -198,7 +198,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -226,7 +226,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -288,7 +288,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
 
     val feature = parse(featureString).get
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
     result.feature.sourceRef.get.line should be (2)
 
     result.background should be (None)
@@ -553,7 +553,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
     val rule = result.rules(0)
 
     rule.scenarios(0).indexIn(rule).get should be (0)
@@ -605,7 +605,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     result.rules(0).indexIn(result).get should be (0)
     result.rules(1).indexIn(result).get should be (1)

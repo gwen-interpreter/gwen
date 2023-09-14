@@ -19,7 +19,9 @@ package gwen.core.eval
 import gwen.core._
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.binding.Binding
+import gwen.core.eval.binding.BindingType
 import gwen.core.eval.binding.BindingResolver
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.support._
 import gwen.core.Errors.UnboundAttributeException
@@ -180,7 +182,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     }) tap { expr =>
       if (options.dryRun && operator.toString.startsWith("match template")) {
         """@\{.*?\}""".r.findAllIn(expr).toList foreach { name =>
-          topScope.set(name.substring(2, name.length - 1), "[dryRun:templateExtract]")
+          topScope.set(name.substring(2, name.length - 1), DryValueBinding.unresolved("templateExtract"))
         }
       }
     }

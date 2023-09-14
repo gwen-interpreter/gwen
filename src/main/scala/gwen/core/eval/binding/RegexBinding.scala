@@ -44,7 +44,7 @@ class RegexBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
     bindIfLazy(
       resolveValue(regexKey) { regex =>
         resolveRef(sourceKey) { source =>
-          ctx.evaluate(s"$$[dryRun:${BindingType.regex}]") {
+          ctx.evaluate(resolveDryValue(BindingType.regex.toString)) {
             ctx.extractByRegex(regex, source)
           }
         }

@@ -167,7 +167,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
   }
 
   private def delayStep(delay: Duration, ctx: T): Step = {
-    val preWaitStep = Step(None, StepKeyword.And.toString, s"delay", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.Synthetic)), None)
+    val preWaitStep = Step(None, StepKeyword.And.toString, s"delay", Nil, None, Nil, None, Pending, Nil, Nil, List(Tag(Annotations.Synthetic)), None, Nil)
     engine.beforeStep(preWaitStep, ctx)
     val start = System.nanoTime()
     Thread.sleep(delay.toMillis)

@@ -108,6 +108,30 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       val indent = indentFor(step)
       val tags = if (verbatim) step.tags.filter(_.name != Annotations.Message.toString) else step.printableTags
       out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${tags.map(_.toString).mkString(" ")} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
+      if (verbatim && (step.message.nonEmpty || step.dryValues.nonEmpty)) {
+        val max = step.siblingsIn(parent) match { 
+          case Nil => 0
+          case siblings => siblings.map(_.asInstanceOf[Step]).filter(s => s.message.nonEmpty || s.dryValues.nonEmpty).map(_.name.length).max
+        }
+        val padding = " " * (max - step.name.length)
+        step.message foreach { msg =>
+          val msgTag = s"""@${Annotations.Message}(${Formatting.surroundWithQuotes(msg)})"""
+          out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
+        }
+        val dryValues = step.dryValues
+        if (dryValues.nonEmpty) {
+          val dvs = dryValues.groupBy(_._1).toList map { (n, vs) => 
+            val vss = vs.map(_._2)
+            if (vss.size == 1) {
+              val v = vss.head
+              s"""name=${Formatting.surroundWithQuotes(n)},value=${Formatting.surroundWithQuotes(v)}"""
+            }
+            else s"""name=${Formatting.surroundWithQuotes(n)},value={${vss.map(v => Formatting.surroundWithQuotes(v)).mkString(",")}}"""
+          } mkString(", ")
+          val dryRunTag = s"""@${Annotations.DryRun}($dvs)"""
+          out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${dryRunTag}${if (colors) ansi.reset else ""}")
+        }
+      }
       if (step.table.nonEmpty) {
         out.println()
         printTable(s"$indent ${" " * keywordMaxLength}", step.table, out)
@@ -115,17 +139,6 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
         step.docString foreach { docString =>
           out.println()
           printDocString(s"$indent ${" " * keywordMaxLength}", docString, out)
-        }
-      }
-      if (verbatim) {
-        step.message foreach { msg =>
-          val max = step.siblingsIn(parent) match { 
-            case Nil => 0
-            case siblings => siblings.map(_.asInstanceOf[Step]).filter(_.message.nonEmpty).map(_.name.length).max
-          }
-          val padding = " " * (max - step.name.length)
-          val msgTag = Tag(Annotations.Message, msg)
-          out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
         }
       }
       if (deep) out.println(printStatus(step, withMessage = true, withIcon = true, withStatusIcon = false))

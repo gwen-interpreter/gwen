@@ -49,7 +49,7 @@ class XPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
       resolveValue(xpathKey) { xpath =>
         resolveValue(targetKey) { target =>
           resolveRef(sourceKey) { source =>
-            ctx.evaluate(s"$$[dryRun:${BindingType.xpath}]") {
+            ctx.evaluate(resolveDryValue(BindingType.xpath.toString)) {
               ctx.evaluateXPath(xpath, source, XMLNodeType.valueOf(target))
             }
           }

@@ -48,7 +48,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       Nil,
       Nil)
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(Nil)
@@ -73,7 +73,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
         Nil,
         Nil)
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     result.background should be (None)
 
@@ -97,7 +97,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None)
+    val result = normaliseSpec(meta, None, false)
 
     val scenario = result.scenarios(0)
     scenario.tags.map(_.name) should be(List("StepDef"))
@@ -118,7 +118,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
           Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None)
+    val result = normaliseSpec(meta, None, false)
     result.background should be (None)
 
     val scenario = result.scenarios(0)
@@ -144,7 +144,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-    normaliseSpec(meta, None)
+    normaliseSpec(meta, None, false)
   }
 
   "Meta with duplicate step def" should "error" in {
@@ -162,7 +162,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
 
     intercept[Errors.AmbiguousCaseException] {
-      normaliseSpec(meta, None)
+      normaliseSpec(meta, None, false)
     }
   }
 
@@ -181,7 +181,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
 
     intercept[Errors.AmbiguousCaseException] {
-      normaliseSpec(meta, None)
+      normaliseSpec(meta, None, false)
     }
   }
 
@@ -195,7 +195,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -223,7 +223,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -251,7 +251,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -278,7 +278,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord))
+    val result = normaliseSpec(feature, Some(dataRecord), false)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -345,7 +345,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
     val feature = parseSpec(file).get
 
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
     result.sourceRef.get.line should be (2)
     result.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:2")
     result.feature.sourceRef.get.line should be (2)
@@ -646,7 +646,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
     val scenario = result.scenarios(0)
 
     scenario.steps(0).indexIn(scenario).get should be (0)
@@ -695,7 +695,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
 
     result.scenarios(0).indexIn(result).get should be (0)
     result.scenarios(1).indexIn(result).get should be (1)
@@ -744,7 +744,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None)
+    val result = normaliseSpec(feature, None, false)
     val outline = result.scenarios(0)
 
     outline.examples(0).indexIn(outline).get should be (0)

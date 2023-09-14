@@ -45,7 +45,7 @@ class SQLBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Stri
     bindIfLazy(
       resolveValue(databaseKey) { database => 
         resolveValue(selectKey) { selectStmt =>
-          ctx.evaluate(s"$$[dryRun:${BindingType.sql}]") {
+          ctx.evaluate(resolveDryValue(BindingType.sql.toString)) {
             ctx.executeSQLQuery(selectStmt, database)
           }
         }

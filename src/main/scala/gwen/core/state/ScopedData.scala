@@ -17,6 +17,7 @@
 package gwen.core.state
 
 import gwen.core._
+import gwen.core.eval.binding.BindingType
 
 import scala.collection.mutable
 import scala.util.chaining._
@@ -182,7 +183,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     */
   def clear(name: String): ScopedData = {
     (findEntries { case (n, _) =>
-      n == name || n.startsWith(s"$name/")
+      (n == name || n.startsWith(s"$name/")) && !n.endsWith(s"/${BindingType.dryValue}")
     } map { case (n, _) =>
       n
     } distinct) filter { n => 

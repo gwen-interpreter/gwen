@@ -301,17 +301,11 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
     if (files.nonEmpty) {
       println("Pretty formatting..")
     }
-    val prettied = files flatMap { file =>
-      try {
-        parseSpec(file, verbatim = true) map { spec => 
-          val prettySpec = printer.prettyPrint(Root, spec)
-          println(s"- $file")
-          file.writeText(prettySpec)
-          Some(file)
-        } getOrElse(None)
-      } catch {
-        case _: Throwable => None
-      }
+    val prettied = files map { file =>
+      val prettySpec = printer.prettyPrint(Root, parseSpec(file, verbatim = true).get)
+      println(s"- $file")
+      file.writeText(prettySpec)
+      file
     }
     if (prettied.nonEmpty) {
         println()

@@ -19,6 +19,7 @@ package gwen.core.eval.binding
 import gwen.core.GwenSettings
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
+import gwen.core.state.Environment
 
 import util.chaining.scalaUtilChainingOps
 
@@ -53,6 +54,28 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     resolve(key) { value =>
       resolver(ctx.interpolate(value))
     }
+  }
+
+  /**
+    * Looks up an optional dry run value
+    *
+    * @param key the bound value key
+    * @return the resolved and interpolated value
+    */
+  def resolveDryValue(defaultValue: String): String = { 
+    val binding = new DryValueBinding[T](name, defaultValue, ctx)
+    binding.resolve()
+  }
+
+  /**
+    * Looks up an optional dry run value
+    *
+    * @param key the bound value key
+    * @return the resolved and interpolated value
+    */
+  def resolveDryValueOpt(): Option[String] = { 
+    val binding = new DryValueBinding[T](name, "", ctx)
+    binding.resolveOpt
   }
 
   /**

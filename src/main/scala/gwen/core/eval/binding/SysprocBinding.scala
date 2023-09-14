@@ -54,7 +54,7 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
     val unix = ctx.scopes.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
     bindIfLazy(
       lookupValue(key) { sysproc => 
-        ctx.evaluate(s"$$[dryRun:${if (unix) BindingType.unixsysproc else BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}]") {
+        ctx.evaluate(resolveDryValue(s"${if (unix) BindingType.unixsysproc else BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}")) {
           ctx.callSysProc(sysproc, delimiter, unix)
         }
       }

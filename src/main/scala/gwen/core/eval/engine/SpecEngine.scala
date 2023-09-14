@@ -42,13 +42,13 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
 
   private [engine] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     Dialect.withLanguage(spec.feature.language) {
-      val nspec = normaliseSpec(spec, dataRecord)
+      val nspec = normaliseSpec(spec, dataRecord, ctx.options.dryRun)
       evaluateSpec(parent, nspec, metaResults, dataRecord, ctx)
     }
   }
 
   private [engine] def evaluateMeta(parent: GwenNode, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    val nmeta = normaliseSpec(meta, dataRecord)
+    val nmeta = normaliseSpec(meta, dataRecord, ctx.options.dryRun)
     val metaResult = evaluateSpec(parent, nmeta, metaResults, dataRecord, ctx)
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {

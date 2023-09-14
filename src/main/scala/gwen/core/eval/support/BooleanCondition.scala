@@ -20,6 +20,7 @@ import gwen.core.Booleans
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.Binding
+import gwen.core.eval.binding.BindingType
 
 import scala.util.Failure
 import scala.util.Success
@@ -57,7 +58,7 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
     }
   }
 
-  private def isDryRunValue(value: String): Boolean = ctx.options.dryRun && value.contains("$[dryRun:")
+  private def isDryRunValue(value: String): Boolean = ctx.options.dryRun && value.contains(s"$$[${BindingType.dryValue}:")
 
   def evaluate(): Boolean = {
     var result: Option[Boolean] = None

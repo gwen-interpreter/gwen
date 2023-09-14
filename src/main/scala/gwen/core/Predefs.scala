@@ -328,6 +328,10 @@ object Formatting {
   def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
   def upTo2DecimalPlaces(number: Double): String = new DecimalFormat("#.##").format(number)
   def escapeNewLineChars(source: String): String = source.replaceAll("\n", s"\\\\n");
+  def surroundWithQuotes(source: String): String = {
+    val quoteChar = if (source.contains("'")) '"' else '\''
+    s"$quoteChar$source$quoteChar"
+  } 
 
   def formatTable(table: List[(Long, List[String])]): String = {
     (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")

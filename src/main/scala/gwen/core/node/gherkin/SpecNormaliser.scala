@@ -43,8 +43,9 @@ trait SpecNormaliser extends BehaviorRules {
     *
     * @param spec the feature spec
     * @param dataRecord optional feature level data record
+    * @param dryRun true if dry run; false otherwise
     */
-  def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord]): Spec = {
+  def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord], dryRun: Boolean): Spec = {
     val interpolator = DataRecord.interpolateLenient(dataRecord)
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
@@ -57,18 +58,18 @@ trait SpecNormaliser extends BehaviorRules {
         } getOrElse spec.feature
       ).interpolate(interpolator),
       None,
-      dataRecord.map(expandDataScenarios(scenarios, _, spec.background)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord)),
+      dataRecord.map(expandDataScenarios(scenarios, _, spec.background, dryRun)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, dryRun)),
       spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
           withBackground = None,
-          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord)
+          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord, dryRun)
         ).interpolate(interpolator)
       },
       Nil
     )
     if (!normalisedSpec.isMeta && normalisedSpec.steps(expanded = false).isEmpty) Errors.syntaxError(s"No steps found in feature${normalisedSpec.specFile.map(f => s" file: $f").getOrElse("")}")
-    normalisedSpec
+    normaliseSteps(normalisedSpec, dryRun)
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType): Unit = {
@@ -82,14 +83,14 @@ trait SpecNormaliser extends BehaviorRules {
     }
   }
 
-  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background]): List[Scenario] = {
+  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], dryRun: Boolean): List[Scenario] = {
     val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
-    expandScenarios(scenarios, Some(dataBg), Some(dataRecord))
+    expandScenarios(scenarios, Some(dataBg), Some(dataRecord), dryRun)
   }
 
-  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord]): List[Scenario] =
+  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord], dryRun: Boolean): List[Scenario] =
     scenarios.map { scenario =>
-      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord)
+      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, dryRun)
       else expandScenario(scenario, background, dataRecord)
     }
 
@@ -112,9 +113,9 @@ trait SpecNormaliser extends BehaviorRules {
   }
 
 
-  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
+  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], dryRun: Boolean): Scenario = {
     val interpolator = DataRecord.interpolateLenient(dataRecord)
-    outline.copy(
+    val normalisedOutline = outline.copy(
       withBackground = None,
       withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
@@ -155,6 +156,7 @@ trait SpecNormaliser extends BehaviorRules {
         )
       }
     ).interpolate(interpolator)
+    normaliseSteps(normalisedOutline, dryRun)
   }
 
   private def resolveParams(source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
@@ -193,7 +195,7 @@ trait SpecNormaliser extends BehaviorRules {
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None)
+      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None, Nil)
     }
     val description = dataFile map { file => 
       List(s"Input data file: ${file.getPath}")
@@ -231,6 +233,71 @@ trait SpecNormaliser extends BehaviorRules {
           descriptor.getOrElse("No data"),
           description,
           dataSteps.map(_.copy()))
+    }
+  }
+
+  private def normaliseSteps(spec: Spec, dryRun: Boolean): Spec = {
+    spec.copy(
+      withBackground = spec.background map { bg => 
+        bg.copy(
+          withSteps = normaliseSteps(bg.steps, dryRun)
+        )
+      },
+      withScenarios = spec.scenarios map { scenario => 
+        normaliseSteps(scenario, dryRun)
+      },
+      withRules = spec.rules map { rule => 
+        rule.copy(
+          withScenarios = rule.scenarios map { scenario =>
+            normaliseSteps(scenario, dryRun)
+          }
+        )
+      }
+    )
+  }
+
+  private def normaliseSteps(scenario: Scenario, dryRun: Boolean): Scenario = {
+    scenario.copy(
+      withBackground = scenario.background map { bg => 
+        bg.copy(
+          withSteps = normaliseSteps(bg.steps, dryRun)
+        )
+      },
+      withSteps = normaliseSteps(scenario.steps, dryRun),
+      withExamples = scenario.examples map { examples => 
+        examples.copy(
+          withScenarios = examples.scenarios map { scenario => 
+            normaliseSteps(scenario, dryRun)
+          }
+        )
+      }
+    )
+  }
+
+  private def normaliseSteps(steps: List[Step], dryRun: Boolean): List[Step] = {
+    if (steps.exists(_.dryValues.nonEmpty)) {
+      steps flatMap { step => 
+        val dryValues = step.dryValues
+        if (dryValues.nonEmpty) {
+          if (dryRun) {
+            if (step.dryValues.size > 1) {
+              step.dryValues map { dv =>
+                step.copy(
+                  withDryValues = List(dv)
+                )
+              }
+            } else {
+              List (step)
+            }
+          } else {
+            List(step.copy(withDryValues = Nil))
+          }
+        } else {
+          List(step)
+        }
+      }
+    } else {
+      steps
     }
   }
 

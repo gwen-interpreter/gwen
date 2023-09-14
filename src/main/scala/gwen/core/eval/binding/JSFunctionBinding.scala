@@ -17,6 +17,7 @@
 package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.state.Environment
 
 import scala.util.Try
@@ -69,7 +70,7 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
   }
 
   private def parseArgs(jsRef: String, args: List[String]): List[String] = {
-    if (!args.contains("$[dryRun:javascript]")) {
+    if (!args.contains(DryValueBinding.unresolved(BindingType.javascript))) {
       val jsKey = JSBinding.key(jsRef)
       val js = ctx.scopes.get(jsKey)
       0 to (args.size - 1) foreach { idx =>

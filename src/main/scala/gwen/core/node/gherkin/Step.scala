@@ -48,6 +48,7 @@ import java.io.File
   * @param callerParams optional caller parameters
   * @param tags list of optional tags/annotations
   * @param message: optional overriding error message
+  * @param dryValues optional dry values
   */
 case class Step(
     sourceRef: Option[SourceRef],
@@ -61,7 +62,8 @@ case class Step(
     override val params: List[(String, String)],
     override val callerParams: List[(String, String)],
     tags: List[Tag],
-    message: Option[String]) extends GherkinNode {
+    message: Option[String],
+    dryValues: List[(String, String)]) extends GherkinNode {
 
   override val nodeType: NodeType = NodeType.Step
 
@@ -139,8 +141,9 @@ case class Step(
       withParams: List[(String, String)] = params,
       withCallerParams: List[(String, String)] = callerParams,
       withTags: List[Tag] = tags,
-      withMessage: Option[String] = message): Step = {
-    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams, withTags, withMessage)
+      withMessage: Option[String] = message,
+      withDryValues: List[(String, String)] = dryValues): Step = {
+    Step(withSourceRef, withKeyword, withName, withAttachments, withStepDef, withTable, withDocString, withEvalStatus, withParams, withCallerParams, withTags, withMessage, withDryValues)
   }
 
   /**
@@ -292,10 +295,13 @@ case class Step(
     }
   }
 
+  def dryValue(name: String): Option[String] = dryValues.find(_._1 == name).map(_._2)
+
 }
 
 object Step {
   def apply(file: Option[File], step: cucumber.Step): Step = {
+    val sourceRef = Option(step.getLocation).map(loc => SourceRef(file, loc))
     val dataTable = step.getDataTable.toScala map { dt =>
       dt.getRows.asScala.toList map { row =>
         (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
@@ -304,19 +310,52 @@ object Step {
     val docString = step.getDocString.toScala.filter(_.getContent().trim.length > 0) map { ds =>
       (Long2long(ds.getLocation.getLine), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
     }
-    val (name, tagList, message): (String, List[Tag], Option[String]) = {
+    val (name, tagList, message, dryValues): (String, List[Tag], Option[String], List[(String, String)]) = {
       val (n, t) = Formatting.escapeNewLineChars(step.getText.trim) match {
         case r"""((?:@\w+\s+)+)$ts(.*)$name""" => 
           (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
         case _ => (Formatting.escapeNewLineChars(step.getText), Nil)
       }
       n match {
-        case r"""(.+)$s1\s+@Message\("(.+)$m"\)\s*(.*)?$s2""" => (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(m))
-        case _ => (n, t, None)
+        case r"""(.+)$s1\s+@Message\((.+)$message\)\s*(.*)?$s2""" => 
+          val msg = message.trim match {
+            case r"""'(.+)$m'""" => m
+            case r""""(.+)$m"""" => m
+            case _ => Errors.illegalStepAnnotationError(sourceRef, "@Message value must be surrouned by single or double quotes")
+          }
+          (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(msg), Nil)
+        case r""".+\@Message.*""" => 
+          Errors.illegalStepAnnotationError(sourceRef, """Invalid @Message annotation syntax. Expected @Message('<message>') or @Message("<message>")""")
+        case r"""(.+)$s1\s+@DryRun\(\s*name\s*=\s*(.+)$name\s*,\s*value\s*=\s*(.+)$value\s*\)\s*(.*)?$s2""" =>
+          val dvname = name.trim match {
+            case r"""'(.+)$n'""" => n
+            case r""""(.+)$n"""" => n
+            case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun name value must be surrouned by single or double quotes")
+          }
+          val values = value.trim match {
+            case r"""\{(.+)$csv\}""" => csv.split(",").toList map {v => 
+              v.trim match {
+                case r"""'(.+)$v'""" => v
+                case r""""(.+)$v"""" => v
+                case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun multi value entries must be surrouned by single or double quotes")
+              }
+            }
+            case sv => sv.trim match {
+              case r"""'(.+)$v'""" => List(v)
+              case r""""(.+)$v"""" => List(v)
+              case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun single value entry must be surrouned by single or double quotes")
+            }
+          }
+          val dvs = values map { v => (dvname, v) }
+          (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, None, dvs)
+        case r""".+@DryRun.*""" => 
+          Errors.illegalStepAnnotationError(sourceRef, "Invalid @DryRun annotation syntax. Expected @DryRun(name = '<name>', value = '<value>') or @DryRun(name = '<name>', value = {'<value-1>', '<value-2>', '<value-N>'})")
+        case _ => 
+          (n, t, None, Nil)
       }
     }
     Step(
-      Option(step.getLocation).map(loc => SourceRef(file, loc)),
+      sourceRef,
       step.getKeyword.trim, 
       name.trim, 
       Nil, 
@@ -327,7 +366,8 @@ object Step {
       Nil,
       Nil,
       tagList,
-      message)
+      message,
+      dryValues)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {
     case s: Spec => s.steps.flatMap(_.errorTrails)
@@ -343,7 +383,7 @@ object Step {
     steps.lastOption foreach { lastStep =>
       steps.filter(_.isFinally) foreach { step => 
         if (step != lastStep) {
-          Errors.illegalStepAnnotationError(step, "@Finally permitted only in last step of parent node")
+          Errors.illegalStepAnnotationError(step.sourceRef, "@Finally permitted only in last step of parent node")
         }
       }
     }
@@ -354,14 +394,14 @@ object Step {
           else if (step.isLazy) Annotations.Lazy
           else Annotations.Deferred
         }
-        Errors.illegalStepAnnotationError(step, s"@$annotation annotation permitted only for '<x> defined by <y>' DSL steps")
+        Errors.illegalStepAnnotationError(step.sourceRef, s"@$annotation annotation permitted only for '<x> defined by <y>' DSL steps")
       } else {
         val annotations = {
           (if (step.isEager) List(Annotations.Eager) else Nil) ++
           (if (step.isLazy) List(Annotations.Lazy) else Nil)
         }
         if (annotations.size > 1) {
-          Errors.illegalStepAnnotationError(step, s"Only one of ${annotations.map(a => s"@$a").mkString(", ")} annotation permitted for step")
+          Errors.illegalStepAnnotationError(step.sourceRef, s"Only one of ${annotations.map(a => s"@$a").mkString(", ")} annotation permitted for step")
         }
       }
     }

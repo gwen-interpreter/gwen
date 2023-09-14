@@ -17,6 +17,7 @@
 package gwen.core.eval.lambda.unit
 
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
@@ -27,7 +28,7 @@ class CaptureBase64Decoded[T <: EvalContext](target: String, source: String) ext
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val sourceValue = ctx.getBoundReferenceValue(source)
-    val content = ctx.evaluate("$[dryRun:decodeBase64]") {
+    val content = ctx.evaluate(DryValueBinding.unresolved("decodeBase64")) {
       ctx.decodeBase64(sourceValue)
     }
     ctx.topScope.set(target, content)

@@ -18,6 +18,7 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core.LocationType
 import gwen.core.eval.EvalContext
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
@@ -28,7 +29,7 @@ class CapturePDF[T <: EvalContext](target: String, sourceType: LocationType, sou
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val content = ctx.evaluate("$[dryRun:pdfText]") {
+    val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved("pdfText"))) {
       ctx.capturePDFText(sourceType, sourceLocation)
     }
     ctx.topScope.set(target, content)

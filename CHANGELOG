@@ -1,3 +1,15 @@
+3.47.0
+======
+Aug 15, 2023
+- Introduce DryRun Annotations to specify values for bindings that cannot be resolved in dry runs
+  - `@DryRun(name = '<name>', value = '<value>')`
+    - To specify a single dry run value
+    - The step having the annotation will be called once with this value in a dry run
+  - `@DryRun(name = '<name>', value = {'<value-1>', '<value-2>', '<value-N>'})`
+    - To specify multiple dry run values
+    - The step having the annotation will be repeatedly called for each value in a dry run
+- Both Message and DryRun annotations can now accept single quotes in addition to double quotes around values
+
 3.46.0
 ======
 Aug 7, 2023

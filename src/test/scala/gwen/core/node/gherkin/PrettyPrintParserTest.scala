@@ -100,7 +100,7 @@ Feature: Gwen
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
-    val specFeature = normaliseSpec(parse(featureString).get, None)
+    val specFeature = normaliseSpec(parse(featureString).get, None , false)
     printer.prettyPrint(Root, specFeature).replace("\r", "") should be (s"""@wip
 Feature: Gwen
 

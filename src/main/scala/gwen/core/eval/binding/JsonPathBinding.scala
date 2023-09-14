@@ -44,7 +44,7 @@ class JsonPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T,
     bindIfLazy(
       resolveValue(pathKey) { jsonPath => 
         resolveRef(sourceKey) { source =>
-          ctx.evaluate(s"$$[dryRun:${BindingType.`json path`}]") {
+          ctx.evaluate(resolveDryValue(BindingType.`json path`.toString)) {
             ctx.evaluateJsonPath(jsonPath, source)
           }
         }

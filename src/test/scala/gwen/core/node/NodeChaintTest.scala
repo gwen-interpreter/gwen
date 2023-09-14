@@ -114,7 +114,7 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     file.createNewFile()
     file.writeText(featureString)
 
-    val spec = normaliseSpec(parseSpec(file).get, None)
+    val spec = normaliseSpec(parseSpec(file).get, None, false)
     val unit = FeatureUnit(Root, file, Nil, None, mockTagFilter, None)
     val builder = new NodeChainBuilder()
     var chain = NodeChain()

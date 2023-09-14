@@ -48,7 +48,7 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     featureSet.hasNext should be (true)
     val unit1 = featureSet.next()
     val feature1 = parseSpec(unit1.featureFile) match {
-      case Success(spec) => normaliseSpec(spec, unit1.dataRecord)
+      case Success(spec) => normaliseSpec(spec, unit1.dataRecord, false)
       case Failure(e) => sys.error(e.toString)
     }
     feature1.feature.name should be ("About me [1 of 3]")
@@ -66,7 +66,7 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     featureSet.hasNext should be (true)
     val unit2 = featureSet.next()
     val feature2 = parseSpec(unit2.featureFile) match {
-      case Success(spec) => normaliseSpec(spec, unit2.dataRecord)
+      case Success(spec) => normaliseSpec(spec, unit2.dataRecord, false)
       case Failure(e) => sys.error(e.toString)
     }
     feature2.feature.name should be ("About me [2 of 3]")
@@ -84,7 +84,7 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     featureSet.hasNext should be (true)
     val unit3 = featureSet.next()
     val feature3 = parseSpec(unit3.featureFile) match {
-      case Success(spec) => normaliseSpec(spec, unit3.dataRecord)
+      case Success(spec) => normaliseSpec(spec, unit3.dataRecord, false)
       case Failure(e) => sys.error(e.toString)
     }
     feature3.feature.name should be ("About me [3 of 3]")
