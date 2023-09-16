@@ -281,8 +281,9 @@ trait SpecNormaliser extends BehaviorRules {
         if (dryValues.nonEmpty) {
           if (dryRun) {
             if (step.dryValues.size > 1) {
-              step.dryValues map { dv =>
+              step.dryValues.zipWithIndex map { (dv, idx) =>
                 step.copy(
+                  withKeyword = if(idx > 0) StepKeyword.And.toString else step.keyword,
                   withDryValues = List(dv)
                 )
               }
