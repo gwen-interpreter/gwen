@@ -1,6 +1,12 @@
+3.47.1
+======
+Sep 16, 2023
+- Fix dry run annotation logic in for-each loop
+- Remove pre-existing same named loop var check and restore value when for-each finishes
+
 3.47.0
 ======
-Aug 15, 2023
+Sep 15, 2023
 - Introduce DryRun Annotations to specify values for bindings that cannot be resolved in dry runs
   - `@DryRun(name = '<name>', value = '<value>')`
     - To specify a single dry run value
@@ -12,12 +18,12 @@ Aug 15, 2023
 
 3.46.0
 ======
-Aug 7, 2023
+Sep 7, 2023
 - Any type of binding can now be used as a boolean condition throughout the DSLs (in prior versions only JS or simple bindings were accepted).
 
 3.45.0
 ======
-Aug 7, 2023
+Sep 7, 2023
 - Add DSLs to capture PDF text content
   - `I capture the PDF text from url "<url>" `
   - `I capture the PDF text from url "<url>" as <name>`
@@ -27,7 +33,7 @@ Aug 7, 2023
 
 3.44.7
 ======
-Sep 28, 2023
+Aug 28, 2023
 - Runtime library updates
   - Update htmlcleaner from v2.28 to v2.29
   - Update commons-codec from v1.15 to v1.16.0

@@ -19,6 +19,7 @@ package gwen.core.eval.lambda.composite
 import gwen.core._
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin._
@@ -52,10 +53,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
           case _ =>
             val noOfElements = items.size
             logger.info(s"For-each[$name]: $noOfElements found")
+            val prevNameValue = ctx.topScope.getOpt(name)
             try {
-              if(Try(ctx.getBoundReferenceValue(name)).isSuccess) {
-                Errors.ambiguousCaseError(s"For-each element name '$name' already bound (use a free name instead)")
-              }
               items.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
                 val itemNo = index + 1
                 val params: List[(String, String)] = currentElement match {
@@ -99,7 +98,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                 }) :: acc
               } reverse
             } finally {
-              ctx.topScope.set(name, null)
+              ctx.topScope.set(name, prevNameValue.orNull)
             }
         }
       val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
