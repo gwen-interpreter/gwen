@@ -133,20 +133,22 @@ object Tag {
     value.trim match {
       case r"""'(.+?)$v'""" => v
       case r""""(.+?)$v"""" => v
-      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} in @$annotation must be surrounded by single or double quotes")
+      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} in @$annotation annotation must be surrounded by single (preferred) or double quotes")
     }
   }
 
   def parseListValue(sourceRef: Option[SourceRef], annotation: Annotations, name: Option[String], value: String): List[String] = {
+    def parseList(csv: String): List[String] = {
+      csv.split(",").toList map { v => 
+        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entry"), v)
+      }
+    }
     value.trim match {
-      case r"""\[(.+)$csv\]""" => csv.split(",").toList map { v => 
-        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entry"), v)
-      }
-      case r"""\{(.+)$csv\}""" => csv.split(",").toList map { v => 
-        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entry"), v)
-      }
-      case _ =>
-        List(parseSingleValue(sourceRef, annotation, name, value))
+      case r"""\[(.+?)\]$csv""" => parseList(csv)
+      case r"""\{(.+?)\}$csv""" => parseList(csv)
+      case r"""'(.+?)$v'""" => List(v)
+      case r""""(.+?)$v"""" => List(v)
+      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} in @$annotation annotation must be surrounded by single or double quotes for a single value or square or curly braces for a list value")
     }
   }
 
