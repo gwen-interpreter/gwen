@@ -126,7 +126,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
               val v = vss.head
               s"""name=${Formatting.surroundWithQuotes(n)},value=${Formatting.surroundWithQuotes(v)}"""
             }
-            else s"""name=${Formatting.surroundWithQuotes(n)},value={${vss.map(v => Formatting.surroundWithQuotes(v)).mkString(",")}}"""
+            else s"""name=${Formatting.surroundWithQuotes(n)},value=[${vss.map(v => Formatting.surroundWithQuotes(v)).mkString(",")}]"""
           } mkString(", ")
           val dryRunTag = s"""@${Annotations.DryRun}($dvs)"""
           out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${dryRunTag}${if (colors) ansi.reset else ""}")

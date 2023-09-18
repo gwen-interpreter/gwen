@@ -133,14 +133,17 @@ object Tag {
     value.trim match {
       case r"""'(.+?)$v'""" => v
       case r""""(.+?)$v"""" => v
-      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} attribute of $value in @$annotation must be surrounded by single or double quotes")
+      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} in @$annotation must be surrounded by single or double quotes")
     }
   }
 
   def parseListValue(sourceRef: Option[SourceRef], annotation: Annotations, name: Option[String], value: String): List[String] = {
     value.trim match {
+      case r"""\[(.+)$csv\]""" => csv.split(",").toList map { v => 
+        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entry"), v)
+      }
       case r"""\{(.+)$csv\}""" => csv.split(",").toList map { v => 
-        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entries"), v)
+        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entry"), v)
       }
       case _ =>
         List(parseSingleValue(sourceRef, annotation, name, value))
