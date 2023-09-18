@@ -135,7 +135,7 @@ nl.big-o
   +-liqp:0.8.2
   | +-MIT License - http://www.opensource.org/licenses/mit-license.php
 com.squareup.okio
-  +-okio:1.17.2
+  +-okio:1.17.5
   | +-no license specified
 com.squareup.okhttp3
   +-logging-interceptor:3.14.9
@@ -269,7 +269,7 @@ com.vladsch.flexmark
 com.google.guava
   +-listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
   | +-no license specified
-  +-guava:32.0.1-jre
+  +-guava:32.1.2-jre
   | +-no license specified
   +-failureaccess:1.0.1
   | +-no license specified
