@@ -141,12 +141,12 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     var associateMeta: Option[File] = None
     // filter out all meta associated with other features files
     val filteredMetas = metas.filter { m => 
-      val assocaitedFeature = new File(m.getParentFile(), s"${m.simpleName}.feature")
-      val isAssociate = assocaitedFeature.isSame(Option(featureFile))
+      val associatedFeature = new File(m.getParentFile(), s"${m.simpleName}.feature")
+      val isAssociate = associatedFeature.isSame(Option(featureFile))
       if (isAssociate) {
         associateMeta = Some(m)
       }
-      !isAssociate && !assocaitedFeature.exists
+      !isAssociate && !associatedFeature.exists
     }
     // put associate meta at end of list to ensure it is loaded last (so it overrides other meta)
     filteredMetas ++ associateMeta.toList

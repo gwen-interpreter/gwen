@@ -17,6 +17,7 @@
 package gwen.core.eval.engine
 
 import gwen.core.Errors
+import gwen.core.FileIO
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node._
@@ -131,7 +132,7 @@ trait UnitEngine[T <: EvalContext]
           if (name == Annotations.Import.toString) {
             val file = new File(filepath)
             if (!file.exists()) Errors.missingOrInvalidImportFileError(tag)
-            if (!file.getName.endsWith(".meta")) Errors.unsupportedImportError(tag)
+            if (!FileIO.isMetaFile(file)) Errors.unsupportedImportError(tag)
             if (file.getCanonicalPath.equals(specFile.getCanonicalPath)) {
               Errors.recursiveImportError(tag)
             }

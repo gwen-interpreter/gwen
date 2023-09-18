@@ -56,7 +56,7 @@ class SpecResult(
 
   lazy val elapsedTime = Duration(finished.getTime - started.getTime, MILLISECONDS)
   lazy val screenshots: List[File] = spec.attachments.filter(_._1 == "Screenshot").map(_._2)
-  lazy val isMeta: Boolean = spec.specFile.exists(_.getName.endsWith(".meta"))
+  lazy val isMeta: Boolean = spec.specFile.exists(FileIO.isMetaFile)
   lazy val summary = ResultsSummary(this)
   lazy val duration: Duration = evalStatus.duration
   lazy val sustainedCount: Int = spec.sustainedCount
