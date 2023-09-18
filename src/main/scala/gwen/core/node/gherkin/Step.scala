@@ -328,7 +328,7 @@ object Step {
           val dvs = values map { v => (dvName, v) }
           (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, None, dvs)
         case r""".+@DryRun.*""" => 
-          Errors.illegalStepAnnotationError(sourceRef, "Invalid @DryRun annotation syntax. Expected @DryRun(name = '<name>', value = '<value>') or @DryRun(name = '<name>', value = {'<value-1>', '<value-2>', '<value-N>'})")
+          Errors.illegalStepAnnotationError(sourceRef, "Invalid @DryRun annotation syntax. Expected @DryRun(name = '<name>', value = '<value>') or @DryRun(name = '<name>', value = ['<value-1>', '<value-2>', '<value-N>'])")
         case _ => 
           (n, t, None, Nil)
       }
