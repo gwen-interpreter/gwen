@@ -318,35 +318,14 @@ object Step {
       }
       n match {
         case r"""(.+)$s1\s+@Message\((.+)$message\)\s*(.*)?$s2""" => 
-          val msg = message.trim match {
-            case r"""'(.+)$m'""" => m
-            case r""""(.+)$m"""" => m
-            case _ => Errors.illegalStepAnnotationError(sourceRef, "@Message value must be surrouned by single or double quotes")
-          }
+          val msg = Tag.parseSingleValue(sourceRef, Annotations.Message, None, message)
           (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, Some(msg), Nil)
         case r""".+\@Message.*""" => 
           Errors.illegalStepAnnotationError(sourceRef, """Invalid @Message annotation syntax. Expected @Message('<message>') or @Message("<message>")""")
-        case r"""(.+)$s1\s+@DryRun\(\s*name\s*=\s*(.+)$name\s*,\s*value\s*=\s*(.+)$value\s*\)\s*(.*)?$s2""" =>
-          val dvname = name.trim match {
-            case r"""'(.+)$n'""" => n
-            case r""""(.+)$n"""" => n
-            case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun name value must be surrouned by single or double quotes")
-          }
-          val values = value.trim match {
-            case r"""\{(.+)$csv\}""" => csv.split(",").toList map {v => 
-              v.trim match {
-                case r"""'(.+)$v'""" => v
-                case r""""(.+)$v"""" => v
-                case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun multi value entries must be surrouned by single or double quotes")
-              }
-            }
-            case sv => sv.trim match {
-              case r"""'(.+)$v'""" => List(v)
-              case r""""(.+)$v"""" => List(v)
-              case _ => Errors.illegalStepAnnotationError(sourceRef, "@DryRun single value entry must be surrouned by single or double quotes")
-            }
-          }
-          val dvs = values map { v => (dvname, v) }
+        case r"""(.+)$s1\s+@DryRun\(\s*name\s*=(.+)$name\s*,\s*value\s*=(.+)$value\)\s*(.*)?$s2""" =>
+          val dvName = Tag.parseSingleValue(sourceRef, Annotations.DryRun, Some("name"), name)
+          val values = Tag.parseListValue(sourceRef, Annotations.DryRun, Some("value"), value)
+          val dvs = values map { v => (dvName, v) }
           (s"${s1.trim} ${Option(s2).map(_.trim).getOrElse("")}", t, None, dvs)
         case r""".+@DryRun.*""" => 
           Errors.illegalStepAnnotationError(sourceRef, "Invalid @DryRun annotation syntax. Expected @DryRun(name = '<name>', value = '<value>') or @DryRun(name = '<name>', value = {'<value-1>', '<value-2>', '<value-N>'})")

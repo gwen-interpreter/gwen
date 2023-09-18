@@ -185,7 +185,6 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
 
   private def printTable(indent: String, table: List[(Long, List[String])], out: PrintWriter): Unit = {
     printTextLines(indent, Formatting.splitLines(Formatting.formatTable(table)), out)
-    if (table.size == 1) out.println()
   }
 
   private def printDocString(indent: String, docString: (Long, String, Option[String]), out: PrintWriter): Unit = {

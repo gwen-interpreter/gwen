@@ -16,6 +16,7 @@
 package gwen.core.node.gherkin.table
 
 import gwen.core._
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Tag
 import gwen.core.state.ScopedData
@@ -41,13 +42,13 @@ object DataTable {
       case r"""DataTable""" =>
         val table = step.table.map(_._2)
         DataTable(if (table.nonEmpty) table.tail else Nil, HeaderType.top, table.headOption.getOrElse(Nil))
-      case r"""DataTable\(horizontal="([^".]+?)"$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.top, namesCSV.split(",").toList)
-      case r"""DataTable\(vertical="([^".]+?)"$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.left, namesCSV.split(",").toList)
-      case r"""DataTable\(header="(top|left)"$header\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.valueOf(header), Nil)
-      case r"""DataTable\(type="matrix"\)""" =>
+      case r"""DataTable\(horizontal=(.+?)$namesCSV\)""" =>
+        DataTable(step.table.map(_._2), HeaderType.top, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("horizontal"), namesCSV).split(",").toList)
+      case r"""DataTable\(vertical=(.+?)$namesCSV\)""" =>
+        DataTable(step.table.map(_._2), HeaderType.left, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("vertical"), namesCSV).split(",").toList)
+      case r"""DataTable\(header=(.+?)$header\)""" if (header.contains("top") || header.contains("left")) =>
+        DataTable(step.table.map(_._2), HeaderType.valueOf(Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("header"), header)), Nil)
+      case r"""DataTable\(type=(.+?)$value\)""" if value.contains("matrix") =>
         DataTable(step.table.map(_._2), HeaderType.top_left, Nil)
       case _ => tagSyntaxError(tag)
     }
@@ -55,17 +56,22 @@ object DataTable {
 
   private val validTags = List(
     """DataTable""",
+    """DataTable\(horizontal='([^".]+?)'\)""",
     """DataTable\(horizontal="([^".]+?)"\)""",
+    """DataTable\(vertical='([^''.]+?)'\)""",
     """DataTable\(vertical="([^".]+?)"\)""",
+    """DataTable\(header='(top|left)'\)""",
     """DataTable\(header="(top|left)"\)""",
-    """DataTable\(type="matrix"\)""")
+    """DataTable\(type='matrix'\)""",
+    """DataTable\(type="matrix"\)"""
+    )
 
   def checkTagSyntax(tag: Tag): Unit =
     if (!validTags.exists(tag.name.matches(_))) tagSyntaxError(tag)
 
   private def tagSyntaxError(tag: Tag) =
     Errors.invalidTagError(
-      s"""Invalid tag syntax: $tag - correct table tags include: @DataTable, @DataTable(horizontal|vertical="name1,name2..,nameN"), @DataTable(header="top|left"), @DataTable(type="matrix")"""
+      s"""Invalid DataTable annotation: $tag - correct syntax is: @DataTable or @DataTable(horizontal|vertical='name1,name2..,nameN') or @DataTable(horizontal|vertical="name1,name2..,nameN") or @DataTable(header='top|left') or @DataTable(header="top|left") or @DataTable(type='matrix') or  @DataTable(type="matrix")"""
     )
 
   /**

@@ -34,13 +34,13 @@ import scala.jdk.OptionConverters._
 object Errors {
 
   def parseError(parseError: ParseError) = throw new ParserException(parseError)
-  def syntaxError(msg: String) = throw new GherkinSyntaxError(msg, None, None, None)
-  def syntaxError(msg: String, line: Long) = throw new GherkinSyntaxError(msg, None, Some(line), None)
-  def syntaxError(msg: String, file: Option[File], line: Long, col: Option[Long]) = throw new GherkinSyntaxError(msg, file, Some(line), col)
+  def syntaxError(msg: String) = throw new SyntaxError(msg, None, None, None)
+  def syntaxError(msg: String, line: Long) = throw new SyntaxError(msg, None, Some(line), None)
+  def syntaxError(msg: String, file: Option[File], line: Long, col: Option[Long]) = throw new SyntaxError(msg, file, Some(line), col)
   def syntaxError(file: File, cause: ParseError) = cause.getSource.getLocation.toScala match {
     case Some(loc) =>
-      throw new GherkinSyntaxError(cause.getMessage, Some(file), Some(loc.getLine), loc.getColumn.toScala.map(_.toLong))
-    case _ => throw new GherkinSyntaxError(cause.getMessage, Some(file), None, None)
+      throw new SyntaxError(cause.getMessage, Some(file), Some(loc.getLine), loc.getColumn.toScala.map(_.toLong))
+    case _ => throw new SyntaxError(cause.getMessage, Some(file), None, None)
   }
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
   def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
@@ -61,6 +61,7 @@ object Errors {
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
   def invalidTagError(msg: String) = throw new InvalidTagException(msg)
+  def invalidAnnotationError(sourceRef: Option[SourceRef], msg: String) = throw new InvalidAnnotationException(sourceRef, msg)
   def regexError(msg: String) = throw new RegexException(msg)
   def systemProcessError(msg: String, cause: Throwable) = throw new SystemProcessException(msg, cause)
   def xPathError(msg: String) = throw new XPathException(msg)
@@ -120,8 +121,8 @@ object Errors {
   /** Signals a StepDef that failed to execute. */
   class StepDefException(stepDef: Scenario, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(stepDef.sourceRef)}", cause)
 
-  /** Thrown when a Gherkin parsing error occurs. */
-  class GherkinSyntaxError(msg: String, file: Option[File], line: Option[Long], col: Option[Long]) extends GwenException(s"Gherkin syntax error${at(file, line, col)}: $msg")
+  /** Thrown when a parsing error occurs. */
+  class SyntaxError(msg: String, file: Option[File], line: Option[Long], col: Option[Long]) extends GwenException(s"Syntax error${at(file, line, col)}: $msg")
 
   class ParserException(val parseError: ParseError) extends GwenException(s"Parser errors:\n${parseError.getMessage}")
 
@@ -171,6 +172,9 @@ object Errors {
 
   /** Thrown when an invalid tag is detected. */
   class InvalidTagException(annotation: String) extends GwenException(s"Invalid annotation: $annotation")
+
+  /** Thrown when an invalid annotation is detected. */
+  class InvalidAnnotationException(sourceRef: Option[SourceRef], msg: String) extends GwenException(s"Invalid or illegal annotation${at(sourceRef)}: $msg")
 
   /** Thrown when a regex error occurs. */
   class RegexException(msg: String) extends GwenException(msg)

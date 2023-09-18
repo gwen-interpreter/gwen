@@ -137,7 +137,7 @@ trait UnitEngine[T <: EvalContext]
             }
             Some(file)
           } else if (name.equalsIgnoreCase(Annotations.Import.toString)) {
-            Errors.invalidTagError(s"""Invalid import syntax: $tag - correct syntax is @Import("filepath")""")
+            Errors.invalidTagError(s"""Invalid import annotation: $tag - correct syntax is @Import('filepath') or @Import("filepath")""")
           } else {
             None
           }

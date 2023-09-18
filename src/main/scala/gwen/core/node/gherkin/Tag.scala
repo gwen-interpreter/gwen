@@ -60,7 +60,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
   }
 
   /** Returns a string representation of this tag. */
-  override def toString: String = s"@$name${value.map(v => s"""("$v")""").getOrElse("")}"
+  override def toString: String = s"@$name${value.map(v => s"""(${Formatting.surroundWithQuotes(v)})""").getOrElse("")}"
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,
@@ -109,6 +109,7 @@ object Tag {
       Errors.invalidTagError(s"Whitespace not allowed in tag '$tagString'")
     }
     tagString match {
+      case r"""~?@(.*?)$n\('(.*?)'$v\)""" => Tag(sourceRef, n, Option(v))
       case r"""~?@(.*?)$n\("(.*?)"$v\)""" => Tag(sourceRef, n, Option(v))
       case r"""~?@(.*?)$n""" => Tag(sourceRef, n, None)
       case _ => Errors.invalidTagError(s"Invalid tag syntax: $tagString")
@@ -122,6 +123,28 @@ object Tag {
   }
   def findAllByName(tags: List[Tag], name: String): List[Tag] = {
     tags.filter(_.name == name)
+  }
+
+  def parseSingleValue(sourceRef: Option[SourceRef], annotation: Annotations, name: Option[String], value: String): String = {
+    parseSingleValue(sourceRef, annotation.toString, name, value)
+  }
+
+  private def parseSingleValue(sourceRef: Option[SourceRef], annotation: String, name: Option[String], value: String): String = {
+    value.trim match {
+      case r"""'(.+?)$v'""" => v
+      case r""""(.+?)$v"""" => v
+      case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} attribute of $value in @$annotation must be surrounded by single or double quotes")
+    }
+  }
+
+  def parseListValue(sourceRef: Option[SourceRef], annotation: Annotations, name: Option[String], value: String): List[String] = {
+    value.trim match {
+      case r"""\{(.+)$csv\}""" => csv.split(",").toList map { v => 
+        parseSingleValue(sourceRef, annotation, name.map(n => s"$n entries"), v)
+      }
+      case _ =>
+        List(parseSingleValue(sourceRef, annotation, name, value))
+    }
   }
 
 }

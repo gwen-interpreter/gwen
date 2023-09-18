@@ -80,16 +80,25 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     val dataExamplesAndBackgrouds = iTags flatMap { tag =>
       if (tag.name.startsWith(Annotations.Examples.toString)) {
         val (filepath, prefix, where, required) = tag.name match {
-          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where",required=(true|false)$required\)""" => (file, Some(prefix), Some(where), required.toBoolean)
-          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",where="(.+?)$where"\)""" => (file, Some(prefix), Some(where), false)
-          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",required=(true|false)$required\)""" => (file, Some(prefix), None, required.toBoolean)
-          case r"""Examples\(file="(.+?)$file",where="(.+?)$where",required=(true|false)$required\)""" => (file, None, Some(where), required.toBoolean)
-          case r"""Examples\(file="(.+?)$file",where="(.+?)$where"\)""" => (file, None, Some(where), false)
-          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix",required=(true|false)$required\)""" => (file, Some(prefix), None, required.toBoolean)
-          case r"""Examples\(file="(.+?)$file",prefix="(.+?)$prefix"\)""" => (file, Some(prefix), None, false)
-          case r"""Examples\(file="(.+?)$file",required=(true|false)$required\)""" => (file, None, None, required.toBoolean)
-          case r"Examples" if tag.value.nonEmpty => (tag.value.get, None, None, false)
-          case _ => Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.(csv|json)"[,where="javascript expression"][,required=true|false])""")
+          case r"""Examples\(file=(.+?)$file,prefix=(.+?)$prefix,where=(.+?)$where,required=(true|false)$required\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("prefix"), prefix)), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("where"), where)), required.toBoolean)
+          case r"""Examples\(file=(.+?)$file,prefix=(.+?)$prefix,where=(.+?)$where\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("prefix"), prefix)), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("where"), where)), false)
+          case r"""Examples\(file=(.+?)$file,prefix=(.+?)$prefix,required=(true|false)$required\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("prefix"), prefix)), None, required.toBoolean)
+          case r"""Examples\(file=(.+?)$file,where=(.+?)$where,required=(true|false)$required\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), None, Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("where"), where)), required.toBoolean)
+          case r"""Examples\(file=(.+?)$file,where=(.+?)$where\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), None, Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("where"), where)), false)
+          case r"""Examples\(file=(.+?)$file,prefix=(.+?)$prefix,required=(true|false)$required\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("prefix"), prefix)), None, required.toBoolean)
+          case r"""Examples\(file=(.+?)$file,prefix=(.+?)$prefix\)""" => 
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), Some(Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("prefix"), prefix)), None, false)
+          case r"""Examples\(file=(.+?)$file,required=(true|false)$required\)""" =>
+            (Tag.parseSingleValue(tag.sourceRef, Annotations.Examples, Some("file"), file), None, None, required.toBoolean)
+          case r"Examples" if tag.value.nonEmpty => 
+            (tag.value.get, None, None, false)
+          case _ => Errors.invalidTagError(s"""Invalid Examples annotation: $tag - correct syntax is @Examples('path/file.(csv|json)'[,where='javascript expression'][,required=true|false]) or @Examples("path/file.(csv|json)"[,where="javascript expression"][,required=true|false])""")
         }
         val whereFilter = where.map(ctx.interpolateParams).map(ctx.interpolateLenient)
         val examplesTag = tag.copy(withValue = Some(filepath))
@@ -130,7 +139,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         Some((Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
-        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples("path/file.(csv|json)") or @Examples(file="path/file.(csv|json)",where="javascript expression")""")
+        Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples('path/file.(csv|json)') or @Examples("path/file.(csv|json)") or @Examples(file='path/file.(csv|json)',where='javascript expression') or @Examples(file="path/file.(csv|json)",where="javascript expression")""")
       } else {
         None
       }

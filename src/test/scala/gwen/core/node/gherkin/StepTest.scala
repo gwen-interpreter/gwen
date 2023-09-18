@@ -50,27 +50,27 @@ class StepTest extends BaseTest with Matchers with GherkinParser with TestModel 
     
     StepKeyword.values.map(_.toString) foreach { keyword =>
       
-      assertFail(s"$keyword",   "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword ",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\t", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-      assertFail(s"$keyword\n", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword",   "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword ",  "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\t", "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"$keyword\n", "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
       
-      assertFail(s"I do not start with the $keyword clause", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+      assertFail(s"I do not start with the $keyword clause", "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
     }
     
   }
   
   "invalid keywords" should "not parse" in {
     
-    assertFail("?",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^C",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("^Q",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("{)()ASD}", "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail(";",        "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("\\s",      "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("/n",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("(?:.+)?",  "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
-    assertFail("''",       "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("?",        "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^C",       "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("^Q",       "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("{)()ASD}", "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail(";",        "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("\\s",      "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("/n",       "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("(?:.+)?",  "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
+    assertFail("''",       "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected")
   }
 
   "Step with valid data table " should "parse" in {
@@ -107,7 +107,7 @@ class StepTest extends BaseTest with Matchers with GherkinParser with TestModel 
         |       | three | 3 |
       """.stripMargin
 
-    assertFail(stepString, "Gherkin syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
+    assertFail(stepString, "Syntax error [at line 1]: 'Given|When|Then|And|But <expression>' expected: Parser errors:\n(6:8): inconsistent cell count within the table")
 
   }
 

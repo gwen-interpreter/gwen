@@ -1,3 +1,10 @@
+3.47.3
+======
+Sep 18, 2023
+- All annotations can now accept single or double quoted values
+- Prefer single quoted values over double for all annotations
+- Update scala from v3.3.0 to v3.3.1
+
 3.47.2
 ======
 Sep 16, 2023
