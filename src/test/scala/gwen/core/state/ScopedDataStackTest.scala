@@ -592,7 +592,7 @@ class ScopedDataStackTest extends BaseTest with Matchers {
     
       withSetting("gwen.state.level", level) {
         
-        val scopes = ScopedDataStack(new mutable.ArrayStack[ScopedData]())
+        val scopes = ScopedDataStack(new mutable.Stack[ScopedData]())
         
         scopes.current.scope should be (level)
         scopes.topScope.scope should be (level)
