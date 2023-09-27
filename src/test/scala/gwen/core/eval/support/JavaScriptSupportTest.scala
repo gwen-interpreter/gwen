@@ -17,17 +17,22 @@
 package gwen.core.eval.support
 
 import gwen.core.BaseTest
+import gwen.core.GwenOptions
+import gwen.core.eval.EvalContext
+import gwen.core.state.EnvState
 
 import org.scalatest.matchers.should.Matchers
 
-class ScriptSupportTest extends BaseTest with Matchers with ScriptSupport {
+class JavaScriptSupportTest extends BaseTest with Matchers {
 
-  "JavaScript" should "execute" in {
+  private val jsSupport = new EvalContext(GwenOptions(), EnvState()).asInstanceOf[JavaScriptSupport[EvalContext]]
 
-    val intResult = evaluateJS("2*2")
+  "JavaScript function" should "execute" in {
+
+    val intResult = jsSupport.evaluateJS("2*2")
     intResult should be(4)
 
-    val date = evaluateJS(
+    val date = jsSupport.evaluateJS(
       """(function() {
         |  var d = new Date(2017, 6, 8);
         |  return d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();
@@ -35,16 +40,29 @@ class ScriptSupportTest extends BaseTest with Matchers with ScriptSupport {
     date should be ("8/6/2017")
   }
 
+  "JavaScript arrow function" should "execute" in {
+
+    val intResult = jsSupport.evaluateJS("() => 2*2")
+    intResult should be(4)
+
+    val date = jsSupport.evaluateJS(
+      """ () => {
+         |  var d = new Date(2017, 6, 8);
+         |  return d.getDate()  + '/' + (d.getMonth()) + '/' + d.getFullYear();
+         |}""".stripMargin)
+    date should be ("8/6/2017")
+  }
+
   "JavaScript explicit conversion" should "work" in {
 
-    evaluateJS("'howdy'").asInstanceOf[String] should be ("howdy")
-    evaluateJS("5").toString should be ("5")
+    jsSupport.evaluateJS("'howdy'").asInstanceOf[String] should be ("howdy")
+    jsSupport.evaluateJS("5").toString should be ("5")
 
   }
 
   "JavaScript date" should "work" in {
 
-    Option(evaluateJS("new Date()").toString) should not be (None)
+    Option(jsSupport.evaluateJS("new Date()").toString) should not be (None)
 
   }
   

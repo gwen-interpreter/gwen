@@ -214,7 +214,8 @@ trait DetaiFormatter {
   }
 
   private def formatScenarioHeader(scenario: Scenario): TypedTag[String] = {
-    val status = scenario.evalStatus.keyword
+    val evalStatus = scenario.evalStatus
+    val status = evalStatus.keyword
     val tags = scenario.tags
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
       for {
@@ -247,7 +248,7 @@ trait DetaiFormatter {
       },
       raw(escapeHtml(scenario.name)),
       raw(" \u00a0 "),
-      formatParams(scenario.params, status),
+      formatParams(scenario.params, evalStatus),
       if (!scenario.isForEach) {
         formatDescriptionLines(scenario.description, Some(status))
       } else {
@@ -390,7 +391,7 @@ trait DetaiFormatter {
             rowHtml
           )
         } else rowHtml,
-        scenarioOpt.flatMap(scenario => formatAttachments(None, scenario.attachments, status)),
+        scenarioOpt.flatMap(scenario => formatAttachments(None, scenario.attachments, evalStatus)),
         scenarioOpt.map(scenario => formatExampleDiv(scenario, status)).getOrElse(span())
       )
     )
@@ -469,9 +470,9 @@ trait DetaiFormatter {
         if (step.printableTags.nonEmpty) formatTags(step.printableTags, true) else "",
         if (stepDef.nonEmpty && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" \u00a0 "),
-        formatParams(step.params, status),
+        formatParams(step.params, evalStatus),
         raw(" \u00a0 "),
-        formatAttachments(None, step.deepAttachments, status),
+        formatAttachments(None, step.attachments ++ step.childAttachments(name => !name.endsWith("-function")), evalStatus),
         for {
           sd <- stepDef
           if (evalStatus.isEvaluated)
@@ -612,7 +613,8 @@ trait DetaiFormatter {
     )
   }
 
-  def formatParams(params: List[(String, String)], status: StatusKeyword): Option[TypedTag[String]] = {
+  def formatParams(params: List[(String, String)], evalStatus: EvalStatus): Option[TypedTag[String]] = {
+    val status = (if (evalStatus.isAbstained) Disabled else evalStatus).keyword
     if (params.size > 0) {
       Some(
         div(`class` := s"dropdown bg-${bgStatus(status)}",

@@ -15,9 +15,15 @@
  */
 package gwen.core
 
+import gwen.core.Errors.UnboundReferenceException
 import gwen.core.data.DataSource
 
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.lang3.StringUtils
+
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 object Interpolator {
 
@@ -27,7 +33,7 @@ object Interpolator {
   val unresolvedPropertySyntax = """^(?s)(.*)\$\!\{(.+?)\}(.*)$""".r
   val unresolvedParamSyntax = """^(?s)(.*)\$\!<(.+?)>(.*)$""".r
 
-  val reservedPlaeholder: String => Boolean = DataSource.hasLookupPrefix
+  val isReservedPlaeholder: String => Boolean = DataSource.hasLookupPrefix
 }
 
 /**
@@ -38,7 +44,8 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   /** Resolves all ${property} and $<param> references in the given string.*/
   def interpolate(source: String): String = {
     source match {
-      case Interpolator.propertySyntax(prefix, property, suffix) =>
+      case Interpolator.propertySyntax(prefix, p, s) =>
+        val (property, suffix) = balance('{', '}', p, s)
         logger.debug(s"Resolving property-syntax binding: $${$property}")
         interpolate(s"$prefix${resolveProperty(interpolate(property))}$suffix")
       case _ => interpolateParameters(source, interpolate)
@@ -50,7 +57,8 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
 
   private def interpolateParameters(source: String, interpolator: String => String): String = {
     source match {
-      case Interpolator.paramSyntax(prefix, param, suffix) =>
+      case Interpolator.paramSyntax(prefix, p, s) =>
+        val (param, suffix) = balance('<', '>', p, s)
         logger.debug(s"Resolving param-syntax binding: $$<$param>")
         interpolator.apply(s"$prefix${resolveParam(s"<${interpolator.apply(param)}>")}$suffix")
       case _ => restoreUnresolved(source)
@@ -58,7 +66,7 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   }
 
   private[core] def resolveProperty(name: String): String = {
-    Option(name).filterNot(Interpolator.reservedPlaeholder).map(resolveStrict) getOrElse {
+    Option(name).filterNot(Interpolator.isReservedPlaeholder).map(resolveStrict) getOrElse {
       resolveLenient(name)
     }
   }
@@ -69,7 +77,12 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   }
 
   private final def resolveLenient(name: String): String = {
-    resolver.apply(name) getOrElse { 
+    Try(resolver.apply(name)) match {
+      case Success(value) => value
+      case Failure(e) => 
+        if (e.isInstanceOf[UnboundReferenceException]) None
+        else throw e
+    } getOrElse { 
       if (name.startsWith("<") && name.endsWith(">")) s"$$!$name"
       else s"$$!{$name}"
     }
@@ -77,9 +90,11 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
 
   private def restoreUnresolved(source: String): String = {
     source match {
-      case Interpolator.unresolvedPropertySyntax(prefix, property, suffix) => 
+      case Interpolator.unresolvedPropertySyntax(prefix, p, s) => 
+        val (property, suffix) = balance('{', '}', p, s)
         restoreUnresolved(s"$prefix$${$property}$suffix")
-      case Interpolator.unresolvedParamSyntax(prefix, param, suffix) => 
+      case Interpolator.unresolvedParamSyntax(prefix, p, s) => 
+        val (param, suffix) = balance('<', '>', p, s)
         restoreUnresolved(s"$prefix$$<$param>$suffix")
       case _ => source
     }
@@ -93,6 +108,22 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   lazy val strict: Interpolator = new Interpolator(resolver) {
     override private[core] def resolveProperty(name: String): String = resolveStrict(name)
     override private[core] def resolveParam(name: String): String = resolveStrict(name)
+  }
+
+  private def balance(opening: Char, closing: Char, current: String, suffix: String): (String, String) = {
+    val bal = current.count(_ == opening) - current.count(_ == closing)
+    if (bal > 0) {
+      val closingBraceIndex = StringUtils.ordinalIndexOf(suffix, closing.toString, bal)
+      if (closingBraceIndex > -1) {
+        val p = suffix.substring(0, closingBraceIndex + 1)  
+        val s = suffix.drop(p.length)
+        (current + p.trim, s)
+      } else {
+        (current, suffix)
+      }
+    } else {
+      (current, suffix)
+    }
   }
 
 }

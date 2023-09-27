@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.47.5"
+val gwenVersion = "3.48.0"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -48,7 +48,6 @@ lazy val mainDependencies = {
   val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
   val jsonPath = "2.8.0"
-  val jodaTime = "2.12.5"
   val scalaTags = "0.12.0"
   val htmlCleaner = "2.29"
   val rpCommon = "5.8.1"
@@ -68,7 +67,6 @@ lazy val mainDependencies = {
     "org.apache.commons" % "commons-text" % commonsText,
     "com.github.tototoshi" %% "scala-csv" % scalaCSV,
     "com.jayway.jsonpath" % "json-path" % jsonPath,
-    "joda-time" % "joda-time" % jodaTime,
     "com.lihaoyi" %% "scalatags" % scalaTags,
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % htmlCleaner,
     "com.typesafe" % "config" % tsConfig,

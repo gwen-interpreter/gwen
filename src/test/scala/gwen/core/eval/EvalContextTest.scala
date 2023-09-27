@@ -50,44 +50,44 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
 
     val ctx = newCtx
     ctx.topScope.pushObject(DataTable.tableKey, table1)
-    ctx.getBoundReferenceValue("data[1][token]") should be ("1")
+    ctx.getBoundValue("data[1][token]") should be ("1")
     ctx.topScope.pushObject(DataTable.tableKey, table2)
-    ctx.getBoundReferenceValue("data[1][token]") should be ("2")
+    ctx.getBoundValue("data[1][token]") should be ("2")
     ctx.topScope.pushObject(DataTable.recordKey, new ScopedData(DataTable.recordKey).set("data[token]", "0"))
-    ctx.getBoundReferenceValue("data[token]") should be ("0")
+    ctx.getBoundValue("data[token]") should be ("0")
     ctx.topScope.popObject(DataTable.recordKey).isDefined should be (true)
-    ctx.getBoundReferenceValue("data[1][token]") should be ("2")
+    ctx.getBoundValue("data[1][token]") should be ("2")
     ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
-    ctx.getBoundReferenceValue("data[1][token]") should be ("1")
+    ctx.getBoundValue("data[1][token]") should be ("1")
     ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
     intercept[UnboundAttributeException] {
-      ctx.getBoundReferenceValue("data[1][token]")
+      ctx.getBoundValue("data[1][token]")
     }
   }
 
-  "scope with a blank attribute" should """yield blank for getBoundReferenceValue call""" in {
+  "scope with a blank attribute" should """yield blank for getBoundValue call""" in {
     val ctx = newCtx
     ctx.topScope.set("x", "")
     ctx.topScope.set("x", "1")
     ctx.topScope.set("x", "")
-    ctx.getBoundReferenceValue("x") should be ("")
+    ctx.getBoundValue("x") should be ("")
   }
 
-  "scope with a null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
+  "scope with a null attribute" should """yield UnboundAttributeException for getBoundValue call""" in {
     val ctx = newCtx
     ctx.topScope.set("x", null)
     intercept[UnboundAttributeException] {
-      ctx.getBoundReferenceValue("x")
+      ctx.getBoundValue("x")
     }
   }
 
-  "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundReferenceValue call""" in {
+  "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundValue call""" in {
     val ctx = newCtx
     ctx.topScope.set("x", "1")
-    ctx.getBoundReferenceValue("x") should be ("1")
+    ctx.getBoundValue("x") should be ("1")
     ctx.topScope.set("x", null)
     intercept[UnboundAttributeException] {
-      ctx.getBoundReferenceValue("x")
+      ctx.getBoundValue("x")
     }
   }
 
@@ -100,7 +100,7 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
   """Property that's bound to a bad javascript""" should "should fail interpolation" in {
     val ctx = newCtx
     JSBinding.bind("length", "'Bad length function'.len()", ctx)
-    intercept[ScriptException] {
+    intercept[FunctionException] {
       ctx.interpolate("""${length} chars""")
     }
   }

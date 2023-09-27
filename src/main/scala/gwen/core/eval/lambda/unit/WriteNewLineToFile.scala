@@ -32,7 +32,7 @@ class WriteNewLineToFile[T <: EvalContext](filepath: Option[String], filpathRef:
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.evaluate(step) {
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundReferenceValue(s"${filpathRef.get} file")}"))
+        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
         if (overwrite) {
           file.writeNewLine()
         } else {

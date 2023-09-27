@@ -17,6 +17,7 @@
 package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
+import gwen.core.eval.support.JavaScriptSupport
 import gwen.core.state.Environment
 
 import scala.util.Try
@@ -42,13 +43,17 @@ class JSBinding[T <: EvalContext](name: String, params: List[String], ctx: T) ex
   val key = JSBinding.key(name)
 
   override def resolve(): String = {
-    bindIfLazy(
-      resolveValue(key) { javascript =>
-        ctx.evaluate(resolveDryValue(BindingType.javascript.toString)) {
-          Option(ctx.evaluateJS(ctx.formatJSReturn(javascript), params*)).map(_.toString).getOrElse("")
-        }
+    resolveValue(key) { javascript =>
+      evaluateFunction(javascript, params)
+    }
+  }
+
+  def evaluateFunction(javascript: String, params: List[String]): String = {
+    bindIfLazy {
+      ctx.evaluate(resolveDryValue(BindingType.javascript.toString)) {
+        Option(ctx.evaluateJS(javascript, params)).map(_.toString).getOrElse("")
       }
-    )
+    }
   }
 
   override def toString: String = Try {

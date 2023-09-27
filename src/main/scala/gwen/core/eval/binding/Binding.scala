@@ -86,7 +86,7 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     */
   private [binding] def resolveRef(key: String)(resolver: String => U): U = { 
     resolve(key) { value =>
-      resolver(ctx.interpolate(ctx.getBoundReferenceValue(value)))
+      resolver(ctx.interpolate(ctx.getBoundValue(value)))
     }
   }
 

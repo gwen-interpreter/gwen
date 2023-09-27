@@ -27,12 +27,13 @@ import gwen.core.result.SpecResult
 import scala.sys.process._
 import scala.util.Try
 
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 import scalatags.Text.all._
 
 import java.io.File
 import java.net.InetAddress
+import java.time.ZonedDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 /** Formats the feature summary and detail reports in JUnit xml. */
@@ -61,7 +62,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     val errorCount = evalStatuses.filter(status => status.isError && !status.isAssertionError).size
     val skippedCount = evalStatuses.filter(status => status.isSkipped || status.isPending).size
     val time = result.elapsedTime.toNanos.toDouble / 1000000000d
-    val timestamp = new DateTime(result.finished).withZone(DateTimeZone.UTC).toString
+    val timestamp = ZonedDateTime.from(result.finished.toInstant().atZone(ZoneId.systemDefault())).format(DateTimeFormatter.ISO_INSTANT)
     
     val testsuiteTag = {
       tag("testsuite")(

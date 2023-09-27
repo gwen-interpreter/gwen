@@ -26,7 +26,7 @@ class CaptureByJS[T <: EvalContext](target: String, javascript: String) extends 
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val content = Option(ctx.evaluateJS(ctx.formatJSReturn(ctx.interpolate(javascript)))).map(_.toString).orNull
+    val content = Option(ctx.evaluateJS(ctx.interpolate(javascript))).map(_.toString).orNull
     ctx.topScope.set(target, content)
     step.addAttachment(target, "txt", content)
   }

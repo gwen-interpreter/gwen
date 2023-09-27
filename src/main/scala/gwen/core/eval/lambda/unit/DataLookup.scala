@@ -34,7 +34,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
-      val file = new File(filepath.getOrElse(s"${ctx.getBoundReferenceValue(s"${filpathRef.get} file")}"))
+      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
       if (!file.exists()) Errors.missingFileError(file)
       val dataSource =  DataSource(file)
       val table = dataSource.table.zipWithIndex map { (row, idx) => 
@@ -52,7 +52,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
           val js1 = ctx.interpolateParams(js0)
           val javascript = ctx.interpolate(js1)
           val raw = ctx.evaluate("true") {
-            Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("false")
+            Option(ctx.evaluateJS(javascript)).map(_.toString).getOrElse("false")
           }
           Try(raw.toBoolean).getOrElse(Errors.invalidTypeError(s"Boolean expected but got '$raw' when evaluating JS predicate: $javascript"))
         } catch {

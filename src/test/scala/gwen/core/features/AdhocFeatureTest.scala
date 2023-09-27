@@ -16,6 +16,7 @@
 package gwen.core.features
 
 import gwen.GwenInterpreter
+import gwen.core.Settings
 import gwen.core.BaseTest
 import gwen.core.GwenOptions
 import gwen.core.Settings
@@ -26,16 +27,17 @@ import java.io.File
 
 class AdhocFeatureTest extends BaseTest {
 
-  val feature = "src/test/features/multiline"
+  val feature = "src/test/features/functions"
 
   val interpreter = GwenInterpreter()
 
   s"Feature should" should "execute" in {
     val options = GwenOptions(
       batch = true,
-      reportDir = Some(new File(s"target/reports")), 
+      reportDir = Some(new File(s"target/reports/adhoc")), 
       reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-      features = List(new File(feature))
+      features = List(new File(feature)),
+      settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
     )
         
     Settings.init(options.settingsFiles*)

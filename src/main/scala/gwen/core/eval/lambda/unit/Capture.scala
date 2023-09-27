@@ -26,7 +26,7 @@ class Capture[T <: EvalContext](target: String, source: String) extends UnitStep
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val content = ctx.getBoundReferenceValue(source)
+    val content = ctx.getBoundValue(source)
     ctx.topScope.set(target, content)
     step.addAttachment(target, "txt", content)
   }

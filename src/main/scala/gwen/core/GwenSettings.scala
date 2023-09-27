@@ -50,6 +50,7 @@ object GwenSettings {
     `gwen.mask.char`
     `gwen.parallel.maxThreads`
     `gwen.rampup.interval.seconds`
+    `gwen.report.attach.functions`
     `gwen.report.overwrite`
     `gwen.report.suppress.meta`
     `gwen.report.slideshow.framespersecond`
@@ -88,6 +89,14 @@ object GwenSettings {
    */
   def `gwen.report.slideshow.framespersecond`: Int = {
     Settings.getInt("gwen.report.slideshow.framespersecond")
+  }
+
+  /**
+    * Provides access to the `gwen.report.attach.functions` setting used to control whether 
+    * or not evaluted functions are attached to the HTML report (default value is `true`).
+    */
+  def `gwen.report.attach.functions`: Boolean = {
+    Settings.getBoolean("gwen.report.attach.functions")
   }
 
   /**

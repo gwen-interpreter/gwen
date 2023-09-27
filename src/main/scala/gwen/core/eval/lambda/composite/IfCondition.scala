@@ -36,6 +36,8 @@ import util.chaining.scalaUtilChainingOps
 
 class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, conditionTimeoutSecs: Long, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
+  if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
+  
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
@@ -49,16 +51,18 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     val tags = List(Tag(Annotations.Synthetic), ifTag, Tag(Annotations.StepDef))
     val iStepDef = Scenario(None, tags, ifTag.toString, s"${if (negate) "not " else ""}$condition", Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
+    val attachments = ctx.popAttachments()
     ctx.evaluate(sdCall()) {
       val satisfied = bCondition.evaluate()
       LoadStrategyBinding.bindIfLazy(bCondition.name, satisfied.toString, ctx)
-      if (satisfied) {
+      val result = if (satisfied) {
         logger.info(s"Processing conditional step (${if (bCondition.negated) "not " else ""}${bCondition.name} = true): ${step.keyword} $doStep")
         sdCall()
       } else {
         logger.info(s"Skipping conditional step (${if (bCondition.negated) "not " else ""}${bCondition.name} = false): ${step.keyword} $doStep")
         step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
       }
+      result.addAttachments(attachments)
     }
   }
 

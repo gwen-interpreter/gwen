@@ -1,7 +1,19 @@
+3.48.0
+======
+Oct 4, 2023
+- Add JS arrow functions
+    - Syntax: `(args) => body`
+    - Add arrow function evaluation to REPL
+    - Add new `gwen.report.attach.functions` setting to control whether or not to attach functions to steps (default is `true`)
+- Introduce boolean `true` and `false` literals
+- Annotation attributes can now be surrounded by back-ticks, in addition to single or double quotes
+- Include messages and location of errors at end of console report
+- Remove joda-time dependency and use java.time package instead
+
 3.47.5
 ======
 Sep 19, 2023
-- Imporoved syntax error reporting for annotations
+- Improved syntax error reporting for annotations
 
 3.47.4
 ======

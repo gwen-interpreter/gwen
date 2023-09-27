@@ -31,7 +31,7 @@ class IsDefined[T <: EvalContext](source: String, negate: Boolean, message: Opti
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       ctx.perform {
-        val value = Try(ctx.getBoundReferenceValue(source))
+        val value = Try(ctx.getBoundValue(source))
         val result = if (negate) value.isFailure else value.isSuccess
         ctx.assertWithError(
           result, 

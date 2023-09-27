@@ -24,7 +24,7 @@ import gwen.core.node.gherkin.Step
 class ForEachDelimited[T <: EvalContext](doStep: String, entry: String, source: String, delimiter: String, engine: EvalEngine[T]) extends ForEach[T](engine, doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    val sourceValue = ctx.getBoundReferenceValue(source)
+    val sourceValue = ctx.getBoundValue(source)
     val values = () => {
       if (sourceValue.nonEmpty) {
         sourceValue.split(delimiter).toSeq

@@ -28,7 +28,7 @@ class CaptureByRegex[T <: EvalContext](target: String, regex: String, source: St
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val sourceValue = ctx.getBoundReferenceValue(source)
+    val sourceValue = ctx.getBoundValue(source)
     val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved(BindingType.regex))) {
       ctx.extractByRegex(regex, sourceValue)
     }

@@ -11,4 +11,4 @@ Feature: Binding tests
       And b1 should be "B"
       And b2 should be "B"
       And b3 should be "B"
-      And j1 should be "true"
+      And j1 should be true

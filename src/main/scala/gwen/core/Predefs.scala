@@ -47,6 +47,8 @@ import java.text.DecimalFormat
 import java.util.UUID
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.Date
+import java.text.SimpleDateFormat
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
@@ -328,10 +330,22 @@ object Formatting {
   def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
   def upTo2DecimalPlaces(number: Double): String = new DecimalFormat("#.##").format(number)
   def escapeNewLineChars(source: String): String = source.replaceAll("\n", s"\\\\n");
-  def surroundWithQuotes(source: String): String = {
-    val quoteChar = if (source.contains("'")) '"' else '\''
+  def surroundWithQuotes(source: String): String = surroundWithQuotes(source, '\'', '"', '`')
+  def surroundWithQuotesForAnnotation(source: String): String = surroundWithQuotes(source, '\'', '`', '"')
+  private def surroundWithQuotes(source: String, quote1: Char, quote2: Char, quote3: Char): String = {
+    val quoteChar =  
+      if (source.contains(quote1)) {
+        if (source.contains(quote2)) quote3
+        else quote2
+      } else quote1
     s"$quoteChar$source$quoteChar"
   } 
+  def formatDate(date: String, fromFormat: String, toFormat: String): String = {
+    formatDate(new SimpleDateFormat(fromFormat).parse(date), toFormat)
+  }
+  def formatDate(date: Date, toFormat: String): String = {
+    new SimpleDateFormat(toFormat).format(date)
+  }
 
   def formatTable(table: List[(Long, List[String])]): String = {
     (table.indices.toList map { rowIndex => formatTableRow(table, rowIndex) }).mkString("\r\n")

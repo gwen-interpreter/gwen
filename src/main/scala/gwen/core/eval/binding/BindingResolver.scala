@@ -16,14 +16,16 @@
 
 package gwen.core.eval.binding
 
-import gwen.core.LoadStrategy
 import gwen.core.Errors
 import gwen.core.Settings
 import gwen.core.eval.EvalContext
 import gwen.core.state.ScopedData
 import gwen.core.node.gherkin.table.DataTable
 
-import scala.util.chaining._
+import scala.util.matching.Regex
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 /** 
  * Resolves all bindings.
@@ -31,13 +33,21 @@ import scala.util.chaining._
 class BindingResolver[T <: EvalContext](ctx: T) {
 
   /**
-    * Find the binding with the given name and resolves it.
+    * Finds the value of the binding containing a name and applies optional function.
     *
-    * @param name the binding name
-    * @return the resolved value
+    * @param expression the binding expression
+    * @return some value or None otherwise
     */
-  def resolve(name: String): String = { 
-    getBinding(name).resolve()
+  def resolveOpt(expression: String): Option[String] = {
+    Option(expression).map(_.trim) map { expr => 
+      Try(ctx.getBoundValue(expr)) match {
+        case Success(value) => value
+        case Failure(e) =>
+          ctx.parseArrowFunction(expr).map(_.apply) getOrElse { 
+            throw e
+          }
+      }
+    }
   }
 
   /**
@@ -50,7 +60,7 @@ class BindingResolver[T <: EvalContext](ctx: T) {
     val visibleScopes = ctx.scopes.visible
     val attScopes = visibleScopes.filterAtts{case (n, _) => n.startsWith(name)}
     attScopes.findEntry { case (n, _) => 
-      n.matches(s"""$name(/(text|javascript|function.+|xpath.+|regex.+|json path.+|sysproc|file|sql.+${if (ctx.options.dryRun) "|dryValue" else ""}))?""")
+      n.matches(s"""${Regex.quote(name)}(/(text|javascript|function.+|xpath.+|regex.+|json path.+|sysproc|file|sql.+${if (ctx.options.dryRun) "|dryValue" else ""}))?""")
     } map { case (n, _) =>
       if (n == DryValueBinding.key(name)) new DryValueBinding(name, "", ctx)
       else if (n == TextBinding.key(name)) new TextBinding(name, ctx)

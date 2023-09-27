@@ -27,7 +27,7 @@ class CaptureBase64Decoded[T <: EvalContext](target: String, source: String) ext
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val sourceValue = ctx.getBoundReferenceValue(source)
+    val sourceValue = ctx.getBoundValue(source)
     val content = ctx.evaluate(DryValueBinding.unresolved("decodeBase64")) {
       ctx.decodeBase64(sourceValue)
     }

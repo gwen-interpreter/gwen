@@ -31,7 +31,9 @@ import java.io.File
 
 import scala.jdk.OptionConverters._
 
-object Errors {
+import com.typesafe.scalalogging.LazyLogging
+
+object Errors extends LazyLogging {
 
   def parseError(parseError: ParseError) = throw new ParserException(parseError)
   def syntaxError(msg: String) = throw new SyntaxError(msg, None, None, None)
@@ -45,6 +47,7 @@ object Errors {
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)
   def undefinedStepError(step: Step) = throw new UndefinedStepException(step)
   def illegalStepError(msg: String) = throw new IllegalStepException(msg)
+  def illegalConditionError(condition: String) = throw new IllegalConditionException(condition)
   def disabledStepError(step: Step) = throw new DisabledStepException(step)
   def unboundAttributeError(name: String) = throw new UnboundReferenceException(name, None, None)
   def unboundAttributeError(name: String, cause: Throwable) = throw new UnboundReferenceException(name, None, Some(cause))
@@ -80,8 +83,8 @@ object Errors {
   def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
-  def scriptError(language: String, script: String, cause: Throwable) = throw new ScriptException(language, script, cause)
-  def javaScriptError(javascript: String, cause: Throwable) = throw new ScriptException("JavaScript", javascript, cause)
+  def functionError(func: String, cause: Throwable) = throw new FunctionException(func, cause.getMessageLine1, Some(cause))
+  def functionError(func: String, msg: String) = throw new FunctionException(func, msg, None)
   def templateMatchError(msg: String) = throw new TemplateMatchException(msg)
   def unsupportedLocalSetting(name: String) = throw new UnsupportedLocalSettingException(name)
   def invalidSettingError(name: String, value: String, msg: String) = throw new InvalidSettingException(name, value, msg)
@@ -107,8 +110,9 @@ object Errors {
   def unsupportedDataFileError(dataFile: File) = throw new UnsupportedDataFileException(dataFile)
   def unsupportedJsonStructureError(dataFile: File, cause: Throwable) = throw new UnsupportedJsonStructureException(dataFile, cause)
   def missingJSArgumentError(jsRef: String, argIndex: Int) = throw new MissingJSArgumentException(jsRef, argIndex)
+  def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
 
-  private def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
+  def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
   private def at(location: String): String = if (location.length > 0) s" [at $location]" else ""
   
@@ -134,6 +138,9 @@ object Errors {
 
   /** Thrown when an illegal step is detected. */
   class IllegalStepException(msg: String) extends GwenException(msg)
+
+  /** Thrown when an illegal condition is detected. */
+  class IllegalConditionException(condition: String) extends GwenException(s"Illegal condition literal: $condition (predicate function or reference expected)")
 
   /** Thrown when a step is disabled. */
   class DisabledStepException(step: Step) extends StepException(step, "Step is disabled")
@@ -232,8 +239,8 @@ object Errors {
   /** Thrown when a data table error is detected. */
   class DataTableException(msg: String) extends GwenException(msg)
 
-  /** Thrown when a script evaluation error is detected. */
-  class ScriptException(language: String, script: String, cause: Throwable) extends GwenException(s"Failed to execute $language: ${if (language == "JavaScript" && script.startsWith("return ")) script.substring(7) else script} (cause: ${cause.getMessageLine1})", cause)
+  /** Thrown when a JavaScript function error is detected. */
+  class FunctionException(func: String, msg: String, cause: Option[Throwable]) extends GwenException(s"$msg: $func", cause.orNull)
 
   /** Thrown when a template match error is detected. */
   class TemplateMatchException(msg: String) extends GwenException(msg)
@@ -309,6 +316,9 @@ object Errors {
 
   /** Thrown when a JS function argument is missing. */
   class MissingJSArgumentException(jsRef: String, argIndex: Int) extends GwenException(s"arguments[$argIndex] placeholder expected (for parameter ${argIndex + 1}) but not defined in JS function binding: $jsRef")
+
+  /** Thrown when an unbound refrence or invalid function is detected. */
+  class InvalidReferenceOrFunctionException(msg: String) extends GwenException(msg)
   
 
 }

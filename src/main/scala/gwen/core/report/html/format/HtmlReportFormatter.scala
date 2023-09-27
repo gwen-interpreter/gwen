@@ -121,7 +121,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
       ),
       td(`class` := "summary-line-2", width := s"${if (videos.nonEmpty) "60px" else "0px"}",
         if (videos.nonEmpty) {
-          formatVideoAttachments(reportBase, videos, Some(result.evalStatus.keyword))
+          formatVideoAttachments(reportBase, videos, Some(result.evalStatus))
         } else ""
       ),
       td(`class` := "summary-line-2", featureColPercentage.map(percentage => (attr("width") := s"$percentage%")),
@@ -137,7 +137,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
         }
       ),
       if (inError) {
-        val eSteps = Step.errorTrails(result.spec).flatMap(_.lastOption)
+        val eSteps = result.errorTrails
         td(`class` := "summary-line-2",
           table(`class` := "table-responsive",
             tbody(
@@ -148,7 +148,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
                 tr(`class` := "summary-line-0", style := "border-top: hidden;",
                   td(`class` := "summary-line-0", style := "vertical-align:top;",
                     if (eAttachments.nonEmpty) {
-                      formatAttachments(reportBase, eAttachments, result.evalStatus.keyword)
+                      formatAttachments(reportBase, eAttachments, result.evalStatus)
                     } else "",
                     " "
                   ),
@@ -325,10 +325,11 @@ object HtmlReportFormatter {
     )
   }
 
-  private [format] def formatAttachments(baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword): Option[TypedTag[String]] = {
+  private [format] def formatAttachments(baseDir: Option[String], attachments: List[(String, File)], evalStatus: EvalStatus): Option[TypedTag[String]] = {
+    val status = (if (evalStatus.isAbstained) Disabled else evalStatus).keyword
     if (attachments.size > 1) {
       Some(
-        formatAttachmentsDropdown("Attachments", baseDir, attachments, status, attachmentHref)
+        formatAttachmentsDropdown("Attachments", baseDir, attachments, evalStatus, attachmentHref)
       )
     } else if (attachments.size == 1)  {
       val (name, file) = attachments(0)
@@ -344,7 +345,8 @@ object HtmlReportFormatter {
     }
   }
 
-  private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], status: StatusKeyword, hrefFormatter: File => String): TypedTag[String] = { 
+  private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], evalStatus: EvalStatus, hrefFormatter: File => String): TypedTag[String] = { 
+    val status = (if (evalStatus.isAbstained) Disabled else evalStatus).keyword
     div(`class` := s"dropdown",
       button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} ${if (status == StatusKeyword.Ignored) "grayed " else ""}dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
         strong(
@@ -372,11 +374,11 @@ object HtmlReportFormatter {
     )
   }
 
-  private [format] def formatVideoAttachments(reportBase: Option[String], videos: List[File], status: Option[StatusKeyword]): TypedTag[String] = {
+  private [format] def formatVideoAttachments(reportBase: Option[String], videos: List[File], evalStatus: Option[EvalStatus]): TypedTag[String] = {
     if (videos.size > 1) {
-      formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), status.getOrElse(Disabled.keyword), videoHref)
+      formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), evalStatus.getOrElse(Disabled), videoHref)
     } else {
-      button(attr("type") := "button", `class` := s"btn btn-${status.map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "position: relative; top: -1px;",
+      button(attr("type") := "button", `class` := s"btn btn-${evalStatus.map(_.keyword).map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "position: relative; top: -1px;",
         "Video"
       )
     }

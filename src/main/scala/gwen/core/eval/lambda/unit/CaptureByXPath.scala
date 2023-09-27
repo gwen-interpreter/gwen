@@ -29,7 +29,7 @@ class CaptureByXPath[T <: EvalContext](target: String, xpath: String, source: St
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val sourceValue = ctx.getBoundReferenceValue(source)
+    val sourceValue = ctx.getBoundValue(source)
     val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved(BindingType.xpath))) {
       ctx.evaluateXPath(xpath, sourceValue, nodeType)
     }

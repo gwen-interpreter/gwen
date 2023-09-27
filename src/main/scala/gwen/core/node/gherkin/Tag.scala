@@ -60,7 +60,7 @@ case class Tag(sourceRef: Option[SourceRef], name: String, value: Option[String]
   }
 
   /** Returns a string representation of this tag. */
-  override def toString: String = s"@$name${value.map(v => s"""(${Formatting.surroundWithQuotes(v)})""").getOrElse("")}"
+  override def toString: String = s"@$name${value.map(v => s"""(${Formatting.surroundWithQuotesForAnnotation(v)})""").getOrElse("")}"
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,
@@ -131,8 +131,7 @@ object Tag {
 
   private def parseSingleValue(sourceRef: Option[SourceRef], annotation: String, name: Option[String], value: String): String = {
     value.trim match {
-      case r"""'(.+?)$v'""" => v
-      case r""""(.+?)$v"""" => v
+      case r"""('|"|`)$q(.+?)$v\1""" => v
       case _ => Errors.invalidAnnotationError(sourceRef, s"${name.getOrElse("value")} in @$annotation annotation must be surrounded by single (preferred) or double quotes")
     }
   }

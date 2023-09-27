@@ -122,7 +122,7 @@ class ConsoleReporter(options: GwenOptions)
         out.print(cache.remove(spec.uuid) sortBy { (line, output) => line } map { (_, output) => output } mkString "")
       }
     }
-    out.print(printer.printSpecResult(result))
+    out.println(printer.printSpecResult(result))
   }
 
   override def beforeBackground(event: NodeEvent[Background]): Unit = {
@@ -233,7 +233,7 @@ class ConsoleReporter(options: GwenOptions)
         val step = event.source
         val parent = event.callChain.previous
         if (depth.get == logDepth || step.stepDef.isEmpty || step.stepDef.map(_.steps.isEmpty).getOrElse(false)) {
-          out.println(printer.printStatus(step, withMessage = true, withIcon = true, withStatusIcon = false))
+          out.println(printer.printStatus(step, Some(step.evalStatus.message), withIcon = true, withStatusIcon = false))
         }
       }
       depth.set(depth.get - 1)

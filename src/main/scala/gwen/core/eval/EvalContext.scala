@@ -24,7 +24,6 @@ import gwen.core.eval.binding.BindingResolver
 import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.binding.LoadStrategyBinding
 import gwen.core.eval.support._
-import gwen.core.Errors.UnboundAttributeException
 import gwen.core.node.gherkin.Step
 import gwen.core.state.Environment
 import gwen.core.state.EnvState
@@ -38,29 +37,21 @@ import scala.util.chaining._
 
 import java.io.File
 import java.io.FileNotFoundException
-
 import java.net.URL
+import scala.collection.SeqView
 
 /**
   * Provides all evaluation capabilities.
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with RegexSupport with XPathSupport with JsonPathSupport
-    with SQLSupport with ScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport {
+    with SQLSupport with ArrowFunctionSupport with JavaScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
 
-  // Interpolator for resolving $<param> and ${property} references
-  private def interpolator: Interpolator = new Interpolator(name => {
-    paramScope.getOpt(name) orElse { 
-      try {
-        Option(getBoundReferenceValue(name))
-      } catch {
-        case _: UnboundAttributeException => None
-      }
-    }
-  })
+  // Interpolator for resolving $<param> and ${property} references and applying functions
+  private def interpolator: Interpolator = new Interpolator(bindingResolver.resolveOpt)
 
   // Interpolator for resolving $<param> references only
   private def paramInterpolator: Interpolator = new Interpolator(paramScope.getOpt)
@@ -111,9 +102,9 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
 
   /**
    * Gets get value bound to the given name.
-   *  @param name the name of the attribute or value
+   * @param name the name of the attribute or value
    */
-  def getBoundReferenceValue(name: String): String = {
+  def getBoundValue(name: String): String = {
     getBinding(name).resolve()
   }
 

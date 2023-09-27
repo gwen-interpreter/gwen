@@ -35,6 +35,8 @@ import scala.util.chaining._
 
 abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
 
+  if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
+
   def evaluteCondition(ctx: T): Boolean
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {

@@ -6,6 +6,9 @@ Feature: DocStrings Meta
     Given the formatted date is defined by javascript
           """JavaScript
           (function() {
+            // deliberate comments to test arrow parsing
+            //var x = [1,2,3,4];
+            //x.some(n => n % 2 == 0);
             var d = new Date();
             var year = d.getFullYear();
             var month = ('0' + (d.getMonth() + 1)).slice(-2);

@@ -16,12 +16,15 @@
 
 package gwen.core.eval.binding
 
+import gwen.core.Errors
+import gwen.core.Formatting
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.DryValueBinding
 import gwen.core.state.Environment
 
+import scala.util.chaining._
+import scala.util.Success
 import scala.util.Try
-import gwen.core.Errors
 
 object JSFunctionBinding {
   
@@ -47,7 +50,7 @@ object JSFunctionBinding {
 
 }
 
-class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
+class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBinding[T](name, Nil, ctx) {
 
   val jsRefKey = JSFunctionBinding.jsRefKey(name)
   val argsKey = JSFunctionBinding.argsKey(name)
@@ -57,29 +60,38 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
     bindIfLazy(
       resolveValue(jsRefKey) { jsRef =>
         resolveValue(argsKey) { argsString =>
-          if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
-            resolveValue(delimiterKey) { delimiter =>
-              new JSBinding(jsRef, parseArgs(jsRef, argsString.split(delimiter).toList), ctx).resolve()
-            }
+          val delimiter = if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
+            Option(resolveValue(delimiterKey) { identity })
           } else {
-            new JSBinding(jsRef, parseArgs(jsRef, List(argsString)), ctx).resolve()
+            None
+          }
+          val params = delimiter map { delim => 
+            argsString.split(delim).toList
+          } getOrElse {
+            List(argsString)
+          }
+          val javascript = ctx.scopes.get(JSBinding.key(jsRef))
+          Try(ctx.parseArrowFunction(javascript)) match {
+            case Success(Some(func)) =>
+              evaluateFunction(func.wrapper(params), Nil)
+            case _ =>
+              new JSBinding(jsRef, parseParams(jsRef, javascript, params), ctx).resolve()
           }
         }
       }
     )
   }
 
-  private def parseArgs(jsRef: String, args: List[String]): List[String] = {
-    if (!args.contains(DryValueBinding.unresolved(BindingType.javascript))) {
-      val jsKey = JSBinding.key(jsRef)
-      val js = ctx.scopes.get(jsKey)
-      0 to (args.size - 1) foreach { idx =>
-        if (!js.contains(s"arguments[$idx]")) {
-          Errors.missingJSArgumentError(jsRef, idx)
+  private def parseParams(jsRef: String, javascript: String, params: List[String]): List[String] = {
+    params tap { _ =>
+      if (!params.contains(DryValueBinding.unresolved(BindingType.javascript))) {
+        0 to (params.size - 1) foreach { idx =>
+          if (!javascript.contains(s"arguments[$idx]")) {
+            Errors.missingJSArgumentError(jsRef, idx)
+          }
         }
       }
     }
-    args
   }
 
   override def toString: String = Try {

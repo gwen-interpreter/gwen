@@ -29,6 +29,7 @@ import scala.util.Try
 
 import java.io.File
 import java.util.Date
+import gwen.core.node.gherkin.Step
 
 /**
   * Captures the results of an evaluated specification.
@@ -72,6 +73,9 @@ class SpecResult(
       withEmpty || counts.nonEmpty
     }
   }
+
+  def errorTrails: List[Step] = Step.errorTrails(spec).flatMap(_.lastOption)
+  def message: String = s"\n  - ${evalStatus.message}${errorTrails.headOption.map(s => s"\n   ${Errors.at(s.sourceRef)}").getOrElse("")}"
   
   private [result] lazy val scenarioCounts = 
     EvalStatus.countsByType(spec.evalScenarios.flatMap { s =>

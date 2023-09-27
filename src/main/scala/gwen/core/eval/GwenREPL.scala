@@ -300,6 +300,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
       |   Evaluates a step
       |     step : the step expression
       |
+      | (args) => body
+      |   Evaluates a JavaScript arrow function 
+      |
       | q|exit|quit|bye
       |   Closes the REPL session and exits
       |
@@ -438,31 +441,39 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
         Dialect.setLanguage(language)
         s"# language: $language"
       case trimmedInput =>
-        val started = System.nanoTime()
-        if (StepKeyword.names.exists(name => trimmedInput.toLowerCase.startsWith(name.toLowerCase))) {
-          engine.interpretStep(trimmedInput, ctx) match {
-            case Success(step) => 
-              printStatus(step.evalStatus)
-            case Failure(error) => 
-              printError(started, error)
+        evaluateStep(trimmedInput)
+    }
+  }
+
+  private def evaluateStep(input: String): String = {
+    val started = System.nanoTime()
+    if (StepKeyword.names.exists(name => input.toLowerCase.startsWith(name.toLowerCase)) || input.contains("=>")) {
+      engine.interpretStep(input, ctx) match {
+        case Success(step) => printStatus(step.evalStatus)
+        case Failure(error) => 
+          Try(ctx.parseArrowFunction(input).map(_.apply)) match {
+            case Success(result) => result.map(r => s"  ${Formatting.surroundWithQuotes(r)}")
+            case Failure(e) => Some(printError(s"  ${e.getMessage}"))
+          } getOrElse {
+            printError(started, error)
           }
-        } else {
-          printError(started, s"Unknown input or command")
-        }
+      }
+    } else {
+      printError(started, s"Unknown input or command")
     }
   }
 
   private def printError(msg: String): String = {
-    printer.printStatus("  ", Failed(0, msg), withMessage = true, withIcon = true, withStatusIcon = false)
+    printer.printStatus("  ", Failed(0, msg), Some(msg), withIcon = true, withStatusIcon = false)
   }
   private def printError(started: Long, error: Throwable): String = {
     printError(started, error.toString)
   }
   private def printError(started: Long, msg: String): String = {
-    printer.printStatus("  ", Failed(System.nanoTime() - started, msg), withMessage = true, withIcon = true, withStatusIcon = false)
+    printer.printStatus("  ", Failed(System.nanoTime() - started, msg), Some(s"  $msg"), withIcon = true, withStatusIcon = false)
   }
   private def printStatus(status: EvalStatus): String = {
-    printer.printStatus("  ", status, withMessage = true, withIcon = true, withStatusIcon = false)
+    printer.printStatus("  ", status, Some(s"  ${status.message}"), withIcon = true, withStatusIcon = false)
   }  
 
 }

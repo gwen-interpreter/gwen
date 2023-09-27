@@ -159,16 +159,16 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
-      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be blank""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, "", ComparisonOperator.be, Option(negation).isDefined, step.message)
+      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|true|false)$literal""" =>
+        new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message)
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
         new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2( ignoring case)?$ignoringCase""" =>
         new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute1 should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
         new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
-      case r"""(.+?)$attribute should( not)?$negation be blank""" =>
-        new Compare(attribute, "", ComparisonOperator.be, Option(negation).isDefined, step.message)
+      case r"""(.+?)$attribute should( not)?$negation be (blank|true|false)$literal""" =>
+        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
       case r"""(.+?)$attribute should be absent""" =>

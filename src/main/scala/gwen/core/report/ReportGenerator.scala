@@ -43,7 +43,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import java.io.BufferedInputStream
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Date
 
 /**
@@ -205,7 +204,7 @@ object ReportGenerator {
               if (GwenSettings.`gwen.report.overwrite`) {
                 dir.deleteDir()
               } else {
-                dir.renameTo(new File(s"${dir.getAbsolutePath}-${new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())}"))
+                dir.renameTo(new File(s"${dir.getAbsolutePath}-${Formatting.formatDate(new Date(), "yyyyMMdd-HHmmss")}"))
               }
             }
             dir.mkdirs()

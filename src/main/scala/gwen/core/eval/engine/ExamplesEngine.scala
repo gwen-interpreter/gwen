@@ -126,7 +126,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             val js1 = ctx.interpolateParams(js0)
             val javascript = ctx.interpolate(js1)
             (ctx.evaluate("true") {
-              Option(ctx.evaluateJS(ctx.formatJSReturn(javascript))).map(_.toString).getOrElse("false")
+              Option(ctx.evaluateJS(javascript)).map(_.toString).getOrElse("false")
             }).toBoolean
           } getOrElse true
         })

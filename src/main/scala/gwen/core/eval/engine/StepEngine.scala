@@ -269,13 +269,7 @@ trait StepEngine[T <: EvalContext] {
         step
       }
     }
-    val fStep = ctx.popAttachments() match {
-      case Nil => eStep
-      case attachments =>
-        attachments.foldLeft(eStep) { case (accStep, (attachmentNo, name, file)) =>
-          accStep.addAttachment(attachmentNo, name, file)
-        }
-    }
+    val fStep = eStep.addAttachments(ctx.popAttachments())
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
         if (status.isDisabledError) {

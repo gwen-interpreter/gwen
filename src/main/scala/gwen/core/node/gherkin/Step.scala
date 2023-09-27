@@ -91,11 +91,20 @@ case class Step(
     } getOrElse Nil)
   }
 
-  def deepAttachments: List[(String, File)] = {
+  def deepAttachments: List[(String, File)] = deepAttachments { _ => true }
+
+  def deepAttachments(includeFilter: String => Boolean): List[(String, File)] = {
     val dSteps = deepSteps
-    if (deepSteps.size > 1) {
-      deepSteps.filter(!_.evalStatus.isIgnored).flatMap(_.attachments)
-    } else this.attachments
+    if (deepSteps.size > 1) filterAttachments(deepSteps, includeFilter) else this.attachments
+  }
+
+  def childAttachments(includeFilter: String => Boolean): List[(String, File)] = {
+    val childSteps = deepSteps.filter(_ == this)
+    filterAttachments(deepSteps, includeFilter)
+  }
+
+  private def filterAttachments(steps: List[Step], includeFilter: String => Boolean): List[(String, File)] = {
+    steps.filter(!_.evalStatus.isIgnored).flatMap(s => s.attachments.filter(nf => includeFilter(nf._1)))
   }
 
   /** Returns the given value if the step has no docString or the docString content otherwise. */
@@ -181,6 +190,12 @@ case class Step(
     val fileCopy = file.copyToFile(File.createTempFile(s"${Formatting.padWithZeroes(attachmentNo)}-${file.simpleName}-", s".${file.extension}"))
     fileCopy.deleteOnExit()
     addAttachment((name, fileCopy))
+  }
+
+  def addAttachments(attachments: List[(Int, String, File)]): Step = {
+    attachments.foldLeft(this) { case (accStep, (attachmentNo, name, file)) =>
+      accStep.addAttachment(attachmentNo, name, file)
+    }
   }
 
   /**

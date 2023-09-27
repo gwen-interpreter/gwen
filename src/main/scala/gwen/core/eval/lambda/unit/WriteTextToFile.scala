@@ -32,8 +32,8 @@ class WriteTextToFile[T <: EvalContext](content: Option[String], contentRef: Opt
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.evaluate(step) {
-        val text = content.getOrElse(ctx.getBoundReferenceValue(contentRef.get))
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundReferenceValue(s"${filpathRef.get} file")}"))
+        val text = content.getOrElse(ctx.getBoundValue(contentRef.get))
+        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
         if (overwrite) {
           file.writeText(text)
         } else {

@@ -22,7 +22,6 @@ import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
 
 import scala.util.chaining._
-import gwen.core.status.Pending
 
 /**
   * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
@@ -134,16 +133,13 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   override def getOpt(name: String): Option[String] = getDerivedImplicitOpt(name).orElse(super.getOpt(name))
 
   private def getDerivedImplicitOpt(name: String): Option[String] = {
-    if (name.startsWith("gwen.eval.")) {
-      if (name == "gwen.eval.status.keyword") super.getOpt("gwen.eval.status.keyword").orElse(Some(StatusKeyword.Pending.toString))
-      else if (name == "gwen.eval.status.keyword.upperCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toUpperCase)
-      else if (name == "gwen.eval.status.keyword.lowerCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toLowerCase)
-      else if (name == "gwen.eval.status.message") super.getOpt("gwen.eval.status.message").orElse(Some(""))
-      else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
-      else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
-      else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
-      else None
-    }
+    if (name == "gwen.eval.status.keyword") super.getOpt("gwen.eval.status.keyword").orElse(Some(StatusKeyword.Pending.toString))
+    else if (name == "gwen.eval.status.keyword.upperCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toUpperCase)
+    else if (name == "gwen.eval.status.keyword.lowerCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toLowerCase)
+    else if (name == "gwen.eval.status.message") super.getOpt("gwen.eval.status.message").orElse(Some(""))
+    else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
+    else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
+    else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
     else None
   }
 

@@ -28,7 +28,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration._
 
-class BooleanConditionTest extends BaseTest with Matchers with ScriptSupport {
+class BooleanConditionTest extends BaseTest with Matchers {
 
   val timeout = 1
 

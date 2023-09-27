@@ -115,7 +115,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
         }
         val padding = " " * (max - step.name.length)
         step.message foreach { msg =>
-          val msgTag = s"""@${Annotations.Message}(${Formatting.surroundWithQuotes(msg)})"""
+          val msgTag = s"""@${Annotations.Message}(${Formatting.surroundWithQuotesForAnnotation(msg)})"""
           out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
         }
         val dryValues = step.dryValues
@@ -124,9 +124,9 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
             val vss = vs.map(_._2)
             if (vss.size == 1) {
               val v = vss.head
-              s"""name=${Formatting.surroundWithQuotes(n)},value=${Formatting.surroundWithQuotes(v)}"""
+              s"""name=${Formatting.surroundWithQuotesForAnnotation(n)},value=${Formatting.surroundWithQuotesForAnnotation(v)}"""
             }
-            else s"""name=${Formatting.surroundWithQuotes(n)},value=[${vss.map(v => Formatting.surroundWithQuotes(v)).mkString(",")}]"""
+            else s"""name=${Formatting.surroundWithQuotesForAnnotation(n)},value=[${vss.map(v => Formatting.surroundWithQuotesForAnnotation(v)).mkString(",")}]"""
           } mkString(", ")
           val dryRunTag = s"""@${Annotations.DryRun}($dvs)"""
           out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${dryRunTag}${if (colors) ansi.reset else ""}")
@@ -141,7 +141,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
           printDocString(s"$indent ${" " * keywordMaxLength}", docString, out)
         }
       }
-      if (deep) out.println(printStatus(step, withMessage = true, withIcon = true, withStatusIcon = false))
+      if (deep) out.println(printStatus(step, Some(step.evalStatus.message), withIcon = true, withStatusIcon = false))
     }
     out
   }
@@ -211,20 +211,20 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
     }
   }
 
-  def printStatus(node: GwenNode, withMessage: Boolean, withIcon: Boolean, withStatusIcon: Boolean): String = {
+  def printStatus(node: GwenNode, message: Option[String], withIcon: Boolean, withStatusIcon: Boolean): String = {
     val indent = indentForStatus(node)
-    printStatus(indent, node.evalStatus, withMessage, withIcon, withStatusIcon)
+    printStatus(indent, node.evalStatus, message, withIcon, withStatusIcon)
     
   }
 
-  def printStatus(indent: String, status: EvalStatus, withMessage: Boolean, withIcon: Boolean, withStatusIcon: Boolean): String = {
+  def printStatus(indent: String, status: EvalStatus, message: Option[String], withIcon: Boolean, withStatusIcon: Boolean): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
-    printStatus(indent, status, withMessage, withIcon, withStatusIcon, pw)
+    printStatus(indent, status, message, withIcon, withStatusIcon, pw)
     sw.toString
   }
 
-  private def printStatus(indent: String, status: EvalStatus, withMessage: Boolean, withIcon: Boolean, withStatusIcon: Boolean, out: PrintWriter): Unit = {
+  private def printStatus(indent: String, status: EvalStatus, message: Option[String], withIcon: Boolean, withStatusIcon: Boolean, out: PrintWriter): Unit = {
     val keywordString = if (status.isAbstained) "Abstained" else status.keyword.toString
     val statusString = {
       if (!status.isAbstained) {
@@ -240,8 +240,8 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       }
     }
     status match {
-      case _: Failed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (withMessage) s" - ${status.message}" else ""}${if (colors) ansi.reset else ""}")
-      case _: Sustained => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (withMessage) s" - ${status.message}" else ""}${if (colors) ansi.reset else ""}")
+      case _: Failed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${message.map(msg => s"\n$msg").getOrElse("")}${if (colors) ansi.reset else ""}")
+      case _: Sustained => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${message.map(msg => s"\n$msg").getOrElse("")}${if (colors) ansi.reset else ""}")
       case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (colors) ansi.reset else ""}")
       case Loaded => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (colors) ansi.reset else ""}")
       case Pending => // noop
@@ -250,10 +250,10 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   }
 
   def printSpecResult(result: SpecResult): String = {
-    printSpecResult(result.started, result.finished, result.elapsedTime, result.evalStatus, result.statusCounts(withEmpty = false))
+    printSpecResult(result.started, result.finished, result.elapsedTime, result.evalStatus, result.statusCounts(withEmpty = false), Some(result.message))
   }
 
-  private def printSpecResult(started: Date, finished: Date, elapsedTime: Duration, evalStatus: EvalStatus, statusCounts: List[(NodeType, Map[StatusKeyword, Int])]): String = {
+  private def printSpecResult(started: Date, finished: Date, elapsedTime: Duration, evalStatus: EvalStatus, statusCounts: List[(NodeType, Map[StatusKeyword, Int])], message: Option[String]): String = {
     val sw = new StringWriter()
     val pw = new PrintWriter(sw)
     val header: List[String] = "" :: StatusKeyword.reportables.map(_.toString)
@@ -289,7 +289,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
     pw.println(s"${Formatting.leftPad("Finished", widths(0))}  $finished")
     pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
     pw.println()
-    printStatus("  ", evalStatus, withMessage = false, withIcon = false, withStatusIcon = true, pw)
+    printStatus("  ", evalStatus, message, withIcon = false, withStatusIcon = true, pw)
     if (deep) pw.println()
     sw.toString
   }
@@ -305,19 +305,22 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       val results = summary.results.filter(_.evalStatus.keyword == keyword)
       if (results.nonEmpty) Some(keyword, results) else None
     }
-    resultsByStatus.zipWithIndex foreach { case ((keyword, results), idx) => 
+    val messages = resultsByStatus.zipWithIndex.foldLeft(List[String]()) { case (acc, ((keyword, results), idx)) => 
       if (idx > 0) pw.println()
       val widths = List(
-        Try(results.map(r => printStatus(r.spec, withMessage = false, withIcon = false, withStatusIcon = true)).map(_.length).max).getOrElse(0),
+        Try(results.map(r => printStatus(r.spec, None, withIcon = false, withStatusIcon = true)).map(_.length).max).getOrElse(0),
         Try(results.map(_.spec.feature.name).map(_.length).max).getOrElse(0),
         Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
       )
-      results foreach { result =>
+      val msgs: List[String] = results flatMap { result =>
         val spec = result.spec
-        pw.println(s"  ${Formatting.leftPad(printStatus(spec, withMessage = false, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.name, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
+        pw.println(s"  ${Formatting.leftPad(printStatus(spec, None, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.name, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
+        if (result.evalStatus.isError) Some(result.message)
+        else None
       }
+      acc ++ msgs
     }
-    pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false)))
+    pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false), Some(messages.mkString("\n"))))
     sw.toString
   }
 
