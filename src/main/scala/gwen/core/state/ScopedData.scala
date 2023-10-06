@@ -65,11 +65,6 @@ class ScopedData(val scope: String) extends LazyLogging {
     */
   private val atts = mutable.ListBuffer[(String, String)]()
 
-  /**
-    * Map name-closure pairs where the closure is a function that returns a string value.
-    */
-  private var closures = Map[String, () => String]()
-
   val isTopScope = false
 
   /**
@@ -101,12 +96,6 @@ class ScopedData(val scope: String) extends LazyLogging {
       }
     } map (_._2)
 
-  private def resolveNVP(nvp: (String, String)) = nvp match { case (n, v) =>
-    if (v == "() => String")
-      (n, if (closures.contains(n)) closures(n)() else null)
-    else nvp
-  }
-
   /**
     * Finds and retrieves an attribute from the scope (throws error if not found)
     *
@@ -127,6 +116,16 @@ class ScopedData(val scope: String) extends LazyLogging {
   } map(_._2)
 
   /**
+    * Finds the visible entry
+    *
+    * @param name the name of the entry to find
+    * @return Some visible entry or None
+    */
+  def hasValue(name: String, value: String): Boolean = {
+    findEntry((n, _) => n == name || n.startsWith(s"$name/")) map { (_, v) => v == value } getOrElse false
+  }
+
+  /**
     * Binds a new attribute value to the scope.  If an attribute of the same
     * name already exists, then this new attribute overrides the existing one
     * but does not replace it.
@@ -137,7 +136,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *         newly added attribute
     */
   def set(name: String, value: String): ScopedData = {
-    if (!getOpt(name).contains(value)) {
+    if (!hasValue(name, value)) {
       (name, value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
         atts += nvp
@@ -153,27 +152,6 @@ class ScopedData(val scope: String) extends LazyLogging {
       }
     }
     this
-  }
-
-  /**
-    * Binds a name-closure pair.
-    *
-    * @param name the name bound to the function
-    * @param closure the closure function that will return the value (null to remove)
-    * @return the current scope containing the old attributes plus the
-    *         newly added attribute
-    */
-  def set(name: String)(closure: () => String): ScopedData = {
-    if (closure != null) {
-      if (!closures.contains(name)) set(name, "() => String")
-      closures += (name -> closure)
-      this
-    }
-    else {
-      closures -= name
-      set(name, null)
-    }
-
   }
 
   /**
@@ -227,7 +205,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
-    atts.map(resolveNVP).filter(pred).toSeq ++ flashScope.map(_.map(resolveNVP).filter(pred).toSeq).getOrElse(Nil)
+    atts.filter(pred).toSeq ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)
   }
 
   /**
@@ -240,7 +218,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     s"""${padding}scope : "$scope" {${
          allAtts.toList match {
            case Nil => " }"
-           case _ => s"""${allAtts map resolveNVP map {
+           case _ => s"""${allAtts map {
              case (n, v) =>
                s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
            } mkString}

@@ -37,6 +37,12 @@ class ScopedDataTest extends BaseTest with Matchers {
         |}""".stripMargin)
     scope.getOpt("userId") should be (None)
   }
+
+  "scope with clear on attribute" should "yield None for getOpt call" in {
+    val scope = ScopedData("login").clear("userId")
+    scope.asString()       should be ("""scope : "login" { }""")
+    scope.getOpt("userId") should be (None)
+  }
   
   "scope with a null attribute" should "throw error for get call" in {
     val scope = ScopedData("login").set("userId", null)
@@ -44,6 +50,14 @@ class ScopedDataTest extends BaseTest with Matchers {
       """scope : "login" {
         |  userId : null
         |}""".stripMargin)
+    intercept[UnboundAttributeException] {
+      scope.get("userId")
+    }
+  }
+
+  "scope after clear on attribute" should "throw error for get call" in {
+    val scope = ScopedData("login").clear("userId")
+    scope.asString()    should be ("""scope : "login" { }""")
     intercept[UnboundAttributeException] {
       scope.get("userId")
     }

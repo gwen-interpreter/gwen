@@ -1,6 +1,6 @@
 3.48.0
 ======
-Oct 4, 2023
+Oct 10, 2023
 - Add JS arrow functions
     - Syntax: `(args) => body`
     - Add arrow function evaluation to REPL
@@ -9,6 +9,7 @@ Oct 4, 2023
 - Annotation attributes can now be surrounded by back-ticks, in addition to single or double quotes
 - Include messages and location of errors at end of console report
 - Remove joda-time dependency and use java.time package instead
+- Only override bindings if their values differ to current ones
 
 3.47.5
 ======

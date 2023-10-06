@@ -99,8 +99,8 @@ case class Step(
   }
 
   def childAttachments(includeFilter: String => Boolean): List[(String, File)] = {
-    val childSteps = deepSteps.filter(_ == this)
-    filterAttachments(deepSteps, includeFilter)
+    val childSteps = deepSteps.filter(_ != this)
+    filterAttachments(childSteps, includeFilter)
   }
 
   private def filterAttachments(steps: List[Step], includeFilter: String => Boolean): List[(String, File)] = {

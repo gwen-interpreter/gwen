@@ -46,6 +46,16 @@ class TopScopeTest extends BaseTest with Matchers {
       }
     }
   }
+
+  forAll (levels) { level =>
+    s"$level scope after clear on attribute" should "yield None for getOpt call" in {
+      withSetting("gwen.state.level", level) {
+        val scope = new TopScope().clear("userId")
+        scope.asString()       should be (s"""scope : "$level" { }""")
+        scope.getOpt("userId") should be (None)
+      }
+    }
+  }
   
   forAll (levels) { level =>
     s"$level scope with a null attribute" should "throw error for get call" in {
@@ -55,6 +65,18 @@ class TopScopeTest extends BaseTest with Matchers {
           s"""scope : "$level" {
             |  userId : null
             |}""".stripMargin)
+        intercept[UnboundAttributeException] {
+          scope.get("userId")
+        }
+      }
+    }
+  }
+
+  forAll (levels) { level =>
+    s"$level scope after clear on attribute" should "throw error for get call" in {
+      withSetting("gwen.state.level", level) {
+        val scope = new TopScope().clear("userId")
+        scope.asString()    should be (s"""scope : "$level" { }""")
         intercept[UnboundAttributeException] {
           scope.get("userId")
         }
@@ -130,39 +152,6 @@ class TopScopeTest extends BaseTest with Matchers {
             |  name : "gwen"
             |}""".stripMargin)
         scope.getAll("name") should be (Seq("todd", "gwen"))
-      }
-    }
-  }
-
-  forAll (levels) { level =>
-    s"$level scope with one function attribute" should "contain only that attribute" in {
-      withSetting("gwen.state.level", level) {
-        val scope = new TopScope().set("userId") { () => "gwen" }
-        scope.asString()    should be (
-          s"""scope : "$level" {
-            |  userId : "gwen"
-            |}""".stripMargin)
-        scope.getOpt("userId") should be (Some("gwen"))
-        scope.getOpt("UserId") should be (None)
-      }
-    }
-  }
-
-  forAll (levels) { level =>
-    s"$level scope with one attribute and one function value" should "contain those two attributes" in {
-      withSetting("gwen.state.level", level) {
-        val scope = new TopScope()
-        scope.set("userId", "gwen")
-        scope.set("password") { () => "pwd" }
-        scope.asString()      should be (
-          s"""scope : "$level" {
-            |  userId : "gwen"
-            |  password : "pwd"
-            |}""".stripMargin)
-        scope.getOpt("userId")   should be (Some("gwen"))
-        scope.getOpt("password") should be (Some("pwd"))
-        scope.getOpt("UserId")   should be (None)
-        scope.getOpt("Password") should be (None)
       }
     }
   }

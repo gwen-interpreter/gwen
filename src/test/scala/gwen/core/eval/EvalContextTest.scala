@@ -81,11 +81,27 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
     }
   }
 
+  "scope clear on missing attribute" should """do nothing""" in {
+    val ctx = newCtx
+    ctx.topScope.clear("x")
+    ctx.topScope.getOpt("x") should be (None)
+  }
+
   "scope with a null attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundValue call""" in {
     val ctx = newCtx
     ctx.topScope.set("x", "1")
     ctx.getBoundValue("x") should be ("1")
     ctx.topScope.set("x", null)
+    intercept[UnboundAttributeException] {
+      ctx.getBoundValue("x")
+    }
+  }
+
+  "scope with clear on attribute overriding non null attribute" should """yield UnboundAttributeException for getBoundValue call""" in {
+    val ctx = newCtx
+    ctx.topScope.set("x", "1")
+    ctx.getBoundValue("x") should be ("1")
+    ctx.topScope.clear("x")
     intercept[UnboundAttributeException] {
       ctx.getBoundValue("x")
     }

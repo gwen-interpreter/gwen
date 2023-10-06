@@ -170,7 +170,7 @@ class ScopedDataStack() {
             current.set(name, value)
         }
       }
-      else if (!getOpt(name).contains(value)) {
+      else if (!visible.getOpt(name).map(_ == value).getOrElse(false)) {
         current.set(name, value)
       }
   }
@@ -262,6 +262,27 @@ class ScopedDataStack() {
     */
   def allEntriesIn(scope: String): Seq[(String, String)] = findEntriesIn(scope) { _ => true }
 
+  /**
+    * Finds the visible entry
+    *
+    * @param name the name of the entry to find
+    * @param pred the conditions to match
+    * @return Some visible entry or None
+    */
+  def visibleEntry(name: String)(pred: ((String, String)) => Boolean): Option[(String, String)] = {
+    visible.filterAtts((n, _) => n == name || n.startsWith(s"$name/")).findEntry(pred)
+  }
+
+  /**
+    * Checks if an entry is visible
+    *
+    * @param name the name of the entry to check
+    * @return true if visible; false otherwise
+    */
+  def hasVisibleEntry(name: String): Boolean = {
+     visibleEntry(name) { _ => true } map { (n, _) => n == name } getOrElse false
+  }
+  
   /**
     * Finds and retrieves an attribute in the a named scope by scanning for it
     * in all scopes in the stack (starting with the top most scope with that

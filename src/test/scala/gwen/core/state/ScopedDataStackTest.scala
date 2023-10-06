@@ -340,14 +340,14 @@ class ScopedDataStackTest extends BaseTest with Matchers {
     scopes.getAllIn("person", "middleName")   should be (Nil)
   }
   
-  "addScope" should "should keep currently active scope of same name" in {
+  "addScope" should "keep currently active scope of same name" in {
     val scopes = new ScopedDataStack()
     val scope1 = scopes.addScope("home")
     val scope2 = scopes.addScope("home")
     scope1 should be (scope2)
   }
   
-  "addScope" should "should not keep currently active scope of different name" in {
+  "addScope" should "not keep currently active scope of different name" in {
     val scopes = new ScopedDataStack()
     val scope1 = scopes.addScope("home1")
     val scope2 = scopes.addScope("home2")
@@ -355,7 +355,7 @@ class ScopedDataStackTest extends BaseTest with Matchers {
   }
   
   forAll (levels) { level =>
-    "addScope" should s"should maintain only one $level scope" in {
+    "addScope" should s"maintain only one $level scope" in {
       withSetting("gwen.state.level", level) {
         val scopes = new ScopedDataStack()
         scopes.current should be (scopes.topScope)
@@ -367,7 +367,7 @@ class ScopedDataStackTest extends BaseTest with Matchers {
     }
   }
   
-  "set" should "should not replicate already visible attributes with same name and value" in {
+  "set" should "not replicate already visible attributes with same name and value" in {
     
     val scopes = new ScopedDataStack()
     scopes.addScope("register")
@@ -652,11 +652,25 @@ class ScopedDataStackTest extends BaseTest with Matchers {
     scopes.getOpt("x") should be (None)
   }
 
+  "scope after clear on attribute" should """yield None for getOpt call""" in {
+    val scopes = new ScopedDataStack()
+    scopes.clear("x")
+    scopes.getOpt("x") should be (None)
+  }
+
   "scope with a null attribute overriding non null attribute" should """yield None for getOpt call""" in {
     val scopes = new ScopedDataStack()
     scopes.set("x", "1")
     scopes.getOpt("x") should be (Some("1"))
     scopes.set("x", null)
+    scopes.getOpt("x") should be (None)
+  }
+
+  "scope after clear on attribute overriding non null attribute" should """yield None for getOpt call""" in {
+    val scopes = new ScopedDataStack()
+    scopes.set("x", "1")
+    scopes.getOpt("x") should be (Some("1"))
+    scopes.clear("x")
     scopes.getOpt("x") should be (None)
   }
   
