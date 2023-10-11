@@ -47,28 +47,35 @@ trait ArrowFunctionSupport[T <: EvalContext] {
   this: T =>
 
   def parseArrowFunction(function: String): Option[ArrowFunction[T]] = {
-    val arrowIndex = function.indexOf("=>")
-    if (arrowIndex != -1) {
-      val params = function.substring(0, arrowIndex)
-      val body = function.drop(params.length + 2)
-      val argList = Option(params).map(_.trim) map { ps =>
-        if (ps.startsWith("(") && ps.endsWith(")")) ps.drop(1).dropRight(1) else ps
-      } getOrElse ""
-      val args = argList.split(",").toList.map(_.trim).filter(_.nonEmpty).zipWithIndex map { (arg, argIndex) =>
-        val assigmentIndex = arg.indexOf("=")
-        if (assigmentIndex != -1) {
-          val n = arg.substring(0, assigmentIndex)
-          val ref = arg.drop(n.length + 1).trim
-          val name = n.trim
-          if (name.isEmpty()) Errors.functionError(function, s"Illegal blank name for argument ${argIndex + 1} in function")
-          if (ref.isEmpty()) Errors.functionError(function, s"Illegal blank reference for argument ${argIndex + 1} in function")
-          (name, ref)
-        } else {
-          (arg, arg)
+    if (function.matches("""(?s)\s*\(\s*function\s*\(.*""")) None else {
+      val arrowIndex = function.indexOf("=>")
+      if (arrowIndex == -1) None else {
+        val params = function.substring(0, arrowIndex)
+        val body = function.drop(params.length + 2)
+        val argList = Option(params).map(_.trim) map { ps =>
+          if (ps.startsWith("(") && ps.endsWith(")")) ps.drop(1).dropRight(1) else ps
+        } getOrElse ""
+        val args = argList.split(",").toList.map(_.trim).filter(_.nonEmpty).zipWithIndex map { (arg, argIndex) =>
+          val assigmentIndex = arg.indexOf("=")
+          if (assigmentIndex != -1) {
+            val n = arg.substring(0, assigmentIndex)
+            val ref = arg.drop(n.length + 1).trim
+            val name = n.trim
+            if (name.isEmpty()) Errors.functionError(function, s"Illegal blank name for argument ${argIndex + 1} in function")
+            if (ref.isEmpty()) Errors.functionError(function, s"Illegal blank reference for argument ${argIndex + 1} in function")
+            (name, ref)
+          } else {
+            (arg, arg)
+          }
+        }
+        args filter { (n, _) => 
+          n.matches("""[a-z]\w*""")
+        } match {
+          case Nil if args.nonEmpty => None
+          case _ => Some(ArrowFunction(function, args, body.trim, this))
         }
       }
-      Some(ArrowFunction(function, args, body.trim, this))
-    } else None
+    }
   }
 
 }

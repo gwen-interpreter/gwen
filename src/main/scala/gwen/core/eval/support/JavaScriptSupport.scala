@@ -69,13 +69,9 @@ trait JavaScriptSupport[T <: EvalContext] extends ArrowFunctionSupport[T] {
   def formatJSReturn(javascript: String) = javascript
 
   def parseJS(javascript: String): String = {
-    if (javascript.matches("""(?s)\s*\(\s*function\s*\(.*""")) {
-      javascript
-    } else {
-      Try(parseArrowFunction(javascript)) match {
-        case Success(Some(func)) => func.wrapper
-        case _ => javascript
-      }
+    Try(parseArrowFunction(javascript)) match {
+      case Success(Some(func)) => func.wrapper
+      case _ => javascript
     }
   }
 

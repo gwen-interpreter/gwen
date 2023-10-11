@@ -1,3 +1,8 @@
+3.48.1
+======
+Oct 10, 2023
+- Fix arrow function parser to skip over standard js functions
+
 3.48.0
 ======
 Oct 10, 2023
