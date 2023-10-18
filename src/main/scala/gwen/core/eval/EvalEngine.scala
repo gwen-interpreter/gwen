@@ -69,6 +69,19 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new IfDefinedCondition(doStep, attribute, Option(negation).isDefined, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay""" =>
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration.Zero, defaultRepeatTimeout(defaultRepeatDelay), defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" =>
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" =>
+        val delayDuration = Duration(delayPeriod.toLong, delayUnit)
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, delayDuration, defaultRepeatTimeout(delayDuration), defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if doStep != "I wait" =>
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, defaultRepeatDelay, Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) =>
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, defaultRepeatDelay, defaultRepeatTimeout(defaultRepeatDelay), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" if !condition.contains('"') =>
         Some(new RepeatJS(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" if !condition.contains('"') =>
