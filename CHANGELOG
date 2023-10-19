@@ -1,3 +1,8 @@
+3.49.1
+======
+Sep 19, 2023
+- Retry PDF text capture until timeout
+
 3.49.0
 ======
 Oct 18, 2023

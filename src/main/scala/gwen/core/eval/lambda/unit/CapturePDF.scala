@@ -17,6 +17,7 @@
 package gwen.core.eval.lambda.unit
 
 import gwen.core.LocationType
+import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.UnitStep
@@ -24,13 +25,36 @@ import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
-
-class CapturePDF[T <: EvalContext](target: String, sourceType: LocationType, sourceLocation: String) extends UnitStep[T] {
+class CapturePDF[T <: EvalContext](target: String, sourceType: LocationType, sourceLocation: String, timeoutSecs: Long) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved("pdfText"))) {
-      ctx.capturePDFText(sourceType, sourceLocation)
+      var result: Option[String] = None
+      var error: Option[Throwable] = None
+      try {
+        ctx.waitUntil(timeoutSecs, s"waiting for PDF at $sourceType: $sourceLocation") {
+          try {
+            result = Option(ctx.capturePDFText(sourceType, sourceLocation))
+          } catch {
+            case e: Throwable => 
+              error = Some(e)
+          }
+          result.nonEmpty
+        }
+      } catch {
+        case e: Throwable =>
+          result getOrElse {
+            error map { err => 
+              throw err
+            } getOrElse {
+              throw e
+            }
+          }
+      }
+      result getOrElse {
+        Errors.waitTimeoutError(timeoutSecs, s"Timed out waiting for PDF at $sourceType: $sourceLocation")
+      }
     }
     ctx.topScope.set(target, content)
     step.addAttachment(target, "txt", content)

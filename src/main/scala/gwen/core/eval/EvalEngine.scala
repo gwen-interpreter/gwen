@@ -141,9 +141,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
         new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None, Option(ignoringCase).isDefined)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location as (.+?)$name""" =>
-        new CapturePDF(name, LocationType.valueOf(locationType), location)
+        new CapturePDF(name, LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location""" =>
-        new CapturePDF("the PDF text", LocationType.valueOf(locationType), location)
+        new CapturePDF("the PDF text", LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
       case r"""I capture (.+?)$source as (.+?)$attribute""" =>
         new Capture(attribute, source)
       case r"""I capture (.+?)$attribute""" =>
