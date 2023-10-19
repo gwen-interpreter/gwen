@@ -49,6 +49,11 @@ Feature: Number tables meta (for each)
       And name[1] should be "decimal"
       And name[2] should be "binary"
       And record.number should match regex "\d+"
+      And passed is "${gwen.eval.status.isPassed}"
+      And x is "1" if passed
+      And y is "1" if not passed
+      And x should be "1"
+      And y should not be defined
 
   @StepDef
   @ForEach

@@ -21,13 +21,14 @@ import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.Binding
 import gwen.core.eval.binding.BindingType
+import gwen.core.eval.binding.DataRecordBinding
+import gwen.core.eval.binding.SimpleBinding
 
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
 import util.chaining.scalaUtilChainingOps
-import gwen.core.eval.binding.SimpleBinding
 
 class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, timeoutSecs: Long, ctx: T) {
   
@@ -48,8 +49,8 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
   private def find (name: String): Try[Binding[T, String]] = {
     Try(ctx.getBinding(name).asInstanceOf[Binding[T, String]]) map { binding => 
       binding tap { _ =>
-        if (binding.isInstanceOf[SimpleBinding[T]]) {
-          val v = binding.asInstanceOf[SimpleBinding[T]].resolve()
+        if (binding.isInstanceOf[SimpleBinding[T]] || binding.isInstanceOf[DataRecordBinding[T]]) {
+          val v = binding.resolve()
           if (!Booleans.isBoolean(v) && !isDryRunValue(v)) {
             Errors.unboundBooleanAttributeError(name, v)
           }
