@@ -98,6 +98,13 @@ extension [F <: File](file: F) {
     new FileWriter(file, append)
   }
 
+  private def newFileOutputStream: FileOutputStream = {
+    if (file.getParentFile != null && !file.getParentFile.exists()) {
+      file.getParentFile.mkdirs()
+    }
+    new FileOutputStream(file)
+  }
+
   def writeBinary(bis: BufferedInputStream): File =
     file tap { f =>
       if (f.getParentFile != null && !f.getParentFile.exists()) {

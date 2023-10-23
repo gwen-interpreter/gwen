@@ -62,32 +62,10 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
   private def isDryRunValue(value: String): Boolean = ctx.options.dryRun && value.contains(s"$$[${BindingType.dryValue}:")
 
   def evaluate(): Boolean = {
-    var result: Option[Boolean] = None
-    var error: Option[Throwable] = None
-    try {
-      ctx.waitUntil(timeoutSecs, s"waiting for condition: $condition") {
-        try {
-          val raw = binding.resolve()
-          val res = Try(raw.toBoolean).getOrElse(Errors.invalidTypeError(s"Boolean expected but got '$raw' when evaluating condition: $condition"))
-          result = Option(if (negated) !res else res)
-        } catch {
-          case e: Throwable => 
-            error = Some(e)
-        }
-        result.nonEmpty
-      }
-    } catch {
-      case e: Throwable =>
-        result getOrElse {
-          error map { err => 
-            throw err
-          } getOrElse {
-            throw e
-          }
-        }
-    }
-    result getOrElse {
-      Errors.waitTimeoutError(timeoutSecs, s"Timed out waiting for condition: $condition")
+    ctx.getWithWait(timeoutSecs, s"waiting for condition: $condition") { () => 
+      val raw = binding.resolve()
+      val res = Try(raw.toBoolean).getOrElse(Errors.invalidTypeError(s"Boolean expected but got '$raw' when evaluating condition: $condition"))
+      if (negated) !res else res
     }
     
   }

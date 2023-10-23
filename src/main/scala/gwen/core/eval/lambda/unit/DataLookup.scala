@@ -30,11 +30,11 @@ import scala.util.Try
 
 import java.io.File
 
-class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Option[String], filpathRef: Option[String], jsPredicate: String) extends UnitStep[T] {
+class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Option[String], filepathRef: Option[String], jsPredicate: String) extends UnitStep[T] {
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
-      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
+      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
       if (!file.exists()) Errors.missingFileError(file)
       val dataSource =  DataSource(file)
       val table = dataSource.table.zipWithIndex map { (row, idx) => 

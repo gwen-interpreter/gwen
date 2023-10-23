@@ -204,6 +204,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new WriteNewLineToFile(None, Some(filepathRef), mode == "write")
       case r"""I (write|append)$mode (.+?)$contentRef to (.+?)$filepathRef file""" =>
         new WriteTextToFile(None, Some(contentRef), None, Some(filepathRef), mode == "write")
+      case r"""I download "(.+?)"$url to "(.+?)"$filepath""" =>
+        new DownloadToFile(url, Some(filepath), None, defaultConditionTimeoutSecs)
+      case r"""I download "(.+?)"$url to (.+?)$filepathRef""" =>
+        new DownloadToFile(url, None, Some(filepathRef), defaultConditionTimeoutSecs)
       case r"""I lookup (.+?)$name in the "(.+?)$filepath" file where "(.+)"$predicate""" =>
         new DataLookup(name, name, Some(filepath), None, step.orDocString(predicate))
       case r"""I lookup (.+?)$name in (.+?)$filepathRef file where "(.+)"$predicate""" =>

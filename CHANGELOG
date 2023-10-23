@@ -1,11 +1,18 @@
+3.50.0
+======
+Oct 24, 2023
+- Add DSLs for downloading files from a URL
+  - `I download "<url>" to "<filepath>"`
+  - `I download "<url>" to <filepathRef>`
+
 3.49.2
 ======
-Sep 19, 2023
+Oct 19, 2023
 - Fix issue with negated if conditions when using data tables
 
 3.49.1
 ======
-Sep 19, 2023
+Oct 19, 2023
 - Retry PDF text capture until timeout
 
 3.49.0

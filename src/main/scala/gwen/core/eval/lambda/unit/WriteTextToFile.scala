@@ -27,13 +27,13 @@ import scala.util.chaining._
 
 import java.io.File
 
-class WriteTextToFile[T <: EvalContext](content: Option[String], contentRef: Option[String], filepath: Option[String], filpathRef: Option[String], overwrite: Boolean) extends UnitStep[T] {
+class WriteTextToFile[T <: EvalContext](content: Option[String], contentRef: Option[String], filepath: Option[String], filepathRef: Option[String], overwrite: Boolean) extends UnitStep[T] {
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.evaluate(step) {
         val text = content.getOrElse(ctx.getBoundValue(contentRef.get))
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
+        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
         if (overwrite) {
           file.writeText(text)
         } else {
@@ -44,4 +44,3 @@ class WriteTextToFile[T <: EvalContext](content: Option[String], contentRef: Opt
   }
 
 }
-

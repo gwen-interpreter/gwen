@@ -27,12 +27,12 @@ import scala.util.chaining._
 
 import java.io.File
 
-class WriteNewLineToFile[T <: EvalContext](filepath: Option[String], filpathRef: Option[String], overwrite: Boolean) extends UnitStep[T] {
+class WriteNewLineToFile[T <: EvalContext](filepath: Option[String], filepathRef: Option[String], overwrite: Boolean) extends UnitStep[T] {
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       ctx.evaluate(step) {
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filpathRef.get} file")}"))
+        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
         if (overwrite) {
           file.writeNewLine()
         } else {

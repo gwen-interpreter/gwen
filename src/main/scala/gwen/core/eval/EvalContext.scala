@@ -191,6 +191,34 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     Wait.waitUntil(timeoutSecs, reason) { condition }
   }
 
+  def getWithWait[T](timeoutSecs: Long, reason: String)(func: () => T): T = {
+    var result: Option[T] = None
+    var error: Option[Throwable] = None
+    try {
+      waitUntil(timeoutSecs, reason) {
+        try {
+          result = Option(func())
+        } catch {
+          case e: Throwable => 
+            error = Some(e)
+        }
+        result.nonEmpty
+      }
+    } catch {
+      case e: Throwable =>
+        result getOrElse {
+          error map { err => 
+            throw err
+          } getOrElse {
+            throw e
+          }
+        }
+    }
+    result getOrElse {
+      Errors.waitTimeoutError(timeoutSecs, reason)
+    }
+  }
+
   /**
     * Applies a function to a step and captures the result.
     *

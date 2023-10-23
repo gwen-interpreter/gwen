@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2023 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,31 @@
 
 package gwen.core.eval.lambda.unit
 
-import gwen.core.LocationType
+import gwen.core._
 import gwen.core.eval.EvalContext
-import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
 
-class CapturePDF[T <: EvalContext](target: String, sourceType: LocationType, sourceLocation: String, timeoutSecs: Long) extends UnitStep[T] {
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URL
+import java.nio.channels.Channels
+
+class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[String], filepathRef: Option[String], timeoutSecs: Long) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved("pdfText"))) {
-      ctx.getWithWait(timeoutSecs, s"waiting for PDF at $sourceType: $sourceLocation") { () => 
-        ctx.capturePDFText(sourceType, sourceLocation)
+    val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(filepathRef.get)}"))
+    ctx.perform{
+      ctx.getWithWait(timeoutSecs, s"downloading $sourceUrl to $file") { () => 
+        val urlChannel = Channels.newChannel(new URL(sourceUrl).openStream())
+        val fileChannel = file.newFileOutputStream.getChannel
+        fileChannel.transferFrom(urlChannel, 0, Long.MaxValue)
       }
     }
-    ctx.topScope.set(target, content)
-    step.addAttachment(target, "txt", content)
+    step
   }
 
 }
