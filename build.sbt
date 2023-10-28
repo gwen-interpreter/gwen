@@ -38,22 +38,22 @@ lazy val projectSettings = Seq(
 )
 
 lazy val mainDependencies = {
-  val cucumberGherkin = "26.2.0"
+  val cucumberGherkin = "27.0.0"
   val scopt = "4.1.0"
   val scalaLogging = "3.9.5"
   val jline = "3.23.0"
   val slf4j = "1.7.36"
-  val slf4jLog4j = "2.20.0"
+  val slf4jLog4j = "2.21.1"
   val commonCodec = "1.16.0"
   val commonsText = "1.10.0"
   val scalaCSV = "1.3.10"
   val jsonPath = "2.8.0"
   val scalaTags = "0.12.0"
   val htmlCleaner = "2.29"
-  val rpCommon = "5.8.1"
-  val rpClientJava = "5.1.22"
-  val tsConfig = "1.4.2"
-  val jansi = "2.4.0"
+  val rpCommon = "5.10.0"
+  val rpClientJava = "5.1.23"
+  val tsConfig = "1.4.3"
+  val jansi = "2.4.1"
   val pdfBox = "3.0.0"
 
   Seq(
@@ -83,21 +83,23 @@ lazy val mainDependencies = {
 }
 
 lazy val mainOverrides = {
-  val jacksonDataBind = "2.15.2"
-  val guava = "32.1.2-jre"
-  val okio = "1.17.5"
+  val jacksonDataBind = "2.15.3"
+  val guava = "32.1.3-jre"
+  val okio = "1.17.6"
+  val reactiveStreams = "1.0.4"
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % jacksonDataBind,
     "com.google.guava" % "guava" % guava,
-    "com.squareup.okio" % "okio" % okio
+    "com.squareup.okio" % "okio" % okio,
+    "org.reactivestreams" % "reactive-streams" % reactiveStreams
   )
 }
 
 lazy val testDependencies = {
-  val scalaTest = "3.2.16"
+  val scalaTest = "3.2.17"
   val scalaTestPlusMockito = "3.2.11.0"
   val mockitoCore = "4.11.0"
-  val h2 = "2.2.220"
+  val h2 = "2.2.224"
   // val slick = "3.3.3"
 
   Seq(
