@@ -23,7 +23,7 @@ import gwen.core.state.ScopedData
   * @param records list of records containing the data
   * @param names list of data element names
   */
-class FlatTable(val records: List[List[String]], val names: List[String]) extends DataTable {
+class FlatTable(val tableType: TableType, val records: List[List[String]], val names: List[String]) extends DataTable {
 
   /**
     * Binds each data element to a new table scope for accessing the values.

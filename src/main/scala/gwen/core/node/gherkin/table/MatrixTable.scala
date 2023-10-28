@@ -27,6 +27,8 @@ import gwen.core.state.ScopedData
   */
 class MatrixTable(val records: List[List[String]], val topNames: List[String], val leftNames: List[String], val vertexName: String) extends DataTable {
 
+  val tableType: TableType = TableType.matrix
+
   /**
     * Binds each data element to a new table scope for accessing the values.
     */

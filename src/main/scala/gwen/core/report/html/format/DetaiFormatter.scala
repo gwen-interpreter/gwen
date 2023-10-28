@@ -20,6 +20,7 @@ import gwen.core.Formatting._
 import gwen.core.node.FeatureUnit
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Background
 import gwen.core.node.gherkin.Examples
 import gwen.core.node.gherkin.GherkinNode
@@ -72,7 +73,7 @@ trait DetaiFormatter {
           for {
             scenario <- result.spec.scenarios
           } yield {
-            formatScenario(scenario, true)
+            formatScenario(scenario, None, true)
           },
           for {
             rule <- result.spec.rules
@@ -174,7 +175,7 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatScenario(scenario: Scenario, topLevel: Boolean): List[TypedTag[String]] = {
+  private def formatScenario(scenario: Scenario, descriptor: Option[String], topLevel: Boolean): List[TypedTag[String]] = {
     val status = scenario.evalStatus.keyword
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
@@ -187,7 +188,7 @@ trait DetaiFormatter {
           formatBackground(scenario, background)
         },
         ul(`class` := "list-group",
-          formatScenarioHeader(scenario)
+          formatScenarioHeader(scenario, descriptor)
         ),
         div(`class` := "panel-body",
           div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
@@ -213,7 +214,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatScenarioHeader(scenario: Scenario): TypedTag[String] = {
+  private def formatScenarioHeader(scenario: Scenario, descriptor: Option[String]): TypedTag[String] = {
     val evalStatus = scenario.evalStatus
     val status = evalStatus.keyword
     val tags = scenario.tags
@@ -246,7 +247,7 @@ trait DetaiFormatter {
           )
         )
       },
-      raw(escapeHtml(scenario.name)),
+      raw(escapeHtml(s"${scenario.name}${descriptor.map(d => s" $d").getOrElse("")}")),
       raw(" \u00a0 "),
       formatParams(scenario.params, evalStatus),
       if (!scenario.isForEach) {
@@ -361,7 +362,7 @@ trait DetaiFormatter {
         div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
           " ",
         ),
-        formatDataRow(table, 0, evalStatus, true)
+        formatDataRow(table, false, None, 0, evalStatus, true)
       )
     )
   }
@@ -369,7 +370,7 @@ trait DetaiFormatter {
   private def formatExampleRow(scenarioOpt: Option[Scenario], evalStatus: EvalStatus, table: List[(Long, List[String])], rowIndex: Int, keywordPixels: Int, isExpanded: Boolean): TypedTag[String] = {
     val line = table(rowIndex)._1
     val status = evalStatus.keyword
-    val rowHtml = formatDataRow(table, rowIndex, evalStatus, isExpanded)
+    val rowHtml = formatDataRow(table, true, None, rowIndex, evalStatus, isExpanded)
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError) s"bg-${bgStatus(status)}" else ""}",
       div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
         span(`class` := "pull-right",
@@ -399,7 +400,7 @@ trait DetaiFormatter {
 
   private def formatExampleDiv(scenario: Scenario, status: StatusKeyword): TypedTag[String] = {
     div(id := scenario.uuid, `class` := s"panel-collapse collapse${if (status == StatusKeyword.Failed) " in" else ""}", role := "tabpanel",
-      formatScenario(scenario, false)
+      formatScenario(scenario, None, false)
     )
   }
 
@@ -437,7 +438,7 @@ trait DetaiFormatter {
             for {
               scenario <- rule.scenarios
             } yield {
-              formatScenario(scenario, false)
+              formatScenario(scenario, None, false)
             }
           )
         )
@@ -448,6 +449,7 @@ trait DetaiFormatter {
   private def formatStepLine(parent: GwenNode, step: Step, evalStatus: EvalStatus, keywordPixels: Int): TypedTag[String] = {
     val status = evalStatus.keyword
     val stepDef = step.stepDef
+    val isHorizForEach = step.isHorizontalForEachTable
     li(`class` := s"list-group-item list-group-item-${bgStatus(status)} ${if (evalStatus.isError || evalStatus.isDisabled) s"bg-${bgStatus(status)}" else ""}",
       a(name := s"${status}-${step.uuid}"),
       div(`class` := s"bg-${bgStatus(status)} ${if (evalStatus.isDisabled || evalStatus.isAbstained || evalStatus.isIgnored) "text-muted" else ""}",
@@ -468,25 +470,25 @@ trait DetaiFormatter {
         ),
         " ",
         if (step.printableTags.nonEmpty) formatTags(step.printableTags, true) else "",
-        if (stepDef.nonEmpty && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
+        if (stepDef.nonEmpty && !isHorizForEach && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
         raw(" \u00a0 "),
         formatParams(step.params, evalStatus),
         raw(" \u00a0 "),
         formatAttachments(None, step.attachments ++ step.childAttachments(name => !name.endsWith("-function")), evalStatus),
         for {
           sd <- stepDef
-          if (evalStatus.isEvaluated)
+          if (evalStatus.isEvaluated && !isHorizForEach)
           topLevel = if (parent.isInstanceOf[Scenario]) !parent.asInstanceOf[Scenario].isStepDef else parent.isInstanceOf[Background]
           collapse = (status != StatusKeyword.Passed && status != StatusKeyword.Ignored) || (!topLevel && step.siblingsIn(parent).size == 1)
         } yield {
-          formatStepDefDiv(sd, status, collapse)
+          formatStepDefDiv(sd, None, status, collapse)
         },
         for {
           docString <- step.docString
         } yield {
           formatStepDocString(step, keywordPixels)
         },
-        formatStepDataTable(step, keywordPixels)
+        formatStepDataTable(step, isHorizForEach, keywordPixels)
       ),
       for {
         opt <- Option(evalStatus.isError && stepDef.isEmpty)
@@ -540,23 +542,34 @@ trait DetaiFormatter {
     )
   }
                   
-  private def formatStepDefDiv(stepDef: Scenario, status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
+  private def formatStepDefDiv(stepDef: Scenario, descriptor: Option[String], status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
     div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (collapse) " in" else ""}", role := "tabpanel",
-      formatScenario(stepDef, false)
+      formatScenario(stepDef, descriptor, false)
     )
   }
 
-  private def formatStepDataTable(step: Step, keywordPixels: Int): Option[TypedTag[String]] = {
+  private def formatStepDataTable(step: Step, isHorizForEach: Boolean, keywordPixels: Int): Option[TypedTag[String]] = {
     val evalStatus = step.evalStatus
     val status = evalStatus.keyword
+    val hasHeaderRow = isHorizForEach && step.stepDef.map(_.steps.size < step.table.size).getOrElse(false)
     if (step.table.nonEmpty) {
       Some(
         div(`class` := "horizontal-scroll",
           for {
             rowIndex <- step.table.indices
             line = step.table(rowIndex)._1
+            sdIndex = if (hasHeaderRow) rowIndex - 1 else rowIndex
+            isHeaderRow = rowIndex == 0 && hasHeaderRow
+            rowStepDef = if (isHeaderRow || !isHorizForEach) None else step.stepDef.map(_.steps(sdIndex)).headOption.flatMap(_.stepDef)
           } yield {
             div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
+              rowStepDef map { sd =>
+                span(`class` := "pull-right",
+                  small(
+                    durationOrStatus(sd.evalStatus).toString
+                  )
+                )
+              },
               div(`class` := "line-no",
                 small(
                   if (line > 0) line.toString else ""
@@ -565,7 +578,7 @@ trait DetaiFormatter {
               div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
                 " "
               ),
-              formatDataRow(step.table, rowIndex, evalStatus, false)
+              formatDataRow(step.table, hasHeaderRow, rowStepDef, rowIndex, evalStatus, false)
             )
           }
         )
@@ -607,10 +620,26 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatDataRow(table: List[(Long, List[String])], rowIndex: Int, status: EvalStatus, isExample: Boolean): TypedTag[String] = {
-    code(`class` := s"bg-${bgStatus(status.keyword)} ${if (rowIndex == 0 || status.isFailed || !isExample) "data-table" else s"text-${cssStatus(status.keyword)}"}",
-      raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
-    )
+  private def formatDataRow(table: List[(Long, List[String])], hasHeader: Boolean, stepDef: Option[Scenario], rowIndex: Int, status: EvalStatus, isExample: Boolean): Seq[TypedTag[String]] = {
+    val rowHtml = raw(escapeHtml(Formatting.formatTableRow(table, rowIndex)))
+    val collapse = status.keyword != StatusKeyword.Passed && status.keyword != StatusKeyword.Ignored
+    Seq(
+      Some(
+        code(`class` := s"bg-${bgStatus(status.keyword)} ${if (rowIndex == 0 || status.isFailed || !isExample) "data-table" else s"text-${cssStatus(status.keyword)}"}",
+          stepDef.filter(_ => !collapse) map { sd =>
+            a(`class` := s"inverted-${cssStatus(status.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${sd.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := sd.uuid,
+                rowHtml
+            )
+          } getOrElse rowHtml
+        )
+      ),
+      stepDef map { sd => 
+        val itemNo = if (hasHeader) rowIndex else rowIndex + 1
+        val itemCount = table.size - (if (hasHeader) 1 else 0)
+        val descriptor = s"[${itemNo} of $itemCount]"
+        formatStepDefDiv(sd, Some(descriptor), sd.evalStatus.keyword, collapse) 
+      }
+    ).flatten
   }
 
   def formatParams(params: List[(String, String)], evalStatus: EvalStatus): Option[TypedTag[String]] = {

@@ -133,6 +133,7 @@ case class Step(
   }
 
   def hasDualColumnTable: Boolean = table.nonEmpty && table.head._2.size == 2
+  def isHorizontalForEachTable = table.nonEmpty && stepDef.exists(_.isHorizontalTable) && stepDef.exists(_.isForEach)
   def printableTags: List[Tag] = tags.filter(_.name.toLowerCase != Annotations.Breakpoint.toString.toLowerCase)
 
   /** Returns a string representation of this step. */

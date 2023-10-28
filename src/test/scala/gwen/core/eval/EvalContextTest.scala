@@ -21,11 +21,12 @@ import gwen.core.GwenOptions
 import gwen.core.Errors._
 import gwen.core.TestModel
 import gwen.core.eval.binding.JSBinding
+import gwen.core.node.gherkin.table.DataTable
+import gwen.core.node.gherkin.table.FlatTable
+import gwen.core.node.gherkin.table.TableType
 import gwen.core.state.EnvState
 import gwen.core.state.ScopedData
 import gwen.core.state.StateLevel
-import gwen.core.node.gherkin.table.DataTable
-import gwen.core.node.gherkin.table.FlatTable
 
 import org.scalatest.matchers.should.Matchers
 
@@ -45,8 +46,8 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
 
   "Data tables and records" should "be accessible until popped" in {
 
-    val table1 = new FlatTable(List(List("1")), List("token"))
-    val table2 = new FlatTable(List(List("2")), List("token"))
+    val table1 = new FlatTable(TableType.horizontal, List(List("1")), List("token"))
+    val table2 = new FlatTable(TableType.horizontal, List(List("2")), List("token"))
 
     val ctx = newCtx
     ctx.topScope.pushObject(DataTable.tableKey, table1)

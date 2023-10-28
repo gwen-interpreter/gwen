@@ -1,3 +1,8 @@
+3.50.1
+======
+Oct 28, 2023
+- Hyperlink each data table row in HTML reports to associated StepDef
+
 3.50.0
 ======
 Oct 24, 2023

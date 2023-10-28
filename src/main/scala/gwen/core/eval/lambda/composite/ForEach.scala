@@ -23,6 +23,8 @@ import gwen.core.eval.binding.DryValueBinding
 import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin._
+import gwen.core.node.gherkin.table.DataTable
+import gwen.core.node.gherkin.table.TableType
 import gwen.core.state.ScopedData
 import gwen.core.status._
 
@@ -42,16 +44,25 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
           withKeyword = if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And)
         )
       }
-      val tags = List(Tag(Annotations.Synthetic), Tag(Annotations.ForEach), Tag(Annotations.StepDef))
+      val tableTypeTag: Option[Tag] = ctx.topScope.getObject(DataTable.tableKey) match {
+        case Some(table: DataTable) =>
+          table.tableType match {
+            case TableType.horizontal => Some(Tag(Annotations.HorizontalTable))
+            case TableType.vertical => Some(Tag(Annotations.VerticalTable))
+            case TableType.matrix => Some(Tag(Annotations.MatrixTable))
+          }
+        case _ => None
+      }
+      val tags = List(Tag(Annotations.Synthetic), Tag(Annotations.ForEach), Tag(Annotations.StepDef)) ++ tableTypeTag.toList
       val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
       engine.beforeStepDef(preForeachStepDef, ctx)
+      val noOfElements = items.size
       val steps =
         items match {
           case Nil =>
             logger.info(s"For-each[$name]: none found")
             Nil
           case _ =>
-            val noOfElements = items.size
             logger.info(s"For-each[$name]: $noOfElements found")
             val prevNameValue = ctx.topScope.getOpt(name)
             try {
@@ -73,6 +84,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                 }
                 val prevIndex = ctx.topScope.getOpt("iteration.index")
                 val prevNumber = ctx.topScope.getOpt("iteration.number")
+                val descriptor = s"[$name] $itemNo of $noOfElements"
                 ctx.topScope.set("iteration.index", index.toString)
                 ctx.topScope.set("iteration.number", itemNo.toString)
                 (try {
@@ -81,14 +93,14 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                       val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
                       val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
                       if (failfast && !isSoftAssert) {
-                        logger.info(s"Skipping [$name] $itemNo of $noOfElements")
+                        logger.info(s"Skipping $descriptor")
                         engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
                       } else {
-                        logger.info(s"Processing [$name] $itemNo of $noOfElements")
+                        logger.info(s"Processing $descriptor")
                         engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
                       }
                     case _ =>
-                      logger.info(s"Processing [$name] $itemNo of $noOfElements")
+                      logger.info(s"Processing $descriptor")
                       engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
                   }
                 } finally {

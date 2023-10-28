@@ -25,6 +25,7 @@ import gwen.core.state.ScopedData
   * Data table containing records.
   */
 trait DataTable {
+  val tableType: TableType
   val records: List[List[String]]
   def tableScope: ScopedData
 }
@@ -101,8 +102,8 @@ object DataTable {
         val records = table.tail.map(_.tail)
         new MatrixTable(records, topHeaders, leftHeaders, table.head(0))
       case _ =>
-        if (headers.nonEmpty) new FlatTable(table, headers)
-        else new FlatTable(table.tail, table.head)
+        if (headers.nonEmpty) new FlatTable(tableType, table, headers)
+        else new FlatTable(tableType, table.tail, table.head)
     }
   }
 }

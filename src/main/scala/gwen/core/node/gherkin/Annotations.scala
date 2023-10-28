@@ -17,4 +17,4 @@
 package gwen.core.node.gherkin
 
 enum Annotations:
-  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData, Hard, Soft, Sustained, DryRun
+  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, HorizontalTable, VerticalTable, MatrixTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData, Hard, Soft, Sustained, DryRun
