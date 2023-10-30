@@ -31,8 +31,8 @@ class WriteNewLineToFile[T <: EvalContext](filepath: Option[String], filepathRef
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
+      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
       ctx.evaluate(step) {
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
         if (overwrite) {
           file.writeNewLine()
         } else {

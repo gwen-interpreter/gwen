@@ -31,9 +31,9 @@ class WriteTextToFile[T <: EvalContext](content: Option[String], contentRef: Opt
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
+      val text = content.getOrElse(ctx.getBoundValue(contentRef.get))
+      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
       ctx.evaluate(step) {
-        val text = content.getOrElse(ctx.getBoundValue(contentRef.get))
-        val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
         if (overwrite) {
           file.writeText(text)
         } else {
