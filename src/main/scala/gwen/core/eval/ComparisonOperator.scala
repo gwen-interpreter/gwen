@@ -18,3 +18,20 @@ package gwen.core.eval
 
 enum ComparisonOperator:
   case be, contain, `start with`, `end with`, `match regex`, `match xpath`, `match json path`, `match template`, `match template file`
+
+object ComparisonOperator {
+  def fromModal(modal: String): ComparisonOperator = {
+    modal match {
+      case "is" => ComparisonOperator.be
+      case "contains" => ComparisonOperator.contain
+      case "starts with" => ComparisonOperator.`start with`
+      case "ends with" => ComparisonOperator.`end with`
+      case "matches regex" => ComparisonOperator.`match regex`
+      case "matches xpath" => ComparisonOperator.`match xpath`
+      case "matches json path" => ComparisonOperator.`match json path`
+      case "matches template" => ComparisonOperator.`match template`
+      case "matches template file" => ComparisonOperator.`match template file`
+      case _ => ComparisonOperator.valueOf(modal)
+    }
+  }
+}
