@@ -67,6 +67,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new ForEachDelimited(doStep, entry, source, delimiter, this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation defined""" =>
         Some(new IfDefinedCondition(doStep, attribute, Option(negation).isDefined, this))
+      case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation blank""" =>
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).isDefined, "", this))
+      case r"""(.+)$doStep if (.+?)$attribute is not "(.*?)"$expression"""""" =>
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, true, expression, this))
+      case r"""(.+)$doStep if (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression"""""" =>
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), false, expression, this))
+      case r"""(.+)$doStep if (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression"""""" =>
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>

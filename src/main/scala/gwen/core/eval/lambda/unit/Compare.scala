@@ -27,15 +27,15 @@ import gwen.core.behavior.BehaviorType
 import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
+import scala.util.Try
 
 class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
-      val binding = ctx.getBinding(source)
       val expected = ctx.parseExpression(operator, expression)
-      val actualValue = binding.resolve()
+      val actualValue = ctx.getBoundValue(source)
       ctx.perform {
         val result = ctx.compare(source, expected, actualValue, operator, negate)
         val op = {
@@ -47,10 +47,11 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         }
         result match {
           case Success(assertion) =>
+            val displayName = Try(ctx.getBinding(source).displayName).getOrElse(source)
             ctx.assertWithError(
               assertion, 
               message, 
-              s"Expected ${binding.displayName} to ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got ${ValueLiteral.orQuotedValue(actualValue)}"}",
+              s"Expected $displayName to ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got ${ValueLiteral.orQuotedValue(actualValue)}"}",
               step.assertionMode)
           case Failure(error) =>
             throw error;
