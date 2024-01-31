@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.51.1"
+val gwenVersion = "3.51.2"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -66,14 +66,23 @@ lazy val mainDependencies = {
     "org.apache.pdfbox" % "pdfbox-io" % "3.0.1" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
+  ) ++ mainOverrides
+}
+
+lazy val mainOverrides = {
+  Seq(
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.16.1",
+    "com.google.guava" % "guava" % "33.0.0-jre",
+    "org.reactivestreams" % "reactive-streams" % "1.0.4",
+    "org.slf4j" % "slf4j-api" % "1.7.36"
   )
 }
 
 dependencyOverrides ++= Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.36",
   "com.fasterxml.jackson.core" %  "jackson-databind" % "2.16.1",
-  "com.google.guava" % "guava" % "33.0.0-jre",
-  "org.reactivestreams" % "reactive-streams" % "1.0.4"
+    "com.google.guava" % "guava" % "33.0.0-jre",
+    "org.reactivestreams" % "reactive-streams" % "1.0.4",
+    "org.slf4j" % "slf4j-api" % "1.7.36"
 )
 
 lazy val testDependencies = {
