@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.51.2"
+val gwenVersion = "3.51.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -45,7 +45,7 @@ lazy val mainDependencies = {
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "3.25.1",
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.21.1",
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.22.1",
     "org.slf4j" % "jul-to-slf4j" % "1.7.36",
     "commons-codec" % "commons-codec" % "1.16.0",
     "org.apache.commons" % "commons-text" % "1.11.0",
