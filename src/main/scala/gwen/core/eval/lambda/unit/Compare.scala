@@ -51,7 +51,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
             ctx.assertWithError(
               assertion, 
               message, 
-              s"Expected $displayName to ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but got ${ValueLiteral.orQuotedValue(actualValue)}"}",
+              s"$displayName should ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but ${if (op == ComparisonOperator.be) "got" else "value was"} ${ValueLiteral.orQuotedValue(actualValue)}"}",
               step.assertionMode)
           case Failure(error) =>
             throw error;

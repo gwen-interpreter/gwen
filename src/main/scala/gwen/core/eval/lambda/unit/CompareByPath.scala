@@ -58,7 +58,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
             ctx.assertWithError(
               assertion, 
               message, 
-              s"Expected $source at $pathType '$path' to ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actual == expected) "" else s" but got '${ValueLiteral.orQuotedValue(actual)}"}",
+              s"$source at $pathType '$path' should ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actual == expected) "" else s" but got '${ValueLiteral.orQuotedValue(actual)}"}",
               step.assertionMode)
           case Failure(error) =>
             throw error;
