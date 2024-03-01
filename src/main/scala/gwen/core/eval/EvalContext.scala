@@ -262,7 +262,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       if (!assertion) Errors.assertionError(Try(interpolateLenient(msg)).getOrElse(msg), mode)
     } getOrElse {
       try {
-        assert(assertion, assertError)
+        Assert(assertion, assertError)
       } catch {
         case error: AssertionError => Errors.assertionError(error.getMessage, mode)
       }

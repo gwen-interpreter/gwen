@@ -503,3 +503,10 @@ object Wait {
 
 enum LocationType:
     case file,url
+
+object Assert {
+  def apply(assertion: Boolean, message: => String): Unit = {
+    if (!assertion)
+      throw new java.lang.AssertionError(message)
+  }
+}

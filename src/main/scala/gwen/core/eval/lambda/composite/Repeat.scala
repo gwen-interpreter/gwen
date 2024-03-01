@@ -40,9 +40,9 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
   def evaluteCondition(ctx: T): Boolean
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
-    assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
-    assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
+    Assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
+    Assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
+    Assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
     val operationTag = Tag(if (operation == "until") Annotations.Until else Annotations.While)
     val tags = List(Tag(Annotations.Synthetic), operationTag, Tag(Annotations.StepDef))
     val preCondStepDef = Scenario(None, tags, operationTag.name, condition, Nil, None, Nil, Nil, step.params, step.cumulativeParams)

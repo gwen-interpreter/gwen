@@ -15,13 +15,14 @@
  */
 package gwen.core.node
 
+import gwen.core.Assert
 import gwen.core.node.gherkin.GherkinNode
 import gwen.core.node.gherkin.Step
 import gwen.core.state.ReservedParam
 
 class NodeChain(val nodes: List[GwenNode]) {
 
-  assert(nodes.nonEmpty, "IllegalState: nodes cannot be empty")
+  Assert(nodes.nonEmpty, "IllegalState: nodes cannot be empty")
 
   def previous: GwenNode = nodes(nodes.size - 2)
   def last: GwenNode = nodes.last
