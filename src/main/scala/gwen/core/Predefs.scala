@@ -16,6 +16,8 @@
 
 package gwen.core
 
+import gwen.core.eval.ComparisonOperator
+
 import scala.concurrent.duration.Duration
 import scala.io.Source
 import scala.util.matching.Regex
@@ -508,5 +510,8 @@ object Assert {
   def apply(assertion: Boolean, message: => String): Unit = {
     if (!assertion)
       throw new java.lang.AssertionError(message)
+  }
+  def formatFailed(source: String, expected: String, actual: String, negate: Boolean, operator: ComparisonOperator): String = {
+    s"$source should ${if(negate) "not " else ""}$operator ${ValueLiteral.orQuotedValue(expected)}${if (operator == ComparisonOperator.be && actual == expected) "" else s" but ${if (operator == ComparisonOperator.be) "got" else "value was"} ${ValueLiteral.orQuotedValue(actual)}"}"
   }
 }

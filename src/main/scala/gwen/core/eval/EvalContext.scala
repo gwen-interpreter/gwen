@@ -128,7 +128,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       case ComparisonOperator.`match template` | ComparisonOperator.`match template file` =>
         matchTemplate(expected, actual, sourceName, topScope) match {
           case Success(result) =>
-            if (negate) Errors.templateMatchError(s"$sourceName should not match template") else result
+            if (negate) Errors.templateMatchError(Assert.formatFailed(sourceName, expected, actual, negate, operator)) else result
           case Failure(failure) =>
             if (negate) false else throw failure
         }

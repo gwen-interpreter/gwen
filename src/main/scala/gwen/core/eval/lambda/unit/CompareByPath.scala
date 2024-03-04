@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Assert
 import gwen.core.Errors
 import gwen.core.ValueLiteral
 import gwen.core.eval.ComparisonOperator
@@ -58,7 +59,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
             ctx.assertWithError(
               assertion, 
               message, 
-              s"$source at $pathType '$path' should ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actual == expected) "" else s" but got '${ValueLiteral.orQuotedValue(actual)}"}",
+              Assert.formatFailed(source, expected, actual, negate, op),
               step.assertionMode)
           case Failure(error) =>
             throw error;

@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.Assert
 import gwen.core.ValueLiteral
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
@@ -51,7 +52,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
             ctx.assertWithError(
               assertion, 
               message, 
-              s"$displayName should ${if(negate) "not " else ""}$op ${ValueLiteral.orQuotedValue(expected)}${if (op == ComparisonOperator.be && actualValue == expected) "" else s" but ${if (op == ComparisonOperator.be) "got" else "value was"} ${ValueLiteral.orQuotedValue(actualValue)}"}",
+              Assert.formatFailed(displayName, expected, actualValue, negate, op),
               step.assertionMode)
           case Failure(error) =>
             throw error;
