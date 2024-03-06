@@ -76,7 +76,8 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
   private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, maxNameLength: Int): TypedTag[String] = {
     val videos = result.videos
     val featureName = result.displayName
-    val inError = result.evalStatus.isError
+    val errorTrails = result.errorTrails
+    val inError = errorTrails.nonEmpty
     val featureColPercentage = {
       if (inError) {
         Some(Option(Option((maxNameLength / 2) + 2).filter(_ < 25).getOrElse(24)).filter(_ > 7).getOrElse(6) + (if (videos.isEmpty) 1 else 0))
@@ -137,18 +138,17 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
         }
       ),
       if (inError) {
-        val eSteps = result.errorTrails
         td(`class` := "summary-line-2",
           table(`class` := "table-responsive",
             tbody(
               for {
-                eStep <- eSteps
+                eStep <- errorTrails
                 eAttachments = eStep.attachments
               } yield {
                 tr(`class` := "summary-line-0", style := "border-top: hidden;",
                   td(`class` := "summary-line-0", style := "vertical-align:top;",
                     if (eAttachments.nonEmpty) {
-                      formatAttachments(reportBase, eAttachments, result.evalStatus)
+                      formatAttachments(reportBase, eAttachments, reportingStatus)
                     } else "",
                     " "
                   ),
@@ -348,7 +348,7 @@ object HtmlReportFormatter {
   private [format] def formatAttachmentsDropdown(name: String, baseDir: Option[String], attachments: List[(String, File)], evalStatus: EvalStatus, hrefFormatter: File => String): TypedTag[String] = { 
     val status = (if (evalStatus.isAbstained) Disabled else evalStatus).keyword
     div(`class` := s"dropdown",
-      button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} ${if (status == StatusKeyword.Ignored) "grayed " else ""}dropdown-toggle", attr("type") := "button", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
+      button(`class` := s"btn btn-${cssStatus(status)} bg-${bgStatus(status)} dropdown-toggle ${if (status == StatusKeyword.Ignored) "grayed " else ""}", attr("type") := "button", attr("data-toggle") := "dropdown",
         strong(
           name
         ),

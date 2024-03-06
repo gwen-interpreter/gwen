@@ -647,7 +647,7 @@ trait DetaiFormatter {
     if (params.size > 0) {
       Some(
         div(`class` := s"dropdown bg-${bgStatus(status)}",
-          button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown", style := "position: relative; top: -0.5px;",
+          button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown",
             strong(
               "parameters "
             ),

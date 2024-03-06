@@ -157,6 +157,9 @@ div {
 
 .dropdown-toggle {
   border:none;
+  background-color: transparent;
+  position: relative; 
+  top: -0.5px;
 }
 
 .dropdown-menu {
