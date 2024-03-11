@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.51.7"
+val gwenVersion = "3.51.8"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.3.1",
+  scalaVersion := "3.4.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,21 +41,21 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "27.0.0",
+    "io.cucumber" % "gherkin" % "28.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "3.25.1",
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.22.1",
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.23.0",
     "org.slf4j" % "jul-to-slf4j" % "1.7.36",
-    "commons-codec" % "commons-codec" % "1.16.0",
+    "commons-codec" % "commons-codec" % "1.16.1",
     "org.apache.commons" % "commons-text" % "1.11.0",
     "com.github.tototoshi" %% "scala-csv" % "1.3.10",
     "com.jayway.jsonpath" % "json-path" % "2.9.0",
     "com.lihaoyi" %% "scalatags" % "0.12.0",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
-    "com.epam.reportportal" % "commons-model" % "5.11.0",
-    "com.epam.reportportal" % "client-java" % "5.2.2" excludeAll(
+    "com.epam.reportportal" % "commons-model" % "5.11.1",
+    "com.epam.reportportal" % "client-java" % "5.2.5" excludeAll(
       ExclusionRule(organization = "org.aspectj"),
       ExclusionRule(organization = "org.jetbrains.kotlin")
     ),
@@ -80,19 +80,16 @@ lazy val mainOverrides = {
 
 dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" %  "jackson-databind" % "2.16.1",
-    "com.google.guava" % "guava" % "33.0.0-jre",
-    "org.reactivestreams" % "reactive-streams" % "1.0.4",
-    "org.slf4j" % "slf4j-api" % "1.7.36"
+  "com.google.guava" % "guava" % "33.0.0-jre",
+  "org.reactivestreams" % "reactive-streams" % "1.0.4",
+  "org.slf4j" % "slf4j-api" % "1.7.36"
 )
 
 lazy val testDependencies = {
   Seq(
-    "org.scalatest" %% "scalatest" % "3.2.17",
+    "org.scalatest" %% "scalatest" % "3.2.18",
     "org.scalatestplus" %% "mockito-4-2" % "3.2.11.0",
-    "org.mockito" % "mockito-core" % "4.11.0",
-    "com.h2database" % "h2" % "2.2.224"
-    // TODO: uncomment and re-enable SQLSupportTest once slick releases a Scala 3-compatible version
-    // "com.typesafe.slick" %% "slick" % "3.3.3"
+    "org.mockito" % "mockito-core" % "4.11.0"
   ).map(_ % Test)
 }
 

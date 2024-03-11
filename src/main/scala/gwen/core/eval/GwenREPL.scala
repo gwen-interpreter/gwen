@@ -102,7 +102,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
               ctx.dsl.distinct match {
                 case Nil => Nil
                 case dsl => 
-                  val dslCompleter = TreeCompleter.node(dsl:_*)
+                  val dslCompleter = TreeCompleter.node(dsl*)
                   StepKeyword.names map { keyword =>
                     TreeCompleter.node(keyword.toString, dslCompleter)
                   }

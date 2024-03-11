@@ -160,7 +160,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       .orElse(Settings.getOpt("log4j.configuration")).foreach { config =>
 
       val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
-      if (config.toLowerCase.trim startsWith "file:") {
+      if (config.toLowerCase.trim.startsWith("file:")) {
         context.setConfigLocation(new URL(config).toURI)
       } else {
         context.setConfigLocation(new File(config).toURI)
