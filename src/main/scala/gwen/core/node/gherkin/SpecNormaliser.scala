@@ -22,6 +22,7 @@ import gwen.core.behavior.BehaviorRules
 import gwen.core.data.DataRecord
 import gwen.core.status.Pending
 
+import scala.io.Source
 import scala.util.chaining._
 
 import java.io.File
@@ -195,7 +196,11 @@ trait SpecNormaliser extends BehaviorRules {
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
       val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
-      Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None, Nil)
+      if (Source.fromString(value).getLines().length > 1) 
+        Step(None, keyword, s"$name is", Nil, None, Nil, Some((0, value, None)), Pending, Nil, Nil, List(dataTag), None, Nil)
+      else {
+        Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None, Nil)
+      }
     }
     val description = dataFile map { file => 
       List(s"Input data file: ${file.getPath}")
