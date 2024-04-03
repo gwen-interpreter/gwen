@@ -17,6 +17,7 @@
 package gwen.core.state
 
 import gwen.core._
+import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.Spec
 import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
@@ -127,6 +128,15 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
       set("gwen.eval.status.keyword", keyword.toString)
       set("gwen.eval.status.message", message)
     }
+  }
+
+  def bindDataRecord(rec: DataRecord): Unit = {
+    rec.data foreach { case (name, value) =>
+      set(name, value)
+    }
+    set("data record number", rec.recordNo.toString)
+    set("data.record.number", rec.recordNo.toString)
+    set("data.record.index", (rec.recordNo - 1).toString)
   }
 
   override def get(name: String): String = getDerivedImplicitOpt(name).getOrElse(super.get(name))

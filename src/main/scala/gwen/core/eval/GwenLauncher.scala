@@ -241,11 +241,6 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       engine.init(options, EnvState())
     }
     if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
-    unit.dataRecord foreach { record =>
-      record.data foreach { case (name, value) =>
-        ctx.topScope.set(name, value)
-      }
-    }
     val result = try {
       interpretUnit(unit, ctx)
     } finally {

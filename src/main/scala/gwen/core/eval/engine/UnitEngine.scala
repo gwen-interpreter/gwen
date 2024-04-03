@@ -68,6 +68,7 @@ trait UnitEngine[T <: EvalContext]
     * @param ctx the evaluation context
     */
   private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[SpecResult] = {
+    unit.dataRecord.foreach(ctx.topScope.bindDataRecord)
     Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
@@ -97,11 +98,6 @@ trait UnitEngine[T <: EvalContext]
 
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
     ctx.topScope.setImplicitAtts(Some(spec), Pending, true)
-    unit.dataRecord foreach { rec =>
-      ctx.topScope.set("data record number", rec.recordNo.toString)
-      ctx.topScope.set("data.record.number", rec.recordNo.toString)
-      ctx.topScope.set("data.record.index", (rec.recordNo - 1).toString)
-    }
     val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
     val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
     val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)

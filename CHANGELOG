@@ -1,14 +1,19 @@
-5.51.10
+3.51.11
+=======
+Apr 3, 2024
+- Bind first record of input data file when launching Gwen in REPL mode
+
+3.51.10
 =======
 Mar 22, 2024
 - Fix data feeds to cater for multiline data
 
-5.51.9
+3.51.9
 ======
 Mar 11, 2024
 - Update build tooling
 
-5.51.8
+3.51.8
 ======
 Mar 11, 2024
 - Update library dependencies
