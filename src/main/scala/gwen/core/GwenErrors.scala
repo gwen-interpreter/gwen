@@ -106,6 +106,7 @@ object Errors extends LazyLogging {
   def initProjectError(msg: String) = throw new InitProjectException(msg)
   def copyResourceError(msg: String) = throw new CopyResourceException(msg)
   def assertionError(msg: String, mode: AssertionMode) = throw new GwenAssertionError(msg, mode)
+  def accumulatedAssertionError(error: GwenAssertionError) = throw new AccumulatedAssertionError(error)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
   def unsupportedDataFileError(dataFile: File) = throw new UnsupportedDataFileException(dataFile)
   def unsupportedJsonStructureError(dataFile: File, cause: Throwable) = throw new UnsupportedJsonStructureException(dataFile, cause)
@@ -303,7 +304,10 @@ object Errors extends LazyLogging {
   class CopyResourceException(msg: String) extends GwenException(msg)
 
   /** Thrown when an assertion fails. */
-  class GwenAssertionError(msg: String, val mode: AssertionMode) extends AssertionError(msg)
+  class GwenAssertionError(val msg: String, val mode: AssertionMode) extends AssertionError(msg)
+
+  /** Thrown when an accumulated assertion error is raised. */
+  class AccumulatedAssertionError(error: GwenAssertionError) extends GwenAssertionError(error.msg, error.mode)
 
   /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
   class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)

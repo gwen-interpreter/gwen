@@ -272,6 +272,10 @@ trait StepEngine[T <: EvalContext] {
     val fStep = eStep.addAttachments(ctx.popAttachments())
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
+        if (fStep.stepDef.isEmpty && !status.isAccumulatedAssertionError) {
+          val errorList = ctx.topScope.getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]).getOrElse(Nil)
+          ctx.topScope.pushObject("gwen.accumulated.errors", errorList ++ List(status.message))
+        }
         if (status.isDisabledError) {
           fStep.copy(withEvalStatus = Disabled)
         } else if (fStep.isTry) {

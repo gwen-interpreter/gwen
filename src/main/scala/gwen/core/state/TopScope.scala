@@ -23,6 +23,9 @@ import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
 
 import scala.util.chaining._
+import scala.jdk.CollectionConverters._
+
+import net.minidev.json.JSONArray
 
 /**
   * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
@@ -108,6 +111,10 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     }
   }
 
+  def removeObject(name: String): Unit = {
+    objectStack -= name
+  }
+
   /** Gets all implicit attributes. */
   def implicitAtts: Seq[(String, String)] =
     findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name)$""")}
@@ -150,6 +157,16 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
     else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
     else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
+    else if (name == "gwen.accumulated.errors") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
+      errs match {
+        case Nil => ""
+        case err :: Nil => err
+        case _ => s"${errs.size} errors:\n${errs.zipWithIndex.map { (e, i) => s"(${i+1}) $e" } mkString "\n" }"
+      }
+    } orElse(Some(""))
+    else if (name == "gwen.accumulated.errors:JSONArray") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
+      JSONArray.toJSONString(errs.asJava)
+    } orElse(Some(JSONArray.toJSONString(Nil.asJava)))
     else None
   }
 

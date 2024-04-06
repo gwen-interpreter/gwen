@@ -67,6 +67,9 @@ trait EvalStatus {
   def isAssertionError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[Errors.GwenAssertionError])
 
+  def isAccumulatedAssertionError: Boolean =
+    cause.exists(c => c != null && c.isInstanceOf[Errors.AccumulatedAssertionError])
+
   def isHardAssertionError = isAssertionError(AssertionMode.hard)
   def isSoftAssertionError = isAssertionError(AssertionMode.soft)
   def isSustainedAssertionError = isAssertionError(AssertionMode.sustained)

@@ -1,3 +1,22 @@
+3.52.0
+======
+Apr 6, 2024
+- Add accumulated errors and asserts
+  - Add DSL `I reset accumulated errors` to reset (clear) any currently accumulated errors and demarcate a boundary for new ones
+  - Add DSL `there should be no accumulated errors`
+    - When called after a series of failed soft or sustained assertions, will raise an error containing all accumulated failure messages
+  - Accumulated error messages can also be referenced throughout specifications as:
+    - `${gwen.accumulated.errors}` - A numbered list of accumulataed errors, example:
+        ```
+        2 errors:
+        (1) x should not be blank
+        (2) y should be true but got false
+        ```
+    - `${gwen.accumulated.errors:JSONArray}` - A JSON array of accumulataed errors, example:
+        ```
+        ["x should be blank", "y should not be true but got false"]
+        ```
+
 3.51.11
 =======
 Apr 3, 2024

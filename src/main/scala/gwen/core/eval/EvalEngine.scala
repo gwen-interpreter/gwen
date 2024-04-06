@@ -226,6 +226,11 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new DataLookup(dataName, name, Some(filepath), None, step.orDocString(predicate))
       case r"""I lookup (.+?)$dataName in (.+?)$filepathRef file as (.+?)$name where "(.+)"$predicate""" =>
         new DataLookup(dataName, name, None, Some(filepathRef), step.orDocString(predicate))
+      case "I reset accumulated errors" =>
+        new ResetAccumulatedErrors()
+      case "there should be no accumulated errors" =>
+        new Compare("gwen.accumulated.errors", "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"))
+
       case _ =>
         Errors.undefinedStepError(step)
         

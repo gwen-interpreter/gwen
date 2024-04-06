@@ -17,6 +17,7 @@
 package gwen.core.eval.lambda.unit
 
 import gwen.core.Assert
+import gwen.core.Errors
 import gwen.core.ValueLiteral
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
@@ -49,11 +50,16 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
         result match {
           case Success(assertion) =>
             val displayName = Try(ctx.getBinding(source).displayName).getOrElse(source)
-            ctx.assertWithError(
-              assertion, 
-              message, 
-              Assert.formatFailed(displayName, expected, actualValue, negate, op),
-              step.assertionMode)
+            try {
+              ctx.assertWithError(
+                assertion, 
+                message, 
+                Assert.formatFailed(displayName, expected, actualValue, negate, op),
+                step.assertionMode)
+            } catch {
+              case gae: Errors.GwenAssertionError if source == "gwen.accumulated.errors" =>
+                Errors.accumulatedAssertionError(gae)
+            }
           case Failure(error) =>
             throw error;
         }

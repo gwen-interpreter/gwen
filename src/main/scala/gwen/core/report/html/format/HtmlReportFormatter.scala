@@ -76,7 +76,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
   private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, maxNameLength: Int): TypedTag[String] = {
     val videos = result.videos
     val featureName = result.displayName
-    val errorTrails = result.errorTrails
+    val errorTrails = result.errorTrails.filter(!_.evalStatus.isAccumulatedAssertionError)
     val inError = errorTrails.nonEmpty
     val featureColPercentage = {
       if (inError) {
