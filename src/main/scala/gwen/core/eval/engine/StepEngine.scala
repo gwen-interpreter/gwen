@@ -110,26 +110,32 @@ trait StepEngine[T <: EvalContext] {
       }
     }
     if (resume(parent, step, ctx)) {
-      val prevStatus = if (step.isTry) Some(ctx.currentStatus) else None
-      val pStep = resolveParamPlaceholders(step, ctx)
-      val eStep = pStep.evalStatus match {
-        case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
-          beforeStep(pStep.copy(withEvalStatus = Pending), ctx)
-          pStep
-        case _ =>
-          val rStep = resolveAllPlaceholders(pStep, ctx)
-          logger.info(s"Evaluating Step: $rStep")
-          beforeStep(rStep.copy(withEvalStatus = Pending), ctx)
-          ctx.withStep(rStep) { s =>
-            Try(healthCheck(parent, s, ctx)) match {
-              case Failure(e) => throw e
-              case _ => translateAndEvaluate(parent, s, ctx)
+      val isTry = step.isTry
+      if (isTry) ctx.topScope.pushObject("gwen.scope.try", true)
+      try {
+        val prevStatus = if (step.isTry) Some(ctx.currentStatus) else None
+        val pStep = resolveParamPlaceholders(step, ctx)
+        val eStep = pStep.evalStatus match {
+          case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
+            beforeStep(pStep.copy(withEvalStatus = Pending), ctx)
+            pStep
+          case _ =>
+            val rStep = resolveAllPlaceholders(pStep, ctx)
+            logger.info(s"Evaluating Step: $rStep")
+            beforeStep(rStep.copy(withEvalStatus = Pending), ctx)
+            ctx.withStep(rStep) { s =>
+              Try(healthCheck(parent, s, ctx)) match {
+                case Failure(e) => throw e
+                case _ => translateAndEvaluate(parent, s, ctx)
+              }
             }
-          }
-      }
-      finaliseStep(eStep, prevStatus, ctx) tap { fStep =>
-        logStatus(ctx.options, fStep)
-        afterStep(fStep, ctx)
+        }
+        finaliseStep(eStep, prevStatus, ctx) tap { fStep =>
+          logStatus(ctx.options, fStep)
+          afterStep(fStep, ctx)
+        }
+      } finally {
+        if (isTry) ctx.topScope.popObject("gwen.scope.try")
       }
     } else {
       ctx.close()
@@ -272,7 +278,8 @@ trait StepEngine[T <: EvalContext] {
     val fStep = eStep.addAttachments(ctx.popAttachments())
     fStep.evalStatus match {
       case status @ Failed(nanos, error) =>
-        if (!fStep.isTry && fStep.stepDef.isEmpty && !status.isAccumulatedAssertionError) {
+        val inTry = ctx.topScope.getObject("gwen.scope.try").map(_.asInstanceOf[Boolean]).getOrElse(false)
+        if (!inTry && !status.isDisabledError && fStep.stepDef.isEmpty && !status.isAccumulatedAssertionError) {
           val errorList = ctx.topScope.getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]).getOrElse(Nil)
           ctx.topScope.pushObject("gwen.accumulated.errors", errorList ++ List(status.message))
         }
