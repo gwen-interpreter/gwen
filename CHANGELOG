@@ -1,3 +1,8 @@
+3.52.1
+======
+Apr 8, 2024
+- Do not accumulate errors raised in `@Try` steps
+
 3.52.0
 ======
 Apr 6, 2024
@@ -6,13 +11,13 @@ Apr 6, 2024
   - Add DSL `there should be no accumulated errors`
     - When called after a series of failed soft or sustained assertions, will raise an error containing all accumulated failure messages
   - Accumulated error messages can also be referenced throughout specifications as:
-    - `${gwen.accumulated.errors}` - A numbered list of accumulataed errors, example:
+    - `${gwen.accumulated.errors}` - A numbered list of accumulated errors, example:
         ```
         2 errors:
         (1) x should not be blank
         (2) y should be true but got false
         ```
-    - `${gwen.accumulated.errors:JSONArray}` - A JSON array of accumulataed errors, example:
+    - `${gwen.accumulated.errors:JSONArray}` - A JSON array of accumulated errors, example:
         ```
         ["x should be blank", "y should not be true but got false"]
         ```
