@@ -1,3 +1,8 @@
+3.52.3
+======
+Apr 12, 2024
+- Fix alignment of Message annotations in formatter to cater for step level tags
+
 3.52.2
 ======
 Apr 8, 2024

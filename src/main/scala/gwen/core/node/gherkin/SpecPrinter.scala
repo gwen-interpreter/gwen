@@ -106,14 +106,14 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       val keyword = step.keyword
       val keywordMaxLength = StepKeyword.maxLength
       val indent = indentFor(step)
-      val tags = if (verbatim) step.tags.filter(_.name != Annotations.Message.toString) else step.printableTags
-      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${tags.map(_.toString).mkString(" ")} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
+      val tags = filterStepTags(step)
+      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${stringifyTags(tags)} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
       if (verbatim && (step.message.nonEmpty || step.dryValues.nonEmpty)) {
         val max = step.siblingsIn(parent) match { 
           case Nil => 0
-          case siblings => siblings.map(_.asInstanceOf[Step]).filter(s => s.message.nonEmpty || s.dryValues.nonEmpty).map(_.name.length).max
+          case siblings => siblings.map(_.asInstanceOf[Step]).filter(s => s.message.nonEmpty || s.dryValues.nonEmpty).map(s => stepExpressionLength(tags, s)).max
         }
-        val padding = " " * (max - step.name.length)
+        val padding = " " * (max - stepExpressionLength(tags, step))
         step.message foreach { msg =>
           val msgTag = s"""@${Annotations.Message}(${Formatting.surroundWithQuotesForAnnotation(msg)})"""
           out.print(s"    $padding${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${msgTag}${if (colors) ansi.reset else ""}")
@@ -144,6 +144,16 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       if (deep) out.println(printStatus(step, Some(step.evalStatus.message), withIcon = true, withStatusIcon = false))
     }
     out
+  }
+
+  private def filterStepTags(step: Step): List[Tag] = {
+    if (verbatim) step.tags.filter(_.name != Annotations.Message.toString) else step.printableTags
+  }
+
+  private def stringifyTags(tags: List[Tag]): String = tags.map(_.toString).mkString(" ")
+
+  private def stepExpressionLength(tags: List[Tag], step: Step): Int = {
+    s"${if (tags.nonEmpty) s"${stringifyTags(tags)} " else ""}${step.name}".length
   }
 
   override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
