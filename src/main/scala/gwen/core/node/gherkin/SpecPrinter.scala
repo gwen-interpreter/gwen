@@ -111,7 +111,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       if (verbatim && (step.message.nonEmpty || step.dryValues.nonEmpty)) {
         val max = step.siblingsIn(parent) match { 
           case Nil => 0
-          case siblings => siblings.map(_.asInstanceOf[Step]).filter(s => s.message.nonEmpty || s.dryValues.nonEmpty).map(s => stepExpressionLength(tags, s)).max
+          case siblings => siblings.map(_.asInstanceOf[Step]).filter(s => s.message.nonEmpty || s.dryValues.nonEmpty).map(s => stepExpressionLength(filterStepTags(s), s)).max
         }
         val padding = " " * (max - stepExpressionLength(tags, step))
         step.message foreach { msg =>

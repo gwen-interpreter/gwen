@@ -1,7 +1,12 @@
+3.53.1
+======
+Apr 15, 2024
+- Fix alignment of Message annotations in formatter to cater for step level tags
+
 3.53.0
 ======
 Apr 14, 2024
-- Add Trim and IgnoreCase annotations to support triming and ignoring case in match DSLs 
+- Add Trim and IgnoreCase annotations to support trimming and ignoring case in match DSLs 
 
 3.52.3
 ======
