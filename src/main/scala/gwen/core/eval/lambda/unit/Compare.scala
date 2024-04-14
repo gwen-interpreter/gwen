@@ -30,8 +30,9 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 import scala.util.Try
+import gwen.core.Formatting
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStep[T] {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -39,7 +40,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
       val expected = ctx.parseExpression(operator, expression)
       val actualValue = ctx.getBoundValue(source)
       ctx.perform {
-        val result = ctx.compare(source, expected, actualValue, operator, negate)
+        val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate)
         val op = {
           if (operator == ComparisonOperator.`match template file`) {
             ComparisonOperator.`match template`

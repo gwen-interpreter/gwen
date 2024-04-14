@@ -339,6 +339,13 @@ object Formatting {
   def sha256Hash(source: String): String = DigestUtils.sha256Hex(source)
   def upTo2DecimalPlaces(number: Double): String = new DecimalFormat("#.##").format(number)
   def escapeNewLineChars(source: String): String = source.replaceAll("\n", s"\\\\n");
+  def format(source: String, trim: Boolean, upperCase: Boolean): String = {
+    if (trim) {
+      if (upperCase) source.trim.toUpperCase
+      else source.trim
+    } else if (upperCase) source.toUpperCase
+    else source
+  }
   def surroundWithQuotes(source: String): String = surroundWithQuotes(source, '\'', '"', '`')
   def surroundWithQuotesForAnnotation(source: String): String = surroundWithQuotes(source, '\'', '`', '"')
   private def surroundWithQuotes(source: String, quote1: Char, quote2: Char, quote3: Char): String = {

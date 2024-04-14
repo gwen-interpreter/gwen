@@ -29,7 +29,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 
-class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String], sourceValue2: Option[String], operator: SimilarityOperator, percentage: Double, ignoreCase: Boolean, negate: Boolean, message: Option[String]) extends UnitStep[T] {
+class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String], sourceValue2: Option[String], operator: SimilarityOperator, percentage: Double, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Assertion, ctx)
@@ -39,7 +39,7 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
     val value2 = sourceValue2.getOrElse(binding2.get.resolve())
     var similarityScore: Option[Double] = None
     ctx.perform {
-      ctx.checkSimilarity(if (ignoreCase) value1.toUpperCase else value1, if (ignoreCase) value2.toUpperCase else value2, operator, percentage, negate) match {
+      ctx.checkSimilarity(Formatting.format(value1, trim, ignoreCase), Formatting.format(value2, trim, ignoreCase), operator, percentage, negate) match {
         case Success((passed, score)) =>
           similarityScore = score
           score match {
@@ -53,7 +53,7 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
           ctx.assertWithError(
             passed, 
             message, 
-            s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}${if (ignoreCase) " (ignoring case)" else ""}",
+            s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}",
             step.assertionMode)
         case Failure(error) =>
           if (ctx.topScope.getOpt("similarity score").nonEmpty) {

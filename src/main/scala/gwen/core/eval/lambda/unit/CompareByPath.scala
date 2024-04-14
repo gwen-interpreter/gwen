@@ -18,6 +18,7 @@ package gwen.core.eval.lambda.unit
 
 import gwen.core.Assert
 import gwen.core.Errors
+import gwen.core.Formatting
 import gwen.core.ValueLiteral
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
@@ -32,7 +33,7 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStep[T] {
+class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -46,7 +47,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
             path, src, XMLNodeType.text)
           case _ => Errors.invalidBindingPathTypeError(pathType)
         }
-        val result = ctx.compare(s"$source at $pathType '$path'", expected, actual, operator, negate)
+        val result = ctx.compare(s"$source at $pathType '$path'", Formatting.format(expected, trim, ignoreCase), Formatting.format(actual, trim, ignoreCase), operator, negate)
         val op = {
           if (operator == ComparisonOperator.`match template file`) {
             ComparisonOperator.`match template`

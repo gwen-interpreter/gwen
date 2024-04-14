@@ -68,13 +68,13 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation defined""" =>
         Some(new IfDefinedCondition(doStep, attribute, Option(negation).isDefined, this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation blank""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).isDefined, "", this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).isDefined, "", step.isTrim, step.isIgnoreCase, this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).isDefined, expression, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).isDefined, expression, step.isTrim, step.isIgnoreCase, this))
       case r"""(.+)$doStep if (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.fromModal(operator), false, expression, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.fromModal(operator), false, expression, step.isTrim, step.isIgnoreCase, this))
       case r"""(.+)$doStep if (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, step.isTrim, step.isIgnoreCase, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (?:timeout|wait)""" =>
@@ -142,14 +142,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureByRegex(name, expression, source)
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByJsonPath(name, expression, source)
-      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2( ignoring case)?$ignoringCase as (.+?)$name""" =>
-        new CaptureSimilarity(name, attribute1, None, Some(value2), Option(ignoringCase).isDefined)
-      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2( ignoring case)?$ignoringCase as (.+?)$name""" =>
-        new CaptureSimilarity(name, attribute1, Some(attribute2), None, Option(ignoringCase).isDefined)
-      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2( ignoring case)?$ignoringCase""" =>
-        new CaptureSimilarity("similarity score", attribute1, None, Some(value2), Option(ignoringCase).isDefined)
-      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
-        new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None, Option(ignoringCase).isDefined)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2 as (.+?)$name""" =>
+        new CaptureSimilarity(name, attribute1, None, Some(value2), step.isTrim, step.isIgnoreCase)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2 as (.+?)$name""" =>
+        new CaptureSimilarity(name, attribute1, Some(attribute2), None, step.isTrim, step.isIgnoreCase)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2""" =>
+        new CaptureSimilarity("similarity score", attribute1, None, Some(value2), step.isTrim, step.isIgnoreCase)
+      case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2""" =>
+        new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None, step.isTrim, step.isIgnoreCase)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location as (.+?)$name""" =>
         new CapturePDF(name, LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location""" =>
@@ -183,17 +183,17 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|true|false)$literal""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message)
+        new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
-      case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2( ignoring case)?$ignoringCase""" =>
-        new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
-      case r"""(.+?)$attribute1 should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to (.+?)$attribute2( ignoring case)?$ignoringCase""" =>
-        new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(ignoringCase).isDefined, Option(negation).isDefined, step.message)
+        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
+      case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2""" =>
+        new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
+      case r"""(.+?)$attribute1 should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to (.+?)$attribute2""" =>
+        new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
       case r"""(.+?)$attribute should( not)?$negation be (blank|true|false)$literal""" =>
-        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message)
+        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message)
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).isDefined, step.message, step.isTrim, step.isIgnoreCase)
       case r"""(.+?)$attribute should be absent""" =>
         new IsDefined(attribute, true, step.message)
       case r"""(.+?)$attribute should( not)?$negation be defined""" =>
@@ -229,7 +229,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case "I reset accumulated errors" =>
         new ResetAccumulatedErrors()
       case "there should be no accumulated errors" =>
-        new Compare("gwen.accumulated.errors", "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"))
+        new Compare("gwen.accumulated.errors", "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"), false, false)
 
       case _ =>
         Errors.undefinedStepError(step)
