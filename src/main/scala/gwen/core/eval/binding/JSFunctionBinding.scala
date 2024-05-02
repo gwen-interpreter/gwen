@@ -66,7 +66,7 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
             None
           }
           val params = delimiter map { delim => 
-            argsString.split(delim).toList
+            argsString.split(delim, -1).toList
           } getOrElse {
             List(argsString)
           }
