@@ -83,9 +83,10 @@ trait SummaryFormatter {
     div(`class` := "panel panel-default",
       div(`class` := "panel-heading", style := "padding-right: 20px; padding-bottom: 0px; border-style: none;",
         span(`class` := "label label-black",
-          "Results"
+          if(summary.results.nonEmpty) "Results" else "No-op"
         ),
         div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
+          if(summary.results.isEmpty) "No input data provided" else "",
           span(`class` := "pull-right", style := "padding-right: 10px;",
             small(
               formatDuration(DurationOps.sum(summary.results.map(_.elapsedTime)))

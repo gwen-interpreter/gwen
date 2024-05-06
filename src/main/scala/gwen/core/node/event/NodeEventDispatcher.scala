@@ -97,7 +97,7 @@ class NodeEventDispatcher extends LazyLogging {
           Settings.setLocal("gwen.feature.failfast.enabled", "true")
           Settings.setLocal("gwen.feature.failfast.exit", "false")
           throw e
-        case _ => // noop
+        case _ => // No-op
       }
     }
   }

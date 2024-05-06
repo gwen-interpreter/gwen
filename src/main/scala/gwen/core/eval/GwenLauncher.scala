@@ -155,10 +155,19 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       val reportGenerators = ReportGenerator.generatorsFor(options, engine)
       reportGenerators.foreach(_.init(engine))
       Try {
-        if (options.parallel) {
-          executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
+        if (options.dataFile.nonEmpty && featureStream.isEmpty) {
+          println("[No-op] No input data provided")
+          ResultsSummary() tap { summary => 
+            reportGenerators foreach {
+              _.reportSummary(summary)
+            }
+          }
         } else {
-          executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
+          if (options.parallel) {
+            executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
+          } else {
+            executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
+          }
         }
       } match {
         case Success(s) =>

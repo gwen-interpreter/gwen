@@ -176,17 +176,13 @@ class ReportGenerator (
     * @param summary the feature summary to report
     */
   final def reportSummary(summary: ResultsSummary): Option[File] =
-    if (summary.results.nonEmpty) {
-      summaryReportFile tap { reportFile =>
-        reportFile foreach { file =>
-          formatSummary(options, info, summary) foreach { content =>
-            file.writeText(content)
-            logger.info(s"${config.name} feature summary${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
-          }
+    summaryReportFile tap { reportFile =>
+      reportFile foreach { file =>
+        formatSummary(options, info, summary) foreach { content =>
+          file.writeText(content)
+          logger.info(s"${config.name} feature summary${if (options.dryRun) " dry-run" else " evaluation"} report generated: ${file.getAbsolutePath}")
         }
       }
-    } else {
-      None
     }
 
 }

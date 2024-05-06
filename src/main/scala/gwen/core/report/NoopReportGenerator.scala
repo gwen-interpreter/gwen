@@ -25,7 +25,7 @@ import gwen.core.result.SpecResult
 import java.io.File
 
 /**
-  * Noop report generator.
+  * No-op report generator.
   */
 abstract class NoopReportGenerator(config: ReportConfig, options: GwenOptions, info: GwenInfo) extends ReportGenerator(config, options, info) with ReportFormatter {
   

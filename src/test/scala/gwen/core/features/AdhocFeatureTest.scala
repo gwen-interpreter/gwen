@@ -44,7 +44,7 @@ class AdhocFeatureTest extends BaseTest {
     interpreter.run(options, None) match {
       case _: Passed => // excellent :)
       case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-      case _ => fail("evaluation expected but got noop")
+      case _ => fail("evaluation expected but got No-op")
     }
   }
   

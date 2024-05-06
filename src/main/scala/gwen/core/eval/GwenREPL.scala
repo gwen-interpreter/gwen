@@ -245,7 +245,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private def eval(input: String): Option[String] = {
     Option(input).getOrElse(paste.map(_ => ":paste").getOrElse("exit")).trim match {
       case "" if paste.isEmpty =>
-        Some("  [noop]")
+        Some("  [No-op]")
       case "help" if paste.isEmpty =>
         Some(help)
       case r"""env(.+?)?$$$options""" if paste.isEmpty => 

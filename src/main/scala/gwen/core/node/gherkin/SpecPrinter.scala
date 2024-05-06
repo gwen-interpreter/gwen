@@ -254,7 +254,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       case _: Sustained => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${message.map(msg => s"\n$msg").getOrElse("")}${if (colors) ansi.reset else ""}")
       case _: Passed => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (colors) ansi.reset else ""}")
       case Loaded => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (colors) ansi.reset else ""}")
-      case Pending => // noop
+      case Pending => // No-op
       case _ => out.print(s"$indent${if (colors) ansi.fg(colorFor(status)) else ""}$statusString${if (colors) ansi.reset else ""}")
     }
   }

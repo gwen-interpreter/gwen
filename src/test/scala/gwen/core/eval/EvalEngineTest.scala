@@ -42,7 +42,7 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
       val step = engine.evaluateStep(Root, Step(StepKeyword.Given.toString, " I am unsupported"), ctx)
       step.evalStatus match {
         case Failed(_, e) if e.getCause != null => throw e.getCause
-        case _ => //noop
+        case _ => //No-op
       }
     }
   }

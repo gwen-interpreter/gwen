@@ -220,7 +220,7 @@ trait StepEngine[T <: EvalContext] {
       parent match {
         case scenario: Scenario if !scenario.isStepDef =>
           healthCheck(step, ctx)
-        case _ => // noop
+        case _ => // No-op
       }
     }
   }
