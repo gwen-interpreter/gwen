@@ -86,7 +86,7 @@ trait SummaryFormatter {
           if(summary.results.nonEmpty) "Results" else "No-op"
         ),
         div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
-          if(summary.results.isEmpty) "No input data provided" else "",
+          if(summary.results.isEmpty) "No input data" else "",
           span(`class` := "pull-right", style := "padding-right: 10px;",
             small(
               formatDuration(DurationOps.sum(summary.results.map(_.elapsedTime)))

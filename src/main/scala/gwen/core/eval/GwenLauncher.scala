@@ -156,7 +156,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       reportGenerators.foreach(_.init(engine))
       Try {
         if (options.dataFile.nonEmpty && featureStream.isEmpty) {
-          println("[No-op] No input data provided")
+          println("[No-op] No input data")
           ResultsSummary() tap { summary => 
             reportGenerators foreach {
               _.reportSummary(summary)
