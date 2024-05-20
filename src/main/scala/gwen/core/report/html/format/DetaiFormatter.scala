@@ -137,6 +137,7 @@ trait DetaiFormatter {
       val count = metaResults.size
       val metaStatus = EvalStatus(metaResults.map(_.evalStatus))
       val status = metaStatus.keyword
+      val hasError = metaResults.flatMap(_.errorTrails.filter(!_.evalStatus.isAccumulatedAssertionError)).nonEmpty
       div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
           li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
@@ -163,7 +164,7 @@ trait DetaiFormatter {
                       (res, rowIndex) <- metaResults.zipWithIndex
                       reportPath = if (GwenSettings.`gwen.report.suppress.meta`) None else Some(s"meta/${reportFiles.tail(rowIndex).getName}")
                     } yield {
-                      formatSummaryLine(options, res, reportPath, None, rowIndex, 0)
+                      formatSummaryLine(options, res, reportPath, None, rowIndex, 0, hasError)
                     }
                   )
                 )

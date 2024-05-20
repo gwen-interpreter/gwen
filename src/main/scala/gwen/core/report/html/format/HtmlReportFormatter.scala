@@ -73,13 +73,12 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
     }
   }
   
-  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, maxNameLength: Int): TypedTag[String] = {
+  private [format] def formatSummaryLine(options: GwenOptions, result: SpecResult, reportPath: Option[String], sequenceNo: Option[Int], rowIndex: Int, maxNameLength: Int, hasError: Boolean): TypedTag[String] = {
     val videos = result.videos
     val featureName = result.displayName
     val errorTrails = result.errorTrails.filter(!_.evalStatus.isAccumulatedAssertionError)
-    val inError = errorTrails.nonEmpty
     val featureColPercentage = {
-      if (inError) {
+      if (hasError) {
         Some(Option(Option((maxNameLength / 2) + 2).filter(_ < 25).getOrElse(24)).filter(_ > 7).getOrElse(6) + (if (videos.isEmpty) 1 else 0))
       } else {
         None
@@ -137,7 +136,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
             raw(escapeHtml(featureName))
         }
       ),
-      if (inError) {
+      if (hasError) {
         td(`class` := "summary-line-2",
           table(`class` := "table-responsive",
             tbody(

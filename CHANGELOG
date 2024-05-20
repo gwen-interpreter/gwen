@@ -1,3 +1,8 @@
+3.53.5
+======
+May 20, 2024
+- Fix HTML report summary table to cater for sustained errors
+
 3.53.4
 ======
 May 11, 2024
