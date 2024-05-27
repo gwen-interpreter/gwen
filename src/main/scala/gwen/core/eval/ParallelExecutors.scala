@@ -40,7 +40,7 @@ object ParallelExecutors extends LazyLogging {
     * @return an executor instance
     */
   private def createExecutor(): ExecutorService = {
-    Executors.newWorkStealingPool(GwenSettings.`gwen.parallel.maxThreads`)
+    Executors.newFixedThreadPool(GwenSettings.`gwen.parallel.maxThreads`)
   }
 
 }

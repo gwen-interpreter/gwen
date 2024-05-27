@@ -1,3 +1,8 @@
+3.53.6
+======
+27 May 2024
+- Use fixed thread pool executor (instead of work stealing thread pool) for parallel excecution
+
 3.53.5
 ======
 May 20, 2024
