@@ -24,10 +24,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.defaultCSVFormat
+import net.minidev.json.JSONArray
 
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 import java.io.File
+import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -71,23 +74,48 @@ object CsvDataSource {
 
 /** JSON record access */
 class JsonDataSource(override val dataFile: File) extends DataSource {
+  private def flatten(entry: java.util.Map.Entry[String, Object]): List[(String, Object)] = {
+    val value = entry.getValue
+    Try(value.asInstanceOf[java.util.Map[String, Object]]) map { mapValue =>
+      mapValue.entrySet().asScala.toList map { e =>
+        val name = s"${entry.getKey}.${e.getKey}"
+        new AbstractMap.SimpleEntry(name, e.getValue)
+      } flatMap(flatten)
+    } getOrElse {
+      Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
+        val list = listValue.asScala.toList
+        if (list.forall(_.isInstanceOf[String])) {
+          List((entry.getKey, JSONArray.toJSONString(listValue)))
+        } else {
+          list.zipWithIndex map { (v, i) => 
+            val name = s"${entry.getKey}.${i}"
+            new AbstractMap.SimpleEntry(name, v)
+          } flatMap(flatten)
+        }
+      } getOrElse {
+        List((entry.getKey, value.toString))
+      }
+    }
+  }
   override lazy val table: List[List[String]] = {
     val mapper = new ObjectMapper()
     try {
       // name-value pairs
       val json = mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
-      val header = json.flatMap(_.keySet.asScala.toList).map(_.trim).distinct
-      val records = json match {
+      val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
+      val header = nvps.map(_.keySet.toList).toList.flatten.distinct
+      val records = nvps match {
         case Nil => Nil
         case recs => 
           recs map { rec => 
             header.map { h => 
-              Option(rec.get(h)).map(_.toString).getOrElse("")
+              rec.get(h).map(_.toString).getOrElse("")
             }
           }
       }
       val trim = GwenSettings.`gwen.auto.trim.data.json`
       header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
+      
     } catch {
       case e: MismatchedInputException => 
         Errors.unsupportedJsonStructureError(dataFile, e)
