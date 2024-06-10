@@ -109,7 +109,7 @@ object Errors extends LazyLogging {
   def accumulatedAssertionError(error: GwenAssertionError) = throw new AccumulatedAssertionError(error)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
   def unsupportedDataFileError(dataFile: File) = throw new UnsupportedDataFileException(dataFile)
-  def unsupportedJsonStructureError(dataFile: File, cause: Throwable) = throw new UnsupportedJsonStructureException(dataFile, cause)
+  def unsupportedJsonStructureError(cause: Throwable) = throw new UnsupportedJsonStructureException(cause)
   def missingJSArgumentError(jsRef: String, argIndex: Int) = throw new MissingJSArgumentException(jsRef, argIndex)
   def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
 
@@ -315,8 +315,8 @@ object Errors extends LazyLogging {
   /** Thrown when a data file is not supported. */
   class UnsupportedDataFileException(dataFile: File) extends GwenException(s"Unsupported data file (csv or json expected): $dataFile")
 
-  /** Thrown when a JSON data error is detected. */
-  class UnsupportedJsonStructureException(dataFile: File, cause: Throwable) extends GwenException(s"Unsupported JSON data structure in file (array of mapped data expected): $dataFile", cause)
+  /** Thrown when a non JSON string array is detected. */
+  class UnsupportedJsonStructureException(cause: Throwable) extends GwenException(s"Unsupported JSON data structure (array of strings expected)", cause)
 
   /** Thrown when a JS function argument is missing. */
   class MissingJSArgumentException(jsRef: String, argIndex: Int) extends GwenException(s"arguments[$argIndex] placeholder expected (for parameter ${argIndex + 1}) but not defined in JS function binding: $jsRef")

@@ -21,7 +21,6 @@ import gwen.core.FileIO
 import gwen.core.GwenSettings
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.defaultCSVFormat
 import net.minidev.json.JSONArray
@@ -103,31 +102,25 @@ class JsonDataSource(override val dataFile: File) extends DataSource {
   }
   override lazy val table: List[List[String]] = {
     val mapper = new ObjectMapper()
-    try {
-      // name-value pairs
-      val json = Try {
-        mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
-      } getOrElse {
-        List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
-      }
-      val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
-      val header = nvps.map(_.keySet.toList).toList.flatten.distinct.sorted
-      val records = nvps match {
-        case Nil => Nil
-        case recs => 
-          recs map { rec => 
-            header.map { h => 
-              rec.get(h).map(_.toString).getOrElse("")
-            }
-          }
-      }
-      val trim = GwenSettings.`gwen.auto.trim.data.json`
-      header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
-      
-    } catch {
-      case e: MismatchedInputException => 
-        Errors.unsupportedJsonStructureError(dataFile, e)
+    // name-value pairs
+    val json = Try {
+      mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
+    } getOrElse {
+      List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
     }
+    val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
+    val header = nvps.map(_.keySet.toList).toList.flatten.distinct.sorted
+    val records = nvps match {
+      case Nil => Nil
+      case recs => 
+        recs map { rec => 
+          header.map { h => 
+            rec.get(h).map(_.toString).getOrElse("")
+          }
+        }
+    }
+    val trim = GwenSettings.`gwen.auto.trim.data.json`
+    header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
   }
   override def lookupPrefix = JsonDataSource.lookupPrefix
 }

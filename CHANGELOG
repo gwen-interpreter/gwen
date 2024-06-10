@@ -1,3 +1,9 @@
+3.55.0
+======
+10 Jun 2024
+  - Add new DSL for looping over JSON arrays
+    - `<step> for each <entry> in <json|JSON> array <arrayRef>`
+
 3.54.1
 ======
 10 Jun 2024
