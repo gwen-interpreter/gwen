@@ -1,8 +1,9 @@
 3.55.0
 ======
-10 Jun 2024
+11 Jun 2024
   - Add new DSL for looping over JSON arrays
     - `<step> for each <entry> in <json|JSON> array <arrayRef>`
+  - Bind nested arrays and elements when loading JSON input data
 
 3.54.1
 ======

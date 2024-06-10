@@ -1,0 +1,32 @@
+[
+    { 
+      "user": { 
+        "name": "Gwen",
+        "surname": "Stefani",
+        "jobs": [
+          "Pop Singer",
+          "Solo Artist"
+        ]
+      }
+    },
+    { 
+      "user": { 
+        "name": "Gwyneth",
+        "surname": "Paltrow",
+        "jobs": [
+          "Actress",
+          "Singer"
+        ]
+      }
+    },
+    { 
+      "user": { 
+        "name": "Gwen",
+        "surname": "Cooper",
+        "jobs": [
+          "Actress",
+          "Torchwood Agent"
+        ]
+      }
+    }
+  ]

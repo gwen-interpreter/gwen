@@ -84,14 +84,10 @@ class JsonDataSource(override val dataFile: File) extends DataSource {
       } getOrElse {
         Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
           val list = listValue.asScala.toList
-          if (list.forall(_.isInstanceOf[String])) {
-            List((entry.getKey, JSONArray.toJSONString(listValue)))
-          } else {
-            list.zipWithIndex map { (v, i) => 
-              val name = s"${entry.getKey}.${i}"
-              new AbstractMap.SimpleEntry(name, v)
-            } flatMap(flatten)
-          }
+          (list.zipWithIndex map { (v, i) => 
+            val name = s"${entry.getKey}[${i}]"
+            new AbstractMap.SimpleEntry(name, v)
+          } flatMap(flatten)) ++ List((entry.getKey, JSONArray.toJSONString(listValue)))
         } getOrElse {
           List((entry.getKey, value.toString))
         }
