@@ -1,3 +1,10 @@
+3.54.1
+======
+10 Jun 2024
+- Support single top level object in JSON input data (in addition to array)
+- Sort JSON input data by key names
+- Convert nulls to blank when reading JSON properties
+
 3.54.0
 ======
 9 Jun 2024

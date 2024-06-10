@@ -76,34 +76,42 @@ object CsvDataSource {
 class JsonDataSource(override val dataFile: File) extends DataSource {
   private def flatten(entry: java.util.Map.Entry[String, Object]): List[(String, Object)] = {
     val value = entry.getValue
-    Try(value.asInstanceOf[java.util.Map[String, Object]]) map { mapValue =>
-      mapValue.entrySet().asScala.toList map { e =>
-        val name = s"${entry.getKey}.${e.getKey}"
-        new AbstractMap.SimpleEntry(name, e.getValue)
-      } flatMap(flatten)
-    } getOrElse {
-      Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
-        val list = listValue.asScala.toList
-        if (list.forall(_.isInstanceOf[String])) {
-          List((entry.getKey, JSONArray.toJSONString(listValue)))
-        } else {
-          list.zipWithIndex map { (v, i) => 
-            val name = s"${entry.getKey}.${i}"
-            new AbstractMap.SimpleEntry(name, v)
-          } flatMap(flatten)
-        }
+    if (value != null) {
+      Try(value.asInstanceOf[java.util.Map[String, Object]]) map { mapValue =>
+        mapValue.entrySet().asScala.toList map { e =>
+          val name = s"${entry.getKey}.${e.getKey}"
+          new AbstractMap.SimpleEntry(name, e.getValue)
+        } flatMap(flatten)
       } getOrElse {
-        List((entry.getKey, value.toString))
+        Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
+          val list = listValue.asScala.toList
+          if (list.forall(_.isInstanceOf[String])) {
+            List((entry.getKey, JSONArray.toJSONString(listValue)))
+          } else {
+            list.zipWithIndex map { (v, i) => 
+              val name = s"${entry.getKey}.${i}"
+              new AbstractMap.SimpleEntry(name, v)
+            } flatMap(flatten)
+          }
+        } getOrElse {
+          List((entry.getKey, value.toString))
+        }
       }
+    } else {
+      List((entry.getKey, ""))
     }
   }
   override lazy val table: List[List[String]] = {
     val mapper = new ObjectMapper()
     try {
       // name-value pairs
-      val json = mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
+      val json = Try {
+        mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
+      } getOrElse {
+        List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
+      }
       val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
-      val header = nvps.map(_.keySet.toList).toList.flatten.distinct
+      val header = nvps.map(_.keySet.toList).toList.flatten.distinct.sorted
       val records = nvps match {
         case Nil => Nil
         case recs => 

@@ -32,14 +32,18 @@ import java.io.File
 class FeatureSetTest extends BaseTest with Matchers with GherkinParser with SpecNormaliser {
   
   "Data driven feature with csv data file" should "normalise without error" in {
-    verify("/gwen/datadriven/AboutMe.csv")
+    verify3("/gwen/datadriven/AboutMe.csv")
   }
 
-  "Data driven feature with json data file" should "normalise without error" in {
-    verify("/gwen/datadriven/AboutMe.json")
+  "Data driven feature with top array json data file" should "normalise without error" in {
+    verify3("/gwen/datadriven/AboutMeTopArray.json")
   }
 
-  private def verify(dataFilePath: String): Unit = {
+  "Data driven feature with top object json data file" should "normalise without error" in {
+    verify1("/gwen/datadriven/AboutMeTopObject.json")
+  }
+
+  private def verify3(dataFilePath: String): Unit = {
 
     val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
     val dataFile = new File(getClass.getResource(dataFilePath).getFile)
@@ -98,6 +102,35 @@ class FeatureSetTest extends BaseTest with Matchers with GherkinParser with Spec
     feature3.scenarios(0).steps(0).toString should be ("Given I am ${my age} year(s) old")
     feature3.scenarios(0).steps(1).toString should be ("When I am a ${my gender}")
     feature3.scenarios(0).steps(2).toString should be ("Then I am a ${my age} year old ${my title}")
+    
+    featureSet.hasNext should be (false)
+    
+  }
+
+  private def verify1(dataFilePath: String): Unit = {
+
+    val featureFile = new File(getClass.getResource("/gwen/datadriven/AboutMe.feature").getFile)
+    val dataFile = new File(getClass.getResource(dataFilePath).getFile)
+    val featureSet = new FeatureSet(FeatureUnit(Root, featureFile, Nil, None, new TagFilter(Nil)), DataSource(dataFile))
+
+    featureSet.hasNext should be (true)
+    val unit1 = featureSet.next()
+    val feature1 = parseSpec(unit1.featureFile) match {
+      case Success(spec) => normaliseSpec(spec, unit1.dataRecord, false)
+      case Failure(e) => sys.error(e.toString)
+    }
+
+    feature1.feature.name should be ("About me [1 of 1]")
+    feature1.scenarios.length should be (1)
+    feature1.scenarios(0).background.get.name should be ("Input data record 1 of 1")
+    feature1.scenarios(0).background.get.description should be (List(s"Input data file: ${dataFile.getPath}"))
+    feature1.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
+    feature1.scenarios(0).background.get.steps(1).toString should be ("""And my gender is "male"""")
+    feature1.scenarios(0).background.get.steps(2).toString should be ("""And my title is "Mr"""")
+    feature1.scenarios(0).name should be ("What am I?")
+    feature1.scenarios(0).steps(0).toString should be ("Given I am ${my age} year(s) old")
+    feature1.scenarios(0).steps(1).toString should be ("When I am a ${my gender}")
+    feature1.scenarios(0).steps(2).toString should be ("Then I am a ${my age} year old ${my title}")
     
     featureSet.hasNext should be (false)
     
