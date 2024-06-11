@@ -32,6 +32,7 @@ import java.io.File
 import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.HashMap
+import org.apache.commons.lang3.ClassUtils
 
 trait DataSource {
   val dataFile: File
@@ -102,21 +103,52 @@ class JsonDataSource(override val dataFile: File) extends DataSource {
     val json = Try {
       mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
     } getOrElse {
-      List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
+      Try {
+        List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
+      } getOrElse {
+        val values = mapper.readValue(dataFile, classOf[ArrayList[String]])
+        val jMap = new HashMap[String, Object]()
+        jMap.put("data", values)
+        List(jMap)
+      }
     }
-    val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
-    val header = nvps.map(_.keySet.toList).toList.flatten.distinct.sorted
-    val records = nvps match {
-      case Nil => Nil
-      case recs => 
-        recs map { rec => 
-          header.map { h => 
-            rec.get(h).map(_.toString).getOrElse("")
+    val (header, records) = {
+      if (json.size == 1 && json.head.entrySet().size == 1 && isStringOrPrimitive(Try(json.head.entrySet().asScala.toList.headOption.map(_.getValue().asInstanceOf[ArrayList[Object]].get(0))).getOrElse(None))) {
+        val entry = json.head.entrySet().asScala.toList.head
+        (List(entry.getKey()), entry.getValue().asInstanceOf[java.util.List[Object]].asScala.toList.map(v => Option(v).getOrElse("")).map(v => List(v.toString)))
+      } else if (isStringOrPrimitive(json.headOption)) {
+        (List("data"), json.asInstanceOf[List[Object]].map(v => Option(v).getOrElse("")).map(v => List(v.toString)))
+      } else {
+        try {
+          val nvps = json.map(_.entrySet().asScala.toList.flatMap(flatten).toMap)
+          val names = nvps.map(_.keySet.toList).toList.flatten.distinct.sorted
+          val values = nvps match {
+            case Nil => Nil
+            case _ => 
+              nvps map { value => 
+                names.map { n => 
+                  value.get(n).map(_.toString).getOrElse("")
+                }
+              }
           }
+          (names, values)
+        } catch {
+          case e: ClassCastException =>
+            Errors.unsupportedJsonStructureError(e)
         }
+      }
     }
-    val trim = GwenSettings.`gwen.auto.trim.data.json`
-    header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
+
+    if (header.isEmpty || records.isEmpty || (records.size == 1 && records.head.iterator.next == "[]")) {
+      List() :: List()
+    } else {
+      val trim = GwenSettings.`gwen.auto.trim.data.json`
+      header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
+    }
+
+  }
+  private def isStringOrPrimitive(value: Option[Object]): Boolean = {
+      value.map(v => Try(v.asInstanceOf[String]).isSuccess || Try(ClassUtils.isPrimitiveOrWrapper(v.getClass())).getOrElse(false)).getOrElse(false)
   }
   override def lookupPrefix = JsonDataSource.lookupPrefix
 }

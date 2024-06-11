@@ -1,0 +1,30 @@
+[
+  { 
+    "name": "Gwen",
+    "surname": "Stefani",
+    "jobs": [
+      "Pop Singer",
+      "Solo Artist"
+    ],
+    "hits": [
+      { "song": "Just a girl", "year": 1995 },
+      { "song": "What You Waiting For?", "year": 2004 }
+    ] 
+  },
+  { 
+    "name": "Moby",
+    "surname": null,
+    "jobs": [
+      "Singer"
+    ],
+    "hits": [
+      { "song": "Extreme Ways", "year": 2002 }
+    ] 
+  },
+  { 
+    "name": "No",
+    "surname": "Body",
+    "jobs": null,
+    "hits": null
+  }
+]

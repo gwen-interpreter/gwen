@@ -316,7 +316,7 @@ object Errors extends LazyLogging {
   class UnsupportedDataFileException(dataFile: File) extends GwenException(s"Unsupported data file (csv or json expected): $dataFile")
 
   /** Thrown when a non JSON string array is detected. */
-  class UnsupportedJsonStructureException(cause: Throwable) extends GwenException(s"Unsupported JSON data structure (array of strings expected)", cause)
+  class UnsupportedJsonStructureException(cause: Throwable) extends GwenException(s"Unsupported or inconsistent JSON input data structure", cause)
 
   /** Thrown when a JS function argument is missing. */
   class MissingJSArgumentException(jsRef: String, argIndex: Int) extends GwenException(s"arguments[$argIndex] placeholder expected (for parameter ${argIndex + 1}) but not defined in JS function binding: $jsRef")

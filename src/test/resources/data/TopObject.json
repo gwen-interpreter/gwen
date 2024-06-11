@@ -1,0 +1,12 @@
+{ 
+  "name": "Gwen",
+  "surname": "Stefani",
+  "jobs": [
+    "Pop Singer",
+    "Solo Artist"
+  ],
+  "hits": [
+    { "song": "Just a girl", "year": 1995 },
+    { "song": "What You Waiting For?", "year": 2004 }
+  ]
+}

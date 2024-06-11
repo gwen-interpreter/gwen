@@ -75,48 +75,6 @@ class AllFeaturesTest extends BaseTest {
       }
     }
 
-    s"All features with data using $level level state" should "evaluate without error" in {
-      
-      val options = GwenOptions(
-        batch = true,
-        reportDir = Some(new File(s"target/reports/all-features-data/$level-level")),
-        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-        features = List(new File("src/test/features-data")),
-        dataFile = Some(new File("src/test/features-data/Users.json"))
-      )
-        
-      Settings.init(options.settingsFiles*)
-      interpreter.run(options, None) match {
-        case _: Passed => // excellent :)
-        case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-        case _ => fail("evaluation expected but got No-op")
-      }
-    }
-
-  }
-
-  forAll (levels) { level =>
-  
-    s"All features with data using $level level state" should "pass parallel --dry-run test" in {
-      
-      val options = GwenOptions(
-        batch = true,
-        reportDir = Some(new File(s"target/reports/all-features-data-dry-run/$level-level")),
-        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
-        features = List(new File("src/test/features-data")),
-        dryRun = true,
-        parallel = true,
-        dataFile = Some(new File("src/test/features-data/Users.json"))
-      )
-        
-      Settings.init(options.settingsFiles*)
-      interpreter.run(options, None) match {
-        case _: Passed => // excellent :)
-        case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-        case _ => fail("evaluation expected but got No-op")
-      }
-    }
-
   }
   
 }

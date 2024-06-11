@@ -1,0 +1,20 @@
+[
+  { 
+    "name": "Moby",
+    "surname": null,
+    "jobs": "Singer"
+  },
+  { 
+    "name": "Gwen",
+    "surname": "Stefani",
+    "jobs": [
+      "Pop Singer",
+      "Solo Artist"
+    ]
+  },
+  { 
+    "name": "No",
+    "surname": "One",
+    "jobs": ""
+  }
+]
