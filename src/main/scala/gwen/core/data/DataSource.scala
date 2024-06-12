@@ -21,10 +21,14 @@ import gwen.core.FileIO
 import gwen.core.GwenSettings
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.github.tototoshi.csv.CSVReader
 import com.github.tototoshi.csv.defaultCSVFormat
 import net.minidev.json.JSONArray
+import org.apache.commons.lang3.ClassUtils
 
+
+import scala.io.Source
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -32,7 +36,6 @@ import java.io.File
 import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.HashMap
-import org.apache.commons.lang3.ClassUtils
 
 trait DataSource {
   val dataFile: File
@@ -74,39 +77,34 @@ object CsvDataSource {
 
 /** JSON record access */
 class JsonDataSource(override val dataFile: File) extends DataSource {
-  private def flatten(entry: java.util.Map.Entry[String, Object]): List[(String, Object)] = {
-    val value = entry.getValue
-    if (value != null) {
-      Try(value.asInstanceOf[java.util.Map[String, Object]]) map { mapValue =>
-        mapValue.entrySet().asScala.toList map { e =>
-          val name = s"${entry.getKey}.${e.getKey}"
-          new AbstractMap.SimpleEntry(name, e.getValue)
-        } flatMap(flatten)
-      } getOrElse {
-        Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
-          val list = listValue.asScala.toList
-          (list.zipWithIndex map { (v, i) => 
-            val name = s"${entry.getKey}[${i}]"
-            new AbstractMap.SimpleEntry(name, v)
-          } flatMap(flatten)) ++ List((entry.getKey, JSONArray.toJSONString(listValue)))
-        } getOrElse {
-          List((entry.getKey, value.toString))
-        }
-      }
-    } else {
-      List((entry.getKey, ""))
+  override lazy val table: List[List[String]] = JsonDataSource.parseObject(Source.fromFile(dataFile).mkString)
+  override def lookupPrefix = JsonDataSource.lookupPrefix
+}
+
+object JsonDataSource {
+
+  val lookupPrefix = "json.record."
+
+  def parseStringArray(jsonStr: String): List[String] = {
+    val mapper = new ObjectMapper()
+    try {
+      mapper.readValue(jsonStr, classOf[java.util.List[String]]).asScala.toList
+    } catch {
+      case e: MismatchedInputException => 
+        Errors.unsupportedJsonStructureError(e)
     }
   }
-  override lazy val table: List[List[String]] = {
+
+  def parseObject(jsonStr: String): List[List[String]] = {
     val mapper = new ObjectMapper()
     // name-value pairs
     val json = Try {
-      mapper.readValue(dataFile, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
+      mapper.readValue(jsonStr, classOf[ArrayList[HashMap[String, Object]]]).asScala.toList
     } getOrElse {
       Try {
-        List(mapper.readValue(dataFile, classOf[HashMap[String, Object]]))
+        List(mapper.readValue(jsonStr, classOf[HashMap[String, Object]]))
       } getOrElse {
-        val values = mapper.readValue(dataFile, classOf[ArrayList[String]])
+        val values = mapper.readValue(jsonStr, classOf[ArrayList[String]])
         val jMap = new HashMap[String, Object]()
         jMap.put("data", values)
         List(jMap)
@@ -145,14 +143,34 @@ class JsonDataSource(override val dataFile: File) extends DataSource {
       val trim = GwenSettings.`gwen.auto.trim.data.json`
       header.map(_.trim) :: records.map(rec => if (trim) rec.map(_.trim) else rec)
     }
-
   }
+
+  private def flatten(entry: java.util.Map.Entry[String, Object]): List[(String, Object)] = {
+    val value = entry.getValue
+    if (value != null) {
+      Try(value.asInstanceOf[java.util.Map[String, Object]]) map { mapValue =>
+        mapValue.entrySet().asScala.toList map { e =>
+          val name = s"${entry.getKey}.${e.getKey}"
+          new AbstractMap.SimpleEntry(name, e.getValue)
+        } flatMap(flatten)
+      } getOrElse {
+        Try(value.asInstanceOf[java.util.List[Object]]) map { listValue => 
+          val list = listValue.asScala.toList
+          (list.zipWithIndex map { (v, i) => 
+            val name = s"${entry.getKey}[${i}]"
+            new AbstractMap.SimpleEntry(name, v)
+          } flatMap(flatten)) ++ List((entry.getKey, JSONArray.toJSONString(listValue)))
+        } getOrElse {
+          List((entry.getKey, value.toString))
+        }
+      }
+    } else {
+      List((entry.getKey, ""))
+    }
+  }
+
   private def isStringOrPrimitive(value: Option[Object]): Boolean = {
       value.map(v => Try(v.asInstanceOf[String]).isSuccess || Try(ClassUtils.isPrimitiveOrWrapper(v.getClass())).getOrElse(false)).getOrElse(false)
   }
-  override def lookupPrefix = JsonDataSource.lookupPrefix
-}
 
-object JsonDataSource {
-  val lookupPrefix = "json.record."
 }

@@ -16,36 +16,48 @@
 
 package gwen.core.eval.lambda.composite
 
-import com.fasterxml.jackson.databind.ObjectMapper
-
-import scala.jdk.CollectionConverters._
-
-import gwen.core.Errors
+import gwen.core.data.JsonDataSource
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.data.DataRecord
 import gwen.core.node.GwenNode
+import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.Tag
+import gwen.core.node.gherkin.StepKeyword
+import gwen.core.node.gherkin.table.DataTable
+import gwen.core.state.ScopedData
 
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
+import scala.io.Source
+import scala.util.Success
+import scala.util.Try
+
 
 class ForEachJsonArrayElement[T <: EvalContext](doStep: String, entry: String, source: String, engine: EvalEngine[T]) extends ForEach[T](engine, doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     val sourceValue = ctx.getBoundValue(source)
-    val values = () => {
+    val entries = () => {
       if (sourceValue.nonEmpty) {
-        val mapper = new ObjectMapper()
-        try {
-          mapper.readValue(sourceValue, classOf[java.util.List[String]]).asScala.toSeq
-        } catch {
-          case e: MismatchedInputException => 
-            Errors.unsupportedJsonStructureError(e)
+        Try(JsonDataSource.parseObject(sourceValue)) match {
+          case Success(table) if table.nonEmpty =>
+            val names = table.head map { h => 
+              if (h == "data" && entry != "data") entry else s"$entry.$h"
+            }
+            val valueList = table.tail
+            valueList map { values => 
+              ScopedData(DataTable.recordKey, names zip values) 
+            }
+          case _ => 
+            JsonDataSource.parseStringArray(sourceValue) map { value =>
+              ScopedData(DataTable.recordKey).set(entry, value)
+            }
         }
       } else {
         Nil
       }
     }
-    evaluateForEach(values, entry, parent, step, ctx)
+    evaluateForEach(entries, entry, parent, step, ctx)
   }
 
 }

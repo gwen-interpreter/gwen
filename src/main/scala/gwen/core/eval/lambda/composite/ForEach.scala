@@ -70,7 +70,11 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                 val itemNo = index + 1
                 val params: List[(String, String)] = currentElement match {
                   case data: ScopedData => 
-                    ctx.topScope.pushObject(name, data)
+                    if (data.scope == DataTable.recordKey) {
+                      ctx.topScope.pushObject(DataTable.recordKey, data)
+                    } else {
+                      ctx.topScope.pushObject(name, data)
+                    }
                     data.findEntries { _ => true } toList
                   case value: String => 
                     ctx.topScope.set(name, value)
@@ -104,7 +108,10 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                       engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
                   }
                 } finally {
-                  ctx.topScope.popObject(name)
+                  currentElement match {
+                    case data: ScopedData if data.scope == DataTable.recordKey => ctx.topScope.popObject(DataTable.recordKey)
+                    case _ => ctx.topScope.popObject(name)
+                  }
                   ctx.topScope.set("iteration.number", prevNumber.orNull)
                   ctx.topScope.set("iteration.index", prevIndex.orNull)
                 }) :: acc

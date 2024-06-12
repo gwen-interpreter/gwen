@@ -17,10 +17,12 @@
 package gwen.core.data
 
 import gwen.core.BaseTest
+import gwen.core.data.DataSource
+
+import com.fasterxml.jackson.core.JsonParseException
+import org.scalatest.matchers.should.Matchers
 
 import java.io.File
-import org.scalatest.matchers.should.Matchers
-import gwen.core.data.DataSource
 
 class JsonDataSourceTest extends BaseTest with Matchers {
 
@@ -276,6 +278,61 @@ class JsonDataSourceTest extends BaseTest with Matchers {
         val (header, records) = getHeaderAndRecords("src/test/resources/data/EmptyNamedArray.json")
         header.size should be (0)
         records.size should be (0)
+
+    }
+
+    "JSON Single element String array" should "return element" in {
+
+        val elements = JsonDataSource.parseStringArray("""["one"]""").toArray
+        elements.size should be (1)
+        elements(0) should be ("one")
+
+    }
+
+    "JSON String array" should "return elements when parsed as string array" in {
+
+        val elements = JsonDataSource.parseStringArray("""["one","two"]""").toArray
+        elements.size should be (2)
+        elements(0) should be ("one")
+        elements(1) should be ("two")
+
+        val table = JsonDataSource.parseObject("""["one", "two"]""")
+        val header = table.head.toArray
+        val records = table.tail.toArray
+        header.size should be (1)
+        header(0) should be ("data")
+        records.size should be (2)
+        records(0) should be (List("one"))
+        records(1) should be (List("two"))
+
+    }
+
+    "JSON String array" should "return elements when parsed as object" in {
+
+        val table = JsonDataSource.parseObject("""["one", "two"]""")
+        val header = table.head.toArray
+        val records = table.tail.toArray
+        header.size should be (1)
+        header(0) should be ("data")
+        records.size should be (2)
+        records(0) should be (List("one"))
+        records(1) should be (List("two"))
+
+    }
+
+    "String" should "fail when parsed as string array" in {
+
+        intercept[JsonParseException] {
+            JsonDataSource.parseStringArray("one").toArray
+        }
+
+    }
+
+    "String" should "fail when parsed as Object" in {
+
+        intercept[JsonParseException] {
+            JsonDataSource.parseObject("one").toArray
+        }
 
     }
 

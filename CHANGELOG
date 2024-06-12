@@ -1,9 +1,16 @@
+3.56.0
+======
+13 Jun 2024
+- Json data bindings for nested array loops
+- Simplified DSL for looping over JSON arrays
+  - `<step> for each <entry> in <arrayRef> array`
+
 3.55.0
 ======
 12 Jun 2024
-  - Enhanced support for JSON input data
-  - Add new DSL for looping over JSON arrays
-    - `<step> for each <entry> in <json|JSON> array <arrayRef>`
+- Enhanced support for JSON input data
+- Add new DSL for looping over JSON arrays
+  - `<step> for each <entry> in <json|JSON> array <arrayRef>`
 
 3.54.1
 ======
