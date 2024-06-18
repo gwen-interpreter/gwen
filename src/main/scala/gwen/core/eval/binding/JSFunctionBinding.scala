@@ -21,6 +21,7 @@ import gwen.core.Formatting
 import gwen.core.eval.EvalContext
 import gwen.core.eval.binding.DryValueBinding
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.util.chaining._
 import scala.util.Success
@@ -32,13 +33,17 @@ object JSFunctionBinding {
   def jsRefKey(name: String) = s"${baseKey(name)}/jsRef"
   def argsKey(name: String) = s"${baseKey(name)}/args"
   def delimiterKey(name: String) = s"${baseKey(name)}/delimiter"
+  def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
-  def bind(name: String, javascriptRef: String, argsString: String, delimiter: Option[String], env: Environment): Unit = {
+  def bind(name: String, javascriptRef: String, argsString: String, delimiter: Option[String], masked: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(jsRefKey(name), javascriptRef)
     env.scopes.set(argsKey(name), argsString)
     delimiter foreach { delim =>
       env.scopes.set(delimiterKey(name), delim)
+    }
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
     }
   }
 
@@ -55,6 +60,7 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
   val jsRefKey = JSFunctionBinding.jsRefKey(name)
   val argsKey = JSFunctionBinding.argsKey(name)
   val delimiterKey = JSFunctionBinding.delimiterKey(name)
+  override val maskedKey = JSFunctionBinding.maskedKey(name)
 
   override def resolve(): String = {
     bindIfLazy(
@@ -71,12 +77,14 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
             List(argsString)
           }
           val javascript = ctx.scopes.get(JSBinding.key(jsRef))
-          Try(ctx.parseArrowFunction(javascript)) match {
+          val value = Try(ctx.parseArrowFunction(javascript)) match {
             case Success(Some(func)) =>
               evaluateFunction(func.wrapper(params), Nil)
             case _ =>
               new JSBinding(jsRef, parseParams(jsRef, javascript, params), ctx).resolve()
           }
+          val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+          if (masked) SensitiveData.mask(name, value) else value
         }
       }
     )

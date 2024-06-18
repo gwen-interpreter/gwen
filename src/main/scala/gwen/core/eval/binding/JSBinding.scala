@@ -19,16 +19,21 @@ package gwen.core.eval.binding
 import gwen.core.eval.EvalContext
 import gwen.core.eval.support.JavaScriptSupport
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.util.Try
 
 object JSBinding {
   
   def key(name: String) = s"$name/${BindingType.javascript}"
+  def maskedKey(name: String) = s"${key(name)}/masked"
 
-  def bind(name: String, javascript: String, env: Environment): Unit = {
+  def bind(name: String, javascript: String, masked: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(key(name), javascript)
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
+    }
   }
 
   def find[T <: EvalContext](name: String, ctx: T): Try[JSBinding[T]] = Try {
@@ -41,10 +46,13 @@ object JSBinding {
 class JSBinding[T <: EvalContext](name: String, params: List[String], ctx: T) extends Binding[T, String](name, ctx) {
 
   val key = JSBinding.key(name)
+  val maskedKey = JSBinding.maskedKey(name)
 
   override def resolve(): String = {
     resolveValue(key) { javascript =>
-      evaluateFunction(javascript, params)
+      val value = evaluateFunction(javascript, params)
+      val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+      if (masked) SensitiveData.mask(name, value) else value
     }
   }
 

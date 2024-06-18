@@ -27,12 +27,12 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsXPath[T <: EvalContext](target: String, xpath: String, targetType: String, source: String) extends UnitStep[T] {
+class BindAsXPath[T <: EvalContext](target: String, xpath: String, targetType: String, source: String, masked: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      XPathBinding.bind(target, xpath, targetType, source, ctx)
+      XPathBinding.bind(target, xpath, targetType, source, masked, ctx)
       step.loadStrategy foreach { strategy =>
         val value = {
           if (strategy == LoadStrategy.Eager) Option(new XPathBinding(target, ctx).resolve())

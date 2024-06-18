@@ -33,21 +33,21 @@ import scala.util.chaining._
 import scala.util.Success
 import scala.util.Failure
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String]) extends UnitStep[T] {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String], masked: Boolean) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
       bindingType match {
-        case BindingType.javascript => JSBinding.bind(target, value, ctx) 
+        case BindingType.javascript => JSBinding.bind(target, value, masked, ctx) 
         case BindingType.function => 
           JSBinding.find(value, ctx) match {
             case Success(_) => 
-              JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, ctx)
+              JSFunctionBinding.bind(target, value, argsString.getOrElse(""), delimiter, masked, ctx)
             case Failure(e) => throw e
           }
-        case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, false, ctx)
-        case BindingType.unixsysproc => SysprocBinding.bind(target, value, delimiter, true, ctx)
+        case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, false, masked, ctx)
+        case BindingType.unixsysproc => SysprocBinding.bind(target, value, delimiter, true, masked, ctx)
         case BindingType.file => FileBinding.bind(target, value, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
       }

@@ -52,22 +52,27 @@ object SensitiveData {
 
   def isMaskedName(name: String): Boolean = name.endsWith(MaskedNameSuffix)
 
-  def parse(name: String, value: String): Option[(String, String)] = {
+  def mask(name: String, value: String): String = {
+    val n = s"$name$MaskedNameSuffix"
+    if (n.startsWith("gwen.") && !n.startsWith("gwen.db")) {
+      Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $n")
+    }
+    val mValue = MaskedValues.collectFirst {
+      case mValue if mValue.name == n && mValue.plain == value => mValue
+    } getOrElse {
+      MaskedValue(n, value) tap { mValue =>
+        MaskedValues += mValue
+      }
+    }
+    mValue.toString
+  }
+
+  def parse(name: String, value: String): Option[(String, String)] = Some {
     name match {
       case MaskedNamePattern(n) =>
-        if (n.startsWith("gwen.") && !n.startsWith("gwen.db")) {
-          Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $n")
-        }
-        val mValue = MaskedValues.collectFirst {
-          case mValue if mValue.name == n && mValue.plain == value => mValue
-        } getOrElse {
-          MaskedValue(n, value) tap { mValue =>
-            MaskedValues += mValue
-          }
-        }
-        Some((n, mValue.toString))
+        (n, mask(name, value))
       case _ =>
-        Some((name, value))
+        (name, value)
     }
   }
 

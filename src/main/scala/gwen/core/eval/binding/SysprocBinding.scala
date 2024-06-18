@@ -31,14 +31,18 @@ object SysprocBinding {
   def key(name: String) = s"$name/${BindingType.sysproc}"
   def delimiterKey(name: String) = s"$name/delimiter"
   def unixKey(name: String) = s"$name/unix"
+  def maskedKey(name: String) = s"$name/masked"
 
-  def bind(name: String, sysproc: String, delimiter: Option[String], unix: Boolean, env: Environment): Unit = {
+  def bind(name: String, sysproc: String, delimiter: Option[String], unix: Boolean, masked: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(key(name), sysproc)
     delimiter foreach { delim => 
       env.scopes.set(delimiterKey(name), delim)
     }
     env.scopes.set(unixKey(name), unix.toString)
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
+    }
   }
 
 }
@@ -48,6 +52,7 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
   private val key = SysprocBinding.key(name)
   private val delimiterKey = SysprocBinding.delimiterKey(name)
   private val unixKey = SysprocBinding.unixKey(name)
+  private val maskedKey = SysprocBinding.maskedKey(name)
 
   override def resolve(): String = {
     val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
@@ -55,7 +60,9 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
     bindIfLazy(
       lookupValue(key) { sysproc => 
         ctx.evaluate(resolveDryValue(s"${if (unix) BindingType.unixsysproc else BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}")) {
-          ctx.callSysProc(sysproc, delimiter, unix)
+          val value = ctx.callSysProc(sysproc, delimiter, unix)
+          val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+          if (masked) SensitiveData.mask(name, value) else value
         }
       }
     )

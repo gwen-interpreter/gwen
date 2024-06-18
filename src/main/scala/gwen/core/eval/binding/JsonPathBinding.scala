@@ -18,6 +18,7 @@ package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.util.Try
 
@@ -26,11 +27,15 @@ object JsonPathBinding {
   def baseKey(name: String) = s"$name/${BindingType.`json path`}"
   private def pathKey(name: String) = s"${baseKey(name)}/expression"
   private def sourceKey(name: String) = s"${baseKey(name)}/source"
+  private def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
-  def bind(name: String, jsonPath: String, source: String, env: Environment): Unit = {
+  def bind(name: String, jsonPath: String, source: String, masked: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(pathKey(name), jsonPath)
     env.scopes.set(sourceKey(name), source)
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
+    }
   }
 
 }
@@ -39,13 +44,16 @@ class JsonPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T,
 
   val pathKey = JsonPathBinding.pathKey(name)
   val sourceKey = JsonPathBinding.sourceKey(name)
+  val maskedKey = JsonPathBinding.maskedKey(name)
 
   override def resolve(): String = {
     bindIfLazy(
       resolveValue(pathKey) { jsonPath => 
         resolveRef(sourceKey) { source =>
           ctx.evaluate(resolveDryValue(BindingType.`json path`.toString)) {
-            ctx.evaluateJsonPath(jsonPath, source)
+            val value = ctx.evaluateJsonPath(jsonPath, source)
+            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            if (masked) SensitiveData.mask(name, value) else value
           }
         }
       }

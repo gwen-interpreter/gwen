@@ -18,6 +18,7 @@ package gwen.core.eval.binding
 
 import gwen.core.eval.EvalContext
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.util.Try
 
@@ -26,11 +27,15 @@ object RegexBinding {
   def baseKey(name: String) = s"$name/${BindingType.regex}"
   private def regexKey(name: String) = s"${baseKey(name)}/expression"
   private def sourceKey(name: String) = s"${baseKey(name)}/source"
+  private def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
-  def bind(name: String, regex: String, source: String, env: Environment): Unit = {
+  def bind(name: String, regex: String, source: String, masked: Boolean, env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(regexKey(name), regex)
     env.scopes.set(sourceKey(name), source)
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
+    }
   }
 
 }
@@ -39,13 +44,16 @@ class RegexBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
 
   val regexKey = RegexBinding.regexKey(name)
   val sourceKey = RegexBinding.sourceKey(name)
+  val maskedKey = RegexBinding.maskedKey(name)
 
   override def resolve(): String = {
     bindIfLazy(
       resolveValue(regexKey) { regex =>
         resolveRef(sourceKey) { source =>
           ctx.evaluate(resolveDryValue(BindingType.regex.toString)) {
-            ctx.extractByRegex(regex, source)
+            val value = ctx.extractByRegex(regex, source)
+            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            if (masked) SensitiveData.mask(name, value) else value
           }
         }
       }

@@ -19,6 +19,7 @@ package gwen.core.eval.binding
 import gwen.core.eval.EvalContext
 import gwen.core.eval.support.SQLSupport
 import gwen.core.state.Environment
+import gwen.core.state.SensitiveData
 
 import scala.util.Try
 
@@ -27,11 +28,15 @@ object SQLBinding {
   def baseKey(name: String) = s"$name/${BindingType.sql}"
   private def databaseKey(name: String) = s"${baseKey(name)}/dbName"
   private def selectKey(name: String) = s"${baseKey(name)}/selectStmt"
+  private def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
-  def bind(name: String, database: String, selectStmt: String, env: Environment): Unit = {
+  def bind(name: String, database: String, selectStmt: String, masked: Boolean, env: Environment): Unit = {
     SQLSupport.checkDBSettings(database)
     env.scopes.set(databaseKey(name), database)
     env.scopes.set(selectKey(name), selectStmt)
+    if (masked) {
+      env.scopes.set(maskedKey(name), true.toString)
+    }
   }
 
 }
@@ -40,13 +45,16 @@ class SQLBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Stri
 
   private val databaseKey = SQLBinding.databaseKey(name)
   private val selectKey = SQLBinding.selectKey(name)
+  private val maskedKey = SQLBinding.maskedKey(name)
 
   override def resolve(): String = {
     bindIfLazy(
       resolveValue(databaseKey) { database => 
         resolveValue(selectKey) { selectStmt =>
           ctx.evaluate(resolveDryValue(BindingType.sql.toString)) {
-            ctx.executeSQLQuery(selectStmt, database)
+            val value = ctx.executeSQLQuery(selectStmt, database)
+            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            if (masked) SensitiveData.mask(name, value) else value
           }
         }
       }

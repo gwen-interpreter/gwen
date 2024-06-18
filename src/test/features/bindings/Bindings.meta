@@ -7,3 +7,6 @@ Feature: Meta bindings
       And b1 is "${property.b}"
       And b2 is "${b1}"
       And b3 is "${b2}"
+      And @Masked b4 is defined by unix system process "hostname"
+      And b5 is defined by unix system process "hostname"
+      And b6 is "${b4}"

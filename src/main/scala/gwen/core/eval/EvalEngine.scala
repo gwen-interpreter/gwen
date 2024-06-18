@@ -167,23 +167,23 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter))
+        new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter), step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|unix system process|property|setting|file)$attrType "(.+?)"$expression""" =>
-        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
+        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))
+        new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter), step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.*)"$arg""" =>
-        new BindAsType(attribute, BindingType.function, function, Some(step.orDocString(arg)), None)
+        new BindAsType(attribute, BindingType.function, function, Some(step.orDocString(arg)), None, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
-        new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
+        new BindAsXPath(attribute, step.orDocString(expression), targetType, source, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$expression""" =>
-        new BindAsRegex(attribute, step.orDocString(expression), source)
+        new BindAsRegex(attribute, step.orDocString(expression), source, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$expression""" =>
-        new BindAsJsonPath(attribute, step.orDocString(expression), source)
+        new BindAsJsonPath(attribute, step.orDocString(expression), source, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
-        new BindAsSQL(attribute, dbName, selectStmt)
+        new BindAsSQL(attribute, dbName, selectStmt, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
-        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
+        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt), step.isMasked)
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|true|false)$literal""" =>

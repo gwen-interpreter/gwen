@@ -259,6 +259,7 @@ case class Step(
   def isNoData: Boolean = hasTag(Annotations.NoData)
   def isIgnoreCase: Boolean = hasTag(Annotations.IgnoreCase)
   def isTrim: Boolean = hasTag(Annotations.Trim)
+  def isMasked: Boolean = hasTag(Annotations.Masked)
   
   def assertionMode: AssertionMode = {
     AssertionMode.values find { mode => 
