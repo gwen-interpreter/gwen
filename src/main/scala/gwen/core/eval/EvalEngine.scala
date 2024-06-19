@@ -124,10 +124,6 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new SetProperty(name, value)
       case r"""I reset my (.+?)$name (?:property|setting)""" =>
         new ClearProperty(name)
-      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$value""" =>
-        new BindAttribute(attribute, step.orDocString(value))
-      case r"""(.+?)$attribute (?:is|will be) (blank|true|false)$literal""" =>
-        new BindAttribute(attribute, ValueLiteral.valueOf(literal).value)
       case r"""I wait (\d+)$duration second(?:s?)""" =>
         new Sleep(duration.toInt)
       case r"""I execute system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
@@ -184,6 +180,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new BindAsSQL(attribute, dbName, selectStmt, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
         new BindAsSQL(attribute, dbName, step.orDocString(selectStmt), step.isMasked)
+      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$value""" =>
+        new BindAttribute(attribute, step.orDocString(value))
+      case r"""(.+?)$attribute (?:is|will be) (blank|true|false)$literal""" =>
+        new BindAttribute(attribute, ValueLiteral.valueOf(literal).value)
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|true|false)$literal""" =>
