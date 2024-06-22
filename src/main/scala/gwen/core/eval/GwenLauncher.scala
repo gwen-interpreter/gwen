@@ -48,6 +48,7 @@ import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
+import java.util.Date
 
 /**
   * Launches a gwen engine.
@@ -247,7 +248,9 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
   private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
     Settings.clearLocal()
     val ctx = ctxOpt getOrElse { 
-      engine.init(options, EnvState())
+      engine.init(options, EnvState()) tap { cx => 
+        cx.topScope.initStart(new Date().getTime())
+      }
     }
     if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
     val result = try {

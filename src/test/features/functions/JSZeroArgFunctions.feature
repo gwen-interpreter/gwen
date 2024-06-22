@@ -54,3 +54,5 @@ Feature: Zero Argument Functions
      Then Zero argument functions should work
       And Zero argument functions in DocStrings should work
       And Zero argument functions in documented examples should work
+      And name should not be "${gwen.eval.duration}"
+      And desc should not be "${gwen.eval.duration.msecs}"

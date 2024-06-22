@@ -1,3 +1,10 @@
+3.58.0
+======
+22 Jun 2024
+- Add implicit values for capturing evaluation duration
+  - `gwen.eval.duration` - the formatted duration (eg: 1s 234ms)
+  - `gwen.eval.duration.msecs` - the duration in milliseconds (eg: 1234)
+
 3.57.1
 ======
 19 Jun 2024
@@ -6,7 +13,7 @@
 3.57.0
 ======
 18 Jun 2024
-- Add `@Masked` annotation to mask dyamically evaluated data bound by the following DSLs. If specified, then returned data will be masked in all logs and outputs.
+- Add `@Masked` annotation to mask dynamically evaluated data bound by the following DSLs. If specified, then returned data will be masked in all logs and outputs.
   - `<name> is defined by <javascript|js> "<expression>"`
   - `<name> is defined by <javascriptRef> applied to "<argument>"`
   - `<name> is defined by <javascriptRef> applied to "<arguments>" delimited by "<delimiter>"`

@@ -33,6 +33,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.cucumber.gherkin.ParserException
 
 import java.io.File
+import java.util.Date
 
 /**
   * Feature unit evaluation engine

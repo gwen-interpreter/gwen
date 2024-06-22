@@ -25,6 +25,7 @@ import gwen.core.init.NoopProjectInitialiser
 import gwen.core.node.gherkin.Dialect
 import gwen.core.state.EnvState
 import gwen.core.status.Failed
+import gwen.core.status.Pending
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.logging.log4j.LogManager
@@ -39,7 +40,7 @@ import java.io.OutputStream
 import java.io.PrintStream
 import java.net.URL
 import java.util.{ logging => jul}
-import gwen.core.status.Pending
+import java.util.Date
 
 
 /**
@@ -103,7 +104,12 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
-      Some(engine.init(options, EnvState()) tap { ctx => ctx.topScope.setImplicitAtts(None, Pending, true) } )
+      Some(
+        engine.init(options, EnvState()) tap { ctx => 
+          ctx.topScope.setImplicitAtts(None, Pending, true)
+          ctx.topScope.initStart(new Date().getTime())
+        } 
+      )
     }
     try {
       val evalStatus = run(options, ctxOpt)

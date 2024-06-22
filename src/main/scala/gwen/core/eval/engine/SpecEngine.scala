@@ -69,7 +69,14 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     ctx.topScope.pushObject(SpecType.toString, specType)
     try {
       beforeSpec(spec, ctx)
-      val started = new Date()
+      val started = {
+        if (spec.isMeta) {
+          new Date()
+        } else {
+          metaResults.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
+        }
+      }
+      ctx.topScope.initStart(started.getTime())
       (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
         logger.info("")
         logger.info(s"$action $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")

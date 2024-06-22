@@ -17,15 +17,20 @@
 package gwen.core.state
 
 import gwen.core._
+import gwen.core.Formatting.DurationFormatter
 import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.Spec
 import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
 
+import net.minidev.json.JSONArray
+
 import scala.util.chaining._
 import scala.jdk.CollectionConverters._
+import scala.concurrent.duration.Duration
 
-import net.minidev.json.JSONArray
+import java.util.concurrent.TimeUnit
+import java.util.Date
 
 /**
   * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
@@ -119,6 +124,10 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   def implicitAtts: Seq[(String, String)] =
     findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name)$""")}
 
+  def initStart(timeMsecs: Long): Unit = {
+    set("gwen.eval.start.msecs", timeMsecs.toString)
+  }
+  
   def setImplicitAtts(spec: Option[Spec], status: EvalStatus, force: Boolean): Unit = {
     spec foreach { s => 
       set("gwen.feature.name", s.feature.name)
@@ -157,6 +166,8 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
     else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
     else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
+    else if (name == "gwen.eval.duration.msecs") getOpt("gwen.eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
+    else if (name == "gwen.eval.duration") getOpt("gwen.eval.start.msecs").map(started => DurationFormatter.format(Duration(new Date().getTime() - started.toLong, TimeUnit.MILLISECONDS)))
     else if (name == "gwen.accumulated.errors") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
       errs match {
         case Nil => ""
