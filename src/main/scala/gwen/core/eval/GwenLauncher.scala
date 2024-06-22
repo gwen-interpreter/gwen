@@ -58,7 +58,7 @@ import java.util.Date
 abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends LazyLogging with ProjectInitialiser with GherkinParser {
 
   /**
-    * Interprets a features unit (feaature + meta).
+    * Interprets a features unit (feature + meta).
     *
     * @param unit the feature unit
     * @param ctx the evaluation context
