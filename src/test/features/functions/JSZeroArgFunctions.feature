@@ -56,3 +56,4 @@ Feature: Zero Argument Functions
       And Zero argument functions in documented examples should work
       And name should not be "${gwen.eval.duration}"
       And desc should not be "${gwen.eval.duration.msecs}"
+      And desc should not be "${gwen.eval.duration.secs}"

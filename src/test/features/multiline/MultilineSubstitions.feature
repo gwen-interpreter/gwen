@@ -29,3 +29,4 @@ Feature: Multiline substitutions
           """
       And a should not be "${gwen.eval.duration}"
       And b should not be "${gwen.eval.duration.msecs}"
+      And b should not be "${gwen.eval.duration.secs}"

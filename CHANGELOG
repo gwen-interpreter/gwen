@@ -1,3 +1,9 @@
+3.58.2
+======
+24 Jun 2024
+- Add implicit values for capturing evaluation duration in seconds
+  - `gwen.eval.duration.secs` - the formatted duration (eg: 23s)
+
 3.58.1
 ======
 22 Jun 2024

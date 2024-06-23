@@ -167,6 +167,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
     else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
     else if (name == "gwen.eval.duration.msecs") getOpt("gwen.eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
+    else if (name == "gwen.eval.duration.secs") getOpt("gwen.eval.start.msecs").map(started => ((new Date().getTime() - started.toLong).toDouble / 1000d).toString)
     else if (name == "gwen.eval.duration") getOpt("gwen.eval.start.msecs").map(started => DurationFormatter.format(Duration(new Date().getTime() - started.toLong, TimeUnit.MILLISECONDS)))
     else if (name == "gwen.accumulated.errors") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
       errs match {
