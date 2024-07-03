@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,13 @@ class ParameterStack {
     * The parameters stack.
     */
   private val paramStack = mutable.Stack[ScopedData]()
+
+  def deepCopyInto(pStack: ParameterStack): ParameterStack = { 
+    paramStack foreach { sd =>
+      pStack.paramStack.push(sd)
+    }
+    pStack
+  }
 
   /**
     * Adds the given parameters (name-value pairs) to a new scope

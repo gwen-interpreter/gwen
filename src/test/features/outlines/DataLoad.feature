@@ -1,13 +1,19 @@
 Feature: Data Load
 
-  @Examples('src/test/features/outlines/Data.csv')
-  Scenario Outline: Load from CSV
-    Given the website is "${WEBSITE}"
-     When I capture the text in the website by regex "(.+?):.*" as the protocol
-     Then the protocol should be "https"
-
+  @StepDef
   @Examples('src/test/features/outlines/Data.json')
-  Scenario Outline: Load from JSON
+  @Parallel
+  Scenario Outline: JSON examples should load
     Given the website is "${website}"
      When I capture the text in the website by regex "(.+?):.*" as the protocol
      Then the protocol should be "https"
+      And the secret should not be blank
+      
+  @Examples('src/test/features/outlines/Data.csv')
+  Scenario Outline: CSV examples should load
+    Given the website is "${WEBSITE}"
+      And @Eager the secret is defined by js "'secret'"
+     When I capture the text in the website by regex "(.+?):.*" as the protocol
+     Then the protocol should be "https"
+      And JSON examples should load
+

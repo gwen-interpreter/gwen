@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package gwen.core.status
 
 import gwen.core.BaseTest
+import gwen.core.GwenOptions
 import gwen.core.TestModel
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Spec
@@ -28,6 +29,7 @@ import org.scalatest.matchers.should.Matchers
 class EvalStatusTest extends BaseTest with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
+  private val options = GwenOptions(dryRun = false, parallel = false)
 
   private val featureString = """
    
@@ -66,7 +68,7 @@ Background: The tester
     
     // setup
     
-    val featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    val featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     // assert
     
@@ -88,7 +90,7 @@ Background: The tester
     
     // setup
     
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -127,7 +129,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
 
     featureSpec = Spec(
       featureSpec.feature,
@@ -166,7 +168,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
 
     featureSpec = Spec(
       featureSpec.feature,
@@ -205,7 +207,7 @@ Background: The tester
 
     // setup
     val sustained = new Exception(StatusKeyword.Sustained.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
 
     var isSustained = false
 
@@ -255,7 +257,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -320,7 +322,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -385,7 +387,7 @@ Background: The tester
     // setup 
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     featureSpec = Spec(
       featureSpec.feature,
@@ -457,7 +459,7 @@ Background: The tester
     // setup
     
     val error = new Exception(StatusKeyword.Failed.toString)
-    var featureSpec = normaliseSpec(parse(featureString).get, None, false)
+    var featureSpec = normaliseSpec(parse(featureString).get, None, options)
     
     featureSpec = Spec(
       featureSpec.feature,

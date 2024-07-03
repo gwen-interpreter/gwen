@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Branko Juric, Brady Wood
+ * Copyright 2019-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package gwen.core.node.gherkin
 
 import gwen.core.Errors.AmbiguousCaseException
 import gwen.core.BaseTest
+import gwen.core.GwenOptions
 import gwen.core.TestModel
 import gwen.core.data.DataRecord
 import gwen.core.data.DataSource
@@ -31,6 +32,7 @@ import org.scalatest.matchers.should.Matchers
 class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser with GherkinParser with TestModel {
 
   private val parse = parseSpec(_: String)
+  private val options = GwenOptions(dryRun = false, parallel = false)
 
   val background = Background(
     "background",
@@ -51,7 +53,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       Nil,
       Nil)
 
-    val result = normaliseSpec(feature, None, false)
+    val result = normaliseSpec(feature, None, options)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(Nil)
@@ -76,7 +78,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Nil,
         Nil)
 
-    val result = normaliseSpec(feature, None, false)
+    val result = normaliseSpec(feature, None, options)
 
     result.background should be (None)
 
@@ -100,7 +102,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None, false)
+    val result = normaliseSpec(meta, None, options)
 
     val scenario = result.scenarios(0)
     scenario.tags should be(List(Tag("@StepDef")))
@@ -121,7 +123,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           Step(StepKeyword.Then.toString, "step 3", Passed(2)))
         )), Nil, Nil)
 
-    val result = normaliseSpec(meta, None, false)
+    val result = normaliseSpec(meta, None, options)
     result.background should be (None)
 
     val scenario = result.scenarios(0)
@@ -147,7 +149,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
         Step(StepKeyword.Then.toString, "step 3", Passed(2)))
       )), Nil, Nil)
-    normaliseSpec(meta, None , false)
+    normaliseSpec(meta, None , options)
   }
 
   "Meta with duplicate step def" should "error" in {
@@ -165,7 +167,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
 
     intercept[AmbiguousCaseException] {
-      normaliseSpec(meta, None, false)
+      normaliseSpec(meta, None, options)
     }
   }
 
@@ -184,7 +186,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
 
     intercept[AmbiguousCaseException] {
-      normaliseSpec(meta, None , false)
+      normaliseSpec(meta, None , options)
     }
   }
 
@@ -198,7 +200,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord), false)
+    val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -226,7 +228,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
     val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
-    val result = normaliseSpec(feature, Some(dataRecord), false)
+    val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
     result.feature.name should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
@@ -288,7 +290,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
 
     val feature = parse(featureString).get
 
-    val result = normaliseSpec(feature, None, false)
+    val result = normaliseSpec(feature, None, options)
     result.feature.sourceRef.get.line should be (2)
 
     result.background should be (None)
@@ -553,7 +555,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None, false)
+    val result = normaliseSpec(feature, None, options)
     val rule = result.rules(0)
 
     rule.scenarios(0).indexIn(rule).get should be (0)
@@ -605,7 +607,7 @@ class SpecNormaliserRulesTest extends BaseTest with Matchers with SpecNormaliser
           |""".stripMargin
 
     val feature = parse(spec).get
-    val result = normaliseSpec(feature, None, false)
+    val result = normaliseSpec(feature, None, options)
 
     result.rules(0).indexIn(result).get should be (0)
     result.rules(1).indexIn(result).get should be (1)

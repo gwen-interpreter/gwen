@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,11 @@ class ScopedData(val scope: String) extends LazyLogging {
     *  the current non top scope).
     */
   private [state] var flashScope: Option[mutable.Map[String, String]] = None
+
+  /** Creates a deep clone containing all data. */
+  def deepClone: ScopedData = new ScopedData(scope) tap { sd => 
+    atts foreach { (n, v) => sd.set(n, v) }
+  }
 
   /**
     * Checks if the scoped data is empty.

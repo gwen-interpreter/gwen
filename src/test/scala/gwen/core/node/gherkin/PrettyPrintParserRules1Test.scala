@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Branko Juric, Brady Wood
+ * Copyright 2019-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core.BaseTest
+import gwen.core.GwenOptions
 import gwen.core.node.Root
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.SpecNormaliser
@@ -103,7 +104,8 @@ Feature: Gwen
 
   "pretty print of normalised Gwen feature" should "replicate background for each expanded scenario" in {
 
-    val specFeature = normaliseSpec(parse(featureString).get, None, false)
+    val options = GwenOptions(dryRun = false, parallel = false) 
+    val specFeature = normaliseSpec(parse(featureString).get, None, options)
     printer.prettyPrint(Root, specFeature).replace("\r", "") should be (s"""@wip
 Feature: Gwen
 

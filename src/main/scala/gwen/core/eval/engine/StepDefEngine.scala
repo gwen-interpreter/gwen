@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package gwen.core.eval.engine
 
+import gwen.core.Errors
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
@@ -83,6 +84,10 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   def callStepDef(parent: GwenNode, iStepDef: Scenario, step: Step, ctx: T): Step = {
+    var parallelAncestor = ctx.nodeChain.nodes.reverse.find(_.isInstanceOf[Scenario]).map(_.asInstanceOf[Scenario].isParallel).getOrElse(false)
+    if (parallelAncestor && iStepDef.isParallel) {
+      Errors.illegalNestedParallelExceutionError(step.sourceRef)
+    }
     val stepDef = iStepDef.withCallerParams(step)
     val lock = if (stepDefLock.containsKey(stepDef.name)) {
       Some(stepDefLock.get(stepDef.name))

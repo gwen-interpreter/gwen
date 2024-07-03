@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,7 @@ object Errors extends LazyLogging {
   def unsupportedJsonStructureError(cause: Throwable) = throw new UnsupportedJsonStructureException(cause)
   def missingJSArgumentError(jsRef: String, argIndex: Int) = throw new MissingJSArgumentException(jsRef, argIndex)
   def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
+  def illegalNestedParallelExceutionError(sourceRef: Option[SourceRef]) = throw new IllegalNestedParallelExecutionException(sourceRef)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -323,6 +324,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when an unbound refrence or invalid function is detected. */
   class InvalidReferenceOrFunctionException(msg: String) extends GwenException(msg)
+
+  /** Thrown when a nested parallel execution is detected. */
+  class IllegalNestedParallelExecutionException(sourceRef: Option[SourceRef]) extends GwenException(s"Illegal nested parallel executon at${at(sourceRef)}")
   
 
 }

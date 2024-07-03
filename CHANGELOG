@@ -1,3 +1,11 @@
+3.59.0
+======
+3 Jul 2024
+- Introduce `Parallel` annotation on outline examples
+  - Cannot be used in a nested manner (an error will be raised on any such detection)
+  - Effective only when Gwen is invoked without the `--parallel` option (i.e: when no other parallel execution is taking place). It will be implicitly removed otherwise.
+- Added implicit value `gwen.feature.language` 
+
 3.58.2
 ======
 24 Jun 2024

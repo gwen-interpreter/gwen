@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Background
 import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.Annotations
+import gwen.core.node.gherkin.Examples
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecNormaliser
@@ -50,15 +51,17 @@ import java.util.concurrent.CopyOnWriteArrayList
 trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], dataRecord: Option[DataRecord], ctx: T, language: String): List[Scenario] = {
+  private [engine] def evaluateScenarios(parent: GwenNode, scenarios: List[Scenario], dataRecord: Option[DataRecord], ctx: T): List[Scenario] = {
     val loadingMeta = if (parent.isInstanceOf[Spec]) {
       parent.asInstanceOf[Spec].isMeta
     } else {
       false
     }
     val input = scenarios.map(s => if (s.isOutline && (!loadingMeta || !s.isStepDef)) expandExamples(s, dataRecord, ctx) else s)
-    if (ctx.options.parallelScenarios(ctx.stateLevel) && ctx.specType.isFeature) {
-      evaluateParallelScenarios(parent, input, ctx, language)
+    val parallelScenarios = ctx.options.parallelScenarios(ctx.stateLevel) && ctx.specType.isFeature
+    val parallelExamples = parent.isInstanceOf[Examples] && parent.asInstanceOf[Examples].isParallel
+    if (parallelScenarios || parallelExamples) {
+      evaluateParallelScenarios(parent, input, parallelExamples, ctx)
     } else {
       evaluateSequentialScenarios(parent, input, ctx)
     }
@@ -71,17 +74,19 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     } reverse
   }
 
-  private def evaluateParallelScenarios(parent: GwenNode, scenarios: List[Scenario], ctx: T, language: String): List[Scenario] = {
+  private def evaluateParallelScenarios(parent: GwenNode, scenarios: List[Scenario], parallelExamples: Boolean, ctx: T): List[Scenario] = {
     val stepDefs = scenarios.filter(_.isStepDef).foldLeft(List[Scenario]()) {
       (acc: List[Scenario], stepDef: Scenario) =>
         evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
     }
+    val language = ctx.topScope.get("gwen.feature.language")
     val executor = ParallelExecutors.scenarioInstance
     implicit val ec = ExecutionContext.fromExecutorService(executor)
     val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
     val futures = scenarios.filter(!_.isStepDef).to(LazyList).map { scenario =>
       Future {
-        val ctxClone = engine.init(ctx.options, ctx.cloneState)
+        val stateClone = if (parallelExamples) ctx.deepCloneState else ctx.shallowCloneState
+        val ctxClone = engine.init(ctx.options.copy(parallel = true), stateClone)
         try {
           Dialect.withLanguage(language) {
             val scenarioResult = evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>

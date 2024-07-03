@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,14 +41,15 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
   engine: EvalEngine[T] =>
 
   private [engine] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+    ctx.topScope.set("gwen.feature.language", spec.feature.language)
     Dialect.withLanguage(spec.feature.language) {
-      val nspec = normaliseSpec(spec, dataRecord, ctx.options.dryRun)
+      val nspec = normaliseSpec(spec, dataRecord, ctx.options)
       evaluateSpec(parent, nspec, metaResults, dataRecord, ctx)
     }
   }
 
   private [engine] def evaluateMeta(parent: GwenNode, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    val nmeta = normaliseSpec(meta, dataRecord, ctx.options.dryRun)
+    val nmeta = normaliseSpec(meta, dataRecord, ctx.options)
     val metaResult = evaluateSpec(parent, nmeta, metaResults, dataRecord, ctx)
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
@@ -83,8 +84,8 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
       }
       val resultSpec = spec.copy(
         withBackground = None,
-        withScenarios = evaluateScenarios(spec, spec.scenarios, dataRecord, ctx, spec.feature.language),
-        withRules = evaluateRules(spec, spec.rules, dataRecord, ctx, spec.feature.language),
+        withScenarios = evaluateScenarios(spec, spec.scenarios, dataRecord, ctx),
+        withRules = evaluateRules(spec, spec.rules, dataRecord, ctx),
         withMetaSpecs = metaResults.map(_.spec)
       )
       resultSpec.specFile foreach { _ =>

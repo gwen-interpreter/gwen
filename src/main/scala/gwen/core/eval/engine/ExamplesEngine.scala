@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       } else {
         beforeExamples(exs, ctx)
         exs.copy(
-          withScenarios = exs.scenarios map { scenario =>
-            evaluateScenario(exs, scenario, ctx)
-          }
+          withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
         ) tap { exs =>
           afterExamples(exs, ctx)
         }
@@ -136,7 +134,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         } else {
           (resultTable, None)
         }
-        Some((Examples(None, Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
+        Some((Examples(outline.sourceRef, if (outline.isParallel) List(Tag(Annotations.Parallel)) else Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples('path/file.(csv|json)') or @Examples("path/file.(csv|json)") or @Examples(file='path/file.(csv|json)',where='javascript expression') or @Examples(file="path/file.(csv|json)",where="javascript expression")""")
@@ -154,7 +152,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
             outline.copy(withExamples = List(exs)),
             background,
             dataRecord,
-            ctx.options.dryRun
+            ctx.options
           )
         } flatMap (_.examples)
         outline.copy(

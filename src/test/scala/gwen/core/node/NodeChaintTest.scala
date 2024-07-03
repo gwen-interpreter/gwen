@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,8 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     file.createNewFile()
     file.writeText(featureString)
 
-    val spec = normaliseSpec(parseSpec(file).get, None, false)
+    val options = GwenOptions(dryRun = false, parallel = false)
+    val spec = normaliseSpec(parseSpec(file).get, None, options)
     val unit = FeatureUnit(Root, file, Nil, None, mockTagFilter, None)
     val builder = new NodeChainBuilder()
     var chain = NodeChain()

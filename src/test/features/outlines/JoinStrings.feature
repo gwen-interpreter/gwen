@@ -10,6 +10,7 @@ Feature: Join Strings
      When I join the two strings
      Then the result should be "<result>"
 
+    @Parallel
     Examples: Basic string concatenation
 
       The header row contains the placeholder names. The body rows that
@@ -22,7 +23,7 @@ Feature: Join Strings
   Scenario: Verify that we can join two strings in meta
     Given result is ""
      When I join two strings in meta
-     Then the result should not be ""
+     Then result should be defined
 
   Scenario Outline: Joining <text 1> and <text 2> should yield <result> with impilictly bound cells
 

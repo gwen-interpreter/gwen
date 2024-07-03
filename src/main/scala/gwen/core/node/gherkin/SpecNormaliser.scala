@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ trait SpecNormaliser extends BehaviorRules {
     *
     * @param spec the feature spec
     * @param dataRecord optional feature level data record
-    * @param dryRun true if dry run; false otherwise
+    * @param options command line options
     */
-  def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord], dryRun: Boolean): Spec = {
+  def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord], options: GwenOptions): Spec = {
     val interpolator = DataRecord.interpolateLenient(dataRecord)
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
@@ -59,18 +59,18 @@ trait SpecNormaliser extends BehaviorRules {
         } getOrElse spec.feature
       ).interpolate(interpolator),
       None,
-      dataRecord.map(expandDataScenarios(scenarios, _, spec.background, dryRun)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, dryRun)),
+      dataRecord.map(expandDataScenarios(scenarios, _, spec.background, options)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, options)),
       spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
           withBackground = None,
-          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord, dryRun)
+          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord, options)
         ).interpolate(interpolator)
       },
       Nil
     )
     if (!normalisedSpec.isMeta && normalisedSpec.steps(expanded = false).isEmpty) Errors.syntaxError(s"No steps found in feature${normalisedSpec.specFile.map(f => s" file: $f").getOrElse("")}")
-    normaliseSteps(normalisedSpec, dryRun)
+    normaliseSteps(normalisedSpec, options)
   }
 
   private def validate(background: Option[Background], scenarios: List[Scenario], specType: SpecType): Unit = {
@@ -84,14 +84,14 @@ trait SpecNormaliser extends BehaviorRules {
     }
   }
 
-  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], dryRun: Boolean): List[Scenario] = {
+  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], options: GwenOptions): List[Scenario] = {
     val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
-    expandScenarios(scenarios, Some(dataBg), Some(dataRecord), dryRun)
+    expandScenarios(scenarios, Some(dataBg), Some(dataRecord), options)
   }
 
-  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord], dryRun: Boolean): List[Scenario] =
+  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord], options: GwenOptions): List[Scenario] =
     scenarios.map { scenario =>
-      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, dryRun)
+      if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, options)
       else expandScenario(scenario, background, dataRecord)
     }
 
@@ -114,13 +114,15 @@ trait SpecNormaliser extends BehaviorRules {
   }
 
 
-  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], dryRun: Boolean): Scenario = {
+  def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], options: GwenOptions): Scenario = {
     val interpolator = DataRecord.interpolateLenient(dataRecord)
     val normalisedOutline = outline.copy(
+      withTags = filterParallelTags(outline.tags, options),
       withBackground = None,
       withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
         val names = exs.table.head._2
         exs.copy(
+          withTags = filterParallelTags(exs.tags, options),
           withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), tableIndex) =>
             val params: List[(String, String)] = names zip values
             val normalisedBackground = {
@@ -128,11 +130,13 @@ trait SpecNormaliser extends BehaviorRules {
                 Some(dataBackground(params, background, tableIndex + 1, exs.table.tail.size, exs.dataFile, interpolator))
               } else background
             }
+            val outlineTags = outline.tags.filter(t => t.name != Annotations.StepDef.toString && !t.name.startsWith(Annotations.Examples.toString)).map(_.interpolate(interpolator))
+            val tags = (if (exs.isParallel && !outline.isParallel) List(Tag(Annotations.Parallel)) else Nil) ++ outlineTags
             new Scenario(
               outline.sourceRef map { sref =>
                 SourceRef(sref.file, rowLineNo)
               },
-              outline.tags.filter(t => t.name != Annotations.StepDef.toString && !t.name.startsWith(Annotations.Examples.toString)).map(_.interpolate(interpolator)),
+              filterParallelTags(tags, options),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
               s"${resolveParams(interpolator.apply(outline.name), params)._1}${if (exs.name.length > 0) s" -- ${interpolator.apply(exs.name)}" else ""}",
               outline.description map { line =>
@@ -157,7 +161,12 @@ trait SpecNormaliser extends BehaviorRules {
         )
       }
     ).interpolate(interpolator)
-    normaliseSteps(normalisedOutline, dryRun)
+    normaliseSteps(normalisedOutline, options)
+  }
+
+  private def filterParallelTags(tags: List[Tag], options: GwenOptions): List[Tag] = {
+    if (options.parallel) tags.filter(_.name != Annotations.Parallel.toString)
+    else tags
   }
 
   private def resolveParams(source: String, params: List[(String, String)]): (String, List[(String, String)]) = {
@@ -241,50 +250,50 @@ trait SpecNormaliser extends BehaviorRules {
     }
   }
 
-  private def normaliseSteps(spec: Spec, dryRun: Boolean): Spec = {
+  private def normaliseSteps(spec: Spec, options: GwenOptions): Spec = {
     spec.copy(
       withBackground = spec.background map { bg => 
         bg.copy(
-          withSteps = normaliseSteps(bg.steps, dryRun)
+          withSteps = normaliseSteps(bg.steps, options)
         )
       },
       withScenarios = spec.scenarios map { scenario => 
-        normaliseSteps(scenario, dryRun)
+        normaliseSteps(scenario, options)
       },
       withRules = spec.rules map { rule => 
         rule.copy(
           withScenarios = rule.scenarios map { scenario =>
-            normaliseSteps(scenario, dryRun)
+            normaliseSteps(scenario, options)
           }
         )
       }
     )
   }
 
-  private def normaliseSteps(scenario: Scenario, dryRun: Boolean): Scenario = {
+  private def normaliseSteps(scenario: Scenario, options: GwenOptions): Scenario = {
     scenario.copy(
       withBackground = scenario.background map { bg => 
         bg.copy(
-          withSteps = normaliseSteps(bg.steps, dryRun)
+          withSteps = normaliseSteps(bg.steps, options)
         )
       },
-      withSteps = normaliseSteps(scenario.steps, dryRun),
+      withSteps = normaliseSteps(scenario.steps, options),
       withExamples = scenario.examples map { examples => 
         examples.copy(
           withScenarios = examples.scenarios map { scenario => 
-            normaliseSteps(scenario, dryRun)
+            normaliseSteps(scenario, options)
           }
         )
       }
     )
   }
 
-  private def normaliseSteps(steps: List[Step], dryRun: Boolean): List[Step] = {
+  private def normaliseSteps(steps: List[Step], options: GwenOptions): List[Step] = {
     if (steps.exists(_.dryValues.nonEmpty)) {
       steps flatMap { step => 
         val dryValues = step.dryValues
         if (dryValues.nonEmpty) {
-          if (dryRun) {
+          if (options.dryRun) {
             if (step.dryValues.size > 1) {
               step.dryValues.zipWithIndex map { (dv, idx) =>
                 step.copy(

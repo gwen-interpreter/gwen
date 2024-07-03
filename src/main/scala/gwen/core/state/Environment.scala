@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,11 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def topScope: TopScope = scopes.topScope
   def nodeChain: NodeChain = state.nodeChain
 
-  /** Create a clone of the current environment state */
-  def cloneState: EnvState = EnvState(topScope, Some(stepDefs), nodeChain, stateLevel)
+  /** Create a shallow clone of the current environment state */
+  def shallowCloneState: EnvState = state.shallowClone
+
+  /** Create a deep clone of the current environment state */
+  def deepCloneState: EnvState = state.deepClone
 
   /**
     * Closes any resources associated with the evaluation context. This implementation

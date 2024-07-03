@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,6 +116,7 @@ case class Scenario(
     name => name == Annotations.Synchronized.toString || name == Annotations.Synchronised.toString
   }
   def isSynthetic: Boolean = Tag.findByName(tags, Annotations.Synthetic.toString).nonEmpty
+  def isParallel: Boolean = tags.exists(_.name == Annotations.Parallel.toString)
   
   def attachments: List[(String, File)] = {
     allSteps.flatMap(step => step.deepAttachments)

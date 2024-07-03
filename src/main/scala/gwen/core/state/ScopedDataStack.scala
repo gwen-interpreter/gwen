@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,8 +81,11 @@ class ScopedDataStack() {
     */
   def topScope: TopScope =  scopes.last.asInstanceOf[TopScope]
 
-  /** Creates a clone containing all scoped data. */
-  override def clone(): ScopedDataStack = ScopedDataStack(scopes)
+  /** Creates a deep clone containing all scoped data. */
+  def deepClone: ScopedDataStack = new ScopedDataStack tap { copy =>
+    scopes foreach { sd => copy.scopes.push(sd.deepClone) }
+    paramScope.deepCopyInto(copy.paramScope)
+  }
 
   /**
     * Provides access to the currently active scope.

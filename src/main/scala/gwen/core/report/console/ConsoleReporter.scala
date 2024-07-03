@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,12 @@ class ConsoleReporter(options: GwenOptions)
     extends NodeEventListener("Console Reporter", Set(NodeType.Meta)) {
 
   private val parallel = options.parallel
+  private val parallelScenarios = parallel && StateLevel.isScenario
   private val printer = new SpecPrinter(deep = false, verbatim = false, ConsoleColors.isEnabled)
   
   private var loadingStepDef = ThreadLocal.withInitial[Boolean] { () => false }
   private var depth = ThreadLocal.withInitial[Int] { () => 0 }
-  private val parallelOut: Option[ThreadLocal[(ByteArrayOutputStream, PrintStream)]] = {
+  private var parallelOut: Option[ThreadLocal[(ByteArrayOutputStream, PrintStream)]] = {
     if (parallel) {
       Some(
         ThreadLocal.withInitial[(ByteArrayOutputStream, PrintStream)] { () => 
@@ -49,8 +50,8 @@ class ConsoleReporter(options: GwenOptions)
       )
     } else None
   }
-  private val parallelScenarioCache: Option[ConcurrentMap[String, List[(Long, String)]]] = {
-    if (parallel && StateLevel.isScenario) {
+  private var parallelScenarioCache: Option[ConcurrentMap[String, List[(Long, String)]]] = {
+    if (parallelScenarios) {
       Some(new ConcurrentHashMap[String, List[(Long, String)]]())
     } else None
   }
@@ -110,16 +111,20 @@ class ConsoleReporter(options: GwenOptions)
     val spec = event.source
     val parent = event.callChain.previous
     out.println(printer.prettyPrint(parent, spec.feature))
-    parallelScenarioCache foreach { cache =>
-      cache.putIfAbsent(spec.uuid, Nil)
+    if (parallelScenarios) {
+      parallelScenarioCache foreach { cache =>
+        cache.putIfAbsent(spec.uuid, Nil)
+      }
     }
   }
 
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     val result = event.source
-    parallelScenarioCache foreach { cache =>
-      event.callChain.nodes.find(_.isInstanceOf[Spec]).map(_.asInstanceOf[Spec]) foreach { spec =>
-        out.print(cache.remove(spec.uuid) sortBy { (line, output) => line } map { (_, output) => output } mkString "")
+    if (parallelScenarios) {
+      parallelScenarioCache foreach { cache =>
+        event.callChain.nodes.find(_.isInstanceOf[Spec]) foreach { node =>
+          out.print(cache.remove(node.uuid) sortBy { (line, output) => line } map { (_, output) => output } mkString "")
+        }
       }
     }
     out.println(printer.printSpecResult(result))
@@ -149,14 +154,20 @@ class ConsoleReporter(options: GwenOptions)
   }
 
   override def beforeScenario(event: NodeEvent[Scenario]): Unit = {
+    val parent = event.callChain.previous
+    if (parent.isInstanceOf[Examples] && parent.asInstanceOf[Examples].isParallel) {
+      depth.set(depth.get + 1)
+    }
     if (depth.get == 0) {
       val scenario = event.source
-      parallelScenarioCache foreach {_ =>
-        val action = if (options.dryRun) "Checking" else "Executing"
-        val unit = event.callChain.nodes.find(_.isInstanceOf[FeatureUnit]).map(_.asInstanceOf[FeatureUnit])
-        val parent = event.callChain.previous
-        val scenarioNo = scenario.indexIn(parent).map(_ + 1)
-        System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase}${unit.map(u => s" specification: ${u.displayName}").getOrElse("")} scenario${scenarioNo.map(n => s"[$n]").getOrElse("")}: ${scenario.name}")
+      if (parallelScenarios) {
+        parallelScenarioCache foreach {_ =>
+          val action = if (options.dryRun) "Checking" else "Executing"
+          val unit = event.callChain.nodes.find(_.isInstanceOf[FeatureUnit]).map(_.asInstanceOf[FeatureUnit])
+          val parent = event.callChain.previous
+          val scenarioNo = scenario.indexIn(parent).map(_ + 1)
+          System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase}${unit.map(u => s" specification: ${u.displayName}").getOrElse("")} scenario${scenarioNo.map(n => s"[$n]").getOrElse("")}: ${scenario.name}")
+        }
       }
       if (scenario.background.isEmpty && !scenario.isExpanded) {
         val parent = event.callChain.previous
@@ -166,14 +177,17 @@ class ConsoleReporter(options: GwenOptions)
   }
 
   override def afterScenario(event: NodeEvent[Scenario]): Unit = {  
+    val scenario = event.source
     parallelScenarioCache foreach { cache =>
       parallelOut foreach { threadLocal =>
         val (outBuffer, outStream) = threadLocal.get
         outStream.flush()
-        event.callChain.nodes.find(_.isInstanceOf[Spec]).map(_.asInstanceOf[Spec]) foreach { spec =>
+        event.callChain.nodes.reverse.find(n => n.isInstanceOf[Spec] || (n.isInstanceOf[Examples] && n.asInstanceOf[Examples].isParallel)) foreach { node =>
           try {
             cache.synchronized {
-              cache.put(spec.uuid, (spec.sourceRef.map(_.line).getOrElse(0), outBuffer.toString) :: cache.get(spec.uuid))
+              if (cache.containsKey(node.uuid)) {
+                cache.put(node.uuid, (scenario.sourceRef.map(_.line).getOrElse(0), outBuffer.toString) :: cache.get(node.uuid))
+              }
             }
           } finally {
             outStream.close()
@@ -183,17 +197,45 @@ class ConsoleReporter(options: GwenOptions)
         threadLocal.set((baos, new PrintStream(baos)))
       }
     }
-  }
-
-  override def beforeExamples(event: NodeEvent[Examples]): Unit = {
-    if (depth.get == 0) {
-      val examples = event.source
-      val parent = event.callChain.previous
-      out.print(printer.prettyPrint(parent, examples))
+    val parent = event.callChain.previous
+    if (parent.isInstanceOf[Examples] && parent.asInstanceOf[Examples].isParallel) {
+      depth.set(depth.get - 1)
     }
   }
 
-  override def afterExamples(event: NodeEvent[Examples]): Unit = {  }
+  override def beforeExamples(event: NodeEvent[Examples]): Unit = {
+    val examples = event.source
+    if (depth.get == 0) {
+      val parent = event.callChain.previous
+      out.print(printer.prettyPrint(parent, examples))
+    }
+    if (examples.isParallel) {
+      parallelOut = Some(
+        ThreadLocal.withInitial[(ByteArrayOutputStream, PrintStream)] { () => 
+          val baos = new ByteArrayOutputStream()
+          (baos, new PrintStream(baos))
+        }
+      )
+      parallelScenarioCache = Some(new ConcurrentHashMap[String, List[(Long, String)]]())
+      parallelScenarioCache foreach { cache =>
+        cache.putIfAbsent(examples.uuid, Nil)
+      }
+    }
+  }
+
+  override def afterExamples(event: NodeEvent[Examples]): Unit = { 
+    val examples = event.source
+    if (examples.isParallel) {
+      parallelOut = None
+      parallelScenarioCache foreach { cache =>
+        val key = cache.keySet().iterator.next()
+        event.callChain.nodes.reverse.find(n => n.isInstanceOf[Examples] && n.asInstanceOf[Examples].isParallel) foreach { node =>
+          out.print(cache.remove(key) sortBy { (line, output) => line } map { (_, output) => output } mkString "")
+        }
+      }
+      parallelScenarioCache = None
+    }
+  }
 
   override def beforeRule(event: NodeEvent[Rule]): Unit = {
     val rule = event.source

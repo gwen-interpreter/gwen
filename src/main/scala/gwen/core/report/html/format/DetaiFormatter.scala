@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,6 +314,7 @@ trait DetaiFormatter {
       div(`class` := s"panel panel-${cssStatus(status)} bg-${bgStatus(status)}",
         ul(`class` := "list-group",
           li(`class` := s"list-group-item list-group-item-${bgStatus(status)}", style := "padding: 10px 10px; margin-right: 10px;",
+            formatTags(exs.tags, false),
             span(`class` := s"label label-${cssStatus(status)}",
               exs.keyword
             ),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 Branko Juric, Brady Wood
+ * Copyright 2016-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
 
   /** Gets all implicit attributes. */
   def implicitAtts: Seq[(String, String)] =
-    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(name|file\.(name|simpleName|path|absolutePath))|rule\.name|eval\.start\.msecs)$""")}
+    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(language|name|file\.(name|simpleName|path|absolutePath))|rule\.name|eval\.start\.msecs)$""")}
 
   def initStart(timeMsecs: Long): Unit = {
     set("gwen.eval.start.msecs", timeMsecs.toString)

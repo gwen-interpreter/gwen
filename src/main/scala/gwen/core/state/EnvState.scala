@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,15 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
 
   /** Current node chain builder. */
   private var nodeBuilder = new NodeChainBuilder()
+
+  def shallowClone: EnvState = EnvState(scopes.topScope, Some(stepDefs), nodeChain, stateLevel)
+
+  def deepClone: EnvState = {
+    new EnvState(scopes.deepClone, stateLevel) tap { newState =>
+      newState.stepDefs = stepDefs
+      newState.nodeBuilder = NodeChainBuilder(nodeChain)
+    }
+  }
 
   /** Provides access to step defs. */
   def getStepDefs = stepDefs

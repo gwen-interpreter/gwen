@@ -17,6 +17,7 @@ Feature: Join Strings Meta
      When I join the two strings
      Then the result should be "<result>"
 
+    @Parallel
     Examples:
 
       The header row contains the placeholder names. The body rows that

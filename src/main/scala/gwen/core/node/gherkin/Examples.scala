@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,6 +104,8 @@ case class Examples(
       withDescription = description.map(interpolator)
     )
   }
+
+  def isParallel: Boolean = tags.exists(_.name == Annotations.Parallel.toString)
 
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Branko Juric, Brady Wood
+ * Copyright 2015-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     val packageName = result.spec.specFile.map(f => f.uri).getOrElse("")
     val name = s"$packageName.Feature: ${result.spec.feature.name}"
     val pkg = result.spec.specFile.map(_ => packageName)
-    val scenarios = findScenarios(result)
+    val scenarios = findScenarios(options, result)
     val scenarioCount = scenarios.length
     val evalStatuses = scenarios.map(_.evalStatus)
     val failureCount = evalStatuses.filter(_.isAssertionError).size
@@ -114,13 +114,13 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     
   }
 
-  private def findScenarios(result: SpecResult): List[Scenario] = {
+  private def findScenarios(options: GwenOptions, result: SpecResult): List[Scenario] = {
     result.spec.evalScenarios.filter(!_.isStepDef).flatMap { scenario =>
       if (scenario.isOutline) {
         val s = if (scenario.evalStatus.isEvaluated) {
           scenario
         } else {
-          normaliseScenarioOutline(scenario, scenario.background, None, false)
+          normaliseScenarioOutline(scenario, scenario.background, None, options)
         }
         s.examples.flatMap(_.scenarios)
       }
