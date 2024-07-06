@@ -62,7 +62,9 @@ case class Scenario(
   }
 
   override val evalStatus: EvalStatus = {
-    if (isOutline && examples.flatMap(_.scenarios).isEmpty) {
+    if (isOutline && examples.isEmpty && isStepDef) {
+      Loaded
+    } else if (isOutline && examples.flatMap(_.scenarios).isEmpty) {
       Passed(0, abstained = true)
     } else {
       EvalStatus(allSteps.map(_.evalStatus), ignoreSustained = !isStepDef)

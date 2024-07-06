@@ -83,7 +83,8 @@ class ScopedDataStack() {
 
   /** Creates a deep clone containing all scoped data. */
   def deepClone: ScopedDataStack = new ScopedDataStack tap { copy =>
-    scopes foreach { sd => copy.scopes.push(sd.deepClone) }
+    scopes.filter(!_.isTopScope) foreach { sd => copy.scopes.push(sd.deepClone) }
+    topScope.deepCopyInto(copy.topScope)
     paramScope.deepCopyInto(copy.paramScope)
   }
 

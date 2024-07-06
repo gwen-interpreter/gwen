@@ -53,7 +53,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
     beforeStepDef(stepDef, ctx)
     logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
     ctx.addStepDef(stepDef)
-    if (ctx.options.parallel && stepDef.isSynchronized) {
+    if (stepDef.isSynchronized) {
       stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
     }
     val loadedSteps = transitionSteps(stepDef.steps, Loaded, ctx)

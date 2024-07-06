@@ -51,6 +51,12 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
 
+  def deepCopyInto(tScope: TopScope): TopScope = tScope tap { _ => 
+    tScope.currentScope = currentScope.map(_.deepClone)
+    tScope.objectStack = objectStack
+    super.deepCopyInto(tScope)
+  }
+
   /**
     * Binds a new attribute value to the scope.  If an attribute of the same
     * name already exists, then this new attribute overrides the existing one

@@ -75,10 +75,14 @@ class ScopedData(val scope: String) extends LazyLogging {
   private [state] var flashScope: Option[mutable.Map[String, String]] = None
 
   /** Creates a deep clone containing all data. */
-  def deepClone: ScopedData = new ScopedData(scope) tap { sd => 
-    atts foreach { (n, v) => sd.set(n, v) }
-  }
+  def deepClone: ScopedData = deepCopyInto(new ScopedData(scope))
 
+  /** Copies all data. */
+  def deepCopyInto(sd: ScopedData): ScopedData = sd tap { _ =>
+    atts foreach { (n, v) => sd.set(n, v) }
+    sd.flashScope = flashScope map { fs => mutable.Map[String, String]().addAll(fs.iterator) }
+  }
+  
   /**
     * Checks if the scoped data is empty.
     *

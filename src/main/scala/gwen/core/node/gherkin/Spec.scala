@@ -95,7 +95,8 @@ case class Spec(
   override val evalStatus: EvalStatus = {
     val specStatus = EvalStatus(steps.map(_.evalStatus))
     metaSpecs match {
-      case Nil => specStatus
+      case Nil => 
+        if (isMeta && steps.isEmpty) Loaded else specStatus
       case _ =>
         val totalStatus = EvalStatus((metaSpecs.flatMap(_.steps) ++ steps).map(_.evalStatus))
         specStatus match {

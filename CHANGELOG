@@ -1,3 +1,8 @@
+3.59.1
+======
+8 July 2024
+- Fix context cloning and Synchronized StepDefs for parallel outline examples
+
 3.59.0
 ======
 3 Jul 2024
