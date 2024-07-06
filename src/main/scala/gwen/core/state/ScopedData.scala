@@ -67,20 +67,12 @@ class ScopedData(val scope: String) extends LazyLogging {
 
   val isTopScope = false
 
-  /**
-    *  Provides access to the local flash data (attributes are pushed into this
-    *  scope when global attributes are changed so that they become accessible in
-    *  the current non top scope).
-    */
-  private [state] var flashScope: Option[mutable.Map[String, String]] = None
-
   /** Creates a deep clone containing all data. */
   def deepClone: ScopedData = deepCopyInto(new ScopedData(scope))
 
   /** Copies all data. */
   def deepCopyInto(sd: ScopedData): ScopedData = sd tap { _ =>
     atts foreach { (n, v) => sd.set(n, v) }
-    sd.flashScope = flashScope map { fs => mutable.Map[String, String]().addAll(fs.iterator) }
   }
   
   /**
@@ -88,7 +80,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     *
     * @return true if empty; false otherwise
     */
-  def isEmpty: Boolean = atts.isEmpty && flashScope.isEmpty
+  def isEmpty: Boolean = atts.isEmpty
 
   /**
     * Finds and retrieves an attribute value from the scope by name.  If
@@ -149,15 +141,6 @@ class ScopedData(val scope: String) extends LazyLogging {
       (name, value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
         atts += nvp
-      } tap { _ =>
-        flashScope foreach { fs =>
-          if (!isTopScope && fs.nonEmpty) {
-            name match {
-              case r"(.+?)$n/.*" => fs -= n
-              case _ => fs -= name
-            }
-          }
-        }
       }
     }
     this
@@ -214,7 +197,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @return a sequence of name-value pairs or Nil if no entries match the predicate
    */
   def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] = {
-    atts.filter(pred).toSeq ++ flashScope.map(_.filter(pred).toSeq).getOrElse(Nil)
+    atts.filter(pred).toSeq
   }
 
   /**
@@ -223,11 +206,10 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @param padding the padding to insert at the start of each line (default is blank)
     */
   def asString(padding: String = ""): String = {
-    val allAtts = atts ++ flashScope.map(_.toList).getOrElse(Nil)
     s"""${padding}scope : "$scope" {${
-         allAtts.toList match {
+         atts.toList match {
            case Nil => " }"
-           case _ => s"""${allAtts map {
+           case _ => s"""${atts map {
              case (n, v) =>
                s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
            } mkString}

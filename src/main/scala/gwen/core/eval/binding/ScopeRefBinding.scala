@@ -16,26 +16,28 @@
 
 package gwen.core.eval.binding
 
-import scala.util.Failure
-import scala.util.Success
-import scala.util.Try
+import gwen.core.eval.EvalContext
+import gwen.core.state.Environment
 
-enum BindingType:
-  case javascript, function, xpath, regex, sysproc, unixsysproc, property, setting, file, sql, `json path`, loading, dryValue, scopeRef
+object ScopeRefBinding {
+  
+  def key(name: String) = s"$name/${BindingType.scopeRef}"
 
-object BindingType {
-
-  def parse(bType: String): BindingType = {
-    Try(valueOf(bType)) match {
-      case Success(value) => value
-      case Failure(error) => bType match {
-        case "js" => javascript
-        case "system process" => sysproc
-        case "unix system process" => unixsysproc
-        case _ => throw error
-      }
-    }
+  def bind(name: String, value: String, env: Environment): Unit = {
+    env.scopes.set(key(name), value)
   }
 
 }
 
+class ScopeRefBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
+
+  private val key = ScopeRefBinding.key(name)
+
+  override def resolve(): String = {
+    val scope = lookupValue(key) { identity }
+    ctx.scopes.getIn(scope, name)
+  }
+
+  override def toString: String = name
+
+}

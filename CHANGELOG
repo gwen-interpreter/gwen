@@ -1,7 +1,8 @@
 3.59.1
 ======
-8 July 2024
+6 July 2024
 - Fix context cloning and Synchronized StepDefs for parallel outline examples
+- Replace flash scope with scope reference
 
 3.59.0
 ======

@@ -19,6 +19,7 @@ package gwen.core.state
 import gwen.core._
 import gwen.core.Formatting.DurationFormatter
 import gwen.core.data.DataRecord
+import gwen.core.eval.binding.ScopeRefBinding
 import gwen.core.node.gherkin.Spec
 import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
@@ -33,9 +34,8 @@ import java.util.concurrent.TimeUnit
 import java.util.Date
 
 /**
-  * Binds all top level attributes and adds flash attributes in the current scope when necessary. Also
-  * included is a cache for storing non string objects. The top scope can be a feature or scenario
-  * level scope depending on the `gwen.state.level` setting.
+  * Binds all top level attributes. Also included is a cache for storing non string objects. 
+  * The top scope can be a feature or scenario level scope depending on the `gwen.state.level` setting.
   *
   * @author Branko Juric
   */
@@ -61,8 +61,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     * Binds a new attribute value to the scope.  If an attribute of the same
     * name already exists, then this new attribute overrides the existing one
     * but does not replace it. If an attribute of the same name exists in the
-    * current scope, then the attribute is also added to its flash scope (so
-    * that overriding occurs).
+    * current scope, then a referene to the top attribute is added to the current scope.
     *
     * @param name the name of the attribute to bind
     * @param value the value to bind to the attribute
@@ -73,9 +72,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     super.set(name, value) tap { _=>
       currentScope foreach { cs =>
         if (cs.findEntries { case (n, _) => n == name || n.startsWith(s"$name/") } nonEmpty) {
-          cs.flashScope.foreach { fs =>
-            fs += ((name, value))
-          }
+          cs.set(ScopeRefBinding.key(name), scope)
         }
       }
     }

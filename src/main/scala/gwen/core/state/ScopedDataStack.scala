@@ -104,7 +104,6 @@ class ScopedDataStack() {
     */
   def addScope(scope: String): ScopedData =
     if (scope != current.scope) {
-      current.flashScope = None
       topScope.currentScope = None
       if (scope == topScope.scope) {
         topScope
@@ -114,7 +113,6 @@ class ScopedDataStack() {
         }
         scopes push ScopedData(scope)
         current tap { _ =>
-          current.flashScope = Some(mutable.Map[String, String]())
           topScope.currentScope = Some(current)
         }
       }
