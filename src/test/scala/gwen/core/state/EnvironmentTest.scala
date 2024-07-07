@@ -65,7 +65,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     
   }
 
-  "New StepDef added to env context" should "still be accessible after scenario level reset" in {
+  "Feature impolicits and New StepDef added to env context" should "still be accessible after scenario level reset" in {
     
     val steps = List(
       Step(StepKeyword.Given.toString, """I enter "gwen" in the search field"""),
@@ -75,10 +75,24 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
 
     val env = newEnv
+    env.topScope.set("engineName", "Gwen-Core")
+    env.featureScope.set("gwen.feature.file.name", "file.feature")
+    env.featureScope.set("gwen.feature.file.simpleName", "file")
+    env.featureScope.set("gwen.feature.file.path", "path/file.feature")
+    env.featureScope.set("gwen.feature.file.absolutePath", "/absolute/path/file.feature")
+    env.featureScope.set("gwen.feature.name", "feature")
+    env.ruleScope.set("gwen.rule.name", "rule")
     env.addStepDef(stepdef)
     env.getStepDef("""I search for "gwen"""", None) should be (Some(stepdef))
     env.reset(StateLevel.scenario)
+    env.scopes.getOpt("engineName") should be (None)
     env.getStepDef("""I search for "gwen"""", None) should be (Some(stepdef))
+    env.scopes.get("gwen.feature.file.name") should be ("file.feature")
+    env.scopes.get("gwen.feature.file.simpleName") should be ("file")
+    env.scopes.get("gwen.feature.file.path") should be ("path/file.feature")
+    env.scopes.get("gwen.feature.file.absolutePath") should be ("/absolute/path/file.feature")
+    env.scopes.get("gwen.feature.name") should be ("feature")
+    env.scopes.get("gwen.rule.name") should be ("rule")
     
   }
   
@@ -195,7 +209,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     }
   }
 
-  "Implicit top scope attribute" should "not be removed after feature level reset" in {
+  "Implicit top scope attribute" should "be removed after feature level reset" in {
     val env = newEnv
     env.topScope.set("engineName", "Gwen-Core")
     env.topScope.get("engineName") should be ("Gwen-Core")
@@ -206,13 +220,13 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     env.topScope.set("gwen.feature.name", "feature")
     env.topScope.set("gwen.rule.name", "rule")
     env.reset(StateLevel.feature)
-    env.topScope.getOpt("engineName") should be (None)
-    env.topScope.get("gwen.feature.file.name") should be ("file.feature")
-    env.topScope.get("gwen.feature.file.simpleName") should be ("file")
-    env.topScope.get("gwen.feature.file.path") should be ("path/file.feature")
-    env.topScope.get("gwen.feature.file.absolutePath") should be ("/absolute/path/file.feature")
-    env.topScope.get("gwen.feature.name") should be ("feature")
-    env.topScope.get("gwen.rule.name") should be ("rule")
+    env.scopes.getOpt("engineName") should be (None)
+    env.scopes.getOpt("gwen.feature.file.name") should be (None)
+    env.scopes.getOpt("gwen.feature.file.simpleName") should be (None)
+    env.scopes.getOpt("gwen.feature.file.path") should be(None)
+    env.scopes.getOpt("gwen.feature.file.absolutePath") should be (None)
+    env.scopes.getOpt("gwen.feature.name") should be (None)
+    env.scopes.getOpt("gwen.rule.name") should be (None)
   }
 
   forAll (levels) { level =>

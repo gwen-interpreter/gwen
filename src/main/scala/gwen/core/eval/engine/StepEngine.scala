@@ -269,7 +269,8 @@ trait StepEngine[T <: EvalContext] {
                 }
               }
             }
-          case _ => step
+          case _ => 
+            step
         }
       } else {
         step

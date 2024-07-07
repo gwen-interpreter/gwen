@@ -27,6 +27,12 @@ Feature: Multiline substitutions
           """
           ${a}
           """
+      And a should not be "${gwen.feature.eval.duration}"
+      And b should not be "${gwen.feature.eval.duration.msecs}"
+      And b should not be "${gwen.feature.eval.duration.secs}"
       And a should not be "${gwen.eval.duration}"
       And b should not be "${gwen.eval.duration.msecs}"
       And b should not be "${gwen.eval.duration.secs}"
+      And a should not be "${gwen.scenario.eval.duration}"
+      And b should not be "${gwen.scenario.eval.duration.msecs}"
+      And b should not be "${gwen.scenario.eval.duration.secs}"

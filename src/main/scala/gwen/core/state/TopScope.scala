@@ -17,7 +17,6 @@
 package gwen.core.state
 
 import gwen.core._
-import gwen.core.Formatting.DurationFormatter
 import gwen.core.data.DataRecord
 import gwen.core.eval.binding.ScopeRefBinding
 import gwen.core.node.gherkin.Spec
@@ -28,10 +27,6 @@ import net.minidev.json.JSONArray
 
 import scala.util.chaining._
 import scala.jdk.CollectionConverters._
-import scala.concurrent.duration.Duration
-
-import java.util.concurrent.TimeUnit
-import java.util.Date
 
 /**
   * Binds all top level attributes. Also included is a cache for storing non string objects. 
@@ -48,13 +43,41 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     */
   private [state] var currentScope: Option[ScopedData] = None
 
+  /**
+    *  Provides access to the rule scope.
+    */
+  val featureScope = TransientStack.featureStack
+
+  /**
+    *  Provides access to the rule scope.
+    */
+  val ruleScope = TransientStack.ruleStack
+
+  /**
+    *  Provides access to the scenario scope.
+    */
+  val scenarioScope = TransientStack.scenarioStack
+
+  /**
+    *  Provides access to the stepDef scope.
+    */
+  val stepDefScope = TransientStack.stepDefStack
+
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
 
   def deepCopyInto(tScope: TopScope): TopScope = tScope tap { _ => 
     tScope.currentScope = currentScope.map(_.deepClone)
     tScope.objectStack = objectStack
+    copyImplicitsInto(tScope)
     super.deepCopyInto(tScope)
+  }
+
+  def copyImplicitsInto(tScope: TopScope): TopScope = tScope tap { _ =>
+    featureScope.deepCloneInto(tScope.featureScope)
+    ruleScope.deepCloneInto(tScope.ruleScope)
+    scenarioScope.deepCloneInto(tScope.scenarioScope)
+    stepDefScope.deepCloneInto(tScope.stepDefScope)
   }
 
   /**
@@ -123,30 +146,24 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     objectStack -= name
   }
 
-  /** Gets all implicit attributes. */
-  def implicitAtts: Seq[(String, String)] =
-    findEntries { case (n, _) => n.matches("""^gwen\.(feature\.(language|name|file\.(name|simpleName|path|absolutePath))|rule\.name|eval\.start\.msecs)$""")}
-
   def initStart(timeMsecs: Long): Unit = {
-    set("gwen.eval.start.msecs", timeMsecs.toString)
+    featureScope.set("gwen.feature.eval.start.msecs", timeMsecs.toString)
   }
   
   def setImplicitAtts(spec: Option[Spec], status: EvalStatus, force: Boolean): Unit = {
     spec foreach { s => 
-      set("gwen.feature.name", s.feature.name)
+      featureScope.set("gwen.feature.name", s.feature.name)
       s.specFile foreach { file =>
-        set("gwen.feature.file.name", file.getName)
-        set("gwen.feature.file.simpleName", file.simpleName)
-        set("gwen.feature.file.path", file.getPath)
-        set("gwen.feature.file.absolutePath", file.getAbsolutePath)
+        featureScope.set("gwen.feature.file.name", file.getName)
+        featureScope.set("gwen.feature.file.simpleName", file.simpleName)
+        featureScope.set("gwen.feature.file.path", file.getPath)
+        featureScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
       }
     }
-    val keyword = if(status.isPending || status.isFailed) status.keyword else StatusKeyword.Passed
-    val message = if (status.isFailed) status.message else ""
-    if (status.isFailed || get("gwen.eval.status.keyword") != StatusKeyword.Failed.toString || force) {
-      set("gwen.eval.status.keyword", keyword.toString)
-      set("gwen.eval.status.message", message)
-    }
+    featureScope.setStatus(status, force)
+    ruleScope.setStatus(status, false)
+    scenarioScope.setStatus(status, false)
+    stepDefScope.setStatus(status, false)
   }
 
   def bindDataRecord(rec: DataRecord): Unit = {
@@ -158,20 +175,14 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     set("data.record.index", (rec.recordNo - 1).toString)
   }
 
-  override def get(name: String): String = getDerivedImplicitOpt(name).getOrElse(super.get(name))
-  override def getOpt(name: String): Option[String] = getDerivedImplicitOpt(name).orElse(super.getOpt(name))
+  override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))
+  override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
 
-  private def getDerivedImplicitOpt(name: String): Option[String] = {
-    if (name == "gwen.eval.status.keyword") super.getOpt("gwen.eval.status.keyword").orElse(Some(StatusKeyword.Pending.toString))
-    else if (name == "gwen.eval.status.keyword.upperCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toUpperCase)
-    else if (name == "gwen.eval.status.keyword.lowerCased") getDerivedImplicitOpt("gwen.eval.status.keyword").map(_.toLowerCase)
-    else if (name == "gwen.eval.status.message") super.getOpt("gwen.eval.status.message").orElse(Some(""))
-    else if (name == "gwen.eval.status.message.escaped") getOpt("gwen.eval.status.message").map(Formatting.escapeJava)
-    else if (name == "gwen.eval.status.isFailed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
-    else if (name == "gwen.eval.status.isPassed") getOpt("gwen.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
-    else if (name == "gwen.eval.duration.msecs") getOpt("gwen.eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
-    else if (name == "gwen.eval.duration.secs") getOpt("gwen.eval.start.msecs").map(started => ((new Date().getTime() - started.toLong).toDouble / 1000d).toString)
-    else if (name == "gwen.eval.duration") getOpt("gwen.eval.start.msecs").map(started => DurationFormatter.format(Duration(new Date().getTime() - started.toLong, TimeUnit.MILLISECONDS)))
+  private def getImplicitOpt(name: String): Option[String] = {
+    if (name.startsWith("gwen.feature.") || name.startsWith("gwen.eval.")) featureScope.getOpt(name)
+    else if (name.startsWith("gwen.scenario.")) scenarioScope.getOpt(name)
+    else if (name.startsWith("gwen.stepDef.")) stepDefScope.getOpt(name)
+    else if (name.startsWith("gwen.rule.")) ruleScope.getOpt(name)
     else if (name == "gwen.accumulated.errors") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
       errs match {
         case Nil => ""

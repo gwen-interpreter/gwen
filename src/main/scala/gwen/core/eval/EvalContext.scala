@@ -270,8 +270,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   }
 
   def currentStatus: EvalStatus = {
-    val keyword = scopes.get("gwen.eval.status.keyword") 
-    if (keyword == StatusKeyword.Failed.toString) Failed(0, scopes.get("gwen.eval.status.message")) else Passed(0)
+    val keyword = featureScope.get("gwen.feature.eval.status.keyword") 
+    if (keyword == StatusKeyword.Failed.toString) Failed(0, featureScope.get("gwen.feature.eval.status.message")) else Passed(0)
   }
 
 }

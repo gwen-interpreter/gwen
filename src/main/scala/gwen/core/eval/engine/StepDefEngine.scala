@@ -36,6 +36,8 @@ import com.typesafe.scalalogging.LazyLogging
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
+import java.util.Date
+import gwen.core.status.StatusKeyword
 
 /**
   * StepDef evaluation engine.
@@ -102,10 +104,14 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       )
       checkStepDefRules(sdStep, ctx)
       ctx.paramScope.push(stepDef.name, stepDef.params)
-      val prevSDName = ctx.topScope.getOpt("gwen.stepDef.name")
-      if (!iStepDef.isSynthetic) {
-        ctx.topScope.set("gwen.stepDef.name", stepDef.name)
-      }
+      ctx.stepDefScope.push(
+        stepDef.name,
+        List(
+          ("gwen.stepDef.name", stepDef.name),
+          ("gwen.stepDef.eval.status.keyword", StatusKeyword.Passed.toString),
+          ("gwen.stepDef.eval.start.msecs", new Date().getTime().toString),
+        )
+      )
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
@@ -124,9 +130,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
           }
         }
       } finally {
-        if (!iStepDef.isSynthetic) {
-          ctx.topScope.set("gwen.stepDef.name", prevSDName.orNull)
-        }
+        ctx.stepDefScope.pop()
         ctx.paramScope.pop()
       }
     } finally {

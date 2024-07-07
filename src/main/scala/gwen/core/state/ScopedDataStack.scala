@@ -73,7 +73,7 @@ class ScopedDataStack() {
   /**
     *  Provides access to the parameter scope.
     */
-  val paramScope = new ParameterStack()
+  val paramScope = TransientStack.paramsStack
 
   /**
     * Provides access to the top level scope (which is always at the

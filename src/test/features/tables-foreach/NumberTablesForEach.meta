@@ -54,6 +54,11 @@ Feature: Number tables meta (for each)
       And y is "1" if not passed
       And x should be "1"
       And y should not be defined
+      And passed is "${gwen.scenario.eval.status.isPassed}"
+      And x is "1" if passed
+      And y is "1" if not passed
+      And x should be "1"
+      And y should not be defined
 
   @StepDef
   @ForEach

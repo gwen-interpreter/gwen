@@ -7,4 +7,6 @@ Feature: Multiline substitutions meta
   @StepDef
   Scenario: <name> is assigned to "<value>"
     Given $<name> is "$<value>"
+      And gwen.feature.eval.duration should not be "${start duration}"
       And gwen.eval.duration should not be "${start duration}"
+      And gwen.scenario.eval.duration should not be "${start duration}"

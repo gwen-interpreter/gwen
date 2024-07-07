@@ -28,6 +28,7 @@ import gwen.core.status._
 import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
+import java.util.Date
 
 /**
   * Rule evaluation engine.
@@ -43,17 +44,35 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
   }
 
   private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, dataRecord: Option[DataRecord], ctx: T, acc: List[Rule]): Rule = {
-    ctx.topScope.set("gwen.rule.name", rule.name)
-    EvalStatus(acc.map(_.evalStatus)) match {
-      case status @ Failed(_, error) =>
-        val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
-        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
-        val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-        if (failfast && !exitOnFail && !isSoftAssert) {
-          transitionRule(rule, Skipped, ctx)
-        } else if (exitOnFail && !isSoftAssert) {
-          transitionRule(rule, rule.evalStatus, ctx)
-        } else {
+    ctx.ruleScope.push(
+      rule.name,
+      List(
+        ("gwen.rule.name", rule.name),
+        ("gwen.rule.eval.status.keyword", StatusKeyword.Passed.toString),
+        ("gwen.rule.eval.start.msecs", new Date().getTime().toString),
+      )
+    )
+    try {
+      EvalStatus(acc.map(_.evalStatus)) match {
+        case status @ Failed(_, error) =>
+          val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
+          val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
+          val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+          if (failfast && !exitOnFail && !isSoftAssert) {
+            transitionRule(rule, Skipped, ctx)
+          } else if (exitOnFail && !isSoftAssert) {
+            transitionRule(rule, rule.evalStatus, ctx)
+          } else {
+            beforeRule(rule, ctx)
+            logger.info(s"Evaluating ${rule.keyword}: $rule")
+            rule.copy(
+              withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
+            ) tap { r =>
+              logStatus(ctx.options, r)
+              afterRule(r, ctx)
+            }
+          }
+        case _ =>
           beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
@@ -62,16 +81,9 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
             logStatus(ctx.options, r)
             afterRule(r, ctx)
           }
-        }
-      case _ =>
-        beforeRule(rule, ctx)
-        logger.info(s"Evaluating ${rule.keyword}: $rule")
-        rule.copy(
-          withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
-        ) tap { r =>
-          logStatus(ctx.options, r)
-          afterRule(r, ctx)
-        }
+      }
+    } finally {
+      ctx.ruleScope.pop()
     }
   }
 

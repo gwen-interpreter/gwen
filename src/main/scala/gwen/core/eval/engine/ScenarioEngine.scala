@@ -44,6 +44,7 @@ import scala.util.chaining._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.Date
 
 /**
   * Scenario evaluation engine.
@@ -79,7 +80,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       (acc: List[Scenario], stepDef: Scenario) =>
         evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
     }
-    val language = ctx.topScope.get("gwen.feature.language")
+    val language = ctx.topScope.featureScope.get("gwen.feature.language")
     val executor = ParallelExecutors.scenarioInstance
     implicit val ec = ExecutionContext.fromExecutorService(executor)
     val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
@@ -115,7 +116,6 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       if (StateLevel.scenario.equals(ctx.stateLevel)) {
         ctx.reset(StateLevel.scenario)
       }
-      ctx.topScope.set("gwen.scenario.name", scenario.name)
     }
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
@@ -147,10 +147,22 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       (if (scenario.isOutline) {
         evaluateScenarioOutline(scenario, ctx)
       } else {
-        scenario.background map  { background =>
-          evaluateScenarioWithBackground(scenario, background, ctx)
-        } getOrElse {
-          evaluateScenarioWithoutBackground(scenario, ctx)
+        ctx.scenarioScope.push(
+          scenario.name,
+          List(
+            ("gwen.scenario.name", scenario.name),
+            ("gwen.scenario.eval.status.keyword", StatusKeyword.Passed.toString),
+            ("gwen.scenario.eval.start.msecs", new Date().getTime().toString),
+          )
+        )
+        try {
+          scenario.background map  { background =>
+            evaluateScenarioWithBackground(scenario, background, ctx)
+          } getOrElse {
+            evaluateScenarioWithoutBackground(scenario, ctx)
+          }
+        } finally {
+          ctx.scenarioScope.pop()
         }
       }) tap { s =>
         afterScenario(s, ctx)

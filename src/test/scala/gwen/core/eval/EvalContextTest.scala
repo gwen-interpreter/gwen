@@ -133,7 +133,6 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
     ctx.topScope.set("ee", "3")
     ctx.getBoundValue("ee") should be ("3")
     ctx.topScope.set("e", "2")                // will create a copy in local flash scope
-    println("@@@@@@\n" + ctx.scopes.asString)
     ctx.getBoundValue("e") should be ("2")    // will source value from local flash scope copy
     JSBinding.bind("e", "2 + 2", false, ctx)
     ctx.getBoundValue("e") should be ("4")

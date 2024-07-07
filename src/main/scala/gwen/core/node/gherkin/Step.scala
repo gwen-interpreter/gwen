@@ -21,7 +21,6 @@ import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.state.EnvState
-import gwen.core.state.ParameterStack
 import gwen.core.status._
 
 import scala.io.Source

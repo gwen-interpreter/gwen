@@ -50,6 +50,7 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
 
   def deepClone: EnvState = {
     new EnvState(scopes.deepClone, stateLevel) tap { newState =>
+      scopes.topScope.copyImplicitsInto(newState.scopes.topScope)
       newState.stepDefs = stepDefs
       newState.nodeBuilder = NodeChainBuilder(nodeChain)
     }
@@ -159,9 +160,7 @@ object EnvState {
 
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain, stateLevel: StateLevel): EnvState = {
     new EnvState(new ScopedDataStack(), stateLevel) tap { newState =>
-      topScope.implicitAtts foreach { case (n, v) =>
-        newState.scopes.topScope.set(n, v)
-      }
+      topScope.copyImplicitsInto(newState.scopes.topScope)
       stepDefs foreach { sdefs =>
         newState.stepDefs = sdefs
       }

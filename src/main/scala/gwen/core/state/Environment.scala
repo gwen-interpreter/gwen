@@ -39,9 +39,13 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   def stateLevel: StateLevel = state.stateLevel
   def stepDefs: Map[String, Scenario] = state.getStepDefs
-  def paramScope: ParameterStack = scopes.paramScope
+  def paramScope: TransientStack = scopes.paramScope
   def scopes: ScopedDataStack = state.scopes
   def topScope: TopScope = scopes.topScope
+  def featureScope: TransientStack = topScope.featureScope
+  def ruleScope: TransientStack = topScope.ruleScope
+  def scenarioScope: TransientStack = topScope.scenarioScope
+  def stepDefScope: TransientStack = topScope.stepDefScope
   def nodeChain: NodeChain = state.nodeChain
 
   /** Create a shallow clone of the current environment state */
@@ -61,9 +65,9 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
     logger.info(s"Resetting environment")
     state = if (StateLevel.feature.equals(level)) {
       EnvState.resetAttachmentNo()
-      EnvState(topScope, None, NodeChain(), level)
+      EnvState(new TopScope(), None, NodeChain(), level)
     } else {
-      EnvState(topScope, Some(stepDefs), nodeChain, level)
+      shallowCloneState
     }
 
   }
