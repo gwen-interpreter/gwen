@@ -1,8 +1,9 @@
 3.59.1
 ======
-6 July 2024
+7 July 2024
 - Fix context cloning and Synchronized StepDefs for parallel outline examples
 - Replace flash scope with scope reference
+- Set transparent background on HTML report dropdowns
 
 3.59.0
 ======

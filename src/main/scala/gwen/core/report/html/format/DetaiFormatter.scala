@@ -651,7 +651,7 @@ trait DetaiFormatter {
         div(`class` := s"dropdown bg-${bgStatus(status)}",
           button(`class` := s"btn btn-${cssStatus(status)} dropdown-toggle", attr("type") := "button", id := "dropdownMenu1", attr("data-toggle") := "dropdown",
             strong(
-              "parameters "
+              "Parameters "
             ),
             span(`class` :="caret")
           ),

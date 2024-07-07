@@ -153,6 +153,7 @@ div {
 
 .dropdown {
   display:inline;
+  background-color: transparent;
 }
 
 .dropdown-toggle {
