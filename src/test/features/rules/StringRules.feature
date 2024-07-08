@@ -32,7 +32,9 @@ Feature: String rules
     Example: Verify that we can join two strings in meta
       Given the result is ""
        When I join two strings in meta
-       Then the result should not be ""
+       Then the result should not be "" if gwen.state.level is "feature"
+        And gwen.scenario.name should be "Verify that we can join two strings in meta"
+        And gwen.rule.name should be "Joining two strings together should result in a string containing both"
 
   Rule: Replacing a substring in a string should result in substitution of the substring
 
@@ -42,6 +44,7 @@ Feature: String rules
         And string 3 is ""
        When I substitute string 1 for string 2 in string 3
        Then the result should be ""
+        And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"
 
     Scenario Template: Substituting <string 1> for <string 2> in <string 3> should yield <result>
 
@@ -53,8 +56,9 @@ Feature: String rules
        When I substitute string 1 for string 2 in string 3
        Then the result should be "<result>"
         And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"
+        And gwen.scenario.name should end with "-- More basic string concatenation"
 
-      Examples: Basic string concatenation
+      Examples: More basic string concatenation
 
         The header row contains the placeholder names. The body rows that
         follow contain the data that is bound to each scenario that is evaluated.

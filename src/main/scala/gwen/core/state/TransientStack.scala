@@ -98,7 +98,8 @@ class TransientStack(stackName: String) {
     transientStack.headOption.flatMap(_.getOpt(name)).headOption orElse {
       findOpt(name, s"${stackName}.", s"${stackName}.") orElse {
         if (stackName == "feature") {
-          if (name == s"gwen.eval.status.keyword") getOpt(s"gwen.feature.eval.status.keyword")
+          if (name == "gwen.eval.status.keyword") getOpt("gwen.feature.eval.status.keyword")
+          else if (name == "gwen.eval.status.message") getOpt("gwen.feature.eval.status.message")
           else findOpt(name, "", "feature.") 
         } else None
       }
@@ -108,7 +109,7 @@ class TransientStack(stackName: String) {
   private def findOpt(name: String, level1: String, level2: String): Option[String] = {
     if (name == s"gwen.${level1}eval.status.keyword.upperCased") getOpt(s"gwen.${level2}eval.status.keyword").map(_.toUpperCase)
     else if (name == s"gwen.${level1}eval.status.keyword.lowerCased") getOpt(s"gwen.${level2}eval.status.keyword").map(_.toLowerCase)
-    else if (name == s"gwen.${level1}eval.status.message") Some("")
+    else if (name == s"gwen.${level1}eval.status.message") getOpt(s"gwen.${level2}eval.status.message")
     else if (name == s"gwen.${level1}eval.status.message.escaped") getOpt(s"gwen.${level2}eval.status.message").map(Formatting.escapeJava)
     else if (name == s"gwen.${level1}eval.status.isFailed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
     else if (name == s"gwen.${level1}eval.status.isPassed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)

@@ -1,3 +1,8 @@
+3.60.1
+======
+9 July 2024
+- Fix `gwen.eval.status.message` implicit
+
 3.60.0
 ======
 8 July 2024
