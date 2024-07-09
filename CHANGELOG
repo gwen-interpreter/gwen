@@ -1,8 +1,13 @@
+3.61.1
+======
+9 July 2024
+- Use `ISO-8859-1` encoding if text files cannot be read using `UTF-8`
+
 3.61.0
 ======
 9 July 2024
 - Add DSL to read in file using a given character encoding
-  - <name> is defined by <encoding> file "<filepath>"
+  - `<name> is defined by <encoding> file "<filepath>"`
 
 3.60.1
 ======

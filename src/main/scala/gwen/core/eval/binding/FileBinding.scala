@@ -52,8 +52,12 @@ class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Str
           val file = new File(filePath)
           if (file.exists()) {
             val contents = ctx.scopes.getOpt(encodingKey) match {
-              case Some(enc) => Source.fromFile(file, enc).mkString
-              case _ => Source.fromFile(file).mkString
+              case Some(enc) => 
+                Source.fromFile(file, enc).mkString
+              case _ => 
+                Try(Source.fromFile(file).mkString) getOrElse {
+                  Source.fromFile(file, "ISO-8859-1").mkString
+                }
             }
             ctx.interpolate(contents)
           } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
