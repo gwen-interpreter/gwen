@@ -15,6 +15,10 @@ Feature: Accumulated errors
   Scenario: failed assertions in try scope should not be accumlated
      Then @Soft @Try w should be "2"
      Then @Soft w should be "3"
+      And gwen.feature.eval.status.message should not be blank
+      And gwen.eval.status.message should not be blank
+      And soft message 1 is "${gwen.feature.eval.status.message}"
+      And soft message 2 is "${gwen.eval.status.message}"
 
   Scenario: Two accumulated errors
     Given w is "1"
@@ -28,6 +32,8 @@ Feature: Accumulated errors
       And @Try w should be "4"
       And @Sustained z should be true
       And @Try failed assertions in try scope should not be accumlated
+      And soft message 1 should not be blank
+      And soft message 2 should not be blank
       And gwen.accumulated.errors should be
           """
           2 errors:
