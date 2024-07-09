@@ -28,10 +28,14 @@ import java.io.FileNotFoundException
 object FileBinding {
   
   def key(name: String) = s"$name/${BindingType.file}"
+  def encodingKey(name: String) = s"$name/${BindingType.file}/encoding"
 
-  def bind(name: String, filepath: String, env: Environment): Unit = {
+  def bind(name: String, filepath: String, encoding: Option[String], env: Environment): Unit = {
     env.scopes.clear(name)
     env.scopes.set(key(name), filepath)
+    encoding foreach { enc => 
+      env.scopes.set(encodingKey(name), enc)
+    }
   }
 
 }
@@ -39,6 +43,7 @@ object FileBinding {
 class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, String](name, ctx) {
 
   private val key = FileBinding.key(name)
+  private val encodingKey = FileBinding.encodingKey(name)
 
   override def resolve(): String = {
     bindIfLazy(
@@ -46,7 +51,11 @@ class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Str
         ctx.evaluate(resolveDryValue(BindingType.file.toString)) {
           val file = new File(filePath)
           if (file.exists()) {
-            ctx.interpolate(Source.fromFile(file).mkString)
+            val contents = ctx.scopes.getOpt(encodingKey) match {
+              case Some(enc) => Source.fromFile(file, enc).mkString
+              case _ => Source.fromFile(file).mkString
+            }
+            ctx.interpolate(contents)
           } else throw new FileNotFoundException(s"File bound to '$name' not found: $file")
         }
       }

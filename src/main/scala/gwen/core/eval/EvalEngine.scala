@@ -164,8 +164,12 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
         new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter), step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|unix system process|property|setting|file)$attrType "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|unix system process|property|setting)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None, step.isMasked)
+      case r"""(.+?)$attribute (?:is|will be) defined by file "(.+?)"$filepath""" =>
+        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), None, None, step.isMasked)
+      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$enc file "(.+?)"$filepath""" =>
+        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), Some(enc), None, step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
         new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter), step.isMasked)
       case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.*)"$arg""" =>

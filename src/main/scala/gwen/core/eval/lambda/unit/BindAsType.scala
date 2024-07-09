@@ -48,7 +48,7 @@ class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, val
           }
         case BindingType.sysproc => SysprocBinding.bind(target, value, delimiter, false, masked, ctx)
         case BindingType.unixsysproc => SysprocBinding.bind(target, value, delimiter, true, masked, ctx)
-        case BindingType.file => FileBinding.bind(target, value, ctx)
+        case BindingType.file => FileBinding.bind(target, value, argsString, ctx)
         case _ => ctx.topScope.set(target, Settings.get(value))
       }
       step.loadStrategy foreach { strategy =>

@@ -1,3 +1,9 @@
+3.61.0
+======
+9 July 2024
+- Add DSL to read in file using a given character encoding
+  - <name> is defined by <encoding> file "<filepath>"
+
 3.60.1
 ======
 9 July 2024
