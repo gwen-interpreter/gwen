@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.61.1"
+val gwenVersion = "3.61.2"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.4.1",
+  scalaVersion := "3.4.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -44,12 +44,12 @@ lazy val mainDependencies = {
     "io.cucumber" % "gherkin" % "28.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "3.26.1",
+    "org.jline" % "jline" % "3.26.3",
     "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.23.1",
     "org.slf4j" % "jul-to-slf4j" % "1.7.36",
-    "commons-codec" % "commons-codec" % "1.17.0",
-    "org.apache.commons" % "commons-text" % "1.11.0",
-    "com.github.tototoshi" %% "scala-csv" % "1.3.10",
+    "commons-codec" % "commons-codec" % "1.17.1",
+    "org.apache.commons" % "commons-text" % "1.12.0",
+    "com.github.tototoshi" %% "scala-csv" % "1.4.1",
     "com.jayway.jsonpath" % "json-path" % "2.9.0",
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
@@ -71,16 +71,16 @@ lazy val mainDependencies = {
 
 lazy val mainOverrides = {
   Seq(
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.1",
-    "com.google.guava" % "guava" % "33.2.0-jre",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
+    "com.google.guava" % "guava" % "33.2.1-jre",
     "org.reactivestreams" % "reactive-streams" % "1.0.4",
     "org.slf4j" % "slf4j-api" % "1.7.36"
   )
 }
 
 dependencyOverrides ++= Seq(
-  "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.1",
-  "com.google.guava" % "guava" % "33.2.0-jre",
+  "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
+  "com.google.guava" % "guava" % "33.2.1-jre",
   "org.reactivestreams" % "reactive-streams" % "1.0.4",
   "org.slf4j" % "slf4j-api" % "1.7.36"
 )
