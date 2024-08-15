@@ -77,10 +77,9 @@ trait UnitEngine[T <: EvalContext]
             case Some(spec) =>
               Some(evaluateSpec(unit, spec, loadedMeta, ctx))
             case None =>
-              if (ctx.options.verbose)
+              if (ctx.options.verbose) {
                 logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
-              else 
-                println(s"Feature file skipped (does not satisfy tag filters): ${file}\n")
+              }
               None
           }
         case Failure(e) =>
