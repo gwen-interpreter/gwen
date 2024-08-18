@@ -441,20 +441,20 @@ object UUIDGenerator {
 }
 
 object Deprecation extends LazyLogging {
-  def warn(category: String, oldWay: String, newWay: String): Unit = {
-    logger.warn(
-      s"""|$category is deprecated and will be unsupported soon
-          |${createMsg(category, oldWay, newWay)}""".stripMargin
+  def warn(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
+    println(
+      s"""|WARNING: $category is deprecated and will be unsupported in next major release
+          |${createMsg(category, oldWay, newWayOpt)}""".stripMargin
     )
   }
-  def fail(category: String, oldWay: String, newWay: String): Unit = {
+  def fail(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     Errors.deprecatedError(
       s"""|$category is deprecated and no longer supported
-          |${createMsg(category, oldWay, newWay)}""".stripMargin
+          |${createMsg(category, oldWay, newWayOpt)}""".stripMargin
     )
   }
-  private def createMsg(prefix: String, oldWay: String, newWay: String): String = {
-    s"""|       $oldWay >> Instead use >> $newWay
+  private def createMsg(prefix: String, oldWay: String, newWayOpt: Option[String]): String = {
+    s"""|       $oldWay${newWayOpt.map(newWay => s" >> Instead use >> $newWay").getOrElse("")}
         |       ${"^" * oldWay.size}""".stripMargin
   }
 }

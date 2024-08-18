@@ -163,7 +163,7 @@ object GwenOptions {
 
       opt[String]('p', "properties") action {
         (ps, c) =>
-          Deprecation.warn("CLI option", "-p|--properties", "-c|--conf")
+          Deprecation.warn("CLI option", "-p|--properties", Some("-c|--conf"))
           c.copy(settingsFiles = c.settingsFiles ++ ps.split(",").toList.map(new File(_)))
       } validate { ps =>
         ((ps.split(",") flatMap { f =>
@@ -182,9 +182,13 @@ object GwenOptions {
 
       opt[String]('f', "formats") action {
         (fs, c) =>
-          c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
+          val formats = fs.split(",").toList.map(f => ReportFormat.valueOf(f))
+          formats.find(_ == ReportFormat.rp) foreach { format =>
+            Deprecation.warn("Report Portal option", s"-f|--format = $format", None)
+          }
+          c.copy(reportFormats = formats)
       } valueName "reports" text s"""|Report formats to include in output (comma separated)
-                                     |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default is ${ReportFormat.html})""".stripMargin
+                                                                                               |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html}, ${ReportFormat.rp} deprecated)""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>

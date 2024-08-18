@@ -267,7 +267,7 @@ object Settings extends LazyLogging {
     deprecatedName flatMap { dName =>
       getOpt(dName, None, config) tap { value =>
         if (value.nonEmpty) {
-          Deprecation.fail("Setting", dName, name)
+          Deprecation.fail("Setting", dName, Some(name))
         }
       }
     } orElse {
@@ -447,7 +447,7 @@ object Settings extends LazyLogging {
           case Nil =>
             getList(name, conf)
           case _ =>
-            Deprecation.fail("Setting", dName, name)
+            Deprecation.fail("Setting", dName, Some(name))
             Nil
         }
       } getOrElse {
