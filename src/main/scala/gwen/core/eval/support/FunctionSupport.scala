@@ -30,7 +30,9 @@ class ArrowFunction[T <: EvalContext](val source: String, argBindings: List[(Str
   private def argValueOpt(name: String): Option[String] = argRefOpt(name).map(ctx.getBoundValue)
   lazy val wrapper: String = wrapper(argNames.map(argValue))
   def wrapper(argValues: List[String]): String = {
-    val args = (argNames zip argValues) map { (n, v) => (n, Formatting.surroundWithQuotes(v)) }
+    val args = (argNames zip argValues) map { (n, v) => 
+      (n, if(Source.fromString(v).getLines().toList.length > 1) s"`$v`" else Formatting.surroundWithQuotes(v))
+    }
     ctx.jsFunctionWrapper(args, body)
   }
   def apply: String = {
