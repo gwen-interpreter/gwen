@@ -36,6 +36,7 @@ import java.io.File
 import java.util.AbstractMap
 import java.util.ArrayList
 import java.util.HashMap
+import com.fasterxml.jackson.core.JsonParseException
 
 trait DataSource {
   val dataFile: File
@@ -43,6 +44,13 @@ trait DataSource {
   def header: List[String] = table.headOption.getOrElse(Nil)
   def data: List[List[String]] = if (table.size > 1) table.tail else Nil
   def lookupPrefix: String
+  def parseFile[T](dataFile: File)(parse: File => T): T = {
+    try {
+      parse(dataFile)
+    } catch {
+      case e: Throwable => Errors.malformedDataSourceError(dataFile, e)
+    }
+  }
 }
 
 object DataSource {
@@ -65,8 +73,10 @@ object DataSource {
 class CsvDataSource(override val dataFile: File) extends DataSource {
   private def ignoreEmpty(rec: Seq[String]) = rec.filter(_.trim.nonEmpty).nonEmpty
   override lazy val table: List[List[String]] = {
-    val trim = GwenSettings.`gwen.auto.trim.data.csv`
-    CSVReader.open(dataFile).all().filter(ignoreEmpty).zipWithIndex.map((v, i) => if (i == 0 || trim) v.map(_.trim) else v)
+    parseFile(dataFile) { file => 
+      val trim = GwenSettings.`gwen.auto.trim.data.csv`
+      CSVReader.open(file).all().filter(ignoreEmpty).zipWithIndex.map((v, i) => if (i == 0 || trim) v.map(_.trim) else v)
+    }
   }
   override def lookupPrefix = CsvDataSource.lookupPrefix
 }
@@ -77,7 +87,11 @@ object CsvDataSource {
 
 /** JSON record access */
 class JsonDataSource(override val dataFile: File) extends DataSource {
-  override lazy val table: List[List[String]] = JsonDataSource.parseObject(Source.fromFile(dataFile).mkString)
+  override lazy val table: List[List[String]] = {
+    parseFile(dataFile) { file => 
+      JsonDataSource.parseObject(Source.fromFile(file).mkString)
+    }
+  }
   override def lookupPrefix = JsonDataSource.lookupPrefix
 }
 

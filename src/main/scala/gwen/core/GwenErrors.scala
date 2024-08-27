@@ -113,6 +113,7 @@ object Errors extends LazyLogging {
   def missingJSArgumentError(jsRef: String, argIndex: Int) = throw new MissingJSArgumentException(jsRef, argIndex)
   def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
   def illegalNestedParallelExceutionError(sourceRef: Option[SourceRef]) = throw new IllegalNestedParallelExecutionException(sourceRef)
+  def malformedDataSourceError(dataFile: File, cause: Throwable) = throw new MalformedDataSourceException(dataFile, cause)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -315,6 +316,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when a data file is not supported. */
   class UnsupportedDataFileException(dataFile: File) extends GwenException(s"Unsupported data file (csv or json expected): $dataFile")
+
+  /** Thrown when a data file is not supported. */
+  class MalformedDataSourceException(dataFile: File, cause: Throwable) extends GwenException(s"Malformed ${dataFile.extension.toUpperCase} data in $dataFile file: ${cause.getMessage}", cause)
 
   /** Thrown when a non JSON string array is detected. */
   class UnsupportedJsonStructureException(cause: Throwable) extends GwenException(s"Unsupported or inconsistent JSON input data structure", cause)

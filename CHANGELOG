@@ -1,8 +1,12 @@
+3.61.6
+======
+28 August 2024
+- Report malformed data file error when an input data file fails to parse
 
 3.61.5
 ======
 27 August 2024
-- Fix JS function calls with mulitline string arguments
+- Fix JS function calls with multiline string arguments
 
 3.61.4
 ======

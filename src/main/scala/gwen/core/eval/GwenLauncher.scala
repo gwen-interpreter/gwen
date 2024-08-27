@@ -49,6 +49,7 @@ import scala.util.chaining._
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
 import java.util.Date
+import gwen.core.Errors.MalformedDataSourceException
 
 /**
   * Launches a gwen engine.
@@ -131,7 +132,11 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       case e: Throwable =>
         val failed = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
-          logger.error(failed.message, e)
+          if (e.isInstanceOf[MalformedDataSourceException]) {
+            logger.error(e.getMessage)  
+          } else {
+            logger.error(failed.message, e)
+          }
           failed
         } else {
           throw e
