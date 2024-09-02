@@ -80,6 +80,7 @@ object Errors extends LazyLogging {
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
   def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
   def dataHeaderNotFoundError(file: File) = throw new DataHeaderNotFoundException(file)
+  def multilineDataFieldNameError(name: String, file: Option[File]) = throw new MultilineDataFieldNameException(name, file)
   def recursiveImportError(importAnnotation: Tag) = throw new RecursiveImportException(importAnnotation)
   def sqlError(msg: String) = throw new SQLException(msg)
   def dataTableError(msg: String) = throw new DataTableException(msg)
@@ -228,8 +229,11 @@ object Errors extends LazyLogging {
   /** Thrown when a data lookup fails. */
   class DataLookupException(file: File, name: String) extends GwenException(s"No such data in file $file having name: $name")
 
-    /** Thrown when a data file doesn't have a header record. */
+  /** Thrown when a data file doesn't have a header record. */
   class DataHeaderNotFoundException(file: File) extends GwenException(s"Header not found in data file: $file)")
+
+  /** Thrown when a data field name spans multiple lines. */
+  class MultilineDataFieldNameException(name: String, file: Option[File]) extends GwenException(s"Illegal mutiline data field name${file.map(f => s" found in data file $f").getOrElse("")}: $name)")
   
   /** Thrown when a recursive import is detected. */
   class RecursiveImportException(importAnnotation: Tag) extends GwenException(s"Recursive (cyclic) $importAnnotation detected${at(importAnnotation.sourceRef)}") {

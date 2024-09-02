@@ -204,6 +204,9 @@ trait SpecNormaliser extends BehaviorRules {
     val noData = background.map(_.isNoData).getOrElse(false)
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
+      if (Source.fromString(name).getLines().toList.size > 1) {
+        Errors.multilineDataFieldNameError(name, dataFile)
+      }
       val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       if (Source.fromString(value).getLines().length > 1) 
         Step(None, keyword, s"$name is", Nil, None, Nil, Some((0, value, None)), Pending, Nil, Nil, List(dataTag), None, Nil)
