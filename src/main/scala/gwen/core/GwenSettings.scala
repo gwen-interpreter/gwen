@@ -23,6 +23,7 @@ import gwen.core.state.StateLevel
 import scala.util.Try
 
 import java.io.File
+import java.util.logging.Level
 
 /**
   * Provides access to all Gwen settings.
@@ -57,6 +58,7 @@ object GwenSettings {
     `gwen.state.level`
     `gwen.video.dir`
     `gwen.video.timeoutSecs`
+    `gwen.logLevel.deprecations`
   }
 
   /**
@@ -371,6 +373,27 @@ object GwenSettings {
     */
   def `gwen.error.messages.inline.locators`: Boolean = {
       Settings.getBoolean("gwen.error.messages.inline.locators")
+  }
+
+  /**
+    * Provides access to the `gwen.behavior.rules` setting used to determine whether strict,
+    * or lenient rules around Given-When-Then usage should be enforced in features (default value is
+    * `strict`). When strict, scenarios and backgrounds must contain Given-When-Then ordered steps
+    * and Given steps set context, When steps must perform actions, and Then or But steps must perform
+    * assertions. When `leneient` no behavioral rules are enforced. Note that `gwen.behavior.rules` is
+    * an alias for this setting.
+    */
+  def `gwen.logLevel.deprecations`: Level = {
+    Settings.getOpt("gwen.logLevel.deprecations") map { level => 
+      level match {
+        case "warn" => Level.WARNING
+        case "error" => Level.SEVERE
+        case "none" => Level.OFF
+        case _ => Errors.invalidSettingError("gwen.logLevel.deprecations", level, "Valid value are warn|error|none")
+      }
+    } getOrElse {
+      Level.WARNING
+    }
   }
 
 }

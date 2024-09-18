@@ -82,38 +82,38 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).isDefined, defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" =>
-        Deprecation.warn("Step variant", s"using no delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('0s') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
+        Deprecation.log("Overloaded step", s"using no delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('0s') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using no delay""" =>
-        Deprecation.warn("Step variant", s"using no delay", Some(s"@Delay('0s') annotation"))
+        Deprecation.log("Overloaded step", s"using no delay", Some(s"@Delay('0s') annotation"))
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration.Zero, step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" if doStep != "I wait" =>
-        Deprecation.warn("Step variant", s"using $delayPeriod $delayUnit delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
+        Deprecation.log("Overloaded step", s"using $delayPeriod $delayUnit delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" =>
-        Deprecation.warn("Step variant", s"using $delayPeriod $delayUnit delay", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') annotation"))
+        Deprecation.log("Overloaded step", s"using $delayPeriod $delayUnit delay", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') annotation"))
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, delayDuration, defaultRepeatTimeout(delayDuration), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" if doStep != "I wait" =>
-        Deprecation.warn("Step variant", s"using $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotation"))
+        Deprecation.log("Overloaded step", s"using $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotation"))
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, step.delayOpt.getOrElse(defaultRepeatDelay), Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) =>
         Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).isDefined, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" if !condition.contains('"') =>
-        Deprecation.warn("Step variant", s"using no delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('0s') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
+        Deprecation.log("Overloaded step", s"using no delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('0s') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
         Some(new RepeatJS(doStep, operation, condition, Duration.Zero, Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using no delay""" if !condition.contains('"') =>
-        Deprecation.warn("Step variant", s"using no delay", Some(s"@Delay('0s') annotation"))
+        Deprecation.log("Overloaded step", s"using no delay", Some(s"@Delay('0s') annotation"))
         Some(new RepeatJS(doStep, operation, condition, Duration.Zero, step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay and (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" if doStep != "I wait" && !condition.contains('"') =>
-        Deprecation.warn("Step variant", s"using $delayPeriod $delayUnit delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
+        Deprecation.log("Overloaded step", s"using $delayPeriod $delayUnit delay and $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') @Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotations"))
         Some(new RepeatJS(doStep, operation, condition, Duration(delayPeriod.toLong, delayUnit), Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$delayPeriod (second|millisecond)$delayUnit delay""" if doStep != "I wait" && !condition.contains('"') =>
-        Deprecation.warn("Step variant", s"using $delayPeriod $delayUnit delay", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') annotation"))
+        Deprecation.log("Overloaded step", s"using $delayPeriod $delayUnit delay", Some(s"@Delay('$delayPeriod${Map("second" -> "s", "millisecond" -> "ms")(delayUnit)}') annotation"))
         val delayDuration = Duration(delayPeriod.toLong, delayUnit)
         Some(new RepeatJS(doStep, operation, condition, delayDuration, defaultRepeatTimeout(delayDuration), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition using (.+?)$timeoutPeriod (minute|second|millisecond)$timeoutUnit (timeout|wait)$timeoutLiteral""" if doStep != "I wait" && !condition.contains('"') =>
-        Deprecation.warn("Step variant", s"using $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotation"))
+        Deprecation.log("Overloaded step", s"using $timeoutPeriod $timeoutUnit $timeoutLiteral", Some(s"@Timeout('$timeoutPeriod${Map("minute" -> "m", "second" -> "s", "millisecond" -> "ms")(timeoutUnit)}') annotation"))
         Some(new RepeatJS(doStep, operation, condition, step.delayOpt.getOrElse(defaultRepeatDelay), Duration(timeoutPeriod.toLong, timeoutUnit), defaultConditionTimeoutSecs, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && !condition.contains('"') && !step.expression.matches(""".*".*(until|while).*".*""")) =>
         Some(new RepeatJS(doStep, operation, condition, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))

@@ -55,6 +55,7 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
 import javax.xml.transform.OutputKeys
+import java.util.logging.Level
 
 /** Predefs and extension methods avaiable wherever this page is imported. */
 
@@ -456,18 +457,26 @@ object UUIDGenerator {
 }
 
 object Deprecation extends LazyLogging {
-  def warn(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
-    println(
-      s"""|
-          |WARNING: $category is deprecated and will be unsupported in next major Gwen 4 release
-          |${createMsg(category, oldWay, newWayOpt)}
-          |""".stripMargin
-    )
+  import java.util.logging.Level
+  import org.fusesource.jansi.Ansi._
+  def log(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
+    val level = GwenSettings.`gwen.logLevel.deprecations`
+    val msg = s"""|${if (level == Level.WARNING) s"$level: " else ""}$category is deprecated and will not be unsupported in next major release
+                  |${createMsg(category, oldWay, newWayOpt)}
+                  |""".stripMargin
+    level match {
+      case Level.WARNING => 
+        val colors = ConsoleColors.isEnabled
+        println(s"\n${if (colors) ansi.fg(Color.YELLOW) else ""}$msg${if (colors) ansi.reset else ""}")
+      case Level.SEVERE => 
+        Errors.deprecatedError(msg)
+      case _ => // noop
+    }
   }
+
   def fail(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     Errors.deprecatedError(
-      s"""|
-          |$category is deprecated and no longer supported
+      s"""|$category is deprecated and no longer supported
           |${createMsg(category, oldWay, newWayOpt)}
           |""".stripMargin
     )

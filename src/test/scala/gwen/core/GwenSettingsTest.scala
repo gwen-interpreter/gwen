@@ -27,6 +27,7 @@ import gwen.core.report.rp.RPSettings
 import gwen.core.state.StateLevel
 
 import org.scalatest.matchers.should.Matchers
+import java.util.logging.Level
 
 class GwenSettingsTest extends BaseTest with Matchers {
 
@@ -66,6 +67,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.video.timeoutSecs` should be (10)
       GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records` should be (Integer.MAX_VALUE)
       GwenSettings.`gwen.error.messages.inline.locators` should be (false)
+      GwenSettings.`gwen.logLevel.deprecations` should be (Level.WARNING)
     }
   }
 
