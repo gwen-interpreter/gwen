@@ -22,8 +22,7 @@ import gwen.core.GwenSettings
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
-import com.github.tototoshi.csv.CSVReader
-import com.github.tototoshi.csv.defaultCSVFormat
+import com.github.tototoshi.csv._
 import net.minidev.json.JSONArray
 import org.apache.commons.lang3.ClassUtils
 

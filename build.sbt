@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.4.2",
+  scalaVersion := "3.5.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,29 +41,29 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "28.0.0",
+    "io.cucumber" % "gherkin" % "29.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "3.26.3",
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.23.1",
+    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.24.0",
     "org.slf4j" % "jul-to-slf4j" % "1.7.36",
     "commons-codec" % "commons-codec" % "1.17.1",
     "org.apache.commons" % "commons-text" % "1.12.0",
-    "com.github.tototoshi" %% "scala-csv" % "1.4.1",
+    "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "2.9.0",
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
-    "com.epam.reportportal" % "commons-model" % "5.11.1",
+    "com.epam.reportportal" % "commons-model" % "5.12.0",
     "com.epam.reportportal" % "client-java" % "5.2.14" excludeAll(
       ExclusionRule(organization = "org.aspectj"),
       ExclusionRule(organization = "org.jetbrains.kotlin")
     ),
     "org.fusesource.jansi" % "jansi" % "2.4.1",
-    "org.apache.pdfbox" % "pdfbox" % "3.0.2" excludeAll(
+    "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
-    "org.apache.pdfbox" % "pdfbox-io" % "3.0.2" excludeAll(
+    "org.apache.pdfbox" % "pdfbox-io" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
   ) ++ mainOverrides
@@ -72,7 +72,7 @@ lazy val mainDependencies = {
 lazy val mainOverrides = {
   Seq(
     "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
-    "com.google.guava" % "guava" % "33.2.1-jre",
+    "com.google.guava" % "guava" % "33.3.0-jre",
     "org.reactivestreams" % "reactive-streams" % "1.0.4",
     "org.slf4j" % "slf4j-api" % "1.7.36"
   )
@@ -80,7 +80,7 @@ lazy val mainOverrides = {
 
 dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
-  "com.google.guava" % "guava" % "33.2.1-jre",
+  "com.google.guava" % "guava" % "33.3.0-jre",
   "org.reactivestreams" % "reactive-streams" % "1.0.4",
   "org.slf4j" % "slf4j-api" % "1.7.36"
 )
