@@ -293,6 +293,9 @@ object Formatting {
   object DurationFormatter {
 
     import scala.concurrent.duration._
+    import java.util.concurrent.TimeUnit
+
+    private val DurationPattern = """(?i)(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?(?:(\d+)ms)?""".r
 
     private val Formatters = List(
       HOURS -> (("h", new DecimalFormat("00"))),
@@ -323,11 +326,23 @@ object Formatting {
       } else "~0ms"
     }
 
+    def parse(duration: String): Option[Duration] = {
+      duration match {
+        case DurationPattern(h,m,s,ms) =>
+          val msecs = (Try(h.toLong).getOrElse(0L) * 60 * 60 * 1000) + (Try(m.toLong).getOrElse(0L) * 60 * 1000) + (Try(s.toLong).getOrElse(0L) * 1000) + Try(ms.toLong).getOrElse(0L)
+          Some(Duration(msecs, TimeUnit.MILLISECONDS))
+        case "Wait" | "Wait" =>
+          Some(Duration.Zero)
+        case _ => None
+      }
+    }
+
   }
 
   def padWithZeroes(num: Int): String = padWithZeroes(num, 4)
   def padWithZeroes(num: Int, padding: Int): String = s"%0${padding}d".format(num)
   def formatDuration(duration: Duration): String = DurationFormatter.format(duration)
+  def parseDuration(duration: String): Option[Duration] = DurationFormatter.parse(duration)
   def escapeHtml(text: String): String = escapeHtmlSpaces(StringEscapeUtils.escapeHtml4(text).replaceAll("""[\r\n]+""", "<br>"))
   def escapeHtmlSpaces(text: String): String = text.replaceAll("  ", " \u00a0")
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
@@ -443,14 +458,18 @@ object UUIDGenerator {
 object Deprecation extends LazyLogging {
   def warn(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     println(
-      s"""|WARNING: $category is deprecated and will be unsupported in next major release
-          |${createMsg(category, oldWay, newWayOpt)}""".stripMargin
+      s"""|
+          |WARNING: $category is deprecated and will be unsupported in next major Gwen 4 release
+          |${createMsg(category, oldWay, newWayOpt)}
+          |""".stripMargin
     )
   }
   def fail(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     Errors.deprecatedError(
-      s"""|$category is deprecated and no longer supported
-          |${createMsg(category, oldWay, newWayOpt)}""".stripMargin
+      s"""|
+          |$category is deprecated and no longer supported
+          |${createMsg(category, oldWay, newWayOpt)}
+          |""".stripMargin
     )
   }
   private def createMsg(prefix: String, oldWay: String, newWayOpt: Option[String]): String = {

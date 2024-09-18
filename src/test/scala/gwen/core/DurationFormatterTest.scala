@@ -18,6 +18,7 @@ package gwen.core
 
 import gwen.core.BaseTest
 import gwen.core.Formatting.formatDuration
+import gwen.core.Formatting.parseDuration
 
 import scala.concurrent.duration.Duration
 
@@ -79,6 +80,42 @@ class DurationFormatterTest extends BaseTest with Matchers {
   
   "1 hour 1 minute 1 second 1 millisecond 999999 microseconds duration" should "round up to nearest millisecond and format to " in {
     formatDuration(Duration.fromNanos(3661001999999L)) should be ("1h 01m 01s 002ms")
+  }
+
+  "1h1m1s1ms" should "parse" in {
+    parseDuration("1h1m1s1ms").map(_.toMillis) should be (Some(3661001L))
+  }
+
+  "2h1m1ms" should "parse" in {
+    parseDuration("2h1m1ms").map(_.toMillis) should be (Some(7260001L))
+  }
+
+  "1h5s" should "parse" in {
+    parseDuration("1h5s").map(_.toMillis) should be (Some(3605000L))
+  }
+
+  "2h01ms" should "parse" in {
+    parseDuration("2h01ms").map(_.toMillis) should be (Some(7200001L))
+  }
+
+  "2m" should "parse" in {
+    parseDuration("2m").map(_.toMillis) should be (Some(120000L))
+  }
+
+  "5m10s" should "parse" in {
+    parseDuration("5m10s").map(_.toMillis) should be (Some(310000L))
+  }
+
+  "500ms" should "parse" in {
+    parseDuration("500ms").map(_.toMillis) should be (Some(500L))
+  }
+
+  "1 minute" should "not parse" in {
+    parseDuration("1 minute") should be (None)
+  }
+
+  "2secs" should "not parse" in {
+    parseDuration("2secs") should be (None)
   }
 
 }

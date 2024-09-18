@@ -550,14 +550,14 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
 
       Scenario: Increment counter
           Given counter is "0"
-          When I increment counter until counter > 3 using no delay
+          When @Delay('0s') I increment counter until counter > 3
           Then counter should be "4"
 
       Scenario: Increment counter with if condition
           Given counter is "-1"
             And condition is defined by javascript "true"
           When I increment counter
-            And I increment counter until counter > 3 using no delay if condition
+            And @Delay('0s') I increment counter until counter > 3 if condition
           Then counter should be "4"
       """
 
@@ -604,75 +604,75 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]""")
     chain = builder.push(scenario1.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(1).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(2).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario1.steps(1).stepDef.get.steps(3).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]/I increment counter until counter > 3[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter[1]""")
     chain = builder.pop()._2
@@ -706,83 +706,83 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter is defined by javascript "0 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]/counter > 3 is defined by javascript "1 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter is defined by javascript "1 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]/counter > 3 is defined by javascript "2 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[2]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter is defined by javascript "2 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]/counter > 3 is defined by javascript "3 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[3]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter is defined by javascript "3 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]/counter > 3 is defined by javascript "4 > 3"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]/I increment counter[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]/I increment counter[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]/I increment counter[4]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]/counter > 3[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]/counter > 3[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]/I increment counter until counter > 3 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]/I increment counter until counter > 3[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]/condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]/condition[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 using no delay if condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]/I increment counter until counter > 3 if condition[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/until.feature/Repeat until example[1]/Increment counter with if condition[1]""")
     chain = builder.push(scenario2.steps(4))
@@ -813,16 +813,16 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
             And counter2 < 4 is defined by javascript "${counter2} < 4"
 
       Scenario: Increment counter1
-          Given counter1 is "-1"
+         Given counter1 is "-1"
           When I increment counter1
-            And I increment counter1 while counter1 < 4 using no delay
+           And @Delay('0s') I increment counter1 while counter1 < 4
           Then counter1 should be "4"
 
       Scenario: Increment counter2 with if condition
           Given counter2 is "-1"
             And condition is defined by javascript "true"
-          When I increment counter2
-            And I increment counter2 while counter2 < 4 using no delay if condition
+           When I increment counter2
+            And @Delay("0s") I increment counter2 while counter2 < 4 if condition
           Then counter2 should be "4"
        """
 
@@ -899,75 +899,75 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
     chain = builder.push(scenario1.steps(2))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 is defined by javascript "0 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 is defined by javascript "0 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 < 4 is defined by javascript "1 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]/counter1 < 4 is defined by javascript "1 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]/I increment counter1[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 is defined by javascript "1 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 is defined by javascript "1 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(1).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 < 4 is defined by javascript "2 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]/counter1 < 4 is defined by javascript "2 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]/I increment counter1[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[2]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 is defined by javascript "2 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 is defined by javascript "2 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(2).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 < 4 is defined by javascript "3 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]/counter1 < 4 is defined by javascript "3 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]/I increment counter1[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[3]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 is defined by javascript "3 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 is defined by javascript "3 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
     chain = builder.push(scenario1.steps(2).stepDef.get.steps(3).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 < 4 is defined by javascript "4 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]/counter1 < 4 is defined by javascript "4 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]/I increment counter1[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]/I increment counter1[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]/I increment counter1[4]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]/counter1 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]/counter1 < 4[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]/I increment counter1 while counter1 < 4[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter1[1]""")
     chain = builder.pop()._2
@@ -1001,83 +1001,83 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 is defined by javascript "0 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 is defined by javascript "0 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 < 4 is defined by javascript "1 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]/counter2 < 4 is defined by javascript "1 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]/I increment counter2[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 is defined by javascript "1 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 is defined by javascript "1 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(1).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 < 4 is defined by javascript "2 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]/counter2 < 4 is defined by javascript "2 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]/I increment counter2[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[2]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[2]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 is defined by javascript "2 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 is defined by javascript "2 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(2).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 < 4 is defined by javascript "3 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]/counter2 < 4 is defined by javascript "3 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]/I increment counter2[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[3]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[3]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get)
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(0))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 is defined by javascript "3 + 1"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 is defined by javascript "3 + 1"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
     chain = builder.push(scenario2.steps(3).stepDef.get.steps(0).stepDef.get.steps(3).stepDef.get.steps(1))
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 < 4 is defined by javascript "4 < 4"[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]/counter2 < 4 is defined by javascript "4 < 4"[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]/I increment counter2[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]/I increment counter2[4]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]/I increment counter2[4]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]/counter2 < 4[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]/counter2 < 4[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]/I increment counter2 while counter2 < 4 using no delay[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]/I increment counter2 while counter2 < 4[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]/condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]/condition[1]""")
     chain = builder.pop()._2
-    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 using no delay if condition[1]""")
+    chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]/I increment counter2 while counter2 < 4 if condition[1]""")
     chain = builder.pop()._2
     chain.nodePath should be ("""/target/NodeChainTest/while.feature/Repeat while example[1]/Increment counter2 with if condition[1]""")
     chain = builder.push(scenario2.steps(4))

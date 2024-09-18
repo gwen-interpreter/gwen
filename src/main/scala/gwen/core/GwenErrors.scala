@@ -115,6 +115,7 @@ object Errors extends LazyLogging {
   def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
   def illegalNestedParallelExceutionError(sourceRef: Option[SourceRef]) = throw new IllegalNestedParallelExecutionException(sourceRef)
   def malformedDataSourceError(dataFile: File, cause: Throwable) = throw new MalformedDataSourceException(dataFile, cause)
+  def illegalDurationAnnotationError(targetName: String, annotation: String) = throw new IllegalDurationAnnotationExcpetion(targetName, annotation)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -335,6 +336,8 @@ object Errors extends LazyLogging {
 
   /** Thrown when a nested parallel execution is detected. */
   class IllegalNestedParallelExecutionException(sourceRef: Option[SourceRef]) extends GwenException(s"Illegal nested parallel executon at${at(sourceRef)}")
-  
+
+  /** Thrown when an illegal duration pattern is detected in a Wait or Delay annotation. */
+  class IllegalDurationAnnotationExcpetion(targetName: String, annotation: String) extends GwenException(s"Illegal or malformed $annotation annotation. Valid examples include: @${targetName}('10s'), @${targetName}('1m30s'), @${targetName}('2m')")
 
 }

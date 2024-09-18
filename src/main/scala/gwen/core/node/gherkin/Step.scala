@@ -17,6 +17,7 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
+import gwen.core.Formatting.DurationFormatter
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
@@ -30,6 +31,7 @@ import scala.jdk.OptionConverters._
 import io.cucumber.messages.{ types => cucumber }
 
 import java.io.File
+import scala.concurrent.duration.Duration
 
 /**
   * Captures a gherkin step.
@@ -259,6 +261,16 @@ case class Step(
   def isIgnoreCase: Boolean = hasTag(Annotations.IgnoreCase)
   def isTrim: Boolean = hasTag(Annotations.Trim)
   def isMasked: Boolean = hasTag(Annotations.Masked)
+  def timeoutOpt: Option[Duration] = parseDurationInAnnotation("Timeout")
+  def delayOpt: Option[Duration] = parseDurationInAnnotation("Delay")
+  
+  private def parseDurationInAnnotation(annotationName: String): Option[Duration] = {
+    tags.find(t => t.name.toLowerCase().startsWith(annotationName.toLowerCase())) flatMap { annotation =>
+      Option(annotation).filter(_.name == annotationName).flatMap(_.value).map(DurationFormatter.parse) getOrElse {
+        Errors.illegalDurationAnnotationError(annotationName, annotation.toString)
+      }
+    }
+  }
   
   def assertionMode: AssertionMode = {
     AssertionMode.values find { mode => 
@@ -330,7 +342,7 @@ object Step {
     }
     val (name, tagList, message, dryValues): (String, List[Tag], Option[String], List[(String, String)]) = {
       val (n, t) = Formatting.escapeNewLineChars(step.getText.trim) match {
-        case r"""((?:@\w+\s+)+)$ts(.*)$name""" => 
+        case r"""((?:@\w+(?:\(\S+\))?\s+)+)$ts(.*)$name""" => 
           (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
         case _ => (Formatting.escapeNewLineChars(step.getText), Nil)
       }
