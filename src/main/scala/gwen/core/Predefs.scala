@@ -461,7 +461,7 @@ object Deprecation extends LazyLogging {
   import org.fusesource.jansi.Ansi._
   def log(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     val level = GwenSettings.`gwen.logLevel.deprecations`
-    val msg = s"""|${if (level == Level.WARNING) s"$level: " else ""}$category is deprecated and will not be unsupported in next major release
+    val msg = s"""|${if (level == Level.WARNING) s"$level: " else ""}$category is deprecated and will not be supported in next major release
                   |${createMsg(category, oldWay, newWayOpt)}
                   |""".stripMargin
     level match {
