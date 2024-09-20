@@ -261,13 +261,14 @@ case class Step(
   def isIgnoreCase: Boolean = hasTag(Annotations.IgnoreCase)
   def isTrim: Boolean = hasTag(Annotations.Trim)
   def isMasked: Boolean = hasTag(Annotations.Masked)
-  def timeoutOpt: Option[Duration] = parseDurationInAnnotation("Timeout")
-  def delayOpt: Option[Duration] = parseDurationInAnnotation("Delay")
+  def timeoutOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Timeout)
+  def delayOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Delay)
   
-  private def parseDurationInAnnotation(annotationName: String): Option[Duration] = {
-    tags.find(t => t.name.toLowerCase().startsWith(annotationName.toLowerCase())) flatMap { annotation =>
-      Option(annotation).filter(_.name == annotationName).flatMap(_.value).map(DurationFormatter.parse) getOrElse {
-        Errors.illegalDurationAnnotationError(annotationName, annotation.toString)
+  private def parseDurationInAnnotation(annotation: Annotations): Option[Duration] = {
+    val name = annotation.toString
+    tags.find(t => t.name.toLowerCase().startsWith(name.toLowerCase())) flatMap { annot =>
+      Option(annot).filter(_.name == name).flatMap(_.value).map(DurationFormatter.parse) getOrElse {
+        Errors.illegalDurationAnnotationError(name, annot.toString)
       }
     }
   }
@@ -288,6 +289,9 @@ case class Step(
     */
   override def interpolate(interpolator: String => String): Step = {
     if (isData || isNoData) this else {
+      val iTags = tags map { tag => 
+        Tag(tag.sourceRef, interpolator.apply(tag.toString))
+      }
       val iName = interpolator.apply(name)
       val iTable = table map { case (line, record) =>
         (line, record.map(cell => interpolator.apply(cell)))
@@ -296,8 +300,9 @@ case class Step(
         (line, interpolator.apply(content), contentType)
       }
       val iParams = params map { (name, value) => (name, interpolator.apply(value)) }
-      val iStep = if (iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString) {
+      val iStep = if (iTags.diff(tags).nonEmpty || iName != name || iTable != table || iDocString != docString || iParams.mkString != params.mkString) {
         copy(
+          withTags = iTags,
           withName = iName,
           withTable = iTable,
           withDocString = iDocString,
