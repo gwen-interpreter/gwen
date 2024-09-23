@@ -462,7 +462,7 @@ object Deprecation extends LazyLogging {
   def log(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     val level = GwenSettings.`gwen.logLevel.deprecations`
     val msg = s"""|${if (level == Level.WARNING) s"$level: " else ""}$category is deprecated and will not be supported in next major release
-                  |${createMsg(category, oldWay, newWayOpt)}
+                  |${createMsg({if (level == Level.WARNING) s"${" " * (level.toString.length + 2)}" else ""}, oldWay, newWayOpt)}
                   |""".stripMargin
     level match {
       case Level.WARNING => 
@@ -477,13 +477,13 @@ object Deprecation extends LazyLogging {
   def fail(category: String, oldWay: String, newWayOpt: Option[String]): Unit = {
     Errors.deprecatedError(
       s"""|$category is deprecated and no longer supported
-          |${createMsg(category, oldWay, newWayOpt)}
+          |${createMsg("", oldWay, newWayOpt)}
           |""".stripMargin
     )
   }
   private def createMsg(prefix: String, oldWay: String, newWayOpt: Option[String]): String = {
-    s"""|       $oldWay${newWayOpt.map(newWay => s" >> Instead use >> $newWay").getOrElse("")}
-        |       ${"^" * oldWay.size}""".stripMargin
+    s"""|$prefix$oldWay${newWayOpt.map(newWay => s" >> Instead use >> $newWay").getOrElse("")}
+        |$prefix${"^" * oldWay.size}""".stripMargin
   }
 }
 

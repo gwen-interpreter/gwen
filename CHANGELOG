@@ -1,3 +1,30 @@
+3.64.0
+======
+23 September 2024
+- Add file based DSL steps
+  - `<step> if "<filepath>" file[ not] exists`
+  - `<step> if "<filepath>" file does not exist`
+  - `<step> if <filepathRef file>[ not] exists`
+  - `<step> if <filepathRef file> does not exist`
+  - `<step> if "<filepath>" file is[ not] empty`
+  - `<step> if <filepathRef file> is[ not] empty`
+  - `<step> <until|while> "<filepath>" file[ not] exists`
+  - `<step> <until|while> "<filepath>" file does not exist`
+  - `<step> <until|while> <filepathRef file>[ not] exists`
+  - `<step> <until|while> <filepathRef file> does not exist`
+  - `<step> <until|while> "<filepath>" file is[ not] empty`
+  - `<step> <until|while> <filepathRef file> is[ not] empty`
+  - `I wait until "<filepath>" file[ not] exists`
+  - `I wait until "<filepath>" file does not exist`
+  - `I wait until <filepathRef file>[ not] exists`
+  - `I wait until <filepathRef file> does not exist`
+  - `I wait until "<filepath>" file is[ not] empty`
+  - `I wait until <filepathRef file> is[ not] empty`
+  - `"<filepath>" file should[ not] exist`
+  - `<filepathRef file> should[ not] exist`
+  - `"<filepath>" file should[ not] be empty`
+  - `<filepathRef file> should[ not] be empty`
+  
 3.63.2
 ======
 20 September 2024
@@ -356,7 +383,7 @@ Oct 28, 2023
 Oct 24, 2023
 - Add DSLs for downloading files from a URL
   - `I download "<url>" to "<filepath>"`
-  - `I download "<url>" to <filepathRef>`
+  - `I download "<url>" to <filepathRef file>`
 
 3.49.2
 ======
@@ -892,9 +919,9 @@ Sep 6, 2022
 Aug 24, 2022
 - Introduce CSV lookup DSLs:
   - `I lookup <name> in the "<filepath>" file where "<predicate>"`
-  - `I lookup <name> in <filepathRef> file where "<predicate>"`
+  - `I lookup <name> in <filepathRef file> where "<predicate>"`
   - `I lookup <column> in the "<filepath>" file as <name> where "<predicate>"`
-  - `I lookup <column> in <filepathRef> file as <name> where "<predicate>"`
+  - `I lookup <column> in <filepathRef file> as <name> where "<predicate>"`
 
 3.26.1
 ======
@@ -959,9 +986,9 @@ Jul 21, 2022
   - `I <write|append> "<text>" to "<filepath>" file`
   - `I <write|append> <textRef> to "<filepath>" file`
   - `I <write|append> new line to "<filepath>" file`
-  - `I <write|append> "<text>" to <filepathRef> file`
-  - `I <write|append> <textRef> to <filepathRef> file`
-  - `I <write|append> new line to <filepathRef> file`
+  - `I <write|append> "<text>" to <filepathRef file>`
+  - `I <write|append> <textRef> to <filepathRef file>`
+  - `I <write|append> new line to <filepathRef file>`
 
 3.21.0
 ======

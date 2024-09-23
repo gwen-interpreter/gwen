@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Branko Juric, Brady Wood
+ * Copyright 2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,44 +18,28 @@ package gwen.core.eval.lambda.composite
 
 import gwen.core.Errors
 import gwen.core.eval.EvalContext
-import gwen.core.eval.binding.LoadStrategyBinding
-import gwen.core.eval.ComparisonOperator
+import gwen.core.eval.FileComparisonOperator
 import gwen.core.eval.lambda.CompositeStep
-import gwen.core.eval.lambda.unit.Compare
 import gwen.core.eval.engine.StepDefEngine
+import gwen.core.eval.support.FileCondition
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Tag
+import gwen.core.node.gherkin.Step
 import gwen.core.status._
 
-import util.chaining.scalaUtilChainingOps
+import scala.util.chaining._
 
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
+import java.io.File
+import java.nio.file.Files
 
-class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operator: ComparisonOperator, negate: Boolean, expression: String, trim: Boolean, ignoreCase: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
+class IfFileCondition[T <: EvalContext](doStep: String, filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStep[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    def cond = s"$name " + (
-      if (negate) {
-        if (operator == ComparisonOperator.be) "is not" else s"does not $operator"
-      } else {
-        operator match {
-          case ComparisonOperator.be => "is"
-          case ComparisonOperator.contain => "contains"
-          case ComparisonOperator.`start with` => "starts with"
-          case ComparisonOperator.`end with` => "ends with"
-          case ComparisonOperator.`match regex` => "matches regex"
-          case ComparisonOperator.`match xpath` => "matches xpath"
-          case ComparisonOperator.`match json path` => "matches json path"
-          case ComparisonOperator.`match template` => "matches template"
-          case ComparisonOperator.`match template file` => "matches template file"
-        }
-      }
-    ) + s""" "${if (expression == "") "blank" else expression}""""
+    def fileCondition = new FileCondition(filepath, filepathRef, operator, negate, ctx)
+    val cond = fileCondition.condition
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }
@@ -66,14 +50,7 @@ class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operato
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     val attachments = ctx.popAttachments()
     ctx.evaluate(sdCall()) {
-      val compare = new Compare[T](name, expression, operator, negate, None, trim, ignoreCase)
-      val satisfied = Try(compare.apply(parent, step, ctx)) match {
-        case Success(_) => true
-        case Failure(e) =>
-          if (e.isInstanceOf[AssertionError]) false
-          else throw e
-      }
-      LoadStrategyBinding.bindIfLazy(name, satisfied.toString, ctx)
+      val satisfied = fileCondition.evaluate()
       val result = if (satisfied) {
         logger.info(s"Processing conditional step ($cond = true): ${step.keyword} $doStep")
         sdCall()

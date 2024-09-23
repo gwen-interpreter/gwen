@@ -44,19 +44,21 @@ class IfDefinedCondition[T <: EvalContext](doStep: String, name: String, negate:
     val tags = List(Tag(Annotations.Synthetic), ifTag, Tag(Annotations.StepDef))
     val iStepDef = Scenario(None, tags, ifTag.toString, cond, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
+    val attachments = ctx.popAttachments()
     ctx.evaluate(sdCall()) {
       val satisfied = {
         val result = Try(ctx.getBinding(name))
         if (!negate) result.isSuccess else result.isFailure
       }
       LoadStrategyBinding.bindIfLazy(name, satisfied.toString, ctx)
-      if (satisfied) {
+      val result = if (satisfied) {
         logger.info(s"Processing conditional step ($cond = true): ${step.keyword} $doStep")
         sdCall()
       } else {
         logger.info(s"Skipping conditional step ($cond = false): ${step.keyword} $doStep")
         step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
       }
+      result.addAttachments(attachments)
     }
   }
 

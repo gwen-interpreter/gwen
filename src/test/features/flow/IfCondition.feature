@@ -74,3 +74,33 @@ Feature: If Conditionals
      When I perform this if not this condition
       And I perform that if this condition
      Then the called step should be "this step"
+
+  Scenario: Perform this if filepath exists
+    Given the target is "this"
+     When I perform this if "gwen.conf" file exists
+      And I perform that if "gwen.conf" file not exists
+     Then the called step should be "this step"
+      And the called step should not be "that step"
+
+  Scenario: Perform this if fileref exists
+    Given the target is "that"
+      And the file is "gwen.conf"
+     When I perform that if the file exists
+      And I perform this if the file does not exist
+     Then the called step should be "that step"
+      And the called step should not be "this step"
+
+  Scenario: Perform this if file empty or not
+    Given the target is "this"
+     When I perform this if "gwen.conf" file is not empty
+      And I perform that if "gwen.conf" file is empty
+     Then the called step should be "this step"
+      And the called step should not be "that step"
+
+  Scenario: Perform this if fileref emtpy or not
+    Given the target is "that"
+      And the file is "gwen.conf"
+     When I perform that if the file is not empty
+      And I perform this if the file is empty
+     Then the called step should be "that step"
+      And the called step should not be "this step"

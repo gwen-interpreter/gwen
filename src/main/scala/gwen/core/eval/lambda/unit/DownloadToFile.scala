@@ -32,7 +32,7 @@ class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[Strin
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
-    val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(filepathRef.get)}"))
+    val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
     ctx.perform{
       ctx.getWithWait(timeoutSecs, s"downloading $sourceUrl to $file") { () => 
         val urlChannel = Channels.newChannel(new URL(sourceUrl).openStream())

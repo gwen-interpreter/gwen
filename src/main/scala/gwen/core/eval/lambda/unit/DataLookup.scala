@@ -34,7 +34,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
-      val file = new File(filepath.getOrElse(s"${ctx.getBoundValue(s"${filepathRef.get} file")}"))
+      val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
       if (!file.exists()) Errors.missingFileError(file)
       val dataSource =  DataSource(file)
       val table = dataSource.table.zipWithIndex map { (row, idx) => 

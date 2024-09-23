@@ -35,3 +35,6 @@ object ComparisonOperator {
     }
   }
 }
+
+enum FileComparisonOperator:
+  case exists, empty
