@@ -349,6 +349,7 @@ object Formatting {
   def escapeXml(text: String): String = StringEscapeUtils.escapeXml10(text)
   def escapeJson(text: String): String = StringEscapeUtils.escapeJson(text)
   def escapeJava(text: String): String = StringEscapeUtils.escapeJava(text)
+  def escapeCSV(text: String): String = StringEscapeUtils.escapeCsv(escapeNewLineChars(text))
   def leftPad(str: String, size: Int): String = s"${" " * (size - str.length)}$str"
   def rightPad(str: String, size: Int): String = s"$str${" " * (size - str.length)}"
   def padTailLines(str: String, padding: String) = str.replaceAll("""\r?\n""", s"""\n$padding""")

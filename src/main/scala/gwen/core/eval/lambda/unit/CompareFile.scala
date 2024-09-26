@@ -43,7 +43,7 @@ class CompareFile[T <: EvalContext](filepath: Option[String], filepathRef: Optio
             ctx.assertWithError(
               assertion, 
               message, 
-              s"${filepath.map(fp => s""""$fp" file""").getOrElse(filepathRef.get)} should${if (negate) " not" else ""} ${if(operator == FileComparisonOperator.exists) s"exist but did${if(!negate) " not" else ""}" else s"be empty but was${if(!negate) " not" else ""}"}",
+              s"${filepath.map(fp => s"""'$fp' file""").getOrElse(filepathRef.get)} should${if (negate) " not" else ""} ${if(operator == FileComparisonOperator.exists) s"exist but did${if(!negate) " not" else ""}" else s"be empty but was${if(!negate) " not" else ""}"}",
               step.assertionMode)
           case Failure(error) =>
             throw error;

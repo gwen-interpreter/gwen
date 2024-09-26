@@ -111,6 +111,7 @@ class TransientStack(stackName: String) {
     else if (name == s"gwen.${level1}eval.status.keyword.lowerCased") getOpt(s"gwen.${level2}eval.status.keyword").map(_.toLowerCase)
     else if (name == s"gwen.${level1}eval.status.message") getOpt(s"gwen.${level2}eval.status.message")
     else if (name == s"gwen.${level1}eval.status.message.escaped") getOpt(s"gwen.${level2}eval.status.message").map(Formatting.escapeJava)
+    else if (name == s"gwen.${level1}eval.status.message.csvEscaped") getOpt(s"gwen.${level2}eval.status.message").map(Formatting.escapeCSV)
     else if (name == s"gwen.${level1}eval.status.isFailed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
     else if (name == s"gwen.${level1}eval.status.isPassed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
     else if (name == s"gwen.${level1}eval.duration.msecs") getOpt(s"gwen.${level2}eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
