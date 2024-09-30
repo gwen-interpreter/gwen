@@ -33,6 +33,7 @@ import java.io.File
  * A Gherkin feature specification.
  *
  * @param feature the feature node
+ * @param occurrance the data feed occurrence
  * @param background optional background
  * @param scenarios list of scenarios
  * @param rules list of rules
@@ -41,6 +42,7 @@ import java.io.File
 
 case class Spec(
     feature: Feature, 
+    occurrence: Option[Occurrence],
     background: Option[Background], 
     scenarios: List[Scenario],
     rules: List[Rule],
@@ -55,6 +57,8 @@ case class Spec(
       case _ => Nil
     }
   }
+
+  def displayName = feature.displayName
 
   def specFile: Option[File] = sourceRef.flatMap(_.file)
   def specType: SpecType = feature.specType
@@ -108,11 +112,12 @@ case class Spec(
 
   def copy(
       withFeature: Feature = feature,
+      withOccurrence: Option[Occurrence] = occurrence,
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios,
       withRules: List[Rule] = rules,
       withMetaSpecs: List[Spec] = metaSpecs): Spec = {
-    Spec(withFeature, withBackground, withScenarios, withRules, withMetaSpecs)
+    Spec(withFeature, withOccurrence, withBackground, withScenarios, withRules, withMetaSpecs)
   }
   
 }
@@ -124,6 +129,6 @@ object Spec {
     val background = cFeature.getChildren.asScala.toList.flatMap(_.getBackground.toScala).headOption map { b => Background(file, b) }
     val scenarios = cFeature.getChildren.asScala.toList.flatMap(_.getScenario.toScala) map { s => Scenario(file, s, verbatim) }
     val rules = cFeature.getChildren.asScala.toList.flatMap(_.getRule.toScala).map { case r => Rule(file, r, verbatim) }
-    Spec(feature, background, scenarios, rules, Nil)
+    Spec(feature, None, background, scenarios, rules, Nil)
   }
 }

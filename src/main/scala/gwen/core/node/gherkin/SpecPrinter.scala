@@ -67,7 +67,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       out.println()
     }
     printTags("", feature.tags, out)
-    out.print(s"${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${feature.keyword}:${if (colors) ansi.reset else ""}${if(feature.name.isEmpty) "" else s" ${feature.name}"}")
+    out.print(s"${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${feature.keyword}:${if (colors) ansi.reset else ""}${if(feature.displayName.isEmpty) "" else s" ${feature.displayName}"}")
     if (deep || feature.description.nonEmpty) out.println()
     printDescription("  ", feature.description, out)
     out
@@ -76,7 +76,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   override def onBackground(parent: GwenNode, background: Background, out: PrintWriter): PrintWriter = {
     val indent = indentFor(background)
     out.println()
-    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""}${if(background.name.isEmpty) "" else s" ${background.name}"}")
+    out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${background.keyword}:${if (colors) ansi.reset else ""}${if(background.displayName.isEmpty) "" else s" ${background.displayName}"}")
     if (deep || background.description.nonEmpty) out.println()
     printDescription(s"$indent  ", background.description, out)
     if (deep && background.description.nonEmpty && background.steps.nonEmpty) {
@@ -91,7 +91,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       val keyword = scenario.keyword
       out.println()
       printTags(indent, scenario.tags, out)
-      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""}${if(scenario.name.isEmpty) "" else s" ${scenario.name}"}")
+      out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${keyword}:${if (colors) ansi.reset else ""}${if(scenario.displayName.isEmpty) "" else s" ${scenario.displayName}"}")
       if (deep || scenario.description.nonEmpty) out.println()
       printDescription(s"$indent  ", scenario.description, out)
       if (deep && scenario.description.nonEmpty && scenario.steps.nonEmpty) {
@@ -107,7 +107,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       val keywordMaxLength = StepKeyword.maxLength
       val indent = indentFor(step)
       val tags = filterStepTags(step)
-      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${stringifyTags(tags)} ${if (colors) ansi.reset else ""}" else ""}${step.name}")
+      out.print(s"$indent${if (colors) ansi.bold else ""}${Formatting.leftPad(keyword, keywordMaxLength)}${if (colors) ansi.reset else ""} ${if (tags.nonEmpty) s"${if (colors) ansi.fg(SpecPrinter.TagsColor) else ""}${stringifyTags(tags)} ${if (colors) ansi.reset else ""}" else ""}${step.displayName}")
       if (verbatim && (step.message.nonEmpty || step.dryValues.nonEmpty)) {
         val max = step.siblingsIn(parent) match { 
           case Nil => 0
@@ -153,12 +153,13 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   private def stringifyTags(tags: List[Tag]): String = tags.map(_.toString).mkString(" ")
 
   private def stepExpressionLength(tags: List[Tag], step: Step): Int = {
-    s"${if (tags.nonEmpty) s"${stringifyTags(tags)} " else ""}${step.name}".length
+    s"${if (tags.nonEmpty) s"${stringifyTags(tags)} " else ""}${step.displayName}".length
   }
 
   override def onRule(parent: GwenNode, rule: Rule, out: PrintWriter): PrintWriter = {
     val indent = indentFor(rule)
     if (deep) out.println()
+    printTags(indent,rule.tags, out)
     out.print(s"$indent${if (colors) ansi.bold.fg(SpecPrinter.ClauseColor) else ""}${rule.keyword}:${if (colors) ansi.reset else ""}${if(rule.name.isEmpty) "" else s" ${rule.name}"}")
     if (deep || rule.description.nonEmpty) out.println()
     printDescription(s"$indent  ", rule.description, out)
@@ -319,12 +320,12 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
       if (idx > 0) pw.println()
       val widths = List(
         Try(results.map(r => printStatus(r.spec, None, withIcon = false, withStatusIcon = true)).map(_.length).max).getOrElse(0),
-        Try(results.map(_.spec.feature.name).map(_.length).max).getOrElse(0),
+        Try(results.map(_.spec.feature.displayName).map(_.length).max).getOrElse(0),
         Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
       )
       val msgs: List[String] = results flatMap { result =>
         val spec = result.spec
-        pw.println(s"  ${Formatting.leftPad(printStatus(spec, None, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.name, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
+        pw.println(s"  ${Formatting.leftPad(printStatus(spec, None, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.displayName, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
         if (result.evalStatus.isError) Some(result.message)
         else None
       }

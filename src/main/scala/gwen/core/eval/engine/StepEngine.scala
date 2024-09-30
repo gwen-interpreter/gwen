@@ -281,8 +281,8 @@ trait StepEngine[T <: EvalContext] {
       case status @ Failed(nanos, error) =>
         val inTry = ctx.topScope.getObject("gwen.scope.try").map(_.asInstanceOf[Boolean]).getOrElse(false)
         if (!inTry && !status.isDisabledError && fStep.stepDef.isEmpty && !status.isAccumulatedAssertionError) {
-          val errorList = ctx.topScope.getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]).getOrElse(Nil)
-          ctx.topScope.pushObject("gwen.accumulated.errors", errorList ++ List(status.message))
+          val errorList = ctx.topScope.getObject(`gwen.accumulated.errors`).map(_.asInstanceOf[List[String]]).getOrElse(Nil)
+          ctx.topScope.pushObject(`gwen.accumulated.errors`, errorList ++ List(status.message))
         }
         if (status.isDisabledError) {
           fStep.copy(withEvalStatus = Disabled)

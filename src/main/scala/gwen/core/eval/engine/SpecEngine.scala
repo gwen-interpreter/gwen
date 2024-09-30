@@ -37,11 +37,11 @@ import com.typesafe.scalalogging.LazyLogging
 /**
   * Spec evaluation engine.
   */
-trait SpecEngine[T <: EvalContext] extends LazyLogging {
+trait SpecEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
   engine: EvalEngine[T] =>
 
   private [engine] def evaluateFeature(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
-    ctx.topScope.featureScope.set("gwen.feature.language", spec.feature.language)
+    ctx.topScope.featureScope.set(`gwen.feature.language`, spec.feature.language)
     Dialect.withLanguage(spec.feature.language) {
       val nspec = normaliseSpec(spec, dataRecord, ctx.options)
       evaluateSpec(parent, nspec, metaResults, dataRecord, ctx)
@@ -69,6 +69,8 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
     val specType = spec.specType
     ctx.topScope.pushObject(SpecType.toString, specType)
     try {
+      ctx.topScope.featureScope.set(`gwen.feature.name`, spec.feature.name)
+      ctx.topScope.featureScope.set(`gwen.feature.displayName`, spec.feature.displayName)
       beforeSpec(spec, ctx)
       val started = {
         if (spec.isMeta) {
@@ -77,10 +79,11 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
           metaResults.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
         }
       }
+      ctx.topScope.featureScope.set(`gwen.feature.eval.started`, started.toString)
       ctx.topScope.initStart(started.getTime())
       (if(spec.isMeta) "Loading" else "Evaluating") tap {action =>
         logger.info("")
-        logger.info(s"$action $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
+        logger.info(s"$action $specType: ${spec.feature.displayName}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
       }
       val resultSpec = spec.copy(
         withBackground = None,
@@ -89,7 +92,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
         withMetaSpecs = metaResults.map(_.spec)
       )
       resultSpec.specFile foreach { _ =>
-        logger.info(s"${if (resultSpec.isMeta) "Loaded" else "Evaluated"} $specType: ${spec.feature.name}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
+        logger.info(s"${if (resultSpec.isMeta) "Loaded" else "Evaluated"} $specType: ${spec.feature.displayName}${spec.specFile.map(file => s" [file: $file]").getOrElse("")}")
       }
       new SpecResult(resultSpec, None, ctx.getVideos, metaResults, started, new Date()) tap { result =>
         if(!spec.isMeta) {
@@ -97,6 +100,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging {
         } else {
           StatusLogger.log(ctx.options, logger, result.evalStatus, result.toString)
         }
+        ctx.topScope.featureScope.set(`gwen.feature.eval.finished`, result.finished.toString)
         afterSpec(result, ctx)
       }
     } finally {

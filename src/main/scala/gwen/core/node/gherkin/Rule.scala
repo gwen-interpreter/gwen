@@ -32,6 +32,7 @@ import java.io.File
   * Captures a gherkin rule.
   * 
   * @param sourceRef the location in source
+  * @param tags list of tags
   * @param keyword the Gherkin keyword for this Rule
   * @param name the rule name
   * @param description optional description
@@ -40,6 +41,7 @@ import java.io.File
   */
 case class Rule(
     sourceRef: Option[SourceRef],
+    tags: List[Tag],
     keyword: String,
     name: String,
     description: List[String],
@@ -81,12 +83,13 @@ case class Rule(
 
   def copy(
       withSourceRef: Option[SourceRef] = sourceRef,
+      withTags: List[Tag] = tags,
       withKeyword: String = keyword,
       withName: String = name,
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withScenarios: List[Scenario] = scenarios): Rule = {
-    Rule(withSourceRef, withKeyword, withName, withDescription, withBackground, withScenarios)
+    Rule(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withScenarios)
   }
 
   /**
@@ -108,6 +111,7 @@ object Rule {
   def apply(file: Option[File], rule: cucumber.Rule, verbatim: Boolean): Rule = {
     Rule(
       Option(rule.getLocation).map(loc => SourceRef(file, loc)),
+      Option(rule.getTags).map(_.asScala.toList).getOrElse(Nil).distinct map { t => Tag(file, t) },
       rule.getKeyword,
       rule.getName,
       Option(rule.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),

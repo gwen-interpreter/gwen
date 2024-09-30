@@ -45,6 +45,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def featureScope: TransientStack = topScope.featureScope
   def ruleScope: TransientStack = topScope.ruleScope
   def scenarioScope: TransientStack = topScope.scenarioScope
+  def examplesScope: TransientStack = topScope.examplesScope
   def stepDefScope: TransientStack = topScope.stepDefScope
   def nodeChain: NodeChain = state.nodeChain
 

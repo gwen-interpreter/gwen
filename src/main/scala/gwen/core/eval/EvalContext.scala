@@ -45,7 +45,8 @@ import scala.collection.SeqView
   */
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with RegexSupport with XPathSupport with JsonPathSupport
-    with SQLSupport with ArrowFunctionSupport with JavaScriptSupport with DecodingSupport with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport {
+    with SQLSupport with ArrowFunctionSupport with JavaScriptSupport with DecodingSupport 
+    with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport with ImplicitValueKeys {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
@@ -270,8 +271,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   }
 
   def currentStatus: EvalStatus = {
-    val keyword = featureScope.get("gwen.feature.eval.status.keyword") 
-    if (keyword == StatusKeyword.Failed.toString) Failed(0, featureScope.get("gwen.feature.eval.status.message")) else Passed(0)
+    val keyword = featureScope.get(`gwen.feature.eval.status.keyword`) 
+    if (keyword == StatusKeyword.Failed.toString) Failed(0, featureScope.get(`gwen.feature.eval.status.message`)) else Passed(0)
   }
 
 }

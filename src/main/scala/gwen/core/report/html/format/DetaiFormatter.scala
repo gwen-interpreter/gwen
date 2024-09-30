@@ -58,7 +58,7 @@ trait DetaiFormatter {
   override def formatDetail(options: GwenOptions, info: GwenInfo, unit: FeatureUnit, result: SpecResult, breadcrumbs: List[(String, File)], reportFiles: List[File]): Option[String] = {
 
     val reportDir = HtmlReportConfig.reportDir(options).get
-    val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
+    val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.displayName)
     val title = s"${result.spec.specType} Specification"
     val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
 
@@ -111,7 +111,7 @@ trait DetaiFormatter {
             result.spec.specType.toString
           }
         ),
-        raw(escapeHtml(result.spec.feature.name)),
+        raw(escapeHtml(result.spec.feature.displayName)),
         formatDescriptionLines(result.spec.feature.description, None),
         div(`class` := "panel-body", style := "padding-left: 0px; padding-right: 0px; margin-right: -10px;",
           span(`class` := "pull-right", style := "padding-right: 10px;",
@@ -176,7 +176,7 @@ trait DetaiFormatter {
     }
   }
 
-  private def formatScenario(scenario: Scenario, descriptor: Option[String], topLevel: Boolean): List[TypedTag[String]] = {
+  private def formatScenario(scenario: Scenario, occurence: Option[Occurrence], topLevel: Boolean): List[TypedTag[String]] = {
     val status = scenario.evalStatus.keyword
     val conflict = scenario.steps.map(_.evalStatus.keyword).exists(_ != status)
     val scenarioKeywordPixels = noOfKeywordPixels(scenario.steps)
@@ -189,7 +189,7 @@ trait DetaiFormatter {
           formatBackground(scenario, background)
         },
         ul(`class` := "list-group",
-          formatScenarioHeader(scenario, descriptor)
+          formatScenarioHeader(scenario, occurence)
         ),
         div(`class` := "panel-body",
           div(`class` := s"panel-${cssStatus(status)} ${if (conflict) s"bg-${bgStatus(status)}" else ""}", style := s"margin-bottom: 0px; ${if (conflict) "" else "border-style: none;"}",
@@ -215,7 +215,7 @@ trait DetaiFormatter {
     )
   }
 
-  private def formatScenarioHeader(scenario: Scenario, descriptor: Option[String]): TypedTag[String] = {
+  private def formatScenarioHeader(scenario: Scenario, occurence: Option[Occurrence]): TypedTag[String] = {
     val evalStatus = scenario.evalStatus
     val status = evalStatus.keyword
     val tags = scenario.tags
@@ -248,7 +248,7 @@ trait DetaiFormatter {
           )
         )
       },
-      raw(escapeHtml(s"${scenario.name}${descriptor.map(d => s" $d").getOrElse("")}")),
+      raw(escapeHtml(s"${scenario.displayName}${occurence.map(d => s" $d").getOrElse("")}")),
       raw(" \u00a0 "),
       formatParams(scenario.params, evalStatus),
       if (!scenario.isForEach) {
@@ -284,10 +284,10 @@ trait DetaiFormatter {
           ),
           if (!background.evalStatus.isFailed) {
             a(`class` := s"inverted-${cssStatus(status)}", role := "button", attr("data-toggle") := "collapse", href := s"#${parent.uuid}-${background.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := s"${parent.uuid}-${background.uuid}",
-              raw(escapeHtml(background.name)),
+              raw(escapeHtml(background.displayName)),
             )
           } else {
-            raw(escapeHtml(background.name))
+            raw(escapeHtml(background.displayName))
           },
           div(id := s"${parent.uuid}-${background.uuid}", `class` := s"panel-collapse collapse${if (status != StatusKeyword.Passed) " in" else ""}", role := "tabpanel",
             formatDescriptionLines(background.description, Some(status)),
@@ -472,7 +472,7 @@ trait DetaiFormatter {
         ),
         " ",
         if (step.printableTags.nonEmpty) formatTags(step.printableTags, true) else "",
-        if (stepDef.nonEmpty && !isHorizForEach && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.name)),
+        if (stepDef.nonEmpty && !isHorizForEach && (status == StatusKeyword.Passed || status == StatusKeyword.Ignored)) formatStepDefLink(step, status) else raw(escapeHtml(step.displayName)),
         raw(" \u00a0 "),
         formatParams(step.params, evalStatus),
         raw(" \u00a0 "),
@@ -532,7 +532,7 @@ trait DetaiFormatter {
           ),
         ),
         " ",
-        raw(escapeHtml(step.name))
+        raw(escapeHtml(step.displayName))
       )
     ) 
   }
@@ -540,13 +540,13 @@ trait DetaiFormatter {
   private def formatStepDefLink(step: Step, status: StatusKeyword): TypedTag[String] = {
     val stepDef = step.stepDef.get
     a(`class` := s"inverted-${cssStatus(step.evalStatus.keyword)}", role := "button", attr("data-toggle") := "collapse", href := s"#${stepDef.uuid}", attr("aria-expanded") := "true", attr("aria-controls") := stepDef.uuid,
-      raw(escapeHtml(step.name))
+      raw(escapeHtml(step.displayName))
     )
   }
                   
-  private def formatStepDefDiv(stepDef: Scenario, descriptor: Option[String], status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
+  private def formatStepDefDiv(stepDef: Scenario, occurence: Option[Occurrence], status: StatusKeyword, collapse: Boolean): TypedTag[String] = {
     div(id := stepDef.uuid, `class` := s"panel-collapse collapse${if (collapse) " in" else ""}", role := "tabpanel",
-      formatScenario(stepDef, descriptor, false)
+      formatScenario(stepDef, occurence, false)
     )
   }
 
@@ -638,8 +638,7 @@ trait DetaiFormatter {
       stepDef map { sd => 
         val itemNo = if (hasHeader) rowIndex else rowIndex + 1
         val itemCount = table.size - (if (hasHeader) 1 else 0)
-        val descriptor = s"[${itemNo} of $itemCount]"
-        formatStepDefDiv(sd, Some(descriptor), sd.evalStatus.keyword, collapse) 
+        formatStepDefDiv(sd, Some(Occurrence(itemNo, itemCount)), sd.evalStatus.keyword, collapse) 
       }
     ).flatten
   }

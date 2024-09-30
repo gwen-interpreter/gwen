@@ -21,5 +21,5 @@ Feature: File assertions
   Scenario: Assert file shoud not be empty
     Given the file is defined by js "'src/test/features/file/file.txt'"
      When I capture the file
-     Then "src/test/features/file/file.txt" file should not be empty
+     Then @Soft "src/test/features/file/file.txt" file should not be empty
       And the file should not be empty

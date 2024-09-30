@@ -40,6 +40,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     val feature = Spec(
     Feature(None, "feature1", Nil),
       None,
+      None,
       List(
       Scenario(List[Tag](), "scenario1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
@@ -64,6 +65,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
   "Feature with background and no step defs" should "normalise without error" in {
     val feature = Spec(
       Feature(None, "feature1", Nil),
+      None,
       Some(background),
       List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
@@ -91,7 +93,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "StepDef without background and one step def" should "normalise without error" in {
     val meta = Spec(
-    Feature(None, "meta1", Nil), None, List(
+    Feature(None, "meta1", Nil), None, None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
@@ -112,7 +114,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "StepDef with background and one step def" should "normalise without error" in {
     val meta = Spec(
-      Feature(None, "meta1", Nil), Some(background), List(
+      Feature(None, "meta1", Nil), None, Some(background), List(
         Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed(2)),
           Step(StepKeyword.When.toString, "step 2", Passed(1)),
@@ -134,7 +136,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Meta with multiple unique step defs" should "normalise without error" in {
     val meta = Spec(
-    Feature(None, "meta1", Nil), None, List(
+    Feature(None, "meta1", Nil), None, None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
@@ -150,7 +152,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Meta with duplicate step def" should "error" in {
     val meta = Spec(
-    Feature(None, "meta1", Nil), None, List(
+    Feature(None, "meta1", Nil), None, None, List(
       Scenario(List(Tag("@StepDef")), "stepdef1", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
@@ -169,7 +171,7 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Meta with duplicate step def with params" should "error" in {
     val meta = Spec(
-    Feature(None, "meta1", Nil), None, List(
+    Feature(None, "meta1", Nil), None, None, List(
       Scenario(List(Tag("@StepDef")), "stepdef <number>", Nil, None, List(
         Step(StepKeyword.Given.toString, "step 1", Passed(2)),
         Step(StepKeyword.When.toString, "step 2", Passed(1)),
@@ -188,19 +190,21 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Data driven feature with csv file and background" should "normalise without error" in {
     val feature = Spec(
-    Feature(None, "About me", Nil), Some(background), List(
+    Feature(None, "About me", Nil), None, Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
         Step(StepKeyword.When.toString, "I am a ${my gender}"),
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), Occurrence(1, 1), data)
     val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
-    result.feature.name should be ("About me [1 of 1]")
+    result.feature.name should be ("About me")
+    result.feature.displayName should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record 1 of 1")
+    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record")
+    result.scenarios(0).background.get.displayName should be (s"${background.name} + Input data record [1 of 1]")
     result.scenarios(0).background.get.description should be (List("Initialise", "Input data file: AboutMe.csv"))
     result.scenarios(0).background.get.steps.size should be (4)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
@@ -216,19 +220,21 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Data driven feature with json file and background" should "normalise without error" in {
     val feature = Spec(
-    Feature(None, "About me", Nil), Some(background), List(
+    Feature(None, "About me", Nil), None, Some(background), List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
         Step(StepKeyword.When.toString, "I am a ${my gender}"),
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), Occurrence(1, 1), data)
     val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
-    result.feature.name should be ("About me [1 of 1]")
+    result.feature.name should be ("About me")
+    result.feature.displayName should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record 1 of 1")
+    result.scenarios(0).background.get.name should be (s"${background.name} + Input data record")
+    result.scenarios(0).background.get.displayName should be (s"${background.name} + Input data record [1 of 1]")
     result.scenarios(0).background.get.description should be (List("Initialise", "Input data file: AboutMe.json"))
     result.scenarios(0).background.get.steps.size should be (4)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
@@ -244,19 +250,21 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Data driven feature with csv file and no background" should "normalise without error" in {
     val feature = Spec(
-    Feature(None, "About me", Nil), None, List(
+    Feature(None, "About me", Nil), None, None, List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
         Step(StepKeyword.When.toString, "I am a ${my gender}"),
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.csv")), Occurrence(1, 1), data)
     val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
-    result.feature.name should be ("About me [1 of 1]")
+    result.feature.name should be ("About me")
+    result.feature.displayName should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be ("Input data record 1 of 1")
+    result.scenarios(0).background.get.name should be ("Input data record")
+    result.scenarios(0).background.get.displayName should be ("Input data record [1 of 1]")
     result.scenarios(0).background.get.description should be (List("Input data file: AboutMe.csv"))
     result.scenarios(0).background.get.steps.size should be (3)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
@@ -271,19 +279,21 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
 
   "Data driven feature with json file and no background" should "normalise without error" in {
     val feature = Spec(
-    Feature(None, "About me", Nil), None, List(
+    Feature(None, "About me", Nil), None, None, List(
       Scenario(List[Tag](), "What am I?", Nil, None, List(
         Step(StepKeyword.Given.toString, "I am ${my age} year(s) old"),
         Step(StepKeyword.When.toString, "I am a ${my gender}"),
         Step(StepKeyword.Then.toString, "I am a ${my age} year old ${my title}"))
       )), Nil, Nil)
     val data = List(("my age", "18"), ("my gender", "male"), ("my title", "Mr"))
-    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), 1, 1, data)
+    val dataRecord = new DataRecord(DataSource(new File("AboutMe.json")), Occurrence(1, 1), data)
     val result = normaliseSpec(feature, Some(dataRecord), options)
     result.background should be (None)
-    result.feature.name should be ("About me [1 of 1]")
+    result.feature.name should be ("About me")
+    result.feature.displayName should be ("About me [1 of 1]")
     result.scenarios.length should be (1)
-    result.scenarios(0).background.get.name should be ("Input data record 1 of 1")
+    result.scenarios(0).background.get.name should be ("Input data record")
+    result.scenarios(0).background.get.displayName should be ("Input data record [1 of 1]")
     result.scenarios(0).background.get.description should be (List("Input data file: AboutMe.json"))
     result.scenarios(0).background.get.steps.size should be (3)
     result.scenarios(0).background.get.steps(0).toString should be ("""Given my age is "18"""")
@@ -402,9 +412,11 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario1.tags(0).sourceRef.get.line should be (7)
     scenario1.tags(0).sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:7")
     scenario1.name should be("Joining basket and ball should yield basketball -- Compound words")
+    scenario1.displayName should be("Joining basket and ball should yield basketball -- Compound words [1 of 2]")
     scenario1.background.get.sourceRef.get.line should be (4)
     scenario1.background.get.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:4")
-    scenario1.background.get.name should be ("background + Data table record 1 of 2")
+    scenario1.background.get.name should be ("background + Data table record")
+    scenario1.background.get.displayName should be ("background + Data table record [1 of 2]")
     scenario1.background.get.steps(0).sourceRef should be (None)
     scenario1.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
     scenario1.background.get.steps(0).name should be("""string 1 is "basket"""")
@@ -442,9 +454,11 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario2.tags(0).sourceRef.get.line should be (7)
     scenario2.tags(0).sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:7")
     scenario2.name should be("Joining any and thing should yield anything -- Compound words")
+    scenario2.displayName should be("Joining any and thing should yield anything -- Compound words [2 of 2]")
     scenario2.background.get.sourceRef.get.line should be (4)
     scenario2.background.get.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:4")
-    scenario2.background.get.name should be ("background + Data table record 2 of 2")
+    scenario2.background.get.name should be ("background + Data table record")
+    scenario2.background.get.displayName should be ("background + Data table record [2 of 2]")
     scenario2.background.get.steps(0).sourceRef should be (None)
     scenario2.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
     scenario2.background.get.steps(0).name should be("""string 1 is "any"""")
@@ -496,9 +510,11 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario3.tags(0).sourceRef.get.line should be (7)
     scenario3.tags(0).sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:7")
     scenario3.name should be("Joining howdy and doo should yield howdydoo -- Nonsensical compound words")
+    scenario3.displayName should be("Joining howdy and doo should yield howdydoo -- Nonsensical compound words [1 of 2]")
     scenario3.background.get.sourceRef.get.line should be (4)
     scenario3.background.get.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:4")
-    scenario3.background.get.name should be ("background + Data table record 1 of 2")
+    scenario3.background.get.name should be ("background + Data table record")
+    scenario3.background.get.displayName should be ("background + Data table record [1 of 2]")
     scenario3.background.get.steps(0).sourceRef should be (None)
     scenario3.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
     scenario3.background.get.steps(0).name should be("""string 1 is "howdy"""")
@@ -537,9 +553,11 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario4.tags(0).sourceRef.get.line should be (7)
     scenario4.tags(0).sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:7")
     scenario4.name should be("Joining yep and ok should yield yepok -- Nonsensical compound words")
+    scenario4.displayName should be("Joining yep and ok should yield yepok -- Nonsensical compound words [2 of 2]")
     scenario4.background.get.sourceRef.get.line should be (4)
     scenario4.background.get.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:4")
-    scenario4.background.get.name should be ("background + Data table record 2 of 2")
+    scenario4.background.get.name should be ("background + Data table record")
+    scenario4.background.get.displayName should be ("background + Data table record [2 of 2]")
     scenario4.background.get.steps(0).sourceRef should be (None)
     scenario4.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
     scenario4.background.get.steps(0).name should be("""string 1 is "yep"""")
@@ -588,9 +606,11 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario5.tags(0).sourceRef.get.line should be (7)
     scenario5.tags(0).sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:7")
     scenario5.name should be("Joining ding and dong should yield dingdong")
+    scenario5.displayName should be("Joining ding and dong should yield dingdong [1 of 1]")
     scenario5.background.get.sourceRef.get.line should be (4)
     scenario5.background.get.sourceRef.get.toString should be("target/SpecNormaliserTest/outline.feature:4")
-    scenario5.background.get.name should be ("background + Data table record 1 of 1")
+    scenario5.background.get.name should be ("background + Data table record")
+    scenario5.background.get.displayName should be ("background + Data table record [1 of 1]")
     scenario5.background.get.steps(0).sourceRef should be (None)
     scenario5.background.get.steps(0).keyword should be(StepKeyword.Given.toString)
     scenario5.background.get.steps(0).name should be("""string 1 is "ding"""")
@@ -658,13 +678,6 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     scenario.steps(5).indexIn(scenario).get should be (5)
     scenario.steps(6).indexIn(scenario).get should be (6)
 
-    scenario.steps(0).occurrenceIn(scenario).get should be (1)
-    scenario.steps(1).occurrenceIn(scenario).get should be (1)
-    scenario.steps(2).occurrenceIn(scenario).get should be (1)
-    scenario.steps(3).occurrenceIn(scenario).get should be (2)
-    scenario.steps(4).occurrenceIn(scenario).get should be (1)
-    scenario.steps(5).occurrenceIn(scenario).get should be (1)
-    scenario.steps(6).occurrenceIn(scenario).get should be (3)
   }
 
   "Feature with identically named scenarios" should "return correct indexes and occurence numbers" in {
@@ -706,13 +719,6 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     result.scenarios(5).indexIn(result).get should be (5)
     result.scenarios(6).indexIn(result).get should be (6)
 
-    result.scenarios(0).occurrenceIn(result).get should be (1)
-    result.scenarios(1).occurrenceIn(result).get should be (1)
-    result.scenarios(2).occurrenceIn(result).get should be (1)
-    result.scenarios(3).occurrenceIn(result).get should be (1)
-    result.scenarios(4).occurrenceIn(result).get should be (2)
-    result.scenarios(5).occurrenceIn(result).get should be (3)
-    result.scenarios(6).occurrenceIn(result).get should be (1)
   }
 
   "Feature with identically named outline examples" should "return correct indexes and occurence numbers" in {
@@ -755,12 +761,6 @@ class SpecNormaliserTest extends BaseTest with Matchers with SpecNormaliser with
     outline.examples(4).indexIn(outline).get should be (4)
     outline.examples(5).indexIn(outline).get should be (5)
 
-    outline.examples(0).occurrenceIn(outline).get should be (1)
-    outline.examples(1).occurrenceIn(outline).get should be (1)
-    outline.examples(2).occurrenceIn(outline).get should be (2)
-    outline.examples(3).occurrenceIn(outline).get should be (3)
-    outline.examples(4).occurrenceIn(outline).get should be (4)
-    outline.examples(5).occurrenceIn(outline).get should be (1)
   }
 
 }

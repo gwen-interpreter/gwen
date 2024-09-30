@@ -62,7 +62,7 @@ class SpecResult(
   lazy val duration: Duration = evalStatus.duration
   lazy val sustainedCount: Int = spec.sustainedCount
 
-  def displayName: String = Option(spec.feature.name).map(_.trim).filter(!_.isEmpty).getOrElse(spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
+  def displayName: String = Option(spec.feature.displayName).map(_.trim).filter(!_.isEmpty).getOrElse(spec.specFile.map(_.getName()).map(n => Try(n.substring(0, n.lastIndexOf('.'))).getOrElse(n)).getOrElse("-- details --"))
 
   def statusCounts(withEmpty: Boolean): List[(NodeType, Map[StatusKeyword, Int])] = {
     List(

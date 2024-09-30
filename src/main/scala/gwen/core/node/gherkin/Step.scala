@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.Formatting.DurationFormatter
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.RecurringNode
 import gwen.core.node.SourceRef
 import gwen.core.state.EnvState
 import gwen.core.status._
@@ -64,7 +65,7 @@ case class Step(
     override val callerParams: List[(String, String)],
     tags: List[Tag],
     message: Option[String],
-    dryValues: List[(String, String)]) extends GherkinNode {
+    dryValues: List[(String, String)]) extends GherkinNode with RecurringNode with ImplicitValueKeys {
 
   override val nodeType: NodeType = NodeType.Step
 
@@ -331,6 +332,9 @@ case class Step(
   }
 
   def dryValue(name: String): Option[String] = dryValues.find(_._1 == name).map(_._2)
+
+  override val occurrence: Option[Occurrence] = None
+  override def occurrenceNo: Option[Int] = params.find(_._1 == `iteration.number`).map(_._2.toInt)
 
 }
 

@@ -16,9 +16,9 @@
 package gwen.core.node
 
 import gwen.core.Assert
+import gwen.core.node.RecurringNode
 import gwen.core.node.gherkin.GherkinNode
 import gwen.core.node.gherkin.Step
-import gwen.core.state.ReservedParam
 
 class NodeChain(val nodes: List[GwenNode]) {
 
@@ -31,18 +31,8 @@ class NodeChain(val nodes: List[GwenNode]) {
   def steps: List[Step] = nodes.filter(_.nodeType == NodeType.Step).map(_.asInstanceOf[Step])
 
   def nodePath: String = {
-    nodes match {
-      case head :: Nil =>
-        s"/${nodeName(head)}"
-      case head :: tail =>
-        (nodes zip tail).foldLeft("") { (path: String, pair: (GwenNode, GwenNode)) =>
-          val (parent, node) = pair
-          val name = nodeName(node)
-          val occurrenceNo = occurrence(parent, node)
-          s"$path/$name$occurrenceNo"
-        }
-      case _ => 
-        ""
+    nodes.foldLeft("") { (path: String, node: GwenNode) =>
+      s"${if (path != "/") path else ""}/${nodeName(node)}${occurrenceNo(node)}"
     }
   }
 
@@ -53,23 +43,11 @@ class NodeChain(val nodes: List[GwenNode]) {
     }
   }
 
-  private def occurrence(parent: GwenNode, node: GwenNode): String = {
-    node match {
-      case _: GherkinNode =>  
-        node.params collectFirst { case (name, value) 
-          if name == ReservedParam.`iteration.number`.toString => value
-        } orElse {
-          node.occurrenceIn(parent) orElse {
-            parent match {
-              case step: Step if step.stepDef.map(_ == node).getOrElse(false) => Some(1)
-              case _ => None
-            }
-          }
-        } map { occurrence => 
-          s"[$occurrence]"
-        } getOrElse ""
-      case _ => ""
-    }
+  private def occurrenceNo(node: GwenNode): String = {
+    (node match {
+      case rNode: RecurringNode => rNode.occurrenceNo
+      case _ => None
+    }).filter(n => n > 1 || node.isInstanceOf[Step]).map(n => s"[$n]").mkString 
   }
 
 }

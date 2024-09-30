@@ -56,7 +56,7 @@ Feature: String rules
        When I substitute string 1 for string 2 in string 3
        Then the result should be "<result>"
         And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"
-        And gwen.scenario.name should end with "-- More basic string concatenation"
+        And gwen.scenario.name should contain "-- More basic string concatenation"
 
       Examples: More basic string concatenation
 

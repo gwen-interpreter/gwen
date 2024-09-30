@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.ImplicitValueKeys
 import gwen.core.Settings
 import gwen.core.eval.EvalContext
 import gwen.core.eval.lambda.UnitStep
@@ -25,12 +26,12 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class ResetAccumulatedErrors[T <: EvalContext]() extends UnitStep[T] {
+class ResetAccumulatedErrors[T <: EvalContext]() extends UnitStep[T] with ImplicitValueKeys {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
-      ctx.topScope.removeObject("gwen.accumulated.errors")
+      ctx.topScope.removeObject(`gwen.accumulated.errors`)
     }
   }
 

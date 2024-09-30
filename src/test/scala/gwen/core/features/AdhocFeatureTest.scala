@@ -35,7 +35,7 @@ class AdhocFeatureTest extends BaseTest {
     val options = GwenOptions(
       batch = true,
       reportDir = Some(new File(s"target/reports/adhoc")), 
-      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+      reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json, ReportFormat.results),
       features = List(new File(feature)),
       settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
     )

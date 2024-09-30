@@ -19,6 +19,7 @@ package gwen.core.data
 import gwen.core.Errors
 import gwen.core.FileIO
 import gwen.core.GwenSettings
+import gwen.core.ImplicitValueKeys
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
@@ -52,15 +53,15 @@ trait DataSource {
   }
 }
 
-object DataSource {
-  val lookupPrefix: String = "data.record."
+object DataSource extends ImplicitValueKeys {
+  val lookupPrefix: String = `data.record.`
   def apply(dataFile: File): DataSource = {
     if (FileIO.isCsvFile(dataFile)) {
       new CsvDataSource(dataFile)
     } else if (FileIO.isJsonFile(dataFile)) {
       new JsonDataSource(dataFile)
     } else {
-      Errors.unsupportedDataFileError(dataFile)
+      Errors.unsupportedFileError(dataFile, "input data", "csv or json")
     }
   }
   def hasLookupPrefix(name: String): Boolean = {

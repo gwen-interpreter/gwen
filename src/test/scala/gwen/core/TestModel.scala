@@ -26,19 +26,19 @@ trait TestModel {
 
   object Feature {
     def apply(file: Option[File], name: String, description: List[String]): Feature = 
-      new Feature("en", file.map(f => SourceRef(file, 1)), Nil, FeatureKeyword.Feature.toString, name, description)
+      new Feature("en", file.map(f => SourceRef(file, 1)), Nil, FeatureKeyword.Feature.toString, name, None, description)
   }
 
   object Background {
     def apply(name: String, description: List[String], steps: List[Step]): Background =
-      new Background(None, FeatureKeyword.Background.toString, name, description, steps)
+      new Background(None, FeatureKeyword.Background.toString, name, None, description, steps)
   }
 
   object Scenario {
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, Nil, Nil, Nil)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, None, description, background, steps, Nil, Nil, Nil)
     def apply(tags: List[Tag], name: String, description: List[String], background: Option[Background], steps: List[Step], examples: List[Examples]): Scenario =
-      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, description, background, steps, examples, Nil, Nil)
+      new Scenario(None, tags.distinct, FeatureKeyword.Scenario.toString, name, None, description, background, steps, examples, Nil, Nil)
   }
 
   object Step {

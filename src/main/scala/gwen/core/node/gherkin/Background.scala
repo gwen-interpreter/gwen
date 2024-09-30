@@ -16,8 +16,10 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.Occurrence
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.RecurringNode
 import gwen.core.node.SourceRef
 import gwen.core.status.EvalStatus
 
@@ -33,6 +35,7 @@ import java.io.File
   * @param sourceRef the location in source
   * @param keyword the Gherkin keyword for this Background
   * @param name the background name
+  * @param occurrence the data feed occurrence
   * @param description optional background description
   * @param steps list of background steps
  */
@@ -40,8 +43,9 @@ case class Background(
     sourceRef: Option[SourceRef],
     keyword: String, 
     name: String, 
+    occurrence: Option[Occurrence],
     description: List[String], 
-    steps: List[Step]) extends GherkinNode {
+    steps: List[Step]) extends GherkinNode with RecurringNode {
 
   override val nodeType: NodeType = NodeType.Background
   override val evalStatus: EvalStatus = EvalStatus(steps.map(_.evalStatus))
@@ -63,9 +67,10 @@ case class Background(
       withSourceRef: Option[SourceRef] = sourceRef,
       withKeyword: String = keyword, 
       withName: String = name, 
+      withOccurrence: Option[Occurrence] = occurrence,
       withDescription: List[String] = description, 
       withSteps: List[Step] = steps): Background = {
-    Background(withSourceRef, withKeyword, withName, withDescription, withSteps)
+    Background(withSourceRef, withKeyword, withName, withOccurrence, withDescription, withSteps)
   }
 
   /**
@@ -89,6 +94,7 @@ object Background {
       Option(background.getLocation).map(loc => SourceRef(file, loc)),
       background.getKeyword,
       background.getName,
+      None,
       Option(background.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       Option(background.getSteps).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) }
     )

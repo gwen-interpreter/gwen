@@ -33,7 +33,7 @@ import java.util.Date
 /**
   * Rule evaluation engine.
   */
-trait RuleEngine[T <: EvalContext] extends LazyLogging {
+trait RuleEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
   engine: EvalEngine[T] =>
 
   private [engine] def evaluateRules(spec: Spec, rules: List[Rule], dataRecord: Option[DataRecord], ctx: T): List[Rule] = {
@@ -47,9 +47,9 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
     ctx.ruleScope.push(
       rule.name,
       List(
-        ("gwen.rule.name", rule.name),
-        ("gwen.rule.eval.status.keyword", StatusKeyword.Passed.toString),
-        ("gwen.rule.eval.start.msecs", new Date().getTime().toString),
+        (`gwen.rule.name`, rule.name),
+        (`gwen.rule.eval.status.keyword`, StatusKeyword.Passed.toString),
+        (`gwen.rule.eval.start.msecs`, new Date().getTime().toString),
       )
     )
     try {
@@ -63,23 +63,27 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging {
           } else if (exitOnFail && !isSoftAssert) {
             transitionRule(rule, rule.evalStatus, ctx)
           } else {
+            ctx.topScope.ruleScope.set(`gwen.rule.eval.started`, new Date().toString)
             beforeRule(rule, ctx)
             logger.info(s"Evaluating ${rule.keyword}: $rule")
             rule.copy(
               withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
             ) tap { r =>
-              logStatus(ctx.options, r)
+              ctx.topScope.ruleScope.set(`gwen.rule.eval.finished`, new Date().toString)
               afterRule(r, ctx)
+              logStatus(ctx.options, r)
             }
           }
         case _ =>
+          ctx.topScope.ruleScope.set(`gwen.rule.eval.started`, new Date().toString)
           beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
           ) tap { r =>
-            logStatus(ctx.options, r)
+            ctx.topScope.ruleScope.set(`gwen.rule.eval.finished`, new Date().toString)
             afterRule(r, ctx)
+            logStatus(ctx.options, r)
           }
       }
     } finally {

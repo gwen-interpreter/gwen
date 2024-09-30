@@ -22,7 +22,9 @@ import gwen.core.GwenOptions
 import gwen.core.eval.EvalContext
 import gwen.core.node.event.NodeEventDispatcher
 import gwen.core.report.NoopReportGenerator
+import gwen.core.report.ReportFormat
 import gwen.core.report.ReportFormatter
+import gwen.core.report.ReportResult
 import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
 
@@ -44,12 +46,13 @@ class RPReportGenerator(val options: GwenOptions, info: GwenInfo) extends NoopRe
     }
   }
 
-  override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Option[String] = { 
-    rpReporter.flatMap { reporter => 
+  override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): ReportResult = { 
+    val resource = rpReporter.flatMap { reporter => 
       reporter.close(evalStatus) tap { _ =>
         lifecycle.removeListener(reporter)
       }
     }
+    ReportResult(ReportFormat.rp, resource.toList, None)
   }
 
 }

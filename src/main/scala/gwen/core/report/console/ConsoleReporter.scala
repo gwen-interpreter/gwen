@@ -25,6 +25,8 @@ import gwen.core.node.event.NodeEventListener
 import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 import gwen.core.state.StateLevel
+import gwen.core.status.Failed
+import gwen.core.report.ReportFormat
 
 import java.io.PrintStream
 import java.io.ByteArrayOutputStream
@@ -166,7 +168,7 @@ class ConsoleReporter(options: GwenOptions)
           val unit = event.callChain.nodes.find(_.isInstanceOf[FeatureUnit]).map(_.asInstanceOf[FeatureUnit])
           val parent = event.callChain.previous
           val scenarioNo = scenario.indexIn(parent).map(_ + 1)
-          System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase}${unit.map(u => s" specification: ${u.displayName}").getOrElse("")} scenario${scenarioNo.map(n => s"[$n]").getOrElse("")}: ${scenario.name}")
+          System.out.println(s"[${Thread.currentThread.getName}] $action ${SpecType.Feature.toString.toLowerCase}${unit.map(u => s" specification: ${u.displayName}").getOrElse("")} scenario${scenarioNo.map(n => s"[$n]").getOrElse("")}: ${scenario.displayName}")
         }
       }
       if (scenario.background.isEmpty && !scenario.isExpanded) {
@@ -286,15 +288,22 @@ class ConsoleReporter(options: GwenOptions)
     if (summary.results.size > 1) {
       System.out.println(printer.printSummary(summary))
     }
-    val reports = summary.reports
-    if (reports.nonEmpty) {
+    val reportResults = summary.reportResults
+    if (reportResults.nonEmpty) {
+      System.out.println("Reports:")
       System.out.println()
-      val maxWidh = (reports map { (format, _) => format.toString.length }).max
-      reports foreach { (format, report) => 
-        System.out.println(s"${Formatting.leftPad(s"${format.toString.toUpperCase} report", maxWidh + 7)}  $report")
+      val maxWidth = reportResults.map(_.format.toString.length).max
+      reportResults foreach { reportResult => 
+        reportResult.resources.sorted.zipWithIndex foreach { (resource, idx) => 
+          System.out.println(s"  ${if (idx == 0) Formatting.leftPad(reportResult.format.toString.toUpperCase, maxWidth) else " " * maxWidth}  $resource")
+        }
       }
       System.out.println()
     }
+  }
+
+  def printError(failure: Failed): String = {
+    printer.printStatus("", failure, Some(failure.message), true, true)
   }
   
 }

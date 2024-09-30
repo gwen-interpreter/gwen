@@ -16,6 +16,7 @@
 
 package gwen.core.node
 
+import gwen.core.Occurrence
 import gwen.core.data.DataRecord
 import gwen.core.data.DataSource
 
@@ -42,7 +43,7 @@ class FeatureSet(unit: FeatureUnit, dataSource: DataSource) extends Iterator[Fea
   override def next(): FeatureUnit = {
     val (values, index) = dataFeed.next()
     val data = header zip values
-    val dataRecord = new DataRecord(dataSource, index, totalRecs, data.toList)
+    val dataRecord = new DataRecord(dataSource, Occurrence(index, totalRecs), data.toList)
     logger.debug(s"$dataRecord: $data")
     FeatureUnit(Root, unit.featureFile, unit.metaFiles, Some(dataRecord), unit.tagFilter) tap { unit =>
       logger.info(s"Mapped $unit")

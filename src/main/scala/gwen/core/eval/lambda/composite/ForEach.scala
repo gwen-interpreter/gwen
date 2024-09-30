@@ -30,7 +30,9 @@ import gwen.core.status._
 
 import scala.util.Try
 
-abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) extends CompositeStep[T](doStep) {
+import java.util.Date
+
+abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) extends CompositeStep[T](doStep) with ImplicitValueKeys {
 
   /**
     * Repeats a step for each item in list of items of type U.
@@ -54,7 +56,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
         case _ => None
       }
       val tags = List(Tag(Annotations.Synthetic), Tag(Annotations.ForEach), Tag(Annotations.StepDef)) ++ tableTypeTag.toList
-      val preForeachStepDef = Scenario(None, tags, keyword, name, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
+      val preForeachStepDef = Scenario(None, tags, keyword, name, None, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
+      ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.start.msecs`, new Date().getTime().toString)
       engine.beforeStepDef(preForeachStepDef, ctx)
       val noOfElements = items.size
       val steps =
@@ -67,7 +70,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
             val prevNameValue = ctx.topScope.getOpt(name)
             try {
               items.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
-                val itemNo = index + 1
+                val occurence = Occurrence(index + 1, noOfElements)
                 val params: List[(String, String)] = currentElement match {
                   case data: ScopedData => 
                     if (data.scope == DataTable.recordKey) {
@@ -84,13 +87,13 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     List((name, value))
                   case _ =>
                     ctx.topScope.pushObject(name, currentElement)
-                    List((name, s"$name $itemNo"))
+                    List((name, s"$name ${occurence.number}"))
                 }
-                val prevIndex = ctx.topScope.getOpt("iteration.index")
-                val prevNumber = ctx.topScope.getOpt("iteration.number")
-                val descriptor = s"[$name] $itemNo of $noOfElements"
-                ctx.topScope.set("iteration.index", index.toString)
-                ctx.topScope.set("iteration.number", itemNo.toString)
+                val prevIndex = ctx.topScope.getOpt(`iteration.index`)
+                val prevNumber = ctx.topScope.getOpt(`iteration.number`)
+                val descriptor = s"[$name] $occurence"
+                ctx.topScope.set(`iteration.index`, occurence.index.toString)
+                ctx.topScope.set(`iteration.number`, occurence.number.toString)
                 (try {
                   EvalStatus(acc.map(_.evalStatus)) match {
                     case status @ Failed(_, error)  =>
@@ -112,8 +115,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     case data: ScopedData if data.scope == DataTable.recordKey => ctx.topScope.popObject(DataTable.recordKey)
                     case _ => ctx.topScope.popObject(name)
                   }
-                  ctx.topScope.set("iteration.number", prevNumber.orNull)
-                  ctx.topScope.set("iteration.index", prevIndex.orNull)
+                  ctx.topScope.set(`iteration.number`, prevNumber.orNull)
+                  ctx.topScope.set(`iteration.index`, prevIndex.orNull)
                 }) :: acc
               } reverse
             } finally {
@@ -121,6 +124,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
             }
         }
       val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
+      ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
       engine.afterStepDef(foreachStepDef, ctx)
       step.copy(withStepDef = Some(foreachStepDef))
     } else {

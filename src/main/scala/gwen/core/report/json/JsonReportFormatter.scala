@@ -58,8 +58,8 @@ trait JsonReportFormatter extends ReportFormatter {
     val spec = result.spec
     val feature = spec.feature
 
-    val id = s"${result.spec.specFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.name.toLowerCase.replace(' ', '-')}"
-    val name = s"${result.spec.specFile.map(f => s"${f.uri}: ").getOrElse("")}${feature.name}"
+    val id = s"${result.spec.specFile.map(f => FileIO.encodeDir(s"${f.getPath};")).getOrElse("")}${feature.displayName.toLowerCase.replace(' ', '-')}"
+    val name = s"${result.spec.specFile.map(f => s"${f.uri}: ").getOrElse("")}${feature.displayName}"
     val description = s"${feature.description.mkString(Properties.lineSeparator)}"
 
     Some(s"""[
@@ -86,14 +86,14 @@ trait JsonReportFormatter extends ReportFormatter {
   }
 
   private def renderBackground(background: Background, bIndex: Int) = {
-    val id = s"${background.keyword.toLowerCase};${background.name.toLowerCase.replace(' ', '-')};${bIndex + 1}"
+    val id = s"${background.keyword.toLowerCase};${background.displayName.toLowerCase.replace(' ', '-')};${bIndex + 1}"
     val description = s"${background.description.mkString(Properties.lineSeparator)}"
     s"""
       {
         "keyword": "${background.keyword}",
         "id": "${escapeJson(id)}"${background.sourceRef.map { loc => s""",
         "line": ${loc.line}""" } getOrElse("")},
-        "name": "${escapeJson(background.name)}",
+        "name": "${escapeJson(background.displayName)}",
         "description": "${escapeJson(description)}",
         "type": "${background.keyword.toLowerCase}"${if (background.steps.nonEmpty) s""",
         "steps": [${renderSteps(background.steps, id)}
@@ -103,14 +103,14 @@ trait JsonReportFormatter extends ReportFormatter {
 
   private def renderScenario(scenario: Scenario, isExpanded: Boolean, sIndex: Int) = {
     val keyword = s"${scenario.keyword}${if (isExpanded) " Outline" else ""}"
-    val scenarioId = s"${keyword.toLowerCase.replace(' ', '-')};${scenario.name.toLowerCase.replace(' ', '-')};${sIndex + 1}"
+    val scenarioId = s"${keyword.toLowerCase.replace(' ', '-')};${scenario.displayName.toLowerCase.replace(' ', '-')};${sIndex + 1}"
     val description = s"${scenario.description.mkString(Properties.lineSeparator)}"
     s"""
       {
         "keyword": "$keyword",
         "id": "${escapeJson(scenarioId)}"${scenario.sourceRef map { loc => s""",
         "line": ${loc.line}""" } getOrElse("")},
-        "name": "${escapeJson(scenario.name)}",
+        "name": "${escapeJson(scenario.displayName)}",
         "description": "${escapeJson(description)}"${if(scenario.tags.nonEmpty) s""",
         "tags": [${scenario.tags.map { case tag => s"""
           {
@@ -152,7 +152,7 @@ trait JsonReportFormatter extends ReportFormatter {
     s"""
           {
             "keyword": "${step.keyword} ",
-            "name": "${escapeJson(step.name)}"${step.sourceRef.map { loc => s""",
+            "name": "${escapeJson(step.displayName)}"${step.sourceRef.map { loc => s""",
             "line": ${loc.line}"""} getOrElse("")},${if (screenshots.nonEmpty) s"""
             "embeddings": [${screenshots.map{ file => s"""
               {

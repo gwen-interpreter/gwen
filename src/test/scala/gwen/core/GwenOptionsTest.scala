@@ -17,6 +17,7 @@
 package gwen.core
 
 import gwen.core._
+import gwen.core.Errors.UnboundAttributeException
 import gwen.core.node.gherkin.Tag
 import gwen.core.report.ReportFormat
 
@@ -870,6 +871,12 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.metas should be (FileIO.appendFile(metaFiles, Settings.UserMeta))
     options.features should be (features)
     options.init should be (init)
+    val expectedInitOptions = List(
+      if (docker) Some(InitOption.docker) else None,
+      if (jenkins) Some(InitOption.jenkins) else None,
+      if (force) Some(InitOption.force) else None
+    ).flatten
+    
     if (docker) {
       options.initOptions should contain (InitOption.docker)
     } else {
@@ -889,6 +896,34 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.pretty should be (pretty)
     options.formatFiles should be (formatFiles)
 
+    options.interpolate("batch is $<gwen.options.batch>, yep") should be (s"batch is $batch, yep")
+    options.interpolate("parallel is $<gwen.options.parallel>, yep") should be (s"parallel is $parallel, yep")
+    options.interpolate("verbose is $<gwen.options.verbose>, yep") should be (s"verbose is $verbose, yep")
+    options.interpolate("debug is $<gwen.options.debug>, yep") should be (s"debug is $debug, yep")
+    options.interpolate("reportDir is $<gwen.options.reportDir>, yep") should be (s"reportDir is ${reportDir.getOrElse("")}, yep")
+    options.interpolate("reportFormats is $<gwen.options.reportFormats>, yep") should be (s"reportFormats is ${reportFormats.mkString(",")}, yep")
+    options.interpolate("settingsFiles is $<gwen.options.settingsFiles>, yep") should be (s"settingsFiles is ${settingsFiles.mkString(",")}, yep")
+    options.interpolate("tags is $<gwen.options.tags>, yep") should be (s"tags is ${tags.map((t, include) => s"${if (include) "" else "~"}$t").mkString(",")}, yep")
+    options.interpolate("dryRun is $<gwen.options.dryRun>, yep") should be (s"dryRun is $dryRun, yep")
+    options.interpolate("dataFile is $<gwen.options.dataFile>, yep") should be (s"dataFile is ${dataFile.getOrElse("")}, yep")
+    options.interpolate("metas is $<gwen.options.metas>, yep") should be (s"metas is ${FileIO.appendFile(metaFiles, Settings.UserMeta).mkString(",")}, yep")
+    options.interpolate("features is $<gwen.options.features>, yep") should be (s"features is ${features.mkString(" ")}, yep")
+    options.interpolate("init is $<gwen.options.init>, yep") should be (s"init is $init, yep")
+    options.interpolate("initOptions is $<gwen.options.initOptions>, yep") should be (s"initOptions is ${expectedInitOptions.map(opt => s"--$opt").sorted.mkString(" ")}, yep")
+    options.interpolate("initDir is $<gwen.options.initDir>, yep") should be (s"initDir is ${Option(initDir).getOrElse("")}, yep")
+    options.interpolate("pretty is $<gwen.options.pretty>, yep") should be (s"pretty is $pretty, yep")
+    options.interpolate("formatFiles is $<gwen.options.formatFiles>, yep") should be (s"formatFiles is ${formatFiles.mkString(" ")}, yep")
+
+  }
+
+  "Interpolation of unkown options placeholder" should "result in unbound ref error" in {
+    intercept[UnboundAttributeException] {
+      new GwenOptions().interpolate("unkown is $<gwen.options.unkown>, yep")
+    }
+  }
+
+  "Interpolation of non options placeholder" should "have no effect" in {
+    new GwenOptions().interpolate("someting else is $<something.else>, yep") should be ("someting else is $<something.else>, yep")
   }
 
   private def createFile(filepath: String): File = {

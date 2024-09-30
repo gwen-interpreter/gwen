@@ -59,6 +59,7 @@ object Errors extends LazyLogging {
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
   def invalidPropertyError(entry: String, propertyFile: File) = throw new InvalidPropertyException(entry, propertyFile)
   def illegalSettingError(name: String, value: String, validValues: String) = throw new IllegalSettingException(name, value, validValues)
+  def illegalSettingAttributeError(name: String, parent: String, validNames: String) = throw new IllegalSettingAttributeException(name, parent, validNames)
   def illegalStepAnnotationError(sourceRef: Option[SourceRef], msg: String) = throw new IllegalStepAnnotationException(sourceRef, msg)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
@@ -109,7 +110,7 @@ object Errors extends LazyLogging {
   def assertionError(msg: String, mode: AssertionMode) = throw new GwenAssertionError(msg, mode)
   def accumulatedAssertionError(error: GwenAssertionError) = throw new AccumulatedAssertionError(error)
   def interruptException(cause: Throwable) = throw new GwenInterruptException(cause)
-  def unsupportedDataFileError(dataFile: File) = throw new UnsupportedDataFileException(dataFile)
+  def unsupportedFileError(file: File, fileType: String, validExtensions: String) = throw new UnsupportedFileException(file, fileType, validExtensions)
   def unsupportedJsonStructureError(cause: Throwable) = throw new UnsupportedJsonStructureException(cause)
   def missingJSArgumentError(jsRef: String, argIndex: Int) = throw new MissingJSArgumentException(jsRef, argIndex)
   def invalidReferenceOrFunctionError(msg: String) = throw new InvalidReferenceOrFunctionException(msg)
@@ -175,6 +176,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when a property file setting contains an invalid or unspported value. */
   class IllegalSettingException(name: String, value: String, validValues: String) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: $validValues)")
+
+  /** Thrown when a property file setting contains an invalid attirbute name.. */
+  class IllegalSettingAttributeException(name: String, parent: String, validNames: String) extends GwenException(s"Invalid or illegal $parent setting attribute: $name (valid attributes include: $validNames)")
 
   /** Thrown when an annotation is found in an illegal step position. */
   class IllegalStepAnnotationException(sourceRef: Option[SourceRef], msg: String) extends GwenException(s"Invalid or illegal step annotation${at(sourceRef)}: $msg")
@@ -319,8 +323,8 @@ object Errors extends LazyLogging {
   /** Throw when there is a user interrupt error (usually due to cntl-c being pressed). */
   class GwenInterruptException(cause: Throwable) extends GwenException(s"Gwen interrupted", cause)
 
-  /** Thrown when a data file is not supported. */
-  class UnsupportedDataFileException(dataFile: File) extends GwenException(s"Unsupported data file (csv or json expected): $dataFile")
+  /** Thrown when a file is not supported. */
+  class UnsupportedFileException(file: File, fileType: String, validExtensions: String) extends GwenException(s"Unsupported $fileType file ($validExtensions expected): $file")
 
   /** Thrown when a data file is not supported. */
   class MalformedDataSourceException(dataFile: File, cause: Throwable) extends GwenException(s"Malformed ${dataFile.extension.toUpperCase} data in $dataFile file: ${cause.getMessage}", cause)
@@ -339,5 +343,8 @@ object Errors extends LazyLogging {
 
   /** Thrown when an illegal duration pattern is detected in a Wait or Delay annotation. */
   class IllegalDurationAnnotationExcpetion(targetName: String, annotation: String) extends GwenException(s"Illegal or malformed $annotation annotation. Valid examples include: @${targetName}('10s'), @${targetName}('1m30s'), @${targetName}('2m')")
+
+  /** Thrown when an invalid CSV result field or file reference detected. */
+  class CSVResultsReferenceException(errors: List[String]) extends GwenException(errors.map(err => s" - $err").mkString("\n"))
 
 }

@@ -19,6 +19,7 @@ package gwen.core.result
 import gwen.core._
 import gwen.core.node.NodeType
 import gwen.core.report.ReportFormat
+import gwen.core.report.ReportResult
 import gwen.core.status._
 
 import scala.concurrent.duration._
@@ -39,7 +40,7 @@ case class ResultsSummary(
   ruleCounts: Map[StatusKeyword, Int], 
   scenarioCounts: Map[StatusKeyword, Int], 
   stepCounts: Map[StatusKeyword, Int],
-  reports: List[(ReportFormat, String)]) {
+  reportResults: List[ReportResult]) {
   
   lazy val started: Date = results.sortBy(_.started).headOption.map(_.started).getOrElse(new Date)
   lazy val finished: Date = results.sortBy(_.finished).lastOption.map(_.finished).getOrElse(started)
@@ -103,7 +104,7 @@ case class ResultsSummary(
     } mkString ", "
   }
 
-  def withReports(reports: List[(ReportFormat, String)]): ResultsSummary = {
+  def withReports(reports: List[ReportResult]): ResultsSummary = {
     ResultsSummary(results, ruleCounts, scenarioCounts, stepCounts, reports)
   }
   

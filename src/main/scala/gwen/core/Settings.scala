@@ -21,7 +21,9 @@ import gwen.core.state.SensitiveData
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigValue
 import com.typesafe.config.ConfigValueType
+
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable
@@ -49,7 +51,7 @@ object Settings extends LazyLogging {
     envOverrides ++= overrides
   }
 
-  val BootstrapConf: Config = Settings.load()._1
+  val BootstrapConf: Config = Settings.load(Settings.userProjectSettingsFiles*)._1
 
   object Lock
 
@@ -94,6 +96,12 @@ object Settings extends LazyLogging {
     init(prime = false, settingsFiles*)
   }
 
+  private[gwen] def userProjectSettingsFiles: List[File] = {
+    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
+    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
+    userSettingsFile.toList ++ projectSettingsFile.toList
+  }
+
   /**
     * Loads and initialises all settings in the following order of precedence:
     *   1. System properties passed through -D Java command line option
@@ -107,9 +115,7 @@ object Settings extends LazyLogging {
 
     val settingsFiles = {
       if (prime) {
-        val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
-        val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
-        (launchSettings.reverse ++ projectSettingsFile.toList).foldLeft(userSettingsFile.toList) { FileIO.appendFile }
+        (launchSettings.reverse).foldLeft(userProjectSettingsFiles) { FileIO.appendFile }
       } else {
         launchSettings.toList.reverse
       }
@@ -119,19 +125,19 @@ object Settings extends LazyLogging {
     
     // write into properties object
     val props = config.entrySet.asScala.foldLeft(new Properties()) {
-      (properties, entry) =>
-        val name = entry.getKey.asInstanceOf[String].replace("\\", "").replace("\"", "")
+      (properties, entry) => {
+        val name = entry.getKey.replace("\\", "").replace("\"", "")
         val cValue = entry.getValue
         if (ConfigValueType.LIST == cValue.valueType()) {
-          config.getAnyRefList(entry.getKey).asScala.map(_.toString).zipWithIndex foreach { (value, idx) => 
-            properties.setProperty(s"$name.${Formatting.padWithZeroes(idx, 10)}", value)
+          config.getAnyRefList(entry.getKey).asScala.zipWithIndex foreach { (value, idx) => 
+            setProperties(s"$name.${Formatting.padWithZeroes(idx, 10)}", value, properties)
           }
         } else {
-          val value = cValue.unwrapped().toString
-          properties.setProperty(name, value)
+          setProperties(name, cValue.unwrapped, properties)
           orphans.remove(name)
         }
         properties
+      }
     }
     orphans.entrySet.asScala foreach { entry => 
       val key = entry.getKey.toString
@@ -160,6 +166,32 @@ object Settings extends LazyLogging {
       Try(resolveAndStore(prime, entry, props)).map(_ => None).getOrElse(Some(entry))
     } foreach { entry => 
       resolveAndStore(prime, entry, props)
+    }
+  }
+
+  private def setProperties(name: String, value: Object, properties: Properties): Unit = {
+    Try(value.asInstanceOf[java.util.List[Object]]) match {
+      case Success(list) =>
+        list.asScala.zipWithIndex foreach { (listValue, idx) =>
+          val listName = s"$name.${Formatting.padWithZeroes(idx, 10)}"
+          Try(listValue.asInstanceOf[java.util.Map[String, Object]]) match {
+            case Success(map) =>
+              map.entrySet().asScala foreach { entry => 
+                setProperties(s"$listName.${entry.getKey}", entry.getValue, properties)
+              }
+            case _ =>
+              setProperties(listName, listValue, properties)
+          }
+        }
+      case _ =>
+        Try(value.asInstanceOf[java.util.Map[String, Object]]) match {
+          case Success(map) =>
+            map.entrySet().asScala foreach { entry => 
+              setProperties(s"$name.${entry.getKey}", entry.getValue, properties)
+            }
+          case _ =>
+            properties.setProperty(name, value.toString)
+        }
     }
   }
 

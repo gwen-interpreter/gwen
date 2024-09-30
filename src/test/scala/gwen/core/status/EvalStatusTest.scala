@@ -95,6 +95,7 @@ Background: The tester
     featureSpec = Spec(
       featureSpec.feature,
       None,
+      None,
       featureSpec.scenarios map { scenario => 
         Scenario(
           scenario.tags,
@@ -134,6 +135,7 @@ Background: The tester
     featureSpec = Spec(
       featureSpec.feature,
       None,
+      None,
       featureSpec.scenarios map { scenario =>
         Scenario(
           scenario.tags,
@@ -172,6 +174,7 @@ Background: The tester
 
     featureSpec = Spec(
       featureSpec.feature,
+      None,
       None,
       featureSpec.scenarios map { scenario =>
         Scenario(
@@ -213,6 +216,7 @@ Background: The tester
 
     featureSpec = Spec(
       featureSpec.feature,
+      None,
       None,
       featureSpec.scenarios map { scenario =>
         Scenario(
@@ -261,6 +265,7 @@ Background: The tester
     
     featureSpec = Spec(
       featureSpec.feature,
+      None,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
@@ -327,6 +332,7 @@ Background: The tester
     featureSpec = Spec(
       featureSpec.feature,
       None,
+      None,
       featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
         Scenario(
@@ -391,6 +397,7 @@ Background: The tester
     
     featureSpec = Spec(
       featureSpec.feature,
+      None,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
@@ -463,6 +470,7 @@ Background: The tester
     
     featureSpec = Spec(
       featureSpec.feature,
+      None,
       None,
       featureSpec.scenarios.zipWithIndex map { zip =>
         val (scenario, scenarioIndex) = zip
