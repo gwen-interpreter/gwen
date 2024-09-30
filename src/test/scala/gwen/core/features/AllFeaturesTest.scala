@@ -38,7 +38,7 @@ class AllFeaturesTest extends BaseTest {
       val options = GwenOptions(
         batch = true,
         reportDir = Some(new File(s"target/reports/all-features/$level-level")),
-        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json, ReportFormat.results),
         features = List(new File("src/test/features")),
         settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
       )
@@ -60,7 +60,7 @@ class AllFeaturesTest extends BaseTest {
       val options = GwenOptions(
         batch = true,
         reportDir = Some(new File(s"target/reports/all-features-dry-run/$level-level")),
-        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json),
+        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json, ReportFormat.results),
         features = List(new File("src/test/features")),
         dryRun = true,
         parallel = true,

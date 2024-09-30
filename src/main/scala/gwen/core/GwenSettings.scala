@@ -16,9 +16,11 @@
 
 package gwen.core
 
+import gwen.core._
 import gwen.core.behavior.BehaviorMode
 import gwen.core.behavior.FeatureMode
 import gwen.core.state.StateLevel
+import gwen.core.report.results.ResultFile
 
 import scala.util.Try
 
@@ -393,6 +395,13 @@ object GwenSettings {
       }
     } getOrElse {
       Level.WARNING
+    }
+  }
+
+  def `gwen.report.results.files`(options: GwenOptions): List[ResultFile] = {
+    val fileSettings = Settings.findAll(_.startsWith(ResultFile.SettingsKey))
+    fileSettings.filter(_._1.endsWith(".file")).keys.map(_.drop(ResultFile.SettingsKey.length + 1).dropRight(".file".length)).toList.sorted map { id => 
+      ResultFile(id, fileSettings, options)
     }
   }
 

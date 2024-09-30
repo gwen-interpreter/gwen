@@ -17,6 +17,7 @@
 package gwen.core.eval
 
 import gwen.core._
+import gwen.core.Errors.GwenException
 import gwen.core.Settings
 import gwen.core.data.DataSource
 import gwen.core.init.ProjectInitialiser
@@ -49,7 +50,6 @@ import scala.util.chaining._
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
 import java.util.Date
-import gwen.core.Errors.MalformedDataSourceException
 
 /**
   * Launches a gwen engine.
@@ -130,14 +130,15 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       }
     } catch {
       case e: Throwable =>
-        val failed = Failed(System.nanoTime - startNanos, e)
+        val failure = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
-          if (e.isInstanceOf[MalformedDataSourceException]) {
-            logger.error(e.getMessage)  
-          } else {
-            logger.error(failed.message, e)
+          if (!e.isInstanceOf[GwenException]) {
+            logger.error(e.getMessage, e)
           }
-          failed
+          val consoleReporter = new ConsoleReporter(options)
+          logger.error(s"${e.getClass.getSimpleName}:\n\n" + consoleReporter.printError(failure))
+          println()
+          failure
         } else {
           throw e
         }
@@ -177,13 +178,14 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
         }
       } match {
         case Success(s) =>
-          val reports = reportGenerators flatMap { reportGenerator => 
-            reportGenerator.close(engine, s.evalStatus) flatMap { report =>
-              Some((reportGenerator.format, report))
-            }
+          val reportResults = reportGenerators map { reportGenerator => 
+            reportGenerator.close(engine, s.evalStatus)
           }
-          consoleReporter foreach { _.printSummary(s.withReports(reports)) }
+          consoleReporter foreach { _.printSummary(s.withReports(reportResults)) }
           printSummaryStatus(options, s)
+          reportResults.flatMap(_.error).headOption foreach { e => 
+            throw e
+          } 
           s.evalStatus
         case Failure(f) =>
           reportGenerators.foreach(_.close(engine, Failed(System.nanoTime - start, f)))

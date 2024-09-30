@@ -166,7 +166,7 @@ Feature: Gwen
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-    Background: A butterfly might impact a tornado + Data table record 1 of 2
+    Background: A butterfly might impact a tornado + Data table record [1 of 2]
 
       The change in atmosphere when a butterfly flaps
       its wings could alter the path of a tornado
@@ -180,7 +180,7 @@ Feature: Gwen
        Then the change in atmosphere might seam neglibile
         But it could alter the path of the tornado
 
-    Example: Join two strings together -- Basic string concatenation
+    Example: Join two strings together -- Basic string concatenation [1 of 2]
 
       This scenario is evaluated at the point where the outline is declared
 
@@ -189,7 +189,7 @@ Feature: Gwen
        When I join the two strings
        Then the result should be "howdydoo"
 
-    Background: A butterfly might impact a tornado + Data table record 2 of 2
+    Background: A butterfly might impact a tornado + Data table record [2 of 2]
 
       The change in atmosphere when a butterfly flaps
       its wings could alter the path of a tornado
@@ -203,7 +203,7 @@ Feature: Gwen
        Then the change in atmosphere might seam neglibile
         But it could alter the path of the tornado
 
-    Example: Join two strings together -- Basic string concatenation
+    Example: Join two strings together -- Basic string concatenation [2 of 2]
 
       This scenario is evaluated at the point where the outline is declared
 

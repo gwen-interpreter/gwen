@@ -42,7 +42,7 @@ class TagFilter(tagFilters: List[(Tag, Boolean)]) {
   def filter(spec: Spec): Option[Spec] = { 
     if (spec.isMeta) Some(spec) else {
       def scenarios = filterScenarios(spec, spec.scenarios)
-      def rules = spec.rules map { rule =>
+      def rules = filterRules(spec, spec.rules) map { rule =>
         rule.copy(withScenarios = filterScenarios(spec, rule.scenarios))
       }
       if (spec.steps.nonEmpty && scenarios.isEmpty && rules.forall(_.scenarios.isEmpty)) {
@@ -54,6 +54,19 @@ class TagFilter(tagFilters: List[(Tag, Boolean)]) {
       }
     }
   }
+
+  private def filterRules(spec: Spec, rules: List[Rule]): List[Rule] = {
+    val filters = tagFilters ++ TagFilter.DefaultFilters
+    rules flatMap { rule =>
+      val effectiveTags = spec.feature.tags ++ rule.tags
+      val (includes, excludes) = filters.partition(_._2) match { case(x, y) => (x.map(_._1.name ), y.map(_._1.name ))}
+      if (isSatisfied(effectiveTags, includes, excludes) || isSatisfied(effectiveTags, includes, excludes)) {
+        Some(rule)
+      }
+      else None
+    }
+  }
+
 
   private def filterScenarios(spec: Spec, scenarios: List[Scenario]): List[Scenario] = {
     val filters = tagFilters ++ TagFilter.DefaultFilters

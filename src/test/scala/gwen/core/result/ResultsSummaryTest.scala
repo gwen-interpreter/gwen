@@ -59,7 +59,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 1 meta
     val meta1 = Spec(
-      Feature(None, "meta1", Nil), None, List(
+      Feature(None, "meta1", Nil), None, None, List(
         Scenario(List[Tag](), "metaScenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "meta step 1", Passed2),
           Step(StepKeyword.When.toString, "meta step 2", Passed1),
@@ -73,7 +73,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
         
     // add 1 Passed scenario
     val feature1 = Spec(
-      Feature(None, "feature1", Nil), None, List(
+      Feature(None, "feature1", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
@@ -105,7 +105,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 1 failed scenario
     val feature2 = Spec(
-      Feature(None, "feature2", Nil), None, List(
+      Feature(None, "feature2", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Failed3),
@@ -128,7 +128,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 2 Passed scenarios
     val feature3 = Spec(
-      Feature(None, "feature3", Nil), None, List(
+      Feature(None, "feature3", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),
@@ -156,7 +156,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 1 skipped scenario
     val feature4 = Spec(
-      Feature(None, "feature4", Nil), None, List(
+      Feature(None, "feature4", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Skipped),
           Step(StepKeyword.When.toString, "step 2", Skipped),
@@ -179,7 +179,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 1 pending scenario
     val feature5 = Spec(
-      Feature(None, "feature5", Nil), None, List(
+      Feature(None, "feature5", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Pending),
           Step(StepKeyword.When.toString, "step 2", Pending))
@@ -201,7 +201,7 @@ class ResultsSummaryTest extends BaseTest with Matchers with TestModel {
     
     // add 4 Passed and 1 failed scenario
     val feature6 = Spec(
-      Feature(None, "feature6", Nil), None, List(
+      Feature(None, "feature6", Nil), None, None, List(
         Scenario(List[Tag](), "scenario1", Nil, None, List(
           Step(StepKeyword.Given.toString, "step 1", Passed2),
           Step(StepKeyword.When.toString, "step 2", Passed1),

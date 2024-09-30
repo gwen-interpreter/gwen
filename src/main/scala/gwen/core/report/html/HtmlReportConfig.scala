@@ -30,4 +30,4 @@ object HtmlReportConfig extends ReportConfig(
   (options, info) => new HtmlReportGenerator(options, info), 
   options => options.reportDir.map(dir => new File(dir, "html")),
   (spec: Spec, _) =>
-    Some(spec.specFile.map(_.getName).getOrElse(spec.feature.name)))
+    Some(spec.specFile.map(_.getName).getOrElse(spec.feature.displayName)))

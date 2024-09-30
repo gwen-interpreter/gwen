@@ -17,6 +17,7 @@
 package gwen.core.eval.engine
 
 import gwen.core.Errors
+import gwen.core.ImplicitValueKeys
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
@@ -42,7 +43,7 @@ import gwen.core.status.StatusKeyword
 /**
   * StepDef evaluation engine.
   */
-trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
+trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging with ImplicitValueKeys {
   engine: EvalEngine[T] =>
 
   // Lock for managing synchronized StepDefs
@@ -107,9 +108,10 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       ctx.stepDefScope.push(
         stepDef.name,
         List(
-          ("gwen.stepDef.name", stepDef.name),
-          ("gwen.stepDef.eval.status.keyword", StatusKeyword.Passed.toString),
-          ("gwen.stepDef.eval.start.msecs", new Date().getTime().toString),
+          (`gwen.stepDef.name`, stepDef.name),
+          (`gwen.stepDef.displayName`, stepDef.displayName),
+          (`gwen.stepDef.eval.status.keyword`, StatusKeyword.Passed.toString),
+          (`gwen.stepDef.eval.start.msecs`, new Date().getTime().toString),
         )
       )
       try {
@@ -142,6 +144,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   }
 
   private def evaluateStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
+    ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
     beforeStepDef(stepDef, ctx)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
@@ -170,6 +173,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       withSteps = steps,
       withExamples = examples)
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+    ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
     afterStepDef(eStepDef, ctx)
     step.copy(
       withStepDef = Some(eStepDef),

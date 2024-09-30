@@ -71,7 +71,7 @@ object GwenREPL {
   *
   * @author Branko Juric
   */
-class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
+class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends ImplicitValueKeys {
 
   private var paste: Option[List[String]] = None
   private var pastingDocString: Boolean = false
@@ -423,19 +423,19 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) {
   private def evaluate(input: String): String = {
     input.trim match {
       case r"^Feature:(.*)$$$name" =>
-        ctx.topScope.set("gwen.feature.name", name.trim)
+        ctx.topScope.set(`gwen.feature.name`, name.trim)
         s"[gwen.feature.name = ${name.trim}]"
       case r"^Rule:(.*)$$$name" =>
-        ctx.topScope.set("gwen.rule.name", name.trim)
+        ctx.topScope.set(`gwen.rule.name`, name.trim)
         s"[gwen.rule.name = ${name.trim}]"
       case r"^(Scenario|Example):(.*)$$$name" =>
         if (StateLevel.scenario.equals(ctx.stateLevel)) {
           ctx.reset(StateLevel.scenario)
         }
-        ctx.topScope.set("gwen.scenario.name", name.trim)
+        ctx.topScope.set(`gwen.scenario.name`, name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
-        ctx.topScope.set("gwen.scenario.name", name.trim)
+        ctx.topScope.set(`gwen.scenario.name`, name.trim)
         s"[gwen.scenario.name = ${name.trim}]"
       case r"""^#\s*language:\s*(\S+)$$$language""" =>
         Dialect.setLanguage(language)

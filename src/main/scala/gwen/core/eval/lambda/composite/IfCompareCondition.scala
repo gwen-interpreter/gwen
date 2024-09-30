@@ -62,7 +62,7 @@ class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operato
     val iStep = step.copy(withEvalStatus = Pending)
     val ifTag = Tag(Annotations.If)
     val tags = List(Tag(Annotations.Synthetic), ifTag, Tag(Annotations.StepDef))
-    val iStepDef = Scenario(None, tags, ifTag.toString, cond, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
+    val iStepDef = Scenario(None, tags, ifTag.toString, cond, None, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     val attachments = ctx.popAttachments()
     ctx.evaluate(sdCall()) {

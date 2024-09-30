@@ -16,6 +16,7 @@
 
 package gwen.core.node
 
+import gwen.core.Occurrence
 import gwen.core.UUIDGenerator
 import gwen.core.node.NodeType
 import gwen.core.status.EvalStatus
@@ -40,14 +41,6 @@ trait GwenNode {
   final def isLast: Boolean = {
     siblingsIn(this).lastOption.map(_ == this).getOrElse(false)
   }
-  
-  final def occurrenceIn(parent: GwenNode): Option[Int] = { 
-    indexIn(
-      siblingsIn(parent) filter { that => 
-        that.name.size > 0 && that.name == this.name
-      }
-    ) map (_ + 1)
-  }
 
   private def indexIn(nodes: List[GwenNode]): Option[Int] = {
     nodes.zipWithIndex.collectFirst {
@@ -55,6 +48,6 @@ trait GwenNode {
         Some(idx)
     } getOrElse None
   }
-
+  
   override def toString: String = name
 }

@@ -88,7 +88,7 @@ class RuleTest extends BaseTest with Matchers with GherkinParser {
     assertRule(s"Rule:\n\n$background", "", Nil, true, 0)
       
     assertRule(s"Rule:name\n$background\n$scenario1", "name", Nil, true, 1)
-    assertRule(s"Rule: name\n$background\n$scenario1", "name", Nil, true, 1)
+    assertRule(s"@Ignore\nRule: name\n$background\n$scenario1", "name", Nil, true, 1, List("Ignore"))
     
     assertRule(s"Rule:name\nI am a test scenario\n$background\n$scenario1", "name", List("I am a test scenario"), true, 1)
     assertRule(s"Rule: name\nI am another\nmultiline\n\nscenario\n$background\n$scenario1", "name", List("I am another", "multiline", "", "scenario"), true, 1)
@@ -113,8 +113,9 @@ class RuleTest extends BaseTest with Matchers with GherkinParser {
     
   }
 
-  private def assertRule(ruleStr: String, name: String, description: List[String], hasBackground: Boolean, noOfScenarios: Int): Unit = {
+  private def assertRule(ruleStr: String, name: String, description: List[String], hasBackground: Boolean, noOfScenarios: Int, tags: List[String] = Nil): Unit = {
     def rule = parse(ruleStr).get
+    rule.tags.map(_.name) should be (tags)
     rule.name should be (name)
     rule.description should be (description)
     rule.background.nonEmpty should be (hasBackground)

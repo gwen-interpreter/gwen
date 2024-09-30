@@ -16,8 +16,10 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.Occurrence
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.RecurringNode
 import gwen.core.node.SourceRef
 import gwen.core.behavior.BehaviorType
 import gwen.core.status._
@@ -35,6 +37,7 @@ import java.io.File
   * @param tags list of tags
   * @param keyword the Gherkin keyword
   * @param name the scenario name
+  * @param occurrence the data feed occurrence
   * @param description optional description
   * @param background optional background
   * @param steps list of scenario steps
@@ -46,12 +49,13 @@ case class Scenario(
     tags: List[Tag],
     keyword: String,
     name: String,
+    occurrence: Option[Occurrence],
     description: List[String],
     background: Option[Background],
     steps: List[Step],
     examples: List[Examples],
     override val params: List[(String, String)],
-    override val callerParams: List[(String, String)]) extends GherkinNode {
+    override val callerParams: List[(String, String)]) extends GherkinNode with RecurringNode {
 
   override val nodeType: NodeType = {
     if (isStepDef) {
@@ -133,13 +137,14 @@ case class Scenario(
       withTags: List[Tag] = tags,
       withKeyword: String = keyword,
       withName: String = name,
+      withOccurrence: Option[Occurrence] = occurrence,
       withDescription: List[String] = description,
       withBackground: Option[Background] = background,
       withSteps: List[Step] = steps,
       withExamples: List[Examples] = examples,
       withParams: List[(String, String)] = params,
       withCallerParams: List[(String, String)] = callerParams): Scenario = {
-    Scenario(withSourceRef, withTags, withKeyword, withName, withDescription, withBackground, withSteps, withExamples, withParams, withCallerParams)
+    Scenario(withSourceRef, withTags, withKeyword, withName, withOccurrence, withDescription, withBackground, withSteps, withExamples, withParams, withCallerParams)
   }
 
   def withCallerParams(caller: GwenNode): Scenario = {
@@ -189,6 +194,7 @@ object Scenario {
       tags,
       if (verbatim) scenario.getKeyword else keywordFor(tags, scenario.getKeyword),
       scenario.getName,
+      None,
       Option(scenario.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
       None,
       Option(scenario.getSteps).map(_.asScala.toList).getOrElse(Nil).map { case s => Step(file, s) },

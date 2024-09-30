@@ -16,6 +16,7 @@
 
 package gwen.core.eval.lambda.unit
 
+import gwen.core.ImplicitValueKeys
 import gwen.core.Assert
 import gwen.core.Errors
 import gwen.core.ValueLiteral
@@ -32,7 +33,7 @@ import scala.util.chaining._
 import scala.util.Try
 import gwen.core.Formatting
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStep[T] {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStep[T] with ImplicitValueKeys {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -58,7 +59,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
                 Assert.formatFailed(displayName, expected, actualValue, negate, op),
                 step.assertionMode)
             } catch {
-              case gae: Errors.GwenAssertionError if source == "gwen.accumulated.errors" =>
+              case gae: Errors.GwenAssertionError if source == `gwen.accumulated.errors` =>
                 Errors.accumulatedAssertionError(gae)
             }
           case Failure(error) =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-package gwen.core.state
+package gwen.core.node
 
-enum ReservedParam:
-  case `iteration.number`
+import gwen.core.Occurrence
+
+trait RecurringNode extends GwenNode {
+
+  val occurrence: Option[Occurrence]
+
+  def occurrenceNo: Option[Int] = occurrence.map(_.number)
+  def displayName = { 
+    occurrence.orElse(occurrenceNo.map(n => s"[$n]")) map { occ =>
+      s"$name $occ"
+    } getOrElse(name)
+  }
+
+}
+
+  

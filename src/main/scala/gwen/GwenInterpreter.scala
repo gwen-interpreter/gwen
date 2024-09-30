@@ -23,6 +23,7 @@ import gwen.core.eval.GwenLauncher
 import gwen.core.eval.GwenREPL
 import gwen.core.init.NoopProjectInitialiser
 import gwen.core.node.gherkin.Dialect
+import gwen.core.report.console.ConsoleReporter
 import gwen.core.state.EnvState
 import gwen.core.status.Failed
 import gwen.core.status.Pending
@@ -68,8 +69,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     val start = System.nanoTime
+    val options = init(GwenOptions(args))
     try {
-      val options = init(GwenOptions(args))
       logger.info("Initialising settings")
       Settings.init(options.settingsFiles*)
       GwenSettings.check()
@@ -80,12 +81,12 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       case _: Errors.GwenInterruptException =>
         System.exit(1) // user cntl-c initiated exit
       case e: Throwable =>
-        val errMsg = s"${Failed(System.nanoTime - start, e).message}"
-        if (e.isInstanceOf[Errors.GwenException]) {
-          logger.error(errMsg)
-        } else {
-          logger.error(errMsg, e)
+        val failure = Failed(System.nanoTime - start, e)
+        if (!e.isInstanceOf[Errors.GwenException]) {
+          logger.error(failure.message, e)
         }
+        val consoleReporter = new ConsoleReporter(options)
+        logger.error(s"${e.getClass.getSimpleName}:\n\n" + consoleReporter.printError(failure))
         println()
         System.exit(1)
     }

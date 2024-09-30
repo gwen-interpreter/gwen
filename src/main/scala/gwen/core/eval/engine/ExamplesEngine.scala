@@ -33,6 +33,9 @@ import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
 import gwen.core.status.Passed
 import gwen.core.status.Pending
+import gwen.core.status.StatusKeyword
+
+import java.util.Date
 
 import scala.util.chaining._
 
@@ -46,17 +49,31 @@ import java.io.File
 trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {
+  def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {    
     examples map { exs =>
-      if (exs.scenarios.isEmpty) {
-        transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
-      } else {
-        beforeExamples(exs, ctx)
-        exs.copy(
-          withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
-        ) tap { exs =>
-          afterExamples(exs, ctx)
+      ctx.examplesScope.push(
+        exs.name,
+        List(
+          (`gwen.examples.name`, exs.name),
+          (`gwen.examples.eval.status.keyword`, StatusKeyword.Passed.toString),
+          (`gwen.examples.eval.start.msecs`, new Date().getTime().toString),
+        )
+      )
+      try {
+        if (exs.scenarios.isEmpty) {
+          transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
+        } else {
+          ctx.topScope.examplesScope.set(`gwen.examples.eval.started`, new Date().toString)
+          beforeExamples(exs, ctx)
+          exs.copy(
+            withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
+          ) tap { exs =>
+            ctx.topScope.examplesScope.set(`gwen.examples.eval.finished`, new Date().toString)
+            afterExamples(exs, ctx)
+          }
         }
+      } finally {
+        ctx.examplesScope.pop()
       }
     }
   }
@@ -119,7 +136,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         }
         val resultTable = (1L, header) :: (table0.tail filter { (rowNo, row) => 
           whereFilter map { js => 
-            val dataRec = DataRecord(dataSource, rowNo.toInt - 1, table0.size - 1, header zip row)
+            val dataRec = DataRecord(dataSource, Occurrence(rowNo.toInt - 1, table0.size - 1), header zip row)
             val js0 = dataRec.interpolate(js)
             val js1 = ctx.interpolateParams(js0)
             val javascript = ctx.interpolate(js1)
@@ -134,7 +151,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         } else {
           (resultTable, None)
         }
-        Some((Examples(outline.sourceRef, if (outline.isParallel) List(Tag(Annotations.Parallel)) else Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
+        Some((Examples(outline.sourceRef, if (outline.isParallel) List(Tag(Annotations.Parallel)) else Nil, FeatureKeyword.nameOf(FeatureKeyword.Examples), s"${outline.name} -- Data file: $filepath${prefix map { p => s", prefix: $p"} getOrElse ""}${whereFilter map { clause => s", where: $clause"} getOrElse ""}", Nil, finalTable, Some(file), Nil), background))
       } 
       else if (tag.name.equalsIgnoreCase(Annotations.Examples.toString)) {
         Errors.invalidTagError(s"""Invalid Examples tag syntax: $tag - correct syntax is @Examples('path/file.(csv|json)') or @Examples("path/file.(csv|json)") or @Examples(file='path/file.(csv|json)',where='javascript expression') or @Examples(file="path/file.(csv|json)",where="javascript expression")""")
@@ -173,7 +190,7 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         withSteps = step :: bg.steps
       )
     } getOrElse {
-      Background(None, Background.toString, "No data", Nil, List(step))
+      Background(None, Background.toString, "No data", None, Nil, List(step))
     }
     (emptyTable, Some(noDataBackground))
   }

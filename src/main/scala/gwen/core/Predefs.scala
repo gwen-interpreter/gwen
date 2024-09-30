@@ -64,6 +64,7 @@ extension [F <: File](file: F) {
   
   def writeText(text: String): File = writeTextToFile(text, append = false)
   def appendText(text: String): File = writeTextToFile(text, append = true)
+  def appendTextLine(text: String): File = writeTextToFile(text, append = false)
   private def writeTextToFile(text: String, append: Boolean): File =
     file tap { f =>
       f.newFileWriter(append) tap { fw =>
@@ -75,15 +76,20 @@ extension [F <: File](file: F) {
       }
     }
 
-  def writeNewLine(): File = writeNewLineToFile(append = false)
-  def appendNewLine(): File = writeNewLineToFile(append = true)
-  private def writeNewLineToFile(append: Boolean): File =
+  def writeLine(line: String): File = writeNewLineToFile(Some(line), append = false)
+  def appendLine(line: String): File = writeNewLineToFile(Some(line), append = true)
+  def writeNewLine(): File = writeNewLineToFile(None, append = false)
+  def appendNewLine(): File = writeNewLineToFile(None, append = true)
+  private def writeNewLineToFile(line: Option[String] = None, append: Boolean): File =
     file tap { f =>
       f.newFileWriter(append) tap { fw =>
         try {
           new PrintWriter(fw) tap { pw =>
             try {
-              pw.println()
+              line match {
+                case Some(l) => pw.println(l)
+                case None => pw.println()
+              }
             } finally {
               pw.close()
             }
@@ -222,7 +228,7 @@ object FileIO {
   def isFeatureOrMetaFile(file: File): Boolean = isFeatureFile(file) || isMetaFile(file)
   def isCsvFile(file: File): Boolean = hasFileExtension("csv", file)
   def isJsonFile(file: File): Boolean = hasFileExtension("json", file)
-  def hasFileExtension(extension: String, file: File): Boolean = !file.isDirectory && file.getName.endsWith(s".$extension")
+  def hasFileExtension(extension: String, file: File): Boolean = !file.isDirectory && file.getName.toLowerCase.endsWith(s".${extension.toLowerCase}")
   def recursiveScan(dir: File)(filter: File => Boolean): List[File] = {
     val files = dir.listFiles
     val filtered = files.filter(filter).toList

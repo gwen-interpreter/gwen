@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Branko Juric, Brady Wood
+ * Copyright 2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package gwen.core.report
+package gwen.core.report.results
 
-/**
-  * Supported report formats.
-  * 
-  * @author Branko Juric
-  */
-enum ReportFormat {
-  case html, slideshow, results, junit, json, rp, none
+import gwen.core.Errors
+import gwen.core.status.StatusKeyword
 
-  def isCliOption: Boolean = this != slideshow
-  def isFileSystemReport: Boolean = this != rp && this != none
+import java.io.File
+
+import scala.util.Try
+
+case class ResultField(name: String, ref: String, optional: Boolean)
+
+object ResultField {
+  def validateSettingName(name: String): Unit = {
+    Try(ResultFieldAtts.valueOf(name)) getOrElse {
+      Errors.illegalSettingAttributeError(name, "gwen.report.results.fields", ResultFieldAtts.values.mkString(", "))
+    }
+  }
 }
 
+enum ResultFieldAtts:
+  case field, ref, optional, excludes

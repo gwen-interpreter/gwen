@@ -51,7 +51,7 @@ trait SlideshowFormatter extends ReportFormatter {
     if (!GwenSettings.`gwen.report.slideshow.create` || screenshots.isEmpty || result.isMeta) None
     else {
       val reportDir = HtmlSlideshowConfig.reportDir(options).get
-      val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.name)
+      val featureName = result.spec.specFile.map(_.getPath()).getOrElse(result.spec.feature.displayName)
       val rootPath = relativePath(reportFiles.head, reportDir).filter(_ == File.separatorChar).flatMap(_ => "../")
       val summaryCrumb = ("Summary", new File(s"$rootPath/html", "index.html"))
       val dir = HtmlReportConfig.createReportDir(options, result.spec, unit.dataRecord).get

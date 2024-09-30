@@ -25,8 +25,11 @@ import gwen.core.report.rp.RPConfig.StepDefFormat
 import gwen.core.report.rp.RPConfig.TestCaseIdKeys
 import gwen.core.report.rp.RPSettings
 import gwen.core.state.StateLevel
+import gwen.core.status.StatusKeyword
 
 import org.scalatest.matchers.should.Matchers
+
+import java.io.File
 import java.util.logging.Level
 
 class GwenSettingsTest extends BaseTest with Matchers {
@@ -68,6 +71,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records` should be (Integer.MAX_VALUE)
       GwenSettings.`gwen.error.messages.inline.locators` should be (false)
       GwenSettings.`gwen.logLevel.deprecations` should be (Level.WARNING)
+      GwenSettings.`gwen.report.results.files`(GwenOptions()).length should be (0)
     }
   }
 

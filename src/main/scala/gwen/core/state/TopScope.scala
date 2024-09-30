@@ -34,7 +34,7 @@ import scala.jdk.CollectionConverters._
   *
   * @author Branko Juric
   */
-class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
+class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) with ImplicitValueKeys {
 
   override val isTopScope = true
 
@@ -57,6 +57,11 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     *  Provides access to the scenario scope.
     */
   val scenarioScope = TransientStack.scenarioStack
+
+  /**
+    *  Provides access to the rule scope.
+    */
+  val examplesScope = TransientStack.examplesStack
 
   /**
     *  Provides access to the stepDef scope.
@@ -147,22 +152,24 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
   }
 
   def initStart(timeMsecs: Long): Unit = {
-    featureScope.set("gwen.feature.eval.start.msecs", timeMsecs.toString)
+    featureScope.set(`gwen.feature.eval.start.msecs`, timeMsecs.toString)
   }
   
   def setImplicitAtts(spec: Option[Spec], status: EvalStatus, force: Boolean): Unit = {
     spec foreach { s => 
-      featureScope.set("gwen.feature.name", s.feature.name)
+      featureScope.set(`gwen.feature.name`, s.feature.name)
+      featureScope.set(`gwen.feature.displayName`, s.feature.displayName)
       s.specFile foreach { file =>
-        featureScope.set("gwen.feature.file.name", file.getName)
-        featureScope.set("gwen.feature.file.simpleName", file.simpleName)
-        featureScope.set("gwen.feature.file.path", file.getPath)
-        featureScope.set("gwen.feature.file.absolutePath", file.getAbsolutePath)
+        featureScope.set(`gwen.feature.file.name`, file.getName)
+        featureScope.set(`gwen.feature.file.simpleName`, file.simpleName)
+        featureScope.set(`gwen.feature.file.path`, file.getPath)
+        featureScope.set(`gwen.feature.file.absolutePath`, file.getAbsolutePath)
       }
     }
     featureScope.setStatus(status, force)
     ruleScope.setStatus(status, false)
     scenarioScope.setStatus(status, false)
+    examplesScope.setStatus(status, false)
     stepDefScope.setStatus(status, false)
   }
 
@@ -170,27 +177,28 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) {
     rec.data foreach { case (name, value) =>
       set(name, value)
     }
-    set("data record number", rec.recordNo.toString)
-    set("data.record.number", rec.recordNo.toString)
-    set("data.record.index", (rec.recordNo - 1).toString)
+    set(`data record number`, rec.occurrence.number.toString)
+    set(`data.record.number`, rec.occurrence.number.toString)
+    set(`data.record.index`, rec.occurrence.index.toString)
   }
 
   override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))
   override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
 
   private def getImplicitOpt(name: String): Option[String] = {
-    if (name.startsWith("gwen.feature.") || name.startsWith("gwen.eval.")) featureScope.getOpt(name)
-    else if (name.startsWith("gwen.scenario.")) scenarioScope.getOpt(name)
-    else if (name.startsWith("gwen.stepDef.")) stepDefScope.getOpt(name)
-    else if (name.startsWith("gwen.rule.")) ruleScope.getOpt(name)
-    else if (name == "gwen.accumulated.errors") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
+    if (name.startsWith(`gwen.feature.`) || name.startsWith(`gwen.eval.`)) featureScope.getOpt(name)
+    else if (name.startsWith(`gwen.scenario.`)) scenarioScope.getOpt(name)
+    else if (name.startsWith(`gwen.examples.`)) examplesScope.getOpt(name)
+    else if (name.startsWith(`gwen.stepDef.`)) stepDefScope.getOpt(name)
+    else if (name.startsWith(`gwen.rule.`)) ruleScope.getOpt(name)
+    else if (name == `gwen.accumulated.errors`) getObject(`gwen.accumulated.errors`).map(_.asInstanceOf[List[String]]) map { errs => 
       errs match {
         case Nil => ""
         case err :: Nil => err
         case _ => s"${errs.size} errors:\n${errs.zipWithIndex.map { (e, i) => s"(${i+1}) $e" } mkString "\n" }"
       }
     } orElse(Some(""))
-    else if (name == "gwen.accumulated.errors:JSONArray") getObject("gwen.accumulated.errors").map(_.asInstanceOf[List[String]]) map { errs => 
+    else if (name == `gwen.accumulated.errors:JSONArray`) getObject(`gwen.accumulated.errors`).map(_.asInstanceOf[List[String]]) map { errs => 
       JSONArray.toJSONString(errs.asJava)
     } orElse(Some(JSONArray.toJSONString(Nil.asJava)))
     else None

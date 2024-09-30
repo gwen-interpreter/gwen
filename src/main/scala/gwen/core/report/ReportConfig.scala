@@ -46,7 +46,7 @@ class ReportConfig(
         }
       case None =>
         reportDir map { dir =>
-          dir.getPath + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.name)
+          dir.getPath + File.separator + dataRecordDir + FileIO.encodeDir(spec.feature.displayName)
         }
     }
     reportPath map { path => new File(path) }

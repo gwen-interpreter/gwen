@@ -16,8 +16,10 @@
 
 package gwen.core.node.gherkin
 
+import gwen.core.Occurrence
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
+import gwen.core.node.RecurringNode
 import gwen.core.node.SourceRef
 
 import scala.jdk.CollectionConverters._
@@ -35,6 +37,7 @@ import java.io.File
   * @param tags list of tags
   * @param keyword the Gherkin keyword for this Feature
   * @param name the feature name
+  * @param occurrence the data feed occurrence
   * @param description optional description
   */
 case class Feature(
@@ -43,7 +46,8 @@ case class Feature(
     tags: List[Tag],
     keyword: String, 
     name: String, 
-    description: List[String]) extends GherkinNode {
+    occurrence: Option[Occurrence],
+    description: List[String]) extends GherkinNode with RecurringNode {
 
   override val nodeType: NodeType = NodeType.Feature
 
@@ -62,8 +66,9 @@ case class Feature(
       withTags: List[Tag] = tags,
       withKeyword: String = keyword, 
       withName: String = name, 
+      withOccurrence: Option[Occurrence] = occurrence,
       withDescription: List[String] = description): Feature = {
-    Feature(withLanguage, withSourceRef, withTags, withKeyword, withName, withDescription)
+    Feature(withLanguage, withSourceRef, withTags, withKeyword, withName, withOccurrence, withDescription)
   }
 
   /**
@@ -90,6 +95,7 @@ object Feature {
       Option(feature.getTags).map(_.asScala.toList).getOrElse(Nil) map { t => Tag(file, t)  },
       feature.getKeyword,
       feature.getName, 
+      None,
       Option(feature.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil).distinct
     )
   }

@@ -17,6 +17,7 @@
 package gwen.core.data
 
 import gwen.core.Interpolator
+import gwen.core.Occurrence
 
 import java.io.File
 
@@ -24,17 +25,15 @@ import java.io.File
   * Captures a data record used to initialise feature level data bindings
   * 
   *  @param dataSource the data source
-  *  @param recordNo the current data record number
-  *  @param totalRecs the total number of records
+  *  @param occurrence the data record occurrence
   *  @param data the current data  
   */
-class DataRecord(val dataSource: DataSource, val recordNo: Int, val totalRecs: Int, val data: List[(String, String)]) {
-  val descriptor: String = s"${recordNo} of ${totalRecs}"
+class DataRecord(val dataSource: DataSource, val occurrence: Occurrence, val data: List[(String, String)]) {
   private lazy val interpolator = new Interpolator( name => data.filter(_._1 == name).headOption.map(_._2) )
   def interpolate(source: String): String = interpolator.interpolate(source)
   def interpolateLenient(source: String): String = interpolator.lenient.interpolate(source)
   def interpolateStrict(source: String): String = interpolator.strict.interpolate(source)
-  override def toString = s"DataRecord(${dataSource.dataFile.getPath}[$recordNo])"
+  override def toString = s"DataRecord(${dataSource.dataFile.getPath}$occurrence)"
 }
 
 object DataRecord {

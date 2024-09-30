@@ -15,6 +15,7 @@
  */
 package gwen.core.node.gherkin.table
 
+import gwen.core.ImplicitValueKeys
 import gwen.core.state.ScopedData
 
 /**
@@ -23,7 +24,7 @@ import gwen.core.state.ScopedData
   * @param records list of records containing the data
   * @param names list of data element names
   */
-class FlatTable(val tableType: TableType, val records: List[List[String]], val names: List[String]) extends DataTable {
+class FlatTable(val tableType: TableType, val records: List[List[String]], val names: List[String]) extends DataTable with ImplicitValueKeys {
 
   /**
     * Binds each data element to a new table scope for accessing the values.
@@ -49,8 +50,8 @@ class FlatTable(val tableType: TableType, val records: List[List[String]], val n
     override def isEmpty: Boolean = records.isEmpty
     override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
       (
-        ("record.index", s"$recordIndex") :: (
-          ("record.number", s"${recordIndex + 1}") :: (
+        (`record.index`, s"$recordIndex") :: (
+          (`record.number`, s"${recordIndex + 1}") :: (
             names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
               (s"name[${nameIndex + 1}]", name)
             }

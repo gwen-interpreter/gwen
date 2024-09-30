@@ -44,7 +44,7 @@ object EvalEngine {
   *
   * @author Branko Juric
   */
-abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with UnitEngine[T] with StepTranslator[T] with GwenInfo {
+abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with UnitEngine[T] with StepTranslator[T] with GwenInfo with ImplicitValueKeys {
 
   /**
     * Initialises the engine and returns a new evaluation context.
@@ -292,7 +292,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case "I reset accumulated errors" =>
         new ResetAccumulatedErrors()
       case "there should be no accumulated errors" =>
-        new Compare("gwen.accumulated.errors", "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"), false, false)
+        new Compare(`gwen.accumulated.errors`, "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"), false, false)
 
       case _ =>
         Errors.undefinedStepError(step)

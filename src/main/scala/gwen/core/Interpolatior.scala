@@ -88,7 +88,7 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
     }
   }
 
-  private def restoreUnresolved(source: String): String = {
+  def restoreUnresolved(source: String): String = {
     source match {
       case Interpolator.unresolvedPropertySyntax(prefix, p, s) => 
         val (property, suffix) = balance('{', '}', p, s)

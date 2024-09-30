@@ -54,10 +54,11 @@ trait SpecNormaliser extends BehaviorRules {
       (
         dataRecord map { record =>
           spec.feature.copy(
-            withName = s"${spec.feature.name}${if (spec.isMeta) "" else s" [${record.descriptor}]"}",
+            withOccurrence = if (spec.isMeta) None else Some(record.occurrence)
           )
         } getOrElse spec.feature
       ).interpolate(interpolator),
+      dataRecord.map(_.occurrence),
       None,
       dataRecord.map(expandDataScenarios(scenarios, _, spec.background, options)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, options)),
       spec.rules map { rule =>
@@ -85,7 +86,7 @@ trait SpecNormaliser extends BehaviorRules {
   }
 
   private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], options: GwenOptions): List[Scenario] = {
-    val dataBg = dataBackground(dataRecord.data, background, dataRecord.recordNo, dataRecord.totalRecs, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
+    val dataBg = dataBackground(dataRecord.data, background, dataRecord.occurrence, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
     expandScenarios(scenarios, Some(dataBg), Some(dataRecord), options)
   }
 
@@ -119,15 +120,16 @@ trait SpecNormaliser extends BehaviorRules {
     val normalisedOutline = outline.copy(
       withTags = filterParallelTags(outline.tags, options),
       withBackground = None,
-      withExamples = outline.examples.zipWithIndex map { case (exs, tableIndex) =>
+      withExamples = outline.examples map { exs =>
         val names = exs.table.head._2
         exs.copy(
           withTags = filterParallelTags(exs.tags, options),
           withScenarios = exs.table.tail.zipWithIndex.map { case ((rowLineNo, values), tableIndex) =>
+            val occurrence = Occurrence(tableIndex + 1, exs.table.tail.size)
             val params: List[(String, String)] = names zip values
             val normalisedBackground = {
               if (GwenSettings`gwen.auto.bind.tableData.outline.examples`) {
-                Some(dataBackground(params, background, tableIndex + 1, exs.table.tail.size, exs.dataFile, interpolator))
+                Some(dataBackground(params, background, occurrence, exs.dataFile, interpolator))
               } else background
             }
             val outlineTags = outline.tags.filter(t => t.name != Annotations.StepDef.toString && !t.name.startsWith(Annotations.Examples.toString)).map(_.interpolate(interpolator))
@@ -138,7 +140,8 @@ trait SpecNormaliser extends BehaviorRules {
               },
               filterParallelTags(tags, options),
               if (FeatureKeyword.isScenarioTemplate(outline.keyword)) FeatureKeyword.nameOf(FeatureKeyword.Example) else FeatureKeyword.nameOf(FeatureKeyword.Scenario),
-              s"${resolveParams(interpolator.apply(outline.name), params)._1}${if (exs.name.length > 0) s" -- ${interpolator.apply(exs.name)}" else ""}",
+              s"${resolveParams(interpolator.apply(outline.name), params)._1}${if (exs.name.length > 0 && !exs.name.contains(" -- ")) s" -- ${interpolator.apply(exs.name)}" else ""}",
+              Some(occurrence),
               outline.description map { line =>
                 val iLine = interpolator.apply(line)
                 resolveParams(iLine, params)._1
@@ -200,7 +203,7 @@ trait SpecNormaliser extends BehaviorRules {
     }
   }
 
-  private def dataBackground(data: List[(String, String)], background: Option[Background], recordNo: Int, totalRecords: Int, dataFile: Option[File], interpolator: String => String): Background = {
+  private def dataBackground(data: List[(String, String)], background: Option[Background], occurrence: Occurrence, dataFile: Option[File], interpolator: String => String): Background = {
     val noData = background.map(_.isNoData).getOrElse(false)
     val dataTag = if (noData) Tag(Annotations.NoData) else Tag(Annotations.Data)
     val dataSteps = data.zipWithIndex map { case ((name, value), index) =>
@@ -222,7 +225,7 @@ trait SpecNormaliser extends BehaviorRules {
         None 
       }
       else {
-        Some(s"${if (dataFile.nonEmpty) "Input data" else "Data table"} record $recordNo of $totalRecords")
+        Some(s"${if (dataFile.nonEmpty) "Input data" else "Data table"} record")
       }
     }
     background match {
@@ -240,6 +243,7 @@ trait SpecNormaliser extends BehaviorRules {
           bg.sourceRef,
           bg.keyword,
           s"${bg.name}${descriptor.map(d => s" + $d").getOrElse("")}",
+          Some(occurrence),
           bg.description ++ description,
           if (noData) bgSteps ++ dataSteps else dataSteps ++ bgSteps
         ).interpolate(interpolator)
@@ -247,7 +251,8 @@ trait SpecNormaliser extends BehaviorRules {
         Background(
           None,
           FeatureKeyword.nameOf(FeatureKeyword.Background),
-          descriptor.getOrElse("No data"),
+          descriptor.getOrElse("[No data]"),
+          Some(occurrence),
           description,
           dataSteps.map(_.copy()))
     }

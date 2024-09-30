@@ -36,7 +36,7 @@ object JsonReportConfig extends ReportConfig(
   (spec: Spec, dataRecord: Option[DataRecord]) => {
     val parentDirPath = spec.specFile.flatMap(f => Option(f.getParentFile)).map(_.getPath).getOrElse("")
     val dataRecNo = ReportGenerator.encodeDataRecordNo(dataRecord)
-    Some(s"${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.specFile.map(_.getName).getOrElse(spec.feature.name)}")
+    Some(s"${FileIO.encodeDir(parentDirPath)}-$dataRecNo${spec.specFile.map(_.getName).getOrElse(spec.feature.displayName)}")
   }) {
   override def createReportDir(options: GwenOptions, spec: Spec, dataRecord: Option[DataRecord]): Option[File] = getReportDir(options)
 }

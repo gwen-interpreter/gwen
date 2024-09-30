@@ -29,6 +29,7 @@ import gwen.core.report.html.HtmlReportConfig
 import gwen.core.report.html.HtmlSlideshowConfig
 import gwen.core.report.json.JsonReportConfig
 import gwen.core.report.junit.JUnitReportConfig
+import gwen.core.report.results.ResultReportsConfig
 import gwen.core.report.rp.RPReportConfig
 import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
@@ -76,8 +77,8 @@ class ReportGenerator (
 
   def init(lifecycle: NodeEventDispatcher): Unit = { }
 
-  def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): Option[String] = {
-    summaryReportFile orElse {
+  def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): ReportResult = {
+    val resource = summaryReportFile orElse {
       reportDir flatMap { dir => 
         if (format.isCliOption) {
           Some(dir)
@@ -89,7 +90,8 @@ class ReportGenerator (
         val contents = report.list
         contents != null && contents.length > 0
       }
-     } map (_.getAbsolutePath)
+    } map (_.getAbsolutePath)
+    ReportResult(config.format, resource.toList, None)
   }
 
   /**
@@ -223,6 +225,7 @@ object ReportGenerator {
             case ReportFormat.junit => Some(JUnitReportConfig)
             case ReportFormat.json => Some(JsonReportConfig)
             case ReportFormat.rp => Some(RPReportConfig)
+            case ReportFormat.results => Some(ResultReportsConfig)
             case ReportFormat.none => None
           }
         } map { config =>
@@ -231,6 +234,6 @@ object ReportGenerator {
     }
   }
 
-  def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.recordNo)}-").getOrElse("")
+  def encodeDataRecordNo(dataRecord: Option[DataRecord]): String = dataRecord.map(record => s"${Formatting.padWithZeroes(record.occurrence.number)}-").getOrElse("")
 
 }

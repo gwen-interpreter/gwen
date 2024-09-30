@@ -53,7 +53,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
     
     val hostname = Try(InetAddress.getLocalHost.getHostName).getOrElse("hostname".!!.trim)
     val packageName = result.spec.specFile.map(f => f.uri).getOrElse("")
-    val name = s"$packageName.Feature: ${result.spec.feature.name}"
+    val name = s"$packageName.Feature: ${result.spec.feature.displayName}"
     val pkg = result.spec.specFile.map(_ => packageName)
     val scenarios = findScenarios(options, result)
     val scenarioCount = scenarios.length
@@ -81,7 +81,7 @@ trait JUnitReportFormatter extends ReportFormatter with SpecNormaliser {
         attr("timestamp") := timestamp,
         for {
           (scenario, idx) <- scenarios.zipWithIndex
-          name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.name}"
+          name = s"Scenario ${padWithZeroes(idx + 1)}: ${scenario.displayName}"
           time = scenario.evalStatus.nanos.toDouble / 1000000000d
           status = scenario.evalStatus.keyword.toString
         } yield {

@@ -16,8 +16,7 @@
 
 package gwen.core
 
-import gwen.core.Deprecation
-import gwen.core.FileIO
+import gwen.core._
 import gwen.core.init.InitOption
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
@@ -73,6 +72,40 @@ case class GwenOptions(
     pretty: Boolean = GwenOptions.Defaults.pretty,
     formatFiles: List[File] = Nil) {
 
+  def interpolate(source: String): String = {
+    val options = GwenOptions.this
+    val interpolator = new Interpolator(name => {
+        if (name.startsWith("<gwen.options.")) {
+          val n = name.substring("gwen.options.".length + 1, name.length - 1)
+          (n match {
+            case "batch" => Some(options.batch)
+            case "parallel" => Some(options.parallel)
+            case "verbose" => Some(options.verbose)
+            case "debug" => Some(options.debug)
+            case "reportDir" => Some(options.reportDir.getOrElse(""))
+            case "reportFormats" => Some(reportFormats.mkString(","))
+            case "settingsFiles" => Some(options.settingsFiles.mkString(","))
+            case "tags" => Some(options.tags.map((t, include) => s"${if (include) "" else "~"}$t").mkString(","))
+            case "dryRun" => Some(options.dryRun)
+            case "dataFile" => Some(options.dataFile.getOrElse(""))
+            case "metas" => Some(FileIO.appendFile(options.metas, Settings.UserMeta).mkString(","))
+            case "features" => Some(options.features.mkString(" "))
+            case "args" => Some(options.args.mkString(" "))
+            case "init" => Some(options.init)
+            case "initOptions" => Some(options.initOptions.map(opt => s"--$opt").sorted.mkString(" "))
+            case "initDir" => Option(initDir)
+            case "pretty" => Some(options.pretty)
+            case "formatFiles" => Some(options.formatFiles.mkString(" "))
+            case _ => None
+          }).map(_.toString)
+        } else {
+          Option(s"$$!$name")
+        }
+      })
+      val result = interpolator.interpolate(source)
+      interpolator.restoreUnresolved(result)
+  }
+
   def parallelScenarios(stateLevel: StateLevel) = parallel && stateLevel == StateLevel.scenario
 
   def tagFilter = new TagFilter(tags)
@@ -89,9 +122,16 @@ case class GwenOptions(
 
 object GwenOptions {
 
+  object SettingsKey {
+    val dataFile = "gwen.options.dataFile"
+  }
+
   object Defaults {
     val batch = CLISettings.`gwen.cli.options.batch`
-    val format = List(ReportFormat.html)
+    val format = CLISettings.`gwen.cli.options.format` match {
+      case Nil => List(ReportFormat.html)
+      case fs => fs
+    }
     val conf = Nil
     val dryRun = CLISettings.`gwen.cli.options.dryRun`
     val features = CLISettings.`gwen.cli.options.features`

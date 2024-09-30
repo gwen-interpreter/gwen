@@ -27,13 +27,14 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
-import gwen.core.state.ReservedParam
 import gwen.core.status._
 
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) {
+import java.util.Date
+
+abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) with ImplicitValueKeys {
 
   if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
 
@@ -45,7 +46,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
     Assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
     val operationTag = Tag(if (operation == "until") Annotations.Until else Annotations.While)
     val tags = List(Tag(Annotations.Synthetic), operationTag, Tag(Annotations.StepDef))
-    val preCondStepDef = Scenario(None, tags, operationTag.name, condition, Nil, None, Nil, Nil, step.params, step.cumulativeParams)
+    val preCondStepDef = Scenario(None, tags, operationTag.name, condition, None, Nil, None, Nil, Nil, step.params, step.cumulativeParams)
     var condSteps: List[Step] = Nil
     var evaluatedStep = step
     val start = System.nanoTime()
@@ -57,12 +58,13 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
           val preStep = step.copy(
             withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,
             withName = doStep,
-            withParams = List((ReservedParam.`iteration.number`.toString, iteration.toString)) ++ step.params
+            withParams = List((`iteration.number`, iteration.toString)) ++ step.params
           )
           operation match {
             case "until" =>
               logger.info(s"repeat-until $condition: iteration $iteration")
               if (condSteps.isEmpty) {
+                ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
                 engine.beforeStepDef(preCondStepDef, ctx)
               }
               val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
@@ -86,6 +88,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {
+                  ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
                   engine.beforeStepDef(preCondStepDef, ctx)
                 }
                 val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
@@ -137,13 +140,14 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
             val preStep = condSteps.head.copy(
               withKeyword = StepKeyword.And.toString,
               withName = doStep,
-              withParams = List((ReservedParam.`iteration.number`.toString, (iteration + 1).toString)) ++ step.params
+              withParams = List((`iteration.number`, (iteration + 1).toString)) ++ step.params
             )
             engine.beforeStep(preStep, ctx)
             val fStep = engine.finaliseStep(
               preStep.copy(
                 withEvalStatus = Failed(nanos - condSteps.map(_.evalStatus.nanos).sum, error),
-                withStepDef = None
+                withStepDef = None,
+                withTags = preStep.tags.filter(_.name != Annotations.Synthetic.toString)
               ),
               None,
               ctx
@@ -155,8 +159,11 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
 
         }
       }
-      val condStepDef = preCondStepDef.copy(withSteps = steps.reverse)
+      val condStepDef = preCondStepDef.copy(
+        withSteps = steps.reverse
+      )
       ctx.perform {
+        ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
         engine.afterStepDef(condStepDef, ctx)
       }
       evaluatedStep.copy(

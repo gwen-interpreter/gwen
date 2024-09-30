@@ -43,11 +43,11 @@ import java.{util => ju}
 
 class RPReporter(rpClient: RPClient) 
     extends NodeEventListener("Report Portal Reporter", RPConfig.bypassNodeTypes) 
-    with LazyLogging {
+    with LazyLogging with ImplicitValueKeys {
 
   override def beforeUnit(event: NodeEvent[FeatureUnit]): Unit = { 
     val unit = event.source
-    val name = unit.name
+    val name = unit.displayName
     val callChain = event.callChain
     val nodePath = callChain.nodePath
     rpClient.startItem(event.time, None, unit, nodePath, name, "", Nil, Map(), Nil, false)
@@ -57,14 +57,14 @@ class RPReporter(rpClient: RPClient)
     val unit = event.source
     val callChain = event.callChain
     val parent = callChain.last
-    val evalStatus = unit.result.map(_.spec.evalStatus).getOrElse(Skipped)
+    val evalStatus = unit.evalStatus
     rpClient.finishItem(event.time, "", parent, evalStatus)
   }
     
   override def beforeSpec(event: NodeEvent[Spec]): Unit = {
     val spec = event.source
     val feature = spec.feature
-    val name = s"${spec.specType}: ${feature.name}"
+    val name = s"${spec.specType}: ${feature.displayName}"
     val desc = formatDescription(feature)
     val tags = filterTags(feature.tags)
     val callChain = event.callChain
@@ -85,7 +85,7 @@ class RPReporter(rpClient: RPClient)
 
   override def beforeBackground(event: NodeEvent[Background]): Unit = {
     val background = event.source
-    val name = s"${background.keyword}: ${background.name}"
+    val name = s"${background.keyword}: ${background.displayName}"
     val desc = formatDescription(background)
     val callChain = event.callChain
     val parent = callChain.previous
@@ -113,7 +113,7 @@ class RPReporter(rpClient: RPClient)
   }
 
   private def beforeScenario(startTime: ju.Date, scenario: Scenario, callChain: NodeChain, scopes: ScopedDataStack, inlined: Boolean): Unit = {
-    val name = s"${scenario.keyword}: ${scenario.name}"
+    val name = s"${scenario.keyword}: ${scenario.displayName}"
     val desc = formatDescription(scenario)
     val tags = filterTags(scenario.tags)
     val params = scenario.cumulativeParams
@@ -190,7 +190,7 @@ class RPReporter(rpClient: RPClient)
   }
 
   private def beforeStepDef(startTime: ju.Date, stepDef: Scenario, callChain: NodeChain, inlined: Boolean, scopes: ScopedDataStack): Unit = {
-    val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.name}"
+    val name = s"${if (stepDef.isForEach) "ForEach" else stepDef.keyword}: ${stepDef.displayName}"
     val desc = formatDescription(stepDef)
     val tags = filterTags(stepDef.tags)
     val params = stepDef.cumulativeParams
@@ -218,12 +218,12 @@ class RPReporter(rpClient: RPClient)
   }
 
   private def beforeStep(startTime: ju.Date, step: Step, callChain: NodeChain, scopes: ScopedDataStack, inlined: Boolean) = {
-    val name = s"${step.keyword} ${step.name}"
+    val name = s"${step.keyword} ${step.displayName}"
     val desc = formatDescription(step)
     val parent = callChain.previous
     val nodePath = callChain.nodePath
     val breadcrumbs = breadcrumbAtts(step.sourceRef, callChain.steps, scopes)
-    val atts = if (breadcrumbs.nonEmpty) { breadcrumbs ++ Map("step" -> step.name) } else breadcrumbs
+    val atts = if (breadcrumbs.nonEmpty) { breadcrumbs ++ Map("step" -> step.displayName) } else breadcrumbs
     val params = step.cumulativeParams
     val tags = filterTags(step.printableTags)
     rpClient.startItem(startTime, Some(parent), step, nodePath, name, desc, tags, atts, params, inlined)
@@ -461,9 +461,9 @@ class RPReporter(rpClient: RPClient)
   }
 
   private val breadcrumbBindings = List(
-    ("gwen.feature.name" -> "feature"), 
-    ("gwen.rule.name" -> "rule"), 
-    ("gwen.scenario.name" -> "scenario")
+    (`gwen.feature.name` -> "feature"), 
+    (`gwen.rule.name` -> "rule"), 
+    (`gwen.scenario.name` -> "scenario")
   )
 
   private def breadcrumbAtts[T](sourceRef: Option[SourceRef], callSteps: List[Step], scopes: ScopedDataStack): Map[String, String] = {

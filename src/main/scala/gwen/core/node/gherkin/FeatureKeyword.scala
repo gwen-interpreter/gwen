@@ -27,7 +27,7 @@ object FeatureKeyword extends Enumeration {
 
   def nameOf(keyword: FeatureKeyword.Value): String = namesOf(keyword).head
 
-  private def namesOf(keyword: FeatureKeyword.Value): List[String] = {
+  def namesOf(keyword: FeatureKeyword.Value): List[String] = {
     val dialect = Dialect.instance
     if (dialect.getLanguage == "en") {
       List(keyword.toString)

@@ -34,7 +34,7 @@ import gwen.core.status.EvalStatus
   *
   * @author Branko Juric
   */
-class TransientStack(stackName: String) {
+class TransientStack(stackName: String) extends ImplicitValueKeys {
 
   private val isParamStack = stackName == TransientStack.params
   /**
@@ -98,8 +98,8 @@ class TransientStack(stackName: String) {
     transientStack.headOption.flatMap(_.getOpt(name)).headOption orElse {
       findOpt(name, s"${stackName}.", s"${stackName}.") orElse {
         if (stackName == "feature") {
-          if (name == "gwen.eval.status.keyword") getOpt("gwen.feature.eval.status.keyword")
-          else if (name == "gwen.eval.status.message") getOpt("gwen.feature.eval.status.message")
+          if (name == `gwen.eval.status.keyword`) getOpt(`gwen.feature.eval.status.keyword`)
+          else if (name == `gwen.eval.status.message`) getOpt(`gwen.feature.eval.status.message`)
           else findOpt(name, "", "feature.") 
         } else None
       }
@@ -174,5 +174,6 @@ object TransientStack {
   def featureStack: TransientStack = new TransientStack("feature")
   def ruleStack: TransientStack = new TransientStack("rule")
   def scenarioStack: TransientStack = new TransientStack("scenario")
+  def examplesStack: TransientStack = new TransientStack("examples")
   def stepDefStack: TransientStack = new TransientStack("stepDef")
 }

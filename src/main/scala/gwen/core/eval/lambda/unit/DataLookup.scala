@@ -46,7 +46,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
       } getOrElse -1
       if (idx < 0) Errors.dataLookupError(file, dataName)
       val record = table.tail find { (rowNo, row) =>   
-        val dataRecord = DataRecord(dataSource, rowNo.toInt - 1, table.size - 1, header.get zip row)
+        val dataRecord = DataRecord(dataSource, Occurrence(rowNo.toInt - 1, table.size - 1), header.get zip row)
         try {
           val js0 = dataRecord.interpolateStrict(jsPredicate.replace(dataSource.lookupPrefix, DataSource.lookupPrefix))
           val js1 = ctx.interpolateParams(js0)

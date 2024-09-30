@@ -36,6 +36,7 @@ Feature: Gwen
   I want to automate tests
   So that gwen can run them
 
+  @chaos
   Rule: Deterministic chaos
 
     Unpredictable yet non random
@@ -113,6 +114,7 @@ Feature: Gwen
   I want to automate tests
   So that gwen can run them
 
+  @chaos
   Rule: Deterministic chaos
 
     Unpredictable yet non random
@@ -148,7 +150,7 @@ Feature: Gwen
        When expressed in Gherkin
        Then Gwen can evaluate it
 
-    Background: The butterfly effect + Data table record 1 of 2
+    Background: The butterfly effect + Data table record [1 of 2]
 
       Sensitivity to initial conditions
 
@@ -159,7 +161,7 @@ Feature: Gwen
        When a small change is initially applied
        Then a large change will eventually result
 
-    Example: Join two strings together -- Basic string concatenation
+    Example: Join two strings together -- Basic string concatenation [1 of 2]
 
       This scenario is evaluated at the point where the outline is declared
 
@@ -168,7 +170,7 @@ Feature: Gwen
        When I join the two strings
        Then the result should be "howdydoo"
 
-    Background: The butterfly effect + Data table record 2 of 2
+    Background: The butterfly effect + Data table record [2 of 2]
 
       Sensitivity to initial conditions
 
@@ -179,7 +181,7 @@ Feature: Gwen
        When a small change is initially applied
        Then a large change will eventually result
 
-    Example: Join two strings together -- Basic string concatenation
+    Example: Join two strings together -- Basic string concatenation [2 of 2]
 
       This scenario is evaluated at the point where the outline is declared
 

@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.result.SpecResult
+import gwen.core.status.Skipped
 
 import java.io.File
 
@@ -42,10 +43,12 @@ case class FeatureUnit(
 
   override val sourceRef: Option[SourceRef] = None
   override val name: String = featureFile.uri
-  val displayName: String = s"$name${dataRecord.map(rec => if (FileIO.isMetaFile(featureFile)) "" else s" [${rec.descriptor}]").getOrElse("")}"
   override val nodeType: NodeType = NodeType.Unit
   override def siblingsIn(parent: GwenNode): List[GwenNode] = Nil
+  override val evalStatus = result.map(_.spec.evalStatus).getOrElse(Skipped)
 
+  def displayName: String = s"$name${dataRecord.map(rec => if (FileIO.isMetaFile(featureFile)) "" else s" ${rec.occurrence}").getOrElse("")}"
+  
   def ancestor: GwenNode = {
     parent match {
       case parentUnit: FeatureUnit => 

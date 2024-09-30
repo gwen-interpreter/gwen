@@ -69,7 +69,7 @@ object CLISettings extends LazyLogging {
       Settings.convert("gwen.cli.options.format", value, ReportFormat.values.mkString(", ")) { format =>
         ReportFormat.valueOf(format)
       }
-    }
+    } distinct
   }
 
   /**
