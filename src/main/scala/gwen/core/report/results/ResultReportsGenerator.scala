@@ -139,7 +139,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
         val value = {
           scopes.getOpt(field.ref).getOrElse {
             if (field.optional) "" else { 
-              addError(s"Unbound ${field.name} field ref ${field.ref} in file: ${resFile.file}")
+              addError(s"Unbound ${field.name} field${ if (field.name != field.ref) s" ref ${field.ref}" else ""} in results file: ${resFile.file}")
               s"Unbound ref: ${field.ref}"
             }
           }

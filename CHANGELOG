@@ -3,8 +3,8 @@
 9 October 2024
 - Add `results` report format option for declarative CSV reporting
 - Introduce `@Results` annotation to support logging CSV results at any node level
-- Improved report error handling and reporting
-- Add impicit variables:
+- Improved error handling and reporting
+- Add implicit variables:
   - `gwen.feature.displayName`
   - `gwen.feature.eval.started`
   - `gwen.feature.eval.finished`
