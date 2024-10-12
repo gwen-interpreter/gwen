@@ -25,8 +25,8 @@ import java.io.File
 object ResultReportsConfig extends ReportConfig(
   ReportFormat.results,
   "Results", 
-  None, 
+  Some("csv"),
   None, 
   (options, info) => new ResultReportsGenerator(options, info), 
-  options => options.reportDir,
+  options => options.reportDir.map(dir => new File(dir, "results")),
   (spec: Spec, _) => None)

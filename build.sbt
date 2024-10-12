@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "3.66.0"
+val gwenVersion = "4.0.0"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -54,12 +54,8 @@ lazy val mainDependencies = {
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
-    "com.epam.reportportal" % "commons-model" % "5.12.0",
-    "com.epam.reportportal" % "client-java" % "5.2.14" excludeAll(
-      ExclusionRule(organization = "org.aspectj"),
-      ExclusionRule(organization = "org.jetbrains.kotlin")
-    ),
     "org.fusesource.jansi" % "jansi" % "2.4.1",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
     "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
@@ -71,17 +67,11 @@ lazy val mainDependencies = {
 
 lazy val mainOverrides = {
   Seq(
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
-    "com.google.guava" % "guava" % "33.3.0-jre",
-    "org.reactivestreams" % "reactive-streams" % "1.0.4",
     "org.slf4j" % "slf4j-api" % "1.7.36"
   )
 }
 
-dependencyOverrides ++= Seq(
-  "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
-  "com.google.guava" % "guava" % "33.3.0-jre",
-  "org.reactivestreams" % "reactive-streams" % "1.0.4",
+dependencyOverrides ++= Seq(  
   "org.slf4j" % "slf4j-api" % "1.7.36"
 )
 

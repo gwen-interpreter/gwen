@@ -19,11 +19,6 @@ package gwen.core
 import gwen.core.AssertionMode
 import gwen.core.behavior.BehaviorMode
 import gwen.core.behavior.FeatureMode
-import gwen.core.report.rp.RPConfig.ErrorBlocks
-import gwen.core.report.rp.RPConfig.ErrorReportingMode
-import gwen.core.report.rp.RPConfig.StepDefFormat
-import gwen.core.report.rp.RPConfig.TestCaseIdKeys
-import gwen.core.report.rp.RPSettings
 import gwen.core.state.StateLevel
 import gwen.core.status.StatusKeyword
 
@@ -74,25 +69,4 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.report.results.files`(GwenOptions()).length should be (0)
     }
   }
-
-  "Default Gwen RP settings" should "load" in {
-    Settings.exclusively {
-      RPSettings.`gwen.rp.debug` should be (false)
-      RPSettings.`gwen.rp.heartbeat.enabled` should be (true)
-      RPSettings.`gwen.rp.heartbeat.timeoutSecs` should be (3)
-      RPSettings.`gwen.rp.send.annotations` should be (false)
-      RPSettings.`gwen.rp.send.breadcrumbs` should be (false)
-      RPSettings.`gwen.rp.send.failed.envTrace` should be (ErrorReportingMode.none)
-      RPSettings.`gwen.rp.send.failed.errorBlocks` should be (ErrorBlocks.none)
-      RPSettings.`gwen.rp.send.failed.errorTrace` should be (ErrorReportingMode.none)
-      RPSettings.`gwen.rp.send.failed.hierarchy` should be (ErrorReportingMode.inlined)
-      RPSettings.`gwen.rp.send.failed.stepDefs` should be (StepDefFormat.inlined)
-      RPSettings.`gwen.rp.send.markdownBlocks` should be (true)
-      RPSettings.`gwen.rp.send.meta` should be (false)
-      RPSettings.`gwen.rp.send.stepDefs` should be (StepDefFormat.none)
-      RPSettings.`gwen.rp.send.tags` should be (true)
-      RPSettings.`gwen.rp.testCaseId.keys` should be (TestCaseIdKeys.`nodePath+params`)
-    }
-  }
-
 }

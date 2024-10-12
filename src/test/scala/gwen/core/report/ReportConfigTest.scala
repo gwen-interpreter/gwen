@@ -26,8 +26,8 @@ import gwen.core.report.json.JsonReportConfig
 import gwen.core.report.json.JsonReportGenerator
 import gwen.core.report.junit.JUnitReportConfig
 import gwen.core.report.junit.JUnitReportGenerator
-import gwen.core.report.rp.RPReportConfig
-import gwen.core.report.rp.RPReportGenerator
+import gwen.core.report.results.ResultReportsConfig
+import gwen.core.report.results.ResultReportsGenerator
 
 import org.scalatest.matchers.should.Matchers
 
@@ -40,7 +40,7 @@ class ReportConfigTest extends BaseTest with Matchers  {
     HtmlSlideshowConfig.format should be (ReportFormat.slideshow)
     JUnitReportConfig.format should be (ReportFormat.junit)
     JsonReportConfig.format should be (ReportFormat.json)
-    RPReportConfig.format should be (ReportFormat.rp)
+    ResultReportsConfig.format should be (ReportFormat.results)
   }
 
   "File extensions for all report formats" should "map correctly" in {
@@ -48,7 +48,7 @@ class ReportConfigTest extends BaseTest with Matchers  {
     HtmlSlideshowConfig.fileExtension should be (Some("html"))
     JUnitReportConfig.fileExtension should be (Some("xml"))
     JsonReportConfig.fileExtension should be (Some("json"))
-    RPReportConfig.fileExtension should be (None)
+    ResultReportsConfig.fileExtension should be (Some("csv"))
   }
   
   "Names of all report formats" should "map correctly" in {
@@ -56,7 +56,7 @@ class ReportConfigTest extends BaseTest with Matchers  {
     HtmlSlideshowConfig.name should be ("Slideshow")
     JUnitReportConfig.name should be ("JUnit-XML")
     JsonReportConfig.name should be ("JSON")
-    RPReportConfig.name should be ("Report Portal")
+    ResultReportsConfig.name should be ("Results")
   }
   
   "Output directory of all report formats" should "map correctly" in {
@@ -65,7 +65,7 @@ class ReportConfigTest extends BaseTest with Matchers  {
     HtmlSlideshowConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}html")
     JUnitReportConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}junit")
     JsonReportConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}json")
-    RPReportConfig.reportDir(options) should be (None)
+    ResultReportsConfig.reportDir(options).get.getPath should be (s"target${File.separatorChar}report${File.separatorChar}results")
   }
   
   "Report generator for all report formats" should "map correctly" in {
@@ -75,7 +75,7 @@ class ReportConfigTest extends BaseTest with Matchers  {
     HtmlSlideshowConfig.reportGenerator(options, info).isInstanceOf[HtmlSlideshowGenerator] should be (true)
     JUnitReportConfig.reportGenerator(options, info).isInstanceOf[JUnitReportGenerator] should be (true)
     JsonReportConfig.reportGenerator(options, info).isInstanceOf[JsonReportGenerator] should be (true)
-    RPReportConfig.reportGenerator(options, info).isInstanceOf[RPReportGenerator] should be (true)
+    ResultReportsConfig.reportGenerator(options, info).isInstanceOf[ResultReportsGenerator] should be (true)
   }
   
 }

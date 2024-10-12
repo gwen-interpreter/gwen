@@ -22,9 +22,9 @@ package gwen.core.report
   * @author Branko Juric
   */
 enum ReportFormat {
-  case html, slideshow, results, junit, json, rp, none
+  case html, slideshow, results, junit, json, none
 
   def isCliOption: Boolean = this != slideshow
-  def isFileSystemReport: Boolean = this != rp && this != none
+  def isFileSystemReport: Boolean = this != none
 }
 

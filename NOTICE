@@ -14,10 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-This product supports integration with the following products:
-- https://applitools.com (for visual testing)
-- https://reportportal.io (for centralised reporting and analytics)
-
 This product has dependencies on other open source software. All bundled 
 third party dependencies and their licenses are listed in the  
 LICENSE-THIRDPARTY file.
