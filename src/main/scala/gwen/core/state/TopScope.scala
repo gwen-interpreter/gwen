@@ -177,16 +177,15 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
     rec.data foreach { case (name, value) =>
       set(name, value)
     }
-    set(`data record number`, rec.occurrence.number.toString)
-    set(`data.record.number`, rec.occurrence.number.toString)
-    set(`data.record.index`, rec.occurrence.index.toString)
+    set(`gwen.data.record.number`, rec.occurrence.number.toString)
+    set(`gwen.data.record.index`, rec.occurrence.index.toString)
   }
 
   override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))
   override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
 
   private def getImplicitOpt(name: String): Option[String] = {
-    if (name.startsWith(`gwen.feature.`) || name.startsWith(`gwen.eval.`)) featureScope.getOpt(name)
+    if (name.startsWith(`gwen.feature.`)) featureScope.getOpt(name)
     else if (name.startsWith(`gwen.scenario.`)) scenarioScope.getOpt(name)
     else if (name.startsWith(`gwen.examples.`)) examplesScope.getOpt(name)
     else if (name.startsWith(`gwen.stepDef.`)) stepDefScope.getOpt(name)

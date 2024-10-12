@@ -238,7 +238,4 @@ Feature: Multi Argument Functions
       And text1 should not be "${gwen.feature.eval.duration}"
       And text2 should not be "${gwen.feature.eval.duration.msecs}"
       And text2 should not be "${gwen.feature.eval.duration.secs}"
-      And text1 should not be "${gwen.eval.duration}"
-      And text2 should not be "${gwen.eval.duration.msecs}"
-      And text2 should not be "${gwen.eval.duration.secs}"
       

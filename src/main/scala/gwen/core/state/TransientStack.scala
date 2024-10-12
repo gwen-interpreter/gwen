@@ -96,13 +96,7 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     */
   def getOpt(name: String): Option[String] = {
     transientStack.headOption.flatMap(_.getOpt(name)).headOption orElse {
-      findOpt(name, s"${stackName}.", s"${stackName}.") orElse {
-        if (stackName == "feature") {
-          if (name == `gwen.eval.status.keyword`) getOpt(`gwen.feature.eval.status.keyword`)
-          else if (name == `gwen.eval.status.message`) getOpt(`gwen.feature.eval.status.message`)
-          else findOpt(name, "", "feature.") 
-        } else None
-      }
+      findOpt(name, s"${stackName}.", s"${stackName}.")
     }
   }
 

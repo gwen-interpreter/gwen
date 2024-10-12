@@ -50,8 +50,8 @@ class FlatTable(val tableType: TableType, val records: List[List[String]], val n
     override def isEmpty: Boolean = records.isEmpty
     override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
       (
-        (`record.index`, s"$recordIndex") :: (
-          (`record.number`, s"${recordIndex + 1}") :: (
+        (`gwen.table.record.index`, s"$recordIndex") :: (
+          (`gwen.table.record.number`, s"${recordIndex + 1}") :: (
             names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
               (s"name[${nameIndex + 1}]", name)
             }

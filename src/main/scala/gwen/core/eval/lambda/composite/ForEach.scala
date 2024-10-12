@@ -89,11 +89,11 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     ctx.topScope.pushObject(name, currentElement)
                     List((name, s"$name ${occurence.number}"))
                 }
-                val prevIndex = ctx.topScope.getOpt(`iteration.index`)
-                val prevNumber = ctx.topScope.getOpt(`iteration.number`)
+                val prevIndex = ctx.topScope.getOpt(`gwen.iteration.index`)
+                val prevNumber = ctx.topScope.getOpt(`gwen.iteration.number`)
                 val descriptor = s"[$name] $occurence"
-                ctx.topScope.set(`iteration.index`, occurence.index.toString)
-                ctx.topScope.set(`iteration.number`, occurence.number.toString)
+                ctx.topScope.set(`gwen.iteration.index`, occurence.index.toString)
+                ctx.topScope.set(`gwen.iteration.number`, occurence.number.toString)
                 (try {
                   EvalStatus(acc.map(_.evalStatus)) match {
                     case status @ Failed(_, error)  =>
@@ -115,8 +115,8 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     case data: ScopedData if data.scope == DataTable.recordKey => ctx.topScope.popObject(DataTable.recordKey)
                     case _ => ctx.topScope.popObject(name)
                   }
-                  ctx.topScope.set(`iteration.number`, prevNumber.orNull)
-                  ctx.topScope.set(`iteration.index`, prevIndex.orNull)
+                  ctx.topScope.set(`gwen.iteration.number`, prevNumber.orNull)
+                  ctx.topScope.set(`gwen.iteration.index`, prevIndex.orNull)
                 }) :: acc
               } reverse
             } finally {

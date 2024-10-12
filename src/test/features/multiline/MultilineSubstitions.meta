@@ -1,12 +1,11 @@
 Feature: Multiline substitutions meta
 
   Scenario: Init
-    Given start duration is "${gwen.eval.duration}"
+    Given start duration is "${gwen.feature.eval.duration}"
 
   @Action
   @StepDef
   Scenario: <name> is assigned to "<value>"
     Given $<name> is "$<value>"
       And gwen.feature.eval.duration should not be "${start duration}"
-      And gwen.eval.duration should not be "${start duration}"
       And gwen.scenario.eval.duration should not be "${start duration}"
