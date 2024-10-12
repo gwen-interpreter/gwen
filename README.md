@@ -24,7 +24,7 @@ Current Status
 System Requirements
 -------------------
 
-- Java 11 or higher
+- Java 17 or higher
 
 License
 -------

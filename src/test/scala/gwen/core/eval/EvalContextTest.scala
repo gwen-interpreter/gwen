@@ -110,15 +110,15 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
 
   """Property that's bound to a good javascript""" should "should pass interpolation" in {
     val ctx = newCtx
-    JSBinding.bind("length", "'Good length function'.length()", false, ctx)
-    ctx.interpolate("""${length} chars""") should be ("20 chars")
+    JSBinding.bind("func", "'Good function'.toLowerCase()", false, ctx)
+    ctx.interpolate("""${func} yes""") should be ("good function yes")
   }
 
   """Property that's bound to a bad javascript""" should "should fail interpolation" in {
     val ctx = newCtx
-    JSBinding.bind("length", "'Bad length function'.len()", false, ctx)
+    JSBinding.bind("func", "'Bad length function'.len()", false, ctx)
     intercept[FunctionException] {
-      ctx.interpolate("""${length} chars""")
+      ctx.interpolate("""${func} yes""")
     }
   }
 

@@ -51,7 +51,7 @@ trait JavaScriptSupport[T <: EvalContext] extends ArrowFunctionSupport[T] {
     }
     try {
       SensitiveData.withValue(jScript) { js =>
-        new ScriptEngineManager(null).getEngineByName("JavaScript").eval(formatJSReturn(parseJS(js)))
+        new ScriptEngineManager().getEngineByName("js").eval(formatJSReturn(parseJS(js)))
       }
     } catch {
       case e: Errors.GwenException => throw e

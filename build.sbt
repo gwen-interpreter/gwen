@@ -32,8 +32,8 @@ lazy val projectSettings = Seq(
   initialize := {
     val _ = initialize.value
     val javaVersion = sys.props("java.specification.version")
-    if (javaVersion != "11")
-      sys.error(s"JDK 11 is required to build this project. Found $javaVersion instead")
+    if (javaVersion != "17")
+      sys.error(s"Java 17 is required to build this project. Found $javaVersion instead")
   }
 )
 
@@ -56,6 +56,8 @@ lazy val mainDependencies = {
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.1",
     "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
+    "org.graalvm.js" % "js-scriptengine" % "24.1.0",
+    "org.graalvm.js" % "js" % "24.1.0",
     "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
