@@ -43,6 +43,61 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+  "Options with process option" should "parse" in {
+    parseOptions(Array("-p", "default")) match {
+      case Success(options) => {
+        assertOptions(options, process = Some(Process("default")))
+      }
+      case Failure(e) =>
+        fail(s"expected options but failed: ${e.getMessage}")
+    }
+    parseOptions(Array("--process", "default")) match {
+      case Success(options) => {
+        assertOptions(options, process = Some(Process("default")))
+      }
+      case Failure(e) =>
+        fail(s"expected options but failed: ${e.getMessage}")
+    }
+  }
+
+  "Options with process option and feature files" should "fail" in {
+    createDir("dir7")
+    val featureFile = createFile("dir7/file.feature")
+    parseOptions(Array("-p", "default", featureFile.getPath)) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("Cannot specify feature(s) on command line with -p|--process option (specify features in conf/process/default.conf file instead with the gwen.options.features setting)")
+    }
+    parseOptions(Array("--process", "default", featureFile.getPath)) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("Cannot specify feature(s) on command line with -p|--process option (specify features in conf/process/default.conf file instead with the gwen.options.features setting)")
+    }
+  }
+
+  "Options with process option and meta files" should "fail" in {
+    createDir("dir8")
+    val metaFile = createFile("dir8/file.meta")
+    parseOptions(Array("-p", "default", "-m", metaFile.getPath)) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("Cannot specify meta on command line with -p|--process option (specify meta in conf/process/default.conf file instead with the gwen.options.meta setting)")
+    }
+    parseOptions(Array("--process", "default", "-m", metaFile.getPath)) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("Cannot specify meta on command line with -p|--process option (specify meta in conf/process/default.conf file instead with the gwen.options.meta setting)")
+    }
+  }
+
   "Options with batch option and no files" should "fail" in {
     parseOptions(Array("-b")) match {
       case Success(options) => {
@@ -706,6 +761,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Success(options) => {
         assertOptions(
           options,
+          process = None,
           batch = true,
           parallel = true,
           verbose = true,
@@ -728,6 +784,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Success(options) => {
         assertOptions(
           options,
+          process = None,
           batch = true,
           parallel = true,
           verbose = true,
@@ -838,6 +895,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   private def assertOptions(
                              options: GwenOptions,
+                             process: Option[Process] = GwenOptions.Defaults.process,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -858,6 +916,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              pretty: Boolean = GwenOptions.Defaults.pretty,
                              formatFiles: List[File] = Nil): Unit = {
 
+    options.process should be (process)
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.verbose should be (verbose)
@@ -896,6 +955,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.pretty should be (pretty)
     options.formatFiles should be (formatFiles)
 
+    options.interpolate("process is $<gwen.options.process>, yep") should be (s"process is ${process.map(_.name).getOrElse("")}, yep")
     options.interpolate("batch is $<gwen.options.batch>, yep") should be (s"batch is $batch, yep")
     options.interpolate("parallel is $<gwen.options.parallel>, yep") should be (s"parallel is $parallel, yep")
     options.interpolate("verbose is $<gwen.options.verbose>, yep") should be (s"verbose is $verbose, yep")

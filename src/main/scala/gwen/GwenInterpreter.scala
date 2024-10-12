@@ -198,18 +198,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
          |""".stripMargin
       )
 
-    sys.env.get("GWEN_WEB_HOME").filter(_.nonEmpty) foreach { _ =>
-      println(
-        """|
-           | ╭──────────────────────────────────────────────────────────╮
-           | │  Gwen Workspaces DEPRECATED!                             │
-           | │                                                          │
-           | │  Gwen Workspaces are deprecated in favor of projects in  │
-           | │  Gwen 3. Please visit the migration page for options at  │
-           | │  - https://gweninterpreter.org/docs/migration/gwen3      │
-           | ╰──────────────────────────────────────────────────────────╯""".stripMargin
-      )
-    }
   }
 
 }

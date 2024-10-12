@@ -32,6 +32,7 @@ import java.io.File
 /**
   * Captures gwen command line options.
   *
+  * @param process optional process name to launch
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param verbose true for verbose log output, false for pretty log output
@@ -53,6 +54,7 @@ import java.io.File
   * @author Branko Juric
   */
 case class GwenOptions(
+    process: Option[Process] = GwenOptions.Defaults.process,
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
     verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -78,6 +80,7 @@ case class GwenOptions(
         if (name.startsWith("<gwen.options.")) {
           val n = name.substring("gwen.options.".length + 1, name.length - 1)
           (n match {
+            case "process" => Some(options.process.map(_.name).getOrElse(""))
             case "batch" => Some(options.batch)
             case "parallel" => Some(options.parallel)
             case "verbose" => Some(options.verbose)
@@ -127,6 +130,7 @@ object GwenOptions {
   }
 
   object Defaults {
+    val process = None
     val batch = CLISettings.`gwen.cli.options.batch`
     val format = CLISettings.`gwen.cli.options.format` match {
       case Nil => List(ReportFormat.html)
@@ -169,6 +173,11 @@ object GwenOptions {
                 |- features if gwen.state.level = feature (default)
                 |- scenarios if gwen.state.level = scenario""".stripMargin
 
+      opt[String]('p', "process") action {
+        (ps, c) =>
+          c.copy(process = Some(new Process(ps)))
+      } valueName "name" text "Name of process to launch"
+
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
       } text "Exit when execution completes (omit to open REPL)"
@@ -201,34 +210,15 @@ object GwenOptions {
         }).getOrElse(success)
       } valueName "files" text "Settings files: conf, json or properties (comma separated)"
 
-      opt[String]('p', "properties") action {
-        (ps, c) =>
-          Deprecation.log("CLI option", "-p|--properties", Some("-c|--conf"))
-          c.copy(settingsFiles = c.settingsFiles ++ ps.split(",").toList.map(new File(_)))
-      } validate { ps =>
-        ((ps.split(",") flatMap { f =>
-          val file = new File(f)
-          if (!FileIO.hasFileExtension("properties", file)) Some("-p|--properties option only accepts *.properties files")
-          else if (file.exists()) None
-          else Some(s"Provided properties file not found: $f")
-        }) collectFirst {
-          case error => failure(error)
-        }).getOrElse(success)
-      } valueName "files" text "Properties files (deprecated, use -c|--conf instead)"
-
       opt[File]('r', "report") action {
         (f, c) => c.copy(reportDir = Some(f))
       } valueName "dir" text "Directory to output generated report(s) to"
 
       opt[String]('f', "formats") action {
         (fs, c) =>
-          val formats = fs.split(",").toList.map(f => ReportFormat.valueOf(f))
-          formats.find(_ == ReportFormat.rp) foreach { format =>
-            Deprecation.log("Report Portal option", s"-f|--format = $format", None)
-          }
-          c.copy(reportFormats = formats)
+          c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
       } valueName "reports" text s"""|Report formats to include in output (comma separated)
-                                                                                               |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html}, ${ReportFormat.rp} deprecated)""".stripMargin
+                                                                                               |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -324,6 +314,7 @@ object GwenOptions {
 
     (parser.parse(args, GwenOptions()).map { options =>
       new GwenOptions(
+        options.process,
         options.batch,
         options.parallel,
         options.verbose,
@@ -356,6 +347,10 @@ object GwenOptions {
           }
           if (opt.debug && opt.parallel) {
             Errors.invocationError("Debug mode not supported for parallel executions")
+          }
+          if (opt.process.nonEmpty) {
+            if (opt.features.nonEmpty) Errors.invocationError(s"Cannot specify feature(s) on command line with -p|--process option (specify features in ${opt.process.get.settingsFile} file instead with the gwen.options.features setting)")
+            if (opt.metas.nonEmpty) Errors.invocationError(s"Cannot specify meta on command line with -p|--process option (specify meta in ${opt.process.get.settingsFile} file instead with the gwen.options.meta setting)")
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocation failed (see log for details)"))
