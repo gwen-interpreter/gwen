@@ -45,8 +45,9 @@ lazy val mainDependencies = {
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "3.26.3",
-    "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.24.0",
-    "org.slf4j" % "jul-to-slf4j" % "1.7.36",
+    "org.slf4j" % "jul-to-slf4j" % "2.0.16",
+    "ch.qos.logback" % "logback-core" % "1.5.9",
+    "ch.qos.logback" % "logback-classic" % "1.5.9",
     "commons-codec" % "commons-codec" % "1.17.1",
     "org.apache.commons" % "commons-text" % "1.12.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
@@ -64,18 +65,8 @@ lazy val mainDependencies = {
     "org.apache.pdfbox" % "pdfbox-io" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
-  ) ++ mainOverrides
-}
-
-lazy val mainOverrides = {
-  Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.36"
   )
 }
-
-dependencyOverrides ++= Seq(  
-  "org.slf4j" % "slf4j-api" % "1.7.36"
-)
 
 lazy val testDependencies = {
   Seq(

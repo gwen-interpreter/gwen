@@ -28,10 +28,11 @@ import gwen.core.state.EnvState
 import gwen.core.status.Failed
 import gwen.core.status.Pending
 
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.joran.JoranConfigurator
 import com.typesafe.scalalogging.LazyLogging
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.core.LoggerContext
 import org.fusesource.jansi.AnsiConsole
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler
 
 import scala.util.chaining._
@@ -142,9 +143,12 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
 
     if (options.verbose) {
-      val config = getClass.getResource("/log4j2-verbose.properties")
-      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
-      context.setConfigLocation(config.toURI)
+      val context = LoggerFactory.getILoggerFactory().asInstanceOf[LoggerContext]
+      val configurator = new JoranConfigurator()
+      val config = getClass.getResource("/logback-verbose.xml")
+      configurator.setContext(context)
+      context.reset()
+      configurator.doConfigure(config)
     } else {
       
       // suppress error stream
@@ -157,21 +161,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       // send all j.u.l logs to slf4j
       SLF4JBridgeHandler.removeHandlersForRootLogger()
       SLF4JBridgeHandler.install()
-
-    }
-
-    // load user provided log4j configuration
-    Settings.getOpt("log4j2.configurationFile")
-      .orElse(Settings.getOpt("log4j2.configuration"))
-      .orElse(Settings.getOpt("log4j.configurationFile"))
-      .orElse(Settings.getOpt("log4j.configuration")).foreach { config =>
-
-      val context = LogManager.getContext(false).asInstanceOf[LoggerContext]
-      if (config.toLowerCase.trim.startsWith("file:")) {
-        context.setConfigLocation(new URL(config).toURI)
-      } else {
-        context.setConfigLocation(new File(config).toURI)
-      }
 
     }
 
