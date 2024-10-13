@@ -10,6 +10,10 @@
   - Gwen Workspaces warning
   - `-p|--properties` option
   - Report portal integration
+- Raise deprecations as errors by default instead of logged them as warnings
+  | Setting                     | Old default | New default |
+  | :-------------------------- | :---------: | :---------: |
+  | `gwen.logLevel.deprecations`|   `warn`    |   `error`   |
 - | Deprecated Settings          | Use this instead               |
   | :--------------------------- | :----------------------------- |
   | `gwen.cli.options.batch`     | `gwen.launch.options.batch`    |

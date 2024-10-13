@@ -65,7 +65,7 @@ class GwenSettingsTest extends BaseTest with Matchers {
       GwenSettings.`gwen.video.timeoutSecs` should be (10)
       GwenSettings.`gwen.dryRun.limit.tableData.outline.examples.records` should be (Integer.MAX_VALUE)
       GwenSettings.`gwen.error.messages.inline.locators` should be (false)
-      GwenSettings.`gwen.logLevel.deprecations` should be (Level.WARNING)
+      GwenSettings.`gwen.logLevel.deprecations` should be (Level.SEVERE)
       GwenSettings.`gwen.report.results.files`(GwenOptions()).length should be (0)
     }
   }
