@@ -62,8 +62,8 @@ object GwenInterpreter {
 class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging with NoopProjectInitialiser {
 
   Settings.addEnvOverrides(
-    "gwen.cli.options.dryRun" -> "GWEN_DRY_RUN", 
-    "gwen.cli.options.parallel" ->"GWEN_PARALLEL",
+    "gwen.launch.options.dryRun" -> "GWEN_DRY_RUN", 
+    "gwen.launch.options.parallel" ->"GWEN_PARALLEL",
     "gwen.parallel.maxThreads" ->"GWEN_THREADS"
   )
 

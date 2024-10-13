@@ -131,20 +131,20 @@ object GwenOptions {
 
   object Defaults {
     val process = None
-    val batch = CLISettings.`gwen.cli.options.batch`
-    val format = CLISettings.`gwen.cli.options.format` match {
+    val batch = LaunchSettings.`gwen.launch.options.batch`
+    val format = LaunchSettings.`gwen.launch.options.format` match {
       case Nil => List(ReportFormat.html)
       case fs => fs
     }
     val conf = Nil
-    val dryRun = CLISettings.`gwen.cli.options.dryRun`
-    val features = CLISettings.`gwen.cli.options.features`
-    val inputData = CLISettings.`gwen.cli.options.inputData`
-    val parallel = CLISettings.`gwen.cli.options.parallel`
-    val meta = CLISettings.`gwen.cli.options.meta`
-    val report = CLISettings.`gwen.cli.options.report`
-    val tags = CLISettings.`gwen.cli.options.tags`
-    val verbose = CLISettings.`gwen.cli.options.verbose`
+    val dryRun = LaunchSettings.`gwen.launch.options.dryRun`
+    val features = LaunchSettings.`gwen.launch.options.features`
+    val inputData = LaunchSettings.`gwen.launch.options.inputData`
+    val parallel = LaunchSettings.`gwen.launch.options.parallel`
+    val meta = LaunchSettings.`gwen.launch.options.meta`
+    val report = LaunchSettings.`gwen.launch.options.report`
+    val tags = LaunchSettings.`gwen.launch.options.tags`
+    val verbose = LaunchSettings.`gwen.launch.options.verbose`
     val debug = false
     val docker = false
     val jenkins = false
