@@ -200,7 +200,32 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
     else if (name == `gwen.accumulated.errors:JSONArray`) getObject(`gwen.accumulated.errors`).map(_.asInstanceOf[List[String]]) map { errs => 
       JSONArray.toJSONString(errs.asJava)
     } orElse(Some(JSONArray.toJSONString(Nil.asJava)))
-    else None
+    else {
+      deprecatedImplicitOpt(name) flatMap { newName => 
+        Deprecation.log("Implicit value reference", name, Some(newName))
+        getImplicitOpt(newName)
+      }
+    }
+  }
+
+  private def deprecatedImplicitOpt(name: String): Option[String] = {
+    if (name.startsWith("gwen.eval.")) {
+      Some(s"gwen.feature.eval.${name.substring("gwen.eval.".length)}")
+    } else if (name == "data record number" || name == "data.record.number") {
+      Some("gwen.data.record.number	")
+    } else if (name == "data record index" || name == "data.record.index") {
+      Some("gwen.data.record.index")
+    } else if (name == "record.number") {
+      Some("gwen.table.record.number")
+    } else if (name == "record.index") {
+      Some("gwen.table.record.index")
+    } else if (name == "iteration.number") {
+      Some("gwen.iteration.number")
+    } else if (name == "iteration.index") {
+      Some("gwen.iteration.index")
+    } else {
+      None
+    }
   }
 
 }
