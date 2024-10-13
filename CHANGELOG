@@ -6,10 +6,20 @@
 - Require Java 17+ instead of Java 11+
   - With GraalVM instead of Nashorn for JS evaluation
 - Use logback-classic instead of log4j for logging
-- Remove deprecated features
+- Drop deprecated features:
   - Gwen Workspaces warning
   - `-p|--properties` option
   - Report portal integration
+  - Core DSL steps
+    - `I wait <duration> second[s] when <element> is <actioned>`
+    - `I wait until <condition> when <element> is <actioned>`
+  - Core DSL steps in favour of base step with `@Timeout` and `@Delay` annotations
+    - `<step> <until|while> <condition> using <delay> <delayUnit> delay`
+    - `<step> <until|while> <condition> using <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using <delay> <delayUnit> delay and <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using no delay`
+    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
 - Raise deprecations as errors by default instead of logged them as warnings
   | Setting                     | Old default | New default |
   | :-------------------------- | :---------: | :---------: |
