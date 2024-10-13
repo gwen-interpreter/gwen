@@ -26,6 +26,6 @@ case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
   override val keyword: StatusKeyword = StatusKeyword.Sustained
   override def exitCode = 0
   override def emoticon = "[:|]"
-  override def cause = Option(error).map(_.getCause)
+  override def cause = Option(error).map(e => Option(e.getCause).getOrElse(error))
   override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
 }
