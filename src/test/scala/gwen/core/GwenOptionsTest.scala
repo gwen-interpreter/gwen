@@ -33,80 +33,119 @@ import gwen.core.init.InitOption
 class GwenOptionsTest extends BaseTest with Matchers {
 
   val rootDir: File = new File("target" + File.separator + "props") tap { _.mkdirs() }
+  val singleProcessBaseDir = new File("src/test/resources/singleProcess")
+  val multiProcessBaseDir = new File("src/test/resources/multiProcess")
+  val noProcessBaseDir = new File("src/test/resources/noProcess")
+  val singleProcess = Process("single", singleProcessBaseDir)
 
   "Options with no command line args" should "parse" in {
-    parseOptions(Array[String]()) match {
+    parseOptions(Array[String](), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options)
       }
-      case _ => fail("expected options but failed")
+      case Failure(error) => 
+        fail(s"expected options but failed with error: $error")
     }
   }
 
-  "Options with process option" should "parse" in {
-    parseOptions(Array("-p", "default")) match {
+  "Options with existing process option" should "parse" in {
+    parseOptions(Array("-p", "single"), singleProcessBaseDir) match {
       case Success(options) => {
-        assertOptions(options, process = Some(Process("default")))
+        assertOptions(options, process = Process("single", singleProcessBaseDir))
       }
-      case Failure(e) =>
-        fail(s"expected options but failed: ${e.getMessage}")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--process", "default")) match {
+    parseOptions(Array("--process", "single"), singleProcessBaseDir) match {
       case Success(options) => {
-        assertOptions(options, process = Some(Process("default")))
+        assertOptions(options, process = Process("single", singleProcessBaseDir))
       }
-      case Failure(e) =>
-        fail(s"expected options but failed: ${e.getMessage}")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
-  "Options with process option and feature files" should "fail" in {
+  "Options with no process option" should "parse when multiple processes exist" in {
+    parseOptions(Array(), multiProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, process = Process("", multiProcessBaseDir))
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+    parseOptions(Array(), multiProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, process = Process("", multiProcessBaseDir))
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+  }
+
+  "Options with missing process option" should "not parse" in {
+    parseOptions(Array("-p", "missing"), noProcessBaseDir) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("At least one of missing.conf, missing.json or missing.properties files must exist in src/test/resources/noProcess/conf/process for missing process")
+    }
+    parseOptions(Array("--process", "missing"), noProcessBaseDir) match {
+      case Success(options) => {
+        fail("expected failure but was successful")
+      }
+      case Failure(error) =>
+        error.getMessage should be ("At least one of missing.conf, missing.json or missing.properties files must exist in src/test/resources/noProcess/conf/process for missing process")
+    }
+  }
+
+  "Options with single process option and feature files" should "not parse" in {
     createDir("dir7")
     val featureFile = createFile("dir7/file.feature")
-    parseOptions(Array("-p", "default", featureFile.getPath)) match {
+    parseOptions(Array("-p", singleProcess.name, featureFile.getPath), singleProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify feature(s) on command line with -p|--process option (specify features in conf/process/default.conf file instead with the gwen.options.features setting)")
+        error.getMessage should be ("Cannot specify features on command line when launching single process (use gwen.launch.options.features setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
     }
-    parseOptions(Array("--process", "default", featureFile.getPath)) match {
+    parseOptions(Array("--process", singleProcess.name, featureFile.getPath), singleProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify feature(s) on command line with -p|--process option (specify features in conf/process/default.conf file instead with the gwen.options.features setting)")
+        error.getMessage should be ("Cannot specify features on command line when launching single process (use gwen.launch.options.features setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
     }
   }
 
-  "Options with process option and meta files" should "fail" in {
+  "Options with single process option and meta files" should "not parse" in {
     createDir("dir8")
     val metaFile = createFile("dir8/file.meta")
-    parseOptions(Array("-p", "default", "-m", metaFile.getPath)) match {
+    parseOptions(Array("-p", singleProcess.name, "-m", metaFile.getPath), singleProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify meta on command line with -p|--process option (specify meta in conf/process/default.conf file instead with the gwen.options.meta setting)")
+        error.getMessage should be ("Cannot specify meta on command line when launching single process (use gwen.launch.options.meta setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
     }
-    parseOptions(Array("--process", "default", "-m", metaFile.getPath)) match {
+    parseOptions(Array("--process", singleProcess.name, "-m", metaFile.getPath), singleProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify meta on command line with -p|--process option (specify meta in conf/process/default.conf file instead with the gwen.options.meta setting)")
+        error.getMessage should be ("Cannot specify meta on command line when launching single process (use gwen.launch.options.meta setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
     }
   }
 
   "Options with batch option and no files" should "fail" in {
-    parseOptions(Array("-b")) match {
+    parseOptions(Array("-b"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
         error.getMessage should be ("No feature files or directories provided")
     }
-    parseOptions(Array("--batch")) match {
+    parseOptions(Array("--batch"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -116,518 +155,518 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with batch option and files " should "parse" in {
-    parseOptions(Array("-b", ".")) match {
+    parseOptions(Array("-b", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, features = List(new File(".")))
 
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--batch", ".")) match {
+    parseOptions(Array("--batch", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, features = List(new File(".")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with verbose option and files " should "parse" in {
-    parseOptions(Array("-v", ".")) match {
+    parseOptions(Array("-v", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, verbose = true, features = List(new File(".")))
 
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--verbose", ".")) match {
+    parseOptions(Array("--verbose", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, verbose = true, features = List(new File(".")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with debug option and files " should "parse" in {
-    parseOptions(Array("-d", ".")) match {
+    parseOptions(Array("-d", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, debug = true, features = List(new File(".")))
 
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--debug", ".")) match {
+    parseOptions(Array("--debug", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, debug = true, features = List(new File(".")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with dry run option and no files" should "be ok" in {
-    parseOptions(Array("-n")) match {
+    parseOptions(Array("-n"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--dry-run")) match {
+    parseOptions(Array("--dry-run"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with dry run option and files " should "parse" in {
-    parseOptions(Array("-n", ".")) match {
+    parseOptions(Array("-n", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true, features = List(new File(".")))
 
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--dry-run", ".")) match {
+    parseOptions(Array("--dry-run", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true, features = List(new File(".")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with parallel option with implied batch mode" should "parse" in {
-    parseOptions(Array("--parallel", ".")) match {
+    parseOptions(Array("--parallel", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
-      case _ => fail("expected options but failed")
+      case Failure(error) => fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with parallel option with explicit batch mode" should "parse" in {
-    parseOptions(Array("--parallel", "-b", ".")) match {
+    parseOptions(Array("--parallel", "-b", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
-      case _ => fail("expected options but failed")
+      case Failure(error) => fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--parallel", "--batch", ".")) match {
+    parseOptions(Array("--parallel", "--batch", "."), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
-      case _ => fail("expected options but failed")
+      case Failure(error) => fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with report option but no target report directory" should "not parse" in {
-    parseOptions(Array("-r")) match {
+    parseOptions(Array("-r"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--report")) match {
+    parseOptions(Array("--report"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with report option and report directory" should "parse" in {
-    parseOptions(Array("-r", "target/report")) match {
+    parseOptions(Array("-r", "target/report"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--report", "target/report")) match {
+    parseOptions(Array("--report", "target/report"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with format option but no report directory" should "get default report dir" in {
-    parseOptions(Array("-f", "html")) match {
+    parseOptions(Array("-f", "html"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--formats", "html")) match {
+    parseOptions(Array("--formats", "html"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with format option but no format value(s)" should "not parse" in {
-    parseOptions(Array("-f")) match {
+    parseOptions(Array("-f"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--formats")) match {
+    parseOptions(Array("--formats"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with format options and report directory" should "parse" in {
-    parseOptions(Array("-r", "target/report", "-f", "html,junit")) match {
+    parseOptions(Array("-r", "target/report", "-f", "html,junit"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--report", "target/report", "--formats", "html,junit")) match {
+    parseOptions(Array("--report", "target/report", "--formats", "html,junit"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with CSV input data file" should "parse" in {
     createFile("data.csv")
-    parseOptions(Array("-i", "target/props/data.csv")) match {
+    parseOptions(Array("-i", "target/props/data.csv"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--input-data", "target/props/data.csv")) match {
+    parseOptions(Array("--input-data", "target/props/data.csv"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with non existing CSV input data file" should "error" in {
-    parseOptions(Array("-i", "missing.csv")) match {
+    parseOptions(Array("-i", "missing.csv"), noProcessBaseDir) match {
       case Success(_) => {
         fail("missing csv file should result in error")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with JSON input data file" should "parse" in {
     createFile("data.json")
-    parseOptions(Array("-i", "target/props/data.json")) match {
+    parseOptions(Array("-i", "target/props/data.json"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.json")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--input-data", "target/props/data.json")) match {
+    parseOptions(Array("--input-data", "target/props/data.json"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.json")))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with non existing JSON input data file" should "error" in {
-    parseOptions(Array("-i", "missing.json")) match {
+    parseOptions(Array("-i", "missing.json"), noProcessBaseDir) match {
       case Success(_) => {
         fail("missing json file should result in error")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with conf option with no file" should "not parse" in {
-    parseOptions(Array("-c")) match {
+    parseOptions(Array("-c"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--conf")) match {
+    parseOptions(Array("--conf"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with config option with non existing conf file" should "not parse" in {
-    parseOptions(Array("-c", "nonexisting.conf")) match {
+    parseOptions(Array("-c", "nonexisting.conf"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--conf", "nonexisting.conf")) match {
+    parseOptions(Array("--conf", "nonexisting.conf"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with conf option and existing conf file" should "parse" in {
     val confFile = createFile("gwen.conf")
-    parseOptions(Array("-c", confFile.getPath)) match {
+    parseOptions(Array("-c", confFile.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(confFile))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--conf", confFile.getPath)) match {
+    parseOptions(Array("--conf", confFile.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(confFile))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with conf option and multiple existing config files" should "parse" in {
     val configFileA = createFile("gwen-a.json")
     val configFileB = createFile("gwen-b.conf")
-    parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath)) match {
+    parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath)) match {
+    parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option with no tags" should "not parse" in {
-    parseOptions(Array("-t")) match {
+    parseOptions(Array("-t"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--tags")) match {
+    parseOptions(Array("--tags"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with tags option and valid single include tag" should "parse" in {
-    parseOptions(Array("-t", "@wip")) match {
+    parseOptions(Array("-t", "@wip"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), true)))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", "@wip")) match {
+    parseOptions(Array("--tags", "@wip"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), true)))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option and valid single exclude tag" should "parse" in {
-    parseOptions(Array("-t", "~@wip")) match {
+    parseOptions(Array("-t", "~@wip"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), false)))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", "~@wip")) match {
+    parseOptions(Array("--tags", "~@wip"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), false)))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option and invalid single tag" should "not parse" in {
-    parseOptions(Array("-t", "wip")) match {
+    parseOptions(Array("-t", "wip"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--tags", "!wip")) match {
+    parseOptions(Array("--tags", "!wip"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with tags option and mutiple includes" should "parse" in {
     val tags = "@wip,@regression,@transactional,@simple"
     val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@transactional"), true), (Tag("@simple"), true))
-    parseOptions(Array("-t", tags)) match {
+    parseOptions(Array("-t", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags)) match {
+    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option and mutiple exclude tags" should "parse" in {
     val tags = "~@experimental,~@complex"
     val expected: List[(Tag, Boolean)] = List((Tag("@experimental"), false), (Tag("@complex"), false))
-    parseOptions(Array("-t", tags)) match {
+    parseOptions(Array("-t", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags)) match {
+    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option and mutiple include and exclude tags" should "parse" in {
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true))
-    parseOptions(Array("-t", tags)) match {
+    parseOptions(Array("-t", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags)) match {
+    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with tags option and two tags separated by space" should "not parse" in {
     val tags = "@wip @regression"
-    parseOptions(Array("-t", tags)) match {
+    parseOptions(Array("-t", tags), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--tags", tags)) match {
+    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with tags option and one valid tag and one invalid tag" should "not parse" in {
     val tags = "@valid,invalid"
-    parseOptions(Array("-t", tags)) match {
+    parseOptions(Array("-t", tags), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--tags", tags)) match {
+    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with meta option with no meta file" should "not parse" in {
-    parseOptions(Array("-m")) match {
+    parseOptions(Array("-m"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--meta")) match {
+    parseOptions(Array("--meta"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with with non existing meta file" should "not parse" in {
-    parseOptions(Array("-m", "nonexisting.meta")) match {
+    parseOptions(Array("-m", "nonexisting.meta"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--meta", "nonexisting.meta")) match {
+    parseOptions(Array("--meta", "nonexisting.meta"), noProcessBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
   "Options with one existing meta file" should "parse" in {
     val metaFile = createFile("gwen.meta")
-    parseOptions(Array("-m", metaFile.getPath)) match {
+    parseOptions(Array("-m", metaFile.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaFile.getPath)) match {
+    parseOptions(Array("--meta", metaFile.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
@@ -636,19 +675,19 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile2 = createFile("gwen2.meta")
     val metaFiles = List(metaFile1, metaFile2)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths)) match {
+    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaPaths)) match {
+    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
@@ -658,17 +697,17 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile3 = createFile("gwen3.meta")
     val metaFiles = List(metaFile1, metaFile2, metaFile3)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths)) match {
+    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
       case Success(files) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
-    parseOptions(Array("--meta", metaPaths)) match {
+    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
       case Success(files) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
@@ -677,19 +716,19 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile2 = createFile("gwen2.meta")
     val metaFiles = List(metaFile1, metaFile2)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths)) match {
+    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaPaths)) match {
+    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
@@ -698,12 +737,12 @@ class GwenOptionsTest extends BaseTest with Matchers {
     createDir("dir1")
     val feature1 = createFile("dir1/file1.feature")
 
-    parseOptions(Array(feature1.getPath)) match {
+    parseOptions(Array(feature1.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(feature1))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
@@ -711,12 +750,12 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
     val dir2 = createDir("dir2")
 
-    parseOptions(Array(dir2.getPath)) match {
+    parseOptions(Array(dir2.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(dir2))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
 
   }
@@ -727,22 +766,22 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val feature3 = createFile("dir3/file3.feature")
     val dir4 = createDir("dir4")
 
-    parseOptions(Array(dir3.getPath, feature3.getPath, dir4.getPath)) match {
+    parseOptions(Array(dir3.getPath, feature3.getPath, dir4.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(dir3, feature3, dir4))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with nonexisting paths" should "not parse" in {
 
-    parseOptions(Array("nonexistindir", "nonexisting.file")) match {
+    parseOptions(Array("nonexistindir", "nonexisting.file"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
-      case _ =>
+      case Failure(error) =>
     }
   }
 
@@ -757,11 +796,11 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val feature5 = createFile("dir5/file5.feature")
     val dir6 = createDir("dir6")
 
-    parseOptions(Array("-b", "--parallel", "-v", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath)) match {
+    parseOptions(Array("-b", "--parallel", "-v", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(
           options,
-          process = None,
+          process = Process("", noProcessBaseDir),
           batch = true,
           parallel = true,
           verbose = true,
@@ -776,15 +815,15 @@ class GwenOptionsTest extends BaseTest with Matchers {
           List(dir5, feature5, dir6),
           pretty = false)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath)) match {
+    parseOptions(Array("--batch", "--parallel", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(
           options,
-          process = None,
+          process = Process("", noProcessBaseDir),
           batch = true,
           parallel = true,
           verbose = true,
@@ -799,69 +838,69 @@ class GwenOptionsTest extends BaseTest with Matchers {
           List(dir5, feature5, dir6),
           pretty = false)
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
 
   }
 
   "Options with init command" should "parse" in {
 
-    parseOptions(Array("init")) match {
+    parseOptions(Array("init"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, initDir = new File("gwen"))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with init command and non existing dir" should "parse" in {
 
-    parseOptions(Array("init", "gwen")) match {
+    parseOptions(Array("init", "gwen"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, initDir = new File("gwen"))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with init --docker command" should "parse" in {
 
-    parseOptions(Array("init", "--docker")) match {
+    parseOptions(Array("init", "--docker"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, docker = true, initDir = new File("gwen"))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with init --jenkins command" should "parse" in {
 
-    parseOptions(Array("init", "--jenkins")) match {
+    parseOptions(Array("init", "--jenkins"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, jenkins = true, initDir = new File("gwen"))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with init --jenkins and --force command" should "parse" in {
 
-    parseOptions(Array("init", "--jenkins", "--force")) match {
+    parseOptions(Array("init", "--jenkins", "--force"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, jenkins = true, force = true, initDir = new File("gwen"))
       }
-      case _ =>
-        fail("expected options but failed")
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
     }
   }
 
   "Options with pretty format command without switch or dir" should "fail" in {
-    parseOptions(Array("format")) match {
+    parseOptions(Array("format"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -871,7 +910,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with pretty format command without dir" should "parse" in {
-    parseOptions(Array("format", "--pretty")) match {
+    parseOptions(Array("format", "--pretty"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -881,21 +920,21 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with pretty format command with dir" should "parse" in {
-    parseOptions(Array("format", "--pretty", "src/test/features")) match {
+    parseOptions(Array("format", "--pretty", "src/test/features"), noProcessBaseDir) match {
       case Success(options) => {
         assertOptions(options, pretty = true, formatFiles = List(new File("src/test/features")))
       }
-      case _ => fail("expected options but failed")
+      case Failure(error) => fail(s"expected options but failed with error: $error")
     }
   }
 
-  private def parseOptions(args: Array[String]): Try[GwenOptions] = Try {
-    GwenOptions(args)
+  private def parseOptions(args: Array[String], baseDir: File): Try[GwenOptions] = Try {
+    GwenOptions(args, baseDir)
   }
 
   private def assertOptions(
                              options: GwenOptions,
-                             process: Option[Process] = GwenOptions.Defaults.process,
+                             process: Process = GwenOptions.Defaults.process,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -916,7 +955,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              pretty: Boolean = GwenOptions.Defaults.pretty,
                              formatFiles: List[File] = Nil): Unit = {
 
-    options.process should be (process)
+    options.process.name should be (process.name)
+    options.process.settingsFile.map(_.getCanonicalPath) should be (process.settingsFile.map(_.getCanonicalPath))
     options.batch should be (batch)
     options.parallel should be (parallel)
     options.verbose should be (verbose)
@@ -955,7 +995,6 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.pretty should be (pretty)
     options.formatFiles should be (formatFiles)
 
-    options.interpolate("process is $<gwen.options.process>, yep") should be (s"process is ${process.map(_.name).getOrElse("")}, yep")
     options.interpolate("batch is $<gwen.options.batch>, yep") should be (s"batch is $batch, yep")
     options.interpolate("parallel is $<gwen.options.parallel>, yep") should be (s"parallel is $parallel, yep")
     options.interpolate("verbose is $<gwen.options.verbose>, yep") should be (s"verbose is $verbose, yep")

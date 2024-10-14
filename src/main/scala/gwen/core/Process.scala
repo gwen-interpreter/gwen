@@ -18,14 +18,22 @@
 
  import java.io.File
 
- case class Process(name: String) {
+ case class Process(name: String, baseDir: File) {
 
-    val settingsFile: File = {
-        val files = List("conf", "json", "properties").map(ext => new File(s"${if (File("gwen").exists) "gwen/" else ""}conf/process", s"${name}.$ext"))
+  def isDefault: Boolean = name == ""
+
+  def settingsFile: Option[File] = {
+    if (name.trim != "") {
+        val processDir = new File(new File(baseDir, "conf"), "process")
+        val files = List("conf", "json", "properties").map(ext => new File(processDir, s"${name}.$ext"))
         val exists = files.filter(_.exists)
-        if (exists.isEmpty) Errors.invocationError(s"At least one of ${files.take(files.length - 1).map(_.getPath).mkString(", ")} or ${files.last.getPath} files must exist for -p|--process option $name")
-        else if (exists.length > 1) Errors.invocationError(s"Only one of ${exists.take(exists.length - 1).map(_.getPath).mkString(", ")} or ${exists.last.getPath} files must exist for -p|--process option $name")
-        else exists.head
+        if (exists.isEmpty) Errors.invocationError(s"At least one of ${files.take(files.length - 1).map(_.getName).mkString(", ")} or ${files.last.getName} files must exist in $processDir for $name process")
+        else if (exists.length > 1) Errors.invocationError(s"Only one of ${exists.take(exists.length - 1).map(_.getName).mkString(", ")} or ${exists.last.getName} files must exist in $processDir for $name process")
+        else Some(exists.head)
+    } else {
+        None
     }
+  }
 
  }
+ 

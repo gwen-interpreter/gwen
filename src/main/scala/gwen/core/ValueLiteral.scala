@@ -18,6 +18,7 @@ package gwen.core
 
 enum ValueLiteral(val value: String):
   case blank   extends ValueLiteral("")
+  case empty   extends ValueLiteral("")
   case `true`  extends ValueLiteral("true")
   case `false` extends ValueLiteral("false")
 

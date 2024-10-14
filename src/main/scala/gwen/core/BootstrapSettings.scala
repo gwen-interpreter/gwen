@@ -19,6 +19,7 @@ package gwen.core
 import gwen.core.report.ReportFormat
 import gwen.core.node.gherkin.Tag
 
+import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 
@@ -27,11 +28,15 @@ import scala.util.chaining._
 import java.io.File
 
 /**
-  * Provides access to the default Gwen launch settings.
+  * Provides access to the default Gwen settings.
   */
-object LaunchSettings extends LazyLogging {
+object BootstrapSettings extends LazyLogging {
 
-  private val conf =  Settings.BootstrapConf
+  private var conf = Settings.BootstrapConf
+
+  def mergeProcessSettings(process: Process): Unit = {
+    this.conf = Settings.processConf(process)
+  }
 
   check()
 
@@ -39,6 +44,7 @@ object LaunchSettings extends LazyLogging {
     * Checks and validates all launch settings.
     */
   def check(): Unit = {
+    `gwen.baseDir`
     `gwen.launch.options.batch`
     `gwen.launch.options.format`
     `gwen.launch.options.dryRun`
@@ -48,6 +54,13 @@ object LaunchSettings extends LazyLogging {
     `gwen.launch.options.meta`
     `gwen.launch.options.report`
     `gwen.launch.options.tags`
+  }
+
+  /**
+   * Provides access to the `gwen.baseDir` setting used to set the Gwen base directory.
+   */
+  def `gwen.baseDir`: File = {
+    Settings.toFile(Settings.get("gwen.baseDir", None, Some(conf)))
   }
 
   /**

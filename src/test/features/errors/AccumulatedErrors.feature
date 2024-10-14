@@ -7,6 +7,7 @@ Feature: Accumulated errors
       And I reset accumulated errors
      Then there should be no accumulated errors
       And x should not be blank
+      And x should not be empty
       And y should be "1"
       And z should be true
       And there should be no accumulated errors
@@ -20,7 +21,7 @@ Feature: Accumulated errors
 
   Scenario: Two accumulated errors
     Given w is "1"
-      And x is blank
+      And x is empty
       And z is false
      When I capture w as y
       And I reset accumulated errors

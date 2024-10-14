@@ -52,6 +52,7 @@ object Settings extends LazyLogging {
   }
 
   val BootstrapConf: Config = Settings.load(Settings.userProjectSettingsFiles*)._1
+  def processConf(process: Process): Config = Settings.load((process.settingsFile.toList ++ Settings.userProjectSettingsFiles)*)._1
 
   object Lock
 
@@ -80,10 +81,11 @@ object Settings extends LazyLogging {
     * Initialises all settings in the following order of precedence:
     *   1. System properties passed through -D Java command line option
     *   2. ~/gwen.properties (user overrides)
-    *   3. Settings files passed into this method (@launchSettings param)
+    *   3. Settings files passed into this method (@BootstrapSettings param)
     *      - later ones override earlier ones
-    *   4. Project settings (gwen settings in your project root)
-    *   5. Gwen defaults
+    *   4. Process settings
+    *   5. Project settings (gwen settings in your project root)
+    *   6. Gwen defaults
     */
   def init(settingsFiles: File*): Unit = {
     init(prime = true, settingsFiles*)
@@ -106,18 +108,18 @@ object Settings extends LazyLogging {
     * Loads and initialises all settings in the following order of precedence:
     *   1. System properties passed through -D Java command line option
     *   2. ~/gwen.properties (user overrides)
-    *   3. Settings files passed into this method (@launchSettings param)
+    *   3. Settings files passed into this method (@BootstrapSettings param)
     *      - later ones override earlier ones
     *   4. Project settings (gwen settings in your project root)
     *   5. Gwen defaults
     */
-  private def init(prime: Boolean, launchSettings: File*): Unit = {
+  private def init(prime: Boolean, BootstrapSettings: File*): Unit = {
 
     val settingsFiles = {
       if (prime) {
-        (launchSettings.reverse).foldLeft(userProjectSettingsFiles) { FileIO.appendFile }
+        (BootstrapSettings.reverse).foldLeft(userProjectSettingsFiles) { FileIO.appendFile }
       } else {
-        launchSettings.toList.reverse
+        BootstrapSettings.toList.reverse
       }
     }
 

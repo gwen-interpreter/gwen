@@ -25,9 +25,11 @@ import gwen.core.state.StateLevel
 
 import scopt.OptionParser
 
+import scala.jdk.CollectionConverters._
 import scala.util.chaining._
 
 import java.io.File
+import java.util.Arrays
 
 /**
   * Captures gwen command line options.
@@ -54,7 +56,11 @@ import java.io.File
   * @author Branko Juric
   */
 case class GwenOptions(
-    process: Option[Process] = GwenOptions.Defaults.process,
+    process: Process = {
+      sys.env.get("GWEN_PROCESS").map(_.trim).filter(_ != "") map { name => 
+        Process(name, BootstrapSettings.`gwen.baseDir`)
+      } getOrElse GwenOptions.Defaults.process
+    },
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
     verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -74,13 +80,14 @@ case class GwenOptions(
     pretty: Boolean = GwenOptions.Defaults.pretty,
     formatFiles: List[File] = Nil) {
 
+  sys.props += ((ImplicitValueKeys.`gwen.process.name`, process.name))
+
   def interpolate(source: String): String = {
     val options = GwenOptions.this
     val interpolator = new Interpolator(name => {
         if (name.startsWith("<gwen.options.")) {
           val n = name.substring("gwen.options.".length + 1, name.length - 1)
           (n match {
-            case "process" => Some(options.process.map(_.name).getOrElse(""))
             case "batch" => Some(options.batch)
             case "parallel" => Some(options.parallel)
             case "verbose" => Some(options.verbose)
@@ -130,21 +137,21 @@ object GwenOptions {
   }
 
   object Defaults {
-    val process = None
-    val batch = LaunchSettings.`gwen.launch.options.batch`
-    val format = LaunchSettings.`gwen.launch.options.format` match {
+    def process = Process("", BootstrapSettings.`gwen.baseDir`)
+    def batch = BootstrapSettings.`gwen.launch.options.batch`
+    def format = BootstrapSettings.`gwen.launch.options.format` match {
       case Nil => List(ReportFormat.html)
       case fs => fs
     }
     val conf = Nil
-    val dryRun = LaunchSettings.`gwen.launch.options.dryRun`
-    val features = LaunchSettings.`gwen.launch.options.features`
-    val inputData = LaunchSettings.`gwen.launch.options.inputData`
-    val parallel = LaunchSettings.`gwen.launch.options.parallel`
-    val meta = LaunchSettings.`gwen.launch.options.meta`
-    val report = LaunchSettings.`gwen.launch.options.report`
-    val tags = LaunchSettings.`gwen.launch.options.tags`
-    val verbose = LaunchSettings.`gwen.launch.options.verbose`
+    def dryRun = BootstrapSettings.`gwen.launch.options.dryRun`
+    def features = BootstrapSettings.`gwen.launch.options.features`
+    def inputData = BootstrapSettings.`gwen.launch.options.inputData`
+    def parallel = BootstrapSettings.`gwen.launch.options.parallel`
+    def meta = BootstrapSettings.`gwen.launch.options.meta`
+    def report = BootstrapSettings.`gwen.launch.options.report`
+    def tags = BootstrapSettings.`gwen.launch.options.tags`
+    def verbose = BootstrapSettings.`gwen.launch.options.verbose`
     val debug = false
     val docker = false
     val jenkins = false
@@ -157,13 +164,21 @@ object GwenOptions {
     *
     * @param args the command line arguments
     */
-  def apply(args: Array[String]): GwenOptions = {
+  def apply(args: Array[String], baseDir: File): GwenOptions = {
 
     val parser = new OptionParser[GwenOptions]("gwen") {
 
       version("version") text "Print Gwen version"
 
       help("help") text "Print CLI usage"
+
+      opt[String]('p', "process") action {
+        (ps, c) => {
+          c.copy(
+            process = new Process(ps, baseDir)
+          )
+        }
+      } valueName "name" text "Name of process to launch"
 
       opt[Unit]("parallel") action {
         (_, c) => {
@@ -172,11 +187,6 @@ object GwenOptions {
       } text """|Execute features or scenarios in parallel
                 |- features if gwen.state.level = feature (default)
                 |- scenarios if gwen.state.level = scenario""".stripMargin
-
-      opt[String]('p', "process") action {
-        (ps, c) =>
-          c.copy(process = Some(new Process(ps)))
-      } valueName "name" text "Name of process to launch"
 
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
@@ -312,7 +322,14 @@ object GwenOptions {
 
     }
 
-    (parser.parse(args, GwenOptions()).map { options =>
+    (parser.parse(args, GwenOptions()) flatMap { options =>
+      if (options.process.isDefault) {
+        Some(options)
+      } else {
+        BootstrapSettings.mergeProcessSettings(options.process)
+        parser.parse(args, GwenOptions())
+      }
+    } map { options =>
       new GwenOptions(
         options.process,
         options.batch,
@@ -338,7 +355,7 @@ object GwenOptions {
         else options
       } tap { options =>
         options foreach { opt =>
-          if ((opt.batch) && opt.features.isEmpty) {
+          if (opt.batch && opt.features.isEmpty && opt.process.isDefault) {
             Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
@@ -348,9 +365,9 @@ object GwenOptions {
           if (opt.debug && opt.parallel) {
             Errors.invocationError("Debug mode not supported for parallel executions")
           }
-          if (opt.process.nonEmpty) {
-            if (opt.features.nonEmpty) Errors.invocationError(s"Cannot specify feature(s) on command line with -p|--process option (specify features in ${opt.process.get.settingsFile} file instead with the gwen.options.features setting)")
-            if (opt.metas.nonEmpty) Errors.invocationError(s"Cannot specify meta on command line with -p|--process option (specify meta in ${opt.process.get.settingsFile} file instead with the gwen.options.meta setting)")
+          opt.process.settingsFile foreach { psFile =>
+            if (opt.features.diff(GwenOptions.Defaults.features).nonEmpty) Errors.invocationError(s"Cannot specify features on command line when launching ${opt.process.name} process (use gwen.launch.options.features setting in ${psFile} file instead)")
+            if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${opt.process.name} process (use gwen.launch.options.meta setting in ${psFile} file instead)")
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocation failed (see log for details)"))

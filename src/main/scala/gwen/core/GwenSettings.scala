@@ -69,6 +69,13 @@ object GwenSettings {
   val availableProcessors = Runtime.getRuntime().availableProcessors()
 
   /**
+   * Provides access to the gwen process name.
+   */
+  def `gwen.process.name`: Option[String] = {
+    Settings.getOpt(ImplicitValueKeys.`gwen.process.name`)
+  }
+
+  /**
     * Provides access to the `gwen.feature.failfast.enabled` setting used to enable
     * or disable fail fast mode (default value is `true`).
     * Enabling this feature will fail a feature as soon as the first scenario in that
