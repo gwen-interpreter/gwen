@@ -56,11 +56,7 @@ import java.util.Arrays
   * @author Branko Juric
   */
 case class GwenOptions(
-    process: Process = {
-      sys.env.get("GWEN_PROCESS").map(_.trim).filter(_ != "") map { name => 
-        Process(name, BootstrapSettings.`gwen.baseDir`)
-      } getOrElse GwenOptions.Defaults.process
-    },
+    process: Process = GwenOptions.Defaults.process,
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
     verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -137,7 +133,10 @@ object GwenOptions {
   }
 
   object Defaults {
-    def process = Process("", BootstrapSettings.`gwen.baseDir`)
+    def process = Process(
+      sys.env.get("GWEN_PROCESS").map(_.trim).filter(_.nonEmpty).getOrElse(""), 
+      BootstrapSettings.`gwen.baseDir`
+    )
     def batch = BootstrapSettings.`gwen.launch.options.batch`
     def format = BootstrapSettings.`gwen.launch.options.format` match {
       case Nil => List(ReportFormat.html)
