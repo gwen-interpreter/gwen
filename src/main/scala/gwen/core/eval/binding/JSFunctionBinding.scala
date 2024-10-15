@@ -36,20 +36,20 @@ object JSFunctionBinding {
   def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
   def bind(name: String, javascriptRef: String, argsString: String, delimiter: Option[String], masked: Boolean, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(jsRefKey(name), javascriptRef)
-    env.scopes.set(argsKey(name), argsString)
+    env.topScope.clear(name)
+    env.topScope.set(jsRefKey(name), javascriptRef)
+    env.topScope.set(argsKey(name), argsString)
     delimiter foreach { delim =>
-      env.scopes.set(delimiterKey(name), delim)
+      env.topScope.set(delimiterKey(name), delim)
     }
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
   def find[T <: EvalContext](name: String, ctx: T): Try[JSFunctionBinding[T]] = Try {
-    ctx.scopes.get(jsRefKey(name))
-    ctx.scopes.get(argsKey(name))
+    ctx.topScope.get(jsRefKey(name))
+    ctx.topScope.get(argsKey(name))
     new JSFunctionBinding(name, ctx)
   }
 
@@ -66,7 +66,7 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
     bindIfLazy(
       resolveValue(jsRefKey) { jsRef =>
         resolveValue(argsKey) { argsString =>
-          val delimiter = if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
+          val delimiter = if (ctx.topScope.getOpt(delimiterKey).nonEmpty) {
             Option(resolveValue(delimiterKey) { identity })
           } else {
             None
@@ -76,14 +76,14 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
           } getOrElse {
             List(argsString)
           }
-          val javascript = ctx.scopes.get(JSBinding.key(jsRef))
+          val javascript = ctx.topScope.get(JSBinding.key(jsRef))
           val value = Try(ctx.parseArrowFunction(javascript)) match {
             case Success(Some(func)) =>
               evaluateFunction(func.wrapper(params), Nil)
             case _ =>
               new JSBinding(jsRef, parseParams(jsRef, javascript, params), ctx).resolve()
           }
-          val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+          val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
           if (masked) SensitiveData.mask(name, value) else value
         }
       }
@@ -105,7 +105,7 @@ class JSFunctionBinding[T <: EvalContext](name: String, ctx: T) extends JSBindin
   override def toString: String = Try {
     resolveValue(jsRefKey) { jsRef =>
       resolveValue(argsKey) { argsString =>
-        if (ctx.scopes.getOpt(delimiterKey).nonEmpty) {
+        if (ctx.topScope.getOpt(delimiterKey).nonEmpty) {
           resolveValue(delimiterKey) { delimiter =>
             s"$name [${BindingType.function}: $jsRef, args: $argsString, delimiter: $delimiter]"
           }

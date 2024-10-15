@@ -27,7 +27,7 @@ class DataTableBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T
     ctx.topScope.getObject(DataTable.tableKey) match {
       case Some(table: DataTable) => 
         table.tableScope.getOpt(name) getOrElse {
-          ctx.scopes.getOpt(name) getOrElse {
+          ctx.topScope.getOpt(name) getOrElse {
             Settings.getOpt(name) getOrElse {
               Errors.unboundAttributeError(name)
             }

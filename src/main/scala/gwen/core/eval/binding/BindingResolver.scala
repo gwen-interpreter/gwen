@@ -57,7 +57,7 @@ class BindingResolver[T <: EvalContext](ctx: T) {
     * @return a binding
     */
   def getBinding(name: String): Binding[T, String] = {
-    ctx.scopes.visibleEntry(name) { (n, _) => 
+    ctx.topScope.namedEntry(name) { (n, _) => 
       n.matches(s"""${Regex.quote(name)}(/(javascript|function.+|xpath.+|regex.+|json path.+|sysproc|file|scopeRef|sql.+${if (ctx.options.dryRun) "|dryValue" else ""}))?""")
      } map { case (n, _) =>
       if (n == DryValueBinding.key(name)) new DryValueBinding(name, "", ctx)
@@ -69,7 +69,6 @@ class BindingResolver[T <: EvalContext](ctx: T) {
       else if (n == SysprocBinding.key(name)) new SysprocBinding(name, ctx)
       else if (n == FileBinding.key(name)) new FileBinding(name, ctx)
       else if (n.startsWith(SQLBinding.baseKey(name))) new SQLBinding(name, ctx)
-      else if (n == ScopeRefBinding.key(name)) new ScopeRefBinding(name, ctx)
       else new  SimpleBinding(name, ctx)
     } getOrElse {
       (ctx.topScope.getObject(DataTable.recordKey) match {
@@ -79,7 +78,7 @@ class BindingResolver[T <: EvalContext](ctx: T) {
           case _ => None
         }
       }).getOrElse {
-        ctx.scopes.getOpt(name) map { _ => 
+        ctx.topScope.getOpt(name) map { _ => 
           new SimpleBinding(name, ctx)
         } getOrElse {
           Settings.getOpt(name) map { _ => 

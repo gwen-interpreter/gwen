@@ -40,7 +40,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
       checkStepRules(step, BehaviorType.Assertion, ctx)
       val expected = ctx.parseExpression(operator, expression)
       ctx.perform {
-        val src = ctx.scopes.get(source)
+        val src = ctx.topScope.get(source)
         val actual = pathType match {
           case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
           case BindingType.xpath => ctx.evaluateXPath(

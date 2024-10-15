@@ -30,11 +30,11 @@ object JsonPathBinding {
   private def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
   def bind(name: String, jsonPath: String, source: String, masked: Boolean, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(pathKey(name), jsonPath)
-    env.scopes.set(sourceKey(name), source)
+    env.topScope.clear(name)
+    env.topScope.set(pathKey(name), jsonPath)
+    env.topScope.set(sourceKey(name), source)
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
@@ -52,7 +52,7 @@ class JsonPathBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T,
         resolveRef(sourceKey) { source =>
           ctx.evaluate(resolveDryValue(BindingType.`json path`.toString)) {
             val value = ctx.evaluateJsonPath(jsonPath, source)
-            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
             if (masked) SensitiveData.mask(name, value) else value
           }
         }

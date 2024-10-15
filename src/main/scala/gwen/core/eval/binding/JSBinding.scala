@@ -29,15 +29,15 @@ object JSBinding {
   def maskedKey(name: String) = s"${key(name)}/masked"
 
   def bind(name: String, javascript: String, masked: Boolean, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(key(name), javascript)
+    env.topScope.clear(name)
+    env.topScope.set(key(name), javascript)
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
   def find[T <: EvalContext](name: String, ctx: T): Try[JSBinding[T]] = Try {
-    ctx.scopes.get(key(name))
+    ctx.topScope.get(key(name))
     new JSBinding(name, Nil, ctx)
   }
 
@@ -51,7 +51,7 @@ class JSBinding[T <: EvalContext](name: String, params: List[String], ctx: T) ex
   override def resolve(): String = {
     resolveValue(key) { javascript =>
       val value = evaluateFunction(javascript, params)
-      val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+      val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
       if (masked) SensitiveData.mask(name, value) else value
     }
   }

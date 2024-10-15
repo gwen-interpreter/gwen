@@ -165,17 +165,26 @@ class ScopedData(val scope: String) extends LazyLogging {
   }
 
   /**
+    * Finds the named entry
+    *
+    * @param name the name of the entry to find
+    * @param pred the conditions to match
+    * @return Some named entry or None
+    */
+  def namedEntry(name: String)(pred: ((String, String)) => Boolean): Option[(String, String)] = {
+    filterAtts((n, _) => n == name || n.startsWith(s"$name/")).findEntry(pred)
+  }
+
+  /**
    * Filters all contained attributes based on the given predicate.
    *
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return Some(ScopedData) containing only the attributes accepted by the predicate;
-   *         or None if no attributes are accepted
    */
-  def filterAtts(pred: ((String, String)) => Boolean): Option[ScopedData] = {
-    val result = findEntries(pred).foldLeft(if (isTopScope) new TopScope() else ScopedData(scope)) { (data, entry) =>
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedData = {
+    findEntries(pred).foldLeft(if (isTopScope) new TopScope() else ScopedData(scope)) { (data, entry) =>
       data.set(entry._1, entry._2)
     }
-    if (result.isEmpty) None else Some(result)
   }
 
   /**
@@ -202,18 +211,16 @@ class ScopedData(val scope: String) extends LazyLogging {
 
   /**
     * Returns this entire scope as a String.
-    *
-    * @param padding the padding to insert at the start of each line (default is blank)
     */
-  def asString(padding: String = ""): String = {
-    s"""${padding}scope : "$scope" {${
+  def asString: String = {
+    s"""scope : "$scope" {${
          atts.toList match {
            case Nil => " }"
            case _ => s"""${atts map {
              case (n, v) =>
-               s"\n$padding  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"$padding  ${n.replaceAll(".", " ")}    ")}""""}"
+               s"\n  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"  ${n.replaceAll(".", " ")}    ")}""""}"
            } mkString}
-           |$padding}"""
+           |}"""
          }}""".stripMargin
   }
 

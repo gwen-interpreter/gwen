@@ -121,22 +121,6 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
       ctx.interpolate("""${func} yes""")
     }
   }
-
-  "top binding override in local scope" should "be visible in flash scope" in {
-    val ctx = newCtx
-    ctx.topScope.set("e", "1")
-    ctx.getBoundValue("e") should be ("1")
-    ctx.scopes.addScope("E")
-    ctx.getBoundValue("e") should be ("1")
-    JSBinding.bind("e", "2 + 1", false, ctx)
-    ctx.topScope.set("e", ctx.getBoundValue("e"))
-    ctx.topScope.set("ee", "3")
-    ctx.getBoundValue("ee") should be ("3")
-    ctx.topScope.set("e", "2")                // will create a copy in local flash scope
-    ctx.getBoundValue("e") should be ("2")    // will source value from local flash scope copy
-    JSBinding.bind("e", "2 + 2", false, ctx)
-    ctx.getBoundValue("e") should be ("4")
-  }
   
   private def newCtx: EvalContext = newCtx(GwenOptions())
   

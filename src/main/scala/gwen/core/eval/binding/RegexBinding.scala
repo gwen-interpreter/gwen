@@ -30,11 +30,11 @@ object RegexBinding {
   private def maskedKey(name: String) = s"${baseKey(name)}/masked"
 
   def bind(name: String, regex: String, source: String, masked: Boolean, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(regexKey(name), regex)
-    env.scopes.set(sourceKey(name), source)
+    env.topScope.clear(name)
+    env.topScope.set(regexKey(name), regex)
+    env.topScope.set(sourceKey(name), source)
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
@@ -52,7 +52,7 @@ class RegexBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, St
         resolveRef(sourceKey) { source =>
           ctx.evaluate(resolveDryValue(BindingType.regex.toString)) {
             val value = ctx.extractByRegex(regex, source)
-            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
             if (masked) SensitiveData.mask(name, value) else value
           }
         }

@@ -255,7 +255,7 @@ trait StepEngine[T <: EvalContext] {
             (if (!failure.isDisabledError) {
               if (ctx.options.verbose) {
                 if (ctx.options.batch) {
-                  logger.error(ctx.scopes.visible.asString)
+                  logger.error(ctx.topScope.asString)
                 }
                 logger.error(failure.error.getMessage)
               }

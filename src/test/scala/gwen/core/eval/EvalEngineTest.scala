@@ -51,16 +51,16 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
     var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
     step = engine.evaluateStep(parent, step, ctx)
     step.evalStatus.keyword should be (StatusKeyword.Failed)
-    ctx.scopes.getOpt("x") should be (None)
+    ctx.topScope.getOpt("x") should be (None)
     step.stepDef should be (None)
   }
   
   "Step that passes interpolation" should "should be evaluated" in {
-    ctx.scopes.set("y", "1")
+    ctx.topScope.set("y", "1")
     var step = Step(StepKeyword.Given.toString, """x is "${y}"""")
     step = engine.evaluateStep(parent, step, ctx)
     step.evalStatus.keyword should be (StatusKeyword.Passed)
-    ctx.scopes.get("x") should be ("1")
+    ctx.topScope.get("x") should be ("1")
     step.stepDef should be (None)
   }
   
@@ -73,14 +73,14 @@ class EvalEngineTest extends BaseTest with Matchers with MockitoSugar with TestM
         Step(StepKeyword.When.toString, """I capture x as a"""),
         Step(StepKeyword.Then.toString, """a should be "1"""")))
     ctx.addStepDef(stepDef)
-    ctx.scopes.set("y", "1")
+    ctx.topScope.set("y", "1")
     var step = Step(StepKeyword.When.toString, "I assign x, y, and z")
     step = engine.evaluateStep(parent, step, ctx)
     step.evalStatus.keyword should be (StatusKeyword.Passed)
-    ctx.scopes.get("x") should be ("1")
-    ctx.scopes.get("y") should be ("2")
-    ctx.scopes.get("z") should be ("3")
-    ctx.scopes.get("a") should be ("1")
+    ctx.topScope.get("x") should be ("1")
+    ctx.topScope.get("y") should be ("2")
+    ctx.topScope.get("z") should be ("3")
+    ctx.topScope.get("a") should be ("1")
     step.stepDef should not be (None)
   }
 

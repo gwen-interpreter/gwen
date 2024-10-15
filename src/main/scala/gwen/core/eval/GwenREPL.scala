@@ -27,7 +27,6 @@ import gwen.core.node.gherkin.GherkinKeyword
 import gwen.core.node.gherkin.SpecPrinter
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Step
-import gwen.core.state.ScopedDataStack
 import gwen.core.state.StateLevel
 import gwen.core.status.Failed
 import gwen.core.status.EvalStatus
@@ -323,20 +322,12 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
 
   private def env(options: String): String = {
     Option(options) match {
-      case None => ctx.visibleScopes.asString
+      case None => ctx.asString
       case _ => options.trim match {
-        case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
-          case "-f" => ScopedDataStack(ctx.topScope.filterAtts(GwenREPL.attrFilter(filter))).asString
-          case "-a" => ctx.filterAtts(GwenREPL.attrFilter(filter)).asString
-        }
-        case r"""(-f|-a)$$$switch""" => switch match {
-          case "-f" => ctx.topScope.asString()
-          case "-a" => ctx.asString
-        }
         case r""""(.+?)"$$$filter""" =>
-          ctx.visibleScopes.filterAtts(GwenREPL.attrFilter(filter)).asString
+          ctx.filterAtts(GwenREPL.attrFilter(filter)).asString
         case _ =>
-          """Try again using: env [-a|-f] ["filter"]"""
+          """Try again using: env ["filter"]"""
       }
     }
   }

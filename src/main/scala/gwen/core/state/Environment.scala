@@ -39,9 +39,8 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   def stateLevel: StateLevel = state.stateLevel
   def stepDefs: Map[String, Scenario] = state.getStepDefs
-  def paramScope: TransientStack = scopes.paramScope
-  def scopes: ScopedDataStack = state.scopes
-  def topScope: TopScope = scopes.topScope
+  def paramScope: TransientStack = topScope.paramScope
+  def topScope: TopScope = state.topScope
   def featureScope: TransientStack = topScope.featureScope
   def ruleScope: TransientStack = topScope.ruleScope
   def scenarioScope: TransientStack = topScope.scenarioScope
@@ -73,13 +72,10 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   }
 
-  def asString: String = scopes.asString
+  def asString: String = topScope.asString
 
   /** The spec type currently being evaluated. */
   def specType: SpecType = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType]).getOrElse(SpecType.Feature)
-
-  /** Returns the current visible scopes. */
-  def visibleScopes: ScopedDataStack = scopes.visible
 
   /**
    * Filters all attributes in all scopes based on the given predicate.
@@ -87,14 +83,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
    * @param pred the predicate filter to apply; a (name, value) => boolean function
    * @return a new Scoped data stack containing only the attributes accepted by the predicate;
    */
-  def filterAtts(pred: ((String, String)) => Boolean): ScopedDataStack = scopes.filterAtts(pred)
-
-  /**
-    * Gets a named data scope (creates it if it does not exist)
-    *
-    * @param name the name of the data scope to get (or create and get)
-    */
-  def addScope(name: String): ScopedData = scopes.addScope(name)
+  def filterAtts(pred: ((String, String)) => Boolean): ScopedData = topScope.filterAtts(pred)
 
   /**
     * Adds a step definition to the context.

@@ -29,7 +29,7 @@ import scala.util.chaining._
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
 
-class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
+class EnvState(val topScope: TopScope, val stateLevel: StateLevel) {
 
   /** Loaded step defs. */
   private var stepDefs = Map[String, Scenario]()
@@ -46,11 +46,10 @@ class EnvState(val scopes: ScopedDataStack, val stateLevel: StateLevel) {
   /** Current node chain builder. */
   private var nodeBuilder = new NodeChainBuilder()
 
-  def shallowClone: EnvState = EnvState(scopes.topScope, Some(stepDefs), nodeChain, stateLevel)
+  def shallowClone: EnvState = EnvState(topScope, Some(stepDefs), nodeChain, stateLevel)
 
   def deepClone: EnvState = {
-    new EnvState(scopes.deepClone, stateLevel) tap { newState =>
-      scopes.topScope.copyImplicitsInto(newState.scopes.topScope)
+    new EnvState(topScope.deepClone, stateLevel) tap { newState =>
       newState.stepDefs = stepDefs
       newState.nodeBuilder = NodeChainBuilder(nodeChain)
     }
@@ -155,12 +154,11 @@ object EnvState {
   def apply(): EnvState = EnvState(GwenSettings.`gwen.state.level`)
   
   def apply(stateLevel: StateLevel): EnvState = {
-    new EnvState(new ScopedDataStack(), stateLevel)
+    new EnvState(new TopScope(), stateLevel)
   }
 
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain, stateLevel: StateLevel): EnvState = {
-    new EnvState(new ScopedDataStack(), stateLevel) tap { newState =>
-      topScope.copyImplicitsInto(newState.scopes.topScope)
+    new EnvState(topScope.copyImplicitsInto(new TopScope()), stateLevel) tap { newState =>
       stepDefs foreach { sdefs =>
         newState.stepDefs = sdefs
       }

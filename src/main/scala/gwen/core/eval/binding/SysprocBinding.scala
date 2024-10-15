@@ -34,14 +34,14 @@ object SysprocBinding {
   def maskedKey(name: String) = s"$name/masked"
 
   def bind(name: String, sysproc: String, delimiter: Option[String], unix: Boolean, masked: Boolean, env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(key(name), sysproc)
+    env.topScope.clear(name)
+    env.topScope.set(key(name), sysproc)
     delimiter foreach { delim => 
-      env.scopes.set(delimiterKey(name), delim)
+      env.topScope.set(delimiterKey(name), delim)
     }
-    env.scopes.set(unixKey(name), unix.toString)
+    env.topScope.set(unixKey(name), unix.toString)
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
@@ -55,13 +55,13 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
   private val maskedKey = SysprocBinding.maskedKey(name)
 
   override def resolve(): String = {
-    val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
-    val unix = ctx.scopes.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
+    val delimiter = ctx.topScope.getOpt(delimiterKey).map(ctx.interpolate)
+    val unix = ctx.topScope.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
     bindIfLazy(
       lookupValue(key) { sysproc => 
         ctx.evaluate(resolveDryValue(s"${if (unix) BindingType.unixsysproc else BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}")) {
           val value = ctx.callSysProc(sysproc, delimiter, unix)
-          val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+          val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
           if (masked) SensitiveData.mask(name, value) else value
         }
       }
@@ -69,8 +69,8 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
   }
 
   override def toString: String = Try {
-    val delimiter = ctx.scopes.getOpt(delimiterKey).map(ctx.interpolate)
-    val unix = ctx.scopes.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
+    val delimiter = ctx.topScope.getOpt(delimiterKey).map(ctx.interpolate)
+    val unix = ctx.topScope.getOpt(unixKey).map(ctx.interpolate).map(_.toBoolean).getOrElse(false)
     lookupValue(key) { sysproc => 
       s"$name [${if (unix) BindingType.unixsysproc else BindingType.sysproc}: $sysproc${delimiter.map(d => s", delimiter: $d").getOrElse("")}]"
     }

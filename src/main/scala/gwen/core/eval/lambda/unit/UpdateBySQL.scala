@@ -34,7 +34,7 @@ class UpdateBySQL[T <: EvalContext](dbName: String, updateStmt: String) extends 
       val rowsAffected = ctx.evaluate(0) {
         ctx.executeSQLUpdate(updateStmt, dbName)
       }
-      ctx.scopes.set(s"$dbName rows affected", rowsAffected.toString)
+      ctx.topScope.set(s"$dbName rows affected", rowsAffected.toString)
     }
   }
 

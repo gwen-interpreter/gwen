@@ -32,10 +32,10 @@ object SQLBinding {
 
   def bind(name: String, database: String, selectStmt: String, masked: Boolean, env: Environment): Unit = {
     SQLSupport.checkDBSettings(database)
-    env.scopes.set(databaseKey(name), database)
-    env.scopes.set(selectKey(name), selectStmt)
+    env.topScope.set(databaseKey(name), database)
+    env.topScope.set(selectKey(name), selectStmt)
     if (masked) {
-      env.scopes.set(maskedKey(name), true.toString)
+      env.topScope.set(maskedKey(name), true.toString)
     }
   }
 
@@ -53,7 +53,7 @@ class SQLBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Stri
         resolveValue(selectKey) { selectStmt =>
           ctx.evaluate(resolveDryValue(BindingType.sql.toString)) {
             val value = ctx.executeSQLQuery(selectStmt, database)
-            val masked = ctx.scopes.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
+            val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
             if (masked) SensitiveData.mask(name, value) else value
           }
         }

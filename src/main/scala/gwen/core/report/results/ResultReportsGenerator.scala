@@ -27,7 +27,7 @@ import gwen.core.report.NoopReportGenerator
 import gwen.core.report.ReportFormat
 import gwen.core.report.ReportResult
 import gwen.core.result.SpecResult
-import gwen.core.state.ScopedDataStack
+import gwen.core.state.TopScope
 import gwen.core.status.EvalStatus
 
 import com.typesafe.scalalogging.LazyLogging
@@ -69,7 +69,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     val result = event.source 
     filterFiles(result.spec, result.spec.feature.tags) foreach { resFile => 
-      report(resFile, result.evalStatus, event.scopes)
+      report(resFile, result.evalStatus, event.topScope)
     }
   }
 
@@ -77,7 +77,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val rule = event.source
     if (rule.scenarios.nonEmpty) {
       filterFiles(rule, rule.tags) foreach { resFile => 
-        report(resFile, rule.evalStatus, event.scopes)
+        report(resFile, rule.evalStatus, event.topScope)
       }
     }
   }
@@ -86,7 +86,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val scenario = event.source
     if (!scenario.isOutline && scenario.steps.nonEmpty) {
       filterFiles(scenario, scenario.tags) foreach { resFile => 
-        report(resFile, scenario.evalStatus, event.scopes)
+        report(resFile, scenario.evalStatus, event.topScope)
       }
     }
   }
@@ -95,7 +95,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val examples = event.source
     if (examples.scenarios.nonEmpty) {
       filterFiles(examples, examples.tags) foreach { resFile => 
-        report(resFile, examples.evalStatus, event.scopes)
+        report(resFile, examples.evalStatus, event.topScope)
       }
     }
   }
@@ -104,7 +104,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val stepDef = event.source
     if (!stepDef.evalStatus.isLoaded && !stepDef.isOutline && !stepDef.isSynthetic && stepDef.steps.nonEmpty) {
       filterFiles(stepDef, stepDef.tags) foreach { resFile => 
-        report(resFile, stepDef.evalStatus, event.scopes)
+        report(resFile, stepDef.evalStatus, event.topScope)
       }
     }
   }
@@ -133,11 +133,11 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     resultFiles.filter(resFile => ids.contains(resFile.id))
   }
 
-  private def report(resFile: ResultFile, evalStatus: EvalStatus, scopes: ScopedDataStack): Unit = {
+  private def report(resFile: ResultFile, evalStatus: EvalStatus, topScope: TopScope): Unit = {
     if (resFile.status.map(_ == evalStatus.keyword).getOrElse(true)) {
       val record = resFile.fields map { field =>
         val value = {
-          scopes.getOpt(field.ref).getOrElse {
+          topScope.getOpt(field.ref).getOrElse {
             if (field.optional) "" else { 
               addError(s"Unbound ${field.name} field${ if (field.name != field.ref) s" ref ${field.ref}" else ""} in results file: ${resFile.file}")
               s"Unbound ref: ${field.ref}"

@@ -29,7 +29,7 @@ class DataRecordBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
       case Some(record: ScopedData) => 
         record.getOpt(name).orElse(record.getOpt(s"data[$name]")).getOrElse {
           record.getOpt(name) getOrElse {
-            ctx.scopes.getOpt(name) getOrElse {
+            ctx.topScope.getOpt(name) getOrElse {
               Settings.getOpt(name) getOrElse {
                 Errors.unboundAttributeError(name)
               }

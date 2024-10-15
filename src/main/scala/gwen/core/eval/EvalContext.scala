@@ -255,7 +255,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   def addErrorAttachments(step: Step, failure: Failed): Step = {
     step
       .addAttachment("Error details", "txt", failure.error.writeStackTrace())
-      .addAttachment(s"Environment", "txt", scopes.visible.asString)
+      .addAttachment(s"Environment", "txt", topScope.asString)
   }
 
    def assertWithError(assertion: Boolean, customError: Option[String], assertError: String, mode: AssertionMode): Unit = {

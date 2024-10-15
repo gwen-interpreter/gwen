@@ -31,10 +31,10 @@ object FileBinding {
   def encodingKey(name: String) = s"$name/${BindingType.file}/encoding"
 
   def bind(name: String, filepath: String, encoding: Option[String], env: Environment): Unit = {
-    env.scopes.clear(name)
-    env.scopes.set(key(name), filepath)
+    env.topScope.clear(name)
+    env.topScope.set(key(name), filepath)
     encoding foreach { enc => 
-      env.scopes.set(encodingKey(name), enc)
+      env.topScope.set(encodingKey(name), enc)
     }
   }
 
@@ -51,7 +51,7 @@ class FileBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, Str
         ctx.evaluate(resolveDryValue(BindingType.file.toString)) {
           val file = new File(filePath)
           if (file.exists()) {
-            val contents = ctx.scopes.getOpt(encodingKey) match {
+            val contents = ctx.topScope.getOpt(encodingKey) match {
               case Some(enc) => 
                 Source.fromFile(file, enc).mkString
               case _ => 

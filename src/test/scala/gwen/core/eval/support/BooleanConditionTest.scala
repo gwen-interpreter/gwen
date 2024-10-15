@@ -41,103 +41,103 @@ class BooleanConditionTest extends BaseTest with Matchers {
 
   "Bound true JS condition" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSBinding.key("condition"), "1 === 1")
+    ctx.topScope.set(JSBinding.key("condition"), "1 === 1")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound false JS condition" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSBinding.key("condition"), "1 === 2")
+    ctx.topScope.set(JSBinding.key("condition"), "1 === 2")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound true JS condition" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set(JSBinding.key("condition"), "1 === 1")
+    ctx.topScope.set(JSBinding.key("condition"), "1 === 1")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound false JS condition" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set(JSBinding.key("condition"), "1 === 2")
+    ctx.topScope.set(JSBinding.key("condition"), "1 === 2")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound JS condition with not prefix" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSBinding.key("not condition"), "1 === 1")
+    ctx.topScope.set(JSBinding.key("not condition"), "1 === 1")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
     BooleanCondition("not condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound true literal" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set("condition", "true")
+    ctx.topScope.set("condition", "true")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound false literal" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set("condition", "false")
+    ctx.topScope.set("condition", "false")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound true literal" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set("condition", "true")
+    ctx.topScope.set("condition", "true")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound false literal" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set("condition", "false")
+    ctx.topScope.set("condition", "false")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound literal with not prefix" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set("not condition", "true")
+    ctx.topScope.set("not condition", "true")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
     BooleanCondition("not condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound true JS function as condition" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
-    ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "true")
-    ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
+    ctx.topScope.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
+    ctx.topScope.set(JSFunctionBinding.argsKey("condition"), "true")
+    ctx.topScope.set(JSBinding.key("toBoolean"), "arguments[0]")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound false JS function as condition" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
-    ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "false")
-    ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
+    ctx.topScope.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
+    ctx.topScope.set(JSFunctionBinding.argsKey("condition"), "false")
+    ctx.topScope.set(JSBinding.key("toBoolean"), "arguments[0]")
     BooleanCondition("condition", false, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound true JS function as condition" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
-    ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "true")
-    ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
+    ctx.topScope.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
+    ctx.topScope.set(JSFunctionBinding.argsKey("condition"), "true")
+    ctx.topScope.set(JSBinding.key("toBoolean"), "arguments[0]")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (false)
   }
 
   "Bound false JS function as condition" should "invert when negated" in {
     val ctx = newCtx
-    ctx.scopes.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
-    ctx.scopes.set(JSFunctionBinding.argsKey("condition"), "false")
-    ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
+    ctx.topScope.set(JSFunctionBinding.jsRefKey("condition"), "toBoolean")
+    ctx.topScope.set(JSFunctionBinding.argsKey("condition"), "false")
+    ctx.topScope.set(JSBinding.key("toBoolean"), "arguments[0]")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
   }
 
   "Bound JS function as condition with not prefix" should "evaluate" in {
     val ctx = newCtx
-    ctx.scopes.set(JSFunctionBinding.jsRefKey("not condition"), "toBoolean")
-    ctx.scopes.set(JSFunctionBinding.argsKey("not condition"), "true")
-    ctx.scopes.set(JSBinding.key("toBoolean"), "arguments[0]")
+    ctx.topScope.set(JSFunctionBinding.jsRefKey("not condition"), "toBoolean")
+    ctx.topScope.set(JSFunctionBinding.argsKey("not condition"), "true")
+    ctx.topScope.set(JSBinding.key("toBoolean"), "arguments[0]")
     BooleanCondition("condition", true, timeout, ctx).evaluate() should be (true)
     BooleanCondition("not condition", false, timeout, ctx).evaluate() should be (true)
   }

@@ -198,7 +198,7 @@ class NodeEventDispatcher extends LazyLogging {
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Option[NodeEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = NodeEvent(phase, callChain, source, env.scopes)
+      val event = NodeEvent(phase, callChain, source, env.topScope)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

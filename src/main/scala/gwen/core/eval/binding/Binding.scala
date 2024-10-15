@@ -97,7 +97,7 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     * @return the resolved and interpolated value
     */
   private def resolve(key: String)(resolver: String => U): U = { 
-    ctx.scopes.getOpt(key) map { value => 
+    ctx.topScope.getOpt(key) map { value => 
       resolver(value)
     } getOrElse {
       Errors.unboundAttributeError(name)

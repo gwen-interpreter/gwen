@@ -71,7 +71,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
       }
       record foreach { (_, r) => 
         val value = r(idx)
-        ctx.scopes.topScope.set(name, value)
+        ctx.topScope.set(name, value)
       }
     }
   }

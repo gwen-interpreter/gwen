@@ -18,7 +18,6 @@ package gwen.core.state
 
 import gwen.core._
 import gwen.core.data.DataRecord
-import gwen.core.eval.binding.ScopeRefBinding
 import gwen.core.node.gherkin.Spec
 import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
@@ -68,10 +67,17 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
     */
   val stepDefScope = TransientStack.stepDefStack
 
+  /**
+    *  Provides access to the parameter scope.
+    */
+  val paramScope = TransientStack.paramsStack
+
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
 
-  def deepCopyInto(tScope: TopScope): TopScope = tScope tap { _ => 
+  override def deepClone: TopScope = deepCloneInto(new TopScope())
+
+  def deepCloneInto(tScope: TopScope): TopScope = tScope tap { _ => 
     tScope.currentScope = currentScope.map(_.deepClone)
     tScope.objectStack = objectStack
     copyImplicitsInto(tScope)
@@ -83,6 +89,7 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
     ruleScope.deepCloneInto(tScope.ruleScope)
     scenarioScope.deepCloneInto(tScope.scenarioScope)
     stepDefScope.deepCloneInto(tScope.stepDefScope)
+    paramScope.deepCloneInto(tScope.paramScope)
   }
 
   /**
@@ -96,14 +103,9 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
     * @return the current scope containing the old attributes plus the
     *         newly added attribute
     */
-  override def set(name: String, value: String): ScopedData =
-    super.set(name, value) tap { _=>
-      currentScope foreach { cs =>
-        if (cs.findEntries { case (n, _) => n == name || n.startsWith(s"$name/") } nonEmpty) {
-          cs.set(ScopeRefBinding.key(name), scope)
-        }
-      }
-    }
+  override def set(name: String, value: String): ScopedData = {
+    super.set(name, value)
+  }
 
   /**
     * Pushes a named object to the object stack.
