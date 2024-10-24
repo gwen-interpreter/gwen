@@ -42,11 +42,11 @@ object SensitiveData {
   private val MaskedValues = mutable.ArrayBuffer[MaskedValue]()
 
   private val ZeroCounter = new AtomicInteger(0)
-  private val Mask = GwenSettings.`gwen.mask.char`.toString * 5
-  private val MaskPattern = Pattern.quote(Mask)
   private val MaskedNameSuffix = ":masked"
-  private val MaskedNamePattern = s"(.+?)$MaskedNameSuffix".r
-  private val MaskedValuePattern = s"(?s).*($MaskPattern$ZeroChar+).*".r
+  private def Mask = GwenSettings.`gwen.mask.char`.toString * 5
+  private def MaskPattern = Pattern.quote(Mask)
+  private def MaskedNamePattern = s"(.+?)$MaskedNameSuffix".r
+  private def MaskedValuePattern = s"(?s).*($MaskPattern$ZeroChar+).*".r
 
   private def countZeroes(masked: String): Int = masked.count(_ == ZeroChar)
 

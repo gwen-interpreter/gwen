@@ -75,7 +75,7 @@ import scala.util.matching.Regex
 
   "withValue" should "pass in unmasked value" in {
     withSetting("my.prop:masked", "howdydoo") {
-      val unmasked = SensitiveData.withValue(sys.props("my.prop")) { identity }
+      val unmasked = SensitiveData.withValue(Settings.get("my.prop")) { identity }
       unmasked should be ("howdydoo")
     }
   }
@@ -90,7 +90,7 @@ import scala.util.matching.Regex
 
   "withValue" should "unmask masked value" in {
     withSetting("my.prop:masked", "howdydoo") {
-      val unmasked = SensitiveData.withValue(s"Well ${sys.props("my.prop")} partner!") { identity }
+      val unmasked = SensitiveData.withValue(s"Well ${Settings.get("my.prop")} partner!") { identity }
       unmasked should be ("Well howdydoo partner!")
     }
   }
@@ -98,7 +98,7 @@ import scala.util.matching.Regex
   "withValue" should "unmask multiple masked values" in {
     withSetting("my.prop.1:masked", "howdydoo") {
       withSetting("my.prop.2:masked", "partner") {
-        val unmasked = SensitiveData.withValue(s"Well ${sys.props("my.prop.1")} ${sys.props("my.prop.2")}!") { identity }
+        val unmasked = SensitiveData.withValue(s"Well ${Settings.get("my.prop.1")} ${Settings.get("my.prop.2")}!") { identity }
         unmasked should be ("Well howdydoo partner!")
       }
     }
@@ -109,8 +109,8 @@ import scala.util.matching.Regex
       withSetting("my.prop.2:masked", "partner") {
         val unmasked = SensitiveData.withValue(
           s"""|Well
-              | ${sys.props("my.prop.1")}
-              |  ${sys.props("my.prop.2")}!""".stripMargin) { identity }
+              | ${Settings.get("my.prop.1")}
+              |  ${Settings.get("my.prop.2")}!""".stripMargin) { identity }
         unmasked should be (
           """|Well
              | howdydoo

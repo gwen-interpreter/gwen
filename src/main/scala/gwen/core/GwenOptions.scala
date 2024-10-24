@@ -135,22 +135,22 @@ object GwenOptions {
   object Defaults {
     def process = Process(
       sys.env.get("GWEN_PROCESS").map(_.trim).filter(_.nonEmpty).getOrElse(""), 
-      BootstrapSettings.`gwen.baseDir`
+      GwenSettings.`gwen.baseDir`
     )
-    def batch = BootstrapSettings.`gwen.launch.options.batch`
-    def format = BootstrapSettings.`gwen.launch.options.format` match {
+    def batch = GwenSettings.`gwen.launch.options.batch`
+    def format = GwenSettings.`gwen.launch.options.format` match {
       case Nil => List(ReportFormat.html)
       case fs => fs
     }
     val conf = Nil
-    def dryRun = BootstrapSettings.`gwen.launch.options.dryRun`
-    def features = BootstrapSettings.`gwen.launch.options.features`
-    def inputData = BootstrapSettings.`gwen.launch.options.inputData`
-    def parallel = BootstrapSettings.`gwen.launch.options.parallel`
-    def meta = BootstrapSettings.`gwen.launch.options.meta`
-    def report = BootstrapSettings.`gwen.launch.options.report`
-    def tags = BootstrapSettings.`gwen.launch.options.tags`
-    def verbose = BootstrapSettings.`gwen.launch.options.verbose`
+    def dryRun = GwenSettings.`gwen.launch.options.dryRun`
+    def features = GwenSettings.`gwen.launch.options.features`
+    def inputData = GwenSettings.`gwen.launch.options.inputData`
+    def parallel = GwenSettings.`gwen.launch.options.parallel`
+    def meta = GwenSettings.`gwen.launch.options.meta`
+    def report = GwenSettings.`gwen.launch.options.report`
+    def tags = GwenSettings.`gwen.launch.options.tags`
+    def verbose = GwenSettings.`gwen.launch.options.verbose`
     val debug = false
     val docker = false
     val jenkins = false
@@ -325,7 +325,7 @@ object GwenOptions {
       if (options.process.isDefault) {
         Some(options)
       } else {
-        BootstrapSettings.mergeProcessSettings(options.process)
+        Settings.init(options.process.settingsFile.toList)
         parser.parse(args, GwenOptions())
       }
     } map { options =>

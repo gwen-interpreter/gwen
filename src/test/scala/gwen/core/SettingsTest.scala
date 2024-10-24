@@ -52,8 +52,14 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(propFile)
-      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+      try {
+        Settings.init(List(propFile))
+        Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+      } finally {
+        sys.props -= "prop.host"
+        sys.props -= "prop.host.port"
+        sys.props -= "prop.url"
+      }
     }
   }
   
@@ -67,22 +73,14 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(propFile)
-      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
-    }
-  }
-  
-  "existing system property" should "not be overriden when override flag is false" in {
-    withSetting("gwen.target.browser", "firefox") {
-      Settings.add("gwen.target.browser", "chrome", overrideIfExists = false)
-      Settings.get("gwen.target.browser") should be ("firefox")
-    }
-  }
-  
-  "existing system property" should "be overriden when override flag is true" in {
-    withSetting("gwen.target.browser", "firefox") {
-      Settings.add("gwen.target.browser", "chrome", overrideIfExists = true)
-      Settings.get("gwen.target.browser") should be ("chrome")
+      try {
+        Settings.init(List(propFile))
+        Settings.get("prop.url") should be ("http://localhost:8090/howdy")
+      } finally {
+        sys.props -= "prop.host"
+        sys.props -= "prop.host.port"
+        sys.props -= "prop.url"
+      }
     }
   }
 
@@ -97,49 +95,13 @@ class SettingsTest extends BaseTest with Matchers {
     )
     intercept[MissingSettingException] {
       Settings.exclusively {
-        Settings.init(propFile)
-      }
-    }
-  }
-
-  "Settings.entries" should "return all system and local entries" in {
-    withSetting("gwen.target.browser", "chrome") {
-      val size = Settings.size
-      (size > 0) should be (true)
-      Settings.entries.size should be (size)
-      try {
-        Settings.get("gwen.target.browser") should be ("chrome")
-        Settings.entries.filter(_._1 == "gwen.target.browser").values.head should be ("chrome")
-        Settings.setLocal("gwen.target.browser", "safari")  // override sys property
-        Settings.get("gwen.target.browser") should be ("safari")
-        Settings.contains("gwen.target.browser") should be (true)
-        Settings.entries.filter(_._1 == "gwen.target.browser").values.head should be ("safari")
-        Settings.entries.size should be (size)
-        Settings.entries.size should be (Settings.size)
-      } finally {
-        Settings.clearLocal("gwen.target.browser")
-        Settings.get("gwen.target.browser") should be ("chrome") // sys property still thre
-        Settings.entries.size should be (size)
-      }
-    }
-  }
-
-  "Settings.names" should "return all system and local names" in {
-    withSetting("gwen.target.browser", "chrome") {
-      val size = Settings.size
-      (size > 0) should be (true)
-      Settings.names.size should be (size)
-      try {
-        Settings.get("gwen.target.browser") should be ("chrome")
-        Settings.setLocal("gwen.target.browser", "safari")  // override sys property
-        Settings.get("gwen.target.browser") should be ("safari")
-        Settings.contains("gwen.target.browser") should be (true)
-        Settings.names.size should be (size)
-        Settings.names.size should be (Settings.size)
-      } finally {
-        Settings.clearLocal("gwen.target.browser")
-        Settings.get("gwen.target.browser") should be ("chrome") // sys property still thre
-        Settings.names.size should be (size)
+        try {
+          Settings.init(List(propFile))
+        } finally {
+          sys.props -= "prop.host"
+          sys.props -= "prop.host.port"
+          sys.props -= "prop.url"
+        }
       }
     }
   }
@@ -152,7 +114,7 @@ class SettingsTest extends BaseTest with Matchers {
     }
   }
 
-  "multi name-value properties" should "should merge" in {
+  "multi name-value properties" should "merge" in {
     withSetting("gwen.web.chrome.prefs", "alternate_error_pages.enabled=false,session.length_limit=9999999999,other=?") {
       withSetting("gwen.web.chrome.pref.download.prompt_for_download", "false") {
         withSetting("gwen.web.chrome.pref.download.default_directory", "downloads") {
@@ -197,7 +159,7 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(confFile)
+      Settings.init(List(confFile))
       Settings.get("my.secret.conf.setting").contains("*****") should be (true)
     }
   }
@@ -215,7 +177,7 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(confFile)
+      Settings.init(List(confFile))
       Settings.get("my.website.token").contains("*****") should be (true)
       Settings.get("my.website.url").contains("https://host?token=*****") should be (true)
     }
@@ -237,7 +199,7 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(confFile)
+      Settings.init(List(confFile))
       Settings.get("my.secret.json.setting").contains("*****") should be (true)
     }
   }
@@ -258,9 +220,14 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(confFile)
-      Settings.get("a.b") should be ("1")
-      Settings.get("a.b.c") should be ("2")
+      try {
+        Settings.init(List(confFile))
+        Settings.get("a.b") should be ("1")
+        Settings.get("a.b.c") should be ("2")
+      } finally {
+        sys.props -= "a.b"
+        sys.props -= "a.b.c"
+      }
     }
   }
 
@@ -273,7 +240,7 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      Settings.init(propFile)
+      Settings.init(List(propFile))
       Settings.get("d.e") should be ("3")
       Settings.get("d.e.f") should be ("4")
     }
@@ -297,7 +264,7 @@ class SettingsTest extends BaseTest with Matchers {
            |""".stripMargin
       )
       Settings.exclusively {
-        Settings.init(propFile)
+        Settings.init(List(propFile))
         Settings.get("j.k") should be ("7")
         Settings.get("j.k.l") should be ("8")
       }

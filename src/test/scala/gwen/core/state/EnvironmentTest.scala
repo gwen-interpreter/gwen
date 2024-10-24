@@ -28,7 +28,7 @@ import org.scalatest.matchers.should.Matchers
 class EnvironmentTest extends BaseTest with Matchers with TestModel {
   
   "New env context" should "contain no StepDefs" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.getStepDef("google it", None) should be (None)
   }
   
@@ -41,7 +41,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     
     val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef)
     env.getStepDef("""I search for "gwen"""", None) should be (Some(stepdef))
     env.getStepDef("I am not defined", None) should be (None)
@@ -57,7 +57,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     
     val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef) 
     env.getStepDef("""I search for "gwen"""", None) should be (Some(stepdef))
     env.reset(StateLevel.feature)
@@ -74,7 +74,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     
     val stepdef = Scenario(List(Tag("@StepDef")), """I search for "gwen"""", Nil, None, steps)
 
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.set("engineName", "Gwen-Core")
     env.featureScope.set("gwen.feature.file.name", "file.feature")
     env.featureScope.set("gwen.feature.file.simpleName", "file")
@@ -104,7 +104,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef4 = Scenario(List(Tag("@StepDef")), "z = 1 + <x>", Nil, None, Nil)
     val stepdef5 = Scenario(List(Tag("@StepDef")), "z = <x> - <y>", Nil, None, Nil)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
 
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
@@ -130,7 +130,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     
     val stepdef = Scenario(List(Tag("@StepDef")), """I do a search for <searchTerm>""", Nil, None, Nil)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef)
     
     val docString1 = "DocString"
@@ -155,7 +155,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef2 = Scenario(List(Tag("@StepDef")), "c = a + <b>", Nil, None, Nil)
     val stepdef3 = Scenario(List(Tag("@StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
 
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
@@ -175,7 +175,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef1 = Scenario(List(Tag("@StepDef")), "z = a + <b>", Nil, None, Nil)
     val stepdef2 = Scenario(List(Tag("@StepDef")), "z = <x> + <y>", Nil, None, Nil)
     
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
 
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
@@ -188,29 +188,25 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
   
   forAll (levels) { level =>
     "New feature env context" should s"have $level scope" in {
-      withSetting("gwen.state.level", level) {
-        val env = newEnv
-        env.topScope.scope should be (level)
-        env.topScope.isTopScope should be (true)
-      }
+      val env = newEnv(StateLevel.valueOf(level))
+      env.topScope.scope should be (level)
+      env.topScope.isTopScope should be (true)
     }
   }
   
   forAll (levels) { level =>
     s"Bound $level scope attribute" should "be removed after reset" in {
-      withSetting("gwen.state.level", level) {
-        val env = newEnv
-        env.topScope.set("engineName", "Gwen-Core")
-        env.topScope.get("engineName") should be ("Gwen-Core")
-        env.reset(StateLevel.valueOf(level))
-        env.topScope.getOpt("engineName") should be (None)
-        env.topScope.scope should be (level)
-      }
+      val env = newEnv(StateLevel.valueOf(level))
+      env.topScope.set("engineName", "Gwen-Core")
+      env.topScope.get("engineName") should be ("Gwen-Core")
+      env.reset(StateLevel.valueOf(level))
+      env.topScope.getOpt("engineName") should be (None)
+      env.topScope.scope should be (level)
     }
   }
 
   "Implicit top scope attribute" should "be removed after feature level reset" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.set("engineName", "Gwen-Core")
     env.topScope.get("engineName") should be ("Gwen-Core")
     env.topScope.set("gwen.feature.file.name", "file.feature")
@@ -231,30 +227,28 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
 
   forAll (levels) { level =>
     s"Bound $level level scope attribute" should "show up in asString" in {
-      withSetting("gwen.state.level", level) {
-        val env = newEnv
-        env.topScope.set("firstName", "Gwen")
-        env.topScope.get("firstName") should be ("Gwen")
-        env.asString should be (
-          s"""scope : "$level" {
-             |  firstName : "Gwen"
-             |}""".stripMargin)                                   
-      }
+      val env = newEnv(StateLevel.valueOf(level))
+      env.topScope.set("firstName", "Gwen")
+      env.topScope.get("firstName") should be ("Gwen")
+      env.asString should be (
+        s"""scope : "$level" {
+            |  firstName : "Gwen"
+            |}""".stripMargin)                                   
     }
   }
   
   "env.asString on new env context" should "contain empty scopes" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.asString should be ("""scope : "feature" { }""")
   }
   
   "env.filterAtts on empty context" should "should return empty value" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.filterAtts { case (name, _) => name == "page"}.asString should be ("""scope : "feature" { }""")
   }
   
   "StepDef names" should "not start with a keyword" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     StepKeyword.names foreach { keyword =>
       val stepdef = Scenario(List(Tag("@StepDef")), s"""$keyword I search for "gwen"""", Nil, None, Nil)
       intercept[InvalidStepDefException] {
@@ -264,7 +258,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
   }
 
   "Getting bound objects from cache" should "get those objects" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.pushObject("greeting", "howdy")
     env.topScope.pushObject("gwen", "interpreter")
     env.topScope.getObject("greeting") should be (Some("howdy"))
@@ -272,7 +266,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
   }
 
   "Popping bound object from cache" should "clear that object" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.pushObject("greeting", "howdy")
     env.topScope.pushObject("gwen", "interpreter")
     env.topScope.popObject("greeting") should be (Some("howdy"))
@@ -281,7 +275,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
   }
 
   "Resetting context" should "should clear all objects from cache" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.pushObject("greeting", "howdy")
     env.topScope.pushObject("gwen", "interpreter")
     env.reset(StateLevel.feature)
@@ -290,7 +284,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
   }
 
   "Managing bound and shadowed objects from cache" should "work as expected" in {
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.topScope.pushObject("greeting", "howdy")
     env.topScope.pushObject("gwen", "interpreter 1")
     env.topScope.pushObject("gwen", "interpreter 2")
@@ -320,7 +314,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef4 = Scenario(List(Tag("@StepDef")), """I give name "<name>", age "<age>", gender "<gender>" and title "<title>"""", Nil, None, Nil)
     val stepdef5 = Scenario(List(Tag("@StepDef")), """I test "<param1>" "<param2>"""", Nil, None, Nil)
 
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
     env.addStepDef(stepdef3)
@@ -425,7 +419,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef1 = Scenario(List(Tag("@StepDef")), """I "<a>" on "<b>" and "<c>"""", Nil, None, Nil)
     val stepdef2 = Scenario(List(Tag("@StepDef")), """I "<a>" on "<b>"""", Nil, None, Nil)
 
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
 
@@ -439,7 +433,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     val stepdef1 = Scenario(List(Tag("@StepDef")), """I <a> on <b> and <c>""", Nil, None, Nil)
     val stepdef2 = Scenario(List(Tag("@StepDef")), """I <a> on <b>""", Nil, None, Nil)
 
-    val env = newEnv
+    val env = newEnv(StateLevel.feature)
     env.addStepDef(stepdef1)
     env.addStepDef(stepdef2)
 
@@ -449,10 +443,6 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
 
   }
   
-  private def newEnv: Environment = new Environment(EnvState()) { 
-    override def close(): Unit = {
-      super.reset(StateLevel.feature)
-    }
-  }
+  private def newEnv(stateLevel: StateLevel): Environment = new Environment(EnvState(stateLevel)) { }
 
 }

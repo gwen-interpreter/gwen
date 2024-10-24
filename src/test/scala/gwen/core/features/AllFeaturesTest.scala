@@ -43,7 +43,7 @@ class AllFeaturesTest extends BaseTest {
         settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
       )
         
-      Settings.init(options.settingsFiles*)
+      Settings.init(options.settingsFiles)
       interpreter.run(options, None) match {
         case _: Passed => // excellent :)
         case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
@@ -67,7 +67,7 @@ class AllFeaturesTest extends BaseTest {
         settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf"))
       )
         
-      Settings.init(options.settingsFiles*)
+      Settings.init(options.settingsFiles)
       interpreter.run(options, None) match {
         case _: Passed => // excellent :)
         case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)

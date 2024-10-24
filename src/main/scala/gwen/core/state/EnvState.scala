@@ -49,7 +49,7 @@ class EnvState(val topScope: TopScope, val stateLevel: StateLevel) {
   def shallowClone: EnvState = EnvState(topScope, Some(stepDefs), nodeChain, stateLevel)
 
   def deepClone: EnvState = {
-    new EnvState(topScope.deepClone, stateLevel) tap { newState =>
+    new EnvState(topScope.deepClone(stateLevel), stateLevel) tap { newState =>
       newState.stepDefs = stepDefs
       newState.nodeBuilder = NodeChainBuilder(nodeChain)
     }
@@ -154,11 +154,11 @@ object EnvState {
   def apply(): EnvState = EnvState(GwenSettings.`gwen.state.level`)
   
   def apply(stateLevel: StateLevel): EnvState = {
-    new EnvState(new TopScope(), stateLevel)
+    new EnvState(new TopScope(stateLevel), stateLevel)
   }
 
   def apply(topScope: TopScope, stepDefs:  Option[Map[String, Scenario]], nodeChain: NodeChain, stateLevel: StateLevel): EnvState = {
-    new EnvState(topScope.copyImplicitsInto(new TopScope()), stateLevel) tap { newState =>
+    new EnvState(topScope.copyImplicitsInto(new TopScope(stateLevel)), stateLevel) tap { newState =>
       stepDefs foreach { sdefs =>
         newState.stepDefs = sdefs
       }

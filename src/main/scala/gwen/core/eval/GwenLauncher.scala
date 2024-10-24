@@ -18,7 +18,6 @@ package gwen.core.eval
 
 import gwen.core._
 import gwen.core.Errors.GwenException
-import gwen.core.Settings
 import gwen.core.data.DataSource
 import gwen.core.init.ProjectInitialiser
 import gwen.core.node.FeatureStream

@@ -19,6 +19,7 @@ package gwen.core.state
 import gwen.core._
 import gwen.core.data.DataRecord
 import gwen.core.node.gherkin.Spec
+import gwen.core.state.StateLevel
 import gwen.core.status.EvalStatus
 import gwen.core.status.StatusKeyword
 
@@ -28,19 +29,13 @@ import scala.util.chaining._
 import scala.jdk.CollectionConverters._
 
 /**
-  * Binds all top level attributes. Also included is a cache for storing non string objects. 
-  * The top scope can be a feature or scenario level scope depending on the `gwen.state.level` setting.
+  * Binds all top level attributes. Also included is a cache for various scopes and arbitrary objects. 
   *
   * @author Branko Juric
   */
-class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) with ImplicitValueKeys {
+class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) with ImplicitValueKeys {
 
   override val isTopScope = true
-
-  /**
-    *  Provides access to the current (non top) scope.
-    */
-  private [state] var currentScope: Option[ScopedData] = None
 
   /**
     *  Provides access to the rule scope.
@@ -75,10 +70,9 @@ class TopScope() extends ScopedData(GwenSettings.`gwen.state.level`.toString) wi
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
 
-  override def deepClone: TopScope = deepCloneInto(new TopScope())
+  def deepClone(stateLevel: StateLevel): TopScope = deepCloneInto(new TopScope(stateLevel))
 
   def deepCloneInto(tScope: TopScope): TopScope = tScope tap { _ => 
-    tScope.currentScope = currentScope.map(_.deepClone)
     tScope.objectStack = objectStack
     copyImplicitsInto(tScope)
     super.deepCopyInto(tScope)

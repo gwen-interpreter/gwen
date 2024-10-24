@@ -46,11 +46,11 @@ object ResultFile {
     val status = Settings.getOpt(s"$fileKey.status").map(StatusKeyword.valueOf)
     val f = Settings.getFile(options.interpolate(s"$fileKey.file"))
     val file = if (f.getParent != null) f else new File(new File(options.reportDir.getOrElse(GwenSettings.`gwen.outDir`), "results"), f.getName)
-    val fieldMap = Settings.findAll(k => k.startsWith(s"$fileKey.fields."))
-    if (fieldMap.isEmpty) Errors.missingSettingError(s"$fileKey.fields")
-    val fieldKeys = fieldMap.keys.toList.map(k => k.substring(0, k.lastIndexOf("."))).distinct.sorted
+    val fieldSettings = fileSettings.filter(_._1.startsWith(s"$fileKey.fields."))
+    if (fieldSettings.isEmpty) Errors.missingSettingError(s"$fileKey.fields")
+    val fieldKeys = fieldSettings.keys.toList.map(k => k.substring(0, k.lastIndexOf("."))).distinct.sorted
     val fields = fieldKeys flatMap { key =>
-      val fMap = fieldMap.filter((n, _) => n.startsWith(key))
+      val fMap = fieldSettings.filter((n, _) => n.startsWith(key))
       fMap.map(s => s._1.substring(s._1.lastIndexOf(".") + 1)).foreach(ResultField.validateSettingName)
       val ref = fMap.collectFirst { case (n, v) if n.endsWith(".ref") => (v, options.interpolate(v)) }
       val optional = fMap.collectFirst { case (n, _) if n.endsWith(".optional") => Settings.getBoolean(n) } getOrElse false

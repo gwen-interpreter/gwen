@@ -70,14 +70,13 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     val start = System.nanoTime
-    val options = init(GwenOptions(args, BootstrapSettings.`gwen.baseDir`))
+    val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
     val process = options.process
     println(s"#!/gwen ${if (process.isDefault) "--default-process" else s"--process ${process.name}"}\n")
     logger.info("Initialising settings")
     try {
       logger.info("Initialising settings")
-      val settingsFiles = process.settingsFile.toList ++ options.settingsFiles
-      Settings.init(settingsFiles*)
+      Settings.init(process.settingsFile.toList ++ options.settingsFiles)
       GwenSettings.check()
       initLogging(options)
       Dialect.instance

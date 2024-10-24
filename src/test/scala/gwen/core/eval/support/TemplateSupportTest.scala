@@ -17,6 +17,7 @@
 package gwen.core.eval.support
 
 import gwen.core.BaseTest
+import gwen.core.state.StateLevel
 import gwen.core.state.TopScope
 
 import scala.util.{Failure, Success}
@@ -25,7 +26,7 @@ import org.scalatest.matchers.should.Matchers
 
 class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
 
-  val topScope = new TopScope()
+  val topScope = new TopScope(StateLevel.feature)
 
   """Single line static template""" should "match" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""

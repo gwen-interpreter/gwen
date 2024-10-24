@@ -182,7 +182,7 @@ class ScopedData(val scope: String) extends LazyLogging {
    * @return Some(ScopedData) containing only the attributes accepted by the predicate;
    */
   def filterAtts(pred: ((String, String)) => Boolean): ScopedData = {
-    findEntries(pred).foldLeft(if (isTopScope) new TopScope() else ScopedData(scope)) { (data, entry) =>
+    findEntries(pred).foldLeft(if (isTopScope) new TopScope(StateLevel.valueOf(scope)) else ScopedData(scope)) { (data, entry) =>
       data.set(entry._1, entry._2)
     }
   }

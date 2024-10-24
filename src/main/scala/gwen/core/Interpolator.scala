@@ -110,6 +110,11 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
     override private[core] def resolveParam(name: String): String = resolveStrict(name)
   }
 
+  lazy val settings: Interpolator = new Interpolator(resolver) {
+    override private[core] def resolveProperty(name: String): String = resolveStrict(name)
+    override private[core] def resolveParam(name: String): String = resolveLenient(name)
+  }
+
   private def balance(opening: Char, closing: Char, current: String, suffix: String): (String, String) = {
     val bal = current.count(_ == opening) - current.count(_ == closing)
     if (bal > 0) {

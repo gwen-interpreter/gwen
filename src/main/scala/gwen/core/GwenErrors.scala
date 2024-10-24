@@ -154,7 +154,7 @@ object Errors extends LazyLogging {
   abstract class UnboundAttributeException(val name: String, val scope: Option[String], msg: String, val cause: Option[Throwable]) extends GwenException(msg, cause.orNull)
 
   /** Thrown when an attribute cannot be found in a scope. */
-  class UnboundReferenceException(name: String, scope: Option[String], cause: Option[Throwable]) extends UnboundAttributeException(name, scope, s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name", cause)
+  class UnboundReferenceException(override val name: String, scope: Option[String], cause: Option[Throwable]) extends UnboundAttributeException(name, scope, s"Unbound reference${scope.map(x => s" in $x scope")getOrElse ""}: $name", cause)
 
   /** Thrown when a boolean attribute is invalid or unbound. */
   class UnboundBooleanReferenceException(name: String, value: String) extends UnboundAttributeException(name, None, s"Boolean literal or evaluation expected but found '$value' in reference: $name", None)

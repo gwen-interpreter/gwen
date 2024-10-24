@@ -19,25 +19,40 @@ package gwen.core
 import gwen.core._
 import gwen.core.behavior.BehaviorMode
 import gwen.core.behavior.FeatureMode
+import gwen.core.node.gherkin.Tag
 import gwen.core.state.StateLevel
+import gwen.core.report.ReportFormat
 import gwen.core.report.results.ResultFile
 
+import scala.util.chaining._
 import scala.util.Try
 
 import java.io.File
 import java.util.logging.Level
+
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Provides access to all Gwen settings.
   *
   * @author Branko Juric
   */
-object GwenSettings {
+object GwenSettings extends LazyLogging {
 
   /**
     * Checks and validates all settings.
     */
   def check(): Unit = {
+    `gwen.baseDir`
+    `gwen.launch.options.batch`
+    `gwen.launch.options.format`
+    `gwen.launch.options.dryRun`
+    `gwen.launch.options.features`
+    `gwen.launch.options.inputData`
+    `gwen.launch.options.parallel`
+    `gwen.launch.options.meta`
+    `gwen.launch.options.report`
+    `gwen.launch.options.tags`
     `gwen.assertion.mode`
     `gwen.associative.meta`
     `gwen.auto.discover.data.csv`
@@ -69,6 +84,109 @@ object GwenSettings {
   val availableProcessors = Runtime.getRuntime().availableProcessors()
 
   /**
+   * Provides access to the `gwen.baseDir` setting used to set the Gwen base directory.
+   */
+  def `gwen.baseDir`: File = Settings.getFile("gwen.baseDir")
+
+  /**
+    * Provides access to the `gwen.launch.options.batch` setting used to set the default
+    * -b/--batch switch.
+    */
+  def `gwen.launch.options.batch`: Boolean = {
+    Settings.getBoolean("gwen.launch.options.batch", Some("gwen.cli.options.batch")) tap { enabled => 
+      if (enabled) logger.warn("Setting gwen.launch.options.batch=true will enable batch mode only and disable REPL")
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.format` setting used to set the default
+    * -f/--format option.
+    */
+  def `gwen.launch.options.format`: List[ReportFormat] = {
+    Settings.getList("gwen.launch.options.format", Some("gwen.cli.options.format")) map { value => 
+      Settings.convert("gwen.launch.options.format", value, ReportFormat.values.mkString(", ")) { format =>
+        ReportFormat.valueOf(format)
+      }
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.dryRun` setting used to set the default
+    * --n/--dry-run switch.
+    */
+  def `gwen.launch.options.dryRun`: Boolean = {
+    Settings.getBoolean("gwen.launch.options.dryRun", Some("gwen.cli.options.dryRun")) tap { enabled => 
+      if (enabled) logger.warn("Setting gwen.launch.options.dryRun=true will enable validation only and disable execution")
+    }
+  }
+  
+  /**
+    * Provides access to the `gwen.launch.options.features` setting used to set the default
+    * features argument.
+    */
+  def `gwen.launch.options.features`: List[File] = {
+    Settings.getList("gwen.launch.options.features", Some("gwen.cli.options.features")) map { filepath => 
+      Settings.toFile(filepath)
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.inputData` setting used to set the default
+    * -i/--input-data option.
+    */
+  def `gwen.launch.options.inputData`: Option[File] = {
+    Settings.getOpt("gwen.launch.options.inputData", Some("gwen.cli.options.inputData")).headOption.filter(_.trim().size > 0) map { filepath => 
+      Settings.toFile(filepath)
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.meta` setting used to set the default
+    * -m/--meta argument.
+    */
+  def `gwen.launch.options.meta`: List[File] = {
+    Settings.getList("gwen.launch.options.meta", Some("gwen.cli.options.meta")) map { filepath => 
+      Settings.toFile(filepath)
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.parallel` setting used to set the default
+    * --parallel switch.
+    */
+  def `gwen.launch.options.parallel`: Boolean = {
+    Settings.getBoolean("gwen.launch.options.parallel", Some("gwen.cli.options.parallel"))
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.report` setting used to set the default
+    * -r/--report option.
+    */
+  def `gwen.launch.options.report`: Option[File] = {
+    Settings.getOpt("gwen.launch.options.report", Some("gwen.cli.options.report")) map { filepath => 
+      Settings.toFile(filepath)
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.tags` setting used to set the default
+    * -t/--tags option.
+    */
+  def `gwen.launch.options.tags`: List[(Tag, Boolean)] = {
+    Settings.getList("gwen.launch.options.tags", Some("gwen.cli.options.tags")) map { tag => 
+      (Tag(tag), tag.startsWith("@"))
+    }
+  }
+
+  /**
+    * Provides access to the `gwen.launch.options.verbose` setting used to set the default
+    * -v/--verbose option.
+    */
+  def `gwen.launch.options.verbose`: Boolean = {
+    Settings.getBoolean("gwen.launch.options.verbose", Some("gwen.cli.options.verbose"))
+  }
+  
+  /**
    * Provides access to the gwen process name.
    */
   def `gwen.process.name`: Option[String] = {
@@ -82,7 +200,7 @@ object GwenSettings {
     * feature fails.  Other features (if provided) will resume.
     */
   def `gwen.feature.failfast.enabled`: Boolean = {
-    Settings.getBoolean("gwen.feature.failfast.enabled", Some("gwen.feature.failfast"))
+    Settings.getBoolean("gwen.feature.failfast.enabled")
   }
 
   /**
@@ -296,7 +414,7 @@ object GwenSettings {
     * Default value is `*`.
     */
   def `gwen.mask.char`: Char = {
-    val maskChar = sys.props("gwen.mask.char")
+    val maskChar = Settings.get("gwen.mask.char")
     if (maskChar.length != 1) {
       Errors.invalidSettingError("gwen.mask.char", maskChar, "Mask character length must be 1")
     } else {
@@ -346,13 +464,6 @@ object GwenSettings {
     */
   def `gwen.console.log.stepDefs`: Boolean = {
     Settings.getBoolean("gwen.console.log.stepDefs")
-  }
-
-  /**
-    * Provides access to the `gwen.baseDir` setting used to set the Gwen base directory.
-    */
-  def `gwen.baseDir`: File = {
-    Settings.getFile("gwen.baseDir")
   }
 
   /**

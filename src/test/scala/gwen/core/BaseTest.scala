@@ -16,6 +16,8 @@
 
 package gwen.core
 
+import gwen.core.state.StateLevel
+
 import com.typesafe.config.ConfigFactory
 import org.scalatest.prop.TableDrivenPropertyChecks.Table
 import org.scalatest.flatspec.AnyFlatSpec
@@ -23,32 +25,18 @@ import java.io.File
 
 abstract class BaseTest extends AnyFlatSpec {
 
-  Settings.exclusively {
-    Settings.init()
-  }
-
-  val levels = Table ( ("level"), ("feature"), ("scenario") )
+  val levels = Table ( StateLevel.feature.toString, StateLevel.scenario.toString )
 
   def withSetting[T](name: String, value: String)(body: => T):T = {
     Settings.exclusively {
-      if (name.startsWith("gwen.")) {
-        try {
-          Settings.setLocal(name, value)
-          body
-        } finally {
-          Settings.clearLocal()
-        }
-      } else {
-        Settings.exclusively {
-          val original = Settings.getOpt(name)
-          try {
-            Settings.set(name, value)
-            body
-          } finally {
-            original.fold(Settings.clear(name)) { v =>
-              Settings.set(name, v)
-            }
-          }
+      val original = Settings.getOpt(name)
+      try {
+        sys.props += ((name, value))
+        Settings.init()
+        body
+      } finally {
+        original.fold(sys.props -= name) { v =>
+          sys.props += ((name, v))
         }
       }
     }
