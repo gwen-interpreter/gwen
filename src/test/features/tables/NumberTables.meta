@@ -112,36 +112,6 @@ Feature: Number tables meta
       And gwen.table.record.number should match regex "\d+"
 
   @StepDef
-  @DataTable(type="matrix")
-  @Context
-  Scenario: the top and left numbers yield the product in the matrix
-    Given vertex.name should be "x"
-      And top.name[1] should be "1"
-      And top.name[2] should be "2"
-      And top.name[3] should be "3"
-      And left.name[1] should be "1"
-      And left.name[2] should be "2"
-      And left.name[3] should be "3"
-      And data[1][1] should be "1"
-      And data[1][2] should be "2"
-      And data[1][3] should be "3"
-      And data[2][1] should be "2"
-      And data[2][2] should be "4"
-      And data[2][3] should be "6"
-      And data[3][1] should be "3"
-      And data[3][2] should be "6"
-      And data[3][3] should be "9"
-      And top.name[1] x left.name[1] = data[1][1]
-      And top.name[2] x left.name[1] = data[2][1]
-      And top.name[3] x left.name[1] = data[3][1]
-      And top.name[1] x left.name[2] = data[1][2]
-      And top.name[2] x left.name[2] = data[2][2]
-      And top.name[3] x left.name[2] = data[3][2]
-      And top.name[1] x left.name[3] = data[1][3]
-      And top.name[2] x left.name[3] = data[2][3]
-      And top.name[3] x left.name[3] = data[3][3]
-
-  @StepDef
   Scenario: <a> x <b> = <c>
     Given the product is defined by javascript "${$<a>} * ${$<b>}"
      Then the product should be "${$<c>}"
@@ -186,6 +156,6 @@ Feature: Number tables meta
 
   @StepDef
   @DataTable
-  @Context
+  @Assertion
   Scenario: empty number table should do nothing
     Given z is "${number}" for each data record

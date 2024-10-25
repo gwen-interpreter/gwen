@@ -49,7 +49,6 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
           table.tableType match {
             case TableType.horizontal => Some(Tag(Annotations.HorizontalTable))
             case TableType.vertical => Some(Tag(Annotations.VerticalTable))
-            case TableType.matrix => Some(Tag(Annotations.MatrixTable))
           }
         case _ => None
       }

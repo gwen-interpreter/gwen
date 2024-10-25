@@ -22,14 +22,13 @@ package gwen.core.node.gherkin.table
   */
 
 enum TableType:
-  case horizontal, vertical, matrix
+  case horizontal, vertical
 
 object TableType {
 
   def valueFor(headerType: HeaderType): TableType = headerType match {
       case HeaderType.top  => horizontal
       case HeaderType.left => vertical
-      case _ => matrix
   }
 
 }

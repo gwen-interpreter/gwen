@@ -21,4 +21,4 @@ package gwen.core.node.gherkin.table
   * @author Branko Juric
   */
 enum HeaderType:
-  case top, left, top_left
+  case top, left

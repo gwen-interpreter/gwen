@@ -49,8 +49,6 @@ object DataTable {
         DataTable(step.table.map(_._2), HeaderType.left, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("vertical"), namesCSV).split(",").toList)
       case r"""DataTable\(header=(.+?)$header\)""" if (header.contains("top") || header.contains("left")) =>
         DataTable(step.table.map(_._2), HeaderType.valueOf(Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("header"), header)), Nil)
-      case r"""DataTable\(type=(.+?)$value\)""" if value.contains("matrix") =>
-        DataTable(step.table.map(_._2), HeaderType.top_left, Nil)
       case _ => tagSyntaxError(tag)
     }
   }
@@ -95,16 +93,8 @@ object DataTable {
       Errors.dataTableError(
         s"""${table.head.size} names expected for data table but ${headers.size} specified: $tableType=\"${headers.mkString(",")}\"""")
 
-    tableType match {
-      case TableType.matrix =>
-        val topHeaders = table.head.tail
-        val leftHeaders = table.transpose.head.tail
-        val records = table.tail.map(_.tail)
-        new MatrixTable(records, topHeaders, leftHeaders, table.head(0))
-      case _ =>
-        if (headers.nonEmpty) new FlatTable(tableType, table, headers)
+    if (headers.nonEmpty) new FlatTable(tableType, table, headers)
         else new FlatTable(tableType, table.tail, table.head)
-    }
   }
 }
 
