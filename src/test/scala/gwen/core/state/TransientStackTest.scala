@@ -75,10 +75,10 @@ class TransientStackTest extends BaseTest with Matchers {
     val tStack = TransientStack.scenarioStack
     
     tStack.push("login", List(("username", "gwen"), ("password", "pwd")))
-    tStack.toString should be ("scenario : { scope: login, entries : [ { username: gwen }, { password: pwd } ] }")
+    tStack.toString.matches("""scenario : \{ scope: login, entries : \[ \{ gwen\.scenario\.name: login \}, \{ gwen\.scenario\.eval\.start\.msecs: \d+ \}, \{ gwen\.scenario\.eval\.started: .+ \}, \{ gwen\.scenario\.eval\.status\.keyword: Passed \}, \{ gwen\.scenario\.eval\.status\.message:  \}, \{ username: gwen \}, \{ password: pwd \} \] \}""") should be (true)
 
     tStack.push("register", List(("password", "secret")))
-    tStack.toString should be ("scenario : { scope: register, entries : [ { password: secret } ] }")
+    tStack.toString.matches("""scenario : \{ scope: register, entries : \[ \{ gwen\.scenario\.name: register \}, \{ gwen\.scenario\.eval\.start\.msecs: \d+ \}, \{ gwen\.scenario\.eval\.started: .+ \}, \{ gwen\.scenario\.eval\.status\.keyword: Passed \}, \{ gwen\.scenario\.eval\.status\.message:  \}, \{ password: secret \} \] \}""") should be (true)
     
     intercept[UnboundAttributeException] {
       tStack.get("username")  should be ("gwen")
@@ -139,37 +139,37 @@ class TransientStackTest extends BaseTest with Matchers {
 
   "non-parameter stack" should "behave correctly with combinations of empty and non-empty data" in {
     
-    val tStack = TransientStack.scenarioStack
+    val tStack = TransientStack.stepDefStack
     
     tStack.push("stepdef1", Nil)
-    tStack.toString should be ("scenario : { }")
+    tStack.toString.matches("""stepDef : \{ scope: stepdef1, entries : \[ \{ gwen\.stepDef\.name: stepdef1 \}, \{ gwen\.stepDef\.eval\.start\.msecs: \d+ \}, \{ gwen\.stepDef\.eval\.started: .+ \}, \{ gwen\.stepDef\.eval\.status\.keyword: Passed \}, \{ gwen\.stepDef\.eval\.status\.message:  \} \] \}""") should be (true)
     intercept[UnboundAttributeException] {
       tStack.get("username")  should be ("gwen")
     }
     
     tStack.push("stepdef2", List(("username", "gwen")))
-    tStack.toString should be ("scenario : { scope: stepdef2, entries : [ { username: gwen } ] }")
+    tStack.toString.matches("""stepDef : \{ scope: stepdef2, entries : \[ \{ gwen\.stepDef\.name: stepdef2 \}, \{ gwen\.stepDef\.eval\.start\.msecs: \d+ \}, \{ gwen\.stepDef\.eval\.started: .+ \}, \{ gwen\.stepDef\.eval\.status\.keyword: Passed \}, \{ gwen\.stepDef\.eval\.status\.message:  \}, \{ username: gwen \} \] \}""") should be (true)
 
     tStack.get("username")  should be ("gwen")
     
     tStack.push("stepdef3", Nil)
-    tStack.toString should be ("scenario : { }")
+    tStack.toString.matches("""stepDef : \{ scope: stepdef3, entries : \[ \{ gwen\.stepDef\.name: stepdef3 \}, \{ gwen\.stepDef\.eval\.start\.msecs: \d+ \}, \{ gwen\.stepDef\.eval\.started: .+ \}, \{ gwen\.stepDef\.eval\.status\.keyword: Passed \}, \{ gwen\.stepDef\.eval\.status\.message:  \} \] \}""") should be (true)
     intercept[UnboundAttributeException] {
       tStack.get("username")  should be ("gwen")
     }
 
     tStack.pop()
-    tStack.toString should be ("scenario : { scope: stepdef2, entries : [ { username: gwen } ] }")
+    tStack.toString.matches("""stepDef : \{ scope: stepdef2, entries : \[ \{ gwen\.stepDef\.name: stepdef2 \}, \{ gwen\.stepDef\.eval\.start\.msecs: \d+ \}, \{ gwen\.stepDef\.eval\.started: .+ \}, \{ gwen\.stepDef\.eval\.status\.keyword: Passed \}, \{ gwen\.stepDef\.eval\.status\.message:  \}, \{ username: gwen \} \] \}""") should be (true)
     tStack.get("username")  should be ("gwen")
     
     tStack.pop()
-    tStack.toString should be ("scenario : { }")
+    tStack.toString.matches("""stepDef : \{ scope: stepdef1, entries : \[ \{ gwen\.stepDef\.name: stepdef1 \}, \{ gwen\.stepDef\.eval\.start\.msecs: \d+ \}, \{ gwen\.stepDef\.eval\.started: .+ \}, \{ gwen\.stepDef\.eval\.status\.keyword: Passed \}, \{ gwen\.stepDef\.eval\.status\.message:  \} \] \}""") should be (true)
     intercept[UnboundAttributeException] {
       tStack.get("username")  should be ("gwen")
     }
     
     tStack.pop()
-    tStack.toString should be ("scenario : { }")
+    tStack.toString should be ("stepDef : { }")
     intercept[UnboundAttributeException] {
       tStack.get("username")  should be ("gwen")
     }
@@ -177,7 +177,7 @@ class TransientStackTest extends BaseTest with Matchers {
     intercept[NoSuchElementException] {
       tStack.pop()
     }
-    tStack.toString should be ("scenario : { }")
+    tStack.toString should be ("stepDef : { }")
     
   }
 

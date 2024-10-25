@@ -44,7 +44,6 @@ import scala.util.chaining._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.Date
 
 /**
   * Scenario evaluation engine.
@@ -80,7 +79,6 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
       (acc: List[Scenario], stepDef: Scenario) =>
         evaluateOrTransitionScenario(parent, stepDef, ctx, acc) :: acc
     }
-    val language = ctx.topScope.featureScope.get(`gwen.feature.language`)
     val executor = ParallelExecutors.scenarioInstance
     implicit val ec = ExecutionContext.fromExecutorService(executor)
     val acc = new CopyOnWriteArrayList[Scenario](stepDefs.asJavaCollection)
@@ -89,6 +87,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
         val stateClone = if (parallelExamples) ctx.deepCloneState else ctx.shallowCloneState
         val ctxClone = engine.init(ctx.options.copy(parallel = true), stateClone)
         try {
+          val language = ctx.featureScope.get(`gwen.feature.language`)
           Dialect.withLanguage(language) {
             val scenarioResult = evaluateOrTransitionScenario(parent, scenario, ctxClone, acc.asScala.toList) tap { s =>
               acc.add(s)
@@ -142,33 +141,18 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
       if (!scenario.isStepDef) Errors.dataTableError(s"${Annotations.StepDef} tag also expected where ${Annotations.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)
     } else {
-      ctx.scenarioScope.push(
-        scenario.name,
-        List(
-          (`gwen.scenario.name`, scenario.name),
-          (`gwen.scenario.displayName`, scenario.displayName),
-          (`gwen.scenario.eval.status.keyword`, StatusKeyword.Passed.toString),
-          (`gwen.scenario.eval.start.msecs`, new Date().getTime().toString),
-        )
-      )
-      try {
-        ctx.topScope.scenarioScope.set(`gwen.scenario.eval.started`, new Date().toString)
-        beforeScenario(scenario, ctx)
-        logger.info(s"Evaluating ${scenario.keyword}: $scenario")
-        (if (scenario.isOutline) {
-          evaluateScenarioOutline(scenario, ctx)
-        } else {
-          scenario.background map  { background =>
-            evaluateScenarioWithBackground(scenario, background, ctx)
-          } getOrElse {
-            evaluateScenarioWithoutBackground(scenario, ctx)
-          }
-        }) tap { s =>
-          ctx.topScope.scenarioScope.set(`gwen.scenario.eval.finished`, new Date().toString)
-          afterScenario(s, ctx)
+      beforeScenario(scenario, ctx)
+      logger.info(s"Evaluating ${scenario.keyword}: $scenario")
+      (if (scenario.isOutline) {
+        evaluateScenarioOutline(scenario, ctx)
+      } else {
+        scenario.background map  { background =>
+          evaluateScenarioWithBackground(scenario, background, ctx)
+        } getOrElse {
+          evaluateScenarioWithoutBackground(scenario, ctx)
         }
-      } finally {
-        ctx.scenarioScope.pop()
+      }) tap { s =>
+        afterScenario(s, ctx)
       }
     } tap { s =>
       logStatus(ctx.options, s)

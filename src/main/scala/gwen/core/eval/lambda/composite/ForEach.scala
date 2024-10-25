@@ -30,8 +30,6 @@ import gwen.core.status._
 
 import scala.util.Try
 
-import java.util.Date
-
 abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) extends CompositeStep[T](doStep) with ImplicitValueKeys {
 
   /**
@@ -57,7 +55,6 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
       }
       val tags = List(Tag(Annotations.Synthetic), Tag(Annotations.ForEach), Tag(Annotations.StepDef)) ++ tableTypeTag.toList
       val preForeachStepDef = Scenario(None, tags, keyword, name, None, Nil, None, foreachSteps, Nil, Nil, step.cumulativeParams)
-      ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.start.msecs`, new Date().getTime().toString)
       engine.beforeStepDef(preForeachStepDef, ctx)
       val noOfElements = items.size
       val steps =
@@ -80,7 +77,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     }
                     data.findEntries { _ => true } toList
                   case value: String => 
-                    ctx.topScope.set(name, value)
+                    ctx.topScope.set(name, value, force = true)
                     if (ctx.options.dryRun) {
                       ctx.topScope.pushObject(name, currentElement)
                     }
@@ -120,11 +117,10 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                 }) :: acc
               } reverse
             } finally {
-              ctx.topScope.set(name, prevNameValue.orNull)
+              ctx.topScope.set(name, prevNameValue.orNull, force = true)
             }
         }
       val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
-      ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
       engine.afterStepDef(foreachStepDef, ctx)
       step.copy(withStepDef = Some(foreachStepDef))
     } else {

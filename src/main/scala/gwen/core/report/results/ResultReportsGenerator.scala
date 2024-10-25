@@ -102,7 +102,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
 
   override def afterStepDef(event: NodeEvent[Scenario]): Unit = { 
     val stepDef = event.source
-    if (!stepDef.evalStatus.isLoaded && !stepDef.isOutline && !stepDef.isSynthetic && stepDef.steps.nonEmpty) {
+    if (stepDef.isStepDefCall) {
       filterFiles(stepDef, stepDef.tags) foreach { resFile => 
         report(resFile, stepDef.evalStatus, event.topScope)
       }

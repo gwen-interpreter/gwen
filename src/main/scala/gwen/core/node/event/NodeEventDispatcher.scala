@@ -22,6 +22,7 @@ import gwen.core.node.gherkin._
 import gwen.core.result.SpecResult
 import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
+import gwen.core.status.StatusKeyword
 
 import scala.collection.mutable
 import scala.util.chaining._
@@ -31,7 +32,9 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.util.Try
 import scala.util.Failure
 
-class NodeEventDispatcher extends LazyLogging {
+import java.util.Date
+
+class NodeEventDispatcher extends LazyLogging with ImplicitValueKeys {
 
   private val listeners = new mutable.Queue[NodeEventListener]()
 
@@ -57,30 +60,94 @@ class NodeEventDispatcher extends LazyLogging {
     dispatchBeforeEvent(unit, env) { (listener, event) => listener.beforeUnit(event) }
   def afterUnit(unit: FeatureUnit, env: Environment): Unit =
     dispatchAfterEvent(unit, env) { (listener, event) => listener.afterUnit(event) }
-  def beforeSpec(spec: Spec, env: Environment): Unit =
+
+  def beforeSpec(spec: Spec, env: Environment): Unit = {
+    if (spec.isMeta) {
+      env.scenarioScope.push(SpecType.Feature.toString.toLowerCase, Nil)
+    }
+    env.featureScope.set(`gwen.feature.name`, spec.feature.name)
+    env.featureScope.set(`gwen.feature.displayName`, spec.feature.displayName)
+    env.featureScope.set(`gwen.feature.language`, spec.feature.language)
+    env.featureScope.set(`gwen.feature.file.name`, spec.specFile.map(_.getName).getOrElse(""))
+    env.featureScope.set(`gwen.feature.file.simpleName`, spec.specFile.map(_.simpleName).getOrElse(""))
+    env.featureScope.set(`gwen.feature.file.path`, spec.specFile.map(_.getPath).getOrElse(""))
+    env.featureScope.set(`gwen.feature.file.absolutePath`, spec.specFile.map(_.getAbsolutePath).getOrElse(""))
     dispatchBeforeEvent(spec, env) { (listener, event) => listener.beforeSpec(event) }
-  def afterSpec(result: SpecResult, env: Environment): Unit =
+  }
+
+  def afterSpec(result: SpecResult, env: Environment): Unit = {
+    env.featureScope.set(`gwen.feature.eval.finished`, result.finished.toString)
     dispatchAfterEvent(result, env) { (listener, event) => listener.afterSpec(event) }
+    if (result.spec.isMeta) {
+      env.featureScope.pop()
+    }
+  }
+  
   def beforeBackground(background: Background, env: Environment): Unit =
     dispatchBeforeEvent(background, env) { (listener, event) => listener.beforeBackground(event) }
   def afterBackground(background: Background, env: Environment): Unit =
     dispatchAfterEvent(background, env) { (listener, event) => listener.afterBackground(event) }
-  def beforeScenario(scenario: Scenario, env: Environment): Unit =
+  
+  def beforeScenario(scenario: Scenario, env: Environment): Unit = {
+    env.scenarioScope.push(scenario.name, Nil)
+    env.scenarioScope.set(`gwen.scenario.displayName`, scenario.displayName)
     dispatchBeforeEvent(scenario, env) { (listener, event) => listener.beforeScenario(event) }
-  def afterScenario(scenario: Scenario, env: Environment): Unit =
-    dispatchAfterEvent(scenario, env) { (listener, event) => listener.afterScenario(event) }
-  def beforeExamples(examples: Examples, env: Environment): Unit =
+  }
+  
+  def afterScenario(scenario: Scenario, env: Environment): Unit = {
+    try {
+      env.scenarioScope.set(`gwen.scenario.eval.finished`, new Date().toString)
+      env.scenarioScope.setStatus(scenario.evalStatus, force = true)
+      dispatchAfterEvent(scenario, env) { (listener, event) => listener.afterScenario(event) }
+    } finally {
+      env.scenarioScope.pop()
+    }
+  }
+  
+  def beforeExamples(examples: Examples, env: Environment): Unit = {
+    env.examplesScope.push(examples.name, Nil)
     dispatchBeforeEvent(examples, env) { (listener, event) => listener.beforeExamples(event) }
-  def afterExamples(examples: Examples, env: Environment): Unit =
-    dispatchAfterEvent(examples, env) { (listener, event) => listener.afterExamples(event) }
-  def beforeRule(rule: Rule, env: Environment): Unit =
+  }
+  def afterExamples(examples: Examples, env: Environment): Unit = {
+    try {
+      env.examplesScope.set(`gwen.examples.eval.finished`, new Date().toString)
+      env.examplesScope.setStatus(examples.evalStatus, force = true)
+      dispatchAfterEvent(examples, env) { (listener, event) => listener.afterExamples(event) }
+    } finally {
+      env.examplesScope.pop()
+    }
+  }
+
+  def beforeRule(rule: Rule, env: Environment): Unit = {
+    env.ruleScope.push(rule.name, Nil)
     dispatchBeforeEvent(rule, env) { (listener, event) => listener.beforeRule(event) }
+  }
+  
   def afterRule(rule: Rule, env: Environment): Unit =
-    dispatchAfterEvent(rule, env) { (listener, event) => listener.afterRule(event) }
-  def beforeStepDef(stepDef: Scenario, env: Environment): Unit =
+    try {
+      env.ruleScope.set(`gwen.rule.eval.finished`, new Date().toString)
+      env.ruleScope.setStatus(rule.evalStatus, force = true)
+      dispatchAfterEvent(rule, env) { (listener, event) => listener.afterRule(event) }
+    } finally {
+      env.ruleScope.pop()
+    }
+  
+  def beforeStepDef(stepDef: Scenario, env: Environment): Unit = {
+    env.stepDefScope.push(stepDef.name, Nil)
+    env.stepDefScope.set(`gwen.stepDef.displayName`, stepDef.displayName)
     dispatchBeforeEvent(stepDef, env) { (listener, event) => listener.beforeStepDef(event) }
-  def afterStepDef(stepDef: Scenario, env: Environment): Unit =
-    dispatchAfterEvent(stepDef, env) { (listener, event) => listener.afterStepDef(event) }
+  }
+
+  def afterStepDef(stepDef: Scenario, env: Environment): Unit = {
+    try {
+      env.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
+      env.stepDefScope.setStatus(stepDef.evalStatus, force = true)
+      dispatchAfterEvent(stepDef, env) { (listener, event) => listener.afterStepDef(event) }
+    } finally {
+      env.stepDefScope.pop()
+    }
+  }
+
   def beforeStep(step: Step, env: Environment): Unit =
     dispatchBeforeEvent(step, env) { (listener, event) => listener.beforeStep(event) }
   def afterStep(step: Step, env: Environment): Unit = {
@@ -121,7 +188,9 @@ class NodeEventDispatcher extends LazyLogging {
       withBackground = background,
       withSteps = steps,
       withExamples = examples
-    ) tap { s => afterScenario(s, env) }
+    ) tap { s => 
+      afterScenario(s, env) 
+    }
   }
 
   def transitionExamples(examples: Examples, toStatus: EvalStatus, env: Environment): Examples = {

@@ -97,7 +97,7 @@ trait UnitEngine[T <: EvalContext]
   }
 
   private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
-    ctx.topScope.setImplicitAtts(Some(spec), Pending, true)
+    ctx.topScope.setStatus(Pending, force = true)
     val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
     val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
     val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)

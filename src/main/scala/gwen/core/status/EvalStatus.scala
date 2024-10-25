@@ -136,7 +136,7 @@ object EvalStatus {
                   } else {
                     fStatuses.filter(_ != Loaded).lastOption match {
                       case Some(lastStatus) => lastStatus match {
-                        case p: Passed => Passed(duration.toNanos, false)
+                        case _: Passed => Passed(duration.toNanos, false)
                         case _: Ignored => Passed(duration.toNanos, false)
                         case _ => Pending
                       }

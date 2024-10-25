@@ -87,21 +87,6 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
   }
 
   /**
-    * Binds a new attribute value to the scope.  If an attribute of the same
-    * name already exists, then this new attribute overrides the existing one
-    * but does not replace it. If an attribute of the same name exists in the
-    * current scope, then a referene to the top attribute is added to the current scope.
-    *
-    * @param name the name of the attribute to bind
-    * @param value the value to bind to the attribute
-    * @return the current scope containing the old attributes plus the
-    *         newly added attribute
-    */
-  override def set(name: String, value: String): ScopedData = {
-    super.set(name, value)
-  }
-
-  /**
     * Pushes a named object to the object stack.
     *
     * @param name the name to bind the object to
@@ -146,22 +131,8 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
   def removeObject(name: String): Unit = {
     objectStack -= name
   }
-
-  def initStart(timeMsecs: Long): Unit = {
-    featureScope.set(`gwen.feature.eval.start.msecs`, timeMsecs.toString)
-  }
   
-  def setImplicitAtts(spec: Option[Spec], status: EvalStatus, force: Boolean): Unit = {
-    spec foreach { s => 
-      featureScope.set(`gwen.feature.name`, s.feature.name)
-      featureScope.set(`gwen.feature.displayName`, s.feature.displayName)
-      s.specFile foreach { file =>
-        featureScope.set(`gwen.feature.file.name`, file.getName)
-        featureScope.set(`gwen.feature.file.simpleName`, file.simpleName)
-        featureScope.set(`gwen.feature.file.path`, file.getPath)
-        featureScope.set(`gwen.feature.file.absolutePath`, file.getAbsolutePath)
-      }
-    }
+  def setStatus(status: EvalStatus, force: Boolean): Unit = {
     featureScope.setStatus(status, force)
     ruleScope.setStatus(status, false)
     scenarioScope.setStatus(status, false)

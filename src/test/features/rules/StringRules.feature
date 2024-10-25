@@ -6,17 +6,15 @@ Feature: String rules
 
       Howdy doo
 
-      Given string 1 is ""
-        And string 2 is ""
+      Given the result is blank
        When I join the two strings
-       Then the result should be ""
+       Then the result should not be blank
 
     Scenario Template: Joining <string 1> and <string 2> should yield <result>
 
       Joining <string 1> and <string 2> should yield <result>
 
-      Given string 1 is "<string 1>"
-        And string 2 is "<string 2>"
+      Given the result is blank
        When I join the two strings
        Then the result should be "<result>"
 
@@ -30,29 +28,25 @@ Feature: String rules
           | any      | thing    | anything |
 
     Example: Verify that we can join two strings in meta
-      Given the result is ""
+      Given the result is blank
        When I join two strings in meta
-       Then the result should not be "" if gwen.state.level is "feature"
+       Then the result should not be blank if gwen.state.level is "feature"
         And gwen.scenario.name should be "Verify that we can join two strings in meta"
         And gwen.rule.name should be "Joining two strings together should result in a string containing both"
 
   Rule: Replacing a substring in a string should result in substitution of the substring
 
     Background: Reset strings
-      Given string 1 is ""
-        And string 2 is ""
-        And string 3 is ""
+      Given the result is blank
        When I substitute string 1 for string 2 in string 3
-       Then the result should be ""
+       Then the result should not be blank
         And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"
 
     Scenario Template: Substituting <string 1> for <string 2> in <string 3> should yield <result>
 
       Substituting <string 1> for <string 2> in <string 3> should yield <result>
 
-      Given string 1 is "<string 1>"
-        And string 2 is "<string 2>"
-        And string 3 is "<string 3>"
+      Given the result is blank
        When I substitute string 1 for string 2 in string 3
        Then the result should be "<result>"
         And gwen.rule.name should be "Replacing a substring in a string should result in substitution of the substring"

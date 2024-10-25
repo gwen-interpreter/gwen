@@ -28,7 +28,6 @@ import gwen.core.status._
 import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
-import java.util.Date
 
 /**
   * Rule evaluation engine.
@@ -44,50 +43,34 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
   }
 
   private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, dataRecord: Option[DataRecord], ctx: T, acc: List[Rule]): Rule = {
-    ctx.ruleScope.push(
-      rule.name,
-      List(
-        (`gwen.rule.name`, rule.name),
-        (`gwen.rule.eval.status.keyword`, StatusKeyword.Passed.toString),
-        (`gwen.rule.eval.start.msecs`, new Date().getTime().toString),
-      )
-    )
-    try {
-      EvalStatus(acc.map(_.evalStatus)) match {
-        case status @ Failed(_, error) =>
-          val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
-          val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
-          val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
-          if (failfast && !exitOnFail && !isSoftAssert) {
-            transitionRule(rule, Skipped, ctx)
-          } else if (exitOnFail && !isSoftAssert) {
-            transitionRule(rule, rule.evalStatus, ctx)
-          } else {
-            ctx.topScope.ruleScope.set(`gwen.rule.eval.started`, new Date().toString)
-            beforeRule(rule, ctx)
-            logger.info(s"Evaluating ${rule.keyword}: $rule")
-            rule.copy(
-              withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
-            ) tap { r =>
-              ctx.topScope.ruleScope.set(`gwen.rule.eval.finished`, new Date().toString)
-              afterRule(r, ctx)
-              logStatus(ctx.options, r)
-            }
-          }
-        case _ =>
-          ctx.topScope.ruleScope.set(`gwen.rule.eval.started`, new Date().toString)
+    EvalStatus(acc.map(_.evalStatus)) match {
+      case status @ Failed(_, error) =>
+        val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
+        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
+        val exitOnFail = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.exit` }
+        if (failfast && !exitOnFail && !isSoftAssert) {
+          transitionRule(rule, Skipped, ctx)
+        } else if (exitOnFail && !isSoftAssert) {
+          transitionRule(rule, rule.evalStatus, ctx)
+        } else {
           beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
             withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
           ) tap { r =>
-            ctx.topScope.ruleScope.set(`gwen.rule.eval.finished`, new Date().toString)
             afterRule(r, ctx)
             logStatus(ctx.options, r)
           }
-      }
-    } finally {
-      ctx.ruleScope.pop()
+        }
+      case _ =>
+        beforeRule(rule, ctx)
+        logger.info(s"Evaluating ${rule.keyword}: $rule")
+        rule.copy(
+          withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
+        ) tap { r =>
+          afterRule(r, ctx)
+          logStatus(ctx.options, r)
+        }
     }
   }
 

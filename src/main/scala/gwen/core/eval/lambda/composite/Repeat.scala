@@ -32,8 +32,6 @@ import gwen.core.status._
 import scala.concurrent.duration.Duration
 import scala.util.chaining._
 
-import java.util.Date
-
 abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStep[T](doStep) with ImplicitValueKeys {
 
   if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
@@ -64,7 +62,6 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
             case "until" =>
               logger.info(s"repeat-until $condition: iteration $iteration")
               if (condSteps.isEmpty) {
-                ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
                 engine.beforeStepDef(preCondStepDef, ctx)
               }
               val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
@@ -88,7 +85,6 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
               if (result) {
                 logger.info(s"repeat-while $condition: iteration $iteration")
                 if (condSteps.isEmpty) {
-                  ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
                   engine.beforeStepDef(preCondStepDef, ctx)
                 }
                 val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
@@ -163,7 +159,6 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
         withSteps = steps.reverse
       )
       ctx.perform {
-        ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
         engine.afterStepDef(condStepDef, ctx)
       }
       evaluatedStep.copy(

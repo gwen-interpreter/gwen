@@ -117,6 +117,7 @@ object Errors extends LazyLogging {
   def illegalNestedParallelExceutionError(sourceRef: Option[SourceRef]) = throw new IllegalNestedParallelExecutionException(sourceRef)
   def malformedDataSourceError(dataFile: File, cause: Throwable) = throw new MalformedDataSourceException(dataFile, cause)
   def illegalDurationAnnotationError(targetName: String, annotation: String) = throw new IllegalDurationAnnotationExcpetion(targetName, annotation)
+  def immutableModificationError(name: String, annotation: Annotations) = throw new ImmutableModificationException(name, annotation)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -346,5 +347,8 @@ object Errors extends LazyLogging {
 
   /** Thrown when an invalid CSV result field or file reference detected. */
   class CSVResultsReferenceException(errors: List[String]) extends GwenException(errors.map(err => s" - $err").mkString("\n"))
+
+  /** Thrown when an attempt to mutate a constant binding is detected. */
+  class ImmutableModificationException(name: String, annotation: Annotations) extends GwenException(s"Cannot modify read only ${annotation.toString.toLowerCase}: $name")
 
 }

@@ -35,8 +35,6 @@ import gwen.core.status.Passed
 import gwen.core.status.Pending
 import gwen.core.status.StatusKeyword
 
-import java.util.Date
-
 import scala.util.chaining._
 
 import com.typesafe.scalalogging.LazyLogging
@@ -51,29 +49,15 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
 
   def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {    
     examples map { exs =>
-      ctx.examplesScope.push(
-        exs.name,
-        List(
-          (`gwen.examples.name`, exs.name),
-          (`gwen.examples.eval.status.keyword`, StatusKeyword.Passed.toString),
-          (`gwen.examples.eval.start.msecs`, new Date().getTime().toString),
-        )
-      )
-      try {
-        if (exs.scenarios.isEmpty) {
-          transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
-        } else {
-          ctx.topScope.examplesScope.set(`gwen.examples.eval.started`, new Date().toString)
-          beforeExamples(exs, ctx)
-          exs.copy(
-            withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
-          ) tap { exs =>
-            ctx.topScope.examplesScope.set(`gwen.examples.eval.finished`, new Date().toString)
-            afterExamples(exs, ctx)
-          }
+      if (exs.scenarios.isEmpty) {
+        transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
+      } else {
+        beforeExamples(exs, ctx)
+        exs.copy(
+          withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
+        ) tap { exs =>
+          afterExamples(exs, ctx)
         }
-      } finally {
-        ctx.examplesScope.pop()
       }
     }
   }

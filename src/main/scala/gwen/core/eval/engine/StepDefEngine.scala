@@ -37,7 +37,6 @@ import com.typesafe.scalalogging.LazyLogging
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
-import java.util.Date
 import gwen.core.status.StatusKeyword
 
 /**
@@ -105,15 +104,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
       )
       checkStepDefRules(sdStep, ctx)
       ctx.paramScope.push(stepDef.name, stepDef.params)
-      ctx.stepDefScope.push(
-        stepDef.name,
-        List(
-          (`gwen.stepDef.name`, stepDef.name),
-          (`gwen.stepDef.displayName`, stepDef.displayName),
-          (`gwen.stepDef.eval.status.keyword`, StatusKeyword.Passed.toString),
-          (`gwen.stepDef.eval.start.msecs`, new Date().getTime().toString),
-        )
-      )
       try {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
@@ -132,7 +122,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
           }
         }
       } finally {
-        ctx.stepDefScope.pop()
         ctx.paramScope.pop()
       }
     } finally {
@@ -144,7 +133,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
   }
 
   private def evaluateStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
-    ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.started`, new Date().toString)
     beforeStepDef(stepDef, ctx)
     logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
     val steps = if (!stepDef.isOutline) {
@@ -173,7 +161,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
       withSteps = steps,
       withExamples = examples)
     logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
-    ctx.topScope.stepDefScope.set(`gwen.stepDef.eval.finished`, new Date().toString)
     afterStepDef(eStepDef, ctx)
     step.copy(
       withStepDef = Some(eStepDef),

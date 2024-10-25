@@ -69,7 +69,7 @@ class BindingResolver[T <: EvalContext](ctx: T) {
       else if (n == SysprocBinding.key(name)) new SysprocBinding(name, ctx)
       else if (n == FileBinding.key(name)) new FileBinding(name, ctx)
       else if (n.startsWith(SQLBinding.baseKey(name))) new SQLBinding(name, ctx)
-      else new  SimpleBinding(name, ctx)
+      else new SimpleBinding(name, ctx)
     } getOrElse {
       (ctx.topScope.getObject(DataTable.recordKey) match {
         case Some(record: ScopedData) => Some(new DataRecordBinding(name, ctx))

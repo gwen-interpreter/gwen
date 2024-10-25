@@ -20,6 +20,7 @@ import gwen.core._
 import gwen.core.Formatting.DurationFormatter
 import gwen.core.node.gherkin.Annotations
 import gwen.core.status.StatusKeyword
+import gwen.core.status.EvalStatus
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -27,7 +28,6 @@ import scala.util.chaining._
 
 import java.util.concurrent.TimeUnit
 import java.util.Date
-import gwen.core.status.EvalStatus
 
 /**
   * Manages and maintains a temporary in memory stack of data.
@@ -37,6 +37,7 @@ import gwen.core.status.EvalStatus
 class TransientStack(stackName: String) extends ImplicitValueKeys {
 
   private val isParamStack = stackName == TransientStack.params
+
   /**
     * The transient stack.
     */
@@ -69,6 +70,14 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     */
   def push(scope: String, data: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { sd =>
+      if (!isParamStack) {
+        val start = new Date()
+        sd.set(s"gwen.$stackName.name", scope)
+        sd.set(s"gwen.$stackName.eval.start.msecs", start.getTime().toString)
+        sd.set(s"gwen.$stackName.eval.started", start.toString)
+        sd.set(s"gwen.$stackName.eval.status.keyword", StatusKeyword.Passed.toString)
+        sd.set(s"gwen.$stackName.eval.status.message", "")
+      }
       data foreach { case (name, value) =>
        sd.set(parseName(name), value)
       }
@@ -96,21 +105,20 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     */
   def getOpt(name: String): Option[String] = {
     transientStack.headOption.flatMap(_.getOpt(name)).headOption orElse {
-      findOpt(name, s"${stackName}.", s"${stackName}.")
+      findOpt(name)
     }
   }
 
-  private def findOpt(name: String, level1: String, level2: String): Option[String] = {
-    if (name == s"gwen.${level1}eval.status.keyword.upperCased") getOpt(s"gwen.${level2}eval.status.keyword").map(_.toUpperCase)
-    else if (name == s"gwen.${level1}eval.status.keyword.lowerCased") getOpt(s"gwen.${level2}eval.status.keyword").map(_.toLowerCase)
-    else if (name == s"gwen.${level1}eval.status.message") getOpt(s"gwen.${level2}eval.status.message")
-    else if (name == s"gwen.${level1}eval.status.message.escaped") getOpt(s"gwen.${level2}eval.status.message").map(Formatting.escapeJava)
-    else if (name == s"gwen.${level1}eval.status.message.csvEscaped") getOpt(s"gwen.${level2}eval.status.message").map(Formatting.escapeCSV)
-    else if (name == s"gwen.${level1}eval.status.isFailed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
-    else if (name == s"gwen.${level1}eval.status.isPassed") getOpt(s"gwen.${level2}eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
-    else if (name == s"gwen.${level1}eval.duration.msecs") getOpt(s"gwen.${level2}eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
-    else if (name == s"gwen.${level1}eval.duration.secs") getOpt(s"gwen.${level2}eval.duration.msecs").map(msecs => (msecs.toDouble / 1000d).toString)
-    else if (name == s"gwen.${level1}eval.duration") getOpt(s"gwen.${level2}eval.duration.msecs").map(msecs => DurationFormatter.format(Duration(msecs.toLong, TimeUnit.MILLISECONDS)))
+  private def findOpt(name: String): Option[String] = {
+    if (name == s"gwen.$stackName.eval.status.keyword.upperCased") getOpt(s"gwen.$stackName.eval.status.keyword").map(_.toUpperCase)
+    else if (name == s"gwen.$stackName.eval.status.keyword.lowerCased") getOpt(s"gwen.$stackName.eval.status.keyword").map(_.toLowerCase)
+    else if (name == s"gwen.$stackName.eval.status.message.escaped") getOpt(s"gwen.$stackName.eval.status.message").map(Formatting.escapeJava)
+    else if (name == s"gwen.$stackName.eval.status.message.csvEscaped") getOpt(s"gwen.$stackName.eval.status.message").map(Formatting.escapeCSV)
+    else if (name == s"gwen.$stackName.eval.status.isFailed") getOpt(s"gwen.$stackName.eval.status.keyword").map(_ == StatusKeyword.Failed.toString).map(_.toString)
+    else if (name == s"gwen.$stackName.eval.status.isPassed") getOpt(s"gwen.$stackName.eval.status.keyword").map(_ == StatusKeyword.Passed.toString).map(_.toString)
+    else if (name == s"gwen.$stackName.eval.duration.msecs") getOpt(s"gwen.$stackName.eval.start.msecs").map(started => (new Date().getTime() - started.toLong).toString)
+    else if (name == s"gwen.$stackName.eval.duration.secs") getOpt(s"gwen.$stackName.eval.duration.msecs").map(msecs => (msecs.toDouble / 1000d).toString)
+    else if (name == s"gwen.$stackName.eval.duration") getOpt(s"gwen.$stackName.eval.duration.msecs").map(msecs => DurationFormatter.format(Duration(msecs.toLong, TimeUnit.MILLISECONDS)))
     else None
   }
 

@@ -46,7 +46,7 @@ trait SummaryFormatter {
     */
   override def formatSummary(options: GwenOptions, info: GwenInfo, summary: ResultsSummary): Option[String] = {
     val title = "Results Summary"
-    val path = if (options.args.isDefined) options.commandString else ""
+    val path = options.commandString
     val htmlPage = 
       html(lang := "en",
         formatHtmlHead(title, "")

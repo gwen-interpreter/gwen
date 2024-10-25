@@ -123,6 +123,7 @@ case class Scenario(
   }
   def isSynthetic: Boolean = Tag.findByName(tags, Annotations.Synthetic.toString).nonEmpty
   def isParallel: Boolean = tags.exists(_.name == Annotations.Parallel.toString)
+  def isStepDefCall: Boolean = isStepDef && !evalStatus.isLoaded && !isOutline && !isSynthetic && steps.nonEmpty
   
   def attachments: List[(String, File)] = {
     allSteps.flatMap(step => step.deepAttachments)

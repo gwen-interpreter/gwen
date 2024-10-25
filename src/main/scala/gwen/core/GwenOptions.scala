@@ -30,6 +30,7 @@ import scala.util.chaining._
 
 import java.io.File
 import java.util.Arrays
+import org.apache.commons.lang3.SystemUtils
 
 /**
   * Captures gwen command line options.
@@ -74,7 +75,7 @@ case class GwenOptions(
     initOptions: List[InitOption] = Nil,
     initDir: File = GwenOptions.Defaults.initDir,
     pretty: Boolean = GwenOptions.Defaults.pretty,
-    formatFiles: List[File] = Nil) {
+    formatFiles: List[File] = Nil) extends GwenInfo {
 
   sys.props += ((ImplicitValueKeys.`gwen.process.name`, process.name))
 
@@ -119,10 +120,7 @@ case class GwenOptions(
   /**
     * Gets the command string used to invoke gwen.
     */
-  def commandString: String = args match {
-    case (Some(params)) => s"gwen ${params.mkString(" ")}"
-    case _ => ""
-  }
+  def commandString: String = s"${shebang} ${args.map(_.mkString(" ")).getOrElse("")}"
 
 }
 

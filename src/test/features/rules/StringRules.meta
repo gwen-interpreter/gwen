@@ -10,8 +10,7 @@ Feature: Strings rules Meta
   @StepDef
   @Action
   Scenario Template: I join two strings in meta
-    Given string 1 is "<string 1>"
-      And string 2 is "<string 2>"
+    Given the result is blank
      When I join the two strings
      Then the result should be "<result>"
       And gwen.stepDef.name should be "I join two strings in meta"

@@ -56,7 +56,7 @@ import com.typesafe.scalalogging.LazyLogging
   *
   * @param scope the scope name
   */
-class ScopedData(val scope: String) extends LazyLogging {
+class ScopedData(val scope: String) extends Mutability with LazyLogging {
 
   /**
     * The internal list of name-value tuples for storing attributes.  When a
@@ -72,7 +72,7 @@ class ScopedData(val scope: String) extends LazyLogging {
 
   /** Copies all data. */
   def deepCopyInto(sd: ScopedData): ScopedData = sd tap { _ =>
-    atts foreach { (n, v) => sd.set(n, v) }
+    atts foreach { (n, v) => sd.set(n, v, force = true) }
   }
   
   /**
@@ -136,7 +136,8 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @return the current scope containing the old attributes plus the
     *         newly added attribute
     */
-  def set(name: String, value: String): ScopedData = {
+  def set(name: String, value: String, force: Boolean = false): ScopedData = {
+    if (!force) checkMutability(name, this)
     if (!hasValue(name, value)) {
       (name, value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
@@ -151,7 +152,8 @@ class ScopedData(val scope: String) extends LazyLogging {
     * 
     * @param name the name of the attribute to clear
     */
-  def clear(name: String): ScopedData = {
+  def clear(name: String, force: Boolean = false): ScopedData = {
+    if (!force) checkMutability(name, this)
     (findEntries { case (n, _) =>
       (n == name || n.startsWith(s"$name/")) && !n.endsWith(s"/${BindingType.dryValue}")
     } map { case (n, _) =>
@@ -172,7 +174,7 @@ class ScopedData(val scope: String) extends LazyLogging {
     * @return Some named entry or None
     */
   def namedEntry(name: String)(pred: ((String, String)) => Boolean): Option[(String, String)] = {
-    filterAtts((n, _) => n == name || n.startsWith(s"$name/")).findEntry(pred)
+    findEntries((n, _) => n == name || n.startsWith(s"$name/")).filter(pred).lastOption.filter((_, v) => v != null)
   }
 
   /**
@@ -183,7 +185,8 @@ class ScopedData(val scope: String) extends LazyLogging {
    */
   def filterAtts(pred: ((String, String)) => Boolean): ScopedData = {
     findEntries(pred).foldLeft(if (isTopScope) new TopScope(StateLevel.valueOf(scope)) else ScopedData(scope)) { (data, entry) =>
-      data.set(entry._1, entry._2)
+      val (n, v) = entry
+      data.set(n, v, force = true)
     }
   }
 

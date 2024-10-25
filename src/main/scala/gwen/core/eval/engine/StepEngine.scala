@@ -296,7 +296,7 @@ trait StepEngine[T <: EvalContext] {
       case _ =>
         fStep
     } tap { s => 
-      ctx.topScope.setImplicitAtts(None, tryStatus.getOrElse(s.evalStatus), force = s.isTry)
+      ctx.topScope.setStatus(tryStatus.getOrElse(s.evalStatus), force = s.isTry)
     }
 
   }

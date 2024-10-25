@@ -76,9 +76,6 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
     *               Some(ctx) to reuse a context for all, default is None)
     */
   def run(options: GwenOptions, ctxOpt: Option[T] = None): EvalStatus = {
-    if (options.args.isDefined) {
-      logger.info(options.commandString)
-    }
     val startNanos = System.nanoTime
     try {
       if (options.init) {
@@ -135,7 +132,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
             logger.error(e.getMessage, e)
           }
           val consoleReporter = new ConsoleReporter(options)
-          logger.error(s"${e.getClass.getSimpleName}:\n\n" + consoleReporter.printError(failure))
+          logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
           println()
           failure
         } else {
@@ -254,9 +251,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
   private def evaluateUnit[U](options: GwenOptions, ctxOpt: Option[T], unit: FeatureUnit)(f: (Option[SpecResult] => U)): U = {
     Settings.clearLocal()
     val ctx = ctxOpt getOrElse { 
-      engine.init(options, EnvState()) tap { cx => 
-        cx.topScope.initStart(new Date().getTime())
-      }
+      engine.init(options, EnvState())
     }
     if (ctxOpt.nonEmpty) { ctx.reset(StateLevel.feature) }
     val result = try {

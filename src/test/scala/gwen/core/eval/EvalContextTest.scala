@@ -56,11 +56,11 @@ class EvalContextTest extends BaseTest with Matchers with TestModel {
     ctx.getBoundValue("data[1][token]") should be ("2")
     ctx.topScope.pushObject(DataTable.recordKey, new ScopedData(DataTable.recordKey).set("data[token]", "0"))
     ctx.getBoundValue("data[token]") should be ("0")
-    ctx.topScope.popObject(DataTable.recordKey).isDefined should be (true)
+    ctx.topScope.popObject(DataTable.recordKey).nonEmpty should be (true)
     ctx.getBoundValue("data[1][token]") should be ("2")
-    ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
+    ctx.topScope.popObject(DataTable.tableKey).nonEmpty should be (true)
     ctx.getBoundValue("data[1][token]") should be ("1")
-    ctx.topScope.popObject(DataTable.tableKey).isDefined should be (true)
+    ctx.topScope.popObject(DataTable.tableKey).nonEmpty should be (true)
     intercept[UnboundAttributeException] {
       ctx.getBoundValue("data[1][token]")
     }

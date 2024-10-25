@@ -59,7 +59,7 @@ object GwenInterpreter {
   *
   * @param engine the evaluation engine
   */
-class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging with NoopProjectInitialiser {
+class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLauncher(engine) with LazyLogging with NoopProjectInitialiser with GwenInfo {
 
   Settings.addEnvOverrides(
     "gwen.launch.options.dryRun" -> "GWEN_DRY_RUN", 
@@ -68,11 +68,10 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   )
 
   def main(args: Array[String]): Unit = {
-    printBanner("Welcome to ")
+    printBanner("Welcome to ", args)
     val start = System.nanoTime
     val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
     val process = options.process
-    println(s"#!/gwen ${if (process.isDefault) "--default-process" else s"--process ${process.name}"}\n")
     logger.info("Initialising settings")
     try {
       logger.info("Initialising settings")
@@ -90,7 +89,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
           logger.error(failure.message, e)
         }
         val consoleReporter = new ConsoleReporter(options)
-        logger.error(s"${e.getClass.getSimpleName}:\n\n" + consoleReporter.printError(failure))
+        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
         println()
         System.exit(1)
     }
@@ -109,19 +108,14 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
-      Some(
-        engine.init(options, EnvState()) tap { ctx => 
-          ctx.topScope.setImplicitAtts(None, Pending, true)
-          ctx.topScope.initStart(new Date().getTime())
-        } 
-      )
+      Some(engine.init(options, EnvState()))
     }
     try {
       val evalStatus = run(options, ctxOpt)
       if (!options.init) {
         ctxOpt foreach { ctx =>
           if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
-            printBanner("")
+            printBanner("", options.args.getOrElse(Array[String]()))
           }
           createRepl(ctx).run()
         }
@@ -176,7 +170,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     */
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
-  private def printBanner(intro: String): Unit = {
+  private def printBanner(intro: String, args: Array[String]): Unit = {
     println(
       """|
          |   __ ___      _____ _ __     _    
@@ -187,6 +181,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
          |
          |""".stripMargin + intro + engine.implName + " v" + engine.implVersion + engine.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
          |gweninterpreter.org
+         |
+         |""".stripMargin + shebang + " " + args.mkString(" ") + """
          |""".stripMargin
       )
 

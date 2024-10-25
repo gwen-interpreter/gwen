@@ -32,6 +32,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import gwen.core.state.EnvState
 import org.scalatest.matchers.should.Matchers
 
+import java.io.File
+import java.util.Date
+
 class NodeEventListener1 extends NodeEventListener("Listener1") { }
 class NodeEventListener2NoStepDef extends NodeEventListener("Listener2", Set(NodeType.StepDef)) { }
 class NodeEventListener2NoMetaNoStepDef extends NodeEventListener("Listener2", Set(NodeType.Meta, NodeType.StepDef)) { }
@@ -54,6 +57,7 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val unit = mock[FeatureUnit]
     val featureSpec = mock[Spec]
+    val feature = mock[Feature]
     val featureResult = mock[SpecResult]
     val scenario = mock[Scenario]
     val stepDef = mock[Scenario]
@@ -63,6 +67,16 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
 
     val env = new Environment(EnvState()) { }
 
+    when(featureSpec.feature).thenReturn(feature)
+    when(featureSpec.specFile).thenReturn(Some(new File("spec.feature")))
+    when(featureSpec.specType).thenReturn(SpecType.Feature)
+
+    when(featureResult.spec).thenReturn(featureSpec)
+    when(featureResult.finished).thenReturn(new Date())
+
+    when(scenario.evalStatus).thenReturn(Passed(1))
+    when(stepDef.evalStatus).thenReturn(Passed(1))
+    when(rule.evalStatus).thenReturn(Passed(1))
     when(step.evalStatus).thenReturn(Passed(1))
 
     dispatcher.addListener(listener)
@@ -166,6 +180,8 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     when(step3.uuid).thenReturn(stepUuid3)
     when(stepDef1.uuid).thenReturn(stepDefUuid1)
     when(stepDef2.uuid).thenReturn(stepDefUuid2)
+    when(stepDef1.evalStatus).thenReturn(Passed(1))
+    when(stepDef2.evalStatus).thenReturn(Passed(1))
 
     dispatcher.addListener(listener1)
     dispatcher.addListener(listener2)
@@ -246,8 +262,10 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val dispatcher = new NodeEventDispatcher()
 
     val featureSpec = mock[Spec]
+    val feature = mock[Feature]
     val featureResult = mock[SpecResult]
     val metaSpec = mock[Spec]
+    val meta = mock[Feature]
     val metaResult = mock[SpecResult]
     val step1 = mock[Step]
     val step2 = mock[Step]
@@ -269,6 +287,20 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
 
+    when(featureSpec.feature).thenReturn(feature)
+    when(featureSpec.specFile).thenReturn(Some(new File("spec.feature")))
+    when(featureSpec.specType).thenReturn(SpecType.Feature)
+
+    when(featureResult.spec).thenReturn(featureSpec)
+    when(featureResult.finished).thenReturn(new Date())
+
+    when(metaSpec.feature).thenReturn(meta)
+    when(metaSpec.specFile).thenReturn(Some(new File("spec.meta")))
+    when(metaSpec.specType).thenReturn(SpecType.Meta)
+
+    when(metaResult.spec).thenReturn(metaSpec)
+    when(metaResult.finished).thenReturn(new Date())
+
     when(step1.evalStatus).thenReturn(Passed(1))
     when(step2.evalStatus).thenReturn(Passed(1))
     when(step3.evalStatus).thenReturn(Passed(1))
@@ -284,6 +316,8 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     when(step4.nodeType).thenReturn(NodeType.Step)
     when(stepDef1.nodeType).thenReturn(NodeType.StepDef)
     when(stepDef2.nodeType).thenReturn(NodeType.StepDef)
+    when(stepDef1.evalStatus).thenReturn(Passed(1))
+    when(stepDef2.evalStatus).thenReturn(Passed(1))
 
     when(featureSpec.uuid).thenReturn(featureSpecUuid)
     when(featureResult.uuid).thenReturn(featureResultUuid)
