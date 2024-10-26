@@ -19,16 +19,58 @@ import gwen.core._
 import gwen.core.node.gherkin.Annotations
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.Tag
+import gwen.core.ImplicitValueKeys
 import gwen.core.state.ScopedData
 
 /**
-  * Data table containing records.
+  * Models a data table with a associated data names.
+  *
+  * @param orientation the table orientation
+  * @param records list of records containing the data
+  * @param names list of data element names
   */
-trait DataTable {
-  val tableType: TableType
-  val records: List[List[String]]
-  def tableScope: ScopedData
+class DataTable(val orientation: TableOrientation, val records: List[List[String]], val names: List[String]) extends ImplicitValueKeys {
+
+  /**
+    * Binds each data element to a new table scope for accessing the values.
+    */
+  def tableScope : ScopedData = new ScopedData(DataTable.tableKey) {
+    override def isEmpty: Boolean = records.isEmpty
+    override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
+      ((names.zipWithIndex map { case (name, index) =>
+        (s"name[${index + 1}]", name)
+      }) ++ (records.zipWithIndex flatMap { case (record, rIndex) =>
+        names.zip(record) map { case (name, value) =>
+          (s"data[${rIndex + 1}][$name]", value)
+        }
+      })).filter(pred)
+  }
+
+  /**
+    * Binds each data element in a record to a new for accessing values.
+    *
+    * @param recordIndex the record index
+    */
+  def recordScope(recordIndex: Int): ScopedData = new ScopedData(DataTable.recordKey) {
+    override def isEmpty: Boolean = records.isEmpty
+    override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
+      (
+        (`gwen.table.record.index`, s"$recordIndex") :: (
+          (`gwen.table.record.number`, s"${recordIndex + 1}") :: (
+            names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
+              (s"name[${nameIndex + 1}]", name)
+            }
+          ) ++ (
+            names.zip(records(recordIndex)) map { case (name, value) =>
+              (s"data[$name]", value)
+            }
+          )
+        )
+      ).filter(pred)
+  }
+
 }
+
 
 /**
   * Data table factory.
@@ -42,13 +84,13 @@ object DataTable {
     tag.name.trim match {
       case r"""DataTable""" =>
         val table = step.table.map(_._2)
-        DataTable(if (table.nonEmpty) table.tail else Nil, HeaderType.top, table.headOption.getOrElse(Nil))
+        DataTable(if (table.nonEmpty) table.tail else Nil, HeaderPosition.top, table.headOption.getOrElse(Nil))
       case r"""DataTable\(horizontal=(.+?)$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.top, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("horizontal"), namesCSV).split(",").toList)
+        DataTable(step.table.map(_._2), HeaderPosition.top, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("horizontal"), namesCSV).split(",").toList)
       case r"""DataTable\(vertical=(.+?)$namesCSV\)""" =>
-        DataTable(step.table.map(_._2), HeaderType.left, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("vertical"), namesCSV).split(",").toList)
+        DataTable(step.table.map(_._2), HeaderPosition.left, Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("vertical"), namesCSV).split(",").toList)
       case r"""DataTable\(header=(.+?)$header\)""" if (header.contains("top") || header.contains("left")) =>
-        DataTable(step.table.map(_._2), HeaderType.valueOf(Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("header"), header)), Nil)
+        DataTable(step.table.map(_._2), HeaderPosition.valueOf(Tag.parseSingleValue(tag.sourceRef, Annotations.DataTable, Some("header"), header)), Nil)
       case _ => tagSyntaxError(tag)
     }
   }
@@ -77,24 +119,24 @@ object DataTable {
     * Creates a data table.
     *
     * @param rawTable the raw data table
-    * @param headerType the table  header type
+    * @param headerPos the table  header type
     * @param headers list of header names
     */
-  def apply(rawTable: List[List[(String)]], headerType: HeaderType, headers: List[String]): DataTable = {
+  def apply(rawTable: List[List[(String)]], headerPos: HeaderPosition, headers: List[String]): DataTable = {
 
-    val tableType = TableType.valueFor(headerType)
+    val orientation = TableOrientation.valueFor(headerPos)
 
     if (rawTable.isEmpty && headers.isEmpty)
       Errors.dataTableError(s"Data table expected for StepDef with @DataTable annotation")
 
-    val table = if (tableType == TableType.vertical) rawTable.transpose else rawTable
+    val table = if (orientation == TableOrientation.vertical) rawTable.transpose else rawTable
 
     if (headers.nonEmpty && table.nonEmpty && headers.size != table.head.size)
       Errors.dataTableError(
-        s"""${table.head.size} names expected for data table but ${headers.size} specified: $tableType=\"${headers.mkString(",")}\"""")
+        s"""${table.head.size} names expected for data table but ${headers.size} specified: $orientation=\"${headers.mkString(",")}\"""")
 
-    if (headers.nonEmpty) new FlatTable(tableType, table, headers)
-        else new FlatTable(tableType, table.tail, table.head)
+    if (headers.nonEmpty) new DataTable(orientation, table, headers)
+        else new DataTable(orientation, table.tail, table.head)
   }
 }
 

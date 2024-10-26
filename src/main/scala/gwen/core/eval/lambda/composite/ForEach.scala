@@ -24,7 +24,7 @@ import gwen.core.eval.lambda.CompositeStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin._
 import gwen.core.node.gherkin.table.DataTable
-import gwen.core.node.gherkin.table.TableType
+import gwen.core.node.gherkin.table.TableOrientation
 import gwen.core.state.ScopedData
 import gwen.core.status._
 
@@ -46,9 +46,9 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
       }
       val tableTypeTag: Option[Tag] = ctx.topScope.getObject(DataTable.tableKey) match {
         case Some(table: DataTable) =>
-          table.tableType match {
-            case TableType.horizontal => Some(Tag(Annotations.HorizontalTable))
-            case TableType.vertical => Some(Tag(Annotations.VerticalTable))
+          table.orientation match {
+            case TableOrientation.horizontal => Some(Tag(Annotations.HorizontalTable))
+            case TableOrientation.vertical => Some(Tag(Annotations.VerticalTable))
           }
         case _ => None
       }

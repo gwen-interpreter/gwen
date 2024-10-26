@@ -16,9 +16,19 @@
 package gwen.core.node.gherkin.table
 
 /**
-  * Supported table header types.
+  * Supported table orientations.
   *
   * @author Branko Juric
   */
-enum HeaderType:
-  case top, left
+
+enum TableOrientation:
+  case horizontal, vertical
+
+object TableOrientation {
+
+  def valueFor(headerType: HeaderPosition): TableOrientation = headerType match {
+      case HeaderPosition.top  => horizontal
+      case HeaderPosition.left => vertical
+  }
+
+}

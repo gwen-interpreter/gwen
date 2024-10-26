@@ -228,7 +228,7 @@ trait StepEngine[T <: EvalContext] {
   private def translateStepDef(step: Step, ctx: T): Option[CompositeStep[T]] = {
     ctx.getStepDef(step.expression, step.docString.map(_._2)) match {
       case Some(stepDef) if stepDef.isForEach && stepDef.isDataTable =>
-        val dataTable = ForEachTableRecord.parseFlatTable {
+        val dataTable = ForEachTableRecord.parse {
           stepDef.tags.find(_.name.startsWith(s"${Annotations.DataTable.toString}")) map {
             tag => DataTable(tag, step)
           }

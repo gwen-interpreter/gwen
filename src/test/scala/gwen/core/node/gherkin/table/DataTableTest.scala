@@ -41,9 +41,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -58,9 +58,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -75,9 +75,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -93,9 +93,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -111,9 +111,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -129,9 +129,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 | 2 | 3 |
         |      | 2 | 3 | 5 |
         |      | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -144,9 +144,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 0 | 1 | 1 | 2 | 3 |
         |      | 1 | 1 | 2 | 3 | 5 |
         |      | 1 | 2 | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -159,9 +159,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 0 | 1 | 1 | 2 | 3 |
         |      | 1 | 1 | 2 | 3 | 5 |
         |      | 1 | 2 | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -174,9 +174,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | a | 0 | 1 | 1 | 2 | 3 |
         |      | b | 1 | 1 | 2 | 3 | 5 |
         |      | c | 1 | 2 | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
@@ -189,13 +189,13 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | a | 0 | 1 | 1 | 2 | 3 |
         |      | b | 1 | 1 | 2 | 3 | 5 |
         |      | c | 1 | 2 | 3 | 5 | 8 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_multiRecord(dataTable)
+    checkTable_multiRecord(dataTable)
 
   }
 
-  def checkFlatTable_multiRecord(dataTable: FlatTable): Unit = {
+  def checkTable_multiRecord(dataTable: DataTable): Unit = {
 
     dataTable.records.size should be (5)
     dataTable.records.head.size should be (3)
@@ -244,9 +244,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single record horizontal table with no header
         |      | 1 | 2 | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -257,9 +257,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single record horizontal table with no header
         |      | 1 | 2 | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -271,9 +271,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single record horizontal table with a top header
         |      | a | b | c |
         |      | 1 | 2 | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -285,9 +285,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single record horizontal table with a top header
         |      | a | b | c |
         |      | 1 | 2 | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -299,9 +299,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single record horizontal table with a top header
         |      | a | b | c |
         |      | 1 | 2 | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -314,9 +314,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 |
         |      | 2 |
         |      | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -329,9 +329,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | 1 |
         |      | 2 |
         |      | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -344,9 +344,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | a | 1 |
         |      | b | 2 |
         |      | c | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
@@ -359,13 +359,13 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |      | a | 1 |
         |      | b | 2 |
         |      | c | 3 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleRecord(dataTable)
+    checkTable_singleRecord(dataTable)
 
   }
 
-  def checkFlatTable_singleRecord(dataTable: FlatTable): Unit = {
+  def checkTable_singleRecord(dataTable: DataTable): Unit = {
 
     dataTable.records.size should be (1)
     dataTable.records.head.size should be (3)
@@ -402,9 +402,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item horizontal table with no header
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -415,9 +415,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item horizontal table with no header
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -429,9 +429,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single item horizontal table with a top header
         |      | a |
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -443,9 +443,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single item horizontal table with a top header
         |      | a |
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -457,9 +457,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
         |Given a single item horizontal table with a top header
         |      | a |
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -470,9 +470,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item vertical table with no header
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -483,9 +483,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item vertical table with no header
         |      | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -496,9 +496,9 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item vertical table with a left header
         |      | a | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
@@ -509,13 +509,13 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a single item vertical table with a left header
         |      | a | 1 |
-      """.stripMargin)).asInstanceOf[FlatTable]
+      """.stripMargin)).asInstanceOf[DataTable]
 
-    checkFlatTable_singleItem(dataTable)
+    checkTable_singleItem(dataTable)
 
   }
 
-  def checkFlatTable_singleItem(dataTable: FlatTable): Unit = {
+  def checkTable_singleItem(dataTable: DataTable): Unit = {
 
     dataTable.records.size should be (1)
     dataTable.records.head.size should be (1)
@@ -544,7 +544,7 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a zero item horizontal table with a top header
         |      |  a  |
-      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
+      """.stripMargin)).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
@@ -555,7 +555,7 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a zero item horizontal table with a top header
         |      |  a  |
-      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
+      """.stripMargin)).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
@@ -566,7 +566,7 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a zero item horizontal table with a top header
         |      |  a  |
-      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
+      """.stripMargin)).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
@@ -577,7 +577,7 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a zero item vertical table with a left header
         |      |  a  |
-      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
+      """.stripMargin)).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
@@ -588,19 +588,19 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       """
         |Given a zero item vertical table with a left header
         |      |  a  |
-      """.stripMargin)).asInstanceOf[FlatTable].records.isEmpty should be (true)
+      """.stripMargin)).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
   "Zero table" should "return empty table (single quoted)" in {
 
-    DataTable(Tag("""@DataTable(horizontal='none')"""), parse("Given no table")).asInstanceOf[FlatTable].records.isEmpty should be (true)
+    DataTable(Tag("""@DataTable(horizontal='none')"""), parse("Given no table")).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 
   "Zero table" should "return empty table (double quoted)" in {
 
-    DataTable(Tag("""@DataTable(horizontal="none")"""), parse("Given no table")).asInstanceOf[FlatTable].records.isEmpty should be (true)
+    DataTable(Tag("""@DataTable(horizontal="none")"""), parse("Given no table")).asInstanceOf[DataTable].records.isEmpty should be (true)
 
   }
 

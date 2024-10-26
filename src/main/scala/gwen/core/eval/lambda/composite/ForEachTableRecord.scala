@@ -22,12 +22,11 @@ import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.table.DataTable
-import gwen.core.node.gherkin.table.FlatTable
 
 class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]) extends ForEach[T](engine, doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    val dataTable = ForEachTableRecord.parseFlatTable(ctx.topScope.getObject(DataTable.tableKey))
+    val dataTable = ForEachTableRecord.parse(ctx.topScope.getObject(DataTable.tableKey))
     val records = () => {
       dataTable.records.indices.map(idx => dataTable.recordScope(idx))
     }
@@ -37,11 +36,9 @@ class ForEachTableRecord[T <: EvalContext](doStep: String, engine: EvalEngine[T]
 }
 
 object ForEachTableRecord {
-  def parseFlatTable(dataTable: Option[Any]): FlatTable = {
-    dataTable match {
-      case Some(table: FlatTable) => table
-      case Some(other) => Errors.dataTableError(s"Cannot use for each on table of type: ${other.getClass.getName}")
-      case _ => Errors.dataTableError("Calling step has no data table")
+  def parse(dataTable: Option[Any]): DataTable = {
+    dataTable.filter(_.isInstanceOf[DataTable]).map(_.asInstanceOf[DataTable]) getOrElse {
+      Errors.dataTableError("Calling step has no data table")
     }
   }
 }
