@@ -120,8 +120,6 @@ object Settings extends LazyLogging {
         if (!name.contains("\"")) configProps.setProperty(name, entry.getValue.toString)
       }
 
-      //configProps.setProperty("gwen.mask.char", get("gwen.mask.char"))       
-
       names map { name => 
         (name, name.replaceAll("\"", ""))
       } foreach { (name, parsedName) => 
@@ -135,8 +133,6 @@ object Settings extends LazyLogging {
         }
       }
     }
-
-    names.flatMap(n => getOpt(n)).foreach(resolve)
 
   }
 

@@ -97,6 +97,7 @@ class SettingsTest extends BaseTest with Matchers {
       Settings.exclusively {
         try {
           Settings.init(List(propFile))
+          Settings.get("prop.url")
         } finally {
           sys.props -= "prop.host"
           sys.props -= "prop.host.port"
