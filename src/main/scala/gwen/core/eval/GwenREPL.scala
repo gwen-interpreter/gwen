@@ -210,15 +210,15 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
   }
 
   private def enteringLoop(): Unit = {
-    // repl always runs in imperative and lenient mode
     Settings.setLocal("gwen.feature.mode", FeatureMode.imperative.toString)
     Settings.setLocal("gwen.behavior.rules", BehaviorMode.lenient.toString)
+    Settings.setLocal("gwen.input.data.readOnly", false.toString)
 
   }
   private def exitingLoop(): Unit = {
-    // remove local imperative and lenient mode overrides
     Settings.clearLocal("gwen.feature.mode")
     Settings.clearLocal("gwen.behavior.rules")
+    Settings.clearLocal("gwen.input.data.readOnly")
   }
 
   /** Reads all input lines from the command line. */

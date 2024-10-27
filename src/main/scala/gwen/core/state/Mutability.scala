@@ -17,6 +17,7 @@
 package gwen.core.state
 
 import gwen.core.Errors
+import gwen.core.GwenSettings
 import gwen.core.state.Environment
 import gwen.core.node.gherkin.Annotations
 
@@ -28,11 +29,15 @@ trait Mutability {
 
     def checkMutability(name: String, scopedData: ScopedData): Unit = {
       scopedData.getOpt(key(name)).map(Annotations.valueOf) foreach { annotation =>
-        Errors.immutableModificationError(name, annotation)
+        if (GwenSettings.`gwen.input.data.readOnly`) {
+          Errors.immutableModificationError(name, annotation)
+        }
       }
     }
 
     def setReadOnly(name: String, annotation: Annotations, scopedData: ScopedData): Unit = {
-      scopedData.set(key(name), annotation.toString, force = true)
+      if (GwenSettings.`gwen.input.data.readOnly`) {
+        scopedData.set(key(name), annotation.toString, force = true)
+      }
     }
 }

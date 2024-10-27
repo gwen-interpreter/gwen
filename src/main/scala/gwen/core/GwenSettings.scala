@@ -76,6 +76,7 @@ object GwenSettings extends LazyLogging {
     `gwen.video.dir`
     `gwen.video.timeoutSecs`
     `gwen.logLevel.deprecations`
+    `gwen.input.data.readOnly`
   }
 
   /**
@@ -514,6 +515,14 @@ object GwenSettings extends LazyLogging {
     } getOrElse {
       Level.WARNING
     }
+  }
+
+  /**
+    * Provides access to the `gwen.input.data.readOnly` setting used to control whether or not
+    * input data should be read only.
+    */
+  def `gwen.input.data.readOnly`: Boolean = {
+    Settings.getBoolean("gwen.input.data.readOnly")
   }
 
   def `gwen.report.results.files`(options: GwenOptions): List[ResultFile] = {
