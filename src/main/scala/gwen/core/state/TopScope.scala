@@ -37,34 +37,11 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
 
   override val isTopScope = true
 
-  /**
-    *  Provides access to the rule scope.
-    */
   val featureScope = TransientStack.featureStack
-
-  /**
-    *  Provides access to the rule scope.
-    */
   val ruleScope = TransientStack.ruleStack
-
-  /**
-    *  Provides access to the scenario scope.
-    */
   val scenarioScope = TransientStack.scenarioStack
-
-  /**
-    *  Provides access to the rule scope.
-    */
   val examplesScope = TransientStack.examplesStack
-
-  /**
-    *  Provides access to the stepDef scope.
-    */
   val stepDefScope = TransientStack.stepDefStack
-
-  /**
-    *  Provides access to the parameter scope.
-    */
   val paramScope = TransientStack.paramsStack
 
   /** Map of object stacks. */

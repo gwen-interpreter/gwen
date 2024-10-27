@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Semaphore
 import gwen.core.status.StatusKeyword
+import gwen.core.data.DataRecord
 
 /**
   * StepDef evaluation engine.
@@ -52,36 +53,38 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
     * Loads a stepdef to memory.
     */
   private [engine] def loadStepDef(parent: GwenNode, stepDef: Scenario, ctx: T): Scenario = {
-    beforeStepDef(stepDef, ctx)
-    logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
-    ctx.addStepDef(stepDef)
-    if (stepDef.isSynchronized) {
-      stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
-    }
-    val loadedSteps = transitionSteps(stepDef.steps, Loaded, ctx)
-    val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
-    val examples = if (stepDef.isOutline) {
-      stepDef.examples map { exs =>
-        exs.copy(
-          withScenarios = exs.scenarios map { s =>
-            s.copy(
-              withBackground = s.background map { b =>
-                b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
-              },
-              withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
-            )
-          }
-        )
+    ctx.stepDefScope.boundary(stepDef.name, Nil) {
+      beforeStepDef(stepDef, ctx)
+      logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
+      ctx.addStepDef(stepDef)
+      if (stepDef.isSynchronized) {
+        stepDefLock.putIfAbsent(stepDef.name, new Semaphore(1))
       }
-    } else  {
-      stepDef.examples
-    }
-    stepDef.copy(
-      withBackground = None,
-      withSteps = steps,
-      withExamples = examples
-    ) tap { s =>
-      afterStepDef(s, ctx)
+      val loadedSteps = transitionSteps(stepDef.steps, Loaded, ctx)
+      val steps = if (stepDef.isOutline) stepDef.steps else loadedSteps
+      val examples = if (stepDef.isOutline) {
+        stepDef.examples map { exs =>
+          exs.copy(
+            withScenarios = exs.scenarios map { s =>
+              s.copy(
+                withBackground = s.background map { b =>
+                  b.copy(withSteps = b.steps map { _.copy(withEvalStatus = Loaded) })
+                },
+                withSteps = s.steps map { _.copy(withEvalStatus = Loaded) }
+              )
+            }
+          )
+        }
+      } else  {
+        stepDef.examples
+      }
+      stepDef.copy(
+        withBackground = None,
+        withSteps = steps,
+        withExamples = examples
+      ) tap { s =>
+        afterStepDef(s, ctx)
+      }
     }
   }
 
@@ -103,8 +106,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
         withStepDef = Some(stepDef)
       )
       checkStepDefRules(sdStep, ctx)
-      ctx.paramScope.push(stepDef.name, stepDef.params)
-      try {
+      ctx.paramScope.boundary(stepDef.name, stepDef.params) {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)
         nonEmptyDataTableOpt foreach { table =>
@@ -121,8 +123,6 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
             ctx.topScope.popObject(DataTable.tableKey)
           }
         }
-      } finally {
-        ctx.paramScope.pop()
       }
     } finally {
       lock.foreach { l =>
@@ -133,39 +133,41 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
   }
 
   private def evaluateStepDef(parent: GwenNode, stepDef: Scenario, step: Step, ctx: T): Step = {
-    beforeStepDef(stepDef, ctx)
-    logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
-    val steps = if (!stepDef.isOutline) {
-      evaluateSteps(stepDef, stepDef.steps, ctx)
-    } else {
-      stepDef.steps map { step =>
-        if (stepDef.isExpanded) {
-          step.copy(withEvalStatus = Loaded)
-        } else {
-          transitionStep(step, Loaded, ctx)
+    ctx.stepDefScope.boundary(stepDef.name, Nil) {
+      beforeStepDef(stepDef, ctx)
+      logger.debug(s"Evaluating ${stepDef.keyword}: ${stepDef.name}")
+      val steps = if (!stepDef.isOutline) {
+        evaluateSteps(stepDef, stepDef.steps, ctx)
+      } else {
+        stepDef.steps map { step =>
+          if (stepDef.isExpanded) {
+            step.copy(withEvalStatus = Loaded)
+          } else {
+            transitionStep(step, Loaded, ctx)
+          }
         }
       }
-    }
-    val examples = if (stepDef.isOutline) {
-      val exs = if (!stepDef.isExpanded) {
-        expandExamples(stepDef, None, ctx).examples
+      val examples = if (stepDef.isOutline) {
+        val exs = if (!stepDef.isExpanded) {
+          expandExamples(stepDef, None, ctx).examples
+        } else {
+          stepDef.examples
+        }
+        evaluateExamples(stepDef, exs, ctx)
       } else {
         stepDef.examples
       }
-      evaluateExamples(stepDef, exs, ctx)
-    } else {
-      stepDef.examples
+      val eStepDef = stepDef.copy(
+        withBackground = None,
+        withSteps = steps,
+        withExamples = examples)
+      logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
+      afterStepDef(eStepDef, ctx)
+      step.copy(
+        withStepDef = Some(eStepDef),
+        withEvalStatus = eStepDef.evalStatus
+      )
     }
-    val eStepDef = stepDef.copy(
-      withBackground = None,
-      withSteps = steps,
-      withExamples = examples)
-    logger.debug(s"${stepDef.keyword} evaluated: ${stepDef.name}")
-    afterStepDef(eStepDef, ctx)
-    step.copy(
-      withStepDef = Some(eStepDef),
-      withEvalStatus = eStepDef.evalStatus
-    )
   }
 
 }

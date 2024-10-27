@@ -53,6 +53,19 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
         } else if (exitOnFail && !isSoftAssert) {
           transitionRule(rule, rule.evalStatus, ctx)
         } else {
+          ctx.ruleScope.boundary(rule.name, Nil) {
+            beforeRule(rule, ctx)
+            logger.info(s"Evaluating ${rule.keyword}: $rule")
+            rule.copy(
+              withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
+            ) tap { r =>
+              afterRule(r, ctx)
+              logStatus(ctx.options, r)
+            }
+          }
+        }
+      case _ =>
+        ctx.ruleScope.boundary(rule.name, Nil) {
           beforeRule(rule, ctx)
           logger.info(s"Evaluating ${rule.keyword}: $rule")
           rule.copy(
@@ -61,15 +74,6 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
             afterRule(r, ctx)
             logStatus(ctx.options, r)
           }
-        }
-      case _ =>
-        beforeRule(rule, ctx)
-        logger.info(s"Evaluating ${rule.keyword}: $rule")
-        rule.copy(
-          withScenarios = evaluateScenarios(rule, rule.scenarios, dataRecord, ctx)
-        ) tap { r =>
-          afterRule(r, ctx)
-          logStatus(ctx.options, r)
         }
     }
   }

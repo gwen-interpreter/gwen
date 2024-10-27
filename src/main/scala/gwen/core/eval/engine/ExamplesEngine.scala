@@ -52,11 +52,13 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
       if (exs.scenarios.isEmpty) {
         transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
       } else {
-        beforeExamples(exs, ctx)
-        exs.copy(
-          withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
-        ) tap { exs =>
-          afterExamples(exs, ctx)
+        ctx.examplesScope.boundary(exs.name, Nil) {
+          beforeExamples(exs, ctx)
+          exs.copy(
+            withScenarios = evaluateScenarios(exs, exs.scenarios, None, ctx)
+          ) tap { exs =>
+            afterExamples(exs, ctx)
+          }
         }
       }
     }

@@ -27,7 +27,6 @@ import gwen.core.node.gherkin.table.DataTable
 class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Step, dataTable: DataTable,  engine: EvalEngine[T]) extends ForEach[T](engine, stepDef.name) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    ctx.topScope.pushObject(DataTable.tableKey, dataTable)
     val doStepDef = stepDef.copy(
       withTags = stepDef.tags filter { tag => 
         tag.name != Annotations.ForEach.toString &&
@@ -44,7 +43,6 @@ class ForEachTableRecordAnnotated[T <: EvalContext](stepDef: Scenario, step: Ste
     } finally {
       ctx.removeStepDef(doStepDef.name)
       ctx.addStepDef(stepDef)
-      ctx.topScope.popObject(DataTable.tableKey)
     }
   }
 

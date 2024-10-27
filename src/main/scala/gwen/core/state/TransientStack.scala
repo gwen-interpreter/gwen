@@ -57,6 +57,15 @@ abstract class TransientStack(stackName: String) extends ImplicitValueKeys {
     tStack
   }
 
+  def boundary[T](scope: String, data: List[(String, String)])(body: =>T): T = {
+    push(scope, data)
+    try {
+      body
+    } finally {
+      pop()
+    }
+  }
+
   /**
     * Adds the given data (name-value pairs) to a new scope
     * and pushes it onto the stack
@@ -65,7 +74,7 @@ abstract class TransientStack(stackName: String) extends ImplicitValueKeys {
     * @param data the data to add
     * @return the newly added scope
     */
-  def push(scope: String, data: List[(String, String)]): ScopedData = {
+  private[state] def push(scope: String, data: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { sd =>
       data foreach { case (name, value) =>
        sd.set(bindingName(name), value)
@@ -75,7 +84,7 @@ abstract class TransientStack(stackName: String) extends ImplicitValueKeys {
   }
 
   /** Pops the current parameters off the stack. */
-  def pop(): ScopedData = transientStack.pop()
+  private def pop(): ScopedData = transientStack.pop()
 
   /**
     * Finds and retrieves data bound in the current stack.
@@ -186,5 +195,4 @@ object TransientStack {
   def scenarioStack: TransientStack = new TransientNodeStack("scenario")
   def examplesStack: TransientStack = new TransientNodeStack("examples")
   def stepDefStack: TransientStack = new TransientNodeStack("stepDef")
-  def tableStack: TransientStack = new TransientDataStack("table")
 }

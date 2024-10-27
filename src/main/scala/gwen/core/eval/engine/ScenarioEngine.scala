@@ -141,18 +141,20 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
       if (!scenario.isStepDef) Errors.dataTableError(s"${Annotations.StepDef} tag also expected where ${Annotations.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)
     } else {
-      beforeScenario(scenario, ctx)
-      logger.info(s"Evaluating ${scenario.keyword}: $scenario")
-      (if (scenario.isOutline) {
-        evaluateScenarioOutline(scenario, ctx)
-      } else {
-        scenario.background map  { background =>
-          evaluateScenarioWithBackground(scenario, background, ctx)
-        } getOrElse {
-          evaluateScenarioWithoutBackground(scenario, ctx)
+      ctx.scenarioScope.boundary(scenario.name, Nil) {
+        beforeScenario(scenario, ctx)
+        logger.info(s"Evaluating ${scenario.keyword}: $scenario")
+        (if (scenario.isOutline) {
+          evaluateScenarioOutline(scenario, ctx)
+        } else {
+          scenario.background map  { background =>
+            evaluateScenarioWithBackground(scenario, background, ctx)
+          } getOrElse {
+            evaluateScenarioWithoutBackground(scenario, ctx)
+          }
+        }) tap { s =>
+          afterScenario(s, ctx)
         }
-      }) tap { s =>
-        afterScenario(s, ctx)
       }
     } tap { s =>
       logStatus(ctx.options, s)
