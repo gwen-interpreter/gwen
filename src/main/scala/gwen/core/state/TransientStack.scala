@@ -34,23 +34,20 @@ import java.util.Date
   *
   * @author Branko Juric
   */
-class TransientStack(stackName: String) extends ImplicitValueKeys {
-
-  private val isParamStack = stackName == TransientStack.params
+abstract class TransientStack(stackName: String) extends ImplicitValueKeys {
 
   /**
     * The transient stack.
     */
   private val transientStack = mutable.Stack[ScopedData]()
 
+  private[state] def bindingName(name: String): String = name
+  private[state] def rawName(name: String): String = name
+
   def deepCloneInto(tStack: TransientStack): TransientStack = tStack tap { _ =>
     transientStack foreach { sd => 
       tStack.transientStack.push(sd.deepClone)
     }
-  }
-
-  def parseName(name: String): String = {
-    if (isParamStack) s"<$name>" else name
   }
 
   def deepCopyInto(tStack: TransientStack): TransientStack = { 
@@ -70,16 +67,8 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     */
   def push(scope: String, data: List[(String, String)]): ScopedData = {
     ScopedData(scope) tap { sd =>
-      if (!isParamStack) {
-        val start = new Date()
-        sd.set(s"gwen.$stackName.name", scope)
-        sd.set(s"gwen.$stackName.eval.start.msecs", start.getTime().toString)
-        sd.set(s"gwen.$stackName.eval.started", start.toString)
-        sd.set(s"gwen.$stackName.eval.status.keyword", StatusKeyword.Passed.toString)
-        sd.set(s"gwen.$stackName.eval.status.message", "")
-      }
       data foreach { case (name, value) =>
-       sd.set(parseName(name), value)
+       sd.set(bindingName(name), value)
       }
       transientStack.push(sd)
     }
@@ -130,7 +119,7 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     * @return this stack object
     */
   def set(name: String, value: String): TransientStack = {
-    transientStack.headOption.getOrElse(push(stackName, Nil)).set(parseName(name), value)
+    transientStack.headOption.getOrElse(push(stackName, Nil)).set(bindingName(name), value)
     this
   }
 
@@ -160,8 +149,7 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
     transientStack.headOption.map(scope => (scope.scope, scope.findEntries(_ => true).toList)) match {
       case Some((scope, entries)) if entries.nonEmpty =>
         s"$stackName : { scope: $scope, entries : [ ${entries map { case (n, v) =>
-          val name = if (isParamStack) n.substring(1, n.length - 1) else n
-          s"{ $name: $v }"
+          s"{ ${rawName(n)}: $v }"
         } mkString ", "} ] }"
       case _ =>
         s"$stackName : { }"
@@ -170,12 +158,33 @@ class TransientStack(stackName: String) extends ImplicitValueKeys {
 
 }
 
+class TransientNodeStack(stackName: String) extends TransientStack(stackName) {
+  override def push(scope: String, data: List[(String, String)]): ScopedData = {
+    val start = new Date()
+    super.push(
+      scope,
+      List(
+        (s"gwen.$stackName.name", scope),
+        (s"gwen.$stackName.eval.start.msecs", start.getTime().toString),
+        (s"gwen.$stackName.eval.started", start.toString),
+        (s"gwen.$stackName.eval.status.keyword", StatusKeyword.Passed.toString),
+        (s"gwen.$stackName.eval.status.message", "")
+      ) ++ data
+    )
+  }
+}
+
+class TransientDataStack(stackName: String) extends TransientStack(stackName)
+
 object TransientStack {
-  private val params = "params"
-  def paramsStack: TransientStack = new TransientStack(params)
-  def featureStack: TransientStack = new TransientStack("feature")
-  def ruleStack: TransientStack = new TransientStack("rule")
-  def scenarioStack: TransientStack = new TransientStack("scenario")
-  def examplesStack: TransientStack = new TransientStack("examples")
-  def stepDefStack: TransientStack = new TransientStack("stepDef")
+  def paramsStack: TransientStack = new TransientDataStack("params") {
+    override def bindingName(name: String): String = s"<$name>"
+    override def rawName(name: String): String = name.drop(1).dropRight(1)
+  }
+  def featureStack: TransientStack = new TransientNodeStack("feature")
+  def ruleStack: TransientStack = new TransientNodeStack("rule")
+  def scenarioStack: TransientStack = new TransientNodeStack("scenario")
+  def examplesStack: TransientStack = new TransientNodeStack("examples")
+  def stepDefStack: TransientStack = new TransientNodeStack("stepDef")
+  def tableStack: TransientStack = new TransientDataStack("table")
 }
