@@ -337,7 +337,7 @@ object Settings extends LazyLogging {
   }
 
   /** Gets all settings name entries. */
-  def names: Set[String] = {
+  private def names: Set[String] = {
     localSettings.get.keySet.asScala.toSet.map(_.toString) ++ sys.props.keySet.map(_.toString) ++ configProps.keySet.asScala.map(_.toString) ++ config.entrySet.asScala.map(_.getKey)
   }
 
@@ -362,7 +362,7 @@ object Settings extends LazyLogging {
         properties
       }
     }
-    names.filter(predicate) foreach { key => 
+    names.filter(predicate).filter(!_.contains("\"")) foreach { key => 
       if (!props.containsKey(key)) {
         getOpt(key) foreach { value => 
           props.setProperty(key, value)
@@ -396,6 +396,16 @@ object Settings extends LazyLogging {
             properties.setProperty(name, resolve(value.toString))
         }
     }
+  }
+
+  /**
+    * Adds a thread local Gwen setting (overrides any existing value)
+    *
+    * @param name the name of the setting to set
+    * @param value the value to bind to the setting
+    */
+  def set(name: String, value: String): Unit = {
+    configProps.setProperty(name, value)
   }
 
   /**
