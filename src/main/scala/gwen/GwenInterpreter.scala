@@ -71,11 +71,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     printBanner("Welcome to ", args)
     val start = System.nanoTime
     val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
-    val process = options.process
-    logger.info("Initialising settings")
     try {
-      logger.info("Initialising settings")
-      Settings.init(process.settingsFile.toList ++ options.settingsFiles)
       GwenSettings.check()
       initLogging(options)
       Dialect.instance
@@ -95,7 +91,13 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
   }
 
-  def init(options: GwenOptions): GwenOptions = options
+  def init(options: GwenOptions): GwenOptions = {
+    val process = options.process
+    logger.info("Initialising settings")
+    Settings.init(process.settingsFile.toList ++ options.settingsFiles)
+    if (options.repl && options.features.nonEmpty) options.copy(features = Nil)
+    else options
+  }
 
   /**
     * Runs the interpreter with the given options

@@ -172,6 +172,41 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
+   "Options with repl and batch option and no files" should "parse" in {
+    parseOptions(Array("--repl", "-b"), noProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, repl = true, batch = false)
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+    parseOptions(Array("--batch", "--repl"), noProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, repl = true, batch = false)
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+  }
+
+  "Options with repl and batch option and files " should "fail" in {
+    parseOptions(Array("-b", "--repl", "."), noProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, repl = true, batch = false)
+
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+    parseOptions(Array("--repl", "--batch", "."), noProcessBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, repl = true, batch = false)
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+  }
+
   "Options with verbose option and files " should "parse" in {
     parseOptions(Array("-v", "."), noProcessBaseDir) match {
       case Success(options) => {
@@ -801,6 +836,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         assertOptions(
           options,
           process = Process("", noProcessBaseDir),
+          repl = false,
           batch = true,
           parallel = true,
           verbose = true,
@@ -824,6 +860,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         assertOptions(
           options,
           process = Process("", noProcessBaseDir),
+          repl = false,
           batch = true,
           parallel = true,
           verbose = true,
@@ -935,6 +972,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   private def assertOptions(
                              options: GwenOptions,
                              process: Process = GwenOptions.Defaults.process,
+                             repl: Boolean = GwenOptions.Defaults.repl,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
                              verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -957,7 +995,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
     options.process.name should be (process.name)
     options.process.settingsFile.map(_.getCanonicalPath) should be (process.settingsFile.map(_.getCanonicalPath))
-    options.batch should be (batch)
+    options.batch should be (batch && !repl)
+    options.repl should be (repl)
     options.parallel should be (parallel)
     options.verbose should be (verbose)
     options.debug should be (debug)

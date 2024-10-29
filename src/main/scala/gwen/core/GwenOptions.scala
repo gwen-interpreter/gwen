@@ -36,6 +36,7 @@ import org.apache.commons.lang3.SystemUtils
   * Captures gwen command line options.
   *
   * @param process optional process name to launch
+  * @param repl true to open REPL regardless of batch and feature options
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
   * @param verbose true for verbose log output, false for pretty log output
@@ -58,6 +59,7 @@ import org.apache.commons.lang3.SystemUtils
   */
 case class GwenOptions(
     process: Process = GwenOptions.Defaults.process,
+    repl: Boolean = GwenOptions.Defaults.repl,
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
     verbose: Boolean = GwenOptions.Defaults.verbose,
@@ -135,6 +137,7 @@ object GwenOptions {
       sys.env.get("GWEN_PROCESS").map(_.trim).filter(_.nonEmpty).getOrElse(""), 
       GwenSettings.`gwen.baseDir`
     )
+    def repl = false
     def batch = GwenSettings.`gwen.launch.options.batch`
     def format = GwenSettings.`gwen.launch.options.format` match {
       case Nil => List(ReportFormat.html)
@@ -169,14 +172,6 @@ object GwenOptions {
 
       help("help") text "Print CLI usage"
 
-      opt[String]('p', "process") action {
-        (ps, c) => {
-          c.copy(
-            process = new Process(ps, baseDir)
-          )
-        }
-      } valueName "name" text "Name of process to launch"
-
       opt[Unit]("parallel") action {
         (_, c) => {
           c.copy(parallel = true)
@@ -185,9 +180,21 @@ object GwenOptions {
                 |- features if gwen.state.level = feature (default)
                 |- scenarios if gwen.state.level = scenario""".stripMargin
 
+      opt[Unit]("repl") action {
+        (_, c) => c.copy(repl = true)
+      } text "Open REPL even if -b|--batch or feature files|dirs are specified"
+
+      opt[String]('p', "process") action {
+        (ps, c) => {
+          c.copy(
+            process = new Process(ps, baseDir)
+          )
+        }
+      } valueName "name" text "Name of process to launch"
+      
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
-      } text "Exit when execution completes (omit to open REPL)"
+      } text "Exit when execution completes (ignored if --repl is specified)"
 
       opt[Unit]('v', "verbose") action {
         (_, c) => c.copy(verbose = true)
@@ -329,7 +336,8 @@ object GwenOptions {
     } map { options =>
       new GwenOptions(
         options.process,
-        options.batch,
+        options.repl,
+        options.batch && !options.repl,
         options.parallel,
         options.verbose,
         options.debug,
@@ -340,7 +348,7 @@ object GwenOptions {
         options.dryRun,
         options.dataFile,
         FileIO.appendFile(options.metas, Settings.UserMeta),
-        options.features,
+        if (options.repl) Nil else options.features,
         Some(args),
         options.init,
         options.initOptions,
