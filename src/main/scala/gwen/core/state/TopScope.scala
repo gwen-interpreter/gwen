@@ -157,7 +157,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
 
   private def deprecatedImplicitOpt(name: String): Option[String] = {
     if (name.startsWith("gwen.eval.")) {
-      Some(s"gwen.feature.eval.${name.substring("gwen.eval.".length)}")
+      Some(s"gwen.feature.eval.${name.substring("gwen.eval.".length)}").map(_.takeWhile(_ != '/'))
     } else if (name == "data record number" || name == "data.record.number") {
       Some("gwen.data.record.number	")
     } else if (name == "data record index" || name == "data.record.index") {
