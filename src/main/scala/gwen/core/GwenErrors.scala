@@ -77,7 +77,7 @@ object Errors extends LazyLogging {
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
   def missingOrInvalidImportFileError(importAnnotation: Tag) = throw new MissingOrInvalidImportFileException(importAnnotation)
-  def missingFileError(file: File) = throw new MissingFileException(file)
+  def missingFileError(category: String, file: File) = throw new MissingFileException(category, file)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
   def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
   def dataHeaderNotFoundError(file: File) = throw new DataHeaderNotFoundException(file)
@@ -224,7 +224,7 @@ object Errors extends LazyLogging {
   class InvalidStepDefException(stepDef: Scenario, msg: String) extends StepDefException(stepDef, s"Invalid StepDef: $msg")
   
   /** Thrown when an expected file is missing. */
-  class MissingFileException(file: File) extends GwenException(s"File not found $file")
+  class MissingFileException(category: String, file: File) extends GwenException(s"$category not found: $file")
 
   /** Thrown when an import file is not found. */
   class MissingOrInvalidImportFileException(importAnnotation: Tag) extends GwenException(s"Missing or invalid file detected in $importAnnotation annotation${at(importAnnotation.sourceRef)}")

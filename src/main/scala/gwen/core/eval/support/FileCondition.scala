@@ -52,7 +52,7 @@ class FileCondition[T <: EvalContext](filepath: Option[String], filepathRef: Opt
       case FileComparisonOperator.exists =>
         if (negate) !file.exists() else file.exists()
       case FileComparisonOperator.empty =>
-        if (!file.exists()) Errors.missingFileError(file)
+        if (!file.exists()) Errors.missingFileError("File", file)
         if (negate) Files.size(file.toPath()) > 0 else Files.size(file.toPath()) == 0
     }
   }

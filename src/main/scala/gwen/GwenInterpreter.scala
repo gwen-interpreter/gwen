@@ -70,8 +70,9 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ", args)
     val start = System.nanoTime
-    val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
+    val opts = GwenOptions(args, GwenSettings.`gwen.baseDir`)
     try {
+      val options = init(opts)
       GwenSettings.check()
       initLogging(options)
       Dialect.instance
@@ -84,7 +85,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         if (!e.isInstanceOf[Errors.GwenException]) {
           logger.error(failure.message, e)
         }
-        val consoleReporter = new ConsoleReporter(options)
+        val consoleReporter = new ConsoleReporter(opts)
         logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
         println()
         System.exit(1)
@@ -95,8 +96,22 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     val process = options.process
     logger.info("Initialising settings")
     Settings.init(process.settingsFile.toList ++ options.settingsFiles)
-    if (options.repl && options.features.nonEmpty) options.copy(features = Nil)
-    else options
+    (if (options.repl && options.features.nonEmpty) {
+      options.copy(features = Nil)
+    } else {
+      options
+    }) tap { opts => 
+      List(
+        ("Feature file or directory", options.features),
+        ("Meta file or directory", options.metas),
+        ("Input data file", options.dataFile.toList),
+        ("Settings file", options.settingsFiles)
+       ) foreach { (category, files) =>
+        files foreach { file =>
+          if (!file.exists) Errors.missingFileError(category, file)
+        }
+      }
+    }
   }
 
   /**

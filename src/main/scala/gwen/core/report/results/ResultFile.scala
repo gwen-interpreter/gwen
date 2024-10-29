@@ -71,7 +71,7 @@ object ResultFile {
               } else {
                 Nil
               }
-            } else Errors.missingFileError(file)
+            } else Errors.missingFileError("Reference file", file)
 
           } getOrElse Nil
         } else {

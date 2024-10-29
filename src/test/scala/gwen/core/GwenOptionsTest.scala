@@ -88,14 +88,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("At least one of missing.conf, missing.json or missing.properties files must exist in src/test/resources/noProcess/conf/process for missing process")
+        error.getMessage should be ("Undefined process: missing - at least one of missing.conf, missing.json or missing.properties files expected")
     }
     parseOptions(Array("--process", "missing"), noProcessBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("At least one of missing.conf, missing.json or missing.properties files must exist in src/test/resources/noProcess/conf/process for missing process")
+        error.getMessage should be ("Undefined process: missing - at least one of missing.conf, missing.json or missing.properties files expected")
     }
   }
 

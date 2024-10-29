@@ -27,8 +27,8 @@
         val processDir = new File(new File(baseDir, "conf"), "process")
         val files = List("conf", "json", "properties").map(ext => new File(processDir, s"${name}.$ext"))
         val exists = files.filter(_.exists)
-        if (exists.isEmpty) Errors.invocationError(s"At least one of ${files.take(files.length - 1).map(_.getName).mkString(", ")} or ${files.last.getName} files must exist in $processDir for $name process")
-        else if (exists.length > 1) Errors.invocationError(s"Only one of ${exists.take(exists.length - 1).map(_.getName).mkString(", ")} or ${exists.last.getName} files must exist in $processDir for $name process")
+        if (exists.isEmpty) Errors.invocationError(s"Undefined process: $name - at least one of ${files.take(files.length - 1).map(_.getName).mkString(", ")} or ${files.last.getName} files expected")
+        else if (exists.length > 1) Errors.invocationError(s"Ambigous configurations for process: $name - Only one of ${exists.take(exists.length - 1).map(_.getName).mkString(", ")} or ${exists.last.getName} files expected")
         else Some(exists.head)
     } else {
         None

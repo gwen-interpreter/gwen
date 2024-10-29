@@ -218,7 +218,7 @@ object GwenOptions {
             Some("-c|--conf option only accepts *.conf, *.json or *.properties files")
           }
           else if (file.exists()) None
-          else Some(s"Provided settings file not found: $f")
+          else Some(new Errors.MissingFileException("Settings file", file).getMessage)
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
@@ -249,7 +249,7 @@ object GwenOptions {
       opt[File]('i', "input-data") action {
         (d, c) => c.copy(dataFile = Some(d))
       } validate { d =>
-        if (!d.exists) failure(s"Specified data file not found: $d")
+        if (!d.exists) failure(new Errors.MissingFileException("Input data file", d).getMessage)
         else success
       } valueName "file" text "Input data feed (csv or json file)"
 
@@ -259,7 +259,7 @@ object GwenOptions {
       } validate { ms =>
         ((ms.split(",") flatMap { m =>
           if (new File(m).exists()) None
-          else Some(s"Specified meta entry not found: $m")
+          else Some(new Errors.MissingFileException("Meta file or directory", new File(m)).getMessage)
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
@@ -269,7 +269,7 @@ object GwenOptions {
         (f, c) =>
           c.copy(features = c.features :+ f)
       } validate {
-        f => if (f.exists) success else failure(s"Specified feature(s) not found: $f")
+        f => if (f.exists) success else failure(new Errors.MissingFileException("Feature file or directory", f).getMessage)
       } text "Feature files or directories to execute (space separated)"
 
       cmd("init").action { 

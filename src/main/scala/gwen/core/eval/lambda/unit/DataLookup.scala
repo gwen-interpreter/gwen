@@ -35,7 +35,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
-      if (!file.exists()) Errors.missingFileError(file)
+      if (!file.exists()) Errors.missingFileError("Data file", file)
       val dataSource =  DataSource(file)
       val table = dataSource.table.zipWithIndex map { (row, idx) => 
         (idx + 1L, row.toList) 
