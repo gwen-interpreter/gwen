@@ -215,16 +215,24 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
   /**
     * Returns this entire scope as a String.
     */
-  def asString: String = {
-    s"""scope : "$scope" {${
-         atts.toList match {
-           case Nil => " }"
-           case _ => s"""${atts map {
-             case (n, v) =>
-               s"\n  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"  ${n.replaceAll(".", " ")}    ")}""""}"
-           } mkString}
-           |}"""
-         }}""".stripMargin
+  def asString(env: Boolean): String = {
+    val scopeStr =
+      s"""|scope : "$scope" {${
+          atts.toList match {
+            case Nil => " }"
+            case _ => s"""${atts map {
+              case (n, v) =>
+                s"\n  $n : ${if(v == null) String.valueOf(v) else s""""${Formatting.padTailLines(v, s"  ${n.replaceAll(".", " ")}")}""""}"
+            } mkString}
+            |}"""
+          }}""".stripMargin
+    if (env) {
+      s"""|env {
+          |${scopeStr.linesIterator.map(l => s"  $l").mkString("\n|")}
+          |}""".stripMargin
+    } else {
+      scopeStr
+    }
   }
 
 }

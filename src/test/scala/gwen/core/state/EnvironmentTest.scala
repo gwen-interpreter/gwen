@@ -230,21 +230,59 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
       val env = newEnv(StateLevel.valueOf(level))
       env.topScope.set("firstName", "Gwen")
       env.topScope.get("firstName") should be ("Gwen")
-      env.asString should be (
-        s"""scope : "$level" {
+      env.asString(all = true, env = true) should be (
+        s"""|env : "implicits" {
+            |  scope : "feature" { }
+            |  scope : "rule" { }
+            |  scope : "examples" { }
+            |  scope : "scenario" { }
+            |  scope : "stepDef" { }
+            |  scope : "params" { }
+            |}
+            |env {
+            |  scope : "$level" {
+            |    firstName : "Gwen"
+            |  }
+            |}""".stripMargin)
+      println(env.asString(all = true, env = false))
+      env.asString(all = true, env = false) should be (
+        s"""|scope : "feature" { }
+            |scope : "rule" { }
+            |scope : "examples" { }
+            |scope : "scenario" { }
+            |scope : "stepDef" { }
+            |scope : "params" { }
+            |scope : "$level" {
             |  firstName : "Gwen"
-            |}""".stripMargin)                                   
+            |}""".stripMargin)
+      env.asString(all = false, env = true) should be (
+        s"""|env {
+            |  scope : "$level" {
+            |    firstName : "Gwen"
+            |  }
+            |}""".stripMargin)
+      env.asString(all = false, env = false) should be (
+        s"""|scope : "$level" {
+            |  firstName : "Gwen"
+            |}""".stripMargin)
     }
   }
   
   "env.asString on new env context" should "contain empty scopes" in {
     val env = newEnv(StateLevel.feature)
-    env.asString should be ("""scope : "feature" { }""")
-  }
-  
-  "env.filterAtts on empty context" should "should return empty value" in {
-    val env = newEnv(StateLevel.feature)
-    env.filterAtts { case (name, _) => name == "page"}.asString should be ("""scope : "feature" { }""")
+    env.asString(all = true, env = true) should be (
+      s"""|env : "implicits" {
+          |  scope : "feature" { }
+          |  scope : "rule" { }
+          |  scope : "examples" { }
+          |  scope : "scenario" { }
+          |  scope : "stepDef" { }
+          |  scope : "params" { }
+          |}
+          |env {
+          |  scope : "feature" { }
+          |}""".stripMargin
+    )
   }
   
   "StepDef names" should "not start with a keyword" in {

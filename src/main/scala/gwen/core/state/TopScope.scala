@@ -28,6 +28,9 @@ import net.minidev.json.JSONArray
 import scala.util.chaining._
 import scala.jdk.CollectionConverters._
 
+import java.io.StringWriter
+import java.io.PrintWriter
+
 /**
   * Binds all top level attributes. Also included is a cache for various scopes and arbitrary objects. 
   *
@@ -37,12 +40,12 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
 
   override val isTopScope = true
 
-  val featureScope = TransientStack.featureStack
-  val ruleScope = TransientStack.ruleStack
-  val scenarioScope = TransientStack.scenarioStack
-  val examplesScope = TransientStack.examplesStack
-  val stepDefScope = TransientStack.stepDefStack
-  val paramScope = TransientStack.paramsStack
+  val featureScope = ScopedDataStack.featureStack
+  val ruleScope = ScopedDataStack.ruleStack
+  val scenarioScope = ScopedDataStack.scenarioStack
+  val examplesScope = ScopedDataStack.examplesStack
+  val stepDefScope = ScopedDataStack.stepDefStack
+  val paramScope = ScopedDataStack.paramsStack
 
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
@@ -121,15 +124,15 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     rec.data foreach { case (name, value) =>
       set(name, value)
     }
-    set(`gwen.data.record.number`, rec.occurrence.number.toString)
-    set(`gwen.data.record.index`, rec.occurrence.index.toString)
+    featureScope.set(`gwen.data.record.number`, rec.occurrence.number.toString)
+    featureScope.set(`gwen.data.record.index`, rec.occurrence.index.toString)
   }
 
   override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))
   override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
 
   private def getImplicitOpt(name: String): Option[String] = {
-    if (name.startsWith(`gwen.feature.`)) featureScope.getOpt(name)
+    if (name.startsWith(`gwen.feature.`) || name.startsWith(`gwen.data.record.`) || name.startsWith(`gwen.iteration.`)) featureScope.getOpt(name)
     else if (name.startsWith(`gwen.scenario.`)) scenarioScope.getOpt(name)
     else if (name.startsWith(`gwen.examples.`)) examplesScope.getOpt(name)
     else if (name.startsWith(`gwen.stepDef.`)) stepDefScope.getOpt(name)
@@ -170,6 +173,44 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     } else {
       None
     }
+  }
+
+   /**
+   * Filters all contained attributes in all scopes based on the given predicate.
+   *
+   * @param pred the predicate filter to apply; a (name, value) => boolean function
+   * @return Some(ScopedData) containing only the attributes accepted by the predicate;
+   */
+  def filterAllAtts(pred: ((String, String)) => Boolean): List[ScopedData] = {
+    List(
+      featureScope.filterAtts(pred),
+      ruleScope.filterAtts(pred),
+      examplesScope.filterAtts(pred),
+      scenarioScope.filterAtts(pred),
+      stepDefScope.filterAtts(pred),
+      paramScope.filterAtts(pred)
+    ).flatten ++ List(filterAtts(pred))
+  }
+
+  /**
+    * Returns this entire scope as a String.
+    */
+  def asString(all: Boolean, env: Boolean): String = {
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+    if (all) {
+      if (env) pw.println("""env : "implicits" {""")
+      featureScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      ruleScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      examplesScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+      if (env) pw.println("}")
+    }
+    pw.print(super.asString(env))
+    pw.flush()
+    sw.toString
   }
 
 }

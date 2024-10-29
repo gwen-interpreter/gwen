@@ -21,7 +21,9 @@ object ImplicitValueKeys {
 }
 
 trait ImplicitValueKeys {
-    
+
+  val `gwen.`                            = "gwen."
+
   val `gwen.feature.`                    = "gwen.feature."
   val `gwen.feature.language`            = "gwen.feature.language"
   val `gwen.feature.name`                = "gwen.feature.name"
@@ -69,17 +71,17 @@ trait ImplicitValueKeys {
   val `gwen.accumulated.errors`           = "gwen.accumulated.errors"
   val `gwen.accumulated.errors:JSONArray` = "gwen.accumulated.errors:JSONArray"
 
+  val `gwen.iteration.`       = "gwen.iteration."
   val `gwen.iteration.number` = "gwen.iteration.number"
   val `gwen.iteration.index`  = "gwen.iteration.index"
 
-  val `data.record.`       = "data.record."
-    
+  val `data.record.`            = "data.record."
+
+  val `gwen.data.record.`       = "gwen.data.record."  
   val `gwen.data.record.number` = "gwen.data.record.number"
   val `gwen.data.record.index`  = "gwen.data.record.index"
 
   val `gwen.table.record.number` = "gwen.table.record.number"
   val `gwen.table.record.index`  = "gwen.table.record.index"
     
-  val `gwen.report.results.errors` = "gwen.report.results.errors"
-
 }

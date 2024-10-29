@@ -322,10 +322,23 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
 
   private def env(options: String): String = {
     Option(options) match {
-      case None => ctx.asString
+      case None => ctx.topScope.asString(env = true)
       case _ => options.trim match {
+        case r"""(-f|-a)$switch "(.+?)"$$$filter""" => switch match {
+          case "-f" => ctx.topScope.filterAtts(GwenREPL.attrFilter(filter)).asString(env = true)
+          case "-a" => 
+            val data = ctx.topScope.filterAllAtts(GwenREPL.attrFilter(filter))
+            s"""|env : "implicits" {
+                |${data.init.map(_.asString(env = false).linesIterator.map(l => s"  $l").mkString("\n")).mkString("\n")}
+                |}
+                |${data.last.asString}""".stripMargin
+        }
+        case r"""(-f|-a)$$$switch""" => switch match {
+          case "-f" => ctx.topScope.asString(env = true)
+          case "-a" => ctx.asString(all = true, env = true)
+        }
         case r""""(.+?)"$$$filter""" =>
-          ctx.filterAtts(GwenREPL.attrFilter(filter)).asString
+          ctx.topScope.filterAtts(GwenREPL.attrFilter(filter)).asString(env = true)
         case _ =>
           """Try again using: env ["filter"]"""
       }

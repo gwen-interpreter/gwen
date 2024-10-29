@@ -25,31 +25,56 @@ class ScopedDataTest extends BaseTest with Matchers {
 
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("login")
-    scope.asString    should be ("""scope : "login" { }""")
+    println(scope.asString)
+    scope.asString(env = false)    should be (
+      """scope : "login" { }"""
+    )
+    scope.asString(env = true)    should be (
+      """|env {
+         |  scope : "login" { }
+         |}""".stripMargin
+    )
     scope.getOpt("userId") should be (None)
   }
   
   "scope with a null attribute" should "yield None for getOpt call" in {
     val scope = ScopedData("login").set("userId", null)
-    scope.asString    should be (
-      """scope : "login" {
-        |  userId : null
-        |}""".stripMargin)
+    scope.asString(env = false)    should be (
+      """|scope : "login" {
+         |  userId : null
+         |}""".stripMargin)
+    scope.asString(env = true)    should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : null
+         |  }
+         |}""".stripMargin)
     scope.getOpt("userId") should be (None)
   }
 
   "scope with clear on attribute" should "yield None for getOpt call" in {
     val scope = ScopedData("login").clear("userId")
-    scope.asString       should be ("""scope : "login" { }""")
+    scope.asString(env = false)       should be ("""scope : "login" { }""")
+    scope.asString(env = true)        should be (
+      """|env {
+         |  scope : "login" { }
+         |}""".stripMargin
+    )
     scope.getOpt("userId") should be (None)
   }
   
   "scope with a null attribute" should "throw error for get call" in {
     val scope = ScopedData("login").set("userId", null)
-    scope.asString    should be (
-      """scope : "login" {
-        |  userId : null
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "login" {
+         |  userId : null
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : null
+         |  }
+         |}""".stripMargin)
     intercept[UnboundAttributeException] {
       scope.get("userId")
     }
@@ -57,7 +82,12 @@ class ScopedDataTest extends BaseTest with Matchers {
 
   "scope after clear on attribute" should "throw error for get call" in {
     val scope = ScopedData("login").clear("userId")
-    scope.asString    should be ("""scope : "login" { }""")
+    scope.asString(env = false)    should be ("""scope : "login" { }""")
+    scope.asString(env = true)    should be (
+      """|env {
+         |  scope : "login" { }
+         |}""".stripMargin
+    )
     intercept[UnboundAttributeException] {
       scope.get("userId")
     }
@@ -65,21 +95,34 @@ class ScopedDataTest extends BaseTest with Matchers {
   
   "scope with one attribute" should "contain only that attribute" in {
     val scope = ScopedData("login").set("userId", "gwen")
-    scope.asString    should be (
-      """scope : "login" {
-        |  userId : "gwen"
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "login" {
+         |  userId : "gwen"
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : "gwen"
+         |  }
+         |}""".stripMargin)
     scope.getOpt("userId") should be (Some("gwen"))
     scope.getOpt("UserId") should be (None)
   }
   
   "scope with two attributes" should "contain those two attributes" in {
     val scope = ScopedData("login").set("userId", "gwen").set("password", "pwd")
-    scope.asString      should be (
-      """scope : "login" {
-        |  userId : "gwen"
-        |  password : "pwd"
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "login" {
+         |  userId : "gwen"
+         |  password : "pwd"
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : "gwen"
+         |    password : "pwd"
+         |  }
+         |}""".stripMargin)
     scope.getOpt("userId")   should be (Some("gwen"))
     scope.getOpt("password") should be (Some("pwd"))
     scope.getOpt("UserId")   should be (None)
@@ -88,50 +131,84 @@ class ScopedDataTest extends BaseTest with Matchers {
   
   "get lookup on scope with two same named attributes" should "return the most recently added one" in {
     val scope = ScopedData("register").set("name", "todd").set("name", "gwen")
-    scope.asString  should be (
-      """scope : "register" {
-        |  name : "todd"
-        |  name : "gwen"
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "register" {
+         |  name : "todd"
+         |  name : "gwen"
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "register" {
+         |    name : "todd"
+         |    name : "gwen"
+         |  }
+         |}""".stripMargin)
     scope.getOpt("name") should be (Some("gwen"))
   }
   
   "binding the same name and value" should "should not recreate the binding" in {
     val scope = ScopedData("register").set("name", "gwen").set("name", "gwen")
-    scope.asString  should be (
-      """scope : "register" {
-        |  name : "gwen"
-        |}""".stripMargin)
+    scope.asString(env = false)  should be (
+      """|scope : "register" {
+         |  name : "gwen"
+         |}""".stripMargin)
+    scope.asString(env = true)  should be (
+      """|env {
+         |  scope : "register" {
+         |    name : "gwen"
+         |  }
+         |}""".stripMargin)
     scope.getOpt("name") should be (Some("gwen"))
   }
   
   "getAll lookup on scope with two same named attributes" should "return both" in {
     val scope = ScopedData("register").set("name", "todd").set("name", "gwen")
-    scope.asString     should be (
-      """scope : "register" {
-        |  name : "todd"
-        |  name : "gwen"
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "register" {
+         |  name : "todd"
+         |  name : "gwen"
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "register" {
+         |    name : "todd"
+         |    name : "gwen"
+         |  }
+         |}""".stripMargin)
     scope.getAll("name") should be (Seq("todd", "gwen"))
   }
 
   "scope with a blank attribute" should """yield Some("") for getOpt call""" in {
     val scope = ScopedData("login").set("userId", "")
-    scope.asString    should be (
-      """scope : "login" {
-        |  userId : ""
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "login" {
+         |  userId : ""
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : ""
+         |  }
+         |}""".stripMargin)
     scope.getOpt("userId") should be (Some(""))
   }
 
   "scope with a non blank attribute overridden to blank" should """yield Some("") for getOpt call""" in {
     val scope = ScopedData("login").set("userId", "").set("userId", "gwen").set("userId", "")
-    scope.asString    should be (
-      """scope : "login" {
-        |  userId : ""
-        |  userId : "gwen"
-        |  userId : ""
-        |}""".stripMargin)
+    scope.asString(env = false) should be (
+      """|scope : "login" {
+         |  userId : ""
+         |  userId : "gwen"
+         |  userId : ""
+         |}""".stripMargin)
+    scope.asString(env = true) should be (
+      """|env {
+         |  scope : "login" {
+         |    userId : ""
+         |    userId : "gwen"
+         |    userId : ""
+         |  }
+         |}""".stripMargin)
     scope.getOpt("userId") should be (Some(""))
   }
 

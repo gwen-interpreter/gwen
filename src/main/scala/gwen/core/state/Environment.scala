@@ -39,13 +39,13 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   def stateLevel: StateLevel = state.stateLevel
   def stepDefs: Map[String, Scenario] = state.getStepDefs
-  def paramScope: TransientStack = topScope.paramScope
+  def paramScope: ScopedDataStack = topScope.paramScope
   def topScope: TopScope = state.topScope
-  def featureScope: TransientStack = topScope.featureScope
-  def ruleScope: TransientStack = topScope.ruleScope
-  def scenarioScope: TransientStack = topScope.scenarioScope
-  def examplesScope: TransientStack = topScope.examplesScope
-  def stepDefScope: TransientStack = topScope.stepDefScope
+  def featureScope: ScopedDataStack = topScope.featureScope
+  def ruleScope: ScopedDataStack = topScope.ruleScope
+  def scenarioScope: ScopedDataStack = topScope.scenarioScope
+  def examplesScope: ScopedDataStack = topScope.examplesScope
+  def stepDefScope: ScopedDataStack = topScope.stepDefScope
   def nodeChain: NodeChain = state.nodeChain
 
   /** Create a shallow clone of the current environment state */
@@ -72,18 +72,10 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   }
 
-  def asString: String = topScope.asString
+  def asString(all: Boolean, env: Boolean): String = topScope.asString(all, env)
 
   /** The spec type currently being evaluated. */
   def specType: SpecType = topScope.getObject(SpecType.toString).map(_.asInstanceOf[SpecType]).getOrElse(SpecType.Feature)
-
-  /**
-   * Filters all attributes in all scopes based on the given predicate.
-   *
-   * @param pred the predicate filter to apply; a (name, value) => boolean function
-   * @return a new Scoped data stack containing only the attributes accepted by the predicate;
-   */
-  def filterAtts(pred: ((String, String)) => Boolean): ScopedData = topScope.filterAtts(pred)
 
   /**
     * Adds a step definition to the context.
