@@ -116,7 +116,9 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                 }) :: acc
               } reverse
             } finally {
-              ctx.topScope.set(name, prevNameValue.orNull, force = true)
+              if (ctx.topScope.getOpt(name).nonEmpty) {
+                ctx.topScope.set(name, prevNameValue.orNull, force = true)
+              }
             }
         }
       val foreachStepDef = preForeachStepDef.copy(withSteps = steps)
