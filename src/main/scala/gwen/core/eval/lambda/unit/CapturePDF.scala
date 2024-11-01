@@ -23,14 +23,17 @@ import gwen.core.eval.lambda.UnitStep
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.behavior.BehaviorType
+import gwen.core.state.SensitiveData
 
 class CapturePDF[T <: EvalContext](target: String, sourceType: LocationType, sourceLocation: String, timeoutSecs: Long) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val content = ctx.evaluate(step.dryValue(target).getOrElse(DryValueBinding.unresolved("pdfText"))) {
-      ctx.getWithWait(timeoutSecs, s"waiting for PDF at $sourceType: $sourceLocation") { () => 
-        ctx.capturePDFText(sourceType, sourceLocation)
+      SensitiveData.withValue(sourceLocation) { sourceLoc =>
+        ctx.getWithWait(timeoutSecs, s"waiting for PDF at $sourceType: $sourceLocation") { () => 
+          ctx.capturePDFText(sourceType, sourceLoc)
+        }
       }
     }
     ctx.topScope.set(target, content)

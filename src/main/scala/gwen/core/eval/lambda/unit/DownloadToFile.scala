@@ -27,6 +27,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.channels.Channels
+import gwen.core.state.SensitiveData
 
 class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[String], filepathRef: Option[String], timeoutSecs: Long) extends UnitStep[T] {
 
@@ -34,10 +35,12 @@ class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[Strin
     checkStepRules(step, BehaviorType.Action, ctx)
     val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
     ctx.perform{
-      ctx.getWithWait(timeoutSecs, s"downloading $sourceUrl to $file") { () => 
-        val urlChannel = Channels.newChannel(new URL(sourceUrl).openStream())
-        val fileChannel = file.newFileOutputStream.getChannel
-        fileChannel.transferFrom(urlChannel, 0, Long.MaxValue)
+      SensitiveData.withValue(sourceUrl) { url =>
+        ctx.getWithWait(timeoutSecs, s"downloading $sourceUrl to $file") { () => 
+          val urlChannel = Channels.newChannel(new URL(url).openStream())
+          val fileChannel = file.newFileOutputStream.getChannel
+          fileChannel.transferFrom(urlChannel, 0, Long.MaxValue)
+        }
       }
     }
     step
