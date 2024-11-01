@@ -57,7 +57,7 @@ trait TemplateSupport {
       (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}|!\{\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "").replaceAll("""!\{.+?\}""", """\{!\}"""), aLine, idx)
     }).flatMap { case (tLine, aLine, idx) =>
       tLine.r.unapplySeq(aLine).getOrElse {
-        Errors.templateMatchError(s"Could not match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template (check literals and/or syntax)")
+        Errors.templateMatchError(s"Could not match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template")
       }
     }
     val params = names zip values

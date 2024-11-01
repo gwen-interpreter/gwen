@@ -58,7 +58,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
@@ -72,7 +72,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
@@ -86,7 +86,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
@@ -100,7 +100,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
@@ -114,7 +114,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{},"category":{"name":"pet"},"name":"tiger","state":"available"}' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{},"category":{"name":"pet"},"name":"tiger","state":"available"}' in template""")
     }
   }
 
@@ -183,7 +183,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{},' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{},' in template""")
     }
   }
 
@@ -211,7 +211,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{   },' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{   },' in template""")
     }
   }
 
@@ -239,7 +239,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{ },' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{ },' in template""")
     }
   }
 
@@ -267,7 +267,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{nope},' in template (check literals and/or syntax)""")
+        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{nope},' in template""")
     }
   }
 
