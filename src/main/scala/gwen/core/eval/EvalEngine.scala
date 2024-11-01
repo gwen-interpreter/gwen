@@ -230,9 +230,11 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
-        new AttachFile(name, filepath)
+        new AttachFile(Some(name), filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>
-        new AttachFile(name, filepath)
+        new AttachFile(Some(name), filepath)
+      case r"""I attach "(.+?)"$filepath""" =>
+        new AttachFile(None, filepath)
       case r"""I (write|append)$mode "(.*?)"$content to "(.+?)"$filepath file""" =>
         new WriteTextToFile(Some(content), None, Some(filepath), None, mode == "write")
       case r"""I (write|append)$mode new line to "(.+?)"$filepath file""" =>

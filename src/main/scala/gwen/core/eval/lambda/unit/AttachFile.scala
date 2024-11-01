@@ -26,16 +26,17 @@ import gwen.core.behavior.BehaviorType
 
 import java.io.File
 
-class AttachFile[T <: EvalContext](target: String, filepath: String) extends UnitStep[T] {
+class AttachFile[T <: EvalContext](target: Option[String], filepath: String) extends UnitStep[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val file = new File(filepath)
-    if (!file.exists) { 
-      Errors.fileAttachError(file, "not found")
-    }
+    val name = target.getOrElse(file.getName)
     ctx.evaluate(step) {
-      step.addAttachment(target, file)
+      if (!file.exists) { 
+        Errors.fileAttachError(file, "not found")
+      }
+      step.addAttachment(name, file)
     }
   }
 
