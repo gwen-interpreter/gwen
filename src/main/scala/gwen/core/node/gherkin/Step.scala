@@ -334,7 +334,7 @@ case class Step(
   def dryValue(name: String): Option[String] = dryValues.find(_._1 == name).map(_._2)
 
   override val occurrence: Option[Occurrence] = None
-  override def occurrenceNo: Option[Int] = params.find(_._1 == `gwen.iteration.number`).map(_._2.toInt)
+  override def occurrenceNo: Option[Int] = params.find(_._1 == `gwen.iteration.number`).orElse( params.find(_._1 == `gwen.table.record.number`)).map(_._2.toInt)
 
 }
 

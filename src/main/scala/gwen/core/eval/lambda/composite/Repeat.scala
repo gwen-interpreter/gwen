@@ -56,7 +56,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
           val preStep = step.copy(
             withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,
             withName = doStep,
-            withParams = List((`gwen.iteration.number`, iteration.toString)) ++ step.params
+            withParams = step.params ++ List((`gwen.iteration.index`, (iteration - 1).toString), (`gwen.iteration.number`, iteration.toString))
           )
           operation match {
             case "until" =>
@@ -136,7 +136,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
             val preStep = condSteps.head.copy(
               withKeyword = StepKeyword.And.toString,
               withName = doStep,
-              withParams = List((`gwen.iteration.number`, (iteration + 1).toString)) ++ step.params
+              withParams = step.params ++ List((`gwen.iteration.index`, iteration.toString), (`gwen.iteration.number`, (iteration + 1).toString))
             )
             engine.beforeStep(preStep, ctx)
             val fStep = engine.finaliseStep(

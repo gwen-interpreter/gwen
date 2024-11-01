@@ -80,10 +80,10 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     if (ctx.options.dryRun) {
                       ctx.topScope.pushObject(name, currentElement)
                     }
-                    List((name, value))
+                    List((name, value), (`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
                   case _ =>
                     ctx.topScope.pushObject(name, currentElement)
-                    List((name, s"$name ${occurence.number}"))
+                    List((name, s"$name ${occurence.number}"), (`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
                 }
                 val prevIndex = ctx.topScope.featureScope.getOpt(`gwen.iteration.index`)
                 val prevNumber = ctx.topScope.featureScope.getOpt(`gwen.iteration.number`)

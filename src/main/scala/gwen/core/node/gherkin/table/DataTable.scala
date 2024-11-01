@@ -55,17 +55,16 @@ class DataTable(val orientation: TableOrientation, val records: List[List[String
     override def isEmpty: Boolean = records.isEmpty
     override def findEntries(pred: ((String, String)) => Boolean): Seq[(String, String)] =
       (
-        (`gwen.table.record.index`, s"$recordIndex") :: (
-          (`gwen.table.record.number`, s"${recordIndex + 1}") :: (
-            names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
-              (s"name[${nameIndex + 1}]", name)
-            }
-          ) ++ (
-            names.zip(records(recordIndex)) map { case (name, value) =>
-              (s"data[$name]", value)
-            }
-          )
+        (
+          names.zip(records(recordIndex).zipWithIndex) map { case (name, (value, nameIndex)) =>
+            (s"name[${nameIndex + 1}]", name)
+          }
+        ) ++ (
+          names.zip(records(recordIndex)) map { case (name, value) =>
+            (s"data[$name]", value)
+          }
         )
+        ++ List((`gwen.table.record.index`, s"$recordIndex"), (`gwen.table.record.number`, s"${recordIndex + 1}"))
       ).filter(pred)
   }
 
