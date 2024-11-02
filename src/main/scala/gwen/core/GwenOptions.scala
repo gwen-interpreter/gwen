@@ -182,7 +182,7 @@ object GwenOptions {
 
       opt[Unit]("repl") action {
         (_, c) => c.copy(repl = true)
-      } text "Open REPL even if -b|--batch or feature files|dirs are specified"
+      } text "Open REPL (forcefully) regardless of other options"
 
       opt[String]('p', "process") action {
         (ps, c) => {
@@ -375,7 +375,7 @@ object GwenOptions {
             if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${opt.process.name} process (use gwen.launch.options.meta setting in ${psFile} file instead)")
           }
         }
-      }).getOrElse(Errors.invocationError("Gwen invocation failed (see log for details)"))
+      }).getOrElse(Errors.invocationError("Gwen invocation failed - check arguments (specify --help for launch options)"))
 
   }
 

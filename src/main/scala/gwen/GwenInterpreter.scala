@@ -70,9 +70,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ", args)
     val start = System.nanoTime
-    val opts = GwenOptions(args, GwenSettings.`gwen.baseDir`)
     try {
-      val options = init(opts)
+      val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
       GwenSettings.check()
       initLogging(options)
       Dialect.instance
@@ -85,7 +84,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         if (!e.isInstanceOf[Errors.GwenException]) {
           logger.error(failure.message, e)
         }
-        val consoleReporter = new ConsoleReporter(opts)
+        val consoleReporter = new ConsoleReporter(GwenOptions())
         logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
         println()
         System.exit(1)

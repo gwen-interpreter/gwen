@@ -942,7 +942,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(e) => 
-        e.getMessage should be ("Gwen invocation failed (see log for details)")
+        e.getMessage should be ("Gwen invocation failed - check arguments (specify --help for launch options)")
     }
   }
 
@@ -952,7 +952,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail("expected failure but was successful")
       }
       case Failure(e) => 
-        e.getMessage should be ("Gwen invocation failed (see log for details)")
+        e.getMessage should be ("Gwen invocation failed - check arguments (specify --help for launch options)")
     }
   }
 
