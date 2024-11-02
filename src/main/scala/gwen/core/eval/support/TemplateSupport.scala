@@ -43,14 +43,26 @@ trait TemplateSupport {
     * @return success if there is a match; an error otherwise
     */
   def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
-    val names = """@\{.+?\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
+    val tIter = template.linesIterator
+    val tLines = source.linesIterator.toList map { sLine => 
+      if (tIter.hasNext) {
+        val tLine = tIter.next
+        if (tLine.trim == "@{*}") sLine
+        else tLine
+      } else {
+        sLine
+      }
+    }
+    val tString = tLines.mkString("\n")
+    println(tString)
+
+    val names = """@\{.+?\}""".r.findAllIn(tString).toList.zipWithIndex map { case (n, i) =>
       if (n == "@{*}") s"*[$i]" else n
     }
     names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
       Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
     }
 
-    val tLines = Source.fromString(template).getLines().toList
     val lines = tLines zip Source.fromString(source).getLines().toList
 
     val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*@\{.*?\}.*""")) map { case ((ttLine, aLine), idx) =>
@@ -61,7 +73,7 @@ trait TemplateSupport {
       }
     }
     val params = names zip values
-    val resolved = params.foldLeft(template) { (result, param) =>
+    val resolved = params.foldLeft(tString) { (result, param) =>
       val (n, v) = param
       if (n.matches("""\*\[\d+\]""")) result.replaceFirst("""@\{\*\}""", v)
       else result.replace(n, v)

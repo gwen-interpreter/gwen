@@ -5,5 +5,6 @@
   },
   "name": "@{*}",
   @{*}
+  @{*}
   "status": "${my pet status}"
 }
