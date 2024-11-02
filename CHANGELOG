@@ -9,6 +9,7 @@
 - Support `empty` literal in DSLs wherever `blank` is accepted
 - Make all input data read only by default
 - Add `--repl` option to open REPL regardless of batch and feature options
+- Change ignore placeholder syntax in template matcher from `!{}` to `@{*}`
 - Internal engine enhancements
   - Replace internal stack of data caches with a single data cache
   - Manage settings internally without exposing them as system properties

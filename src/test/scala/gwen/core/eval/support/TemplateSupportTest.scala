@@ -58,7 +58,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
+        err.getMessage should be ("""Failed to match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
@@ -72,11 +72,25 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
+        err.getMessage should be ("""Failed to match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
     }
   }
 
-  """Single line template""" should "fail when ignore tag has a space" in {
+  """Single line template""" should "fail when placholder prefix is unknown" in {
+    val template = """{"id":!{pet.id},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
+    val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
+
+    val result = matchTemplate(template, source, "my source", topScope)
+
+    result match {
+      case Success(_) =>
+        fail("Expected match to fail")
+      case Failure(err) =>
+        err.getMessage should be ("""Expected '!' but got '4' at line 1 position 7 in my source: '{"id":[4]..'""")
+    }
+  }
+
+  """Single line template""" should "fail when placholder prefix is unknown and has a space" in {
     val template = """{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
@@ -86,11 +100,11 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
+        err.getMessage should be ("""Expected '!' but got '4' at line 1 position 7 in my source: '{"id":[4]..'""")
     }
   }
 
-  """Single line template""" should "fail when ignore tag is non empty" in {
+  """Single line template""" should "fail when plaeholder is unkown" in {
     val template = """{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
@@ -100,12 +114,12 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}' in template""")
+        err.getMessage should be ("""Expected '!' but got '4' at line 1 position 7 in my source: '{"id":[4]..'""")
     }
   }
 
   """Single line template""" should "fail when source does not match" in {
-    val template = """{"id":!{},"category":{"name":"pet"},"name":"tiger","state":"available"}"""
+    val template = """{"id":@{*},"category":{"name":"pet"},"name":"tiger","state":"available"}"""
     val source =   """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
     val result = matchTemplate(template, source, "my source", topScope)
@@ -114,7 +128,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":!{},"category":{"name":"pet"},"name":"tiger","state":"available"}' in template""")
+        err.getMessage should be ("""Failed to match '{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}' at line 1 in my source to '{"id":@{*},"category":{"name":"pet"},"name":"tiger","state":"available"}' in template""")
     }
   }
 
@@ -183,7 +197,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{},' in template""")
+        err.getMessage should be ("""Failed to match '  "id": 43,' at line 2 in my source to '  "id": @{},' in template""")
     }
   }
 
@@ -211,11 +225,11 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": @{   },' in template""")
+        err.getMessage should be ("""Failed to match '  "id": 43,' at line 2 in my source to '  "id": @{   },' in template""")
     }
   }
 
-  """Multi line template""" should "fail when ignore tag has a space" in {
+  """Multi line template""" should "fail when placeholder is unkown" in {
     val template = """{
                      |  "id": !{ },
                      |  "category": {
@@ -239,11 +253,11 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{ },' in template""")
+        err.getMessage should be ("""Expected '!' but got '4' at line 2 position 9 in my source: '  "id": [4]..'""")
     }
   }
 
-  """Multi line template""" should "fail when ignore tag is non empty" in {
+  """Multi line template""" should "fail when ignore placheolder is unknown" in {
     val template = """{
                      |  "id": !{nope},
                      |  "category": {
@@ -267,13 +281,13 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
       case Success(_) =>
         fail("Expected match to fail")
       case Failure(err) =>
-        err.getMessage should be ("""Could not match '  "id": 43,' at line 2 in my source to '  "id": !{nope},' in template""")
+        err.getMessage should be ("""Expected '!' but got '4' at line 2 position 9 in my source: '  "id": [4]..'""")
     }
   }
 
   """Multi line template""" should "fail when source does not match" in {
     val template = """{
-                     |  "id": !{},
+                     |  "id": @{*},
                      |  "category": {
                      |    "name": "pet"
                      |  },

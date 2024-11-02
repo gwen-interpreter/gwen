@@ -29,7 +29,7 @@ import gwen.core.state.TopScope
 
 /**
   * Can be mixed into evaluation engines to provide template matching support. This will allow users to match any
-  * source content with a target template and also extract (@{name}), ignore (!{}), and inject (${name}) attributes
+  * source content with a target template and also extract (@{name}), ignore (@{*}), and inject (${name}) attributes
   * in scope.
   */
 trait TemplateSupport {
@@ -43,8 +43,8 @@ trait TemplateSupport {
     * @return success if there is a match; an error otherwise
     */
   def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
-    val names = """@\{.+?\}|!\{\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
-      if (n == "!{}") s"![$i]" else n
+    val names = """@\{.+?\}""".r.findAllIn(template).toList.zipWithIndex map { case (n, i) =>
+      if (n == "@{*}") s"*[$i]" else n
     }
     names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
       Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
@@ -53,17 +53,17 @@ trait TemplateSupport {
     val tLines = Source.fromString(template).getLines().toList
     val lines = tLines zip Source.fromString(source).getLines().toList
 
-    val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*(@\{.*?\}|!\{.*?\}).*""")) map { case ((ttLine, aLine), idx) =>
-      (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}|!\{\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", "").replaceAll("""!\{.+?\}""", """\{!\}"""), aLine, idx)
+    val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*@\{.*?\}.*""")) map { case ((ttLine, aLine), idx) =>
+      (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine, idx)
     }).flatMap { case (tLine, aLine, idx) =>
       tLine.r.unapplySeq(aLine).getOrElse {
-        Errors.templateMatchError(s"Could not match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template")
+        Errors.templateMatchError(s"Failed to match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template")
       }
     }
     val params = names zip values
     val resolved = params.foldLeft(template) { (result, param) =>
       val (n, v) = param
-      if (n.matches("""!\[\d+\]""")) result.replaceFirst("""!\{\}""", v)
+      if (n.matches("""\*\[\d+\]""")) result.replaceFirst("""@\{\*\}""", v)
       else result.replace(n, v)
     }
     source == resolved tap { isMatch =>
