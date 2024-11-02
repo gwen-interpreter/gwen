@@ -4,7 +4,7 @@
     "name": "@{category name 2}"
   },
   "name": "@{*}",
-  @{*}
-  @{*}
+  @{**}
+  "carnivore": @{is carnivore}
   "status": "${my pet status}"
-}
+  @{**}

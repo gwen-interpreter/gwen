@@ -109,6 +109,7 @@ Feature: Match and extract JSON templates
             "name": "tiger",
             "family": "cat",
             "domestic": false,
+            "carnivore": true,
             "status": "available"
           }
           """

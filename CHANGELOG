@@ -10,6 +10,7 @@
 - Make all input data read only by default
 - Add `--repl` option to open REPL regardless of batch and feature options
 - Change ignore placeholder syntax in template matcher from `!{}` to `@{*}`
+- Add `@{**}` placeholder to template matcher to support ignoring multiple lines
 - Fix mutiple ignored lines in template matcher
 - Internal engine enhancements
   - Replace internal stack of data caches with a single data cache

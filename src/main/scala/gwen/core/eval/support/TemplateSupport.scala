@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Branko Juric, Brady Wood
+ * Copyright 2018-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import scala.io.Source
 import scala.util.Try
 import scala.util.matching.Regex
 import gwen.core.state.TopScope
+import gwen.core.state.StateLevel
 
 /**
   * Can be mixed into evaluation engines to provide template matching support. This will allow users to match any
@@ -43,26 +44,14 @@ trait TemplateSupport {
     * @return success if there is a match; an error otherwise
     */
   def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
-    val tIter = template.linesIterator
-    val tLines = source.linesIterator.toList map { sLine => 
-      if (tIter.hasNext) {
-        val tLine = tIter.next
-        if (tLine.trim == "@{*}") sLine
-        else tLine
-      } else {
-        sLine
-      }
-    }
+    val tLines = normaliseTemplate(template, source, sourceName, topScope)
     val tString = tLines.mkString("\n")
-    println(tString)
-
     val names = """@\{.+?\}""".r.findAllIn(tString).toList.zipWithIndex map { case (n, i) =>
       if (n == "@{*}") s"*[$i]" else n
     }
     names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
       Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
     }
-
     val lines = tLines zip Source.fromString(source).getLines().toList
 
     val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*@\{.*?\}.*""")) map { case ((ttLine, aLine), idx) =>
@@ -92,5 +81,36 @@ trait TemplateSupport {
     }
   }
 
-
+  private def normaliseTemplate(template: String, source: String, sourceName: String, topScope: TopScope): List[String] = {
+    val sIter = source.linesIterator
+    val tIter = template.linesIterator
+    var tLines: List[String] = Nil
+    while (sIter.hasNext) {
+      var sLine = sIter.next
+      if (tIter.hasNext) {
+        var tLine = tIter.next
+        if (tLine.trim == "@{*}") tLines = sLine :: tLines
+        else if (tLine.trim == "@{**}") {
+          tLines = sLine :: tLines
+          while(tLine != null && tLine.trim.matches("""@\{\*{1,2}\}""")) {
+            if (tIter.hasNext) tLine = tIter.next
+            else tLine = null
+          }
+          if(tLine != null) {
+            var stop = false
+            while(!stop && sIter.hasNext) { // copy lines from source to template in place of @{**}
+              sLine = sIter.next
+              stop = Try(matchTemplate(tLine, sLine, sourceName, new TopScope(StateLevel.feature)).isSuccess).getOrElse(false)
+              tLines = (if (stop) tLine else sLine) :: tLines 
+            }
+          }
+        } else {
+          tLines = tLine :: tLines
+        }
+      } else {
+        tLines = sLine :: tLines
+      }
+    }
+    tLines.reverse
+  }
 }
