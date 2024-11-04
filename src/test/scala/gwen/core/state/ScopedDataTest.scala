@@ -25,7 +25,6 @@ class ScopedDataTest extends BaseTest with Matchers {
 
   "new scope" should "not contain any attributes" in {
     val scope = ScopedData("login")
-    println(scope.asString)
     scope.asString(env = false)    should be (
       """scope : "login" { }"""
     )

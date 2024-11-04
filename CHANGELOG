@@ -4,7 +4,6 @@
 - Introduce Gwen processes to support multiple launch configurations
   - `-p|--process` option
 - Require Java 17+ instead of Java 11+
-  - With GraalVM instead of Nashorn for JS evaluation
 - Use logback instead of log4j for logging
 - Support `empty` literal in DSLs wherever `blank` is accepted
 - Make all input data read only by default
@@ -15,6 +14,13 @@
   - Replace internal stack of data caches with a single data cache
   - Manage settings internally without exposing them as system properties
   - Manage implicits at lifecycle level and use scoped boundaries
+- Update dependencies
+  - Update scala from v3.5.0 to v3.5.2
+  - Update gherkin from v29.0.0 to v30.0.0
+  - Update jlink from v3.26.3 to v3.27.1
+  - Update logback-core from v1.5.9 to v1.5.12
+  - Update logback-classic from v1.5.9 to v1.5.12
+  - Update jackson-databind from v2.17.2 to v2.18.1
 - Add settings(s):
   - `gwen.input.data.readOnly`
 - Add implicit variable(s):
@@ -39,7 +45,7 @@
     - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
     - `<step> <until|while> <condition> using no delay`
     - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
-- Raise deprecations as errors by default instead of logged them as warnings
+- Raise deprecations as errors by default instead of logging them as warnings
   | Setting                     | Old default | New default |
   | :-------------------------- | :---------: | :---------: |
   | `gwen.logLevel.deprecations`|   `warn`    |   `error`   |

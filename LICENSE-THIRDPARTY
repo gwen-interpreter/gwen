@@ -7,17 +7,17 @@ com.fasterxml.jackson.datatype
 org.scala-lang
   +-scala-library:2.13.14
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-scala3-library_3:3.5.0
+  +-scala3-library_3:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-scaladoc_3:3.5.0
+  +-scaladoc_3:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-tasty-core_3:3.5.0
+  +-tasty-core_3:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-scala3-compiler_3:3.5.0
+  +-scala3-compiler_3:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-scala3-interfaces:3.5.0
+  +-scala3-interfaces:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-  +-scala3-tasty-inspector_3:3.5.0
+  +-scala3-tasty-inspector_3:3.5.2
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
 com.jayway.jsonpath
   +-json-path:2.9.0
@@ -31,9 +31,6 @@ org.fusesource.jansi
 com.typesafe
   +-config:1.4.3
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
-org.graalvm.regex
-  +-regex:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
 com.github.tototoshi
   +-scala-csv_3:2.0.0
   | +-Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.html
@@ -54,12 +51,9 @@ org.jsoup
 org.jetbrains
   +-annotations:15.0
   | +-The Apache Software License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
-org.objenesis
-  +-objenesis:3.3
-  | +-no license specified
 org.jline
-  +-jline:3.26.3
-  | +-The BSD License - https://opensource.org/licenses/BSD-3-Clause
+  +-jline:3.27.1
+  | +-no license specified
   +-jline-terminal-jna:3.25.1
   | +-no license specified
   +-jline-native:3.25.1
@@ -79,11 +73,11 @@ org.scala-sbt
   +-compiler-interface:1.9.6
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
 com.fasterxml.jackson.core
-  +-jackson-annotations:2.17.2
+  +-jackson-annotations:2.18.1
   | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
-  +-jackson-core:2.17.2
+  +-jackson-core:2.18.1
   | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
-  +-jackson-databind:2.17.2
+  +-jackson-databind:2.18.1
   | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
   +-jackson-annotations:2.15.1
   | +-The Apache Software License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
@@ -94,12 +88,6 @@ com.fasterxml.jackson.core
 net.java.dev.jna
   +-jna:5.14.0
   | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0.txt
-org.scalactic
-  +-scalactic_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-org.graalvm.shadowed
-  +-icu4j:24.1.0
-  | +-Unicode/ICU License - https://raw.githubusercontent.com/unicode-org/icu/main/LICENSE
 org.yaml
   +-snakeyaml:2.0
   | +-Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0.txt
@@ -119,14 +107,6 @@ org.antlr
 org.jdom
   +-jdom2:2.0.6.1
   | +-Similar to Apache License but with the acknowledgment clause removed - https://raw.github.com/hunterhacker/jdom/master/LICENSE.txt
-org.scalatestplus
-  +-mockito-4-2_3:3.2.11.0
-  | +-Apache-2.0 - http://www.apache.org/licenses/LICENSE-2.0
-net.bytebuddy
-  +-byte-buddy:1.12.19
-  | +-no license specified
-  +-byte-buddy-agent:1.12.19
-  | +-no license specified
 com.fasterxml.jackson.dataformat
   +-jackson-dataformat-yaml:2.15.1
   | +-no license specified
@@ -135,53 +115,9 @@ org.apache.commons
   | +-no license specified
   +-commons-text:1.12.0
   | +-no license specified
-org.scalatest
-  +-scalatest-refspec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-funsuite_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-diagrams_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-funspec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-propspec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-compatible:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-flatspec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-mustmatchers_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-core_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-featurespec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-freespec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-matchers-core_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-wordspec_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-  +-scalatest-shouldmatchers_3:3.2.18
-  | +-the Apache License, ASL Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-org.graalvm.js
-  +-js-language:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  | +-MIT License - http://opensource.org/licenses/MIT
-  +-js-scriptengine:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-js:24.1.0
-  | +-GraalVM Free Terms and Conditions (GFTC) including License for Early Adopter Versions - https://www.oracle.com/downloads/licenses/graal-free-license.html
-  | +-MIT License - http://opensource.org/licenses/MIT
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
 commons-logging
   +-commons-logging:1.3.3
   | +-no license specified
-org.graalvm.polyglot
-  +-polyglot:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
 com.vladsch.flexmark
   +-flexmark-util-options:0.62.2
   | +-no license specified
@@ -231,34 +167,12 @@ com.vladsch.flexmark
   | +-no license specified
   +-flexmark-util-visitor:0.62.2
   | +-no license specified
-org.graalvm.truffle
-  +-truffle-api:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-truffle-runtime:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-truffle-compiler:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-truffle-enterprise:24.1.0
-  | +-GraalVM Free Terms and Conditions (GFTC) including License for Early Adopter Versions - https://www.oracle.com/downloads/licenses/graal-free-license.html
 org.scala-lang.modules
-  +-scala-asm:9.6.0-scala-1
+  +-scala-asm:9.7.0-scala-2
   | +-BSD 3-clause - http://opensource.org/licenses/BSD-3-Clause
-  +-scala-xml_3:2.1.0
-  | +-Apache-2.0 - https://www.apache.org/licenses/LICENSE-2.0
 ua.co.k
   +-strftime4j:1.0.5
   | +-MIT License - http://www.opensource.org/licenses/mit-license.php
-org.graalvm.sdk
-  +-collections:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-nativebridge:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-jniutils:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-word:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
-  +-nativeimage:24.1.0
-  | +-Universal Permissive License, Version 1.0 - http://opensource.org/licenses/UPL
 org.apache.pdfbox
   +-pdfbox-io:3.0.3
   | +-no license specified
@@ -266,13 +180,10 @@ org.apache.pdfbox
   | +-no license specified
   +-pdfbox:3.0.3
   | +-no license specified
-org.mockito
-  +-mockito-core:4.11.0
-  | +-The MIT License - https://github.com/mockito/mockito/blob/main/LICENSE
 io.cucumber
-  +-gherkin:29.0.0
+  +-gherkin:30.0.0
   | +-no license specified
-  +-messages:25.0.1
+  +-messages:26.0.1
   | +-no license specified
 commons-codec
   +-commons-codec:1.17.1
@@ -281,7 +192,7 @@ com.typesafe.scala-logging
   +-scala-logging_3:3.9.5
   | +-Apache 2.0 License - http://www.apache.org/licenses/LICENSE-2.0.html
 ch.qos.logback
-  +-logback-classic:1.5.9
+  +-logback-classic:1.5.12
   | +-no license specified
-  +-logback-core:1.5.9
+  +-logback-core:1.5.12
   | +-no license specified

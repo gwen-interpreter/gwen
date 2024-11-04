@@ -244,7 +244,6 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
             |    firstName : "Gwen"
             |  }
             |}""".stripMargin)
-      println(env.asString(all = true, env = false))
       env.asString(all = true, env = false) should be (
         s"""|scope : "feature" { }
             |scope : "rule" { }

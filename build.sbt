@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.5.0",
+  scalaVersion := "3.5.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,13 +41,13 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "29.0.0",
+    "io.cucumber" % "gherkin" % "30.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "3.26.3",
+    "org.jline" % "jline" % "3.27.1",
     "org.slf4j" % "jul-to-slf4j" % "2.0.16",
-    "ch.qos.logback" % "logback-core" % "1.5.9",
-    "ch.qos.logback" % "logback-classic" % "1.5.9",
+    "ch.qos.logback" % "logback-core" % "1.5.12",
+    "ch.qos.logback" % "logback-classic" % "1.5.12",
     "commons-codec" % "commons-codec" % "1.17.1",
     "org.apache.commons" % "commons-text" % "1.12.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
@@ -56,9 +56,7 @@ lazy val mainDependencies = {
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.1",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.17.2",
-    "org.graalvm.js" % "js-scriptengine" % "24.1.0",
-    "org.graalvm.js" % "js" % "24.1.0",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.18.1",
     "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
@@ -70,9 +68,12 @@ lazy val mainDependencies = {
 
 lazy val testDependencies = {
   Seq(
-    "org.scalatest" %% "scalatest" % "3.2.18",
-    "org.scalatestplus" %% "mockito-4-2" % "3.2.11.0",
-    "org.mockito" % "mockito-core" % "4.11.0"
+    "org.scalatest" %% "scalatest" % "3.2.19",
+    "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0",
+    "org.mockito" % "mockito-core" % "5.14.2",
+    "org.graalvm.js" % "js-scriptengine" % "24.1.1",
+    "org.graalvm.js" % "js" % "24.1.1",
+
   ).map(_ % Test)
 }
 
