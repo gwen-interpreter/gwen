@@ -61,15 +61,13 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     * @return a stream of [FeatureUnit]s found at the location
     */
   def read(location: File, dataFile: Option[File]): LazyList[FeatureUnit] = {
-      val inputs = 
+      val metaFiles = 
         if (location.getParentFile == null) {
-          discoverInputs(location.getAbsoluteFile.getParentFile, (Nil, dataFile))
+          discoverMeta(location.getAbsoluteFile.getParentFile, Nil)
         } else {
-          discoverInputsInPath(location.getParentFile, (Nil, dataFile)) match {
-            case (metas, data) => (metas.reverse, data) 
-          }
+          discoverMetaInPath(location.getParentFile, Nil).reverse
         }
-      deepRead(location, inputs._1, inputs._2)
+      deepRead(location, metaFiles, dataFile)
   }
   
   /**
@@ -82,9 +80,9 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     */
   private def deepRead(location: File, metaFiles: List[File], dataFile: Option[File]): LazyList[FeatureUnit] = {
     if (FileIO.isDirectory(location)) {
-      val inputs = discoverInputs(location, (metaFiles, dataFile))
+      val metas = discoverMeta(location, metaFiles)
       val files = Option(location.listFiles).getOrElse(Array[File]())
-      files.to(LazyList).flatMap(deepRead(_, inputs._1, inputs._2)) 
+      files.to(LazyList).flatMap(deepRead(_, metas, dataFile)) 
     } else if (FileIO.isFeatureFile(location)) {
       val metas = FileIO.appendFile(metaFiles ++ inputMeta, Settings.UserMeta)
       val unit = FeatureUnit(
@@ -112,29 +110,15 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
   }
   
   /**
-    * Scans for meta and data files in the specified directory.
+    * Scans for meta files in the specified directory.
     * 
     * @param dir the directory to scan in
-    * @param inputs tuple of accumulated meta files and one optional data file
+    * @param metaFiles list of accumulated meta files
     */
-  private def discoverInputs(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = {
-    val (metaFiles, dataFile) = inputs
+  private def discoverMeta(dir: File, metaFiles: List[File]): List[File] = {
     val files = Option(dir.listFiles).getOrElse(Array[File]())
     val metas = if (GwenSettings.`gwen.auto.discover.meta`) files.filter(FileIO.isMetaFile).toList else Nil
-    val inputs1 = (metaFiles ::: metas, dataFile)
-    val datas = {
-      (if (GwenSettings.`gwen.auto.discover.data.csv`) files.filter(FileIO.isCsvFile).toList else Nil) match {
-        case Nil => if (GwenSettings.`gwen.auto.discover.data.json`) files.filter(FileIO.isJsonFile).toList else Nil
-        case ls => ls
-      }
-    }
-    datas match {
-      case Nil => inputs1
-      case data :: Nil => (inputs1._1, Some(data))
-      case _ => 
-        if (dataFile.isEmpty) Errors.ambiguousCaseError(s"Ambiguous: expected 1 data file in ${dir.getName} directory but found ${datas.size}")
-        else inputs1
-    }
+    metaFiles ::: metas
   }
 
   private def applyAssociativeMeta(featureFile: File, metas: List[File]): List[File] = {
@@ -157,16 +141,16 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
     * given directory.
     * 
     * @param dir the directory to scan from
-    * @param inputs tuple of accumulated meta files and one optional data file
+    * @param metaFiles list of accumulated meta files
     */
   @tailrec
-  private def discoverInputsInPath(dir: File, inputs: (List[File], Option[File])): (List[File], Option[File]) = { 
+  private def discoverMetaInPath(dir: File, metaFiles: List[File]): List[File] = { 
     val hasParentDir = FileIO.hasParentDirectory(dir) 
     if (!hasParentDir) {
-      discoverInputs(dir, inputs)
+      discoverMeta(dir, metaFiles)
     } else {
       val parent = dir.getParentFile
-      discoverInputsInPath(parent, discoverInputs(dir, inputs))
+      discoverMetaInPath(parent, discoverMeta(dir, metaFiles))
     }
   }
   

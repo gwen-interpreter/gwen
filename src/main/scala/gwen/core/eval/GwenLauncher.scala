@@ -128,11 +128,8 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       case e: Throwable =>
         val failure = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
-          if (!e.isInstanceOf[GwenException]) {
-            logger.error(e.getMessage, e)
-          }
           val consoleReporter = new ConsoleReporter(options)
-          logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
+          logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure), e)
           println()
           failure
         } else {

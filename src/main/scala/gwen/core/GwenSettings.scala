@@ -55,8 +55,6 @@ object GwenSettings extends LazyLogging {
     `gwen.launch.options.tags`
     `gwen.assertion.mode`
     `gwen.associative.meta`
-    `gwen.auto.discover.data.csv`
-    `gwen.auto.discover.data.json`
     `gwen.auto.discover.meta`
     `gwen.auto.trim.data.csv`
     `gwen.auto.trim.data.json`
@@ -290,26 +288,6 @@ object GwenSettings extends LazyLogging {
     */
   def `gwen.auto.discover.meta`: Boolean = {
     Settings.getBoolean("gwen.auto.discover.meta")
-  }
-
-  /**
-    * Provides access to the `gwen.auto.discover.data.csv` setting used to enable
-    * or disable automatic discovery of CSV data files (default value is `false` for enabled).
-    * Disabling this will prevent Gwen from automatically discovering and loading CSV files in the path of an executing
-    * feature, forcing the user to control explicitly through the -i/--input command line option which CSV files to load.
-    */
-  def `gwen.auto.discover.data.csv`: Boolean = {
-    Settings.getBoolean("gwen.auto.discover.data.csv")
-  }
-
-  /**
-    * Provides access to the `gwen.auto.discover.data.json` setting used to enable
-    * or disable automatic discovery of JSON data files (default value is `false` for enabled).
-    * Disabling this will prevent Gwen from automatically discovering and loading JSON files in the path of an executing
-    * feature, forcing the user to control explicitly through the -i/--input command line option which JSON files to load.
-    */
-  def `gwen.auto.discover.data.json`: Boolean = {
-    Settings.getBoolean("gwen.auto.discover.data.json")
   }
 
   /**

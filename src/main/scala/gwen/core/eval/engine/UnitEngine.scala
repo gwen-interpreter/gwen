@@ -58,6 +58,7 @@ trait UnitEngine[T <: EvalContext]
     * @param ctx the evaluation context
     */
   def evaluateUnit(unit: FeatureUnit, ctx: T): Option[SpecResult] = {
+    unit.dataRecord.foreach(ctx.topScope.bindDataRecord)
     evaluateUnit(unit, Nil, ctx)
   }
 
@@ -69,7 +70,6 @@ trait UnitEngine[T <: EvalContext]
     * @param ctx the evaluation context
     */
   private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[SpecResult] = {
-    unit.dataRecord.foreach(ctx.topScope.bindDataRecord)
     Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>

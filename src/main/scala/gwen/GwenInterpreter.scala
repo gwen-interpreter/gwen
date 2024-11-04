@@ -81,11 +81,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         System.exit(1) // user cntl-c initiated exit
       case e: Throwable =>
         val failure = Failed(System.nanoTime - start, e)
-        if (!e.isInstanceOf[Errors.GwenException]) {
-          logger.error(failure.message, e)
-        }
         val consoleReporter = new ConsoleReporter(GwenOptions())
-        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure))
+        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure), e)
         println()
         System.exit(1)
     }
