@@ -89,9 +89,9 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   }
 
   def init(options: GwenOptions): GwenOptions = {
-    val process = options.process
+    val profile = options.profile
     logger.info("Initialising settings")
-    Settings.init(process.settingsFile.toList ++ options.settingsFiles)
+    Settings.init(profile.settingsFile.toList ++ options.settingsFiles)
     (if (options.repl && options.features.nonEmpty) {
       options.copy(features = Nil)
     } else {

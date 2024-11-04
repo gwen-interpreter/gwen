@@ -186,10 +186,10 @@ object GwenSettings extends LazyLogging {
   }
   
   /**
-   * Provides access to the gwen process name.
+   * Provides access to the name of the currently running gwen profile.
    */
-  def `gwen.process.name`: Option[String] = {
-    Settings.getOpt(ImplicitValueKeys.`gwen.process.name`)
+  def `gwen.profile.name`: Option[String] = {
+    Settings.getOpt(ImplicitValueKeys.`gwen.profile.name`)
   }
 
   /**

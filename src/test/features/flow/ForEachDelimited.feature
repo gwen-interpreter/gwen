@@ -14,8 +14,8 @@ Feature: For each delimited value
       And processed roles with index is ""
       And processed roles with number is ""
       And I process user roles for each data record
-     Then gwen.process.name should be blank
-      And gwen.process.name should be empty
+     Then gwen.profile.name should be blank
+      And gwen.profile.name should be empty
       And gwen.stepDef.name should be "I process the following user roles"
       And gwen.feature.file.name should be "ForEachDelimited.feature"
       And gwen.feature.file.simpleName should be "ForEachDelimited"

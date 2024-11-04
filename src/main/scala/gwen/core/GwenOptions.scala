@@ -35,7 +35,7 @@ import org.apache.commons.lang3.SystemUtils
 /**
   * Captures gwen command line options.
   *
-  * @param process optional process name to launch
+  * @param profile optional profile name to launch
   * @param repl true to open REPL regardless of batch and feature options
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
@@ -58,7 +58,7 @@ import org.apache.commons.lang3.SystemUtils
   * @author Branko Juric
   */
 case class GwenOptions(
-    process: Process = GwenOptions.Defaults.process,
+    profile: Profile = GwenOptions.Defaults.profile,
     repl: Boolean = GwenOptions.Defaults.repl,
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
@@ -79,7 +79,7 @@ case class GwenOptions(
     pretty: Boolean = GwenOptions.Defaults.pretty,
     formatFiles: List[File] = Nil) extends GwenInfo {
 
-  sys.props += ((ImplicitValueKeys.`gwen.process.name`, process.name))
+  sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
 
   def interpolate(source: String): String = {
     val options = GwenOptions.this
@@ -133,8 +133,8 @@ object GwenOptions {
   }
 
   object Defaults {
-    def process = Process(
-      sys.env.get("GWEN_PROCESS").map(_.trim).filter(_.nonEmpty).getOrElse(""), 
+    def profile = Profile(
+      sys.env.get("GWEN_PROFILE").map(_.trim).filter(_.nonEmpty).getOrElse(""), 
       GwenSettings.`gwen.baseDir`
     )
     def repl = false
@@ -184,13 +184,13 @@ object GwenOptions {
         (_, c) => c.copy(repl = true)
       } text "Open REPL (forcefully) regardless of other options"
 
-      opt[String]('p', "process") action {
+      opt[String]('p', "profile") action {
         (ps, c) => {
           c.copy(
-            process = new Process(ps, baseDir)
+            profile = new Profile(ps, baseDir)
           )
         }
-      } valueName "name" text "Name of process to launch"
+      } valueName "name" text "Name of profile to launch"
       
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
@@ -327,15 +327,15 @@ object GwenOptions {
     }
 
     (parser.parse(args, GwenOptions()) flatMap { options =>
-      if (options.process.isDefault) {
+      if (options.profile.isDefault) {
         Some(options)
       } else {
-        Settings.init(options.process.settingsFile.toList)
+        Settings.init(options.profile.settingsFile.toList)
         parser.parse(args, GwenOptions())
       }
     } map { options =>
       new GwenOptions(
-        options.process,
+        options.profile,
         options.repl,
         options.batch && !options.repl,
         options.parallel,
@@ -360,7 +360,7 @@ object GwenOptions {
         else options
       } tap { options =>
         options foreach { opt =>
-          if (opt.batch && opt.features.isEmpty && opt.process.isDefault) {
+          if (opt.batch && opt.features.isEmpty && opt.profile.isDefault) {
             Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
@@ -370,9 +370,9 @@ object GwenOptions {
           if (opt.debug && opt.parallel) {
             Errors.invocationError("Debug mode not supported for parallel executions")
           }
-          opt.process.settingsFile foreach { psFile =>
-            if (opt.features.diff(GwenOptions.Defaults.features).nonEmpty) Errors.invocationError(s"Cannot specify features on command line when launching ${opt.process.name} process (use gwen.launch.options.features setting in ${psFile} file instead)")
-            if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${opt.process.name} process (use gwen.launch.options.meta setting in ${psFile} file instead)")
+          opt.profile.settingsFile foreach { psFile =>
+            if (opt.features.diff(GwenOptions.Defaults.features).nonEmpty) Errors.invocationError(s"Cannot specify features on command line when launching ${opt.profile.name} profile (use gwen.launch.options.features setting in ${psFile} file instead)")
+            if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${opt.profile.name} profile (use gwen.launch.options.meta setting in ${psFile} file instead)")
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocation failed - check arguments (specify --help for launch options)"))

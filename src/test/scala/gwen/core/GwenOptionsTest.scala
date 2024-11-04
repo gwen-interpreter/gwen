@@ -33,13 +33,13 @@ import gwen.core.init.InitOption
 class GwenOptionsTest extends BaseTest with Matchers {
 
   val rootDir: File = new File("target" + File.separator + "props") tap { _.mkdirs() }
-  val singleProcessBaseDir = new File("src/test/resources/singleProcess")
-  val multiProcessBaseDir = new File("src/test/resources/multiProcess")
-  val noProcessBaseDir = new File("src/test/resources/noProcess")
-  val singleProcess = Process("single", singleProcessBaseDir)
+  val singleProfileBaseDir = new File("src/test/resources/singleProfile")
+  val multiProfileBaseDir = new File("src/test/resources/multiProfile")
+  val noProfileBaseDir = new File("src/test/resources/noProfile")
+  val singleProfile = Profile("single", singleProfileBaseDir)
 
   "Options with no command line args" should "parse" in {
-    parseOptions(Array[String](), noProcessBaseDir) match {
+    parseOptions(Array[String](), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options)
       }
@@ -48,104 +48,104 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with existing process option" should "parse" in {
-    parseOptions(Array("-p", "single"), singleProcessBaseDir) match {
+  "Options with existing profile option" should "parse" in {
+    parseOptions(Array("-p", "single"), singleProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, process = Process("single", singleProcessBaseDir))
+        assertOptions(options, profile = Profile("single", singleProfileBaseDir))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--process", "single"), singleProcessBaseDir) match {
+    parseOptions(Array("--profile", "single"), singleProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, process = Process("single", singleProcessBaseDir))
-      }
-      case Failure(error) =>
-        fail(s"expected options but failed with error: $error")
-    }
-  }
-
-  "Options with no process option" should "parse when multiple processes exist" in {
-    parseOptions(Array(), multiProcessBaseDir) match {
-      case Success(options) => {
-        assertOptions(options, process = Process("", multiProcessBaseDir))
-      }
-      case Failure(error) =>
-        fail(s"expected options but failed with error: $error")
-    }
-    parseOptions(Array(), multiProcessBaseDir) match {
-      case Success(options) => {
-        assertOptions(options, process = Process("", multiProcessBaseDir))
+        assertOptions(options, profile = Profile("single", singleProfileBaseDir))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
   }
 
-  "Options with missing process option" should "not parse" in {
-    parseOptions(Array("-p", "missing"), noProcessBaseDir) match {
+  "Options with no profile option" should "parse when multiple profilees exist" in {
+    parseOptions(Array(), multiProfileBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, profile = Profile("", multiProfileBaseDir))
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+    parseOptions(Array(), multiProfileBaseDir) match {
+      case Success(options) => {
+        assertOptions(options, profile = Profile("", multiProfileBaseDir))
+      }
+      case Failure(error) =>
+        fail(s"expected options but failed with error: $error")
+    }
+  }
+
+  "Options with missing profile option" should "not parse" in {
+    parseOptions(Array("-p", "missing"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Undefined process: missing - at least one of missing.conf, missing.json or missing.properties files expected")
+        error.getMessage should be ("Undefined profile: missing - at least one of missing.conf, missing.json or missing.properties files expected")
     }
-    parseOptions(Array("--process", "missing"), noProcessBaseDir) match {
+    parseOptions(Array("--profile", "missing"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Undefined process: missing - at least one of missing.conf, missing.json or missing.properties files expected")
+        error.getMessage should be ("Undefined profile: missing - at least one of missing.conf, missing.json or missing.properties files expected")
     }
   }
 
-  "Options with single process option and feature files" should "not parse" in {
+  "Options with single profile option and feature files" should "not parse" in {
     createDir("dir7")
     val featureFile = createFile("dir7/file.feature")
-    parseOptions(Array("-p", singleProcess.name, featureFile.getPath), singleProcessBaseDir) match {
+    parseOptions(Array("-p", singleProfile.name, featureFile.getPath), singleProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify features on command line when launching single process (use gwen.launch.options.features setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
+        error.getMessage should be ("Cannot specify features on command line when launching single profile (use gwen.launch.options.features setting in src/test/resources/singleProfile/conf/profiles/single.conf file instead)")
     }
-    parseOptions(Array("--process", singleProcess.name, featureFile.getPath), singleProcessBaseDir) match {
+    parseOptions(Array("--profile", singleProfile.name, featureFile.getPath), singleProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify features on command line when launching single process (use gwen.launch.options.features setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
+        error.getMessage should be ("Cannot specify features on command line when launching single profile (use gwen.launch.options.features setting in src/test/resources/singleProfile/conf/profiles/single.conf file instead)")
     }
   }
 
-  "Options with single process option and meta files" should "not parse" in {
+  "Options with single profile option and meta files" should "not parse" in {
     createDir("dir8")
     val metaFile = createFile("dir8/file.meta")
-    parseOptions(Array("-p", singleProcess.name, "-m", metaFile.getPath), singleProcessBaseDir) match {
+    parseOptions(Array("-p", singleProfile.name, "-m", metaFile.getPath), singleProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify meta on command line when launching single process (use gwen.launch.options.meta setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
+        error.getMessage should be ("Cannot specify meta on command line when launching single profile (use gwen.launch.options.meta setting in src/test/resources/singleProfile/conf/profiles/single.conf file instead)")
     }
-    parseOptions(Array("--process", singleProcess.name, "-m", metaFile.getPath), singleProcessBaseDir) match {
+    parseOptions(Array("--profile", singleProfile.name, "-m", metaFile.getPath), singleProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
-        error.getMessage should be ("Cannot specify meta on command line when launching single process (use gwen.launch.options.meta setting in src/test/resources/singleProcess/conf/process/single.conf file instead)")
+        error.getMessage should be ("Cannot specify meta on command line when launching single profile (use gwen.launch.options.meta setting in src/test/resources/singleProfile/conf/profiles/single.conf file instead)")
     }
   }
 
   "Options with batch option and no files" should "fail" in {
-    parseOptions(Array("-b"), noProcessBaseDir) match {
+    parseOptions(Array("-b"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
       case Failure(error) =>
         error.getMessage should be ("No feature files or directories provided")
     }
-    parseOptions(Array("--batch"), noProcessBaseDir) match {
+    parseOptions(Array("--batch"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -155,7 +155,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with batch option and files " should "parse" in {
-    parseOptions(Array("-b", "."), noProcessBaseDir) match {
+    parseOptions(Array("-b", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, features = List(new File(".")))
 
@@ -163,7 +163,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--batch", "."), noProcessBaseDir) match {
+    parseOptions(Array("--batch", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, features = List(new File(".")))
       }
@@ -173,14 +173,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
    "Options with repl and batch option and no files" should "parse" in {
-    parseOptions(Array("--repl", "-b"), noProcessBaseDir) match {
+    parseOptions(Array("--repl", "-b"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, repl = true, batch = false)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--batch", "--repl"), noProcessBaseDir) match {
+    parseOptions(Array("--batch", "--repl"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, repl = true, batch = false)
       }
@@ -190,7 +190,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with repl and batch option and files " should "fail" in {
-    parseOptions(Array("-b", "--repl", "."), noProcessBaseDir) match {
+    parseOptions(Array("-b", "--repl", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, repl = true, batch = false)
 
@@ -198,7 +198,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--repl", "--batch", "."), noProcessBaseDir) match {
+    parseOptions(Array("--repl", "--batch", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, repl = true, batch = false)
       }
@@ -208,7 +208,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with verbose option and files " should "parse" in {
-    parseOptions(Array("-v", "."), noProcessBaseDir) match {
+    parseOptions(Array("-v", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, verbose = true, features = List(new File(".")))
 
@@ -216,7 +216,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--verbose", "."), noProcessBaseDir) match {
+    parseOptions(Array("--verbose", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, verbose = true, features = List(new File(".")))
       }
@@ -226,7 +226,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with debug option and files " should "parse" in {
-    parseOptions(Array("-d", "."), noProcessBaseDir) match {
+    parseOptions(Array("-d", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, debug = true, features = List(new File(".")))
 
@@ -234,7 +234,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--debug", "."), noProcessBaseDir) match {
+    parseOptions(Array("--debug", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, debug = true, features = List(new File(".")))
       }
@@ -244,14 +244,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with dry run option and no files" should "be ok" in {
-    parseOptions(Array("-n"), noProcessBaseDir) match {
+    parseOptions(Array("-n"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--dry-run"), noProcessBaseDir) match {
+    parseOptions(Array("--dry-run"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true)
       }
@@ -261,7 +261,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with dry run option and files " should "parse" in {
-    parseOptions(Array("-n", "."), noProcessBaseDir) match {
+    parseOptions(Array("-n", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true, features = List(new File(".")))
 
@@ -269,7 +269,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--dry-run", "."), noProcessBaseDir) match {
+    parseOptions(Array("--dry-run", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dryRun = true, features = List(new File(".")))
       }
@@ -279,7 +279,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with parallel option with implied batch mode" should "parse" in {
-    parseOptions(Array("--parallel", "."), noProcessBaseDir) match {
+    parseOptions(Array("--parallel", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
@@ -288,13 +288,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with parallel option with explicit batch mode" should "parse" in {
-    parseOptions(Array("--parallel", "-b", "."), noProcessBaseDir) match {
+    parseOptions(Array("--parallel", "-b", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
       case Failure(error) => fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--parallel", "--batch", "."), noProcessBaseDir) match {
+    parseOptions(Array("--parallel", "--batch", "."), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, batch = true, parallel = true, features = List(new File(".")))
       }
@@ -303,13 +303,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with report option but no target report directory" should "not parse" in {
-    parseOptions(Array("-r"), noProcessBaseDir) match {
+    parseOptions(Array("-r"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--report"), noProcessBaseDir) match {
+    parseOptions(Array("--report"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
@@ -318,14 +318,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with report option and report directory" should "parse" in {
-    parseOptions(Array("-r", "target/report"), noProcessBaseDir) match {
+    parseOptions(Array("-r", "target/report"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--report", "target/report"), noProcessBaseDir) match {
+    parseOptions(Array("--report", "target/report"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")))
       }
@@ -335,14 +335,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with format option but no report directory" should "get default report dir" in {
-    parseOptions(Array("-f", "html"), noProcessBaseDir) match {
+    parseOptions(Array("-f", "html"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--formats", "html"), noProcessBaseDir) match {
+    parseOptions(Array("--formats", "html"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = GwenOptions.Defaults.report, reportFormats=List(ReportFormat.html))
       }
@@ -352,13 +352,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with format option but no format value(s)" should "not parse" in {
-    parseOptions(Array("-f"), noProcessBaseDir) match {
+    parseOptions(Array("-f"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--formats"), noProcessBaseDir) match {
+    parseOptions(Array("--formats"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -367,14 +367,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with format options and report directory" should "parse" in {
-    parseOptions(Array("-r", "target/report", "-f", "html,junit"), noProcessBaseDir) match {
+    parseOptions(Array("-r", "target/report", "-f", "html,junit"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--report", "target/report", "--formats", "html,junit"), noProcessBaseDir) match {
+    parseOptions(Array("--report", "target/report", "--formats", "html,junit"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, reportDir = Some(new File("target/report")), reportFormats=List(ReportFormat.html, ReportFormat.junit))
       }
@@ -385,14 +385,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with CSV input data file" should "parse" in {
     createFile("data.csv")
-    parseOptions(Array("-i", "target/props/data.csv"), noProcessBaseDir) match {
+    parseOptions(Array("-i", "target/props/data.csv"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--input-data", "target/props/data.csv"), noProcessBaseDir) match {
+    parseOptions(Array("--input-data", "target/props/data.csv"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.csv")))
       }
@@ -402,7 +402,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with non existing CSV input data file" should "error" in {
-    parseOptions(Array("-i", "missing.csv"), noProcessBaseDir) match {
+    parseOptions(Array("-i", "missing.csv"), noProfileBaseDir) match {
       case Success(_) => {
         fail("missing csv file should result in error")
       }
@@ -412,14 +412,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with JSON input data file" should "parse" in {
     createFile("data.json")
-    parseOptions(Array("-i", "target/props/data.json"), noProcessBaseDir) match {
+    parseOptions(Array("-i", "target/props/data.json"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.json")))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--input-data", "target/props/data.json"), noProcessBaseDir) match {
+    parseOptions(Array("--input-data", "target/props/data.json"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, dataFile = Some(new File("target/props/data.json")))
       }
@@ -429,7 +429,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with non existing JSON input data file" should "error" in {
-    parseOptions(Array("-i", "missing.json"), noProcessBaseDir) match {
+    parseOptions(Array("-i", "missing.json"), noProfileBaseDir) match {
       case Success(_) => {
         fail("missing json file should result in error")
       }
@@ -438,13 +438,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with conf option with no file" should "not parse" in {
-    parseOptions(Array("-c"), noProcessBaseDir) match {
+    parseOptions(Array("-c"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--conf"), noProcessBaseDir) match {
+    parseOptions(Array("--conf"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -453,13 +453,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with config option with non existing conf file" should "not parse" in {
-    parseOptions(Array("-c", "nonexisting.conf"), noProcessBaseDir) match {
+    parseOptions(Array("-c", "nonexisting.conf"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--conf", "nonexisting.conf"), noProcessBaseDir) match {
+    parseOptions(Array("--conf", "nonexisting.conf"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -469,14 +469,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with conf option and existing conf file" should "parse" in {
     val confFile = createFile("gwen.conf")
-    parseOptions(Array("-c", confFile.getPath), noProcessBaseDir) match {
+    parseOptions(Array("-c", confFile.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(confFile))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--conf", confFile.getPath), noProcessBaseDir) match {
+    parseOptions(Array("--conf", confFile.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(confFile))
       }
@@ -488,14 +488,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with conf option and multiple existing config files" should "parse" in {
     val configFileA = createFile("gwen-a.json")
     val configFileB = createFile("gwen-b.conf")
-    parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath), noProcessBaseDir) match {
+    parseOptions(Array("-c", configFileA.getPath + "," + configFileB.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath), noProcessBaseDir) match {
+    parseOptions(Array("--conf", configFileA.getPath + "," + configFileB.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, settingsFiles = List(configFileA, configFileB))
       }
@@ -505,13 +505,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with tags option with no tags" should "not parse" in {
-    parseOptions(Array("-t"), noProcessBaseDir) match {
+    parseOptions(Array("-t"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--tags"), noProcessBaseDir) match {
+    parseOptions(Array("--tags"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -520,14 +520,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with tags option and valid single include tag" should "parse" in {
-    parseOptions(Array("-t", "@wip"), noProcessBaseDir) match {
+    parseOptions(Array("-t", "@wip"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), true)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", "@wip"), noProcessBaseDir) match {
+    parseOptions(Array("--tags", "@wip"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), true)))
       }
@@ -537,14 +537,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with tags option and valid single exclude tag" should "parse" in {
-    parseOptions(Array("-t", "~@wip"), noProcessBaseDir) match {
+    parseOptions(Array("-t", "~@wip"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), false)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", "~@wip"), noProcessBaseDir) match {
+    parseOptions(Array("--tags", "~@wip"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = List((Tag("@wip"), false)))
       }
@@ -554,13 +554,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with tags option and invalid single tag" should "not parse" in {
-    parseOptions(Array("-t", "wip"), noProcessBaseDir) match {
+    parseOptions(Array("-t", "wip"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--tags", "!wip"), noProcessBaseDir) match {
+    parseOptions(Array("--tags", "!wip"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -571,14 +571,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with tags option and mutiple includes" should "parse" in {
     val tags = "@wip,@regression,@transactional,@simple"
     val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@transactional"), true), (Tag("@simple"), true))
-    parseOptions(Array("-t", tags), noProcessBaseDir) match {
+    parseOptions(Array("-t", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
+    parseOptions(Array("--tags", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
@@ -590,14 +590,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with tags option and mutiple exclude tags" should "parse" in {
     val tags = "~@experimental,~@complex"
     val expected: List[(Tag, Boolean)] = List((Tag("@experimental"), false), (Tag("@complex"), false))
-    parseOptions(Array("-t", tags), noProcessBaseDir) match {
+    parseOptions(Array("-t", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
+    parseOptions(Array("--tags", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
@@ -609,14 +609,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with tags option and mutiple include and exclude tags" should "parse" in {
     val tags = "@wip,@regression,~@experimental,@transactional,~@complex,@simple"
     val expected: List[(Tag, Boolean)] = List((Tag("@wip"), true), (Tag("@regression"), true), (Tag("@experimental"), false), (Tag("@transactional"), true), (Tag("@complex"), false), (Tag("@simple"), true))
-    parseOptions(Array("-t", tags), noProcessBaseDir) match {
+    parseOptions(Array("-t", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
+    parseOptions(Array("--tags", tags), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, tags = expected)
       }
@@ -627,13 +627,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with tags option and two tags separated by space" should "not parse" in {
     val tags = "@wip @regression"
-    parseOptions(Array("-t", tags), noProcessBaseDir) match {
+    parseOptions(Array("-t", tags), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
+    parseOptions(Array("--tags", tags), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -643,13 +643,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with tags option and one valid tag and one invalid tag" should "not parse" in {
     val tags = "@valid,invalid"
-    parseOptions(Array("-t", tags), noProcessBaseDir) match {
+    parseOptions(Array("-t", tags), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--tags", tags), noProcessBaseDir) match {
+    parseOptions(Array("--tags", tags), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -658,13 +658,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with meta option with no meta file" should "not parse" in {
-    parseOptions(Array("-m"), noProcessBaseDir) match {
+    parseOptions(Array("-m"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--meta"), noProcessBaseDir) match {
+    parseOptions(Array("--meta"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -673,13 +673,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with with non existing meta file" should "not parse" in {
-    parseOptions(Array("-m", "nonexisting.meta"), noProcessBaseDir) match {
+    parseOptions(Array("-m", "nonexisting.meta"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--meta", "nonexisting.meta"), noProcessBaseDir) match {
+    parseOptions(Array("--meta", "nonexisting.meta"), noProfileBaseDir) match {
       case Success(_) => {
         fail("expected None but got options")
       }
@@ -689,14 +689,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with one existing meta file" should "parse" in {
     val metaFile = createFile("gwen.meta")
-    parseOptions(Array("-m", metaFile.getPath), noProcessBaseDir) match {
+    parseOptions(Array("-m", metaFile.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaFile.getPath), noProcessBaseDir) match {
+    parseOptions(Array("--meta", metaFile.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = List(metaFile))
       }
@@ -710,14 +710,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile2 = createFile("gwen2.meta")
     val metaFiles = List(metaFile1, metaFile2)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("-m", metaPaths), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("--meta", metaPaths), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
@@ -732,13 +732,13 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile3 = createFile("gwen3.meta")
     val metaFiles = List(metaFile1, metaFile2, metaFile3)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("-m", metaPaths), noProfileBaseDir) match {
       case Success(files) => {
         fail("expected None but got options")
       }
       case Failure(error) =>
     }
-    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("--meta", metaPaths), noProfileBaseDir) match {
       case Success(files) => {
         fail("expected None but got options")
       }
@@ -751,14 +751,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val metaFile2 = createFile("gwen2.meta")
     val metaFiles = List(metaFile1, metaFile2)
     val metaPaths = metaFiles.map(_.getPath).mkString(",")
-    parseOptions(Array("-m", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("-m", metaPaths), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
-    parseOptions(Array("--meta", metaPaths), noProcessBaseDir) match {
+    parseOptions(Array("--meta", metaPaths), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, metaFiles = metaFiles)
       }
@@ -772,7 +772,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     createDir("dir1")
     val feature1 = createFile("dir1/file1.feature")
 
-    parseOptions(Array(feature1.getPath), noProcessBaseDir) match {
+    parseOptions(Array(feature1.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(feature1))
       }
@@ -785,7 +785,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
     val dir2 = createDir("dir2")
 
-    parseOptions(Array(dir2.getPath), noProcessBaseDir) match {
+    parseOptions(Array(dir2.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(dir2))
       }
@@ -801,7 +801,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val feature3 = createFile("dir3/file3.feature")
     val dir4 = createDir("dir4")
 
-    parseOptions(Array(dir3.getPath, feature3.getPath, dir4.getPath), noProcessBaseDir) match {
+    parseOptions(Array(dir3.getPath, feature3.getPath, dir4.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, features = List(dir3, feature3, dir4))
       }
@@ -812,7 +812,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with nonexisting paths" should "not parse" in {
 
-    parseOptions(Array("nonexistindir", "nonexisting.file"), noProcessBaseDir) match {
+    parseOptions(Array("nonexistindir", "nonexisting.file"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected None but got options")
       }
@@ -831,11 +831,11 @@ class GwenOptionsTest extends BaseTest with Matchers {
     val feature5 = createFile("dir5/file5.feature")
     val dir6 = createDir("dir6")
 
-    parseOptions(Array("-b", "--parallel", "-v", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath), noProcessBaseDir) match {
+    parseOptions(Array("-b", "--parallel", "-v", "-r", reportDir.getPath, "-f", "html,junit", "-c", confFile.getPath, "-t", tags, "-i", dataFile.getPath, "-m", metaFile.getPath, dir5.getPath, feature5.getPath, dir6.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(
           options,
-          process = Process("", noProcessBaseDir),
+          profile = Profile("", noProfileBaseDir),
           repl = false,
           batch = true,
           parallel = true,
@@ -855,11 +855,11 @@ class GwenOptionsTest extends BaseTest with Matchers {
         fail(s"expected options but failed with error: $error")
     }
 
-    parseOptions(Array("--batch", "--parallel", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath), noProcessBaseDir) match {
+    parseOptions(Array("--batch", "--parallel", "--verbose", "--report", reportDir.getPath(), "--formats", "html,junit", "--conf", confFile.getPath(), "--tags", tags, "--input-data", dataFile.getPath(), "--meta", metaFile.getPath(), dir5.getPath(), feature5.getPath(), dir6.getPath), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(
           options,
-          process = Process("", noProcessBaseDir),
+          profile = Profile("", noProfileBaseDir),
           repl = false,
           batch = true,
           parallel = true,
@@ -883,7 +883,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with init command" should "parse" in {
 
-    parseOptions(Array("init"), noProcessBaseDir) match {
+    parseOptions(Array("init"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, initDir = new File("gwen"))
       }
@@ -894,7 +894,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with init command and non existing dir" should "parse" in {
 
-    parseOptions(Array("init", "gwen"), noProcessBaseDir) match {
+    parseOptions(Array("init", "gwen"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, initDir = new File("gwen"))
       }
@@ -905,7 +905,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with init --docker command" should "parse" in {
 
-    parseOptions(Array("init", "--docker"), noProcessBaseDir) match {
+    parseOptions(Array("init", "--docker"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, docker = true, initDir = new File("gwen"))
       }
@@ -916,7 +916,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with init --jenkins command" should "parse" in {
 
-    parseOptions(Array("init", "--jenkins"), noProcessBaseDir) match {
+    parseOptions(Array("init", "--jenkins"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, jenkins = true, initDir = new File("gwen"))
       }
@@ -927,7 +927,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   "Options with init --jenkins and --force command" should "parse" in {
 
-    parseOptions(Array("init", "--jenkins", "--force"), noProcessBaseDir) match {
+    parseOptions(Array("init", "--jenkins", "--force"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, init = true, jenkins = true, force = true, initDir = new File("gwen"))
       }
@@ -937,7 +937,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with pretty format command without switch or dir" should "fail" in {
-    parseOptions(Array("format"), noProcessBaseDir) match {
+    parseOptions(Array("format"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -947,7 +947,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with pretty format command without dir" should "parse" in {
-    parseOptions(Array("format", "--pretty"), noProcessBaseDir) match {
+    parseOptions(Array("format", "--pretty"), noProfileBaseDir) match {
       case Success(options) => {
         fail("expected failure but was successful")
       }
@@ -957,7 +957,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
   }
 
   "Options with pretty format command with dir" should "parse" in {
-    parseOptions(Array("format", "--pretty", "src/test/features"), noProcessBaseDir) match {
+    parseOptions(Array("format", "--pretty", "src/test/features"), noProfileBaseDir) match {
       case Success(options) => {
         assertOptions(options, pretty = true, formatFiles = List(new File("src/test/features")))
       }
@@ -971,7 +971,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   private def assertOptions(
                              options: GwenOptions,
-                             process: Process = GwenOptions.Defaults.process,
+                             profile: Profile = GwenOptions.Defaults.profile,
                              repl: Boolean = GwenOptions.Defaults.repl,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
@@ -993,8 +993,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              pretty: Boolean = GwenOptions.Defaults.pretty,
                              formatFiles: List[File] = Nil): Unit = {
 
-    options.process.name should be (process.name)
-    options.process.settingsFile.map(_.getCanonicalPath) should be (process.settingsFile.map(_.getCanonicalPath))
+    options.profile.name should be (profile.name)
+    options.profile.settingsFile.map(_.getCanonicalPath) should be (profile.settingsFile.map(_.getCanonicalPath))
     options.batch should be (batch && !repl)
     options.repl should be (repl)
     options.parallel should be (parallel)

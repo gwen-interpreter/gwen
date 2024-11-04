@@ -17,7 +17,7 @@
 package gwen.core
 
 object ImplicitValueKeys {
-  val `gwen.process.name` = "gwen.process.name"
+  val `gwen.profile.name` = "gwen.profile.name"
 }
 
 trait ImplicitValueKeys {
