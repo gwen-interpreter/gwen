@@ -52,11 +52,8 @@ object Settings extends LazyLogging {
   
   private val resolver = new Interpolator(name => getOpt(name)).settings
   
-  private val userProjectSettingsFiles: List[File] = {
-    val userSettingsFile: Option[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen"))
-    val projectSettingsFile: Option[File] = settingsFileInDir(new File("."), "gwen")
-    userSettingsFile.toList ++ projectSettingsFile.toList
-  }
+  private val userSettingsFiles: List[File] = FileIO.userDir.flatMap(d => settingsFileInDir(d, "gwen")).toList
+  private val projectSettingsFiles: List[File] = settingsFileInDir(new File("."), "gwen").toList
 
   init()
   
@@ -88,7 +85,8 @@ object Settings extends LazyLogging {
 
       configProps = new Properties()
       val orphans = new Properties()
-      val sFiles = (settingsFiles.foldLeft(userProjectSettingsFiles) { FileIO.appendFile }).reverse
+      //val sFiles = (settingsFiles.foldLeft(userProjectSettingsFiles) { FileIO.appendFile }).reverse
+      val sFiles = (settingsFiles.foldLeft(userSettingsFiles) { FileIO.appendFile }) ++ projectSettingsFiles
       config = sFiles filter(!_.exists) match {
         case Nil =>
           (
