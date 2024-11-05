@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -406,7 +406,7 @@ object Step {
       }
     }
     steps.filter(s => s.isEager || s.isLazy) foreach { step => 
-      if (!step.name.matches(".+ (is|will be) defined .*by .+"))  {
+      if (!step.name.matches(".+ is defined .*by .+"))  {
         val annotation = { 
           if (step.isEager) Annotations.Eager
           else if (step.isLazy) Annotations.Lazy

@@ -85,4 +85,6 @@ Compile / packageBin / mappings ++= Seq(
   file("CHANGELOG") -> "CHANGELOG.txt"
 )
 
-Test/ parallelExecution := false
+Test / parallelExecution := false
+
+Test / testOptions += Tests.Argument("-oF")

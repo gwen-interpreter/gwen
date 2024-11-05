@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 Branko Juric, Brady Wood
+ * Copyright 2020-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ import scala.util.matching.Regex
 
  class SensitiveDataTest extends BaseTest with Matchers {
 
-  "isMaskedName" should "return true for masked proeprty names" in {
+  "isMaskedName" should "return true for masked property names" in {
     SensitiveData.isMaskedName("""my:masked""") should be (true)
     SensitiveData.isMaskedName("""my.prop:masked""") should be (true)
     SensitiveData.isMaskedName("""my.prop.other:masked""") should be (true)
   }
 
-  "isMaskedName" should "return false for standard proeprty names" in {
+  "isMaskedName" should "return false for standard property names" in {
     SensitiveData.isMaskedName("""my""") should be (false)
     SensitiveData.isMaskedName("""my.prop""") should be (false)
     SensitiveData.isMaskedName("""my.prop.other""") should be (false)
@@ -50,13 +50,9 @@ import scala.util.matching.Regex
     }
   }
 
-  "parse" should "return plain original value for non-masked property" in {
+  "parse" should "return return nothing for non-masked property" in {
     val parsed = SensitiveData.parse("my.raw.prop", "howdydoo") 
-    parsed should not be (None)
-    parsed foreach { case (name, value) => 
-      name should be ("my.raw.prop")
-      value should be ("howdydoo")
-    }
+    parsed should be (None)
   }
 
   "parsing with same name and value" should "not create a duplicate" in {

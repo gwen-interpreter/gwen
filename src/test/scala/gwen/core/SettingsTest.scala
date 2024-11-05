@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 Branko Juric, Brady Wood
+ * Copyright 2015-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,14 +52,8 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      try {
-        Settings.init(List(propFile))
-        Settings.get("prop.url") should be ("http://localhost:8090/howdy")
-      } finally {
-        sys.props -= "prop.host"
-        sys.props -= "prop.host.port"
-        sys.props -= "prop.url"
-      }
+      Settings.init(List(propFile))
+      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
     }
   }
   
@@ -73,14 +67,8 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      try {
-        Settings.init(List(propFile))
-        Settings.get("prop.url") should be ("http://localhost:8090/howdy")
-      } finally {
-        sys.props -= "prop.host"
-        sys.props -= "prop.host.port"
-        sys.props -= "prop.url"
-      }
+      Settings.init(List(propFile))
+      Settings.get("prop.url") should be ("http://localhost:8090/howdy")
     }
   }
 
@@ -95,14 +83,8 @@ class SettingsTest extends BaseTest with Matchers {
     )
     intercept[MissingSettingException] {
       Settings.exclusively {
-        try {
-          Settings.init(List(propFile))
-          Settings.get("prop.url")
-        } finally {
-          sys.props -= "prop.host"
-          sys.props -= "prop.host.port"
-          sys.props -= "prop.url"
-        }
+        Settings.init(List(propFile))
+        Settings.get("prop.url")
       }
     }
   }
@@ -207,7 +189,6 @@ class SettingsTest extends BaseTest with Matchers {
 
   "masked system property" should "yield masked value" in {
     withSetting("my.secret.prop:masked", "secret") {
-      Settings.init()
       Settings.get("my.secret.prop").contains("*****") should be (true)
     }
   }
@@ -221,14 +202,9 @@ class SettingsTest extends BaseTest with Matchers {
          |""".stripMargin
     )
     Settings.exclusively {
-      try {
-        Settings.init(List(confFile))
-        Settings.get("a.b") should be ("1")
-        Settings.get("a.b.c") should be ("2")
-      } finally {
-        sys.props -= "a.b"
-        sys.props -= "a.b.c"
-      }
+      Settings.init(List(confFile))
+      Settings.get("a.b") should be ("1")
+      Settings.get("a.b.c") should be ("2")
     }
   }
 
@@ -259,16 +235,15 @@ class SettingsTest extends BaseTest with Matchers {
   "nested keys in properties file through system property" should "resolve" in {
     val propFile = new File(targetDir, "nestedkeys.properties")
     propFile.delete()
-    withSetting("j.k", "7") {
-      propFile.writeText(
-        """|j.k.l=8
-           |""".stripMargin
-      )
-      Settings.exclusively {
-        Settings.init(List(propFile))
-        Settings.get("j.k") should be ("7")
-        Settings.get("j.k.l") should be ("8")
-      }
+    propFile.writeText(
+      """|j.k = 7
+         |j.k.l=8
+         |""".stripMargin
+    )
+    Settings.exclusively {
+      Settings.init(List(propFile))
+      Settings.get("j.k") should be ("7")
+      Settings.get("j.k.l") should be ("8")
     }
   }
 

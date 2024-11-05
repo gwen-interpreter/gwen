@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 Branko Juric, Brady Wood
+ * Copyright 2020-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ extension [F <: File](file: F) {
     file tap { f =>
       f.newFileWriter(append) tap { fw =>
         try {
-          fw.write(text)
+          fw.write(Formatting.stripZeroChar(text))
         } finally {
           fw.close()
         }
@@ -87,7 +87,7 @@ extension [F <: File](file: F) {
           new PrintWriter(fw) tap { pw =>
             try {
               line match {
-                case Some(l) => pw.println(l)
+                case Some(l) => pw.println(Formatting.stripZeroChar(l))
                 case None => pw.println()
               }
             } finally {
@@ -293,6 +293,8 @@ extension (sc: StringContext) {
 object Formatting {
 
   val ZeroChar = '‎' // zero width space char
+
+  def stripZeroChar(s: String) = s.replaceAll(ZeroChar.toString, "")
 
   /**
     * Formats durations for presentation purposes.
@@ -551,7 +553,7 @@ enum LocationType:
 object Assert {
   def apply(assertion: Boolean, message: => String): Unit = {
     if (!assertion)
-      throw new java.lang.AssertionError(message)
+      throw new java.lang.AssertionError(Formatting.stripZeroChar(message))
   }
   def formatFailed(source: String, expected: String, actual: String, negate: Boolean, operator: ComparisonOperator): String = {
     s"$source should ${if(negate) "not " else ""}$operator ${ValueLiteral.orQuotedValue(expected)}${if (operator == ComparisonOperator.be && actual == expected) "" else s" but ${if (operator == ComparisonOperator.be) "got" else "value was"} ${ValueLiteral.orQuotedValue(actual)}"}"

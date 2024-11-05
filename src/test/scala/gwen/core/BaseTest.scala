@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 Brady Wood, Branko Juric
+ * Copyright 2019-2024 Brady Wood, Branko Juric
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,11 @@ abstract class BaseTest extends AnyFlatSpec {
     Settings.exclusively {
       val original = Settings.getOpt(name)
       try {
-        sys.props += ((name, value))
-        Settings.init()
+        Settings.set(name, value)
         body
       } finally {
-        original.fold(sys.props -= name) { v =>
-          sys.props += ((name, v))
+        original foreach { v =>
+          Settings.set(name, v)
         }
       }
     }

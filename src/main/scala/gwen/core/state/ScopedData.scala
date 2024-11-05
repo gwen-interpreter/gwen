@@ -226,13 +226,15 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
             } mkString}
             |}"""
           }}""".stripMargin
-    if (env) {
-      s"""|env {
-          |${scopeStr.linesIterator.map(l => s"  $l").mkString("\n|")}
-          |}""".stripMargin
-    } else {
-      scopeStr
-    }
+    Formatting.stripZeroChar(
+      if (env) {
+        s"""|env {
+            |${scopeStr.linesIterator.map(l => s"  $l").mkString("\n|")}
+            |}""".stripMargin
+      } else {
+        scopeStr
+      }
+    )
   }
 
 }

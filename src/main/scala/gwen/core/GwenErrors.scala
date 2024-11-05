@@ -124,7 +124,7 @@ object Errors extends LazyLogging {
   private def at(location: String): String = if (location.length > 0) s" [at $location]" else ""
   
   /** Base exception\. */
-  class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
+  class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(Formatting.stripZeroChar(msg), cause)
 
   /** Signals a step that failed to execute. */
   class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${if(msg.endsWith(at(step.sourceRef))) "" else at(step.sourceRef)}", cause)
@@ -316,7 +316,7 @@ object Errors extends LazyLogging {
   class CopyResourceException(msg: String) extends GwenException(msg)
 
   /** Thrown when an assertion fails. */
-  class GwenAssertionError(val msg: String, val mode: AssertionMode) extends AssertionError(msg)
+  class GwenAssertionError(val msg: String, val mode: AssertionMode) extends AssertionError(Formatting.stripZeroChar(msg))
 
   /** Thrown when an accumulated assertion error is raised. */
   class AccumulatedAssertionError(error: GwenAssertionError) extends GwenAssertionError(error.msg, error.mode)

@@ -117,20 +117,15 @@ object Settings extends LazyLogging {
       // store orphaned properties so we don't lose a.b=x if a.b.c=y is loaded
       orphans.entrySet.asScala foreach { entry => 
         val name = entry.getKey.toString
-        if (!name.contains("\"")) configProps.setProperty(name, entry.getValue.toString)
+        if (!name.contains("\"")) set(name, entry.getValue.toString)
       }
 
-      names map { name => 
-        (name, name.replaceAll("\"", ""))
-      } foreach { (name, parsedName) => 
-        if (SensitiveData.isMaskedName(parsedName)) {
-          SensitiveData.parse(parsedName, get(name)) foreach { case (mKey, mValue) => 
-            configProps.setProperty(mKey, mValue)
-          }
-        }
-        else if (name != parsedName) {
-          configProps.setProperty(parsedName, resolve(config.getString(name)))
-        }
+      // store quoted or masked settings
+      names flatMap { name => 
+        val rawName = name.replaceAll("\"", "")
+        if (name != rawName || SensitiveData.isMaskedName(rawName)) Some((name, rawName)) else None
+      } foreach { (name, rawName) => 
+        set(rawName, getOpt(name).getOrElse(resolve(config.getString(name))))
       }
     }
 
@@ -172,7 +167,9 @@ object Settings extends LazyLogging {
               Option(localSettings.get.getProperty(name)) orElse {
                 sys.props.get(name) orElse {
                   Option(configProps.getProperty(name)) orElse {
-                    Try(config.getString(name)).map(v => Option(v)).getOrElse(None)
+                    Try(config.getString(name)).map(v => Option(v)).getOrElse {
+                      SensitiveData.maskedValue(name)
+                    }
                   }
                 }
               } map resolve
@@ -405,7 +402,9 @@ object Settings extends LazyLogging {
     * @param value the value to bind to the setting
     */
   def set(name: String, value: String): Unit = {
-    configProps.setProperty(name, value)
+    if (SensitiveData.parse(name, value).isEmpty) {
+      configProps.setProperty(name, value)
+    }
   }
 
   /**
@@ -416,8 +415,9 @@ object Settings extends LazyLogging {
     */
   def setLocal(name: String, value: String): Unit = {
     if (!name.startsWith("gwen.")) Errors.unsupportedLocalSetting(name)
-    val (n, v) = SensitiveData.parse(name, value).getOrElse((name, value))
-    localSettings.get.setProperty(n, v)
+    if (SensitiveData.parse(name, value).isEmpty) {
+      localSettings.get.setProperty(name, value)
+    }
   }
 
   /**

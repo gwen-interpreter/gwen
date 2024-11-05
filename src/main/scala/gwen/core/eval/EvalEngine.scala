@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     */
   override def translateStep(step: Step): UnitStep[T] = {
     step.expression match {
-      case r"""my (.+?)$name (?:property|setting) (?:is|will be) "(.*?)"$value""" =>
+      case r"""my (.+?)$name (?:property|setting) is "(.*?)"$value""" =>
         new SetProperty(name, value)
       case r"""I reset my (.+?)$name (?:property|setting)""" =>
         new ClearProperty(name)
@@ -177,31 +177,31 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
-      case r"""(.+?)$attribute (?:is|will be) defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
+      case r"""(.+?)$attribute is defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
         new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter), step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by (javascript|js|system process|unix system process|property|setting)$attrType "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute is defined by (javascript|js|system process|unix system process|property|setting)$attrType "(.+?)"$expression""" =>
         new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by file "(.+?)"$filepath""" =>
+      case r"""(.+?)$attribute is defined by file "(.+?)"$filepath""" =>
         new BindAsType(attribute, BindingType.file, step.orDocString(filepath), None, None, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$enc file "(.+?)"$filepath""" =>
+      case r"""(.+?)$attribute is defined by (.+?)$enc file "(.+?)"$filepath""" =>
         new BindAsType(attribute, BindingType.file, step.orDocString(filepath), Some(enc), None, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
+      case r"""(.+?)$attribute is defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
         new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter), step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by (.+?)$function applied to "(.*)"$arg""" =>
+      case r"""(.+?)$attribute is defined by (.+?)$function applied to "(.*)"$arg""" =>
         new BindAsType(attribute, BindingType.function, function, Some(step.orDocString(arg)), None, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute is defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
         new BindAsXPath(attribute, step.orDocString(expression), targetType, source, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by regex "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute is defined in (.+?)$source by regex "(.+?)"$expression""" =>
         new BindAsRegex(attribute, step.orDocString(expression), source, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined in (.+?)$source by json path "(.+?)"$expression""" =>
+      case r"""(.+?)$attribute is defined in (.+?)$source by json path "(.+?)"$expression""" =>
         new BindAsJsonPath(attribute, step.orDocString(expression), source, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
+      case r"""(.+?)$attribute is defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
         new BindAsSQL(attribute, dbName, selectStmt, step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
+      case r"""(.+?)$attribute is defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
         new BindAsSQL(attribute, dbName, step.orDocString(selectStmt), step.isMasked)
-      case r"""(.+?)$attribute (?:is|will be) "(.*?)"$value""" =>
+      case r"""(.+?)$attribute is "(.*?)"$value""" =>
         new BindAttribute(attribute, step.orDocString(value))
-      case r"""(.+?)$attribute (?:is|will be) (blank|empty|true|false)$literal""" =>
+      case r"""(.+?)$attribute is (blank|empty|true|false)$literal""" =>
         new BindAttribute(attribute, ValueLiteral.valueOf(literal).value)
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))

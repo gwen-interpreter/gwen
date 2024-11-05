@@ -167,9 +167,11 @@ abstract class ScopedDataStack(stackName: String) extends ImplicitValueKeys {
   def asString: String = {
     dataStack.headOption.map(scope => (scope.scope, scope.findEntries(_ => true).toList)) match {
       case Some((scope, entries)) if entries.nonEmpty =>
-        s"""|scope : "${if (stackName == scope) scope else s"$stackName:$scope"}" {
-            |${entries map { case (n, v) => s"  ${rawName(n)} : ${Option(v).map(value => s"\"$value\"").getOrElse("null")}"} mkString "\n"}
-            |}""".stripMargin
+        Formatting.stripZeroChar(
+          s"""|scope : "${if (stackName == scope) scope else s"$stackName:$scope"}" {
+              |${entries map { case (n, v) => s"  ${rawName(n)} : ${Option(v).map(value => s"\"$value\"").getOrElse("null")}"} mkString "\n"}
+              |}""".stripMargin
+        )
       case _ =>
         s"""scope : "$stackName" { }"""
     }

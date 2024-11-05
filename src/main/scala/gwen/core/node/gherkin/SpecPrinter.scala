@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2023 Branko Juric, Brady Wood
+ * Copyright 2014-2024 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,9 +54,11 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   private val inRule = ThreadLocal.withInitial[Boolean] { () => false }
 
   def prettyPrint(parent: GwenNode, node: GwenNode): String = {
-    new StringWriter() tap { sw =>
-      walk(parent, node, new PrintWriter(sw))
-    } toString
+    Formatting.stripZeroChar(
+      new StringWriter() tap { sw =>
+        walk(parent, node, new PrintWriter(sw))
+      } toString
+    )
   }
 
   override def onFeature(parent: GwenNode, feature: Feature, out: PrintWriter): PrintWriter = {
