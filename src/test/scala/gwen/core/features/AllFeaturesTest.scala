@@ -47,7 +47,23 @@ class AllFeaturesTest extends BaseTest {
       interpreter.run(options, None) match {
         case _: Passed => // excellent :)
         case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-        case _ => fail("evaluation expected but got No-op")
+        case _ => fail("evaluation of features expected but got No-op")
+      }
+
+      val feedOptions = GwenOptions(
+        batch = true,
+        reportDir = Some(new File(s"target/reports/all-features-data-feed/$level-level")),
+        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json, ReportFormat.results),
+        features = List(new File("src/test/features-data-feed")),
+        settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf")),
+        dataFile = Some(new File("src/test/resources/data/StateCodes.csv"))
+      )
+        
+      Settings.init(feedOptions.settingsFiles)
+      interpreter.run(feedOptions, None) match {
+        case _: Passed => // excellent :)
+        case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+        case _ => fail("evaluation of features-data-feed expected but got No-op")
       }
     }
 
@@ -71,8 +87,27 @@ class AllFeaturesTest extends BaseTest {
       interpreter.run(options, None) match {
         case _: Passed => // excellent :)
         case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
-        case _ => fail("evaluation expected but got No-op")
+        case _ => fail("dry run valuation of features expected but got No-op")
       }
+
+      val feedOptions = GwenOptions(
+        batch = true,
+        reportDir = Some(new File(s"target/reports/all-features-data-feed-dry-run/$level-level")),
+        reportFormats = List(ReportFormat.html, ReportFormat.junit, ReportFormat.json, ReportFormat.results),
+        features = List(new File("src/test/features-data-feed")),
+        dryRun = true,
+        parallel = true,
+        settingsFiles = List(new File("src/test/resources/gwen/bindings/bindings.conf")),
+        dataFile = Some(new File("src/test/resources/data/StateCodes.csv"))
+      )
+        
+      Settings.init(feedOptions.settingsFiles)
+      interpreter.run(feedOptions, None) match {
+        case _: Passed => // excellent :)
+        case Failed(_, error) => error.printStackTrace(); fail(error.getMessage)
+        case _ => fail("dry run evaluation of features-data-feed expected but got No-op")
+      }
+
     }
 
   }
