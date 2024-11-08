@@ -30,7 +30,7 @@ object DryValueBinding {
   def key(name: String) = s"$name/${BindingType.dryValue}"
 
   def bind(name: String, value: String, env: Environment): Unit = {
-    env.topScope.set(key(name), value)
+    env.topScope.set(key(name), value, force = true)
   }
 
   def unresolved(bindingType: BindingType): String = unresolved(bindingType.toString)
