@@ -349,6 +349,6 @@ object Errors extends LazyLogging {
   class CSVResultsReferenceException(errors: List[String]) extends GwenException(errors.map(err => s" - $err").mkString("\n"))
 
   /** Thrown when an attempt to mutate a constant binding is detected. */
-  class ImmutableModificationException(name: String, annotation: Annotations) extends GwenException(s"Cannot modify read only ${annotation.toString.toLowerCase}: $name")
+  class ImmutableModificationException(name: String, annotation: Annotations) extends GwenException(s"Cannot modify read only ${annotation.toString.toLowerCase}: ${name.takeWhile(_ != '/')}")
 
 }
