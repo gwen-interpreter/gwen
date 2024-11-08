@@ -65,7 +65,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val rule = mock[Rule]
     val step = mock[Step]
 
-    val env = new Environment(EnvState()) { }
+    val env = new Environment(EnvState()) { 
+      override def getBoundValue(name: String): String = topScope.get(name)
+    }
 
     when(featureSpec.feature).thenReturn(feature)
     when(featureSpec.specFile).thenReturn(Some(new File("spec.feature")))
@@ -164,7 +166,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val stepDefUuid1 = UUIDGenerator.nextId
     val stepDefUuid2 = UUIDGenerator.nextId
 
-    val env = new Environment(EnvState()) { }
+    val env = new Environment(EnvState()) {
+      override def getBoundValue(name: String): String = topScope.get(name)
+    }
 
     when(step1.evalStatus).thenReturn(Passed(1))
     when(step2.evalStatus).thenReturn(Passed(1))
@@ -274,7 +278,9 @@ class NodeEventsTest extends BaseTest with Matchers with MockitoSugar {
     val stepDef1 = mock[Scenario]
     val stepDef2 = mock[Scenario]
 
-    val env = new Environment(EnvState()) { }
+    val env = new Environment(EnvState()) {
+      override def getBoundValue(name: String): String = topScope.get(name)
+    }
 
     val featureSpecUuid = UUIDGenerator.nextId
     val featureResultUuid = UUIDGenerator.nextId

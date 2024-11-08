@@ -21,6 +21,7 @@ import gwen.core.init.InitOption
 import gwen.core.node.gherkin.Tag
 import gwen.core.node.gherkin.TagFilter
 import gwen.core.report.ReportFormat
+import gwen.core.result.ResultFile
 import gwen.core.state.StateLevel
 
 import scopt.OptionParser
@@ -80,6 +81,8 @@ case class GwenOptions(
     formatFiles: List[File] = Nil) extends GwenInfo {
 
   sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
+
+  lazy val resultFiles: List[ResultFile] = GwenSettings.`gwen.report.results.files`(this)
 
   def interpolate(source: String): String = {
     val options = GwenOptions.this

@@ -93,7 +93,7 @@ abstract class ScopedDataStack(stackName: String) extends ImplicitValueKeys {
     * @return the value if it is found (or throws error)
     */
   def get(name: String): String =
-    getOpt(name).getOrElse(Errors.unboundAttributeError(name, stackName))
+    getOpt(name).getOrElse(Errors.unboundReferenceError(name, stackName))
 
   /**
     * Finds and retrieves an optional data bound in the current stack.

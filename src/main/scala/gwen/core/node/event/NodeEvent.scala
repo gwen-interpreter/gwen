@@ -18,11 +18,12 @@ package gwen.core.node.event
 
 import gwen.core.node.GwenNode
 import gwen.core.node.NodeChain
-import gwen.core.state.TopScope
+import gwen.core.state.Environment
 
 import java.{util => ju}
+import gwen.core.state.Environment
 
-case class NodeEvent[T <: GwenNode](phase: NodePhase, callChain: NodeChain, source: T, topScope: TopScope) {
+case class NodeEvent[T <: GwenNode](phase: NodePhase, callChain: NodeChain, source: T, env: Environment) {
   val time: ju.Date = ju.Calendar.getInstance.getTime
   override def toString: String = 
     s"${phase}${source.nodeType} $time ${this.getClass.getSimpleName}[${source.getClass.getSimpleName}]($source,${callChain.previous.uuid},${source.uuid})"

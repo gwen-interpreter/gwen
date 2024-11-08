@@ -73,7 +73,7 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   private[core] def resolveParam(name: String): String = resolveStrict(name)
 
   private final def resolveStrict(name: String): String = {
-    resolver.apply(name) getOrElse { Errors.unboundAttributeError(name) }
+    resolver.apply(name) getOrElse { Errors.unboundReferenceError(name) }
   }
 
   private final def resolveLenient(name: String): String = {

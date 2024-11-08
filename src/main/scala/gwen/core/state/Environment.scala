@@ -37,6 +37,8 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   private var state = initialState
 
+  def getBoundValue(name: String): String
+
   def stateLevel: StateLevel = state.stateLevel
   def stepDefs: Map[String, Scenario] = state.getStepDefs
   def paramScope: ScopedDataStack = topScope.paramScope

@@ -242,7 +242,7 @@ class NodeEventDispatcher extends LazyLogging with ImplicitValueKeys {
       (dispatch: (NodeEventListener, NodeEvent[T]) => Unit): Option[NodeEvent[T]] = {
 
     if (!listener.isPaused) {
-      val event = NodeEvent(phase, callChain, source, env.topScope)
+      val event = NodeEvent(phase, callChain, source, env)
       logger.debug(s"Dispatching event to ${listener.name}: $event")
       dispatch(listener, event)
       Some(event)

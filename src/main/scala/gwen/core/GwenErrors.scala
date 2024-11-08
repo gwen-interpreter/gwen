@@ -49,11 +49,11 @@ object Errors extends LazyLogging {
   def illegalStepError(msg: String) = throw new IllegalStepException(msg)
   def illegalConditionError(condition: String) = throw new IllegalConditionException(condition)
   def disabledStepError(step: Step) = throw new DisabledStepException(step)
-  def unboundAttributeError(name: String) = throw new UnboundReferenceException(name, None, None)
-  def unboundAttributeError(name: String, cause: Throwable) = throw new UnboundReferenceException(name, None, Some(cause))
-  def unboundAttributeError(name: String, scope: String) = throw new UnboundReferenceException(name, Some(scope), None)
-  def unboundAttributeError(name: String, scope: Option[String], cause: Option[Throwable]) = throw new UnboundReferenceException(name, scope, cause)
-  def unboundBooleanAttributeError(name: String, value: String) = throw new UnboundBooleanReferenceException(name, value)
+  def unboundReferenceError(name: String) = throw new UnboundReferenceException(name, None, None)
+  def unboundReferenceError(name: String, cause: Throwable) = throw new UnboundReferenceException(name, None, Some(cause))
+  def unboundReferenceError(name: String, scope: String) = throw new UnboundReferenceException(name, Some(scope), None)
+  def unboundReferenceError(name: String, scope: Option[String], cause: Option[Throwable]) = throw new UnboundReferenceException(name, scope, cause)
+  def unboundBooleanReferenceError(name: String, value: String) = throw new UnboundBooleanReferenceException(name, value)
   def missingSettingError(name: String) = throw new MissingSettingException(name)
   def settingsNotFound(files: List[File]) = throw new SettingsNotFoundException(files)
   def unsupportedMaskedPropertyError(msg: String) = throw new UnsupportedMaskedPropertyException(msg)
@@ -118,6 +118,8 @@ object Errors extends LazyLogging {
   def malformedDataSourceError(dataFile: File, cause: Throwable) = throw new MalformedDataSourceException(dataFile, cause)
   def illegalDurationAnnotationError(targetName: String, annotation: String) = throw new IllegalDurationAnnotationExcpetion(targetName, annotation)
   def immutableModificationError(name: String, annotation: Annotations) = throw new ImmutableModificationException(name, annotation)
+  def resultsFileError(error: String) = resultsFileErrors(List(error))
+  def resultsFileErrors(errors: List[String]) = throw new ResultsFileException(errors)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -345,8 +347,8 @@ object Errors extends LazyLogging {
   /** Thrown when an illegal duration pattern is detected in a Wait or Delay annotation. */
   class IllegalDurationAnnotationExcpetion(targetName: String, annotation: String) extends GwenException(s"Illegal or malformed $annotation annotation. Valid examples include: @${targetName}('10s'), @${targetName}('1m30s'), @${targetName}('2m')")
 
-  /** Thrown when an invalid CSV result field or file reference detected. */
-  class CSVResultsReferenceException(errors: List[String]) extends GwenException(errors.map(err => s" - $err").mkString("\n"))
+  /** Thrown when an invalid result field or file reference detected. */
+  class ResultsFileException(val errors: List[String]) extends GwenException(errors.map(err => if (errors.size > 1 ) s" - $err" else err).mkString("\n"))
 
   /** Thrown when an attempt to mutate a constant binding is detected. */
   class ImmutableModificationException(name: String, annotation: Annotations) extends GwenException(s"Cannot modify read only ${annotation.toString.toLowerCase}: ${name.takeWhile(_ != '/')}")

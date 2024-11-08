@@ -31,13 +31,13 @@ class DataRecordBinding[T <: EvalContext](name: String, ctx: T) extends Binding[
           record.getOpt(name) getOrElse {
             ctx.topScope.getOpt(name) getOrElse {
               Settings.getOpt(name) getOrElse {
-                Errors.unboundAttributeError(name)
+                Errors.unboundReferenceError(name)
               }
             }
           }
         }
       case _ => 
-        Errors.unboundAttributeError(name)
+        Errors.unboundReferenceError(name)
     }
   }
 

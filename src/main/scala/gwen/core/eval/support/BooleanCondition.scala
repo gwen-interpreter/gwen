@@ -52,7 +52,7 @@ class BooleanCondition[T <: EvalContext](condition: String, negate: Boolean, tim
         if (binding.isInstanceOf[SimpleBinding[T]] || binding.isInstanceOf[DataRecordBinding[T]]) {
           val v = binding.resolve()
           if (!Booleans.isBoolean(v) && !isDryRunValue(v)) {
-            Errors.unboundBooleanAttributeError(name, v)
+            Errors.unboundBooleanReferenceError(name, v)
           }
         }
       }

@@ -100,7 +100,7 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     ctx.topScope.getOpt(key) map { value => 
       resolver(value)
     } getOrElse {
-      Errors.unboundAttributeError(name)
+      Errors.unboundReferenceError(name)
     }
   }
 

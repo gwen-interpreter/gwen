@@ -22,7 +22,7 @@ import gwen.core.behavior.FeatureMode
 import gwen.core.node.gherkin.Tag
 import gwen.core.state.StateLevel
 import gwen.core.report.ReportFormat
-import gwen.core.report.results.ResultFile
+import gwen.core.result.ResultFile
 
 import scala.util.chaining._
 import scala.util.Try

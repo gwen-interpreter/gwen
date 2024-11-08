@@ -29,11 +29,11 @@ class DataTableBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T
         table.tableScope.getOpt(name) getOrElse {
           ctx.topScope.getOpt(name) getOrElse {
             Settings.getOpt(name) getOrElse {
-              Errors.unboundAttributeError(name)
+              Errors.unboundReferenceError(name)
             }
           }
         }
-      case _ => Errors.unboundAttributeError(name)
+      case _ => Errors.unboundReferenceError(name)
     }
   }
 

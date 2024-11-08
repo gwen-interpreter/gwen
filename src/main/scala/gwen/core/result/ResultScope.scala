@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package gwen.core.report.results
+package gwen.core.result
 
 import gwen.core._
 import gwen.core.node.NodeType

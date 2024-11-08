@@ -14,20 +14,43 @@
  * limitations under the License.
  */
 
-package gwen.core.report.results
+package gwen.core.result
 
-import gwen.core.Errors
-import gwen.core.FileIO
-import gwen.core.GwenOptions
-import gwen.core.GwenSettings
+import gwen.core._
 import gwen.core.data.CsvDataSource
+import gwen.core.state.Environment
 import gwen.core.status.StatusKeyword
 
 import scala.util.Try
 
 import java.io.File
+import gwen.core.state.Environment
 
-case class ResultFile(id: String, file: File, scope: Option[ResultScope], status: Option[StatusKeyword], fields: List[ResultField])
+case class ResultFile(id: String, file: File, scope: Option[ResultScope], status: Option[StatusKeyword], fields: List[ResultField]) {
+
+  def logRecord(env: Environment): Unit = {
+    var errors: List[String] = Nil
+    val record = fields map { field =>
+      val value = {
+        Try(env.getBoundValue(field.ref)) getOrElse {
+          field.defaultValue getOrElse {
+            errors = (errors ++ List(s"Unbound ${field.name} field${ if (field.name != field.ref) s" reference: ${field.ref}" else ""} in ${file} results file id ${id}"))
+            s"Unbound ref: ${field.ref}"
+          }
+        }
+      }
+      if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
+      else value
+    }
+    this.synchronized {
+      file.appendLine(record.mkString(","))
+    }
+    if (errors.nonEmpty) {
+      Errors.resultsFileErrors(errors)
+    }
+  }
+
+}
 
 object ResultFile {
 

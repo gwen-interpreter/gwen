@@ -104,7 +104,7 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
     * @return the attribute value if found (throws error otherwise)
     */
   def get(name: String): String =
-    getOpt(name).getOrElse(Errors.unboundAttributeError(name, scope))
+    getOpt(name).getOrElse(Errors.unboundReferenceError(name, scope))
 
   /**
     * Finds and retrieves all attribute values from the scope by name.

@@ -84,7 +84,7 @@ class BindingResolver[T <: EvalContext](ctx: T) {
           Settings.getOpt(name) map { _ => 
             new SettingsBinding(name, ctx)
           } getOrElse {
-            Errors.unboundAttributeError(name)
+            Errors.unboundReferenceError(name)
           }
         }
       }

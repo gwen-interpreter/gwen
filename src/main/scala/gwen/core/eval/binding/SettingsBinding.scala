@@ -24,7 +24,7 @@ class SettingsBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T,
 
   override def resolve(): String = {
     Settings.getOpt(name) getOrElse {
-      Errors.unboundAttributeError(name)
+      Errors.unboundReferenceError(name)
     }
   }
 

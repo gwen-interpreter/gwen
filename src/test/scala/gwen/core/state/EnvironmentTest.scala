@@ -480,6 +480,8 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
 
   }
   
-  private def newEnv(stateLevel: StateLevel): Environment = new Environment(EnvState(stateLevel)) { }
+  private def newEnv(stateLevel: StateLevel): Environment = new Environment(EnvState(stateLevel)) { 
+    override def getBoundValue(name: String): String = topScope.get(name)
+  }
 
 }

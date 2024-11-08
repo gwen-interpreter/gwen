@@ -26,8 +26,9 @@ import gwen.core.node.gherkin._
 import gwen.core.report.NoopReportGenerator
 import gwen.core.report.ReportFormat
 import gwen.core.report.ReportResult
+import gwen.core.result.ResultFile
 import gwen.core.result.SpecResult
-import gwen.core.state.TopScope
+import gwen.core.state.Environment
 import gwen.core.status.EvalStatus
 
 import com.typesafe.scalalogging.LazyLogging
@@ -48,7 +49,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     with NodeEventListener("Results Reporter") 
     with LazyLogging with ImplicitValueKeys {
 
-  val resultFiles: List[ResultFile] = GwenSettings.`gwen.report.results.files`(options)
+  val resultFiles: List[ResultFile] = options.resultFiles
   var errors: List[String] = Nil
 
   override def init(lifecycle: NodeEventDispatcher): Unit = { 
@@ -62,14 +63,14 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): ReportResult = { 
     lifecycle.removeListener(this)
     val resources = resultFiles.map(_.file.getCanonicalPath)
-    val error = if (errors.nonEmpty) Some(new Errors.CSVResultsReferenceException(errors)) else None
+    val error = if (errors.nonEmpty) Some(new Errors.ResultsFileException(errors)) else None
     ReportResult(ReportFormat.results, resources, error)
   }
 
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     val result = event.source 
     filterFiles(result.spec, result.spec.feature.tags) foreach { resFile => 
-      report(resFile, result.evalStatus, event.topScope)
+      report(resFile, result.evalStatus, event.env)
     }
   }
 
@@ -77,7 +78,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val rule = event.source
     if (rule.scenarios.nonEmpty) {
       filterFiles(rule, rule.tags) foreach { resFile => 
-        report(resFile, rule.evalStatus, event.topScope)
+        report(resFile, rule.evalStatus, event.env)
       }
     }
   }
@@ -86,7 +87,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val scenario = event.source
     if (!scenario.isOutline && scenario.steps.nonEmpty) {
       filterFiles(scenario, scenario.tags) foreach { resFile => 
-        report(resFile, scenario.evalStatus, event.topScope)
+        report(resFile, scenario.evalStatus, event.env)
       }
     }
   }
@@ -95,7 +96,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val examples = event.source
     if (examples.scenarios.nonEmpty) {
       filterFiles(examples, examples.tags) foreach { resFile => 
-        report(resFile, examples.evalStatus, event.topScope)
+        report(resFile, examples.evalStatus, event.env)
       }
     }
   }
@@ -104,7 +105,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     val stepDef = event.source
     if (stepDef.isStepDefCall) {
       filterFiles(stepDef, stepDef.tags) foreach { resFile => 
-        report(resFile, stepDef.evalStatus, event.topScope)
+        report(resFile, stepDef.evalStatus, event.env)
       }
     }
   }
@@ -133,22 +134,12 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     resultFiles.filter(resFile => ids.contains(resFile.id))
   }
 
-  private def report(resFile: ResultFile, evalStatus: EvalStatus, topScope: TopScope): Unit = {
+  private def report(resFile: ResultFile, evalStatus: EvalStatus, env: Environment): Unit = {
     if (resFile.status.map(_ == evalStatus.keyword).getOrElse(true)) {
-      val record = resFile.fields map { field =>
-        val value = {
-          topScope.getOpt(field.ref) getOrElse {
-            field.defaultValue getOrElse {
-              addError(s"Unbound ${field.name} field${ if (field.name != field.ref) s" ref ${field.ref}" else ""} in results file: ${resFile.file}")
-              s"Unbound ref: ${field.ref}"
-            }
-          }
-        }
-        if (value.trim != "") Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
-        else value
-      }
-      resFile.synchronized {
-        resFile.file.appendLine(record.mkString(","))
+      try {
+        resFile.logRecord(env)
+      } catch {
+        case e: Errors.ResultsFileException => e.errors.foreach(addError)
       }
     }
   }

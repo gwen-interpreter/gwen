@@ -65,7 +65,7 @@ class DataLookup[T <: EvalContext](dataName: String, name: String, filepath: Opt
                 else if (name.startsWith(dataSource.lookupPrefix)) name.replace(dataSource.lookupPrefix, DataSource.lookupPrefix)
                 else throw e
               }
-              Errors.unboundAttributeError(n, e.scope, e.cause)
+              Errors.unboundReferenceError(n, e.scope, e.cause)
             }
         }
       }

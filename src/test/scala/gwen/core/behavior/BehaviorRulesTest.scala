@@ -49,6 +49,7 @@ class BehaviorRulesTest extends BaseTest with Matchers with GherkinParser with B
 
     val env = new Environment(EnvState()) {
         topScope.pushObject("spec.file", featureFile)
+        override def getBoundValue(name: String): String = topScope.get(name)
     }
 
     val featureFile = new File(getClass.getResource("/gwen/evalrules/InlinedStepDef.feature").getFile)
