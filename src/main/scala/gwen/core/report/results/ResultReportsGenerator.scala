@@ -137,8 +137,8 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
     if (resFile.status.map(_ == evalStatus.keyword).getOrElse(true)) {
       val record = resFile.fields map { field =>
         val value = {
-          topScope.getOpt(field.ref).getOrElse {
-            if (field.optional) "" else { 
+          topScope.getOpt(field.ref) getOrElse {
+            field.defaultValue getOrElse {
               addError(s"Unbound ${field.name} field${ if (field.name != field.ref) s" ref ${field.ref}" else ""} in results file: ${resFile.file}")
               s"Unbound ref: ${field.ref}"
             }

@@ -20,7 +20,6 @@ import gwen.core.Errors
 import gwen.core.FileIO
 import gwen.core.GwenOptions
 import gwen.core.GwenSettings
-import gwen.core.Settings
 import gwen.core.data.CsvDataSource
 import gwen.core.status.StatusKeyword
 
@@ -43,8 +42,11 @@ object ResultFile {
   def apply(id: String, fileSettings: Map[String, String], options: GwenOptions): ResultFile = {
     val fileKey = s"${ResultFile.SettingsKey}.$id"
     val scope = ResultScope.resolve(s"$fileKey.scope")
-    val status = Settings.getOpt(s"$fileKey.status").map(StatusKeyword.valueOf)
-    val f = Settings.getFile(options.interpolate(s"$fileKey.file"))
+    val status = fileSettings.get(s"$fileKey.status").map(StatusKeyword.valueOf)
+    val fSetting = options.interpolate(s"$fileKey.file")
+    val f = fileSettings.get(fSetting) map { path => new File(path) } getOrElse {
+      Errors.missingSettingError(fSetting)
+    }
     val file = if (f.getParent != null) f else new File(new File(options.reportDir.getOrElse(GwenSettings.`gwen.outDir`), "results"), f.getName)
     val fieldSettings = fileSettings.filter(_._1.startsWith(s"$fileKey.fields."))
     if (fieldSettings.isEmpty) Errors.missingSettingError(s"$fileKey.fields")
@@ -53,19 +55,19 @@ object ResultFile {
       val fMap = fieldSettings.filter((n, _) => n.startsWith(key))
       fMap.map(s => s._1.substring(s._1.lastIndexOf(".") + 1)).foreach(ResultField.validateSettingName)
       val ref = fMap.collectFirst { case (n, v) if n.endsWith(".ref") => (v, options.interpolate(v)) }
-      val optional = fMap.collectFirst { case (n, _) if n.endsWith(".optional") => Settings.getBoolean(n) } getOrElse false
-      val excludes = fMap.collectFirst { case (n, _) if n.endsWith(".excludes") => Settings.get(n) } map { v => v.split(",").toList.map(_.trim) } getOrElse Nil
+      val defaultValue = fMap.collectFirst { case (n, _) if n.endsWith(".defaultValue") => fileSettings(n) }
+      val excludes = fMap.collectFirst { case (n, _) if n.endsWith(".excludes") => fileSettings(n) } map { v => v.split(",").toList.map(_.trim) } getOrElse Nil
       fMap.collectFirst { case (n, v) if n.endsWith(".field") => v } map { 
-        f => List(ResultField(f, ref.map(_._2).getOrElse(f), optional)) 
+        f => List(ResultField(f, ref.map(_._2).getOrElse(f), defaultValue)) 
       } getOrElse {
-        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, optional))
+        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, defaultValue))
       } flatMap { field => 
         if (field.name == "*") {
           val fileOpt = if (field.ref == "") options.dataFile else Some(new File(field.ref))
           fileOpt map { file =>
             if (file.exists) {
               if (FileIO.isCsvFile(file)) {
-                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.optional))
+                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.defaultValue))
               } else if (!ref.map(_._1.contains(s"$$<{${GwenOptions.SettingsKey.dataFile}}>")).getOrElse(false)) {
                 Errors.unsupportedFileError(file, "field reference file", "csv")
               } else {

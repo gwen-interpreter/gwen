@@ -23,7 +23,7 @@ import java.io.File
 
 import scala.util.Try
 
-case class ResultField(name: String, ref: String, optional: Boolean)
+case class ResultField(name: String, ref: String, defaultValue: Option[String])
 
 object ResultField {
   def validateSettingName(name: String): Unit = {
@@ -34,4 +34,4 @@ object ResultField {
 }
 
 enum ResultFieldAtts:
-  case field, ref, optional, excludes
+  case field, ref, defaultValue, excludes
