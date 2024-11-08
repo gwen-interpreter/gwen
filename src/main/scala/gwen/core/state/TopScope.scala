@@ -149,7 +149,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     } orElse(Some(JSONArray.toJSONString(Nil.asJava)))
     else {
       deprecatedImplicitOpt(name) flatMap { newName => 
-        Deprecation.log("Implicit value reference", name, Some(newName))
+        Deprecation.log("Implicit value reference", name.takeWhile(_ != '/'), Some(newName))
         getImplicitOpt(newName)
       }
     }
