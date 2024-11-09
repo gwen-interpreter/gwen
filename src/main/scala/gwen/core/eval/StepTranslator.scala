@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Branko Juric, Brady Wood
+ * Copyright 2021-2024 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package gwen.core.eval
 
-import gwen.core.eval.lambda.UnitStep
-import gwen.core.eval.lambda.CompositeStep
+import gwen.core.eval.action.UnitStepAction
+import gwen.core.eval.action.CompositeStepAction
 import gwen.core.node.gherkin.Step
 
 /**
@@ -29,19 +29,19 @@ trait StepTranslator[T <: EvalContext] {
   engine: EvalEngine[T] =>
 
   /**
-    * Must be implemented to translate a composite DSL step into an executable operation.
+    * Must be implemented to translate a composite DSL step into an executable action.
     *
     * @param step the step to translate
-    * @return a function that performs the composite step operation and returns it in evaluated form
+    * @return a function that performs the composite step action and returns it in evaluated form
     */
-  def translateCompositeStep(step: Step): Option[CompositeStep[T]]
+  def translateCompositeStep(step: Step): Option[CompositeStepAction[T]]
 
   /**
-    * Must be implemented to translate a DSL step into an executable operation.
+    * Must be implemented to translate a DSL step into an executable action.
     *
     * @param step the step to translate
-    * @return a step operation that throws an exception on failure
+    * @return a step action
     */
-  def translateStep(step: Step): UnitStep[T]
+  def translateStep(step: Step): UnitStepAction[T]
   
 }

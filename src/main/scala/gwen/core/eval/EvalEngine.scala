@@ -20,9 +20,9 @@ import gwen.core._
 import gwen.core.eval.FileComparisonOperator
 import gwen.core.eval.binding._
 import gwen.core.eval.engine.UnitEngine
-import gwen.core.eval.lambda._
-import gwen.core.eval.lambda.composite._
-import gwen.core.eval.lambda.unit._
+import gwen.core.eval.action._
+import gwen.core.eval.action.composite._
+import gwen.core.eval.action.unit._
 import gwen.core.eval.support.XMLNodeType
 import gwen.core.node.event.NodeEventDispatcher
 import gwen.core.node.gherkin._
@@ -60,7 +60,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     * @param step the step to translate
     * @return an optional function that performs the composite step operation and returns it in evaluated form
     */
-  override def translateCompositeStep(step: Step): Option[CompositeStep[T]] = {
+  override def translateCompositeStep(step: Step): Option[CompositeStepAction[T]] = {
     step.expression match {
       case r"""(.+?)$doStep for each data record""" =>
         Some(new ForEachTableRecord(doStep, this))
@@ -121,7 +121,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
     * @param step the step to translate
     * @return a step operation that throws an exception on failure
     */
-  override def translateStep(step: Step): UnitStep[T] = {
+  override def translateStep(step: Step): UnitStepAction[T] = {
     step.expression match {
       case r"""my (.+?)$name (?:property|setting) is "(.*?)"$value""" =>
         new SetProperty(name, value)
