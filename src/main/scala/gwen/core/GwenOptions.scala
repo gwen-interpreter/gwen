@@ -125,7 +125,7 @@ case class GwenOptions(
   /**
     * Gets the command string used to invoke gwen.
     */
-  def commandString: String = s"${shebang} ${args.map(_.mkString(" ")).getOrElse("")}"
+  def commandString: String = s"gwen ${args.map(_.mkString(" ")).getOrElse("")}"
 
 }
 

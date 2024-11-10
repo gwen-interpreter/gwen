@@ -89,6 +89,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   }
 
   def init(options: GwenOptions): GwenOptions = {
+    System.out.println(s"Launching: ${options.commandString}")
+    System.out.println()
     val profile = options.profile
     logger.info("Initialising settings")
     Settings.init(profile.settingsFile.toList ++ options.settingsFiles)
@@ -194,8 +196,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
          |
          |""".stripMargin + intro + engine.implName + " v" + engine.implVersion + engine.noticeMsg.map(msg => s"${System.lineSeparator}$msg").getOrElse("") + """|
          |gweninterpreter.org
-         |
-         |""".stripMargin + shebang + " " + args.mkString(" ") + """
          |""".stripMargin
       )
 

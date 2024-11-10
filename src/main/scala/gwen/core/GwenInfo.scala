@@ -24,5 +24,4 @@ trait GwenInfo {
   lazy val releaseNotesUrl: Option[String] = if (!implVersion.endsWith("-SNAPSHOT")) Some(s"$implHome/releases/tag/v$implVersion") else None
   lazy val gwenHome: String = "https://gweninterpreter.org"
   lazy val noticeMsg: Option[String] = None
-  lazy val shebang: String = "#!gwen"
 }
