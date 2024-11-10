@@ -302,7 +302,7 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
     pw.println(s"${Formatting.leftPad("Finished", widths(0))}  $finished")
     pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
     pw.println()
-    printStatus("  ", evalStatus, message, withIcon = false, withStatusIcon = true, pw)
+    printStatus("", evalStatus, message, withIcon = false, withStatusIcon = true, pw)
     if (deep) pw.println()
     sw.toString
   }

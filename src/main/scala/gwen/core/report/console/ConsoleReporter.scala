@@ -299,6 +299,8 @@ class ConsoleReporter(options: GwenOptions)
         }
       }
       System.out.println()
+      System.out.println(printer.printStatus("", summary.evalStatus, None, withIcon = true, withStatusIcon = true))
+      System.out.println()
     }
   }
 
