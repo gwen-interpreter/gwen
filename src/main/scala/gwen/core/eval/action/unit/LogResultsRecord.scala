@@ -36,10 +36,10 @@ class LogResultsRecord[T <: EvalContext](resultsFileId: String) extends UnitStep
         Errors.resultsFileError(s"No such result file: gwen.reports.results.files.$resultsFileId setting not found")
       }
       resultsFile.scope foreach { scope =>
-        Errors.resultsFileError(s"Cannot explicitly write to results file (id: $resultsFileId) defined with $scope scope")
+        Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having scope: ${scope.nodeType}${scope.nodeName.map(n => s": $n").getOrElse("")}")
       }
       resultsFile.status foreach { status =>
-        Errors.resultsFileError(s"Cannot explicitly write to results file (id: $resultsFileId) defined with $status status")
+        Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having status: $status")
       }
       resultsFile.logRecord(ctx)
     }
