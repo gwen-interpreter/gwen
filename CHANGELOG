@@ -1,6 +1,6 @@
 4.0.0
 =====
-10 November 2024
+11 November 2024
 - Introduce profiles to support multiple launch configurations
   - `-p|--profile` option
 - Require Java 17+ instead of Java 11+
@@ -11,15 +11,16 @@
 - Change ignore placeholder syntax in template matcher from `!{}` to `@{*}`
 - Add `@{**}` placeholder to template matcher to support ignoring multiple lines
 - Print gwen launch arguments on startup
+- Synchronise system process bindings when resolving value from output stream
 - Internal engine enhancements
-  - Replace internal stack of data caches with a single data cache
+  - Replace redundant multi scoped data caches with one single scoped cache
   - Manage settings internally without exposing them as system properties
-  - Manage implicits at lifecycle level and use scoped boundaries
-  - Renamed step function layer from lambda to action
+  - Manage implicits at lifecycle level using boundary level caching
+  - Rename step lambdas to step actions
 - Update dependencies
   - Update scala from v3.5.0 to v3.5.2
   - Update gherkin from v29.0.0 to v30.0.0
-  - Update jlink from v3.26.3 to v3.27.1
+  - Update jline from v3.26.3 to v3.27.1
   - Update logback-core from v1.5.9 to v1.5.12
   - Update logback-classic from v1.5.9 to v1.5.12
   - Update jackson-databind from v2.17.2 to v2.18.1

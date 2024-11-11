@@ -27,6 +27,8 @@ import scala.util.Try
 import gwen.core.Errors
 
 object SysprocBinding {
+
+  private object Lock
   
   def key(name: String) = s"$name/${BindingType.sysproc}"
   def delimiterKey(name: String) = s"$name/delimiter"
@@ -60,7 +62,7 @@ class SysprocBinding[T <: EvalContext](name: String, ctx: T) extends Binding[T, 
     bindIfLazy(
       lookupValue(key) { sysproc => 
         ctx.evaluate(resolveDryValue(s"${if (unix) BindingType.unixsysproc else BindingType.sysproc}${delimiter.map(d => s", delimiter: $d").getOrElse("")}")) {
-          val value = ctx.callSysProc(sysproc, delimiter, unix)
+          val value = SysprocBinding.Lock.synchronized { ctx.callSysProc(sysproc, delimiter, unix) }
           val masked = ctx.topScope.getOpt(maskedKey).map(_.toBoolean).getOrElse(false)
           if (masked) SensitiveData.mask(name, value) else value
         }
