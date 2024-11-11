@@ -12,6 +12,7 @@
 - Add `@{**}` placeholder to template matcher to support ignoring multiple lines
 - Print gwen launch arguments on startup
 - Synchronise system process bindings when resolving value from output stream
+- Only log results file records if results format is sepcified in launch options
 - Internal engine enhancements
   - Replace redundant multi scoped data caches with one single scoped cache
   - Manage settings internally without exposing them as system properties

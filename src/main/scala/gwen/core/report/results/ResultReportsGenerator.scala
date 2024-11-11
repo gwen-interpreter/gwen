@@ -62,7 +62,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
 
   override def close(lifecycle: NodeEventDispatcher, evalStatus: EvalStatus): ReportResult = { 
     lifecycle.removeListener(this)
-    val resources = resultFiles.map(_.file.getCanonicalPath)
+    val resources = resultFiles.filter(_.file.exists).map(_.file.getCanonicalPath)
     val error = if (errors.nonEmpty) Some(new Errors.ResultsFileException(errors)) else None
     ReportResult(ReportFormat.results, resources, error)
   }

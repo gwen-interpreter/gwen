@@ -24,7 +24,6 @@ import gwen.core.status.StatusKeyword
 import scala.util.Try
 
 import java.io.File
-import gwen.core.state.Environment
 
 case class ResultFile(id: String, file: File, scope: Option[ResultScope], status: Option[StatusKeyword], fields: List[ResultField]) {
 

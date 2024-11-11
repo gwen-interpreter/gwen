@@ -23,25 +23,29 @@ import gwen.core.eval.action.UnitStepAction
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Step
 import gwen.core.result.ResultFile
-
-import scala.util.chaining._
+import gwen.core.report.ReportFormat
+import gwen.core.status.Passed
 
 import java.io.File
 
 class LogResultsRecord[T <: EvalContext](resultsFileId: String) extends UnitStepAction[T] {
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
-    step tap { _ =>
-      checkStepRules(step, BehaviorType.Action, ctx)
-      val resultsFile = ctx.options.resultFiles.find(_.id == resultsFileId) getOrElse {
-        Errors.resultsFileError(s"No such result file: gwen.reports.results.files.$resultsFileId setting not found")
-      }
-      resultsFile.scope foreach { scope =>
-        Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having scope: ${scope.nodeType}${scope.nodeName.map(n => s": $n").getOrElse("")}")
-      }
-      resultsFile.status foreach { status =>
-        Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having status: $status")
-      }
+    val start = System.nanoTime
+    checkStepRules(step, BehaviorType.Action, ctx)
+    val resultsFile = ctx.options.resultFiles.find(_.id == resultsFileId) getOrElse {
+      Errors.resultsFileError(s"No such result file: gwen.reports.results.files.$resultsFileId setting not found")
+    }
+    resultsFile.scope foreach { scope =>
+      Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having scope: ${scope.nodeType}${scope.nodeName.map(n => s": $n").getOrElse("")}")
+    }
+    resultsFile.status foreach { status =>
+      Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having status: $status")
+    }
+    if (ctx.options.reportFormats.contains(ReportFormat.results)) {
       resultsFile.logRecord(ctx)
+      step
+    } else {
+      step.copy(withEvalStatus = Passed(System.nanoTime - start, abstained = true))
     }
   }
 
