@@ -43,6 +43,7 @@ import java.io.PrintStream
 import java.net.URL
 import java.util.{ logging => jul}
 import java.util.Date
+import gwen.core.node.FeatureStream
 
 
 /**
@@ -95,7 +96,11 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     logger.info("Initialising settings")
     Settings.init(profile.settingsFile.toList ++ options.settingsFiles)
     (if (options.repl && options.features.nonEmpty) {
-      options.copy(features = Nil)
+      val featureStream = new FeatureStream(options.metas, options.tagFilter)
+      options.copy(
+        metas = featureStream.readAll(options.features, options.dataFile).flatten.toList.flatMap(_.metaFiles),
+        features = Nil
+      )
     } else {
       options
     }) tap { opts => 

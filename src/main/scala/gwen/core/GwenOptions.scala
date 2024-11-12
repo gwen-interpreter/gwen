@@ -351,7 +351,7 @@ object GwenOptions {
         options.dryRun,
         options.dataFile,
         FileIO.appendFile(options.metas, Settings.UserMeta),
-        if (options.repl) Nil else options.features,
+        options.features,
         Some(args),
         options.init,
         options.initOptions,

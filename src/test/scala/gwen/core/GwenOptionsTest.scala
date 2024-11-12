@@ -189,10 +189,10 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
   }
 
-  "Options with repl and batch option and files " should "fail" in {
+  "Options with repl and batch option and files " should "ignore batch" in {
     parseOptions(Array("-b", "--repl", "."), noProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, repl = true, batch = false)
+        assertOptions(options, repl = true, batch = false, features = List(new File(".")))
 
       }
       case Failure(error) =>
@@ -200,7 +200,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     }
     parseOptions(Array("--repl", "--batch", "."), noProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, repl = true, batch = false)
+        assertOptions(options, repl = true, batch = false, features = List(new File(".")))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
