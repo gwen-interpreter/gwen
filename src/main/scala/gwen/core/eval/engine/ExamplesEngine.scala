@@ -45,7 +45,7 @@ import java.io.File
 /**
   * Examples evaluation engine.
   */
-trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
+trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging with ImplicitValueKeys {
   engine: EvalEngine[T] =>
 
   def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {   
@@ -105,8 +105,9 @@ trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
         }
         val whereFilter = where.map(ctx.interpolateParams).map(ctx.interpolateLenient)
         val examplesTag = tag.copy(withValue = Some(filepath))
-        val file = new File(filepath)
-        if (!file.exists()) Errors.missingOrInvalidImportFileError(examplesTag)
+        val file = FileIO.findFile(new File(ctx.topScope.get(`gwen.feature.file.path`)).getParent, filepath) getOrElse {
+          Errors.missingImportFileError(examplesTag)
+        }
         val dataSource = DataSource(file)
         val allRecords = dataSource.table
         val records = if(ctx.options.dryRun) {

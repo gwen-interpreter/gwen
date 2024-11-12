@@ -208,6 +208,7 @@ extension [F <: File](file: F) {
 
 object FileIO {
   val userDir: Option[File] = sys.props.get("user.home").map(d => new File(d))
+  def findFile(baseDir: String, filepath: String): Option[File] = List(new File(filepath), new File(baseDir, filepath)).find(_.exists())
   def encodeDir(dirpath: String): String =
     if (dirpath != null) dirpath.replaceAll("""[/\:\\]""", "-") else ""
   def encodeUri(path: String): String = {

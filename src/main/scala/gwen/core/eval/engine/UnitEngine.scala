@@ -126,8 +126,9 @@ trait UnitEngine[T <: EvalContext]
       tag match {
         case Tag(_, name, Some(filepath)) =>
           if (name == Annotations.Import.toString) {
-            val file = new File(filepath)
-            if (!file.exists()) Errors.missingOrInvalidImportFileError(tag)
+            val file = FileIO.findFile(specFile.getParent(), filepath) getOrElse {
+              Errors.missingImportFileError(tag)
+            }
             if (!FileIO.isMetaFile(file)) Errors.unsupportedImportError(tag)
             if (file.getCanonicalPath.equals(specFile.getCanonicalPath)) {
               Errors.recursiveImportError(tag)

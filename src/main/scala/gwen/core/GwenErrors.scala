@@ -76,7 +76,7 @@ object Errors extends LazyLogging {
   def recursiveStepDefError(stepDef: Scenario) = throw new RecursiveStepDefException(stepDef)
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
-  def missingOrInvalidImportFileError(importAnnotation: Tag) = throw new MissingOrInvalidImportFileException(importAnnotation)
+  def missingImportFileError(importAnnotation: Tag) = throw new MissingImportFileException(importAnnotation)
   def missingFileError(category: String, file: File) = throw new MissingFileException(category, file)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
   def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
@@ -229,7 +229,7 @@ object Errors extends LazyLogging {
   class MissingFileException(category: String, file: File) extends GwenException(s"$category not found: $file")
 
   /** Thrown when an import file is not found. */
-  class MissingOrInvalidImportFileException(importAnnotation: Tag) extends GwenException(s"Missing or invalid file detected in $importAnnotation annotation${at(importAnnotation.sourceRef)}")
+  class MissingImportFileException(importAnnotation: Tag) extends GwenException(s"File not found in $importAnnotation annotation${at(importAnnotation.sourceRef)}")
 
   /** Thrown when an unsupported import file is detected. */
   class UnsupportedImportException(importAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $importAnnotation annotation${at(importAnnotation.sourceRef)} (only .meta files can be imported)")
