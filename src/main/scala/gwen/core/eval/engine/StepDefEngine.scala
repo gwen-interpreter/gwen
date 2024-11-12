@@ -26,6 +26,7 @@ import gwen.core.node.gherkin.Scenario
 import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.table.DataTable
+import gwen.core.result.ResultFile
 import gwen.core.status.Loaded
 import gwen.core.status.Passed
 
@@ -53,6 +54,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
     * Loads a stepdef to memory.
     */
   private [engine] def loadStepDef(parent: GwenNode, stepDef: Scenario, ctx: T): Scenario = {
+    ResultFile.parseAnnotation(stepDef.tags, ctx.options.resultFiles, stepDef.nodeType) 
     ctx.stepDefScope.boundary(stepDef.name, Nil) {
       beforeStepDef(stepDef, ctx)
       logger.info(s"Loading ${stepDef.keyword}: ${stepDef.name}")
@@ -106,6 +108,7 @@ trait StepDefEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging wi
         withStepDef = Some(stepDef)
       )
       checkStepDefRules(sdStep, ctx)
+      ResultFile.parseAnnotation(stepDef.tags, ctx.options.resultFiles, stepDef.nodeType) 
       ctx.paramScope.boundary(stepDef.name, stepDef.params) {
         val dataTableOpt = stepDef.tags.find(_.name.startsWith(Annotations.DataTable.toString)) map { tag => DataTable(tag, step) }
         val nonEmptyDataTableOpt = dataTableOpt.filter(_.records.nonEmpty)

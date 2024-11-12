@@ -31,6 +31,7 @@ import gwen.core.node.gherkin.SpecNormaliser
 import gwen.core.node.gherkin.Step
 import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
+import gwen.core.result.ResultFile
 import gwen.core.status.Passed
 import gwen.core.status.Pending
 import gwen.core.status.StatusKeyword
@@ -47,8 +48,9 @@ import java.io.File
 trait ExamplesEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging {
   engine: EvalEngine[T] =>
 
-  def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {    
+  def evaluateExamples(parent: GwenNode, examples: List[Examples], ctx: T): List[Examples] = {   
     examples map { exs =>
+      ResultFile.parseAnnotation(exs.tags, ctx.options.resultFiles, exs.nodeType) 
       if (exs.scenarios.isEmpty) {
         transitionExamples(exs, Passed(0, abstained = !ctx.options.dryRun), ctx)
       } else {

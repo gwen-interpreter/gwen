@@ -35,14 +35,10 @@ class LogResultsRecord[T <: EvalContext](resultsFileId: String) extends UnitStep
     val resultsFile = ctx.options.resultFiles.find(_.id == resultsFileId) getOrElse {
       Errors.resultsFileError(s"No such result file: gwen.reports.results.files.$resultsFileId setting not found")
     }
-    resultsFile.scope foreach { scope =>
-      Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having scope: ${scope.nodeType}${scope.nodeName.map(n => s": $n").getOrElse("")}")
+    if (resultsFile.scope.nonEmpty) {
+       Errors.resultsFileError(s"Scope not permitted on results file when logging with step${Errors.at(step.sourceRef)} - (remove gwen.report.results.files.${resultsFile.id}.scope setting or don't use step DSL)")
     }
-    resultsFile.status foreach { status =>
-      Errors.resultsFileError(s"Cannot explicitly write to $resultsFileId results file having status: $status")
-    }
-    if (ctx.options.reportFormats.contains(ReportFormat.results)) {
-      resultsFile.logRecord(ctx)
+    if (resultsFile.logRecord(parent, ctx, ctx.options)) {
       step
     } else {
       step.copy(withEvalStatus = Passed(System.nanoTime - start, abstained = true))

@@ -44,6 +44,9 @@ import scala.util.chaining._
 import com.typesafe.scalalogging.LazyLogging
 
 import java.util.concurrent.CopyOnWriteArrayList
+import gwen.core.node.gherkin.Tag
+import gwen.core.node.NodeType
+import gwen.core.result.ResultFile
 
 /**
   * Scenario evaluation engine.
@@ -116,6 +119,7 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
         ctx.reset(StateLevel.scenario)
       }
     }
+    ResultFile.parseAnnotation(scenario.tags, ctx.options.resultFiles, scenario.nodeType)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }

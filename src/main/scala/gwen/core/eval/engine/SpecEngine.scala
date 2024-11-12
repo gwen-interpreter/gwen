@@ -25,6 +25,7 @@ import gwen.core.node.gherkin.Dialect
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecType
 import gwen.core.node.gherkin.SpecPrinter
+import gwen.core.result.ResultFile
 import gwen.core.result.SpecResult
 import gwen.core.status._
 
@@ -69,6 +70,7 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
   private def evaluateSpec(parent: GwenNode, spec: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val specType = spec.specType
     ctx.topScope.pushObject(SpecType.toString, specType)
+    ResultFile.parseAnnotation(spec.feature.tags, ctx.options.resultFiles, spec.nodeType) 
     try {
       beforeSpec(spec, ctx)
       val started = {

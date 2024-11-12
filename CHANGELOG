@@ -1,8 +1,12 @@
 4.0.0
 =====
-11 November 2024
+12 November 2024
 - Introduce profiles to support multiple launch configurations
   - `-p|--profile` option
+ - Internal engine enhancements
+  - Replace redundant multi scoped data caches with one single scoped cache
+  - Manage settings internally without exposing them as system properties
+  - Manage implicits at lifecycle level using boundary level caching
 - Require Java 17+ instead of Java 11+
 - Use logback instead of log4j for logging
 - Support `empty` literal in DSLs wherever `blank` is accepted
@@ -12,12 +16,11 @@
 - Add `@{**}` placeholder to template matcher to support ignoring multiple lines
 - Print gwen launch arguments on startup
 - Synchronise system process bindings when resolving value from output stream
-- Only log results file records if results format is sepcified in launch options
-- Internal engine enhancements
-  - Replace redundant multi scoped data caches with one single scoped cache
-  - Manage settings internally without exposing them as system properties
-  - Manage implicits at lifecycle level using boundary level caching
-  - Rename step lambdas to step actions
+- Do not permit scope attribute on results file configuration when logging with annoation or DSL
+- Only log results file records if results format is specified in launch options
+- Skip logging to result file if the scope or status don't match
+  - and disable calling step when logged via DSL
+- Log unresolved field value if interpolation fails during result file logging
 - Update dependencies
   - Update scala from v3.5.0 to v3.5.2
   - Update gherkin from v29.0.0 to v30.0.0
@@ -36,21 +39,6 @@
     - For attaching files to Gwen reports (where the name of the attachment will be the name of the file)
   - `I log record to <resultsFileId> file`
     - For explicitly logging records to configured results files
-- Drop deprecated features:
-  - Gwen Workspaces warning
-  - `-p|--properties` option
-  - Report portal integration
-  - Matrix tables
-  - Core DSL steps
-    - `I wait <duration> second[s] when <element> is <actioned>`
-    - `I wait until <condition> when <element> is <actioned>`
-  - Core DSL steps in favour of base step with `@Timeout` and `@Delay` annotations
-    - `<step> <until|while> <condition> using <delay> <delayUnit> delay`
-    - `<step> <until|while> <condition> using <timeout> <timeoutUnit> timeout`
-    - `<step> <until|while> <condition> using <delay> <delayUnit> delay and <timeout> <timeoutUnit> timeout`
-    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
-    - `<step> <until|while> <condition> using no delay`
-    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
 - Raise deprecations as errors by default instead of logging them as warnings
   | Setting                     | Old default | New default |
   | :-------------------------- | :---------: | :---------: |
@@ -90,6 +78,21 @@
   | `record.index`                        | `gwen.table.record.index`                     |
   | `iteration.number`                    | `gwen.iteration.number`                       |
   | `iteration.index`                     | `gwen.iteration.index`                        |
+- Drop deprecated features:
+  - Gwen Workspaces warning
+  - `-p|--properties` option
+  - Report portal integration
+  - Matrix tables
+  - Core DSL steps
+    - `I wait <duration> second[s] when <element> is <actioned>`
+    - `I wait until <condition> when <element> is <actioned>`
+  - Core DSL steps in favour of base step with `@Timeout` and `@Delay` annotations
+    - `<step> <until|while> <condition> using <delay> <delayUnit> delay`
+    - `<step> <until|while> <condition> using <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using <delay> <delayUnit> delay and <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
+    - `<step> <until|while> <condition> using no delay`
+    - `<step> <until|while> <condition> using no delay and <timeout> <timeoutUnit> timeout`
 
 3.66.0
 ======

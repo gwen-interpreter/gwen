@@ -18,6 +18,11 @@ package gwen.core.result
 
 import gwen.core._
 import gwen.core.data.CsvDataSource
+import gwen.core.node.gherkin.Tag
+import gwen.core.node.gherkin.Annotations
+import gwen.core.node.GwenNode
+import gwen.core.node.NodeType
+import gwen.core.report.ReportFormat
 import gwen.core.state.Environment
 import gwen.core.status.StatusKeyword
 
@@ -27,25 +32,36 @@ import java.io.File
 
 case class ResultFile(id: String, file: File, scope: Option[ResultScope], status: Option[StatusKeyword], fields: List[ResultField]) {
 
-  def logRecord(env: Environment): Unit = {
-    var errors: List[String] = Nil
-    val record = fields map { field =>
-      val value = {
-        Try(env.getBoundValue(field.ref)) getOrElse {
-          field.defaultValue getOrElse {
-            errors = (errors ++ List(s"Unbound ${field.name} field${ if (field.name != field.ref) s" reference: ${field.ref}" else ""} in ${file} results file id ${id}"))
-            s"Unbound ref: ${field.ref}"
+  def logRecord(node: GwenNode, env: Environment, options: GwenOptions): Boolean = {
+    val resultsEnabled = options.reportFormats.contains(ReportFormat.results)
+    val nodeTypeOK = scope.map(_.nodeType == node.nodeType).getOrElse(true)
+    val nodeNameOK = scope.map(_.nodeName.map(n => node.name.matches("(.* -- )?" + n + "( -- .*)?$")).getOrElse(true)).getOrElse(true)
+    val statusOK = status.map(_ == node.evalStatus.keyword).getOrElse(true)
+    if (resultsEnabled && nodeTypeOK && nodeNameOK && statusOK) {
+      var errors: List[String] = Nil
+      val record = fields map { field =>
+        val value = {
+          Try(env.getBoundValue(field.ref)) getOrElse {
+            env.topScope.getOpt(field.ref) getOrElse {
+              field.defaultValue getOrElse {
+                errors = (errors ++ List(s"Unbound ${field.name} field${ if (field.name != field.ref) s" reference: ${field.ref}" else ""} in ${file} results file id ${id}"))
+                s"Unbound ref: ${field.ref}"
+              }
+            }
           }
         }
+        if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
+        else value
       }
-      if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
-      else value
-    }
-    this.synchronized {
-      file.appendLine(record.mkString(","))
-    }
-    if (errors.nonEmpty) {
-      Errors.resultsFileErrors(errors)
+      if (errors.nonEmpty) {
+        Errors.resultsFileErrors(errors)
+      }
+      this.synchronized {
+        file.appendLine(record.mkString(","))
+      }
+      true
+    } else {
+      false
     }
   }
 
@@ -105,6 +121,27 @@ object ResultFile {
     }
     fileSettings.map(_._1).filter(s => !s.contains(".fields") && !s.matches(""".*((\.\d+\.)(""" + ResultFieldAtts.values.mkString("|") + "))$")).map(s => s.substring(s.lastIndexOf(".") + 1)).foreach(ResultFile.validateSettingName)
     ResultFile(id, file, scope, status, fields)
+  }
+
+  def parseAnnotation(tags: List[Tag], resultFiles: List[ResultFile], nodeType: NodeType): List[String] = {
+    tags.filter(_.name.startsWith(Annotations.Results.toString)) flatMap { annotation => 
+      annotation.toString match {
+        case r"""@Results\((.+?)$value\)""" =>
+          Tag.parseListValue(annotation.sourceRef, Annotations.Results, None, value) map { id => 
+            resultFiles.find(_.id == id) match {
+              case Some(resFile) =>
+                if (resFile.scope.nonEmpty) {
+                  Errors.resultsFileError(s"Scope not permitted on $id results file when logging with $annotation annotation${Errors.at(annotation.sourceRef)} - (remove gwen.report.results.files.$id.scope setting or don't use annotation)")
+                } else {
+                  id
+                }
+              case None =>
+                Errors.resultsFileError(s"Results file not found with id: $id - check your gwen.report.results.files.$id setting or $annotation annotation${Errors.at(annotation.sourceRef)}")
+            }
+          }
+        case _ => Errors.invalidTagError(s"""Invalid Results annotation: $annotation${Errors.at(annotation.sourceRef)} - correct syntax is @Results('id') or @Results(['id1','id2','idN'])""")
+      }
+    }
   }
 }
 

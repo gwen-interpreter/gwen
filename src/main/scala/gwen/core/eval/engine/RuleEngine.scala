@@ -23,6 +23,7 @@ import gwen.core.eval.EvalEngine
 import gwen.core.node.GwenNode
 import gwen.core.node.gherkin.Rule
 import gwen.core.node.gherkin.Spec
+import gwen.core.result.ResultFile
 import gwen.core.status._
 
 import scala.util.chaining._
@@ -43,6 +44,7 @@ trait RuleEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
   }
 
   private def evaluateOrTransitionRule(parent: GwenNode, rule: Rule, dataRecord: Option[DataRecord], ctx: T, acc: List[Rule]): Rule = {
+    ResultFile.parseAnnotation(rule.tags, ctx.options.resultFiles, rule.nodeType)
     EvalStatus(acc.map(_.evalStatus)) match {
       case status @ Failed(_, error) =>
         val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }

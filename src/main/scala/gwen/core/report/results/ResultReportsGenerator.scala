@@ -69,16 +69,16 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
 
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     val result = event.source 
-    filterFiles(result.spec, result.spec.feature.tags) foreach { resFile => 
-      report(resFile, result.evalStatus, event.env)
+    candidateFiles(result.spec, result.spec.feature.tags) foreach { resFile => 
+      report(resFile, result, event.env)
     }
   }
 
   override def afterRule(event: NodeEvent[Rule]): Unit = { 
     val rule = event.source
     if (rule.scenarios.nonEmpty) {
-      filterFiles(rule, rule.tags) foreach { resFile => 
-        report(resFile, rule.evalStatus, event.env)
+      candidateFiles(rule, rule.tags) foreach { resFile => 
+        report(resFile, rule, event.env)
       }
     }
   }
@@ -86,8 +86,8 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def afterScenario(event: NodeEvent[Scenario]): Unit = { 
     val scenario = event.source
     if (!scenario.isOutline && scenario.steps.nonEmpty) {
-      filterFiles(scenario, scenario.tags) foreach { resFile => 
-        report(resFile, scenario.evalStatus, event.env)
+      candidateFiles(scenario, scenario.tags) foreach { resFile => 
+        report(resFile, scenario, event.env)
       }
     }
   }
@@ -95,8 +95,8 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def afterExamples(event: NodeEvent[Examples]): Unit = { 
     val examples = event.source
     if (examples.scenarios.nonEmpty) {
-      filterFiles(examples, examples.tags) foreach { resFile => 
-        report(resFile, examples.evalStatus, event.env)
+      candidateFiles(examples, examples.tags) foreach { resFile => 
+        report(resFile, examples, event.env)
       }
     }
   }
@@ -104,43 +104,24 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def afterStepDef(event: NodeEvent[Scenario]): Unit = { 
     val stepDef = event.source
     if (stepDef.isStepDefCall) {
-      filterFiles(stepDef, stepDef.tags) foreach { resFile => 
-        report(resFile, stepDef.evalStatus, event.env)
+      candidateFiles(stepDef, stepDef.tags) foreach { resFile => 
+        report(resFile, stepDef, event.env)
       }
     }
   }
 
-  private def filterFiles(node: GwenNode, tags: List[Tag]): List[ResultFile] = {
-    val annotatedIds = tags.filter(_.name == Annotations.Results.toString) flatMap { annotation =>
-      annotation.value flatMap { id =>
-        if (resultFiles.filter(_.id == id).isEmpty) {
-          addError(s"gwen.reports.results.files.$id setting not found for results file denoted by id in $annotation annotation${Errors.at(annotation.sourceRef)}")
-          None
-        } else {
-          Some(id)
-        }
-      }
-    }
-    val scopedIds = resultFiles filter { resFile => 
-      resFile.scope.map(_.nodeType) map { resFileNodeType =>
-        if (resFileNodeType == node.nodeType) {
-          resFile.scope.map(_.nodeName.map(n => node.name.matches("(.* -- )?" + n + "( -- .*)?$")).getOrElse(true)).getOrElse(true)
-        } else {
-          false
-        }
-      } getOrElse false
-    } map(_.id)
+  private def candidateFiles(node: GwenNode, tags: List[Tag]): List[ResultFile] = {
+    val annotatedIds = ResultFile.parseAnnotation(tags, resultFiles, node.nodeType)
+    val scopedIds = resultFiles.filter(f => f.scope.nonEmpty).map(_.id)
     val ids = (annotatedIds ++ scopedIds).distinct
     resultFiles.filter(resFile => ids.contains(resFile.id))
   }
 
-  private def report(resFile: ResultFile, evalStatus: EvalStatus, env: Environment): Unit = {
-    if (resFile.status.map(_ == evalStatus.keyword).getOrElse(true)) {
-      try {
-        resFile.logRecord(env)
-      } catch {
-        case e: Errors.ResultsFileException => e.errors.foreach(addError)
-      }
+  private def report(resFile: ResultFile, node: GwenNode, env: Environment): Unit = {
+    try {
+      resFile.logRecord(node, env, options)
+    } catch {
+      case e: Errors.ResultsFileException => e.errors.foreach(addError)
     }
   }
 
