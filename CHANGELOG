@@ -23,6 +23,7 @@
 - Log unresolved field value if interpolation fails during result file logging
 - Support relative file locations in `@Import` and `@Examples` annotations
 - Load all associative meta if features are specified with `--repl` option
+- Auto discover associative meta only
 - Update dependencies
   - Update scala from v3.5.0 to v3.5.2
   - Update gherkin from v29.0.0 to v30.0.0
@@ -60,6 +61,8 @@
   | :----------------------------- | :--------------------------|
   | `gwen.auto.discover.data.csv`  | `-i|--input` launch option |
   | `gwen.auto.discover.data.json` | `-i|--input` launch option |
+  | `gwen.auto.discover.meta`      | `-m|--meta` launch option  |
+  | `gwen.associative.meta`        | This is now always on      |
 - | Deprecated Implicit values            | Use this instead                              |
   | :------------------------------------ | :-------------------------------------------- |
   | `gwen.eval.status.keyword`            | `gwen.feature.eval.status.keyword`            |

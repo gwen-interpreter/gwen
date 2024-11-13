@@ -54,8 +54,6 @@ object GwenSettings extends LazyLogging {
     `gwen.launch.options.report`
     `gwen.launch.options.tags`
     `gwen.assertion.mode`
-    `gwen.associative.meta`
-    `gwen.auto.discover.meta`
     `gwen.auto.trim.data.csv`
     `gwen.auto.trim.data.json`
     `gwen.behavior.rules`
@@ -280,17 +278,6 @@ object GwenSettings extends LazyLogging {
   }
 
   /**
-    * Provides access to the `gwen.auto.discover.meta` setting used to enable
-    * or disable automatic discovery of meta files (default value is `true` for enabled).
-    * Disabling this will prevent Gwen from automatically discovering and loading meta files in the path of an
-    * executing feature, forcing the user to control explicitly through the -m/--meta command line option which meta
-    * files to load.
-    */
-  def `gwen.auto.discover.meta`: Boolean = {
-    Settings.getBoolean("gwen.auto.discover.meta")
-  }
-
-  /**
     * Provides access to the `gwen.auto.trim.data.csv` setting used to enable
     * or disable automatic trimming of CSV data (default value is `false` for no triming).
     */
@@ -337,16 +324,6 @@ object GwenSettings extends LazyLogging {
     */
   def `gwen.feature.mode`: FeatureMode = {
     FeatureMode.valueOf(Settings.get("gwen.feature.mode"))
-  }
-
-  /**
-  * Provides access to the `gwen.associative.meta` setting used to control whether or
-  * not meta files having the same name (excluding file extension) and same location as feature
-  * files are only loaded for that feature and loaded last (default value is true).
-  * This setting is only honoured if `gwen.auto.discover.meta` is also enabled.
-  */
-  def `gwen.associative.meta`: Boolean = {
-    `gwen.auto.discover.meta` && Settings.getBoolean("gwen.associative.meta")
   }
 
   /**

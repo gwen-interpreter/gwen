@@ -80,7 +80,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     }
   }
 
-  "1 input feature file with 1 meta in same dir and 1 meta in parent" should "return the 1 feature and 2 meta" in {
+  "1 input feature file with 1 meta in same dir and 1 meta in parent" should "return the feature file only" in {
     val dir6 = createDir("dir6")
     createDir("dir6/dir7")
     val metaFile1   = createFile("dir6/file1.meta")
@@ -90,7 +90,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
-        assertMetaFiles(List(metaFile1, metaFile2), unit.metaFiles)
+        assertMetaFiles(Nil, unit.metaFiles)
         unit.dataRecord should be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -113,7 +113,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     }
   }
 
-  "feature file with parent directory containing meta" should "return 1 feature and accumulated meta" in {
+  "feature file with parent directory containing meta" should "return 1 feature and no meta" in {
     createDir("dir10")
     createDir("dir10/dir11")
     createDir("dir10/dir11/dir12")
@@ -125,7 +125,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     suite.toList match {
       case unit :: Nil =>
         assertFile(featureFile, unit.featureFile)
-        assertMetaFiles(List(metaFile1, metaFile2, metaFile3), unit.metaFiles.sortBy(_.getName()))
+        assertMetaFiles(Nil, unit.metaFiles.sortBy(_.getName()))
         unit.dataRecord should be (None)
       case _ =>
         fail(s"1 feature unit expected but ${suite.size} found")
@@ -183,15 +183,15 @@ class FeatureStreamTest extends BaseTest with Matchers {
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next()
     assertFile(featureFileAB1, unit.featureFile)
-    assertMetaFiles(List(metaFileA, metaFileB), unit.metaFiles)
+    assertMetaFiles(List(metaFileB), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next()
     assertFile(featureFileAB2, unit.featureFile)
-    assertMetaFiles(List(metaFileA, metaFileB, metaFileB2), unit.metaFiles)
+    assertMetaFiles(List(metaFileB, metaFileB2), unit.metaFiles)
     unit.dataRecord should be (None)
     unit = units.next()
     assertFile(featureFileAB, unit.featureFile)
-    assertMetaFiles(List(metaFileA, metaFileB), unit.metaFiles)
+    assertMetaFiles(List(metaFileB), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(() => units.next())
 
@@ -209,7 +209,7 @@ class FeatureStreamTest extends BaseTest with Matchers {
     units = suite.toList.sortBy(_.featureFile).iterator
     unit = units.next()
     assertFile(featureFileAB2, unit.featureFile)
-    assertMetaFiles(List(metaFileA, metaFileB, metaFileB2), unit.metaFiles)
+    assertMetaFiles(List(metaFileB2), unit.metaFiles)
     unit.dataRecord should be (None)
     assertEndOfStream(() => units.next())
 
@@ -266,144 +266,140 @@ class FeatureStreamTest extends BaseTest with Matchers {
 
   "multi suite with associative meta stream" should "be read in correctly" in {
 
-    withSetting("gwen.associative.meta", "true") {
+    val dirJ           = createDir("dirJ")
+    val metaTopJ       = createFile("dirJ/topJ.meta")
+    val metaFileJ      = createFile("dirJ/fileJ.meta")
+    val featureFileJ   = createFile("dirJ/fileJ.feature")
+    val metaFileJJ     = createFile("dirJ/fileJJ.meta")
+    val featureFileJJ  = createFile("dirJ/fileJJ.feature")
+    val dirJB          =  createDir("dirJ/dirB")
+    val metaFileJB     = createFile("dirJ/dirB/fileJB.meta")
+    val featureFileJB  = createFile("dirJ/dirB/fileJB.feature")
+    val dirJB1         =  createDir("dirJ/dirB/dir1")
+    val featureFileJB1 = createFile("dirJ/dirB/dir1/fileJB1.feature")
+    val dirJB2         =  createDir("dirJ/dirB/dir2")
+    val featureFileJB2 = createFile("dirJ/dirB/dir2/fileJB2.feature")
+    val metaFileJB2    = createFile("dirJ/dirB/dir2/fileJB2.meta")
+    val dirK           =  createDir("dirK")
+    val featureFile1K  = createFile("dirK/file1K.feature")
+    val featureFile2K  = createFile("dirK/file2K.feature")
+    val dirKE          =  createDir("dirK/dirE")
+    val metaFileKE     = createFile("dirK/dirE/fileKE.meta")
+    val featureFileKE  = createFile("dirK/dirE/fileKE.feature")
+    val dirL           =  createDir("dirL")
+    createFile("dirL/fileL.meta")
 
-      val dirJ           = createDir("dirJ")
-      val metaTopJ       = createFile("dirJ/topJ.meta")
-      val metaFileJ      = createFile("dirJ/fileJ.meta")
-      val featureFileJ   = createFile("dirJ/fileJ.feature")
-      val metaFileJJ     = createFile("dirJ/fileJJ.meta")
-      val featureFileJJ  = createFile("dirJ/fileJJ.feature")
-      val dirJB          =  createDir("dirJ/dirB")
-      val metaFileJB     = createFile("dirJ/dirB/fileJB.meta")
-      val featureFileJB  = createFile("dirJ/dirB/fileJB.feature")
-      val dirJB1         =  createDir("dirJ/dirB/dir1")
-      val featureFileJB1 = createFile("dirJ/dirB/dir1/fileJB1.feature")
-      val dirJB2         =  createDir("dirJ/dirB/dir2")
-      val featureFileJB2 = createFile("dirJ/dirB/dir2/fileJB2.feature")
-      val metaFileJB2    = createFile("dirJ/dirB/dir2/fileJB2.meta")
-      val dirK           =  createDir("dirK")
-      val featureFile1K  = createFile("dirK/file1K.feature")
-      val featureFile2K  = createFile("dirK/file2K.feature")
-      val dirKE          =  createDir("dirK/dirE")
-      val metaFileKE     = createFile("dirK/dirE/fileKE.meta")
-      val featureFileKE  = createFile("dirK/dirE/fileKE.feature")
-      val dirL           =  createDir("dirL")
-      createFile("dirL/fileL.meta")
+      val suiteStream = featureStream.readAll(List(dirJ, dirJB, dirJB1, dirJB2, featureFileJB2, dirK, featureFile2K, dirKE, dirL), None)
+    val suites = suiteStream.iterator
 
-        val suiteStream = featureStream.readAll(List(dirJ, dirJB, dirJB1, dirJB2, featureFileJB2, dirK, featureFile2K, dirKE, dirL), None)
-      val suites = suiteStream.iterator
+    // dirJ suite
+    var suite = suites.next()
+    var units = suite.toList.sortBy(_.featureFile).iterator
+    var unit = units.next()
+    assertFile(featureFileJB1, unit.featureFile)
+    assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJJ, metaFileJB), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJB2, unit.featureFile)
+    assertMetaFiles(List(metaFileJB2), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJB, unit.featureFile)
+    assertMetaFiles(List(metaFileJB), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJ, unit.featureFile)
+    assertMetaFiles(List(metaFileJ), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJJ, unit.featureFile)
+    assertMetaFiles(List(metaFileJJ), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dirJ suite
-      var suite = suites.next()
-      var units = suite.toList.sortBy(_.featureFile).iterator
-      var unit = units.next()
-      assertFile(featureFileJB1, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJJ, metaFileJB), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJB2, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB2), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJB, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJ, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJ), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJJ, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJJ), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // dirJB suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileJB1, unit.featureFile)
+    assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJB), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJB2, unit.featureFile)
+    assertMetaFiles(List(metaFileJB2), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFileJB, unit.featureFile)
+    assertMetaFiles(List(metaFileJB), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dirJB suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileJB1, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJB), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJB2, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB2), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFileJB, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // dir JB1 suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileJB1, unit.featureFile)
+    assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJB), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dir JB1 suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileJB1, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJ, metaFileJB), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // dir JB2 suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileJB2, unit.featureFile)
+    assertMetaFiles(List(metaFileJB2), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dir JB2 suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileJB2, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB2), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // featureFile JB2 suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileJB2, unit.featureFile)
+    assertMetaFiles(List(metaFileJB2), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // featureFile JB2 suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileJB2, unit.featureFile)
-      assertMetaFiles(List(metaTopJ, metaFileJB2), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // dir K suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileKE, unit.featureFile)
+    assertMetaFiles(List(metaFileKE), unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFile1K, unit.featureFile)
+    assertMetaFiles(Nil, unit.metaFiles)
+    unit.dataRecord should be (None)
+    unit = units.next()
+    assertFile(featureFile2K, unit.featureFile)
+    assertMetaFiles(Nil, unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dir K suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileKE, unit.featureFile)
-      assertMetaFiles(List(metaFileKE), unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFile1K, unit.featureFile)
-      assertMetaFiles(Nil, unit.metaFiles)
-      unit.dataRecord should be (None)
-      unit = units.next()
-      assertFile(featureFile2K, unit.featureFile)
-      assertMetaFiles(Nil, unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // featureFile 2K suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFile2K, unit.featureFile)
+    assertMetaFiles(Nil, unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // featureFile 2K suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFile2K, unit.featureFile)
-      assertMetaFiles(Nil, unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
+    // dir KE suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    unit = units.next()
+    assertFile(featureFileKE, unit.featureFile)
+    assertMetaFiles(List(metaFileKE), unit.metaFiles)
+    unit.dataRecord should be (None)
+    assertEndOfStream(() => units.next())
 
-      // dir KE suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      unit = units.next()
-      assertFile(featureFileKE, unit.featureFile)
-      assertMetaFiles(List(metaFileKE), unit.metaFiles)
-      unit.dataRecord should be (None)
-      assertEndOfStream(() => units.next())
-
-      // dir F suite
-      suite = suites.next()
-      units = suite.toList.sortBy(_.featureFile).iterator
-      assertEndOfStream(() => units.next())
-
-    }
+    // dir F suite
+    suite = suites.next()
+    units = suite.toList.sortBy(_.featureFile).iterator
+    assertEndOfStream(() => units.next())
 
   }
 
