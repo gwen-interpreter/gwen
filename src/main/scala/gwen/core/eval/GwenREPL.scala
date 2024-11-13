@@ -247,6 +247,11 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
         Some("  [No-op]")
       case "help" if paste.isEmpty =>
         Some(help)
+      case r"""^#\s*language:\s*(\S+)$$$language""" =>
+        Try(Dialect.setLanguage(language)) match {
+          case Success(_) => Some(s"  language = $language")
+          case Failure(e) => Some(printError("  " + e.getMessage))
+        }
       case r"""env(.+?)?$$$options""" if paste.isEmpty => 
         Some(env(options))
       case "history" if paste.isEmpty =>
@@ -290,6 +295,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
       | !<#>
       |   Executes a previously entered command (history bang operator)
       |     # : the history command number
+      |
+      | # language: <language>
+      |    Sets the Gherkin language
       |
       | load <meta-file>
       |  Loads a meta file to pick up any changes
@@ -372,7 +380,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
         System.out.println(s"Exiting paste mode, ${if (steps.nonEmpty) "evaluating.." else "nothing pasted"}")
         steps.reverse map { step =>
           System.out.println(s"\n$prompt${Formatting.padTailLines(step, "      ")}\n")
-          evaluate(step) tap { output => System.out.println(output) }
+          evaluateStep(step.trim) tap { output => System.out.println(output) }
         }
       }
       paste = None
@@ -406,7 +414,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
 
   private def evalInput(input: String): Option[String] = {
     if (paste.isEmpty) {
-      Some(evaluate(input))
+      Some(evaluateStep(input.trim))
     } else {
       if (!pastingDocString) pastingDocString = input.trim.startsWith("\"\"\"")
       else pastingDocString = input.trim != "\"\"\""
@@ -421,31 +429,6 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
         }
       }
       Some(input)
-    }
-  }
-
-  private def evaluate(input: String): String = {
-    input.trim match {
-      case r"^Feature:(.*)$$$name" =>
-        ctx.topScope.set(`gwen.feature.name`, name.trim)
-        s"[gwen.feature.name = ${name.trim}]"
-      case r"^Rule:(.*)$$$name" =>
-        ctx.topScope.set(`gwen.rule.name`, name.trim)
-        s"[gwen.rule.name = ${name.trim}]"
-      case r"^(Scenario|Example):(.*)$$$name" =>
-        if (StateLevel.scenario.equals(ctx.stateLevel)) {
-          ctx.reset(StateLevel.scenario)
-        }
-        ctx.topScope.set(`gwen.scenario.name`, name.trim)
-        s"[gwen.scenario.name = ${name.trim}]"
-      case r"^Scenario(?: (Outline|Template))?:(.*)$$$name" =>
-        ctx.topScope.set(`gwen.scenario.name`, name.trim)
-        s"[gwen.scenario.name = ${name.trim}]"
-      case r"""^#\s*language:\s*(\S+)$$$language""" =>
-        Dialect.setLanguage(language)
-        s"# language: $language"
-      case trimmedInput =>
-        evaluateStep(trimmedInput)
     }
   }
 

@@ -70,7 +70,7 @@ class ResultReportsGenerator(options: GwenOptions, info: GwenInfo)
   override def afterSpec(event: NodeEvent[SpecResult]): Unit = {
     val result = event.source 
     candidateFiles(result.spec, result.spec.feature.tags) foreach { resFile => 
-      report(resFile, result, event.env)
+      report(resFile, result.spec, event.env)
     }
   }
 

@@ -79,6 +79,7 @@ object Errors extends LazyLogging {
   def missingImportFileError(importAnnotation: Tag) = throw new MissingImportFileException(importAnnotation)
   def missingFileError(category: String, file: File) = throw new MissingFileException(category, file)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
+  def unsupportedLanguagetError(language: String) = throw new UnsupportedLanguageException(language)
   def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
   def dataHeaderNotFoundError(file: File) = throw new DataHeaderNotFoundException(file)
   def multilineDataFieldNameError(name: String, file: Option[File]) = throw new MultilineDataFieldNameException(name, file)
@@ -233,6 +234,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when an unsupported import file is detected. */
   class UnsupportedImportException(importAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $importAnnotation annotation${at(importAnnotation.sourceRef)} (only .meta files can be imported)")
+
+  /** Thrown when an unsupported language detected. */
+  class UnsupportedLanguageException(language: String) extends GwenException(s"Unsupported or unknown language: $language")
 
   /** Thrown when a data lookup fails. */
   class DataLookupException(file: File, name: String) extends GwenException(s"No such data in file $file having name: $name")
