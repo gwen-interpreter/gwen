@@ -127,8 +127,8 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
   /** Runs the read-eval-print-loop. */
   def run(): Unit = {
     debug = false
-    System.out.println("\nREPL Console")
-    System.out.println("\nEnter steps to evaluate or type help for more options..")
+    System.out.println("REPL Console\n")
+    System.out.println("Enter steps to evaluate or type help for more options..")
     enteringLoop()
     var lines: List[String] = Nil
     try {

@@ -69,7 +69,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   )
 
   def main(args: Array[String]): Unit = {
-    printBanner("Welcome to ", args)
+    printBanner("Welcome to ")
     val start = System.nanoTime
     try {
       val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
@@ -135,7 +135,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       if (!options.init) {
         ctxOpt foreach { ctx =>
           if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
-            printBanner("", options.args.getOrElse(Array[String]()))
+            printBanner("")
           }
           createRepl(ctx).run()
         }
@@ -190,7 +190,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     */
   private [gwen] def createRepl(ctx: T): GwenREPL[T] = new GwenREPL[T](engine, ctx)
 
-  private def printBanner(intro: String, args: Array[String]): Unit = {
+  private def printBanner(intro: String): Unit = {
     println(
       """|
          |   __ ___      _____ _ __     _    
