@@ -77,9 +77,8 @@ class FeatureStream(inputMeta: List[File], tagFilter: TagFilter) extends LazyLog
       val files = Option(location.listFiles).getOrElse(Array[File]())
       files.to(LazyList).flatMap(deepRead(_, metaFiles, dataFile)) 
     } else if (FileIO.isFeatureFile(location)) {
-      val metas = Option(new File(location.getParentFile(), s"${location.dropExtension}.meta")).filter(_.exists) map { associatveMeta =>
-        (associatveMeta :: metaFiles).distinct
-      } getOrElse metaFiles
+      val assocMeta = Option(new File(location.getParentFile(), s"${location.dropExtension}.meta")).filter(_.exists)
+      val metas = (metaFiles ++ assocMeta.toList).distinct
       val unit = FeatureUnit(Root, location, metas, None, tagFilter)
       dataFile match {
         case Some(file) => new FeatureSet(unit, DataSource(file)).to(LazyList)
