@@ -65,24 +65,22 @@ class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operato
     val iStepDef = Scenario(None, tags, ifTag.toString, cond, None, Nil, None, List(step.copy(withName = doStep)), Nil, Nil, Nil)
     val sdCall = () => engine.callStepDef(step, iStepDef, iStep, ctx)
     val attachments = ctx.popAttachments()
-    ctx.evaluate(sdCall()) {
-      val compare = new Compare[T](name, expression, operator, negate, None, trim, ignoreCase)
-      val satisfied = Try(compare.apply(parent, step, ctx)) match {
-        case Success(_) => true
-        case Failure(e) =>
-          if (e.isInstanceOf[AssertionError]) false
-          else throw e
-      }
-      LoadStrategyBinding.bindIfLazy(name, satisfied.toString, ctx)
-      val result = if (satisfied) {
-        logger.info(s"Processing conditional step ($cond = true): ${step.keyword} $doStep")
-        sdCall()
-      } else {
-        logger.info(s"Skipping conditional step ($cond = false): ${step.keyword} $doStep")
-        step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
-      }
-      result.addAttachments(attachments)
+    val compare = new Compare[T](name, expression, operator, negate, None, trim, ignoreCase)
+    val satisfied = Try(compare.apply(parent, step, ctx)) match {
+      case Success(_) => true
+      case Failure(e) =>
+        if (e.isInstanceOf[AssertionError]) false
+        else throw e
     }
+    LoadStrategyBinding.bindIfLazy(name, satisfied.toString, ctx)
+    val result = if (satisfied) {
+      logger.info(s"Processing conditional step ($cond = true): ${step.keyword} $doStep")
+      sdCall()
+    } else {
+      logger.info(s"Skipping conditional step ($cond = false): ${step.keyword} $doStep")
+      step.copy(withEvalStatus = Passed(0, abstained = !ctx.options.dryRun))
+    }
+    result.addAttachments(attachments)
   }
 
 }
