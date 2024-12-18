@@ -16,6 +16,8 @@
 
 package gwen.core.eval.action.unit
 
+import gwen.core.Formatting
+import gwen.core.AssertionMode
 import gwen.core.ImplicitValueKeys
 import gwen.core.Assert
 import gwen.core.Errors
@@ -31,40 +33,44 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 import scala.util.Try
-import gwen.core.Formatting
 
 class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStepAction[T] with ImplicitValueKeys {
 
+  
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
-      val expected = ctx.parseExpression(operator, expression)
-      val actualValue = ctx.getBoundValue(source)
-      ctx.perform {
-        val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate)
-        val op = {
-          if (operator == ComparisonOperator.`match template file`) {
-            ComparisonOperator.`match template`
-          } else {
-            operator
+      apply(ctx, step.assertionMode)
+    }
+  }
+
+  def apply(ctx: T, assertionMode: AssertionMode = AssertionMode.hard): Unit = {
+    val expected = ctx.parseExpression(operator, expression)
+    val actualValue = ctx.getBoundValue(source)
+    ctx.perform {
+      val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate)
+      val op = {
+        if (operator == ComparisonOperator.`match template file`) {
+          ComparisonOperator.`match template`
+        } else {
+          operator
+        }
+      }
+      result match {
+        case Success(assertion) =>
+          val displayName = Try(ctx.getBinding(source).displayName).getOrElse(source)
+          try {
+            ctx.assertWithError(
+              assertion, 
+              message, 
+              Assert.formatFailed(displayName, expected, actualValue, negate, op),
+              assertionMode)
+          } catch {
+            case gae: Errors.GwenAssertionError if source == `gwen.accumulated.errors` =>
+              Errors.accumulatedAssertionError(gae)
           }
-        }
-        result match {
-          case Success(assertion) =>
-            val displayName = Try(ctx.getBinding(source).displayName).getOrElse(source)
-            try {
-              ctx.assertWithError(
-                assertion, 
-                message, 
-                Assert.formatFailed(displayName, expected, actualValue, negate, op),
-                step.assertionMode)
-            } catch {
-              case gae: Errors.GwenAssertionError if source == `gwen.accumulated.errors` =>
-                Errors.accumulatedAssertionError(gae)
-            }
-          case Failure(error) =>
-            throw error;
-        }
+        case Failure(error) =>
+          throw error;
       }
     }
   }
