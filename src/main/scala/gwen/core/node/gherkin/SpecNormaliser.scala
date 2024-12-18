@@ -27,6 +27,7 @@ import scala.util.chaining._
 
 import java.io.File
 import java.util.regex.Matcher
+import gwen.core.state.SensitiveData
 
 /**
   * Normalises a parsed feature spec by expanding scenarios and scenario outlines in preparation for evaluation.
@@ -210,11 +211,16 @@ trait SpecNormaliser extends BehaviorRules {
       if (Source.fromString(name).getLines().toList.size > 1) {
         Errors.multilineDataFieldNameError(name, dataFile)
       }
+      val (dValue, tags) = if (GwenSettings.`gwen.input.data.maskFields`.contains(name) && dataTag.name == Annotations.Data.toString) {
+        (SensitiveData.mask(name, value), List(dataTag, Tag(Annotations.Masked)))
+      } else {
+       (value, List(dataTag))
+      }
       val keyword = if (index == 0 && !noData) StepKeyword.nameOf(StepKeyword.Given) else StepKeyword.nameOf(StepKeyword.And)
       if (Source.fromString(value).getLines().length > 1) 
-        Step(None, keyword, s"$name is", Nil, None, Nil, Some((0, value, None)), Pending, Nil, Nil, List(dataTag), None, Nil)
+        Step(None, keyword, s"$name is", Nil, None, Nil, Some((0, dValue, None)), Pending, Nil, Nil, tags, None, Nil)
       else {
-        Step(None, keyword, s"""$name is "$value"""", Nil, None, Nil, None, Pending, Nil, Nil, List(dataTag), None, Nil)
+        Step(None, keyword, s"""$name is "$dValue"""", Nil, None, Nil, None, Pending, Nil, Nil, tags, None, Nil)
       }
     }
     val description = dataFile map { file => 

@@ -487,4 +487,12 @@ object GwenSettings extends LazyLogging {
     }
   }
 
+  /**
+    * Provides access to the `gwen.input.data.maskFields` setting used to control which
+    * input fields should be masked.
+    */
+  def `gwen.input.data.maskFields`: List[String] = {
+    Settings.getList("gwen.input.data.maskFields", None).map(_.trim)
+  }
+
 }

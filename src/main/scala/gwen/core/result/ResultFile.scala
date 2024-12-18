@@ -29,6 +29,7 @@ import gwen.core.status.StatusKeyword
 import scala.util.Try
 
 import java.io.File
+import gwen.core.state.SensitiveData
 
 case class ResultFile(id: String, file: File, scope: Option[ResultScope], status: Option[StatusKeyword], fields: List[ResultField]) {
 
@@ -50,8 +51,9 @@ case class ResultFile(id: String, file: File, scope: Option[ResultScope], status
             }
           }
         }
-        if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
+        val v = if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
         else value
+        if (field.unmask) SensitiveData.withValue(v)(identity) else v
       }
       if (errors.nonEmpty) {
         Errors.resultsFileErrors(errors)
@@ -94,18 +96,19 @@ object ResultFile {
       fMap.map(s => s._1.substring(s._1.lastIndexOf(".") + 1)).foreach(ResultField.validateSettingName)
       val ref = fMap.collectFirst { case (n, v) if n.endsWith(".ref") => (v, options.interpolate(v)) }
       val defaultValue = fMap.collectFirst { case (n, _) if n.endsWith(".defaultValue") => fileSettings(n) }
+      val unmask = fMap.collectFirst { case (n, _) if n.endsWith(".unmask") => fileSettings(n).toBoolean } getOrElse false
       val excludes = fMap.collectFirst { case (n, _) if n.endsWith(".excludes") => fileSettings(n) } map { v => v.split(",").toList.map(_.trim) } getOrElse Nil
       fMap.collectFirst { case (n, v) if n.endsWith(".field") => v } map { 
-        f => List(ResultField(f, ref.map(_._2).getOrElse(f), defaultValue)) 
+        f => List(ResultField(f, ref.map(_._2).getOrElse(f), defaultValue, unmask)) 
       } getOrElse {
-        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, defaultValue))
+        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, defaultValue, unmask))
       } flatMap { field => 
         if (field.name == "*") {
           val fileOpt = if (field.ref == "") options.dataFile else Some(new File(field.ref))
           fileOpt map { file =>
             if (file.exists) {
               if (FileIO.isCsvFile(file)) {
-                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.defaultValue))
+                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.defaultValue, field.unmask))
               } else if (!ref.map(_._1.contains(s"$$<{${GwenOptions.SettingsKey.dataFile}}>")).getOrElse(false)) {
                 Errors.unsupportedFileError(file, "field reference file", "csv")
               } else {

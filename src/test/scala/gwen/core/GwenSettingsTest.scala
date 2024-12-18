@@ -73,5 +73,6 @@ class GwenSettingsTest extends BaseTest with Matchers {
     GwenSettings.`gwen.logLevel.deprecations` should be (Level.SEVERE)
     GwenSettings.`gwen.report.results.files`(GwenOptions()).length should be (0)
     GwenSettings.`gwen.input.data.readOnly` should be (true)
+    GwenSettings.`gwen.input.data.maskFields` should be (Nil)
   }
 }
