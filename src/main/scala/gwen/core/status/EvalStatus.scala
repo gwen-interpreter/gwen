@@ -75,6 +75,7 @@ trait EvalStatus {
   def isSustainedAssertionError = isAssertionError(AssertionMode.sustained)
   def isAssertionError(mode: AssertionMode): Boolean = isAssertionError && cause.map(_.asInstanceOf[Errors.GwenAssertionError].mode == mode).getOrElse(false)
   def isDeprecationError = cause.map(_.isInstanceOf[Errors.DeprecatedException]).getOrElse(false)
+  def isUndefinedStepOrReferenceError = cause.map(c => c.isInstanceOf[Errors.UndefinedStepException] || c.isInstanceOf[Errors.UnboundAttributeException]).getOrElse(false)
 
   /** Determines whether or not this status is due to an disabled step error. */
   def isDisabledError: Boolean =

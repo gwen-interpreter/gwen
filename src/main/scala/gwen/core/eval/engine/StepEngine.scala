@@ -113,7 +113,7 @@ trait StepEngine[T <: EvalContext] {
       val isTry = step.isTry
       if (isTry) ctx.topScope.pushObject("gwen.scope.try", true)
       try {
-        val prevStatus = if (step.isTry) Some(ctx.currentStatus) else None
+        val prevStatus = if (isTry) Some(ctx.currentStatus) else None
         val pStep = resolveParamPlaceholders(step, ctx)
         val eStep = pStep.evalStatus match {
           case Failed(_, e) if e.isInstanceOf[Errors.MultilineSubstitutionException] => 
@@ -286,7 +286,7 @@ trait StepEngine[T <: EvalContext] {
         }
         if (status.isDisabledError) {
           fStep.copy(withEvalStatus = Disabled)
-        } else if (fStep.isTry && !status.isDeprecationError) {
+        } else if (fStep.isTry && !status.isDeprecationError && !status.isUndefinedStepOrReferenceError) {
           fStep.copy(withEvalStatus = Ignored(nanos))
         } else if (status.isSustainedAssertionError) {
           fStep.copy(withEvalStatus = Sustained(nanos, error))
