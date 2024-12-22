@@ -1,3 +1,9 @@
+4.1.1
+=====
+23 December 2024
+- Revert:
+  - Do not honor `@Try` annotation in dry run mode when a reference is invalid
+
 4.1.0
 =====
 19 December 2024
