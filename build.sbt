@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "4.1.1"
+val gwenVersion = "4.1.2"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.5.2",
+  scalaVersion := "3.6.2",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,22 +41,22 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "30.0.0",
+    "io.cucumber" % "gherkin" % "30.0.4",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "3.27.1",
+    "org.jline" % "jline" % "3.28.0",
     "org.slf4j" % "jul-to-slf4j" % "2.0.16",
-    "ch.qos.logback" % "logback-core" % "1.5.12",
-    "ch.qos.logback" % "logback-classic" % "1.5.12",
+    "ch.qos.logback" % "logback-core" % "1.5.15",
+    "ch.qos.logback" % "logback-classic" % "1.5.15",
     "commons-codec" % "commons-codec" % "1.17.1",
-    "org.apache.commons" % "commons-text" % "1.12.0",
+    "org.apache.commons" % "commons-text" % "1.13.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "2.9.0",
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.1",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.18.1",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.18.2",
     "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
