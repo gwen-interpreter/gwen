@@ -14,5 +14,6 @@ jobs:
         distribution: adopt
         java-version: 17
         cache: sbt
+    - uses: sbt/setup-sbt@v1
     - name: Build and Test
       run: sbt -v +test
