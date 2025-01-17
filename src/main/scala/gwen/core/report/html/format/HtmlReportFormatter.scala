@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 Branko Juric, Brady Wood
+ * Copyright 2014-2025 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -373,11 +373,12 @@ object HtmlReportFormatter {
     )
   }
 
-  private [format] def formatVideoAttachments(reportBase: Option[String], videos: List[File], evalStatus: Option[EvalStatus]): TypedTag[String] = {
+  private [format] def formatVideoAttachments(reportBase: Option[String], videos: List[(File, String)], evalStatus: Option[EvalStatus]): TypedTag[String] = {
     if (videos.size > 1) {
-      formatAttachmentsDropdown("Videos", reportBase, videos.map(f => ("Video", f)), evalStatus.getOrElse(Disabled), videoHref)
+      formatAttachmentsDropdown("Videos", reportBase, videos.map((f, id) => ("Video", new File(s"$id.${f.extension}"))), evalStatus.getOrElse(Disabled), videoHref)
     } else {
-      button(attr("type") := "button", `class` := s"btn btn-${evalStatus.map(_.keyword).map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(videos.head)}', '_blank');", style := "position: relative; top: -1px;",
+      val (f, id) = videos.head
+      button(attr("type") := "button", `class` := s"btn btn-${evalStatus.map(_.keyword).map(cssStatus).getOrElse("default")} btn-lg", onclick := s"window.open('${reportBase.map(d => s"$d/").getOrElse("")}${videoHref(new File(s"${id}.${f.extension}"))}', '_blank');", style := "position: relative; top: -1px;",
         "Video"
       )
     }

@@ -56,14 +56,16 @@ object SensitiveData {
     if (name.startsWith("gwen.") && !name.startsWith("gwen.db")) {
       Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $name")
     }
-    val mValue = MaskedValues.collectFirst {
-      case mValue if mValue.name == name && mValue.plain == value => mValue
-    } getOrElse {
-      MaskedValue(name, value) tap { mValue =>
-        MaskedValues += mValue
+    SensitiveData.synchronized {
+      val mValue = MaskedValues.collectFirst {
+        case mValue if mValue.name == name && mValue.plain == value => mValue
+      } getOrElse {
+        MaskedValue(name, value) tap { mValue =>
+          MaskedValues += mValue
+        }
       }
+      mValue.toString
     }
-    mValue.toString
   }
 
   def parse(name: String, value: String): Option[(String, String)] = {

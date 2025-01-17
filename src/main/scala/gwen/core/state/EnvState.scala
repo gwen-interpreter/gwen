@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2025 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class EnvState(val topScope: TopScope, val stateLevel: StateLevel) {
   private var attachments: List[(Int, String, File)] = Nil
 
   /** List of recorded videos. */
-  private var videos: List[File] = Nil
+  private var videos: List[(File, String)] = Nil
 
   /** Stack of behaviors. */
   private var behaviors = List[BehaviorType]()
@@ -113,11 +113,11 @@ class EnvState(val topScope: TopScope, val stateLevel: StateLevel) {
     *
     * @param videoFile the video file to add
     */
-  def addVideo(videoFile: File): Unit = {
-    videos = videos ++ List(videoFile)
+  def addVideo(videoFile: File, id: String): Unit = {
+    videos = videos ++ List((videoFile, id))
   }
 
-  def getVideos: List[File] = videos
+  def getVideos: List[(File, String)] = videos
 
   /** Adds the given behavior to the top of the stack. */
   def addBehavior(behavior: BehaviorType): Unit = {

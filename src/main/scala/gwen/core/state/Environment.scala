@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2025 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,11 +181,11 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
 
   def popAttachments(): List[(Int, String, File)] = state.popAttachments()
 
-  def addVideo(videoFile: File): Unit = {
-    state.addVideo(videoFile)
+  def addVideo(videoFile: File, id: String): Unit = {
+    state.addVideo(videoFile, id)
   }
 
-  def getVideos: List[File] = state.getVideos
+  def getVideos: List[(File, String)] = state.getVideos
 
   /** Pushes a node onto the node chain.*/
   def pushNode(node: GwenNode): NodeChain = state.pushNode(node)

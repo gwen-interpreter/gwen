@@ -1,3 +1,9 @@
+4.2.0
+=====
+12 January 2025
+- Use unique id to name video file attachments
+- Synchronise masked value cache
+
 4.1.2
 =====
 27 December 2024

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2025 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,12 +156,11 @@ class ReportGenerator (
   }
 
   def copyVideos(result: SpecResult, featureReportFile: File): Unit = {
-    result.videos foreach { videoFile =>
+    result.videos foreach { (videoFile, id) =>
       Try(Wait.waitUntil(GwenSettings.`gwen.video.timeoutSecs`, s"waiting for video file: $videoFile") { videoFile.exists }) match {
         case Success(_) => 
           val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
-          val videoDir = new File(attachmentsDir, "videos")
-          videoFile.copyToDir(videoDir)
+          videoFile.copyToFile(new File(new File(attachmentsDir, "videos"), s"$id.${videoFile.extension}"))
           videoFile.deleteOnExit
         case Failure(e) => 
           if (e.isInstanceOf[WaitTimeoutException]) {
