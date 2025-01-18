@@ -1,7 +1,11 @@
+4.2.2
+=====
+- Set env.TZ setting to default timezone if not already set
+
 4.2.1
 =====
 17 January 2025
-- Gix github CI to use sbt
+- Fix github CI to use sbt
 
 4.2.0
 =====

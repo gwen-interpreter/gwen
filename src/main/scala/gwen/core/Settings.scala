@@ -25,6 +25,7 @@ import scala.util.Try
 
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigValueType
 import com.typesafe.scalalogging.LazyLogging
 import net.minidev.json.JSONArray
 
@@ -35,7 +36,7 @@ import scala.compiletime.uninitialized
 import java.io.File
 import java.util.Properties
 import java.io.FileReader
-import com.typesafe.config.ConfigValueType
+import java.util.TimeZone
 
 object Settings extends LazyLogging {
 
@@ -84,6 +85,9 @@ object Settings extends LazyLogging {
     exclusively {
 
       configProps = new Properties()
+      if (sys.env.get("TZ").isEmpty && sys.props.get("env.TZ").isEmpty) {
+        configProps.setProperty("env.TZ", TimeZone.getDefault().getID())
+      }
       val orphans = new Properties()
       //val sFiles = (settingsFiles.foldLeft(userProjectSettingsFiles) { FileIO.appendFile }).reverse
       val sFiles = (settingsFiles.foldLeft(userSettingsFiles) { FileIO.appendFile }) ++ projectSettingsFiles
