@@ -77,7 +77,10 @@ object SensitiveData {
     }
   }
 
-  def maskedValue(name: String): Option[String] = MaskedValues.find(_.name == s"$name$MaskedNameSuffix").map(_.masked)
+  def maskedValue(name: String): Option[String] = 
+    SensitiveData.synchronized {
+      MaskedValues.find(_.name == s"$name$MaskedNameSuffix").map(_.masked)
+    }
 
   // Unmasks the given value and applies the given function to it
   def withValue[T](value: String)(apply: String => T): T = {

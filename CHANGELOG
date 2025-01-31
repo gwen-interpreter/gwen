@@ -1,3 +1,7 @@
+4.2.3
+=====
+- Synchronise masked value cache
+
 4.2.2
 =====
 - Set env.TZ setting to default timezone if not already set
