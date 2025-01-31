@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "4.2.3"
+val gwenVersion = "4.2.4"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -15,7 +15,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.6.2",
+  scalaVersion := "3.6.3",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,14 +41,14 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "30.0.4",
+    "io.cucumber" % "gherkin" % "31.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "3.28.0",
     "org.slf4j" % "jul-to-slf4j" % "2.0.16",
-    "ch.qos.logback" % "logback-core" % "1.5.15",
-    "ch.qos.logback" % "logback-classic" % "1.5.15",
-    "commons-codec" % "commons-codec" % "1.17.1",
+    "ch.qos.logback" % "logback-core" % "1.5.16",
+    "ch.qos.logback" % "logback-classic" % "1.5.16",
+    "commons-codec" % "commons-codec" % "1.18.0",
     "org.apache.commons" % "commons-text" % "1.13.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "2.9.0",
@@ -57,10 +57,10 @@ lazy val mainDependencies = {
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.1",
     "com.fasterxml.jackson.core" %  "jackson-databind" % "2.18.2",
-    "org.apache.pdfbox" % "pdfbox" % "3.0.3" excludeAll(
+    "org.apache.pdfbox" % "pdfbox" % "3.0.4" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
-    "org.apache.pdfbox" % "pdfbox-io" % "3.0.3" excludeAll(
+    "org.apache.pdfbox" % "pdfbox-io" % "3.0.4" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
   )
@@ -69,11 +69,10 @@ lazy val mainDependencies = {
 lazy val testDependencies = {
   Seq(
     "org.scalatest" %% "scalatest" % "3.2.19",
-    "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0",
-    "org.mockito" % "mockito-core" % "5.14.2",
-    "org.graalvm.js" % "js-scriptengine" % "24.1.1",
-    "org.graalvm.js" % "js" % "24.1.1",
-
+    "org.scalatestplus" %% "mockito-5-12" % "3.2.19.0",
+    "org.mockito" % "mockito-core" % "5.15.2",
+    "org.graalvm.js" % "js-scriptengine" % "24.1.2",
+    "org.graalvm.js" % "js" % "24.1.2"
   ).map(_ % Test)
 }
 

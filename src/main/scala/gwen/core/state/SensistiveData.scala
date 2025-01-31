@@ -24,6 +24,7 @@ import scala.collection.mutable
 import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.Semaphore
 import java.util.regex.Pattern
 
 /**
@@ -40,6 +41,7 @@ object SensitiveData {
   }
 
   private val MaskedValues = mutable.ArrayBuffer[MaskedValue]()
+  private val lock = new Semaphore(1)
 
   private val ZeroCounter = new AtomicInteger(0)
   private val MaskedNameSuffix = ":masked"
@@ -56,7 +58,8 @@ object SensitiveData {
     if (name.startsWith("gwen.") && !name.startsWith("gwen.db")) {
       Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $name")
     }
-    SensitiveData.synchronized {
+    lock.acquire()
+    try {
       val mValue = MaskedValues.collectFirst {
         case mValue if mValue.name == name && mValue.plain == value => mValue
       } getOrElse {
@@ -65,6 +68,8 @@ object SensitiveData {
         }
       }
       mValue.toString
+    } finally {
+      lock.release()
     }
   }
 
@@ -78,8 +83,11 @@ object SensitiveData {
   }
 
   def maskedValue(name: String): Option[String] = 
-    SensitiveData.synchronized {
+    lock.acquire()
+    try {
       MaskedValues.find(_.name == s"$name$MaskedNameSuffix").map(_.masked)
+    } finally {
+      lock.release()
     }
 
   // Unmasks the given value and applies the given function to it
