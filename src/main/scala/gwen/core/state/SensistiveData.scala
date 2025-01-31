@@ -20,11 +20,12 @@ import gwen.core.Errors
 import gwen.core.Formatting
 import gwen.core.GwenSettings
 
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.util.chaining._
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.Semaphore
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.regex.Pattern
 
 /**
@@ -40,8 +41,7 @@ object SensitiveData {
     override final def toString = masked
   }
 
-  private val MaskedValues = mutable.ArrayBuffer[MaskedValue]()
-  private val lock = new Semaphore(1)
+  private val MaskedValues = new CopyOnWriteArrayList[MaskedValue]()
 
   private val ZeroCounter = new AtomicInteger(0)
   private val MaskedNameSuffix = ":masked"
@@ -58,19 +58,14 @@ object SensitiveData {
     if (name.startsWith("gwen.") && !name.startsWith("gwen.db")) {
       Errors.unsupportedMaskedPropertyError(s"Masking not supported for gwen.* setting: $name")
     }
-    lock.acquire()
-    try {
-      val mValue = MaskedValues.collectFirst {
-        case mValue if mValue.name == name && mValue.plain == value => mValue
-      } getOrElse {
-        MaskedValue(name, value) tap { mValue =>
-          MaskedValues += mValue
-        }
+    val mValue = MaskedValues.iterator.asScala.collectFirst {
+      case mValue if mValue.name == name && mValue.plain == value => mValue
+    } getOrElse {
+      MaskedValue(name, value) tap { mValue =>
+        MaskedValues.add(mValue)
       }
-      mValue.toString
-    } finally {
-      lock.release()
     }
+    mValue.toString
   }
 
   def parse(name: String, value: String): Option[(String, String)] = {
@@ -83,17 +78,12 @@ object SensitiveData {
   }
 
   def maskedValue(name: String): Option[String] = 
-    lock.acquire()
-    try {
-      MaskedValues.find(_.name == s"$name$MaskedNameSuffix").map(_.masked)
-    } finally {
-      lock.release()
-    }
+    MaskedValues.iterator.asScala.find(_.name == s"$name$MaskedNameSuffix").map(_.masked)
 
   // Unmasks the given value and applies the given function to it
   def withValue[T](value: String)(apply: String => T): T = {
     apply(
-      if (MaskedValues.nonEmpty && value.contains(ZeroChar)) unmask(value) else value
+      if (!MaskedValues.isEmpty && value.contains(ZeroChar)) unmask(value) else value
     )
   }
 
@@ -103,7 +93,7 @@ object SensitiveData {
         val zeroCount = countZeroes(masked)
         val index = zeroCount - 1
         if (index < MaskedValues.size) {
-          val mValue = MaskedValues(index)
+          val mValue = MaskedValues.get(index)
           val pattern = s"$MaskPattern$ZeroChar{$zeroCount}"
           unmask(value.replaceAll(pattern, mValue.plain))
         } else {
