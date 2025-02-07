@@ -157,7 +157,7 @@ class ReportGenerator (
 
   def copyVideos(result: SpecResult, featureReportFile: File): Unit = {
     result.videos foreach { (videoFile, id) =>
-      Try(Wait.waitUntil(GwenSettings.`gwen.video.timeoutSecs`, s"waiting for video file: $videoFile") { videoFile.exists }) match {
+      Try(Wait.until(GwenSettings.`gwen.video.timeoutSecs`, s"waiting for video file: $videoFile") { videoFile.exists }) match {
         case Success(_) => 
           val attachmentsDir = new File(featureReportFile.getParentFile, "attachments")
           videoFile.copyToFile(new File(new File(attachmentsDir, "videos"), s"$id.${videoFile.extension}"))

@@ -51,7 +51,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
     var iteration = 0
     ctx.perform {
       try {
-        ctx.waitUntil(timeout.toSeconds.toInt, s"trying to repeat: ${step.name}") {
+        ctx.waitUntil(0, timeout.toSeconds.toInt, s"trying to repeat: ${step.name}") {
           iteration = iteration + 1
           val preStep = step.copy(
             withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,

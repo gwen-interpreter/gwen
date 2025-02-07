@@ -189,7 +189,20 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     * @param condition the boolean condition to wait for (until true)
     */
   def waitUntil(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
-    Wait.waitUntil(timeoutSecs, reason) { condition }
+    Wait.until(timeoutSecs, reason) { condition }
+  }
+
+  /**
+    * Waits until a given condition is ready for a given number of seconds.
+    * Errors on given timeout out seconds. Checks condition every 1 second.
+    *
+    * @param pollMsecs the polling interval in milliseconds
+    * @param timeoutSecs the number of seconds to wait before timing out
+    * @param reason a description of what is being waited on
+    * @param condition the boolean condition to wait for (until true)
+    */
+  def waitUntil(pollMsecs: Long, timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
+    Wait.until(pollMsecs, timeoutSecs, reason) { condition }
   }
 
   def getWithWait[T](timeoutSecs: Long, reason: String)(func: () => T): T = {
@@ -226,8 +239,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     * @param step the step to evaluate
     * @param stepFunction the step evaluator function
     */
-  def withStep(step: Step)(stepFunction: Step => Step): Step = {
-    val start = System.nanoTime - step.evalStatus.nanos
+  def withStep(step: Step, start: Long)(stepFunction: Step => Step): Step = {
     Try(stepFunction(step)) match {
       case Success(eStep) =>
         val status = eStep.stepDef map { sd => sd.evalStatus }  getOrElse {

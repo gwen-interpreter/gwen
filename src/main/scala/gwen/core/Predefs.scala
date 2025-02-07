@@ -47,7 +47,6 @@ import java.io.StringWriter
 import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.text.DecimalFormat
 import java.util.UUID
-import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.Date
 import java.text.SimpleDateFormat
@@ -544,25 +543,26 @@ object Wait {
     * Waits until a given condition is ready for a given number of seconds.
     * Errors on given timeout out seconds. Checks condition every 1 second.
     *
+    * @param pollMsecs the polling interval in milliseconds
     * @param timeoutSecs the number of seconds to wait before timing out
     * @param reason a description of what is being waited on
     * @param condition the boolean condition to wait for (until true)
     */
-  def waitUntil(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
-    val lock = new Semaphore(1)
-    lock.acquire()
+  def until(pollMsecs: Long, timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
+    var satisfied = false
     val start = System.currentTimeMillis
-    while(lock.availablePermits < 1 && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) {
-      if (condition) lock.release()
+    while(!satisfied && ((System.currentTimeMillis - start) / 1000) < timeoutSecs) {
+      if (condition) satisfied = true
+      else if (pollMsecs > 0) Thread.sleep(pollMsecs)
     }
-    try {
-      if (lock.availablePermits < 1) {
-        Errors.waitTimeoutError(timeoutSecs, reason)
-      }
-    } finally {
-      lock.release()
+    if (!satisfied) {
+      Errors.waitTimeoutError(timeoutSecs, reason)
     }
   }
+  def until(timeoutSecs: Long, reason: String)(condition: => Boolean): Unit = {
+    until(200, timeoutSecs, reason)(condition)
+  }
+
 }
 
 enum LocationType:
