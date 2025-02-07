@@ -263,16 +263,33 @@ object FileIO {
   }
 }
 
+object StringPrinter {
+
+  def withPrinter(print: PrintWriter => Unit): String = {
+    val sw = new StringWriter()
+    val pw = new PrintWriter(sw)
+    try {
+      print(pw)
+      pw.flush()
+      sw.toString
+    } finally {
+        try {
+          pw.close()
+        } finally {
+          sw.close()
+        }
+    }
+  }
+
+}
+
 /** Exception functions. */
 extension [T <: Throwable](error: T) {
 
   def writeStackTrace(): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    error.printStackTrace(pw)
-    pw.flush()
-    pw.close()
-    sw.toString
+    StringPrinter.withPrinter { pw =>
+      error.printStackTrace(pw)
+    }
   }
 
   def getMessageLine1: String = {

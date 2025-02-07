@@ -28,8 +28,6 @@ import net.minidev.json.JSONArray
 import scala.util.chaining._
 import scala.jdk.CollectionConverters._
 
-import java.io.StringWriter
-import java.io.PrintWriter
 
 /**
   * Binds all top level attributes. Also included is a cache for various scopes and arbitrary objects. 
@@ -196,21 +194,19 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     * Returns this entire scope as a String.
     */
   def asString(all: Boolean, env: Boolean): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    if (all) {
-      if (env) pw.println("""env : "implicits" {""")
-      featureScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      ruleScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      examplesScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-      if (env) pw.println("}")
+    StringPrinter.withPrinter { pw =>
+      if (all) {
+        if (env) pw.println("""env : "implicits" {""")
+        featureScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        ruleScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        examplesScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        if (env) pw.println("}")
+      }
+      pw.print(super.asString(env))
     }
-    pw.print(super.asString(env))
-    pw.flush()
-    sw.toString
   }
 
 }

@@ -17,7 +17,6 @@
 package gwen.core.node.gherkin
 
 import gwen.core._
-
 import gwen.core.node._
 import gwen.core.status._
 import gwen.core.result.SpecResult
@@ -31,7 +30,6 @@ import scala.util.Try
 
 
 import java.io.PrintWriter
-import java.io.StringWriter
 import java.util.Date
 /**
   * Pretty prints a spec node to a string.  This object recursively prints
@@ -55,9 +53,9 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
 
   def prettyPrint(parent: GwenNode, node: GwenNode): String = {
     Formatting.stripZeroChar(
-      new StringWriter() tap { sw =>
-        walk(parent, node, new PrintWriter(sw))
-      } toString
+      StringPrinter.withPrinter { pw =>
+        walk(parent, node, pw)
+      }
     )
   }
 
@@ -231,10 +229,9 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   }
 
   def printStatus(indent: String, status: EvalStatus, message: Option[String], withIcon: Boolean, withStatusIcon: Boolean): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    printStatus(indent, status, message, withIcon, withStatusIcon, pw)
-    sw.toString
+    StringPrinter.withPrinter { pw =>
+      printStatus(indent, status, message, withIcon, withStatusIcon, pw)
+    }
   }
 
   private def printStatus(indent: String, status: EvalStatus, message: Option[String], withIcon: Boolean, withStatusIcon: Boolean, out: PrintWriter): Unit = {
@@ -267,74 +264,72 @@ class SpecPrinter(deep: Boolean, verbatim: Boolean, colors: Boolean) extends Spe
   }
 
   private def printSpecResult(started: Date, finished: Date, elapsedTime: Duration, evalStatus: EvalStatus, statusCounts: List[(NodeType, Map[StatusKeyword, Int])], message: Option[String]): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    val header: List[String] = "" :: StatusKeyword.reportables.map(_.toString)
-    val details: List[List[String]] = statusCounts map { (node, counts) => 
-      val sum = counts.values.sum
-      s"$sum ${node}${if (sum == 1) "" else "s"}" :: (
-        StatusKeyword.reportables map { keyword => 
-          counts.get(keyword).map(_.toString).getOrElse("-")
-        }
-      )
-    }
-    val table = header :: details
-    val widths = table.transpose.map(_.map(_.length).max + 2)
-    pw.println()
-    table.zipWithIndex foreach { (row, rowIndex)  => 
-      pw.println(
-        ((row zip widths).zipWithIndex) map { case ((cell, width), colIndex) => 
-          val column = Formatting.leftPad(cell, width)
-          if (colors) {
-            if (rowIndex == 0) {
-              if (colIndex == 0 || header(colIndex) == evalStatus.keyword.toString) {
-                s"${ansi.bold.fg(colorFor(evalStatus))}$column${ansi.reset}"
+    StringPrinter.withPrinter { pw =>
+      val header: List[String] = "" :: StatusKeyword.reportables.map(_.toString)
+      val details: List[List[String]] = statusCounts map { (node, counts) => 
+        val sum = counts.values.sum
+        s"$sum ${node}${if (sum == 1) "" else "s"}" :: (
+          StatusKeyword.reportables map { keyword => 
+            counts.get(keyword).map(_.toString).getOrElse("-")
+          }
+        )
+      }
+      val table = header :: details
+      val widths = table.transpose.map(_.map(_.length).max + 2)
+      pw.println()
+      table.zipWithIndex foreach { (row, rowIndex)  => 
+        pw.println(
+          ((row zip widths).zipWithIndex) map { case ((cell, width), colIndex) => 
+            val column = Formatting.leftPad(cell, width)
+            if (colors) {
+              if (rowIndex == 0) {
+                if (colIndex == 0 || header(colIndex) == evalStatus.keyword.toString) {
+                  s"${ansi.bold.fg(colorFor(evalStatus))}$column${ansi.reset}"
+                } else column
+              } else if (colIndex > 0 && cell != "-") {
+                s"${ansi.fg(colorFor(StatusKeyword.valueOf(header(colIndex))))}$column${ansi.reset}"
               } else column
-            } else if (colIndex > 0 && cell != "-") {
-              s"${ansi.fg(colorFor(StatusKeyword.valueOf(header(colIndex))))}$column${ansi.reset}"
             } else column
-          } else column
-        } mkString
-      )
+          } mkString
+        )
+      }
+      pw.println()
+      pw.println(s"${Formatting.leftPad("Started", widths(0))}  $started")
+      pw.println(s"${Formatting.leftPad("Finished", widths(0))}  $finished")
+      pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
+      pw.println()
+      printStatus("", evalStatus, message, withIcon = false, withStatusIcon = true, pw)
+      if (deep) pw.println()
     }
-    pw.println()
-    pw.println(s"${Formatting.leftPad("Started", widths(0))}  $started")
-    pw.println(s"${Formatting.leftPad("Finished", widths(0))}  $finished")
-    pw.println(s"${Formatting.leftPad("Elapsed", widths(0))}  ${Formatting.formatDuration(elapsedTime)}")
-    pw.println()
-    printStatus("", evalStatus, message, withIcon = false, withStatusIcon = true, pw)
-    if (deep) pw.println()
-    sw.toString
   }
 
   def printSummary(summary: ResultsSummary): String = {
-    val sw = new StringWriter()
-    val pw = new PrintWriter(sw)
-    val status = summary.evalStatus.keyword
-    pw.println()
-    pw.println("Summary:")
-    pw.println()
-    val resultsByStatus = StatusKeyword.reportables.reverse flatMap { keyword => 
-      val results = summary.results.filter(_.evalStatus.keyword == keyword)
-      if (results.nonEmpty) Some(keyword, results) else None
-    }
-    val messages = resultsByStatus.zipWithIndex.foldLeft(List[String]()) { case (acc, ((keyword, results), idx)) => 
-      if (idx > 0) pw.println()
-      val widths = List(
-        Try(results.map(r => printStatus(r.spec, None, withIcon = false, withStatusIcon = true)).map(_.length).max).getOrElse(0),
-        Try(results.map(_.spec.feature.displayName).map(_.length).max).getOrElse(0),
-        Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
-      )
-      val msgs: List[String] = results flatMap { result =>
-        val spec = result.spec
-        pw.println(s"  ${Formatting.leftPad(printStatus(spec, None, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.displayName, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
-        if (result.evalStatus.isError) Some(result.message)
-        else None
+    StringPrinter.withPrinter { pw =>
+      val status = summary.evalStatus.keyword
+      pw.println()
+      pw.println("Summary:")
+      pw.println()
+      val resultsByStatus = StatusKeyword.reportables.reverse flatMap { keyword => 
+        val results = summary.results.filter(_.evalStatus.keyword == keyword)
+        if (results.nonEmpty) Some(keyword, results) else None
       }
-      acc ++ msgs
+      val messages = resultsByStatus.zipWithIndex.foldLeft(List[String]()) { case (acc, ((keyword, results), idx)) => 
+        if (idx > 0) pw.println()
+        val widths = List(
+          Try(results.map(r => printStatus(r.spec, None, withIcon = false, withStatusIcon = true)).map(_.length).max).getOrElse(0),
+          Try(results.map(_.spec.feature.displayName).map(_.length).max).getOrElse(0),
+          Try(results.map(_.spec.uri).map(_.length).max).getOrElse(0)
+        )
+        val msgs: List[String] = results flatMap { result =>
+          val spec = result.spec
+          pw.println(s"  ${Formatting.leftPad(printStatus(spec, None, withIcon = false, withStatusIcon = true), widths(0))}  ${Formatting.rightPad(spec.feature.displayName, widths(1))}  ${Formatting.rightPad(spec.uri, widths(2))}")
+          if (result.evalStatus.isError) Some(result.message)
+          else None
+        }
+        acc ++ msgs
+      }
+      pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false), Some(messages.mkString("\n"))))
     }
-    pw.println(printSpecResult(summary.started, summary.finished, summary.elapsedTime, summary.evalStatus, summary.statusCounts(withEmpty = false), Some(messages.mkString("\n"))))
-    sw.toString
   }
 
   private def indentForStatus(node: GwenNode): String = {
