@@ -354,7 +354,14 @@ object GwenSettings extends LazyLogging {
     */
   def `gwen.parallel.maxThreads`: Int = {
     val maxThreads = Settings.getOpt("gwen.parallel.maxThreads") map { n => 
-      if (n == "auto") 0 else Settings.getInt("gwen.parallel.maxThreads")
+      n match {
+        case "auto" => 
+          0
+        case r"(\d+)$percentage%" => 
+          math.round((percentage.toDouble / 100d) * availableProcessors.toDouble).toInt
+        case _ => 
+          Settings.getInt("gwen.parallel.maxThreads")
+      }
     } getOrElse 0
     if (maxThreads < 0) {
       Errors.propertyLoadError("gwen.parallel.maxThreads", "cannot be less than 0")

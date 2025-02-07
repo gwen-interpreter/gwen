@@ -1,3 +1,9 @@
+4.3.0
+=====
+7 February 2025
+- `gwen.parallel.maxThreads` can now be set to a percentage of total cores available
+  - example: 80% for utilisation of 8 of 10 cores available for parallel processing
+
 4.2.4
 =====
 1 February 2025
