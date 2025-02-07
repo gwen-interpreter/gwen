@@ -166,7 +166,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def isEvaluatingTopLevelStep: Boolean = paramScope.isEmpty
 
   def addAttachment(name: String, extension: String, content: String): Unit = { 
-    val file = File.createTempFile(s"${Formatting.padWithZeroes(EnvState.nextAttachmentNo())}-", s".$extension")
+    val file = File.createTempFile(s"$name-", s".$extension")
     file.deleteOnExit()
     file.writeText(content)
     val attach = if (name.endsWith("-function")) GwenSettings.`gwen.report.attach.functions` else true
