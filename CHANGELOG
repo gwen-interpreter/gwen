@@ -1,7 +1,12 @@
+4.3.2
+=====
+8 February 2025
+- Add dependency overrides to main dependencies
+
 4.3.1
 =====
 8 February 2025
-- Override dependencies (security udpate)
+- Override dependencies (security update)
   - Update json-smart from v2.5.0 to v2.5.1
 
 4.3.0
