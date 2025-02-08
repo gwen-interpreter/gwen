@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "4.3.0"
+val gwenVersion = "4.3.1"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -9,7 +9,8 @@ git.useGitDescribe := true
 lazy val gwen = (project in file("."))
   .settings(
     projectSettings,
-    libraryDependencies ++= mainDependencies ++ testDependencies
+    libraryDependencies ++= mainDependencies ++ testDependencies,
+    dependencyOverrides ++= mainOverrides
   )
 
 lazy val projectSettings = Seq(
@@ -63,6 +64,12 @@ lazy val mainDependencies = {
     "org.apache.pdfbox" % "pdfbox-io" % "3.0.4" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
+  )
+}
+
+lazy val mainOverrides = {
+  Seq(
+    "net.minidev" % "json-smart" % "2.5.1"
   )
 }
 
