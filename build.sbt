@@ -1,7 +1,7 @@
 enablePlugins(GitVersioning)
 
 // gwen core version
-val gwenVersion = "4.3.2"
+val gwenVersion = "4.3.3"
 
 git.baseVersion := gwenVersion
 git.useGitDescribe := true
@@ -68,7 +68,7 @@ lazy val mainDependencies = {
 
 lazy val mainOverrides = {
   Seq(
-    "net.minidev" % "json-smart" % "2.5.1"
+    "net.minidev" % "json-smart" % "2.5.2"
   )
 }
 
