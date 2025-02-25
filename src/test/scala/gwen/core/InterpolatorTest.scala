@@ -391,6 +391,109 @@ class InterpolatorTest extends BaseTest with Matchers {
     }
   }
 
+  """Unbound property""" should "resolve to elvis string value" in {
+    interpolateStrict("""Hello ${undefined.prop ?: 'there'}!""") {
+      case _ => None
+    } should be ("Hello there!")
+  }
+
+  """Unbound property""" should "resolve to elvis boolean literal" in {
+    interpolateStrict("""Hello ${undefined.prop ?: true}!""") {
+      case _ => None
+    } should be ("Hello true!")
+  }
+
+  """Unbound property""" should "resolve to elvis boolean string" in {
+    interpolateStrict("""Hello ${undefined.prop ?: 'true'}!""") {
+      case _ => None
+    } should be ("Hello true!")
+  }
+
+  """Unbound property""" should "resolve to elvis blank literal" in {
+    interpolateStrict("""Hello ${undefined.prop ?: blank}!""") {
+      case _ => None
+    } should be ("Hello !")
+  }
+
+  """Unbound property""" should "resolve to elvis blank string" in {
+    interpolateStrict("""Hello ${undefined.prop ?: ''}!""") {
+      case _ => None
+    } should be ("Hello !")
+  }
+
+  """Bound property""" should "not resolve to elvis string value" in {
+    interpolateStrict("""Hello ${bound.prop ?: 'there'}!""") {
+      case "bound.prop" => Some("folks")
+      case _ => None
+    } should be ("Hello folks!")
+  }
+
+  """Bound property""" should "not resolve to elvis boolean literal" in {
+    interpolateStrict("""Hello ${bound.prop ?: true}!""") {
+      case "bound.prop" => Some("folks")
+      case _ => None
+    } should be ("Hello folks!")
+  }
+
+  """Bound property""" should "not resolve to elvis boolean string" in {
+    interpolateStrict("""Hello ${bound.prop ?: 'true'}!""") {
+      case "bound.prop" => Some("folks")
+      case _ => None
+    } should be ("Hello folks!")
+  }
+
+  """Bound property""" should "not resolve to elvis blank literal" in {
+    interpolateStrict("""Hello ${bound.prop ?: blank}!""") {
+      case "bound.prop" => Some("folks")
+      case _ => None
+    } should be ("Hello folks!")
+  }
+
+  """Bound property""" should "not resolve to elvis blank string" in {
+    interpolateStrict("""Hello ${bound.prop ?: ""}!""") {
+      case "bound.prop" => Some("folks")
+      case _ => None
+    } should be ("Hello folks!")
+  }
+
+  """Unbound nested property""" should "resolve to elvis string literal" in {
+    interpolateStrict("""Hello ${undefined.prop1 ?: '${undefined.prop2 ?: 'Nested'}'}!""") {
+      case _ => None
+    } should be ("Hello Nested!")
+  }
+
+  """Unbound nested property""" should "resolve to elvis blank literal" in {
+    interpolateStrict("""Hello ${undefined.prop1 ?: '${undefined.prop2 ?: blank}'}!""") {
+      case _ => None
+    } should be ("Hello !")
+  }
+
+  """Unbound nested property""" should "resolve to elvis blank string" in {
+    interpolateStrict("""Hello ${undefined.prop1 ?: '${undefined.prop2 ?: ''}'}!""") {
+      case _ => None
+    } should be ("Hello !")
+  }
+
+  """Unbound nested property""" should "resolve to elvis boolean literal" in {
+    interpolateStrict("""Hello ${undefined.prop1 ?: '${undefined.prop2 ?: false}'}!""") {
+      case _ => None
+    } should be ("Hello false!")
+  }
+
+   """Unresolvable nested elvis bindings""" should "fail" in {
+    intercept[UnboundAttributeException] {
+      interpolateStrict("""Hello ${undefined.prop1 ?: '${undefined.prop2 ?: '${undefined.prop3}'}'}!""") {
+        case _ => None
+      }
+    }
+  }
+
+  """Value with elvis literal""" should "resolve to value" in  {
+    interpolateStrict("""${y ?: 'howdy ?: do'}""") {
+      case _ => None
+    } should be ("howdy ?: do")
+  }
+
   private def interpolate(source: String, lenient: Boolean = false)(resolver: String => Option[String]): String = {
     createInterpolator(lenient, resolver).interpolate(source)
   }
@@ -404,8 +507,8 @@ class InterpolatorTest extends BaseTest with Matchers {
     if (lenient) interpolator.lenient else interpolator
   }
 
-  private def interpolateStrict(source: String, lenient: Boolean = false)(resolver: String => Option[String]): String = {
-    createInterpolator(lenient, resolver).strict.interpolate(source)
+  private def interpolateStrict(source: String)(resolver: String => Option[String]): String = {
+    createInterpolator(false, resolver).strict.interpolate(source)
   }
 
 }

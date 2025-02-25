@@ -1,3 +1,14 @@
+4.4.0
+=====
+26 February 2025
+- Introduce elvis operator to support default values for undefined bindings
+  - Examples: 
+    `${unbound.string :? 'defaultValue'}`
+    `${unbound.string :? '${some.bound.value}'}`
+    `${unbound.string :? blank}`
+    `${unbound.boolean :? false}`
+    `${unbound.string1 :? '${unbound.string2 ?: blank}'}`
+
 4.3.3
 =====
 14 February 2025

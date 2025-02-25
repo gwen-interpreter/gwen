@@ -137,8 +137,8 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
     *         newly added attribute
     */
   def set(name: String, value: String, force: Boolean = false): ScopedData = {
-    if (!force) checkMutability(name, this)
     if (!hasValue(name, value)) {
+      if (!force) checkMutability(name, this)
       (name, value) tap { nvp =>
         logger.debug(s"Binding $nvp to scope/$scope")
         atts += nvp
@@ -153,7 +153,6 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
     * @param name the name of the attribute to clear
     */
   def clear(name: String, force: Boolean = false): ScopedData = {
-    if (!force) checkMutability(name, this)
     (findEntries { case (n, _) =>
       (n == name || n.startsWith(s"$name/")) && !n.endsWith(s"/${BindingType.dryValue}")
     } map { case (n, _) =>
@@ -161,6 +160,7 @@ class ScopedData(val scope: String) extends Mutability with LazyLogging {
     } distinct) filter { n => 
       getOpt(n).nonEmpty
     } foreach { n =>
+      if (!force) checkMutability(name, this)
       set(n, null)
     }
     this

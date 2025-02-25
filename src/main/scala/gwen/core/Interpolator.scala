@@ -73,12 +73,25 @@ class Interpolator(resolver: String => Option[String]) extends LazyLogging {
   private[core] def resolveParam(name: String): String = resolveStrict(name)
 
   private final def resolveStrict(name: String): String = {
-    resolver.apply(name) getOrElse { Errors.unboundReferenceError(name) }
+    name match {
+      case r"""(.+?)$n \?: (.+)$v""" if !n.contains("=>") =>
+        try {
+          resolveStrict(n)
+        } catch {
+          case e: UnboundReferenceException =>
+            v match {
+              case r"""('|"|`)$q(.*)$qv\1""" => qv
+              case _ => Try(ValueLiteral.valueOf(v).value).getOrElse(v)
+            }
+        }
+      case _ =>
+        resolver.apply(name) getOrElse { Errors.unboundReferenceError(name) }
+    }
   }
 
   private final def resolveLenient(name: String): String = {
-    Try(resolver.apply(name)) match {
-      case Success(value) => value
+    Try(resolveStrict(name)) match {
+      case Success(value) => Option(value)
       case Failure(e) => 
         if (e.isInstanceOf[UnboundReferenceException]) None
         else throw e
