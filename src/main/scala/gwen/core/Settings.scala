@@ -122,10 +122,15 @@ object Settings extends LazyLogging {
         if (!name.contains("\"")) set(name, entry.getValue.toString)
       }
 
-      // store quoted or masked settings
+      // store quoted or masked string settings
       names flatMap { name => 
         val rawName = name.replaceAll("\"", "")
         if (name != rawName || SensitiveData.isMaskedName(rawName)) Some((name, rawName)) else None
+      } filter { (name, _) => 
+        config.getValue(name).valueType match {
+          case ConfigValueType.BOOLEAN | ConfigValueType.NUMBER | ConfigValueType.STRING => true
+          case _ => false
+        }
       } foreach { (name, rawName) => 
         set(rawName, getOpt(name).getOrElse(resolve(config.getString(name))))
       }
