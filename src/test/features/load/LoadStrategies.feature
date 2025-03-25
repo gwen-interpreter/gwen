@@ -159,7 +159,7 @@ Feature: Load Strategies
       And date 3a is "0"
       And date 3b is "0"
       And @Eager the eager date is defined by system process "date"
-      And @lazy the lazy date is defined by system process "date"
+      And @Lazy the lazy date is defined by system process "date"
       And the ephemeral date is defined by system process "date"
      When I capture the eager date as date 1a
       And I wait 1 second

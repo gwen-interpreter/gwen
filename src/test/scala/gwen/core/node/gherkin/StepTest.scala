@@ -190,40 +190,40 @@ class StepTest extends BaseTest with Matchers with GherkinParser with TestModel 
 
   "@Breakpoint on step" should "parse" in {
     val step1 = parse("Given @Breakpoint I am a breakpoint").get
-    val step2 = parse("Given @breakpoint I am a breakpoint too").get
+    val step2 = parse("Given @Breakpoint I am a breakpoint too").get
     step1.isBreakpoint should be (true)
     step1.isFinally should be (false)
     step1.tags should be (List(Tag("@Breakpoint")))
     step1.name should be ("I am a breakpoint")
     step2.isBreakpoint should be (true)
     step2.isFinally should be (false)
-    step2.tags should be (List(Tag("@breakpoint")))
+    step2.tags should be (List(Tag("@Breakpoint")))
     step2.name should be ("I am a breakpoint too")
   }
 
   "@Finally on step" should "parse" in {
     val step1 = parse("Given @Finally I am a finally").get
-    val step2 = parse("Given @finally I am a finally too").get
+    val step2 = parse("Given @Finally I am a finally too").get
     step1.isBreakpoint should be (false)
     step1.isFinally should be (true)
     step1.tags should be (List(Tag("@Finally")))
     step1.name should be ("I am a finally")
     step2.isFinally should be (true)
     step2.isBreakpoint should be (false)
-    step2.tags should be (List(Tag("@finally")))
+    step2.tags should be (List(Tag("@Finally")))
     step2.name should be ("I am a finally too")
   }
 
   "@Breakpoint and @Finally on step" should "parse" in {
     val step1 = parse("Given @Breakpoint @Finally I am a breakpoint and finally").get
-    val step2 = parse("Given @finally  @breakpoint I am a breakpoint and finally too").get
+    val step2 = parse("Given @Finally  @Breakpoint I am a breakpoint and finally too").get
     step1.isBreakpoint should be (true)
     step1.isFinally should be (true)
     step1.tags should be (List(Tag("@Breakpoint"), Tag("@Finally")))
     step1.name should be ("I am a breakpoint and finally")
     step2.isBreakpoint should be (true)
     step2.isFinally should be (true)
-    step2.tags should be (List(Tag("@finally"), Tag("@breakpoint")))
+    step2.tags should be (List(Tag("@Finally"), Tag("@Breakpoint")))
     step2.name should be ("I am a breakpoint and finally too")
   }
   

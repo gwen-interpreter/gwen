@@ -369,6 +369,9 @@ object Step {
         case r""".+@DryRun.*""" => 
           Errors.illegalStepAnnotationError(sourceRef, "Invalid @DryRun annotation syntax. Expected @DryRun(name = '<name>', value = '<value>') or @DryRun(name = '<name>', value = ['<value-1>', '<value-2>', '<value-N>'])")
         case _ => 
+          t foreach { a => 
+            Annotations.validateStepLevel(sourceRef, a)
+          }
           (n, t, None, Nil)
       }
     }
