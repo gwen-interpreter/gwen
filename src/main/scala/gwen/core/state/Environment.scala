@@ -48,6 +48,7 @@ abstract class Environment(initialState: EnvState) extends LazyLogging {
   def scenarioScope: ScopedDataStack = topScope.scenarioScope
   def examplesScope: ScopedDataStack = topScope.examplesScope
   def stepDefScope: ScopedDataStack = topScope.stepDefScope
+  def iterationScope: ScopedDataStack = topScope.iterationScope
   def nodeChain: NodeChain = state.nodeChain
 
   /** Create a shallow clone of the current environment state */

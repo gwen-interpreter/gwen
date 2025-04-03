@@ -49,41 +49,21 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
     var evaluatedStep = step
     val start = System.nanoTime()
     var iteration = 0
+    var iterData: List[(String, String)] = Nil
     ctx.perform {
       try {
         ctx.waitUntil(0, timeout.toSeconds.toInt, s"trying to repeat: ${step.name}") {
           iteration = iteration + 1
-          val preStep = step.copy(
-            withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,
-            withName = doStep,
-            withParams = step.params ++ List((`gwen.iteration.index`, (iteration - 1).toString), (`gwen.iteration.number`, iteration.toString))
-          )
-          operation match {
-            case "until" =>
-              logger.info(s"repeat-until $condition: iteration $iteration")
-              if (condSteps.isEmpty) {
-                engine.beforeStepDef(preCondStepDef, ctx)
-              }
-              val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
-              condSteps = iterationStep :: condSteps
-              iterationStep.evalStatus match {
-                case Failed(_, e) => throw e
-                case _ =>
-                  evaluteCondition(ctx) tap { result =>
-                    if (!result) {
-                      logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
-                      if (delay.gt(Duration.Zero)) {
-                        condSteps = delayStep(delay, ctx) :: condSteps
-                      }
-                    } else {
-                      logger.info(s"repeat-until $condition: completed")
-                    }
-                  }
-              }
-            case "while" =>
-              val result = evaluteCondition(ctx)
-              if (result) {
-                logger.info(s"repeat-while $condition: iteration $iteration")
+          iterData = List((`gwen.iteration.index`, (iteration - 1).toString), (`gwen.iteration.number`, iteration.toString))
+          ctx.iterationScope.boundary(step.name, iterData) {
+            val preStep = step.copy(
+              withKeyword = if(iteration == 1) step.keyword else StepKeyword.And.toString,
+              withName = doStep,
+              withParams = step.params ++ iterData
+            )
+            operation match {
+              case "until" =>
+                logger.info(s"repeat-until $condition: iteration $iteration")
                 if (condSteps.isEmpty) {
                   engine.beforeStepDef(preCondStepDef, ctx)
                 }
@@ -92,15 +72,39 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
                 iterationStep.evalStatus match {
                   case Failed(_, e) => throw e
                   case _ =>
-                    logger.info(s"repeat-while $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
-                    if (delay.gt(Duration.Zero)) {
-                      condSteps = delayStep(delay, ctx) :: condSteps
+                    evaluteCondition(ctx) tap { result =>
+                      if (!result) {
+                        logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
+                        if (delay.gt(Duration.Zero)) {
+                          condSteps = delayStep(delay, ctx) :: condSteps
+                        }
+                      } else {
+                        logger.info(s"repeat-until $condition: completed")
+                      }
                     }
                 }
-              } else {
-                logger.info(s"repeat-while $condition: completed")
-              }
-              !result
+              case "while" =>
+                val result = evaluteCondition(ctx)
+                if (result) {
+                  logger.info(s"repeat-while $condition: iteration $iteration")
+                  if (condSteps.isEmpty) {
+                    engine.beforeStepDef(preCondStepDef, ctx)
+                  }
+                  val iterationStep = engine.evaluateStep(preCondStepDef, preStep, ctx)
+                  condSteps = iterationStep :: condSteps
+                  iterationStep.evalStatus match {
+                    case Failed(_, e) => throw e
+                    case _ =>
+                      logger.info(s"repeat-while $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
+                      if (delay.gt(Duration.Zero)) {
+                        condSteps = delayStep(delay, ctx) :: condSteps
+                      }
+                  }
+                } else {
+                  logger.info(s"repeat-while $condition: completed")
+                }
+                !result
+            }
           }
         }
       } catch {
@@ -118,15 +122,22 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
           )
       }
     } getOrElse {
-      operation match {
-        case "until" =>
-          val iterationStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-          evaluteCondition(ctx)
-          condSteps = iterationStep :: condSteps
-        case _ =>
-          evaluteCondition(ctx)
-          val iterationStep = engine.evaluateStep(step, step.copy(withName = doStep), ctx)
-          condSteps = iterationStep :: condSteps
+      iterData = List((`gwen.iteration.index`, "0"), (`gwen.iteration.number`, "1"))
+      ctx.iterationScope.boundary(step.name, iterData) {
+        val pStep = step.copy(
+          withName = doStep,
+          withParams = step.params ++ iterData
+        )
+        operation match {
+          case "until" =>
+            val iterationStep = engine.evaluateStep(step, pStep, ctx)
+            evaluteCondition(ctx)
+            condSteps = iterationStep :: condSteps
+          case _ =>
+            evaluteCondition(ctx)
+            val iterationStep = engine.evaluateStep(step, pStep, ctx)
+            condSteps = iterationStep :: condSteps
+        }
       }
     }
     if (condSteps.nonEmpty) {
@@ -136,7 +147,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
             val preStep = condSteps.head.copy(
               withKeyword = StepKeyword.And.toString,
               withName = doStep,
-              withParams = step.params ++ List((`gwen.iteration.index`, iteration.toString), (`gwen.iteration.number`, (iteration + 1).toString))
+              withParams = step.params ++ iterData
             )
             engine.beforeStep(preStep, ctx)
             val fStep = engine.finaliseStep(

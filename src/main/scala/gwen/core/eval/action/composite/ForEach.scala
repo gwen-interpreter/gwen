@@ -85,34 +85,30 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     ctx.topScope.pushObject(name, currentElement)
                     List((name, s"$name ${occurence.number}"), (`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
                 }
-                val prevIndex = ctx.topScope.featureScope.getOpt(`gwen.iteration.index`)
-                val prevNumber = ctx.topScope.featureScope.getOpt(`gwen.iteration.number`)
                 val descriptor = s"[$name] $occurence"
-                ctx.topScope.featureScope.set(`gwen.iteration.index`, occurence.index.toString)
-                ctx.topScope.featureScope.set(`gwen.iteration.number`, occurence.number.toString)
                 (try {
-                  EvalStatus(acc.map(_.evalStatus)) match {
-                    case status @ Failed(_, error)  =>
-                      val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
-                      val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
-                      if (failfast && !isSoftAssert) {
-                        logger.info(s"Skipping $descriptor")
-                        engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
-                      } else {
+                  ctx.iterationScope.boundary(step.name, params.filter(_._1.startsWith(`gwen.iteration.`))) {
+                    EvalStatus(acc.map(_.evalStatus)) match {
+                      case status @ Failed(_, error)  =>
+                        val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
+                        val failfast = ctx.evaluate(false) { GwenSettings.`gwen.feature.failfast.enabled` }
+                        if (failfast && !isSoftAssert) {
+                          logger.info(s"Skipping $descriptor")
+                          engine.transitionStep(foreachSteps(index).copy(withParams = params), Skipped, ctx)
+                        } else {
+                          logger.info(s"Processing $descriptor")
+                          engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
+                        }
+                      case _ =>
                         logger.info(s"Processing $descriptor")
                         engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
-                      }
-                    case _ =>
-                      logger.info(s"Processing $descriptor")
-                      engine.evaluateStep(preForeachStepDef, Step(step.sourceRef, if (index == 0) step.keyword else StepKeyword.nameOf(StepKeyword.And), doStep, Nil, None, Nil, None, Pending, params, Nil, Nil, None, Nil), ctx)
+                    }
                   }
                 } finally {
                   currentElement match {
                     case data: ScopedData if data.scope == DataTable.recordKey => ctx.topScope.popObject(DataTable.recordKey)
                     case _ => ctx.topScope.popObject(name)
                   }
-                  ctx.topScope.featureScope.set(`gwen.iteration.number`, prevNumber.orNull)
-                  ctx.topScope.featureScope.set(`gwen.iteration.index`, prevIndex.orNull)
                 }) :: acc
               } reverse
             } finally {

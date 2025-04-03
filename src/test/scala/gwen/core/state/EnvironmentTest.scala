@@ -238,6 +238,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
             |  scope : "scenario" { }
             |  scope : "stepDef" { }
             |  scope : "params" { }
+            |  scope : "iteration" { }
             |}
             |env {
             |  scope : "$level" {
@@ -251,6 +252,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
             |scope : "scenario" { }
             |scope : "stepDef" { }
             |scope : "params" { }
+            |scope : "iteration" { }
             |scope : "$level" {
             |  firstName : "Gwen"
             |}""".stripMargin)
@@ -277,6 +279,7 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
           |  scope : "scenario" { }
           |  scope : "stepDef" { }
           |  scope : "params" { }
+          |  scope : "iteration" { }
           |}
           |env {
           |  scope : "feature" { }

@@ -208,4 +208,5 @@ object ScopedDataStack {
   def scenarioStack: ScopedDataStack = new NodeDataStack("scenario")
   def examplesStack: ScopedDataStack = new NodeDataStack("examples")
   def stepDefStack: ScopedDataStack = new NodeDataStack("stepDef")
+  def iterationStack: ScopedDataStack = new ScopedDataStack("iteration") { }
 }

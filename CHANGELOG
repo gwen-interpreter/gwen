@@ -1,3 +1,8 @@
+4.4.3
+=====
+3 April 2025
+- Introduce scoped iteration boundary to manage iteration implicits
+
 4.4.2
 =====
 25 March 2025

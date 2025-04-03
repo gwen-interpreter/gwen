@@ -44,6 +44,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
   val examplesScope = ScopedDataStack.examplesStack
   val stepDefScope = ScopedDataStack.stepDefStack
   val paramScope = ScopedDataStack.paramsStack
+  val iterationScope = ScopedDataStack.iterationStack
 
   /** Map of object stacks. */
   private var objectStack = Map[String, List[Any]]()
@@ -62,6 +63,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     scenarioScope.deepCloneInto(tScope.scenarioScope)
     stepDefScope.deepCloneInto(tScope.stepDefScope)
     paramScope.deepCloneInto(tScope.paramScope)
+    iterationScope.deepCloneInto(tScope.iterationScope)
   }
 
   /**
@@ -130,10 +132,11 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
   override def getOpt(name: String): Option[String] = getImplicitOpt(name).orElse(super.getOpt(name))
 
   private def getImplicitOpt(name: String): Option[String] = {
-    if (name.startsWith(`gwen.feature.`) || name.startsWith(`gwen.data.record.`) || name.startsWith(`gwen.iteration.`)) featureScope.getOpt(name)
+    if (name.startsWith(`gwen.feature.`) || name.startsWith(`gwen.data.record.`)) featureScope.getOpt(name)
     else if (name.startsWith(`gwen.scenario.`)) scenarioScope.getOpt(name)
     else if (name.startsWith(`gwen.examples.`)) examplesScope.getOpt(name)
     else if (name.startsWith(`gwen.stepDef.`)) stepDefScope.getOpt(name)
+    else if (name.startsWith(`gwen.iteration.`)) iterationScope.getOpt(name)
     else if (name.startsWith(`gwen.rule.`)) ruleScope.getOpt(name)
     else if (name == `gwen.accumulated.errors`) getObject(`gwen.accumulated.errors`).map(_.asInstanceOf[List[String]]) map { errs => 
       errs match {
@@ -186,7 +189,8 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
       examplesScope.filterAtts(pred),
       scenarioScope.filterAtts(pred),
       stepDefScope.filterAtts(pred),
-      paramScope.filterAtts(pred)
+      paramScope.filterAtts(pred),
+      iterationScope.filterAtts(pred)
     ).flatten ++ List(filterAtts(pred))
   }
 
@@ -203,6 +207,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
         scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
         stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
         paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        iterationScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
         if (env) pw.println("}")
       }
       pw.print(super.asString(env))
