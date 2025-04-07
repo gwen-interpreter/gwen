@@ -67,6 +67,7 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
             try {
               items.zipWithIndex.foldLeft(List[Step]()) { case (acc, (currentElement, index)) =>
                 val occurence = Occurrence(index + 1, noOfElements)
+                val iterData = List((`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
                 val params: List[(String, String)] = currentElement match {
                   case data: ScopedData => 
                     if (data.scope == DataTable.recordKey) {
@@ -80,14 +81,14 @@ abstract class ForEach[T <: EvalContext](engine: EvalEngine[T], doStep: String) 
                     if (ctx.options.dryRun) {
                       ctx.topScope.pushObject(name, currentElement)
                     }
-                    List((name, value), (`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
+                    List((name, value)) ++ iterData
                   case _ =>
                     ctx.topScope.pushObject(name, currentElement)
-                    List((name, s"$name ${occurence.number}"), (`gwen.iteration.index`, index.toString), (`gwen.iteration.number`, (index + 1).toString))
+                    List((name, s"$name ${occurence.number}")) ++ iterData
                 }
                 val descriptor = s"[$name] $occurence"
                 (try {
-                  ctx.iterationScope.boundary(step.name, params.filter(_._1.startsWith(`gwen.iteration.`))) {
+                  ctx.iterationScope.boundary(step.name, iterData) {
                     EvalStatus(acc.map(_.evalStatus)) match {
                       case status @ Failed(_, error)  =>
                         val isSoftAssert = ctx.evaluate(false) { status.isSoftAssertionError }
