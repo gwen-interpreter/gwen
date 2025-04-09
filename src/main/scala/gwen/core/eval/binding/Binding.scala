@@ -50,7 +50,7 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     * @param key the bound value key
     * @return the resolved and interpolated value
     */
-  private [binding] def resolveValue(key: String)(resolver: String => U): U = { 
+  def resolveValue(key: String)(resolver: String => U): U = { 
     resolve(key) { value =>
       resolver(ctx.interpolate(value))
     }
@@ -104,7 +104,7 @@ abstract class Binding[T <: EvalContext, U](name: String, ctx: T) {
     }
   }
 
-  private [binding] def bindIfLazy(value: String): String = {
+  def bindIfLazy(value: String): String = {
     value tap { _ =>
       LoadStrategyBinding.bindIfLazy(name, value, ctx)
     }

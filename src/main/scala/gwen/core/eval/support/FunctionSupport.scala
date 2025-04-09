@@ -24,7 +24,7 @@ import scala.io.Source
 
 /** Captures the arguments and body of a Javascript arrow function. */
 class ArrowFunction[T <: EvalContext](val source: String, argBindings: List[(String, String)], val body: String, ctx: T) {
-  private def argNames: List[String] = argBindings map { (name, _) => name }
+  def argNames: List[String] = argBindings map { (name, _) => name }
   private def argRefOpt(name: String): Option[String] = argBindings.find((n, _) => n == name).map((_, ref) => ref)
   private def argValue(name: String): String = argValueOpt(name) getOrElse Errors.functionError(source, s"Undefined argument $name in")
   private def argValueOpt(name: String): Option[String] = argRefOpt(name).map(ctx.getBoundValue)
@@ -35,6 +35,7 @@ class ArrowFunction[T <: EvalContext](val source: String, argBindings: List[(Str
     }
     ctx.jsFunctionWrapper(args, body)
   }
+  def argsBindingWrapper(argValues: List[String]): String = ctx.jsFunctionWrapper(argNames zip argValues, body)
   def apply: String = {
     ctx.addAttachment("js-function", "txt", wrapper) 
     ctx.evaluateJS(wrapper).toString
