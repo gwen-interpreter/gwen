@@ -1,5 +1,14 @@
+4.5.1
+-----
+18 April 2025
+- Update dependencies
+  - Update gherkin from v32.0.0 to v32.1.1
+  - Update jline from v1.5.17 to 1.5.18
+  - Update commons-text from v1.13.0 to v1.13.1
+
 4.5.0
 =====
+10 April 2025
 - Add suppot for creating JS wrapper functions for named argument bindings
 
 4.4.5
