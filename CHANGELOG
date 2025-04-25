@@ -1,3 +1,8 @@
+4.5.2
+-----
+25 April 2025
+- Interpolate env vars during spec normalisation
+
 4.5.1
 -----
 18 April 2025

@@ -40,6 +40,16 @@ import gwen.core.state.SensitiveData
   */
 trait SpecNormaliser extends BehaviorRules {
 
+  private def dataInterpolator(dataRecord: Option[DataRecord]) = {
+    new Interpolator( name => {
+      Settings.getEnvOpt(name).orElse {
+        dataRecord.flatMap { rec =>
+          rec.data.filter(_._1 == name).headOption.map(_._2)
+        }
+      }
+    }).lenient.interpolate
+  }
+
   /**
     * Normalises a parsed feature.
     *
@@ -48,7 +58,7 @@ trait SpecNormaliser extends BehaviorRules {
     * @param options command line options
     */
   def normaliseSpec(spec: Spec, dataRecord: Option[DataRecord], options: GwenOptions): Spec = {
-    val interpolator = DataRecord.interpolateLenient(dataRecord)
+    val interpolator = dataInterpolator(dataRecord)
     val scenarios = noDuplicateStepDefs(spec.scenarios, spec.specFile)
     validate(spec.background, scenarios, spec.specType)
     val normalisedSpec = Spec(
@@ -61,12 +71,12 @@ trait SpecNormaliser extends BehaviorRules {
       ).interpolate(interpolator),
       dataRecord.map(_.occurrence),
       None,
-      dataRecord.map(expandDataScenarios(scenarios, _, spec.background, options)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, options)),
+      dataRecord.map(expandDataScenarios(scenarios, _, spec.background, options, interpolator)).getOrElse(expandScenarios(scenarios, spec.background, dataRecord, options, interpolator)),
       spec.rules map { rule =>
         validate(rule.background, rule.scenarios, spec.specType)
         rule.copy(
           withBackground = None,
-          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord, options)
+          withScenarios = expandScenarios(rule.scenarios, rule.background.orElse(spec.background), dataRecord, options, interpolator)
         ).interpolate(interpolator)
       },
       Nil
@@ -86,19 +96,18 @@ trait SpecNormaliser extends BehaviorRules {
     }
   }
 
-  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], options: GwenOptions): List[Scenario] = {
+  private def expandDataScenarios(scenarios: List[Scenario], dataRecord: DataRecord, background: Option[Background], options: GwenOptions, interpolator: String => String): List[Scenario] = {
     val dataBg = dataBackground(dataRecord.data, background, dataRecord.occurrence, Some(dataRecord.dataSource.dataFile), dataRecord.interpolateLenient)
-    expandScenarios(scenarios, Some(dataBg), Some(dataRecord), options)
+    expandScenarios(scenarios, Some(dataBg), Some(dataRecord), options, interpolator)
   }
 
-  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord], options: GwenOptions): List[Scenario] =
+  private def expandScenarios(scenarios: List[Scenario], background: Option[Background], dataRecord: Option[DataRecord], options: GwenOptions, interpolator: String => String): List[Scenario] =
     scenarios.map { scenario =>
       if (scenario.isOutline) normaliseScenarioOutline(scenario, background, dataRecord, options)
-      else expandScenario(scenario, background, dataRecord)
+      else expandScenario(scenario, background, interpolator)
     }
 
-  private def expandScenario(scenario: Scenario, background: Option[Background], dataRecord: Option[DataRecord]): Scenario = {
-    val interpolator = DataRecord.interpolateLenient(dataRecord)
+  private def expandScenario(scenario: Scenario, background: Option[Background], interpolator: String => String): Scenario = {
     background.map { _ =>
       scenario.copy(
         withBackground = if (scenario.isStepDef) {
@@ -112,12 +121,12 @@ trait SpecNormaliser extends BehaviorRules {
         },
         withExamples = Nil
       ).interpolate(interpolator)
-    } getOrElse scenario
+    } getOrElse scenario.interpolate(interpolator)
   }
 
 
   def normaliseScenarioOutline(outline: Scenario, background: Option[Background], dataRecord: Option[DataRecord], options: GwenOptions): Scenario = {
-    val interpolator = DataRecord.interpolateLenient(dataRecord)
+    val interpolator = dataInterpolator(dataRecord)
     val normalisedOutline = outline.copy(
       withTags = filterParallelTags(outline.tags, options),
       withBackground = None,

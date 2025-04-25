@@ -205,7 +205,7 @@ object Settings extends LazyLogging {
    * 
    * @param name the name of the environment variable (with optional `.env` prefix)
    */
-  private def getEnvOpt(name: String): Option[String] = {
+  def getEnvOpt(name: String): Option[String] = {
     if (name.startsWith("env.") && name.length() > 4) {
       sys.env.get(name.substring(4))
     } else {

@@ -1,9 +1,6 @@
 enablePlugins(GitVersioning)
 
-// gwen core version
-val gwenVersion = "4.5.1"
-
-git.baseVersion := gwenVersion
+git.baseVersion := "4.5.2"
 git.useGitDescribe := true
 
 lazy val gwen = (project in file("."))
@@ -20,7 +17,7 @@ lazy val projectSettings = Seq(
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
   startYear := Some(2014),
-  licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"),
+  licenses += "Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"),
   versionScheme := Some("semver-spec"),
   trapExit := false,
   crossPaths := false,
