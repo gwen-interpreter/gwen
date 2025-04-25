@@ -65,7 +65,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
     * @return the evaluated result
     */
   private def interpretUnit(unit: FeatureUnit, ctx: T): Option[SpecResult] = {
-    engine.evaluateUnit(unit, ctx).map(_._1)
+    engine.evaluateUnit(unit, ctx).headOption
   }
 
   /**

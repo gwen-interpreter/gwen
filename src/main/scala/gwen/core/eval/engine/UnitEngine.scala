@@ -57,7 +57,7 @@ trait UnitEngine[T <: EvalContext]
     * @param unit the feature unit to process
     * @param ctx the evaluation context
     */
-  def evaluateUnit(unit: FeatureUnit, ctx: T): Option[(SpecResult, List[SpecResult])] = {
+  def evaluateUnit(unit: FeatureUnit, ctx: T): List[SpecResult] = {
     unit.dataRecord.foreach(ctx.topScope.bindDataRecord)
     evaluateUnit(unit, Nil, ctx)
   }
@@ -68,19 +68,20 @@ trait UnitEngine[T <: EvalContext]
     * @param unit the feature unit to process
     * @param loadedMeta cumulative meta files
     * @param ctx the evaluation context
+    * @return the unit feature result followed by meta results
     */
-  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[(SpecResult, List[SpecResult])] = {
+  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): List[SpecResult] = {
     Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
           unit.tagFilter.filter(pspec) match {
             case Some(spec) =>
-              Some(evaluateSpec(unit, spec, loadedMeta, ctx))
+              evaluateSpec(unit, spec, loadedMeta, ctx)
             case None =>
               if (ctx.options.verbose) {
                 logger.info(s"Feature file skipped (does not satisfy tag filters): ${file}")
               }
-              None
+              Nil
           }
         case Failure(e) =>
           e match {
@@ -92,23 +93,23 @@ trait UnitEngine[T <: EvalContext]
       if (unit.featureFile.isFile) {
         logger.warn(s"Skipped missing feature file: ${unit.featureFile.getPath}")
       }
-      None
+      Nil
     }
   }
 
-  private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): (SpecResult, List[SpecResult]) = {
+  private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): List[SpecResult] = {
     ctx.topScope.setStatus(Pending, force = true)
     val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
     val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
     val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)
     val metaResults = unitMeta ++ importMeta
     if (spec.isMeta) {
-      (evaluateMeta(unit, spec, unit.dataRecord, ctx), metaResults)
+      evaluateMeta(unit, spec, unit.dataRecord, ctx) :: metaResults
     } else {
       beforeUnit(unit, ctx)
       val result = evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx)
       afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx)
-      (result, Nil)
+      List(result)
     }
   }
 
@@ -117,9 +118,7 @@ trait UnitEngine[T <: EvalContext]
       !loadedMeta.contains(file)
     } flatMap { file =>
       val metaUnit = FeatureUnit(unit, file, Nil, unit.dataRecord, unit.tagFilter)
-      evaluateUnit(metaUnit, loadedMeta, ctx) map { (result, metaResults) => 
-        result :: metaResults
-      } getOrElse Nil
+      evaluateUnit(metaUnit, loadedMeta, ctx)
     }
   }
 

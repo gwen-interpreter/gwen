@@ -76,7 +76,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options)
 
@@ -103,7 +103,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options, Some(mockCtx))
 
@@ -131,7 +131,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options, Some(mockCtx))
 
@@ -160,7 +160,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options, Some(mockCtx))
 
@@ -190,7 +190,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options, Some(mockCtx))
 
@@ -307,9 +307,9 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
     when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(
-      Some((new SpecResult(feature6A, None, Nil, Nil, new ju.Date(), new ju.Date())), Nil),
-      Some((new SpecResult(feature6B, None, Nil, Nil, new ju.Date(), new ju.Date())), Nil),
-      Some((new SpecResult(feature7A, None, Nil, Nil, new ju.Date(), new ju.Date())), Nil)
+      List(new SpecResult(feature6A, None, Nil, Nil, new ju.Date(), new ju.Date())),
+      List(new SpecResult(feature6B, None, Nil, Nil, new ju.Date(), new ju.Date())),
+      List(new SpecResult(feature7A, None, Nil, Nil, new ju.Date(), new ju.Date()))
     )
 
     val evalStatus = launcher(mockEngine).run(options)
@@ -344,7 +344,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     when(mockEngine.implVersion).thenReturn("1.0.0")
     when(mockEngine.gwenHome).thenReturn("https://gweninterpreter.org")
     when(mockEngine.init(same(options), any[EnvState])).thenReturn(mockCtx)
-    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(Some((result, Nil)))
+    when(mockEngine.evaluateUnit(any[FeatureUnit], any[EvalContext])).thenReturn(List(result))
 
     val evalStatus = launcher(mockEngine).run(options)
 

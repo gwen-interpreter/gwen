@@ -404,7 +404,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
       Try(engine.evaluateUnit(metaUnit, ctx)) match {
         case Success(result) => 
           reader = createReader()
-          result.map(_._1.evalStatus) map { status =>
+          result.headOption.map(_.evalStatus) map { status =>
             printStatus(status)
           }
         case Failure(e) => Some(printError(started, e))
