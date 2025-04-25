@@ -400,7 +400,7 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     val unit = FeatureUnit(Root, file, Nil, None, new TagFilter(Nil), None)
     val options = GwenOptions(features = List(file))
     val ctx = EvalEngine().init(options, EnvState())
-    val result = EvalEngine().evaluateUnit(unit, ctx)
+    val result = EvalEngine().evaluateUnit(unit, ctx).map(_._1)
 
     val spec = result.get.spec
     val builder = new NodeChainBuilder()
@@ -572,7 +572,7 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     val unit = FeatureUnit(Root, file, Nil, None, new TagFilter(Nil), None)
     val options = GwenOptions(features = List(file))
     val ctx = EvalEngine().init(options, EnvState())
-    val result = EvalEngine().evaluateUnit(unit, ctx)
+    val result = EvalEngine().evaluateUnit(unit, ctx).map(_._1)
     val spec = result.get.spec
 
     val builder = new NodeChainBuilder()
@@ -839,7 +839,7 @@ class NodeChainTest extends BaseTest with Matchers with MockitoSugar with SpecNo
     val unit = FeatureUnit(Root, file, Nil, None, new TagFilter(Nil), None)
     val options = GwenOptions(features = List(file))
     val ctx = EvalEngine().init(options, EnvState())
-    val result = EvalEngine().evaluateUnit(unit, ctx)
+    val result = EvalEngine().evaluateUnit(unit, ctx).map(_._1)
     val spec = result.get.spec
 
     val builder = new NodeChainBuilder()

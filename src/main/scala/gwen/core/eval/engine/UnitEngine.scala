@@ -57,7 +57,7 @@ trait UnitEngine[T <: EvalContext]
     * @param unit the feature unit to process
     * @param ctx the evaluation context
     */
-  def evaluateUnit(unit: FeatureUnit, ctx: T): Option[SpecResult] = {
+  def evaluateUnit(unit: FeatureUnit, ctx: T): Option[(SpecResult, List[SpecResult])] = {
     unit.dataRecord.foreach(ctx.topScope.bindDataRecord)
     evaluateUnit(unit, Nil, ctx)
   }
@@ -69,7 +69,7 @@ trait UnitEngine[T <: EvalContext]
     * @param loadedMeta cumulative meta files
     * @param ctx the evaluation context
     */
-  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[SpecResult] = {
+  private def evaluateUnit(unit: FeatureUnit, loadedMeta: List[File], ctx: T): Option[(SpecResult, List[SpecResult])] = {
     Option(unit.featureFile).filter(f => f.isFile && f.exists()) map { file =>
       parseSpec(file) match {
         case Success(pspec) =>
@@ -96,19 +96,19 @@ trait UnitEngine[T <: EvalContext]
     }
   }
 
-  private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): SpecResult = {
+  private def evaluateSpec(unit: FeatureUnit, spec: Spec, loadedMeta: List[File], ctx: T): (SpecResult, List[SpecResult]) = {
     ctx.topScope.setStatus(Pending, force = true)
     val unitMeta = loadMetaFiles(unit, unit.metaFiles, loadedMeta, ctx)
     val unitMetaFiles = unitMeta.flatMap(_.spec.specFile)
     val importMeta = loadMetaFiles(unit, metaImportFiles(spec, unit.featureFile), loadedMeta ++ unitMetaFiles, ctx)
     val metaResults = unitMeta ++ importMeta
     if (spec.isMeta) {
-      evaluateMeta(unit, spec, metaResults, unit.dataRecord, ctx)
+      (evaluateMeta(unit, spec, unit.dataRecord, ctx), metaResults)
     } else {
       beforeUnit(unit, ctx)
-      evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx) tap { result =>
-        afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx)
-      }
+      val result = evaluateFeature(unit, spec, metaResults, unit.dataRecord, ctx)
+      afterUnit(FeatureUnit(unit.ancestor, unit, result), ctx)
+      (result, Nil)
     }
   }
 
@@ -117,7 +117,9 @@ trait UnitEngine[T <: EvalContext]
       !loadedMeta.contains(file)
     } flatMap { file =>
       val metaUnit = FeatureUnit(unit, file, Nil, unit.dataRecord, unit.tagFilter)
-      evaluateUnit(metaUnit, loadedMeta, ctx)
+      evaluateUnit(metaUnit, loadedMeta, ctx) map { (result, metaResults) => 
+        result :: metaResults
+      } getOrElse Nil
     }
   }
 

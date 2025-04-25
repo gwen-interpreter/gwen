@@ -402,9 +402,9 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
       val started = System.nanoTime()
       val metaUnit = FeatureUnit(Root, file, Nil, None, ctx.options.tagFilter)
       Try(engine.evaluateUnit(metaUnit, ctx)) match {
-        case Success(spec) => 
+        case Success(result) => 
           reader = createReader()
-          spec.map(_.evalStatus) map { status =>
+          result.map(_._1.evalStatus) map { status =>
             printStatus(status)
           }
         case Failure(e) => Some(printError(started, e))

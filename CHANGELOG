@@ -2,6 +2,7 @@
 -----
 25 April 2025
 - Interpolate env vars during spec normalisation
+- Include results of meta imports in report output
 
 4.5.1
 -----

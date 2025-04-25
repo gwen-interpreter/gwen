@@ -48,10 +48,10 @@ trait SpecEngine[T <: EvalContext] extends LazyLogging with ImplicitValueKeys {
     }
   }
 
-  private [engine] def evaluateMeta(parent: GwenNode, meta: Spec, metaResults: List[SpecResult], dataRecord: Option[DataRecord], ctx: T): SpecResult = {
+  private [engine] def evaluateMeta(parent: GwenNode, meta: Spec, dataRecord: Option[DataRecord], ctx: T): SpecResult = {
     val nmeta = normaliseSpec(meta, dataRecord, ctx.options)
     val metaResult = ctx.featureScope.boundary(SpecType.Feature.toString.toLowerCase, Nil) {
-      evaluateSpec(parent, nmeta, metaResults, dataRecord, ctx)
+      evaluateSpec(parent, nmeta, Nil, dataRecord, ctx)
     }
     val metaSpec = metaResult.spec
     metaSpec.evalStatus match {
