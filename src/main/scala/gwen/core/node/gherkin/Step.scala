@@ -262,6 +262,7 @@ case class Step(
   def isIgnoreCase: Boolean = hasTag(Annotations.IgnoreCase)
   def isTrim: Boolean = hasTag(Annotations.Trim)
   def isMasked: Boolean = hasTag(Annotations.Masked)
+  def isShadowRoot: Boolean = hasTag(Annotations.ShadowRoot)
   def timeoutOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Timeout)
   def delayOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Delay)
   

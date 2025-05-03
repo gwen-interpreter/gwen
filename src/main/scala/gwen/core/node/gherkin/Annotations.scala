@@ -20,10 +20,10 @@ import gwen.core.Errors
 import gwen.core.node.SourceRef
 
 enum Annotations:
-  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, HorizontalTable, VerticalTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData, Hard, Soft, Sustained, DryRun, IgnoreCase, Trim, Masked, Parallel, Timeout, Delay, Results, Abstract
+  case Ignore, Context, Action, Assertion, Import, StepDef, ForEach, DataTable, HorizontalTable, VerticalTable, Examples, Synchronised, Synchronized, Synthetic, If, While, Until, Breakpoint, Finally, Eager, Lazy, Deferred, Message, Try, Data, NoData, Hard, Soft, Sustained, DryRun, IgnoreCase, Trim, Masked, Parallel, Timeout, Delay, Results, Abstract, ShadowRoot
 
 object Annotations {
-  private val stepLevelAnnotations: List[String] = List(Message, Try, Finally, Eager, Lazy, Breakpoint, Hard, Soft, Sustained, DryRun, Masked, Timeout, Delay, Trim, IgnoreCase, Abstract).map(_.toString)
+  private val stepLevelAnnotations: List[String] = List(Message, Try, Finally, Eager, Lazy, Breakpoint, Hard, Soft, Sustained, DryRun, Masked, Timeout, Delay, Trim, IgnoreCase, Abstract, ShadowRoot).map(_.toString)
   def validateStepLevel(sourceRef: Option[SourceRef], annotation: Tag): Unit = {
     if (!stepLevelAnnotations.contains(annotation.name)) {
       stepLevelAnnotations.find(_.toUpperCase == annotation.name.toUpperCase) map { annot =>
