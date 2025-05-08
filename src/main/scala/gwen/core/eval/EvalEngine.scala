@@ -177,6 +177,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CapturePDF(name, LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location""" =>
         new CapturePDF("the PDF text", LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
+      case r"""I capture the base64 encoded PDF text from (.+?)$attribute as (.+?)$name""" =>
+        new CapturePDF(name, LocationType.base64Blob, attribute, defaultConditionTimeoutSecs)
       case r"""I capture the base64 encoded PDF text from (.+?)$attribute""" =>
         new CapturePDF("the PDF text", LocationType.base64Blob, attribute, defaultConditionTimeoutSecs)
       case r"""I capture (.+?)$source as (.+?)$attribute""" =>
