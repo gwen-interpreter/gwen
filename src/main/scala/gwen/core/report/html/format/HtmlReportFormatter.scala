@@ -103,6 +103,7 @@ trait HtmlReportFormatter extends ReportFormatter with SummaryFormatter with Det
                 } yield {
                   div(`class` := "line-no",
                     small(
+                      `class` := "unselectable",
                       seq.toString
                     )
                   )

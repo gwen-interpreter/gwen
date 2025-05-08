@@ -358,10 +358,11 @@ trait DetaiFormatter {
       div(`class` := s"bg-${bgStatus(status)}", style := "white-space: nowrap;",
         div(`class` := "line-no",
           small(
+            `class` := "unselectable",
             if (line > 0) line.toString else ""
           )
         ),
-        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+        div(`class` := "keyword-right unselectable", style := s"width:${keywordPixels}px",
           " ",
         ),
         formatDataRow(table, false, None, 0, evalStatus, true)
@@ -382,10 +383,11 @@ trait DetaiFormatter {
         ),
         div(`class` := "line-no",
           small(
+            `class` := "unselectable",
             if (line > 0) line.toString else ""
           )
         ),
-        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+        div(`class` := "keyword-right unselectable", style := s"width:${keywordPixels}px",
           " ",
         ),
         if (scenarioOpt.nonEmpty && !evalStatus.isFailed) {
@@ -462,6 +464,7 @@ trait DetaiFormatter {
         ),
         div(`class` := "line-no",
           small(
+            `class` := "unselectable",
             step.sourceRef.map(_.line).getOrElse("").toString
           )
         ),
@@ -523,6 +526,7 @@ trait DetaiFormatter {
       div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
+            `class` := "unselectable",
             step.sourceRef.map(_.line).getOrElse("").toString
           )
         ),
@@ -574,10 +578,11 @@ trait DetaiFormatter {
               },
               div(`class` := "line-no",
                 small(
+                  `class` := "unselectable",
                   if (line > 0) line.toString else ""
                 )
               ),
-              div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+              div(`class` := "keyword-right unselectable", style := s"width:${keywordPixels}px",
                 " "
               ),
               formatDataRow(step.table, hasHeaderRow, rowStepDef, rowIndex, evalStatus, false)
@@ -601,10 +606,11 @@ trait DetaiFormatter {
       div(`class` := s"bg-${bgStatus(status)}",
         div(`class` := "line-no",
           small(
+            `class` := "unselectable",
             if (line > 0) line.toString else ""
           )
         ),
-        div(`class` := "keyword-right", style := s"width:${keywordPixels}px",
+        div(`class` := "keyword-right unselectable", style := s"width:${keywordPixels}px",
           " "
         ),
         code(`class` := s"bg-${bgStatus(status)} doc-string",
