@@ -566,7 +566,7 @@ object Wait {
 }
 
 enum LocationType:
-    case file,url
+    case file,url,base64Blob
 
 object Assert {
   def apply(assertion: Boolean, message: => String): Unit = {

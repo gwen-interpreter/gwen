@@ -19,7 +19,6 @@ package gwen.core
 import gwen.core.state.SensitiveData
 
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
 import scala.util.chaining._
 import scala.util.Try
 
