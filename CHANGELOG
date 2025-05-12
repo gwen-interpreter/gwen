@@ -1,3 +1,8 @@
+4.7.3
+-----
+12 May 2025
+- Fail template matches if source is not a full match
+
 4.7.2
 -----
 9 May 2025

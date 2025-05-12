@@ -44,39 +44,43 @@ trait TemplateSupport {
     * @return success if there is a match; an error otherwise
     */
   def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
-    val tLines = normaliseTemplate(template, source, sourceName, topScope)
-    val tString = tLines.mkString("\n")
-    val names = """@\{.+?\}""".r.findAllIn(tString).toList.zipWithIndex map { case (n, i) =>
-      if (n == "@{*}") s"*[$i]" else n
-    }
-    names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
-      Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
-    }
-    val lines = tLines zip Source.fromString(source).getLines().toList
-
-    val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*@\{.*?\}.*""")) map { case ((ttLine, aLine), idx) =>
-      (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine, idx)
-    }).flatMap { case (tLine, aLine, idx) =>
-      tLine.r.unapplySeq(aLine).getOrElse {
-        Errors.templateMatchError(s"Failed to match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template")
+    normaliseTemplate(template, source, sourceName, topScope) match {
+      case Nil =>
+        Errors.templateMatchError(s"Template mismatch")
+      case tLines =>
+      val tString = tLines.mkString("\n")
+      val names = """@\{.+?\}""".r.findAllIn(tString).toList.zipWithIndex map { case (n, i) =>
+        if (n == "@{*}") s"*[$i]" else n
       }
-    }
-    val params = names zip values
-    val resolved = params.foldLeft(tString) { (result, param) =>
-      val (n, v) = param
-      if (n.matches("""\*\[\d+\]""")) result.replaceFirst("""@\{\*\}""", v)
-      else result.replace(n, v)
-    }
-    source == resolved tap { isMatch =>
-      if (isMatch) {
-        params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
-          topScope.set(n.substring(2, n.length-1), v) }
-      } else {
-        val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
-        val (line, column) = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
-        val diffChar = source.charAt(commonPrefix.length)
-        val diffLine = s"${Source.fromString(commonPrefix).getLines().toList.last}[$diffChar].."
-        Errors.templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line $line position $column in $sourceName: '$diffLine'")
+      names.groupBy(identity).collectFirst { case (n, vs) if vs.size > 1 =>
+        Errors.templateMatchError(s"$n parameter defined ${vs.size} times in template '$template'")
+      }
+      val lines = tLines zip Source.fromString(source).getLines().toList
+
+      val values = (lines.zipWithIndex.filter(_._1._1.matches(""".*@\{.*?\}.*""")) map { case ((ttLine, aLine), idx) =>
+        (Regex.quote(ttLine).replaceAll("""@\{\s*\}""", """\{@\}""").replaceAll("""@\{.*?\}""", """\\E(.*?)\\Q""").replaceAll("""\\Q\\E""", ""), aLine, idx)
+      }).flatMap { case (tLine, aLine, idx) =>
+        tLine.r.unapplySeq(aLine).getOrElse {
+          Errors.templateMatchError(s"Failed to match '$aLine' at line ${idx + 1} in $sourceName to '${tLines(idx)}' in template")
+        }
+      }
+      val params = names zip values
+      val resolved = params.foldLeft(tString) { (result, param) =>
+        val (n, v) = param
+        if (n.matches("""\*\[\d+\]""")) result.replaceFirst("""@\{\*\}""", v)
+        else result.replace(n, v)
+      }
+      source == resolved tap { isMatch =>
+        if (isMatch) {
+          params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
+            topScope.set(n.substring(2, n.length-1), v) }
+        } else {
+          val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
+          val (line, column) = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
+          val diffChar = source.charAt(commonPrefix.length)
+          val diffLine = s"${Source.fromString(commonPrefix).getLines().toList.last}[$diffChar].."
+          Errors.templateMatchError(s"Expected '${resolved.charAt(commonPrefix.length)}' but got '$diffChar' at line $line position $column in $sourceName: '$diffLine'")
+        }
       }
     }
   }
@@ -111,6 +115,7 @@ trait TemplateSupport {
         tLines = sLine :: tLines
       }
     }
-    tLines.reverse
+    if (tIter.hasNext) Nil  // not a complete match
+    else tLines.reverse
   }
 }
