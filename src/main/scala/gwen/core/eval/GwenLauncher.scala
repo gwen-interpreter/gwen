@@ -163,10 +163,14 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
             }
           }
         } else {
-          if (options.parallel) {
+          if (options.parallel && featureStream.take(2).size > 1) {
             executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
           } else {
-            executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
+            executeFeatureUnitsSequential(
+              if (options.parallel) options.copy(parallel = false) else options, 
+              featureStream, 
+              ctxOpt, 
+              reportGenerators)
           }
         }
       } match {

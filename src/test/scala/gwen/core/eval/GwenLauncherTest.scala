@@ -65,7 +65,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     val dir1 = createDir("dir1")
     createFile("dir1/file1.feature")
 
-    val options = GwenOptions(features = List(dir1), parallel = true)
+    val options = GwenOptions(features = List(dir1), parallel = false)
 
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
@@ -333,7 +333,7 @@ class GwenLauncherTest extends BaseTest with Matchers with MockitoSugar with Tes
     createFile("dir8/file8.feature")
     val tagFilters = List((Tag("@wip"), true))
 
-    val options = GwenOptions(features = List(dir8), parallel = true, tags = tagFilters)
+    val options = GwenOptions(features = List(dir8), parallel = false, tags = tagFilters)
 
     val mockEngine = mock[EvalEngine[EvalContext]]
     val mockCtx = spy(new EvalContext(options, EnvState()))
