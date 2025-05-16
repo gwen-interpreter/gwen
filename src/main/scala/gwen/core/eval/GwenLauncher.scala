@@ -49,6 +49,7 @@ import scala.util.chaining._
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
 import java.util.Date
+import gwen.core.GwenOptions.Defaults.parallel
 
 /**
   * Launches a gwen engine.
@@ -95,7 +96,10 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
             if (options.dryRun && options.dataFile.nonEmpty && flatStream.isEmpty) {
               Errors.invocationError("At least one input record required for dry run with data file")
             }
-            executeFeatureUnits(options, flatStream, ctxOpt)
+            executeFeatureUnits(
+              if (options.parallel && flatStream.take(2).size < 2) options.copy(parallel = false) else options, 
+              flatStream, 
+              ctxOpt)
           case _ =>
             (EvalStatus {
               val replUnitOpt = if (!options.batch && options.features.isEmpty) {
@@ -163,14 +167,10 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
             }
           }
         } else {
-          if (options.parallel && featureStream.take(2).size > 1) {
+          if (options.parallel) {
             executeFeatureUnitsParallel(options, featureStream, ctxOpt, reportGenerators)
           } else {
-            executeFeatureUnitsSequential(
-              if (options.parallel) options.copy(parallel = false) else options, 
-              featureStream, 
-              ctxOpt, 
-              reportGenerators)
+            executeFeatureUnitsSequential(options, featureStream, ctxOpt, reportGenerators)
           }
         }
       } match {
