@@ -1,3 +1,9 @@
+4.8.0
+-----
+27 May 2025
+- Add implicit variable to capture the evaluated feature sequence number:
+  - `gwen.feature.eval.sequenceNo`
+
 4.7.5
 -----
 16 May 2025

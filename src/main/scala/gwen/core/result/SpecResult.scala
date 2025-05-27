@@ -21,6 +21,7 @@ import gwen.core.node.GwenNode
 import gwen.core.node.NodeType
 import gwen.core.node.SourceRef
 import gwen.core.node.gherkin.Spec
+import gwen.core.node.gherkin.Step
 import gwen.core.report.ReportFormat
 import gwen.core.status._
 
@@ -29,7 +30,6 @@ import scala.util.Try
 
 import java.io.File
 import java.util.Date
-import gwen.core.node.gherkin.Step
 
 /**
   * Captures the results of an evaluated specification.
@@ -47,7 +47,8 @@ class SpecResult(
   val videos: List[(File, String)],
   val metaResults: List[SpecResult],
   val started: Date,
-  val finished: Date) extends GwenNode {
+  val finished: Date,
+  val sequenceNo: Int) extends GwenNode {
 
   override val sourceRef: Option[SourceRef] = spec.sourceRef
   override val name:String = spec.name

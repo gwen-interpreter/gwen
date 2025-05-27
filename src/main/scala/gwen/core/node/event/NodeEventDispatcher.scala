@@ -74,6 +74,7 @@ class NodeEventDispatcher extends LazyLogging with ImplicitValueKeys {
 
   def afterSpec(result: SpecResult, env: Environment): Unit = {
     env.featureScope.set(`gwen.feature.eval.finished`, result.finished.toString)
+    env.featureScope.set(`gwen.feature.eval.sequenceNo`, result.sequenceNo.toString)
     dispatchAfterEvent(result, env) { (listener, event) => listener.afterSpec(event) }
   }
   

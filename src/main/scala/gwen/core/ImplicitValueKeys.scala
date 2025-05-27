@@ -37,6 +37,7 @@ trait ImplicitValueKeys {
   val `gwen.feature.eval.start.msecs`    = "gwen.feature.eval.start.msecs"
   val `gwen.feature.eval.started`        = "gwen.feature.eval.started"
   val `gwen.feature.eval.finished`       = "gwen.feature.eval.finished"
+  val `gwen.feature.eval.sequenceNo`     = "gwen.feature.eval.sequenceNo"
 
   val `gwen.rule.`                    = "gwen.rule."
   val `gwen.rule.name`                = "gwen.rule.name"

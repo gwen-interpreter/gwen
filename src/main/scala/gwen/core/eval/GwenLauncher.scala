@@ -221,7 +221,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       Future.sequence(featureUnits.force),
       Duration.Inf
     )
-    results.flatten.sortBy(_.finished).foldLeft(ResultsSummary())(_ + _) tap { summary =>
+    results.flatten.sortBy(_.sequenceNo).foldLeft(ResultsSummary())(_ + _) tap { summary =>
       reportGenerators foreach {
         _.reportSummary(summary)
       }
@@ -263,9 +263,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
         logger.info("Evaluation context closed")
       } 
     }
-    f(result map { res =>
-      new SpecResult(res.spec, res.reports, res.videos, (res.metaResults), res.started, res.finished)
-    })
+    f(result)
   }
 
   private def flattenResults(results: List[SpecResult]): List[SpecResult] = {
@@ -280,7 +278,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
       (generator.format, generator.reportDetail(unit, result))
     }.filter(_._2.nonEmpty).toMap
     if (reportFiles.nonEmpty)
-      new SpecResult(result.spec, Some(reportFiles), result.videos, result.metaResults, result.started, result.finished)
+      new SpecResult(result.spec, Some(reportFiles), result.videos, result.metaResults, result.started, result.finished, result.sequenceNo)
     else
       result
   }
