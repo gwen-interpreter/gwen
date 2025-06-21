@@ -12,7 +12,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.6.4",
+  scalaVersion := "3.7.1",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,7 +41,7 @@ lazy val mainDependencies = {
     "io.cucumber" % "gherkin" % "32.1.1",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "3.29.0",
+    "org.jline" % "jline" % "3.30.4",
     "org.slf4j" % "jul-to-slf4j" % "2.0.17",
     "ch.qos.logback" % "logback-core" % "1.5.18",
     "ch.qos.logback" % "logback-classic" % "1.5.18",
@@ -52,12 +52,12 @@ lazy val mainDependencies = {
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
-    "org.fusesource.jansi" % "jansi" % "2.4.1",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.18.3",
-    "org.apache.pdfbox" % "pdfbox" % "3.0.4" excludeAll(
+    "org.fusesource.jansi" % "jansi" % "2.4.2",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.19.1",
+    "org.apache.pdfbox" % "pdfbox" % "3.0.5" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
-    "org.apache.pdfbox" % "pdfbox-io" % "3.0.4" excludeAll(
+    "org.apache.pdfbox" % "pdfbox-io" % "3.0.5" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
   ) ++ mainOverrides
@@ -73,7 +73,7 @@ lazy val testDependencies = {
   Seq(
     "org.scalatest" %% "scalatest" % "3.2.19",
     "org.scalatestplus" %% "mockito-5-12" % "3.2.19.0",
-    "org.mockito" % "mockito-core" % "5.17.0",
+    "org.mockito" % "mockito-core" % "5.18.0",
     "org.graalvm.js" % "js-scriptengine" % "24.2.1",
     "org.graalvm.js" % "js" % "24.2.1"
   ).map(_ % Test)
