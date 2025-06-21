@@ -27,12 +27,12 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsRegex[T <: EvalContext](target: String, regex: String, source: String, masked: Boolean) extends UnitStepAction[T] {
+class BindAsRegex[T <: EvalContext](target: String, regex: String, source: String) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      RegexBinding.bind(target, regex, source, masked, ctx)
+      RegexBinding.bind(target, regex, source, step.isMasked, ctx)
       step.loadStrategy foreach { strategy =>
         val value = {
           if (strategy == LoadStrategy.Eager) Option(new RegexBinding(target, ctx).resolve())

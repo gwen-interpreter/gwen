@@ -29,7 +29,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.chaining._
 
-class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String], sourceValue2: Option[String], operator: SimilarityOperator, percentage: Double, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStepAction[T] {
+class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String], sourceValue2: Option[String], operator: SimilarityOperator, percentage: Double, negate: Boolean) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Assertion, ctx)
@@ -39,6 +39,9 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
     val value2 = sourceValue2.getOrElse(binding2.get.resolve())
     var similarityScore: Option[Double] = None
     ctx.perform {
+      val message = step.message
+      val trim = step.isTrim
+      val ignoreCase = step.isIgnoreCase
       ctx.checkSimilarity(Formatting.format(value1, trim, ignoreCase), Formatting.format(value2, trim, ignoreCase), operator, percentage, negate) match {
         case Success((passed, score)) =>
           similarityScore = score

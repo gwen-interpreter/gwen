@@ -33,11 +33,12 @@ import scala.util.chaining._
 import scala.util.Success
 import scala.util.Failure
 
-class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String], masked: Boolean) extends UnitStepAction[T] {
+class BindAsType[T <: EvalContext](target: String, bindingType: BindingType, value: String, argsString: Option[String], delimiter: Option[String]) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
+      val masked = step.isMasked
       bindingType match {
         case BindingType.javascript => JSBinding.bind(target, value, masked, ctx) 
         case BindingType.function => 

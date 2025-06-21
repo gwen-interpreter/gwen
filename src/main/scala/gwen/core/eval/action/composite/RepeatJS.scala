@@ -20,16 +20,13 @@ import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
 import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.support.BooleanCondition
+import gwen.core.node.gherkin.Step
 
+class RepeatJS[T <: EvalContext](doStep: String, operation: String, condition: String, engine: EvalEngine[T])
+    extends Repeat(doStep, operation, condition, engine) {
 
-import scala.concurrent.duration.Duration
-import scala.util.chaining._
-
-class RepeatJS[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T])
-    extends Repeat(doStep, operation, condition, delay, timeout, engine) {
-
-  override def evaluteCondition(ctx: T): Boolean = {
-    val bCond = BooleanCondition(condition, false, conditionTimeoutSecs, ctx)
+  override def evaluteCondition(step: Step, ctx: T): Boolean = {
+    val bCond = BooleanCondition(condition, false, step.timeoutOpt.getOrElse(ctx.defaultWait).toSeconds, ctx)
     ctx.evaluate(true) {
       bCond.evaluate()
     }

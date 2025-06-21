@@ -29,16 +29,26 @@ import gwen.core.node.gherkin.StepKeyword
 import gwen.core.node.gherkin.Tag
 import gwen.core.status._
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.util.chaining._
 
-abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, delay: Duration, timeout: Duration, engine: EvalEngine[T]) extends CompositeStepAction[T](doStep) with ImplicitValueKeys {
+import java.util.concurrent.TimeUnit
+
+abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condition: String, engine: EvalEngine[T]) extends CompositeStepAction[T](doStep) with ImplicitValueKeys {
 
   if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
 
-  def evaluteCondition(ctx: T): Boolean
+  def defaultRepeatTimeout(delay: Duration): Duration = Option(delay).filter(_.gt(Duration.Zero)).getOrElse(Duration(1, SECONDS)) * 30
+  def defaultRepeatDelay(ctx: T): Duration = {
+    val waitSecs = ctx.defaultWait.toSeconds
+    if (waitSecs > 9 && waitSecs % 10 == 0) Duration(waitSecs / 10, SECONDS) else Duration(waitSecs * 100, MILLISECONDS)
+  }
+
+  def evaluteCondition(step: Step, ctx: T): Boolean
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
+    val delay = step.delayOpt.getOrElse(defaultRepeatDelay(ctx))
+    val timeout = step.timeoutOpt.getOrElse(defaultRepeatTimeout(delay))
     Assert(delay.gteq(Duration.Zero), "delay cannot be less than zero")
     Assert(timeout.gt(Duration.Zero), "timeout must be greater than zero")
     Assert(timeout.gteq(delay), "timeout cannot be less than or equal to delay")
@@ -72,7 +82,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
                 iterationStep.evalStatus match {
                   case Failed(_, e) => throw e
                   case _ =>
-                    evaluteCondition(ctx) tap { result =>
+                    evaluteCondition(step, ctx) tap { result =>
                       if (!result) {
                         logger.info(s"repeat-until $condition: not complete, will repeat ${if (delay.gt(Duration.Zero)) s"in ${DurationFormatter.format(delay)}" else "now"}")
                         if (delay.gt(Duration.Zero)) {
@@ -84,7 +94,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
                     }
                 }
               case "while" =>
-                val result = evaluteCondition(ctx)
+                val result = evaluteCondition(step, ctx)
                 if (result) {
                   logger.info(s"repeat-while $condition: iteration $iteration")
                   if (condSteps.isEmpty) {
@@ -131,10 +141,10 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
         operation match {
           case "until" =>
             val iterationStep = engine.evaluateStep(step, pStep, ctx)
-            evaluteCondition(ctx)
+            evaluteCondition(step, ctx)
             condSteps = iterationStep :: condSteps
           case _ =>
-            evaluteCondition(ctx)
+            evaluteCondition(step, ctx)
             val iterationStep = engine.evaluateStep(step, pStep, ctx)
             condSteps = iterationStep :: condSteps
         }

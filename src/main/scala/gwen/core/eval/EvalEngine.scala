@@ -29,8 +29,6 @@ import gwen.core.node.gherkin._
 import gwen.core.state.EnvState
 import gwen.core.status._
 
-import scala.concurrent.duration._
-
 object EvalEngine {
   def apply(): EvalEngine[EvalContext] = new EvalEngine[EvalContext]() {
     override def init(options: GwenOptions, envState: EnvState): EvalContext = {
@@ -85,39 +83,39 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+)$doStep if (.+? file)$filepathRef is( not)?$negation empty""" =>
         Some(new IfFileCondition(doStep, None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty, this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation (?:blank|empty)""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", step.isTrim, step.isIgnoreCase, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, step.isTrim, step.isIgnoreCase, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, this))
       case r"""(.+)$doStep if (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.fromModal(operator), false, expression, step.isTrim, step.isIgnoreCase, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.fromModal(operator), false, expression, this))
       case r"""(.+)$doStep if (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
-        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, step.isTrim, step.isIgnoreCase, this))
+        Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
-        Some(new IfCondition(doStep, condition, Option(negation).nonEmpty, defaultConditionTimeoutSecs, this))
+        Some(new IfCondition(doStep, condition, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation defined""" if (doStep != "I wait" && !step.expression.matches(""".*".*(until|while).*".*""")) =>
-        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).nonEmpty, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatIfDefined(doStep, operation, attribute, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation "(.+?)$filepath" file( not)?$negation exists""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file ${if(Option(negation).nonEmpty) "not " else ""}exists""", Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file ${if(Option(negation).nonEmpty) "not " else ""}exists""", Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation "(.+?)$filepath" file does not exist""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file does not exist""", Some(filepath), None, FileComparisonOperator.exists, true, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file does not exist""", Some(filepath), None, FileComparisonOperator.exists, true, this))
       case r"""(.+?)$doStep (until|while)$operation "(.+?)$filepath" file is( not)?$negation empty""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file is ${if(Option(negation).nonEmpty) "not " else ""}empty""", Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s""""$filepath" file is ${if(Option(negation).nonEmpty) "not " else ""}empty""", Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation (.+? file)$filepathRef( not)?$negation exists""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s"$filepathRef file ${if(Option(negation).nonEmpty) "not " else ""}exists", None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s"$filepathRef file ${if(Option(negation).nonEmpty) "not " else ""}exists", None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation (.+? file)$filepathRef does not exist""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s"$filepathRef file does not exist", None, Some(filepathRef), FileComparisonOperator.exists, true, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s"$filepathRef file does not exist", None, Some(filepathRef), FileComparisonOperator.exists, true, this))
       case r"""(.+?)$doStep (until|while)$operation (.+? file)$filepathRef is( not)?$negation empty""" if (doStep != "I wait") =>
-        Some(new RepeatIfFile(doStep, operation, s"$filepathRef ${if(Option(negation).nonEmpty) "not " else ""}empty", None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), this))
+        Some(new RepeatIfFile(doStep, operation, s"$filepathRef ${if(Option(negation).nonEmpty) "not " else ""}empty", None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation (?:blank|empty)""" if (doStep != "I wait")   =>
-        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", step.isTrim, step.isIgnoreCase, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation "(.*?)"$expression""" if (doStep != "I wait")  =>
-        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, step.isTrim, step.isIgnoreCase, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
-        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.fromModal(operator), false, expression, step.isTrim, step.isIgnoreCase, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.fromModal(operator), false, expression, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
-        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.valueOf(operator), true, expression, step.isTrim, step.isIgnoreCase, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && !condition.contains('"') && !step.expression.matches(""".*".*(until|while).*".*""")) =>
-        Some(new RepeatJS(doStep, operation, condition, step.delayOpt.getOrElse(defaultRepeatDelay), step.timeoutOpt.getOrElse(defaultRepeatTimeout(defaultRepeatDelay)), defaultConditionTimeoutSecs, this))
+        Some(new RepeatJS(doStep, operation, condition, this))
       case _ =>
         None
     }
@@ -138,17 +136,17 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I wait (\d+)$duration second(?:s?)""" =>
         new Sleep(duration.toInt)
       case r"""I wait until "(.+?)$filepath" file( not)?$negation exists""" =>
-        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty)
       case r"""I wait until "(.+?)$filepath" file does not exist""" =>
-        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.exists, true, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.exists, true)
       case r"""I wait until "(.+?)$filepath" file is( not)?$negation empty""" =>
-        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""I wait until (.+? file)$filepathRef( not)?$negation exists""" =>
-        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty)
       case r"""I wait until (.+? file)$filepathRef does not exist""" =>
-        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.exists, true, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.exists, true)
       case r"""I wait until (.+? file)$filepathRef is( not)?$negation empty""" =>
-        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty, step.timeoutOpt.map(_.toSeconds).getOrElse(60))
+        new WaitForFileCondition(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""I execute system process "(.+?)"$systemproc delimited by "(.+?)"$delimiter""" =>
         new ExecuteSysProc(systemproc, Some(delimiter))
       case r"""I execute system process "(.+?)"$systemproc""" =>
@@ -166,21 +164,21 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I capture the content in (.+?)$source by json path "(.+?)"$expression as (.+?)$name""" =>
         new CaptureByJsonPath(name, expression, source)
       case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2 as (.+?)$name""" =>
-        new CaptureSimilarity(name, attribute1, None, Some(value2), step.isTrim, step.isIgnoreCase)
+        new CaptureSimilarity(name, attribute1, None, Some(value2))
       case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2 as (.+?)$name""" =>
-        new CaptureSimilarity(name, attribute1, Some(attribute2), None, step.isTrim, step.isIgnoreCase)
+        new CaptureSimilarity(name, attribute1, Some(attribute2), None)
       case r"""I capture the similarity score of (.+?)$attribute1 compared to "(.+?)"$value2""" =>
-        new CaptureSimilarity("similarity score", attribute1, None, Some(value2), step.isTrim, step.isIgnoreCase)
+        new CaptureSimilarity("similarity score", attribute1, None, Some(value2))
       case r"""I capture the similarity score of (.+?)$attribute1 compared to (.+?)$attribute2""" =>
-        new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None, step.isTrim, step.isIgnoreCase)
+        new CaptureSimilarity("similarity score", attribute1, Some(attribute2), None)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location as (.+?)$name""" =>
-        new CapturePDF(name, LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
+        new CapturePDF(name, LocationType.valueOf(locationType), location)
       case r"""I capture the PDF text from (url|file)$locationType "(.+?)"$location""" =>
-        new CapturePDF("the PDF text", LocationType.valueOf(locationType), location, defaultConditionTimeoutSecs)
+        new CapturePDF("the PDF text", LocationType.valueOf(locationType), location)
       case r"""I capture the base64 encoded PDF text from (.+?)$attribute as (.+?)$name""" =>
-        new CapturePDF(name, LocationType.base64Blob, attribute, defaultConditionTimeoutSecs)
+        new CapturePDF(name, LocationType.base64Blob, attribute)
       case r"""I capture the base64 encoded PDF text from (.+?)$attribute""" =>
-        new CapturePDF("the PDF text", LocationType.base64Blob, attribute, defaultConditionTimeoutSecs)
+        new CapturePDF("the PDF text", LocationType.base64Blob, attribute)
       case r"""I capture (.+?)$source as (.+?)$attribute""" =>
         new Capture(attribute, source)
       case r"""I capture (.+?)$attribute""" =>
@@ -190,27 +188,27 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I base64 decode (.+?)$attribute""" =>
         new CaptureBase64Decoded(attribute, attribute)
       case r"""(.+?)$attribute is defined by system process "(.+?)"$expression delimited by "(.+?)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter), step.isMasked)
+        new BindAsType(attribute, BindingType.sysproc, expression, None, Some(delimiter))
       case r"""(.+?)$attribute is defined by (javascript|js|system process|unix system process|property|setting)$attrType "(.+?)"$expression""" =>
-        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None, step.isMasked)
+        new BindAsType(attribute, BindingType.parse(attrType), step.orDocString(expression), None, None)
       case r"""(.+?)$attribute is defined by file "(.+?)"$filepath""" =>
-        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), None, None, step.isMasked)
+        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), None, None)
       case r"""(.+?)$attribute is defined by (.+?)$enc file "(.+?)"$filepath""" =>
-        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), Some(enc), None, step.isMasked)
+        new BindAsType(attribute, BindingType.file, step.orDocString(filepath), Some(enc), None)
       case r"""(.+?)$attribute is defined by (.+?)$function applied to "(.+?)"$args delimited by "(.*)"$delimiter""" =>
-        new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter), step.isMasked)
+        new BindAsType(attribute, BindingType.function, function, Some(args), Some(delimiter))
       case r"""(.+?)$attribute is defined by (.+?)$function applied to "(.*)"$arg""" =>
-        new BindAsType(attribute, BindingType.function, function, Some(step.orDocString(arg)), None, step.isMasked)
+        new BindAsType(attribute, BindingType.function, function, Some(step.orDocString(arg)), None)
       case r"""(.+?)$attribute is defined by the (text|node|nodeset)$targetType in (.+?)$source by xpath "(.+?)"$expression""" =>
-        new BindAsXPath(attribute, step.orDocString(expression), targetType, source, step.isMasked)
+        new BindAsXPath(attribute, step.orDocString(expression), targetType, source)
       case r"""(.+?)$attribute is defined in (.+?)$source by regex "(.+?)"$expression""" =>
-        new BindAsRegex(attribute, step.orDocString(expression), source, step.isMasked)
+        new BindAsRegex(attribute, step.orDocString(expression), source)
       case r"""(.+?)$attribute is defined in (.+?)$source by json path "(.+?)"$expression""" =>
-        new BindAsJsonPath(attribute, step.orDocString(expression), source, step.isMasked)
+        new BindAsJsonPath(attribute, step.orDocString(expression), source)
       case r"""(.+?)$attribute is defined by sql "(.+?)"$selectStmt in the (.+?)$dbName database""" =>
-        new BindAsSQL(attribute, dbName, selectStmt, step.isMasked)
+        new BindAsSQL(attribute, dbName, selectStmt)
       case r"""(.+?)$attribute is defined in the (.+?)$dbName database by sql "(.+?)"$selectStmt""" =>
-        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt), step.isMasked)
+        new BindAsSQL(attribute, dbName, step.orDocString(selectStmt))
       case r"""(.+?)$attribute is "(.*?)"$value""" =>
         new BindAttribute(attribute, step.orDocString(value))
       case r"""(.+?)$attribute is (blank|empty|true|false)$literal""" =>
@@ -218,29 +216,29 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I update the (.+?)$dbName database by sql "(.+?)"$updateStmt""" =>
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|empty|true|false)$literal""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty)
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
-        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2""" =>
-        new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).nonEmpty)
       case r"""(.+?)$attribute1 should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to (.+?)$attribute2""" =>
-        new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new CheckSimilarity(attribute1, Some(attribute2), None, SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).nonEmpty)
       case r"""(.+?)$attribute should be absent""" =>
-        new IsDefined(attribute, true, step.message)
+        new IsDefined(attribute, true)
       case r"""(.+?)$attribute should( not)?$negation be defined""" =>
-        new IsDefined(attribute, Option(negation).nonEmpty, step.message)
+        new IsDefined(attribute, Option(negation).nonEmpty)
       case r""""(.+?)"$filepath file should( not)?$negation exist""" =>
-        new CompareFile(Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty, step.message)
+        new CompareFile(Some(filepath), None, FileComparisonOperator.exists, Option(negation).nonEmpty)
       case r"""(.+? file)$filepathRef should( not)?$negation exist""" =>
-        new CompareFile(None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty, step.message)
+        new CompareFile(None, Some(filepathRef), FileComparisonOperator.exists, Option(negation).nonEmpty)
       case r""""(.+?)"$filepath file should( not)?$negation be empty""" =>
-        new CompareFile(Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty, step.message)
+        new CompareFile(Some(filepath), None, FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""(.+? file)$filepathRef should( not)?$negation be empty""" =>
-        new CompareFile(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty, step.message)
+        new CompareFile(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation be (blank|empty|true|false)$literal""" =>
-        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty, step.message, step.isTrim, step.isIgnoreCase)
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(Some(name), filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>
@@ -262,9 +260,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I log record to (.+?)$resultsFileId file""" =>
         new LogResultsRecord(resultsFileId)
       case r"""I download "(.+?)"$url to "(.+?)"$filepath""" =>
-        new DownloadToFile(url, Some(filepath), None, defaultConditionTimeoutSecs)
+        new DownloadToFile(url, Some(filepath), None)
       case r"""I download "(.+?)"$url to (.+?)$filepathRef""" =>
-        new DownloadToFile(url, None, Some(filepathRef), defaultConditionTimeoutSecs)
+        new DownloadToFile(url, None, Some(filepathRef))
       case r"""I lookup (.+?)$name in the "(.+?)$filepath" file where "(.+)"$predicate""" =>
         new DataLookup(name, name, Some(filepath), None, step.orDocString(predicate))
       case r"""I lookup (.+?)$name in (.+? file)$filepathRef where "(.+)"$predicate""" =>
@@ -276,19 +274,14 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case "I reset accumulated errors" =>
         new ResetAccumulatedErrors()
       case "there should be no accumulated errors" =>
-        new Compare(`gwen.accumulated.errors`, "", ComparisonOperator.be, false, Some("${gwen.accumulated.errors}"), false, false)
+        new Compare(`gwen.accumulated.errors`, "", ComparisonOperator.be, false)
 
       case _ =>
         Errors.undefinedStepError(step)
         
     }
   }
-
-  def defaultConditionTimeoutSecs: Long = 10
-  def defaultRepeatDelay: Duration = Duration(1, SECONDS)
-  
-  def defaultRepeatTimeout(delay: Duration): Duration = delay * 30
-  
+    
   def logStatus(options: GwenOptions, node: GherkinNode): Unit = { 
     val msg = s"${node.evalStatus} ${node.nodeType}: $node"
     StatusLogger.log(options, logger, node.evalStatus, msg)

@@ -27,12 +27,12 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String, masked: Boolean) extends UnitStepAction[T] {
+class BindAsJsonPath[T <: EvalContext](target: String, jsonPath: String, source: String) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      JsonPathBinding.bind(target, jsonPath, source, masked, ctx)
+      JsonPathBinding.bind(target, jsonPath, source, step.isMasked, ctx)
       step.loadStrategy foreach { strategy =>
         val value = {
           if (strategy == LoadStrategy.Eager) Option(new JsonPathBinding(target, ctx).resolve())

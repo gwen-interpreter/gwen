@@ -36,7 +36,7 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
-class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operator: ComparisonOperator, negate: Boolean, expression: String, trim: Boolean, ignoreCase: Boolean, engine: StepDefEngine[T]) extends CompositeStepAction[T](doStep) {
+class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operator: ComparisonOperator, negate: Boolean, expression: String, engine: StepDefEngine[T]) extends CompositeStepAction[T](doStep) {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     def cond = s"$name " + (
@@ -75,7 +75,7 @@ class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operato
       }
     }
     ctx.evaluate(sdCall()) {
-      val compare = new Compare[T](name, expression, operator, negate, None, trim, ignoreCase)
+      val compare = new Compare[T](name, expression, operator, negate)
       val satisfied = Try(compare.apply(parent, step, ctx)) match {
         case Success(_) => true
         case Failure(e) =>

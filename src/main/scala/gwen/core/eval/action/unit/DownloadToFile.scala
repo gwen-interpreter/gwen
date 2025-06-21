@@ -29,14 +29,14 @@ import java.net.URL
 import java.nio.channels.Channels
 import gwen.core.state.SensitiveData
 
-class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[String], filepathRef: Option[String], timeoutSecs: Long) extends UnitStepAction[T] {
+class DownloadToFile[T <: EvalContext](sourceUrl: String, filepath: Option[String], filepathRef: Option[String]) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Action, ctx)
     val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
     ctx.perform{
       SensitiveData.withValue(sourceUrl) { url =>
-        ctx.getWithWait(timeoutSecs, s"downloading $sourceUrl to $file") { () => 
+        ctx.getWithWait(step.timeoutOpt.getOrElse(ctx.defaultWait).toSeconds, s"downloading $sourceUrl to $file") { () => 
           val urlChannel = Channels.newChannel(new URL(url).openStream())
           val fileChannel = file.newFileOutputStream.getChannel
           fileChannel.transferFrom(urlChannel, 0, Long.MaxValue)

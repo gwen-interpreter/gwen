@@ -29,7 +29,7 @@ import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-class CompareFile[T <: EvalContext](filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStepAction[T] {
+class CompareFile[T <: EvalContext](filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -42,7 +42,7 @@ class CompareFile[T <: EvalContext](filepath: Option[String], filepathRef: Optio
             val displayName = fCond.condition
             ctx.assertWithError(
               assertion, 
-              message, 
+              step.message, 
               s"${filepath.map(fp => s"""'$fp' file""").getOrElse(filepathRef.get)} should${if (negate) " not" else ""} ${if(operator == FileComparisonOperator.exists) s"exist but did${if(!negate) " not" else ""}" else s"be empty but was${if(!negate) " not" else ""}"}",
               step.assertionMode)
           case Failure(error) =>

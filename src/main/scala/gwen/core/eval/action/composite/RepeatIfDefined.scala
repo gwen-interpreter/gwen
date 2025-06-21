@@ -18,14 +18,14 @@ package gwen.core.eval.action.composite
 
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.node.gherkin.Step
 
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
-class RepeatIfDefined[T <: EvalContext](doStep: String, operation: String, name: String, negate: Boolean, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T])
-    extends Repeat(doStep, operation, s"$name is ${if (negate) "not " else ""}defined", delay, timeout, engine) {
+class RepeatIfDefined[T <: EvalContext](doStep: String, operation: String, name: String, negate: Boolean, engine: EvalEngine[T])
+    extends Repeat(doStep, operation, s"$name is ${if (negate) "not " else ""}defined", engine) {
 
-  override def evaluteCondition(ctx: T): Boolean = {
+  override def evaluteCondition(step: Step, ctx: T): Boolean = {
       val result = Try(ctx.getBinding(name))
       if (!negate) result.isSuccess else result.isFailure
   }

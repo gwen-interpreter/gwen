@@ -27,12 +27,12 @@ import gwen.core.behavior.BehaviorType
 
 import scala.util.chaining._
 
-class BindAsSQL[T <: EvalContext](target: String, dbName: String, selectStmt: String, masked: Boolean) extends UnitStepAction[T] {
+class BindAsSQL[T <: EvalContext](target: String, dbName: String, selectStmt: String) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Context, ctx)
-      SQLBinding.bind(target, dbName, selectStmt, masked, ctx)
+      SQLBinding.bind(target, dbName, selectStmt, step.isMasked, ctx)
       step.loadStrategy foreach { strategy =>
         val value = {
           if (strategy == LoadStrategy.Eager) Option(new SQLBinding(target, ctx).resolve())

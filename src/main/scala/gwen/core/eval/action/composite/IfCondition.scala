@@ -34,7 +34,7 @@ import gwen.core.status._
 
 import util.chaining.scalaUtilChainingOps
 
-class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, conditionTimeoutSecs: Long, engine: StepDefEngine[T]) extends CompositeStepAction[T](doStep) {
+class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: Boolean, engine: StepDefEngine[T]) extends CompositeStepAction[T](doStep) {
 
   if (condition.matches("(not )?(true|false)")) Errors.illegalConditionError(condition)
   
@@ -42,7 +42,7 @@ class IfCondition[T <: EvalContext](doStep: String, condition: String, negate: B
     if (condition.matches(""".*( until | while | for each | if ).*""") && !condition.matches(""".*".*((until|while|for each|if)).*".*""")) {
       Errors.illegalStepError("Nested 'if' condition found in illegal step position (only trailing position supported)")
     }
-    val bCondition = new BooleanCondition(condition, negate, conditionTimeoutSecs, ctx)
+    val bCondition = new BooleanCondition(condition, negate, step.timeoutOpt.getOrElse(ctx.defaultWait).toSeconds, ctx)
     ctx.getStepDef(doStep, None) foreach { stepDef =>
       checkStepDefRules(step.copy(withName = doStep, withStepDef = Some(stepDef)), ctx)
     }

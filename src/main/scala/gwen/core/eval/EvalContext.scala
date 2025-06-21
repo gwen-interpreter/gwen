@@ -39,6 +39,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
 import scala.collection.SeqView
+import scala.concurrent.duration._
 
 /**
   * Provides all evaluation capabilities.
@@ -286,5 +287,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     val keyword = featureScope.get(`gwen.feature.eval.status.keyword`) 
     if (keyword == StatusKeyword.Failed.toString) Failed(0, featureScope.get(`gwen.feature.eval.status.message`)) else Passed(0)
   }
+
+  def defaultWait: Duration = Duration(10, SECONDS)
 
 }

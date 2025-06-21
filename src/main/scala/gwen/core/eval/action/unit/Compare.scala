@@ -34,20 +34,26 @@ import scala.util.Success
 import scala.util.chaining._
 import scala.util.Try
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStepAction[T] with ImplicitValueKeys {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStepAction[T] with ImplicitValueKeys {
 
   
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
-      apply(ctx, step.assertionMode)
+      apply(step, ctx)
     }
   }
 
-  def apply(ctx: T, assertionMode: AssertionMode = AssertionMode.hard): Unit = {
+  def apply(step: Step, ctx: T): Unit = {
     val expected = ctx.parseExpression(operator, expression)
     val actualValue = ctx.getBoundValue(source)
     ctx.perform {
+      val message = step.message orElse {
+        if (step.expression == "there should be no accumulated errors") Some("${gwen.accumulated.errors}") else None
+      }
+      val timeout = step.timeoutOpt
+      val trim = step.isTrim
+      val ignoreCase = step.isIgnoreCase
       val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate)
       val op = {
         if (operator == ComparisonOperator.`match template file`) {
@@ -64,7 +70,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
               assertion, 
               message, 
               Assert.formatFailed(displayName, expected, actualValue, negate, op),
-              assertionMode)
+              step.assertionMode)
           } catch {
             case gae: Errors.GwenAssertionError if source == `gwen.accumulated.errors` =>
               Errors.accumulatedAssertionError(gae)

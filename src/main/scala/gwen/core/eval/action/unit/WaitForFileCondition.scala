@@ -27,12 +27,13 @@ import gwen.core.node.gherkin.Step
 
 import scala.util.chaining._
 
-class WaitForFileCondition[T <: EvalContext](filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean, timeoutSecs: Long) extends UnitStepAction[T] {
+class WaitForFileCondition[T <: EvalContext](filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Action, ctx)
       val fCond = FileCondition(filepath, filepathRef, operator, negate, ctx)
+      val timeoutSecs = step.timeoutOpt.getOrElse(ctx.defaultWait).toSeconds
       Assert(timeoutSecs > 0, "timeout must be greater than zero")
       ctx.evaluate(true) {
         ctx.waitUntil(timeoutSecs, s"waiting for true return from file condition: ${fCond.condition}") {

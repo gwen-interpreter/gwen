@@ -21,13 +21,13 @@ import gwen.core.eval.action.unit.Compare
 import gwen.core.eval.ComparisonOperator
 import gwen.core.eval.EvalContext
 import gwen.core.eval.EvalEngine
+import gwen.core.node.gherkin.Step
 
-import scala.concurrent.duration.Duration
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 
-class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: String, name: String, operator: ComparisonOperator, negate: Boolean, expression: String, trim: Boolean, ignoreCase: Boolean, delay: Duration, timeout: Duration, conditionTimeoutSecs: Long, engine: EvalEngine[T])
+class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: String, name: String, operator: ComparisonOperator, negate: Boolean, expression: String, engine: EvalEngine[T])
     extends Repeat(
       doStep, 
       operation, 
@@ -48,11 +48,9 @@ class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: Stri
           }
         }
       ) + s""" "${if (expression == "") "blank" else expression}"""",
-      delay, 
-      timeout, 
       engine) {
 
-  override def evaluteCondition(ctx: T): Boolean = {
+  override def evaluteCondition(step: Step, ctx: T): Boolean = {
     if (ctx.options.dryRun) {
       ctx.parseExpression(operator, expression)
       try {
@@ -62,8 +60,8 @@ class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: Stri
           ctx.getBinding(name)
       }
     }
-    val compare = new Compare[T](name, expression, operator, negate, None, trim, ignoreCase)
-    Try(compare.apply(ctx)) match {
+    val compare = new Compare[T](name, expression, operator, negate)
+    Try(compare.apply(step, ctx)) match {
       case Success(_) => true
       case Failure(e) =>
         if (e.isInstanceOf[AssertionError]) false

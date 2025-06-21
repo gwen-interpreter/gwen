@@ -1,57 +1,62 @@
+4.8.1
+=====
+21 Jun 2025
+- Refactor: decouple engine from step level annotation overrides
+
 4.8.0
------
+=====
 27 May 2025
 - Add implicit variable to capture the evaluated feature sequence number:
   - `gwen.feature.eval.sequenceNo`
 
 4.7.5
------
+=====
 16 May 2025
 - Fix console reporting when parallel option is ignored
 
 4.7.4
------
+=====
 14 May 2025
 - Ignore parallel option if the number of input features does not exceed one
 
 4.7.3
------
+=====
 12 May 2025
 - Fail template matches if source is not a full match
 
 4.7.2
------
+=====
 9 May 2025
 - Add support for binding capturing text from base64 encoded PDF blobs to given names
 
 4.7.1
------
+=====
 8 May 2025
 - Make line numbers in HTML reports unselectable
 
 4.7.0
------
+=====
 8 May 2025
 - Add support for capturing text from base64 encoded PDF blobs
 
 4.6.0
------
+=====
 3 May 2025
 - Add ShadowRoot to step level annotations
 
 4.5.3
------
+=====
 26 April 2025
 - Simplify how feature and meta results are handled in engine layer
 
 4.5.2
------
+=====
 25 April 2025
 - Interpolate env vars during spec normalisation
 - Include results of meta imports in report output
 
 4.5.1
------
+=====
 18 April 2025
 - Update dependencies
   - Update gherkin from v32.0.0 to v32.1.1

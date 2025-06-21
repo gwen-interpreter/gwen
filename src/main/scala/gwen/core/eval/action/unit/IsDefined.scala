@@ -25,7 +25,7 @@ import gwen.core.behavior.BehaviorType
 import scala.util.chaining._
 import scala.util.Try
 
-class IsDefined[T <: EvalContext](source: String, negate: Boolean, message: Option[String]) extends UnitStepAction[T] {
+class IsDefined[T <: EvalContext](source: String, negate: Boolean) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
@@ -35,7 +35,7 @@ class IsDefined[T <: EvalContext](source: String, negate: Boolean, message: Opti
         val result = if (negate) value.isFailure else value.isSuccess
         ctx.assertWithError(
           result, 
-          message, 
+          step.message, 
           s"Expected $source to${if (negate) " not" else ""} be defined",
           step.assertionMode)
       }

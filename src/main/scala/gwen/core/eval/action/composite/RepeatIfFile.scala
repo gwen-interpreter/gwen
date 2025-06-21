@@ -22,15 +22,12 @@ import gwen.core.eval.EvalEngine
 import gwen.core.eval.FileComparisonOperator
 import gwen.core.eval.binding.JSBinding
 import gwen.core.eval.support.FileCondition
+import gwen.core.node.gherkin.Step
 
+class RepeatIfFile[T <: EvalContext](doStep: String, operation: String, condition: String, filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean, engine: EvalEngine[T])
+    extends Repeat(doStep, operation, condition, engine) {
 
-import scala.concurrent.duration.Duration
-import scala.util.chaining._
-
-class RepeatIfFile[T <: EvalContext](doStep: String, operation: String, condition: String, filepath: Option[String], filepathRef: Option[String], operator: FileComparisonOperator, negate: Boolean, delay: Duration, timeout: Duration, engine: EvalEngine[T])
-    extends Repeat(doStep, operation, condition, delay, timeout, engine) {
-
-  override def evaluteCondition(ctx: T): Boolean = {
+  override def evaluteCondition(step: Step, ctx: T): Boolean = {
     val fCond = FileCondition(filepath, filepathRef, operator, negate, ctx)
     ctx.evaluate(true) {
       fCond.evaluate()

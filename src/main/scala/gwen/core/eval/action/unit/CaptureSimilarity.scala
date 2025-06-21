@@ -29,7 +29,7 @@ import scala.util.Success
 import scala.util.chaining._
 import gwen.core.Formatting
 
-class CaptureSimilarity[T <: EvalContext](target: String, source1: String, source2: Option[String], sourceValue2: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStepAction[T] {
+class CaptureSimilarity[T <: EvalContext](target: String, source1: String, source2: Option[String], sourceValue2: Option[String]) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     checkStepRules(step, BehaviorType.Assertion, ctx)
@@ -38,6 +38,8 @@ class CaptureSimilarity[T <: EvalContext](target: String, source1: String, sourc
     val value1 = binding1.resolve()
     val value2 = sourceValue2.getOrElse(binding2.get.resolve())
     ctx.evaluate(Some(1.0)) {
+      val trim = step.isTrim
+      val ignoreCase = step.isIgnoreCase
       ctx.dscSimilarity(Formatting.format(value1, trim, ignoreCase), Formatting.format(value2, trim, ignoreCase))
     } map { score =>
       ctx.topScope.set(target, score.toString)

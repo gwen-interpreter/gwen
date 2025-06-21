@@ -33,13 +33,16 @@ import scala.util.Success
 import scala.util.Failure
 import scala.util.chaining._
 
-class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String], trim: Boolean, ignoreCase: Boolean) extends UnitStepAction[T] {
+class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, path: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStepAction[T] {
 
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
       val expected = ctx.parseExpression(operator, expression)
       ctx.perform {
+        val message = step.message
+        val trim = step.isTrim
+        val ignoreCase = step.isIgnoreCase
         val src = ctx.topScope.get(source)
         val actual = pathType match {
           case BindingType.`json path` => ctx.evaluateJsonPath(path, src)
