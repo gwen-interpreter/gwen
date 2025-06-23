@@ -16,7 +16,9 @@
 
 package gwen.core.status
 
+import gwen.core.AssertionMode
 import gwen.core.BaseTest
+import gwen.core.Errors
 import gwen.core.GwenOptions
 import gwen.core.TestModel
 import gwen.core.node.gherkin.GherkinParser
@@ -584,6 +586,27 @@ Background: The tester
     EvalStatus(List(Passed(10, true))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
     EvalStatus(List(Passed(10, true), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
+  }
+
+  "Failed cause message" should "resolve" in {
+    val error = new Errors.GwenAssertionError("assert error", AssertionMode.hard)
+    val failed = Failed(1L, error)
+    failed.message should be ("assert error")
+    failed.cause.get.getMessage should be ("assert error")
+    failed.isAssertionError should be (true)
+  }
+
+  "Failed wrapped cause message" should "resolve" in {
+    val error0 = new Errors.GwenException("override msg", new Errors.GwenAssertionError("assert error", AssertionMode.hard))
+    val error1 = new Errors.CustomErrorMessage("override msg", new Errors.GwenAssertionError("assert error", AssertionMode.hard))
+    val failed0 = Failed(1L, error0)
+    val failed1 = Failed(1L, error1)
+    failed0.message should be ("assert error")
+    failed0.cause.get.getMessage should be ("assert error")
+    failed0.isAssertionError should be (true)
+    failed1.message should be ("override msg")
+    failed1.cause.get.getMessage should be ("assert error")
+    failed1.isAssertionError should be (true)
   }
 
 }

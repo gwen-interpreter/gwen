@@ -39,7 +39,6 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
     val value2 = sourceValue2.getOrElse(binding2.get.resolve())
     var similarityScore: Option[Double] = None
     ctx.perform {
-      val message = step.message
       val trim = step.isTrim
       val ignoreCase = step.isIgnoreCase
       ctx.checkSimilarity(Formatting.format(value1, trim, ignoreCase), Formatting.format(value2, trim, ignoreCase), operator, percentage, negate) match {
@@ -55,7 +54,6 @@ class CheckSimilarity[T <: EvalContext](source1: String, source2: Option[String]
           }
           ctx.assertWithError(
             passed, 
-            message, 
             s"Expected ${binding1.displayName} '$value1' to${if (negate) " not" else ""} $operator ${Formatting.upTo2DecimalPlaces(percentage)}% similar to${binding2.map(b => s" ${b.displayName}").getOrElse("")} '$value2' but was${score.map(s => s" ${Formatting.upTo2DecimalPlaces(s * 100)}%").getOrElse(if (!negate) " not" else "")}",
             step.assertionMode)
         case Failure(error) =>

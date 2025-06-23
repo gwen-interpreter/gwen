@@ -48,9 +48,6 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
     val expected = ctx.parseExpression(operator, expression)
     val actualValue = ctx.getBoundValue(source)
     ctx.perform {
-      val message = step.message orElse {
-        if (step.expression == "there should be no accumulated errors") Some("${gwen.accumulated.errors}") else None
-      }
       val timeout = step.timeoutOpt
       val trim = step.isTrim
       val ignoreCase = step.isIgnoreCase
@@ -68,7 +65,6 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
           try {
             ctx.assertWithError(
               assertion, 
-              message, 
               Assert.formatFailed(displayName, expected, actualValue, negate, op),
               step.assertionMode)
           } catch {

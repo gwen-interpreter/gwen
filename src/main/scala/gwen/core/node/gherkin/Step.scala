@@ -388,7 +388,7 @@ object Step {
       Nil,
       Nil,
       tagList,
-      message,
+      message.orElse(if (name.trim == "there should be no accumulated errors") Some("${gwen.accumulated.errors}") else None),
       dryValues)
   }
   def errorTrails(node: GwenNode): List[List[Step]] = node match {

@@ -42,7 +42,6 @@ class CompareFile[T <: EvalContext](filepath: Option[String], filepathRef: Optio
             val displayName = fCond.condition
             ctx.assertWithError(
               assertion, 
-              step.message, 
               s"${filepath.map(fp => s"""'$fp' file""").getOrElse(filepathRef.get)} should${if (negate) " not" else ""} ${if(operator == FileComparisonOperator.exists) s"exist but did${if(!negate) " not" else ""}" else s"be empty but was${if(!negate) " not" else ""}"}",
               step.assertionMode)
           case Failure(error) =>

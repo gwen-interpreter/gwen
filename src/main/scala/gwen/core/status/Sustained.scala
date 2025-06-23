@@ -16,16 +16,16 @@
 
 package gwen.core.status
 
+import gwen.core.Errors.CustomErrorMessage
+
 /**
   * Defines the sustained status.
   *
   * @param nanos the duration in nanoseconds
   * @param error the error to sustain
   */
-case class Sustained(nanos: Long, error: Throwable) extends EvalStatus {
+case class Sustained(nanos: Long, error: Throwable) extends EvalError(error) {
   override val keyword: StatusKeyword = StatusKeyword.Sustained
   override def exitCode = 0
   override def emoticon = "[:|]"
-  override def cause = Option(error).map(e => Option(e.getCause).getOrElse(error))
-  override def message: String = cause.map(_.getMessage).getOrElse(error.getMessage)
 }

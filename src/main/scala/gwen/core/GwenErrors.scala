@@ -102,7 +102,6 @@ object Errors extends LazyLogging {
   def fileAttachError(file: File, msg: String) = throw new FileAttachException(file, msg)
   def serviceHealthCheckError(msg: String, cause: Throwable = null) = throw new ServiceHealthCheckException(msg, cause)
   def multilineSubstitutionError(msg: String) = throw new MultilineSubstitutionException(msg)
-  def stepError(step: Step, cause: Throwable) = throw new StepException(step, cause.getMessage, cause)
   def waitTimeoutError(timeoutSecs: Long, reason: String, cause: Throwable = null) = throw new WaitTimeoutException(timeoutSecs, reason, cause)
   def invalidBindingPathTypeError(bindingType: BindingType) = throw new InvalidBindingPathTypeException(bindingType)
   def deprecatedError(msg: String) = throw new DeprecatedException(msg)
@@ -128,6 +127,9 @@ object Errors extends LazyLogging {
   
   /** Base exception\. */
   class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(Formatting.stripZeroChar(msg), cause)
+
+  /** Thrown when an step that has a custom error message fails (wraps exception and overrides message). */
+  class CustomErrorMessage(msg: String, cause: Throwable) extends GwenException(msg, cause)
 
   /** Signals a step that failed to execute. */
   class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${if(msg.endsWith(at(step.sourceRef))) "" else at(step.sourceRef)}", cause)

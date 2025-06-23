@@ -35,7 +35,6 @@ class IsDefined[T <: EvalContext](source: String, negate: Boolean) extends UnitS
         val result = if (negate) value.isFailure else value.isSuccess
         ctx.assertWithError(
           result, 
-          step.message, 
           s"Expected $source to${if (negate) " not" else ""} be defined",
           step.assertionMode)
       }

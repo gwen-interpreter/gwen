@@ -17,6 +17,7 @@
 package gwen.core.status
 
 import gwen.core._
+import gwen.core.Errors.CustomErrorMessage
 
 object Failed {
   def apply(nanos: Long, msg: String): Failed = new Failed(0, new Exception(msg))
@@ -28,15 +29,10 @@ object Failed {
   * @param nanos the duration in nanoseconds
   * @param error the error
   */
-case class Failed(nanos: Long, error: Throwable) extends EvalStatus {
+case class Failed(nanos: Long, error: Throwable) extends EvalError(error) {
   override val keyword: StatusKeyword = StatusKeyword.Failed
   override def exitCode = 1
   override def icon = Some("✘")
   override def emoticon = "[:(]"
-  override def cause = Option(error).map(e => Option(e.getCause).getOrElse(error))
-  override def message: String = {
-    cause.map(getErrorMessage).orElse(Option(getErrorMessage(error))).getOrElse(error.getClass.getSimpleName)
-  }
-  private def getErrorMessage(err: Throwable): String = err.getMessage
   override def asIconString(statusName: String): String = asStatusIconString(statusName)
 }

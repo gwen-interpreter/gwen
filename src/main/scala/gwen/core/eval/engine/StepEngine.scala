@@ -290,9 +290,11 @@ trait StepEngine[T <: EvalContext] {
         } else if (fStep.isTry && !status.isDeprecationError) {
           fStep.copy(withEvalStatus = Ignored(nanos))
         } else if (status.isSustainedAssertionError) {
-          fStep.copy(withEvalStatus = Sustained(nanos, error))
+          fStep.copy(withEvalStatus = Sustained(nanos, fStep.message.map(msg => new Errors.CustomErrorMessage(Try(ctx.interpolateLenient(msg)).getOrElse(msg), error)).getOrElse(error)))
         } else {
-          fStep
+          fStep.message map { msg => 
+            fStep.copy(withEvalStatus = Failed(nanos, new Errors.CustomErrorMessage(Try(ctx.interpolateLenient(msg)).getOrElse(msg), error)))
+          } getOrElse fStep
         }
       case _ =>
         fStep

@@ -40,7 +40,6 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
       checkStepRules(step, BehaviorType.Assertion, ctx)
       val expected = ctx.parseExpression(operator, expression)
       ctx.perform {
-        val message = step.message
         val trim = step.isTrim
         val ignoreCase = step.isIgnoreCase
         val src = ctx.topScope.get(source)
@@ -62,7 +61,6 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
           case Success(assertion) =>
             ctx.assertWithError(
               assertion, 
-              message, 
               Assert.formatFailed(source, expected, actual, negate, op),
               step.assertionMode)
           case Failure(error) =>

@@ -80,7 +80,7 @@ trait EvalStatus {
   def isDisabledError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[Errors.DisabledStepException])
 
-  /** Determines whether or not this status is due to a licens error. */
+  /** Determines whether or not this status is due to a license error. */
   def isLicenseError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[Errors.LicenseException])
 
@@ -99,6 +99,19 @@ trait EvalStatus {
     if (nanos > 0) {
       s"[${Formatting.formatDuration(duration)}] $evalName"
     } else statusName
+}
+
+
+trait EvalError(error: Throwable) extends EvalStatus {
+  override def cause = {
+    Option(error) map { e => 
+      Option(e.getCause).getOrElse(error) 
+    }
+  }
+  override def message: String = {
+    if (error != null && error.isInstanceOf[Errors.CustomErrorMessage]) error.getMessage
+    else cause.map(_.getMessage).orElse(Option(error.getMessage)).getOrElse(error.getClass.getSimpleName)
+  }
 }
 
 object EvalStatus {
@@ -120,13 +133,13 @@ object EvalStatus {
     val fStatuses = statuses.filter(s => !s.isDisabled && !s.isSkipped)
     if (fStatuses.nonEmpty) {
       val duration = DurationOps.sum(fStatuses.map(_.duration))
-      fStatuses.collectFirst { case failed @ Failed(_, _) if failed.isHardAssertionError => failed } match {
+      fStatuses.collectFirst { case failed: Failed if failed.isHardAssertionError => failed } match {
         case Some(failed) => Failed(duration.toNanos, failed.error)
         case None =>
-          fStatuses.collectFirst { case failed @ Failed(_, _) if !failed.isHardAssertionError => failed } match {
+          fStatuses.collectFirst { case failed: Failed if !failed.isHardAssertionError => failed } match {
             case Some(failed) => Failed(duration.toNanos, failed.error)
             case None =>
-              fStatuses.collectFirst { case sustained @ Sustained(_, _) => sustained } match {
+              fStatuses.collectFirst { case sustained: Sustained => sustained } match {
                 case Some(sustained) =>
                   if (ignoreSustained) Passed(duration.toNanos, false)
                   else Sustained(duration.toNanos, sustained.error)
