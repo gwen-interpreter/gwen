@@ -72,7 +72,6 @@ object Errors extends LazyLogging {
   def jsonPathError(msg: String) = throw new JsonPathException(msg)
   def evaluationError(msg: String) = throw new EvaluationException(msg)
   def invocationError(msg: String) = throw new InvocationException(msg)
-  def stepEvaluationError(step: Step, cause: Throwable) = throw new StepEvaluationException(step, cause)
   def recursiveStepDefError(stepDef: Scenario) = throw new RecursiveStepDefException(stepDef)
   def decodingError(msg: String) = throw new DecodingException(msg)
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
@@ -128,11 +127,8 @@ object Errors extends LazyLogging {
   /** Base exception\. */
   class GwenException (msg: String, cause: Throwable = null) extends RuntimeException(Formatting.stripZeroChar(msg), cause)
 
-  /** Thrown when an step that has a custom error message fails (wraps exception and overrides message). */
-  class CustomErrorMessage(msg: String, cause: Throwable) extends GwenException(msg, cause)
-
   /** Signals a step that failed to execute. */
-  class StepException(step: Step, msg: String, cause: Throwable = null) extends GwenException(s"$msg${if(msg.endsWith(at(step.sourceRef))) "" else at(step.sourceRef)}", cause)
+  class StepException(step: Step, msg: String, val customMsg: Boolean, cause: Throwable = null) extends GwenException(s"$msg${if(customMsg || msg.endsWith(at(step.sourceRef))) "" else at(step.sourceRef)}", cause)
 
   /** Signals a StepDef that failed to execute. */
   class StepDefException(stepDef: Scenario, msg: String, cause: Throwable = null) extends GwenException(s"$msg${at(stepDef.sourceRef)}", cause)
@@ -146,7 +142,7 @@ object Errors extends LazyLogging {
   class AmbiguousCaseException(msg: String) extends GwenException(msg)
 
   /** Thrown when an unsupported or undefined step is encountered. */
-  class UndefinedStepException(step: Step) extends StepException(step, "Unsupported or undefined step")
+  class UndefinedStepException(step: Step) extends StepException(step, "Unsupported or undefined step", false)
 
   /** Thrown when an illegal step is detected. */
   class IllegalStepException(msg: String) extends GwenException(msg)
@@ -155,7 +151,7 @@ object Errors extends LazyLogging {
   class IllegalConditionException(condition: String) extends GwenException(s"Illegal condition literal: $condition (predicate function or reference expected)")
 
   /** Thrown when a step is disabled. */
-  class DisabledStepException(step: Step) extends StepException(step, "Step is disabled")
+  class DisabledStepException(step: Step) extends StepException(step, "Step is disabled", false)
 
   abstract class UnboundAttributeException(val name: String, val scope: Option[String], msg: String, val cause: Option[Throwable]) extends GwenException(msg, cause.orNull)
 
@@ -215,10 +211,7 @@ object Errors extends LazyLogging {
   
   /** Throw when there is an error in invoking gwen. */
   class InvocationException(msg: String) extends GwenException(msg)
-  
-  /** Signals a step that failed to evaluate. */
-  class StepEvaluationException(step: Step, val cause: Throwable) extends StepException(step, cause.getMessage, cause)
-  
+    
   /** Signals an infinite recursive StepDef. */
   class RecursiveStepDefException(stepDef: Scenario) extends StepDefException(stepDef, s"Illegal recursive call to StepDef")
 
@@ -276,7 +269,7 @@ object Errors extends LazyLogging {
   class InvalidTypeException(msg: String) extends GwenException(msg)
 
   /** Thrown when an imperative step is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepException(step: Step) extends StepException(step, "Declarative feature mode violation: DSL step not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)")
+  class ImperativeStepException(step: Step) extends StepException(step, "Declarative feature mode violation: DSL step not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)", false)
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
   class ImperativeStepDefException(stepDef: Scenario) extends StepDefException(stepDef, "Declarative feature mode violation: StepDef not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)")
@@ -287,7 +280,7 @@ object Errors extends LazyLogging {
 
   /** Thrown in strict rules mode when a step' behavior type does not match its Given, When, or Then position. */
   class UnexpectedBehaviorException(step: Step, expected: BehaviorType, actual: BehaviorType) 
-    extends StepException(step, s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected. StepDef has @$actual annotation${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))}. (set your gwen.behavior.rules setting to lenient to disable this check)")
+    extends StepException(step, s"Strict behavior rules violation: $actual behavior not permitted where ${expected.toString.toLowerCase} is expected. StepDef has @$actual annotation${at(step.stepDef.flatMap(_.behaviorTag.flatMap(_.sourceRef)))}. (set your gwen.behavior.rules setting to lenient to disable this check)", false)
 
   /** Thrown in strict rules mode when a step def does not declare a Given, When or Then tag. */
   class UndefinedStepDefBehaviorException(stepDef: Scenario) 

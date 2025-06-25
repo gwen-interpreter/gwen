@@ -48,6 +48,9 @@ trait TestModel {
     def apply(keyword: String, name: String): Step = {
       new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, Nil, None, Nil)
     }
+    def apply(keyword: String, name: String, message: String): Step = {
+      new Step(None, keyword, name, Nil, None, Nil, None, Pending, Nil, Nil, Nil, Some(message), Nil)
+    }
     def apply(keyword: String, name: String, evalStatus: EvalStatus): Step = {
       new Step(None, keyword, name, Nil, None, Nil, None, evalStatus, Nil, Nil, Nil, None, Nil)
     }

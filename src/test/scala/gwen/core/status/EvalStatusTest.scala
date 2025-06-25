@@ -24,6 +24,8 @@ import gwen.core.TestModel
 import gwen.core.node.gherkin.GherkinParser
 import gwen.core.node.gherkin.Spec
 import gwen.core.node.gherkin.SpecNormaliser
+import gwen.core.node.gherkin.Step
+import gwen.core.node.gherkin.StepKeyword
 
 import org.scalatest.matchers.should.Matchers
 
@@ -588,7 +590,7 @@ Background: The tester
     EvalStatus(List(Passed(10, true), Passed(10, true), Passed(10, true))).keyword should be (StatusKeyword.Passed)
   }
 
-  "Failed cause message" should "resolve" in {
+  "Failed message" should "resolve" in {
     val error = new Errors.GwenAssertionError("assert error", AssertionMode.hard)
     val failed = Failed(1L, error)
     failed.message should be ("assert error")
@@ -596,17 +598,24 @@ Background: The tester
     failed.isAssertionError should be (true)
   }
 
-  "Failed wrapped cause message" should "resolve" in {
+  "Failed with or without override message" should "resolve" in {
     val error0 = new Errors.GwenException("override msg", new Errors.GwenAssertionError("assert error", AssertionMode.hard))
-    val error1 = new Errors.CustomErrorMessage("override msg", new Errors.GwenAssertionError("assert error", AssertionMode.hard))
+    val step1 = Step(StepKeyword.Given.toString, "x should be y", "override msg")
+    val error1 = new Errors.StepException(step1, step1.message.get, step1.message.nonEmpty, new Errors.GwenAssertionError("x was not y", AssertionMode.hard))
+    val step2 = Step(StepKeyword.Given.toString, "x should be y")
+    val error2 = new Errors.StepException(step2, "x was not y", step2.message.nonEmpty, new Errors.GwenAssertionError("x was not y", AssertionMode.hard))
     val failed0 = Failed(1L, error0)
     val failed1 = Failed(1L, error1)
+    val failed2 = Failed(1L, error2)
     failed0.message should be ("assert error")
     failed0.cause.get.getMessage should be ("assert error")
     failed0.isAssertionError should be (true)
     failed1.message should be ("override msg")
-    failed1.cause.get.getMessage should be ("assert error")
+    failed1.cause.get.getMessage should be ("x was not y")
     failed1.isAssertionError should be (true)
+    failed2.message should be ("x was not y")
+    failed2.cause.get.getMessage should be ("x was not y")
+    failed2.isAssertionError should be (true)
   }
 
 }

@@ -17,7 +17,6 @@
 package gwen.core.status
 
 import gwen.core._
-import gwen.core.Errors.CustomErrorMessage
 
 object Failed {
   def apply(nanos: Long, msg: String): Failed = new Failed(0, new Exception(msg))

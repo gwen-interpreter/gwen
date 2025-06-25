@@ -254,7 +254,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
         }
         eStep.copy(withEvalStatus = status)
       case Failure(error) =>
-        val failure = Failed(System.nanoTime - start, new Errors.StepException(step, error.getMessage, error))
+        val failure = Failed(System.nanoTime - start, new Errors.StepException(step, step.message.map(msg => Try(interpolateLenient(msg)).getOrElse(msg)).getOrElse(error.getMessage), step.message.nonEmpty, error))
         step.copy(withEvalStatus = failure)
     }
   }

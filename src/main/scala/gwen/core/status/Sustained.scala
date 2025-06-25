@@ -16,8 +16,6 @@
 
 package gwen.core.status
 
-import gwen.core.Errors.CustomErrorMessage
-
 /**
   * Defines the sustained status.
   *

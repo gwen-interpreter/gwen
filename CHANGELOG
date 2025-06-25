@@ -1,3 +1,8 @@
+4.8.2
+=====
+25 Jun 2025
+- Handle error message overrides at StepException level
+
 4.8.1
 =====
 24 Jun 2025

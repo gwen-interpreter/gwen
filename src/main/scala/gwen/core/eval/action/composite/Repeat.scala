@@ -31,6 +31,7 @@ import gwen.core.status._
 
 import scala.concurrent.duration._
 import scala.util.chaining._
+import scala.util.Try
 
 import java.util.concurrent.TimeUnit
 
@@ -128,7 +129,7 @@ abstract class Repeat[T <: EvalContext](doStep: String, operation: String, condi
             else nanos
           }
           evaluatedStep = step.copy(
-            withEvalStatus = Failed(durationNanos, new Errors.StepException(step, e.getMessage, e))
+            withEvalStatus = Failed(durationNanos, new Errors.StepException(step, step.message.map(msg => Try(ctx.interpolateLenient(msg)).getOrElse(msg)).getOrElse(e.getMessage), step.message.nonEmpty, e))
           )
       }
     } getOrElse {

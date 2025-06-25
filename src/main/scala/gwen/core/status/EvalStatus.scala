@@ -109,8 +109,8 @@ trait EvalError(error: Throwable) extends EvalStatus {
     }
   }
   override def message: String = {
-    if (error != null && error.isInstanceOf[Errors.CustomErrorMessage]) error.getMessage
-    else cause.map(_.getMessage).orElse(Option(error.getMessage)).getOrElse(error.getClass.getSimpleName)
+    if (error.isInstanceOf[Errors.StepException] && error.asInstanceOf[Errors.StepException].customMsg) error.getMessage
+    else cause.map(_.getMessage).getOrElse(error.getMessage)
   }
 }
 
