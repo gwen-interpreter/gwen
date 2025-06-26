@@ -1,3 +1,10 @@
+4.9.0
+=====
+26 Jun 2025
+- Add new DSLs for checking that input file data is unique
+  - `<name> should be unique in the "<filepath>" file`
+  - `<name> should be unique in the <filepathRef file>`
+
 4.8.2
 =====
 25 Jun 2025

@@ -271,6 +271,10 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new DataLookup(dataName, name, Some(filepath), None, step.orDocString(predicate))
       case r"""I lookup (.+?)$dataName in (.+? file)$filepathRef as (.+?)$name where "(.+)"$predicate""" =>
         new DataLookup(dataName, name, None, Some(filepathRef), step.orDocString(predicate))
+      case r"""(.+?)$name should be unique in the "(.+?)$filepath" file""" =>
+        new UniqueDataCheck(name, Some(filepath), None)
+      case r"""(.+?)$name should be unique in (.+? file)$filepathRef""" =>
+        new UniqueDataCheck(name, None, Some(filepathRef))
       case "I reset accumulated errors" =>
         new ResetAccumulatedErrors()
       case "there should be no accumulated errors" =>
