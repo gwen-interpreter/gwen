@@ -1,3 +1,9 @@
+4.9.1
+=====
+27 Jun 2025
+- Deprecate meta level initialisation scenarios
+  - Users should make them StepDefs and call them were needed instead
+
 4.9.0
 =====
 26 Jun 2025
