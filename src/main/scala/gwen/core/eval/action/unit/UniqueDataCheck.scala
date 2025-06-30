@@ -31,31 +31,27 @@ import scala.util.Try
 import java.io.File
 import gwen.core.eval.ComparisonOperator
 
-class UniqueDataCheck[T <: EvalContext](name: String, filepath: Option[String], filepathRef: Option[String]) extends UnitStepAction[T] {
+class UniqueDataCheck[T <: EvalContext](names: List[String], filepath: Option[String], filepathRef: Option[String]) extends UnitStepAction[T] {
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
     step tap { _ =>
       checkStepRules(step, BehaviorType.Assertion, ctx)
-      val value = ctx.getBoundValue(name)
+      val values = names map { name => ctx.getBoundValue(name) } mkString ","
       val file = new File(filepath.getOrElse(ctx.getBoundValue(filepathRef.get)))
       if (!file.exists()) Errors.missingFileError("Data file", file)
       val dataSource =  DataSource(file)
-      val table = dataSource.table.zipWithIndex map { (row, idx) => 
-        (idx + 1L, row.toList) 
-      }
-      val header = table.headOption map { (_, headings) => headings }
-      val idx = header map { h => 
-        h.indexOf(name)
-      } getOrElse -1
-      if (idx < 0) Errors.dataLookupError(file, name)
-      val matches = table.tail filter { (rowNo, row) =>   
-        val rec = DataRecord(dataSource, Occurrence(rowNo.toInt - 1, table.size - 1), header.get zip row)
-        rec.data.exists { (n, v) => 
-          n.trim.toUpperCase == name.trim.toUpperCase && value.trim == v.trim
+      val header = dataSource.header
+      val hIndexes = names flatMap { name =>
+        if (!header.exists(_ == name)) {
+          Errors.dataLookupError(file, name)
         }
+        header.zipWithIndex.filter(_._1 == name).map(_._2)
       }
+      val matches = dataSource.data map { d =>
+        hIndexes.map(idx => d(idx)) mkString ","
+      } filter (_ == values)
       ctx.assertWithError(
           matches.size < 2, 
-          s"$name $value is not unique in $file file (${matches.size} occurrences found)",
+          s"${names.mkString(",")}: $values is not unique in $file file (${matches.size} occurrences found)",
           step.assertionMode)
     }
   }

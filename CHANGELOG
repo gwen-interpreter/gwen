@@ -1,6 +1,8 @@
 4.9.1
 =====
-27 Jun 2025
+30 Jun 2025
+- Allow aggregated data columns in unique assertion DSLs
+- Honor Message annotations for assertions only
 - Deprecate meta level initialisation scenarios
   - Users should make them StepDefs and call them were needed instead
 
