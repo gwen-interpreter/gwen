@@ -65,7 +65,7 @@ trait EvalStatus {
 
   /** Determines whether or not this status is due to an assertion error. */
   def isAssertionError: Boolean =
-    cause.exists(c => c != null && c.isInstanceOf[Errors.GwenAssertionError])
+    cause.exists(c => c != null && EvalStatus.isAssertionError(c))
 
   def isAccumulatedAssertionError: Boolean =
     cause.exists(c => c != null && c.isInstanceOf[Errors.AccumulatedAssertionError])
@@ -169,5 +169,8 @@ object EvalStatus {
     */
   def countsByType(statuses: List[EvalStatus]): Map[StatusKeyword, Int] =
     statuses.groupBy(_.keyword) map { case (k, v) => (k, v.size) }
+
+  def isAssertionError(e: Throwable): Boolean =
+    e.isInstanceOf[Errors.GwenAssertionError]
 
 }

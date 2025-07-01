@@ -145,7 +145,6 @@ trait ScenarioEngine[T <: EvalContext] extends SpecNormaliser with LazyLogging w
       if (!scenario.isStepDef) Errors.dataTableError(s"${Annotations.StepDef} tag also expected where ${Annotations.DataTable} is specified")
       loadStepDef(parent, scenario, ctx)
     } else {
-      if (parent.nodeType == NodeType.Meta) Deprecation.log("Evaluating scenarios in meta", s"Make the '${scenario.name}' Scenario${Errors.at(scenario.sourceRef)} a StepDef and call it where needed instead", None)
       ctx.scenarioScope.boundary(scenario.name, Nil) {
         beforeScenario(scenario, ctx)
         logger.info(s"Evaluating ${scenario.keyword}: $scenario")
