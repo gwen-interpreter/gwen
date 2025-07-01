@@ -5,5 +5,6 @@ Feature: Multiline substitutions meta
   Scenario: <name> is assigned to "<value>"
     Given start duration is "${gwen.feature.eval.duration}"
       And $<name> is "$<value>"
+     When I wait 2 seconds
      Then gwen.feature.eval.duration should not be "${start duration}"
       And gwen.scenario.eval.duration should not be "${start duration}"
