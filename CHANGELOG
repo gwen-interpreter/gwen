@@ -1,8 +1,8 @@
 4.9.2
 =====
 1 Jul 2025
-  - Fix honoring of Message annotations for assertions only
-  - Undo deprecation of meta level initialisation scenarios
+- Fix honoring of Message annotations for assertions only
+- Undo deprecation of meta level initialisation scenarios
 
 4.9.1
 =====
