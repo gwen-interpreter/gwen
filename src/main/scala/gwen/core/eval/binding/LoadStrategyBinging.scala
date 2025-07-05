@@ -29,9 +29,11 @@ object LoadStrategyBinding {
       case Some(v) =>
         if (strategy == LoadStrategy.Eager) {
           ctx.topScope.set(name, v)
+          ctx.addAttachment(name, "txt", v)
         }
         else if (strategy == LoadStrategy.Lazy) {
           ctx.topScope.set(name, v)
+          ctx.addAttachment(name, "txt", v)
           val nKey = key(name)
           if (ctx.topScope.getOpt(nKey).nonEmpty) {
             ctx.topScope.set(key(name), null)
