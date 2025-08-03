@@ -233,12 +233,6 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
       env.asString(all = true, env = true) should be (
         s"""|env : "implicits" {
             |  scope : "feature" { }
-            |  scope : "rule" { }
-            |  scope : "examples" { }
-            |  scope : "scenario" { }
-            |  scope : "stepDef" { }
-            |  scope : "params" { }
-            |  scope : "iteration" { }
             |}
             |env {
             |  scope : "$level" {
@@ -247,12 +241,6 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
             |}""".stripMargin)
       env.asString(all = true, env = false) should be (
         s"""|scope : "feature" { }
-            |scope : "rule" { }
-            |scope : "examples" { }
-            |scope : "scenario" { }
-            |scope : "stepDef" { }
-            |scope : "params" { }
-            |scope : "iteration" { }
             |scope : "$level" {
             |  firstName : "Gwen"
             |}""".stripMargin)
@@ -269,17 +257,11 @@ class EnvironmentTest extends BaseTest with Matchers with TestModel {
     }
   }
   
-  "env.asString on new env context" should "contain empty scopes" in {
+  "env.asString on new env context" should "skip empty non feature scopes" in {
     val env = newEnv(StateLevel.feature)
     env.asString(all = true, env = true) should be (
       s"""|env : "implicits" {
           |  scope : "feature" { }
-          |  scope : "rule" { }
-          |  scope : "examples" { }
-          |  scope : "scenario" { }
-          |  scope : "stepDef" { }
-          |  scope : "params" { }
-          |  scope : "iteration" { }
           |}
           |env {
           |  scope : "feature" { }

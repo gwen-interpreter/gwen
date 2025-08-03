@@ -202,12 +202,12 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
       if (all) {
         if (env) pw.println("""env : "implicits" {""")
         featureScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        ruleScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        examplesScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
-        iterationScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")}
+        if (ruleScope.nonEmpty) ruleScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
+        if (examplesScope.nonEmpty) examplesScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
+        if (scenarioScope.nonEmpty) scenarioScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
+        if (stepDefScope.nonEmpty) stepDefScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
+        if (paramScope.nonEmpty) paramScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
+        if (iterationScope.nonEmpty) iterationScope.asString.linesIterator foreach {line => pw.println(s"${if (env) "  " else ""}$line")} else ""
         if (env) pw.println("}")
       }
       pw.print(super.asString(env))

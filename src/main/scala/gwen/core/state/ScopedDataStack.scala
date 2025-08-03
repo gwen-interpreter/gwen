@@ -151,6 +151,9 @@ abstract class ScopedDataStack(stackName: String) extends ImplicitValueKeys {
   /** Checks whether or not the local stack is empty. */
   def isEmpty = dataStack.isEmpty
 
+  /** Checks whether or not the local stack is not empty. */
+  def nonEmpty = dataStack.nonEmpty
+
   /**
    * Filters all contained attributes based on the given predicate.
    *
