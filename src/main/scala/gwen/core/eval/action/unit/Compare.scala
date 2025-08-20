@@ -34,7 +34,7 @@ import scala.util.Success
 import scala.util.chaining._
 import scala.util.Try
 
-class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean) extends UnitStepAction[T] with ImplicitValueKeys {
+class Compare[T <: EvalContext](source: String, expression: String, operator: ComparisonOperator, negate: Boolean, message: Option[String]) extends UnitStepAction[T] with ImplicitValueKeys {
 
   
   override def apply(parent: GwenNode, step: Step, ctx: T): Step = {
@@ -65,7 +65,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
           try {
             ctx.assertWithError(
               assertion, 
-              Assert.formatFailed(displayName, expected, actualValue, negate, op),
+              message.map(ctx.interpolateLenient).getOrElse(Assert.formatFailed(displayName, expected, actualValue, negate, op)),
               step.assertionMode)
           } catch {
             case gae: Errors.GwenAssertionError if source == `gwen.accumulated.errors` =>

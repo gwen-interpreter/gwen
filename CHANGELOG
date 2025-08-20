@@ -1,7 +1,13 @@
+4.9.6
+=====
+21 Aug 2025
+- Assign default accumulated error message in Compare action instead of Step message
+  - Fixes pretty formatting to ensure messaage annotation is not added
+
 4.9.5
 =====
 3 Aug 2025
-- Suppress empty implict scope when dumping env
+- Suppress empty implicit scope when dumping env
 
 4.9.4
 =====

@@ -60,7 +60,7 @@ class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: Stri
           ctx.getBinding(name)
       }
     }
-    val compare = new Compare[T](name, expression, operator, negate)
+    val compare = new Compare[T](name, expression, operator, negate, None)
     Try(compare.apply(step, ctx)) match {
       case Success(_) => true
       case Failure(e) =>

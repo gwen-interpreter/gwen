@@ -236,9 +236,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""(.+? file)$filepathRef should( not)?$negation be empty""" =>
         new CompareFile(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation be (blank|empty|true|false)$literal""" =>
-        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty)
+        new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty, None)
       case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
-        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty)
+        new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty, None)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(Some(name), filepath)
       case r"""I attach "(.+?)"$filepath as (.+?)$name""" =>
@@ -278,7 +278,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case "I reset accumulated errors" =>
         new ResetAccumulatedErrors()
       case "there should be no accumulated errors" =>
-        new Compare(`gwen.accumulated.errors`, "", ComparisonOperator.be, false)
+        new Compare(`gwen.accumulated.errors`, "", ComparisonOperator.be, false, step.message.orElse(Some("${gwen.accumulated.errors}")))
 
       case _ =>
         Errors.undefinedStepError(step)

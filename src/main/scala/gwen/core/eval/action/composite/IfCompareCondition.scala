@@ -75,7 +75,7 @@ class IfCompareCondition[T <: EvalContext](doStep: String, name: String, operato
       }
     }
     ctx.evaluate(sdCall()) {
-      val compare = new Compare[T](name, expression, operator, negate)
+      val compare = new Compare[T](name, expression, operator, negate, None)
       val satisfied = Try(compare.apply(parent, step, ctx)) match {
         case Success(_) => true
         case Failure(e) =>
