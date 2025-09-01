@@ -51,7 +51,7 @@ class Compare[T <: EvalContext](source: String, expression: String, operator: Co
       val timeout = step.timeoutOpt
       val trim = step.isTrim
       val ignoreCase = step.isIgnoreCase
-      val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate)
+      val result = ctx.compare(source, Formatting.format(expected, trim, ignoreCase), Formatting.format(actualValue, trim, ignoreCase), operator, negate, step.isMasked)
       val op = {
         if (operator == ComparisonOperator.`match template file`) {
           ComparisonOperator.`match template`

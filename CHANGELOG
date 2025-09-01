@@ -1,8 +1,13 @@
+4.10.0
+======
+1 Sep 2025
+- Add support for masking on template match extractions
+
 4.9.6
 =====
 21 Aug 2025
 - Assign default accumulated error message in Compare action instead of Step message
-  - Fixes pretty formatting to ensure messaage annotation is not added
+  - Fixes pretty formatting to ensure message annotation is not added
 
 4.9.5
 =====

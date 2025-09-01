@@ -62,6 +62,7 @@ object SensitiveData {
       case mValue if mValue.name == name && mValue.plain == value => mValue
     } getOrElse {
       MaskedValue(name, value) tap { mValue =>
+        println("======= " + mValue)
         MaskedValues.add(mValue)
       }
     }

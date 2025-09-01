@@ -49,7 +49,7 @@ class CompareByPath[T <: EvalContext](source: String, pathType: BindingType, pat
             path, src, XMLNodeType.text)
           case _ => Errors.invalidBindingPathTypeError(pathType)
         }
-        val result = ctx.compare(s"$source at $pathType '$path'", Formatting.format(expected, trim, ignoreCase), Formatting.format(actual, trim, ignoreCase), operator, negate)
+        val result = ctx.compare(s"$source at $pathType '$path'", Formatting.format(expected, trim, ignoreCase), Formatting.format(actual, trim, ignoreCase), operator, negate, step.isMasked)
         val op = {
           if (operator == ComparisonOperator.`match template file`) {
             ComparisonOperator.`match template`

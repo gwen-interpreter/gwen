@@ -118,7 +118,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
     */
   def getBinding(name: String): Binding[EvalContext, String] = bindingResolver.getBinding(name)
 
-  def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator, negate: Boolean): Try[Boolean] = Try {
+  def compare(sourceName: String, expected: String, actual: String, operator: ComparisonOperator, negate: Boolean, mask: Boolean): Try[Boolean] = Try {
     val res = operator match {
       case ComparisonOperator.be => expected == actual
       case ComparisonOperator.contain => actual.contains(expected)
@@ -128,7 +128,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       case ComparisonOperator.`match xpath` => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case ComparisonOperator.`match json path` => !evaluateJsonPath(expected, actual).isEmpty
       case ComparisonOperator.`match template` | ComparisonOperator.`match template file` =>
-        matchTemplate(expected, actual, sourceName, topScope) match {
+        matchTemplate(expected, actual, sourceName, mask, topScope) match {
           case Success(result) =>
             if (negate) Errors.templateMatchError(Assert.formatFailed(sourceName, expected, actual, negate, operator)) else result
           case Failure(failure) =>

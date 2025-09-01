@@ -31,14 +31,14 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
   """Single line static template""" should "match" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source = template
-    matchTemplate(template, source, "my source", topScope).isSuccess should be (true)
+    matchTemplate(template, source, "my source", false, topScope).isSuccess should be (true)
   }
 
   """Single line static template""" should "not match when source is different" in {
     val template = """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -52,7 +52,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":@{},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -66,7 +66,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":@{   },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -80,7 +80,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":!{pet.id},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -94,7 +94,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":!{ },"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -108,7 +108,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":!{nope},"category":{"name":"pet"},"name":"tiger","status":"available"}"""
     val source =   """{"id":43,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -122,7 +122,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
     val template = """{"id":@{*},"category":{"name":"pet"},"name":"tiger","state":"available"}"""
     val source =   """{"id":42,"category":{"name":"pet"},"name":"tiger","status":"available"}"""
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -142,7 +142,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
     val source = template
-    matchTemplate(template, source, "my source", topScope).get should be (true)
+    matchTemplate(template, source, "my source", false, topScope).get should be (true)
   }
 
   """Multi line static template""" should "not match when source is different" in {
@@ -163,7 +163,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -191,7 +191,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -219,7 +219,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -247,7 +247,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -275,7 +275,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "status": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>
@@ -303,7 +303,7 @@ class TemplateSupportTest extends BaseTest with Matchers with TemplateSupport {
                      |  "state": "available"
                      |}""".stripMargin
 
-    val result = matchTemplate(template, source, "my source", topScope)
+    val result = matchTemplate(template, source, "my source", false, topScope)
 
     result match {
       case Success(_) =>

@@ -17,16 +17,16 @@
 package gwen.core.eval.support
 
 import gwen.core._
-
-import scala.util.chaining._
+import gwen.core.state.SensitiveData
+import gwen.core.state.StateLevel
+import gwen.core.state.TopScope
 
 import org.apache.commons.lang3.StringUtils
 
 import scala.io.Source
+import scala.util.chaining._
 import scala.util.Try
 import scala.util.matching.Regex
-import gwen.core.state.TopScope
-import gwen.core.state.StateLevel
 
 /**
   * Can be mixed into evaluation engines to provide template matching support. This will allow users to match any
@@ -43,8 +43,8 @@ trait TemplateSupport {
     * @param sourceName the name of the source attribute
     * @return success if there is a match; an error otherwise
     */
-  def matchTemplate(template: String, source: String, sourceName: String, topScope: TopScope): Try[Boolean] = Try {
-    normaliseTemplate(template, source, sourceName, topScope) match {
+  def matchTemplate(template: String, source: String, sourceName: String, mask: Boolean, topScope: TopScope): Try[Boolean] = Try {
+    normaliseTemplate(template, source, sourceName, mask, topScope) match {
       case Nil =>
         Errors.templateMatchError(s"Template mismatch")
       case tLines =>
@@ -73,7 +73,12 @@ trait TemplateSupport {
       source == resolved tap { isMatch =>
         if (isMatch) {
           params.filter { case (n, _) => n.matches("""@\{.+?\}""") } foreach { case (n, v) =>
-            topScope.set(n.substring(2, n.length-1), v) }
+            val name = n.substring(2, n.length-1)
+            if (mask) {
+              topScope.set(name, SensitiveData.mask(name, v))
+            } else {
+              topScope.set(name, v) }
+          }
         } else {
           val commonPrefix = StringUtils.getCommonPrefix(source, resolved)
           val (line, column) = StringOps.lastPositionIn(source.substring(0, commonPrefix.length + 1))
@@ -85,7 +90,7 @@ trait TemplateSupport {
     }
   }
 
-  private def normaliseTemplate(template: String, source: String, sourceName: String, topScope: TopScope): List[String] = {
+  private def normaliseTemplate(template: String, source: String, sourceName: String, mask: Boolean, topScope: TopScope): List[String] = {
     val sIter = source.linesIterator
     val tIter = template.linesIterator
     var tLines: List[String] = Nil
@@ -104,7 +109,7 @@ trait TemplateSupport {
             var stop = false
             while(!stop && sIter.hasNext) { // copy lines from source to template in place of @{**}
               sLine = sIter.next
-              stop = Try(matchTemplate(tLine, sLine, sourceName, new TopScope(StateLevel.feature)).isSuccess).getOrElse(false)
+              stop = Try(matchTemplate(tLine, sLine, sourceName, mask, new TopScope(StateLevel.feature)).isSuccess).getOrElse(false)
               tLines = (if (stop) tLine else sLine) :: tLines 
             }
           }
