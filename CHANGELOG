@@ -1,3 +1,9 @@
+4.10.2
+======
+5 Sep 2025
+- Generate names for unnamed CSV data columns
+  - Use naming convention `unnamed_<index>` where `<index>` is col index of unnamed header
+
 4.10.1
 ======
 2 Sep 2025
