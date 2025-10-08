@@ -20,7 +20,7 @@ import gwen.core._
 
 import com.typesafe.scalalogging.LazyLogging
 import io.cucumber.gherkin.GherkinDialect
-import io.cucumber.gherkin.GherkinDialectProvider
+import io.cucumber.gherkin.GherkinDialects
 import scala.util.Try
 
 object Dialect extends LazyLogging {
@@ -28,7 +28,7 @@ object Dialect extends LazyLogging {
   private val dialectHolder = new ThreadLocal[GherkinDialect]() {
     override protected def initialValue: GherkinDialect = {
       logger.info(s"Default Gherkin feature dialect is: $defaultLanguage")
-      new GherkinDialectProvider(defaultLanguage).getDefaultDialect
+      GherkinDialects.getDialect(defaultLanguage).get
     }
   }
 
@@ -57,7 +57,7 @@ object Dialect extends LazyLogging {
       defaultLanguage
     }
     logger.info(s"Setting Gherkin feature dialect to: $language")
-    Try(dialectHolder.set(new GherkinDialectProvider(language).getDefaultDialect)) getOrElse {
+    Try(dialectHolder.set(GherkinDialects.getDialect(language).get)) getOrElse {
       Errors.unsupportedLanguagetError(lang)
     }
   }
