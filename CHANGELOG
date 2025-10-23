@@ -1,3 +1,8 @@
+4.11.0
+======
+24 Oct 2025
+- Check param scope when resolving bound values
+
 4.10.3
 ======
 8 Oct 2025

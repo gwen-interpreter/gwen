@@ -107,7 +107,7 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
    * @param name the name of the attribute or value
    */
   override def getBoundValue(name: String): String = {
-    getBinding(name).resolve()
+    paramScope.getOpt(name).getOrElse(getBinding(name).resolve())
   }
 
   /**

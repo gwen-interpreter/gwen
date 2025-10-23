@@ -1,6 +1,6 @@
 enablePlugins(GitVersioning)
 
-git.baseVersion := "4.10.3"
+git.baseVersion := "4.11.4"
 git.useGitDescribe := true
 
 lazy val gwen = (project in file("."))
