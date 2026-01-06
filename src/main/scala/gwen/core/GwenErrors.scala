@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2026 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -272,7 +272,7 @@ object Errors extends LazyLogging {
   class ImperativeStepException(step: Step) extends StepException(step, "Declarative feature mode violation: DSL step not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)", false)
 
   /** Thrown when an imperative step defenition is detected in a feature when declarative mode is enabled. */
-  class ImperativeStepDefException(stepDef: Scenario) extends StepDefException(stepDef, "Declarative feature mode violation: StepDef not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)")
+  class ImperativeStepDefException(stepDef: Scenario) extends StepDefException(stepDef, "Declarative feature mode violation: StepDef or control statement not permitted in feature (set your gwen.feature.mode setting to imperative to disable this check)")
 
   /** Thrown in strict rules mode when Given-When-Then order is not satisfied in a scenario or background */
   class ImproperBehaviorException(node: GherkinNode) 
