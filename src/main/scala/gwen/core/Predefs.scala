@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 Branko Juric, Brady Wood
+ * Copyright 2020-2026 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -577,3 +577,6 @@ object Assert {
     s"$source should ${if(negate) "not " else ""}$operator ${ValueLiteral.orQuotedValue(expected)}${if (operator == ComparisonOperator.be && actual == expected) "" else s" but ${if (operator == ComparisonOperator.be) "got" else "value was"} ${ValueLiteral.orQuotedValue(actual)}"}"
   }
 }
+
+enum SortOrder:
+    case ascending,descending

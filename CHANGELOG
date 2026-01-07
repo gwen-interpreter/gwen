@@ -2,6 +2,7 @@
 ======
 7 Jan 2026
 - Update imperative DSL error message to include control statements
+- Add support for sorting CSV result files by a nominated column
 
 4.11.1
 ======

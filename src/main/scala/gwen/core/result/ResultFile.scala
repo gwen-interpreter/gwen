@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Branko Juric, Brady Wood
+ * Copyright 2024-2026 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,27 @@ case class ResultFile(id: String, file: File, scope: Option[ResultScope], status
       }
       this.synchronized {
         file.appendLine(record.mkString(","))
+        fields.find(_.sort.nonEmpty) foreach { sortField => 
+          val fieldName = sortField.name
+          val asending = sortField.sort.exists(_ == SortOrder.ascending)
+          CsvDataSource(file).table match {
+            case header::records =>
+              header.zipWithIndex.find(_._1 == fieldName).map(_._2) foreach { sortFieldIndex => 
+                val numeric = records.forall(rec => Try(rec(sortFieldIndex).toDouble).isSuccess)
+                val sorted = records.sortWith { (a, b) =>
+                  val aValue = a(sortFieldIndex)
+                  val bValue = b(sortFieldIndex)
+                  val compareResult = if (numeric) aValue.toDouble.compareTo(bValue.toDouble) else aValue.compareTo(bValue)
+                  if (asending) compareResult < 0 else compareResult > 0
+                }
+                file.writeLine(header.mkString(","))
+                sorted foreach {record =>
+                  file.appendLine(record.mkString(","))
+                }
+              }
+            case _ =>
+          }
+        }
       }
       true
     } else {
@@ -97,18 +118,24 @@ object ResultFile {
       val ref = fMap.collectFirst { case (n, v) if n.endsWith(".ref") => (v, options.interpolate(v)) }
       val defaultValue = fMap.collectFirst { case (n, _) if n.endsWith(".defaultValue") => fileSettings(n) }
       val unmask = fMap.collectFirst { case (n, _) if n.endsWith(".unmask") => fileSettings(n).toBoolean } getOrElse false
+      val sort = fMap.collectFirst { case (n, _) if n.endsWith(".sort") => 
+        val v = fileSettings(n)
+        Try(SortOrder.valueOf(v)).map(Some(_)) getOrElse {
+          Errors.illegalSettingError(n, v, SortOrder.values.mkString(", "))
+        }
+      } getOrElse None
       val excludes = fMap.collectFirst { case (n, _) if n.endsWith(".excludes") => fileSettings(n) } map { v => v.split(",").toList.map(_.trim) } getOrElse Nil
       fMap.collectFirst { case (n, v) if n.endsWith(".field") => v } map { 
-        f => List(ResultField(f, ref.map(_._2).getOrElse(f), defaultValue, unmask)) 
+        f => List(ResultField(f, ref.map(_._2).getOrElse(f), defaultValue, unmask, sort)) 
       } getOrElse {
-        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, defaultValue, unmask))
+        fMap.iterator.toList.sortBy(_._1).map(_._2).map(v => ResultField(v, v, defaultValue, unmask, sort))
       } flatMap { field => 
         if (field.name == "*") {
           val fileOpt = if (field.ref == "") options.dataFile else Some(new File(field.ref))
           fileOpt map { file =>
             if (file.exists) {
               if (FileIO.isCsvFile(file)) {
-                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.defaultValue, field.unmask))
+                CsvDataSource(file).header.map(_.trim).filter(h => !excludes.contains(h)).map(h => ResultField(h, h, field.defaultValue, field.unmask, field.sort))
               } else if (!ref.map(_._1.contains(s"$$<{${GwenOptions.SettingsKey.dataFile}}>")).getOrElse(false)) {
                 Errors.unsupportedFileError(file, "field reference file", "csv")
               } else {
@@ -123,6 +150,10 @@ object ResultFile {
       }
     }
     fileSettings.map(_._1).filter(s => !s.contains(".fields") && !s.matches(""".*((\.\d+\.)(""" + ResultFieldAtts.values.mkString("|") + "))$")).map(s => s.substring(s.lastIndexOf(".") + 1)).foreach(ResultFile.validateSettingName)
+    val sortFields = fields.filter(_.sort.nonEmpty)
+    if (sortFields.size > 1) {
+      Errors.multipleSortFieldsError(fileKey, sortFields.flatMap(_.name).mkString(", "))
+    }
     ResultFile(id, file, scope, status, fields)
   }
 

@@ -61,6 +61,7 @@ object Errors extends LazyLogging {
   def illegalSettingError(name: String, value: String, validValues: String) = throw new IllegalSettingException(name, value, validValues)
   def illegalSettingAttributeError(name: String, parent: String, validNames: String) = throw new IllegalSettingAttributeException(name, parent, validNames)
   def illegalStepAnnotationError(sourceRef: Option[SourceRef], msg: String) = throw new IllegalStepAnnotationException(sourceRef, msg)
+  def multipleSortFieldsError(fileKey: String, sortFields: String) = throw new MultipleSortFieldsException(fileKey, sortFields)
   def propertyLoadError(name: String, cause: Throwable) = throw new PropertyLoadException(name, cause)
   def propertyLoadError(name: String, cause: String) = throw new PropertyLoadException(s"$name, cause: $cause", null)
   def licenseError(msg: String) = throw new LicenseException(msg)
@@ -178,6 +179,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when a property file setting contains an invalid or unspported value. */
   class IllegalSettingException(name: String, value: String, validValues: String) extends GwenException(s"Invalid or illegal setting: $name = $value (valid values include: $validValues)")
+
+  /** Thrown when a results file is configured with multiple sort fields. */
+  class MultipleSortFieldsException(fileKey: String, sortFields: String) extends GwenException(s"Multiple sort fields detected in results file setting: $fileKey (only one sort field supported per results file)")
 
   /** Thrown when a property file setting contains an invalid attirbute name.. */
   class IllegalSettingAttributeException(name: String, parent: String, validNames: String) extends GwenException(s"Invalid or illegal $parent setting attribute: $name (valid attributes include: $validNames)")

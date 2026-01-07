@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Branko Juric, Brady Wood
+ * Copyright 2024-2026 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package gwen.core.result
 
-import gwen.core.Errors
+import gwen.core._
 import gwen.core.status.StatusKeyword
 
 import java.io.File
 
 import scala.util.Try
 
-case class ResultField(name: String, ref: String, defaultValue: Option[String], unmask: Boolean)
+case class ResultField(name: String, ref: String, defaultValue: Option[String], unmask: Boolean, sort: Option[SortOrder])
 
 object ResultField {
   def validateSettingName(name: String): Unit = {
@@ -34,4 +34,4 @@ object ResultField {
 }
 
 enum ResultFieldAtts:
-  case field, ref, defaultValue, excludes, unmask
+  case field, ref, defaultValue, excludes, unmask, sort
