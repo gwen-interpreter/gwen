@@ -1,3 +1,8 @@
+4.12.1
+======
+7 Jan 2026
+- Escape sorted CSV results if necessary
+
 4.12.0
 ======
 7 Jan 2026

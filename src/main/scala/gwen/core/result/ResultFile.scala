@@ -51,7 +51,7 @@ case class ResultFile(id: String, file: File, scope: Option[ResultScope], status
             }
           }
         }
-        val v = if (value.trim != "" && FileIO.isCsvFile(file)) Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
+        val v = if (FileIO.isCsvFile(file)) formatCSV(value)
         else value
         if (field.unmask) SensitiveData.withValue(v)(identity) else v
       }
@@ -60,25 +60,27 @@ case class ResultFile(id: String, file: File, scope: Option[ResultScope], status
       }
       this.synchronized {
         file.appendLine(record.mkString(","))
-        fields.find(_.sort.nonEmpty) foreach { sortField => 
-          val fieldName = sortField.name
-          val asending = sortField.sort.exists(_ == SortOrder.ascending)
-          CsvDataSource(file).table match {
-            case header::records =>
-              header.zipWithIndex.find(_._1 == fieldName).map(_._2) foreach { sortFieldIndex => 
-                val numeric = records.forall(rec => Try(rec(sortFieldIndex).toDouble).isSuccess)
-                val sorted = records.sortWith { (a, b) =>
-                  val aValue = a(sortFieldIndex)
-                  val bValue = b(sortFieldIndex)
-                  val compareResult = if (numeric) aValue.toDouble.compareTo(bValue.toDouble) else aValue.compareTo(bValue)
-                  if (asending) compareResult < 0 else compareResult > 0
+        if (FileIO.isCsvFile(file)) {
+          fields.find(_.sort.nonEmpty) foreach { sortField => 
+            val fieldName = sortField.name
+            val asending = sortField.sort.exists(_ == SortOrder.ascending)
+            CsvDataSource(file).table match {
+              case header::records =>
+                header.zipWithIndex.find(_._1 == fieldName).map(_._2) foreach { sortFieldIndex => 
+                  val numeric = records.forall(rec => Try(rec(sortFieldIndex).toDouble).isSuccess)
+                  val sorted = records.sortWith { (a, b) =>
+                    val aValue = a(sortFieldIndex)
+                    val bValue = b(sortFieldIndex)
+                    val compareResult = if (numeric) aValue.toDouble.compareTo(bValue.toDouble) else aValue.compareTo(bValue)
+                    if (asending) compareResult < 0 else compareResult > 0
+                  }
+                  file.writeLine(header.map(formatCSV).mkString(","))
+                  sorted foreach {record =>
+                    file.appendLine(record.map(formatCSV).mkString(","))
+                  }
                 }
-                file.writeLine(header.mkString(","))
-                sorted foreach {record =>
-                  file.appendLine(record.mkString(","))
-                }
-              }
-            case _ =>
+              case _ =>
+            }
           }
         }
       }
@@ -86,6 +88,11 @@ case class ResultFile(id: String, file: File, scope: Option[ResultScope], status
     } else {
       false
     }
+  }
+
+  private def formatCSV(value: String): String = {
+    if (value.trim != "") Formatting.escapeCSV(Formatting.escapeNewLineChars(value))
+    else value
   }
 
 }
