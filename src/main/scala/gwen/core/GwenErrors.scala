@@ -78,6 +78,7 @@ object Errors extends LazyLogging {
   def invalidStepDefError(stepDef: Scenario, msg: String) = throw new InvalidStepDefException(stepDef, msg)
   def missingImportFileError(importAnnotation: Tag) = throw new MissingImportFileException(importAnnotation)
   def missingFileError(category: String, file: File) = throw new MissingFileException(category, file)
+  def missingFormatAnnotationError(msg: String) = throw new MissingFormatAnnotationException(msg)
   def unsupportedImportError(importAnnotation: Tag) = throw new UnsupportedImportException(importAnnotation)
   def unsupportedLanguagetError(language: String) = throw new UnsupportedLanguageException(language)
   def dataLookupError(file: File, name: String) = throw new DataLookupException(file, name)
@@ -230,6 +231,9 @@ object Errors extends LazyLogging {
 
   /** Thrown when an import file is not found. */
   class MissingImportFileException(importAnnotation: Tag) extends GwenException(s"File not found in $importAnnotation annotation${at(importAnnotation.sourceRef)}")
+
+  /** Thrown when a format annotation is missing. */
+  class MissingFormatAnnotationException(msg: String) extends GwenException(msg)
 
   /** Thrown when an unsupported import file is detected. */
   class UnsupportedImportException(importAnnotation: Tag) extends GwenException(s"Unsupported file type detected in $importAnnotation annotation${at(importAnnotation.sourceRef)} (only .meta files can be imported)")

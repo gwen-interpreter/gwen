@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2026 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,6 +183,8 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new Capture(attribute, source)
       case r"""I capture (.+?)$attribute""" =>
         new Capture(attribute, attribute)
+      case r"""I format (.+?)$source from "(.+?)"$sourceFormat to "(.+?)"$targetFormat as (.+?)$attribute""" =>
+        new FormatAttribute(source, sourceFormat, attribute, targetFormat)
       case r"""I base64 decode (.+?)$attribute as (.+?)$name""" =>
         new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>

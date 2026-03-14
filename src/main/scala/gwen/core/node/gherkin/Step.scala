@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2026 Branko Juric, Brady Wood
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,6 +264,8 @@ case class Step(
   def isMasked: Boolean = hasTag(Annotations.Masked)
   def isShadowRoot: Boolean = hasTag(Annotations.ShadowRoot)
   def timeoutOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Timeout)
+  def isDateTime: Boolean = hasTag(Annotations.DateTime)
+  def isNumber: Boolean = hasTag(Annotations.Number)
   def delayOpt: Option[Duration] = parseDurationInAnnotation(Annotations.Delay)
   
   private def parseDurationInAnnotation(annotation: Annotations): Option[Duration] = {
