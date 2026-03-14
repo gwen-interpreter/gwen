@@ -115,7 +115,7 @@ object Examples {
       Errors.syntaxError(
         s"Failed to read table body. Possible syntax error or missing column delimiter in table",
         file,
-        examples.getLocation.getLine,
+        examples.getLocation.getLine.toLong,
         examples.getLocation.getColumn.toScala.map(_.toLong))
     }
     val body = examples.getTableBody
@@ -123,7 +123,7 @@ object Examples {
       Errors.syntaxError(
         s"Failed to read table header. Possible syntax error or missing column delimiter in table",
         file,
-        examples.getLocation.getLine,
+        examples.getLocation.getLine.toLong,
         examples.getLocation.getColumn.toScala.map(_.toLong))
     }
     Examples(
@@ -132,9 +132,9 @@ object Examples {
       examples.getKeyword,
       examples.getName,
       Option(examples.getDescription).filter(_.length > 0).map(_.split("\n").toList.map(_.trim)).getOrElse(Nil),
-      (header.getLocation.getLine, header.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue))) ::
+      (header.getLocation.getLine.toLong, header.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue))) ::
         body.iterator.asScala.toList.map { row =>
-          (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
+          (Long2long(row.getLocation.getLine.toLong), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
         },
       None,
       Nil

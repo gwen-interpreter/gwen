@@ -41,7 +41,7 @@ object Errors extends LazyLogging {
   def syntaxError(msg: String, file: Option[File], line: Long, col: Option[Long]) = throw new SyntaxError(msg, file, Some(line), col)
   def syntaxError(file: File, cause: ParseError) = cause.getSource.getLocation.toScala match {
     case Some(loc) =>
-      throw new SyntaxError(cause.getMessage, Some(file), Some(loc.getLine), loc.getColumn.toScala.map(_.toLong))
+      throw new SyntaxError(cause.getMessage, Some(file), Some(loc.getLine.toLong), loc.getColumn.toScala.map(_.toLong))
     case _ => throw new SyntaxError(cause.getMessage, Some(file), None, None)
   }
   def ambiguousCaseError(msg: String) = throw new AmbiguousCaseException(msg)

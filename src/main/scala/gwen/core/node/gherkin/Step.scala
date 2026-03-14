@@ -346,11 +346,11 @@ object Step {
     val sourceRef = Option(step.getLocation).map(loc => SourceRef(file, loc))
     val dataTable = step.getDataTable.toScala map { dt =>
       dt.getRows.asScala.toList map { row =>
-        (Long2long(row.getLocation.getLine), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
+        (Long2long(row.getLocation.getLine.toLong), row.getCells.asScala.toList.map(c => Formatting.escapeNewLineChars(c.getValue)))
       }
     } getOrElse Nil
     val docString = step.getDocString.toScala.filter(_.getContent().trim.length > 0) map { ds =>
-      (Long2long(ds.getLocation.getLine), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
+      (Long2long(ds.getLocation.getLine.toLong), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
     }
     val (name, tagList, message, dryValues): (String, List[Tag], Option[String], List[(String, String)]) = {
       val (n, t) = Formatting.escapeNewLineChars(step.getText.trim) match {
