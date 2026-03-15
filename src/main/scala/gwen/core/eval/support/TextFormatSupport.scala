@@ -23,12 +23,49 @@ import java.text.NumberFormat
 
 trait TextFormatSupport {
 
+  private def Ordinals = "(st|nd|rd|th)"
+
   def formatDateTime(source: String, sourceFormat: String, targetFormat: String): String = {
-    LocalDate.parse(source, DateTimeFormatter.ofPattern(sourceFormat)).format(DateTimeFormatter.ofPattern(targetFormat))
+    format(source, sourceFormat, targetFormat) { (s, sf, tf) => 
+      LocalDate.parse(s, DateTimeFormatter.ofPattern(sf)).format(DateTimeFormatter.ofPattern(tf))
+    }
   }
 
   def formatNumber(source: String, sourceFormat: String, targetFormat: String): String = {
-    new DecimalFormat(targetFormat).format(DecimalFormat(sourceFormat).parse(source))
+    format(source, sourceFormat, targetFormat) { (s, sf, tf) => 
+      new DecimalFormat(tf).format(DecimalFormat(sf).parse(s))
+    }
+  }
+
+  def format(source: String, sourceFormat: String, targetFormat: String)(formatter: (String, String, String) => String): String = {
+    val (sValue, sFormat) = splitOrdinal(sourceFormat) map { (left, right) => 
+      (source.replaceAll(Ordinals, ""), left + right)
+    } getOrElse {
+      (source, sourceFormat)
+    }
+    splitOrdinal(targetFormat) map { (left, right) =>
+      val leftFormatted = if (left.trim() == "") left else formatter(sValue, sFormat, left)
+      val rightFormatted = if (right.trim() == "") right else format(sValue, sFormat, right)(formatter)
+      leftFormatted + suffix(leftFormatted.trim()) + rightFormatted
+    } getOrElse {
+      formatter(sValue, sFormat,targetFormat)
+    }
+  }
+
+  private def splitOrdinal(format: String): Option[(String, String)] = {
+    val idx = format.indexOf(Ordinals) 
+    if (idx != -1) {
+      Some((format.substring(0, idx), format.substring(idx + Ordinals.length)))
+    } else {
+      None
+    }
+  }
+
+  private def suffix(str: String): String = {
+    if (str.endsWith("1") && !str.endsWith("11")) "st"
+    else if (str.endsWith("2") && !str.endsWith("12")) "nd"
+    else if (str.endsWith("3") && !str.endsWith("13")) "rd"
+    else "th"
   }
 
 }

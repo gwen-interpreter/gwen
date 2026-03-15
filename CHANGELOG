@@ -2,6 +2,7 @@
 ======
 15 Mar 2026
 - Add formatted text values to step attachments
+- Add support for st,nd,rd,th ordinal suffixes in date and number formatters
 
 4.13.0
 ======
