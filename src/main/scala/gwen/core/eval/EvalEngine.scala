@@ -184,7 +184,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
       case r"""I capture (.+?)$attribute""" =>
         new Capture(attribute, attribute)
       case r"""I format (.+?)$source from "(.+?)"$sourceFormat to "(.+?)"$targetFormat as (.+?)$attribute""" =>
-        new FormatAttribute(source, sourceFormat, attribute, targetFormat)
+        new FormatText(source, sourceFormat, attribute, targetFormat)
       case r"""I base64 decode (.+?)$attribute as (.+?)$name""" =>
         new CaptureBase64Decoded(name, attribute)
       case r"""I base64 decode (.+?)$attribute""" =>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Branko Juric, Brady Wood
+ * Copyright 2015-2026 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,8 @@ import scala.concurrent.duration._
 class EvalContext(val options: GwenOptions, envState: EnvState)
     extends Environment(envState) with RegexSupport with XPathSupport with JsonPathSupport
     with SQLSupport with ArrowFunctionSupport with JavaScriptSupport with DecodingSupport 
-    with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport with ImplicitValueKeys {
+    with TemplateSupport with SimilaritySupport with SysProcSupport with PdfSupport
+    with TextFormatSupport with ImplicitValueKeys {
 
   // resolves locator bindings
   private val bindingResolver = new BindingResolver(this)
