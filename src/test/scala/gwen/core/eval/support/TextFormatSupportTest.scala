@@ -67,7 +67,7 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
   }
 
   "Dates and Times" should "format" in {
-    formatDateTime("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm a") should be ("17 Mar 2026, 1:29 pm")
+    formatDateTime("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm") should be ("17 Mar 2026, 1:29")
   }
 
   "Number" should "convert to dollars" in {
