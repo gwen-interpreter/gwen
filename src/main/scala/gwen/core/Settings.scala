@@ -17,6 +17,7 @@
 package gwen.core
 
 import gwen.core.state.SensitiveData
+import gwen.core.eval.support.TextFormatSupport
 
 import scala.collection.mutable
 import scala.util.chaining._
@@ -36,8 +37,9 @@ import java.io.File
 import java.util.Properties
 import java.io.FileReader
 import java.util.TimeZone
+import java.util.Date
 
-object Settings extends LazyLogging {
+object Settings extends LazyLogging with TextFormatSupport {
 
   private object Lock
 
@@ -164,6 +166,10 @@ object Settings extends LazyLogging {
       getEnvOpt(name) match {
         case None => 
           name match {
+            case r"gwen.now" => 
+              Some(new Date().toString)
+            case r"gwen.now:(.+?)$f" => 
+              Some(formatDateTime(new Date(), f))
             case r"(.+?)$n:JSONArray" => 
               Option(getList(n)) map { lv => 
                 if (lv.isEmpty) Errors.missingSettingError(n)

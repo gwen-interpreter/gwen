@@ -84,5 +84,7 @@ trait ImplicitValueKeys {
 
   val `gwen.table.record.number` = "gwen.table.record.number"
   val `gwen.table.record.index`  = "gwen.table.record.index"
+
+  val `gwen.now`  = "gwen.now"
     
 }

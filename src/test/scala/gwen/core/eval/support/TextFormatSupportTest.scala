@@ -66,6 +66,10 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     formatDateTime("31st Mar 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-03-31") 
   }
 
+  "Dates and Times" should "format" in {
+    formatDateTime("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm a") should be ("17 Mar 2026, 1:29 pm")
+  }
+
   "Number" should "convert to dollars" in {
     formatNumber("1234", "#", "$#,##0.00") should be ("$1,234.00")
   }

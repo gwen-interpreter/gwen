@@ -1,3 +1,13 @@
+4.14.0
+======
+17 Mar 2026
+- Support time formatting in addition to dates 
+- Add implicit bindings for current date and time:
+  - `gwen.now` returns a string representation of the current date and time
+     - example: Tue Mar 17 18:11:14 AEDT 2026
+  - `gwen.now:<format>` returns the current data and time in the given format
+    - Where format can be a valid Java date/time pattern as described at https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns
+
 4.13.1
 ======
 15 Mar 2026
