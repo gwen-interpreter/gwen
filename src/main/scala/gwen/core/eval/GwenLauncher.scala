@@ -105,7 +105,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
               val replUnitOpt = if (!options.batch && options.features.isEmpty) {
                 ctxOpt flatMap { ctx =>
                   options.dataFile flatMap { file => 
-                    Some(FeatureSet(FeatureUnit(Root, new File("."), Nil, None, new TagFilter(Nil)), DataSource(file)).next)
+                    Some(FeatureSet(FeatureUnit(Root, new File("."), Nil, None, new TagFilter(Nil)), DataSource(file)).next())
                   }
                 }
               } else None

@@ -162,7 +162,7 @@ object JsonDataSource {
       }
     }
 
-    if (header.isEmpty || records.isEmpty || (records.size == 1 && records.head.iterator.next == "[]")) {
+    if (header.isEmpty || records.isEmpty || (records.size == 1 && records.head.iterator.next() == "[]")) {
       List() :: List()
     } else {
       val trim = GwenSettings.`gwen.auto.trim.data.json`

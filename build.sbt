@@ -1,6 +1,6 @@
 enablePlugins(GitVersioning)
 
-git.baseVersion := "4.14.1"
+git.baseVersion := "4.14.2"
 git.useGitDescribe := true
 
 lazy val gwen = (project in file("."))
@@ -12,7 +12,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.8.2",
+  scalaVersion := "3.8.3",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,19 +41,19 @@ lazy val mainDependencies = {
     "io.cucumber" % "gherkin" % "39.0.0",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "4.0.4",
+    "org.jline" % "jline" % "4.0.12",
     "org.slf4j" % "jul-to-slf4j" % "2.0.17",
     "ch.qos.logback" % "logback-core" % "1.5.32",
     "ch.qos.logback" % "logback-classic" % "1.5.32",
-    "commons-codec" % "commons-codec" % "1.21.0",
+    "commons-codec" % "commons-codec" % "1.22.0",
     "org.apache.commons" % "commons-text" % "1.15.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "3.0.0",
     "com.lihaoyi" %% "scalatags" % "0.13.1",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
-    "org.fusesource.jansi" % "jansi" % "2.4.2",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.20.1",
+    "org.fusesource.jansi" % "jansi" % "2.4.3",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.21.2",
     "org.apache.pdfbox" % "pdfbox" % "3.0.7" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
@@ -70,11 +70,11 @@ lazy val mainOverrides = {
 
 lazy val testDependencies = {
   Seq(
-    "org.scalatest" %% "scalatest" % "3.2.19",
+    "org.scalatest" %% "scalatest" % "3.2.20",
     "org.scalatestplus" %% "mockito-5-12" % "3.2.19.0",
     "org.mockito" % "mockito-core" % "5.23.0",
-    "org.graalvm.js" % "js-scriptengine" % "25.0.2",
-    "org.graalvm.js" % "js" % "25.0.2"
+    "org.graalvm.js" % "js-scriptengine" % "25.0.3",
+    "org.graalvm.js" % "js" % "25.0.3"
   ).map(_ % Test)
 }
 

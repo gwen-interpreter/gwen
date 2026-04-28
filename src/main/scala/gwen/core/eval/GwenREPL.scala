@@ -225,7 +225,7 @@ class GwenREPL[T <: EvalContext](val engine: EvalEngine[T], ctx: T) extends Impl
   private def read(): List[String] = {
     if (paste.isEmpty) System.out.println()
     try {
-      val lines = scala.io.Source.fromString(reader.readLine(prompt)).getLines
+      val lines = scala.io.Source.fromString(reader.readLine(prompt)).getLines()
       (if (lines.hasNext) lines.toList else List("")) tap { _ => 
         if (paste.isEmpty) System.out.println() 
       }

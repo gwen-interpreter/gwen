@@ -95,20 +95,20 @@ trait TemplateSupport {
     val tIter = template.linesIterator
     var tLines: List[String] = Nil
     while (sIter.hasNext) {
-      var sLine = sIter.next
+      var sLine = sIter.next()
       if (tIter.hasNext) {
-        var tLine = tIter.next
+        var tLine = tIter.next()
         if (tLine.trim == "@{*}") tLines = sLine :: tLines
         else if (tLine.trim == "@{**}") {
           tLines = sLine :: tLines
           while(tLine != null && tLine.trim.matches("""@\{\*{1,2}\}""")) {
-            if (tIter.hasNext) tLine = tIter.next
+            if (tIter.hasNext) tLine = tIter.next()
             else tLine = null
           }
           if(tLine != null) {
             var stop = false
             while(!stop && sIter.hasNext) { // copy lines from source to template in place of @{**}
-              sLine = sIter.next
+              sLine = sIter.next()
               stop = Try(matchTemplate(tLine, sLine, sourceName, mask, new TopScope(StateLevel.feature)).isSuccess).getOrElse(false)
               tLines = (if (stop) tLine else sLine) :: tLines 
             }
