@@ -1,3 +1,32 @@
+4.15.0
+======
+19 Jun 2026
+- Add datetime and number format pattern matching to all assertion and guard DSLs:
+  - `<reference> should match datetime format "<datetimePattern>"`
+  - `<reference> should match number format "<numberPattern>"`
+  - `<reference> should not match datetime format "<datetimePattern>"`
+  - `<reference> should not match number format "<numberPattern>"`
+  - `<jsonRef> at json path "<path>" should match datetime format "<datetimePattern>"`
+  - `<jsonRef> at json path "<path>" should match number format "<numberPattern>"`
+  - `<jsonRef> at json path "<path>" should not match datetime format "<datetimePattern>"`
+  - `<jsonRef> at json path "<path>" should not match number format "<numberPattern>"`
+  - `<xmlRef> at xpath "<path>" should match datetime format "<datetimePattern>"`
+  - `<xmlRef> at xpath "<path>" should match number format "<numberPattern>"`
+  - `<xmlRef> at xpath "<path>" should not match datetime format "<datetimePattern>"`
+  - `<xmlRef> at xpath "<path>" should not match number format "<numberPattern>"`
+  - `<step> if <element> matches datetime format "<datetimePattern>"`
+  - `<step> if <element> matches number format "<numberPattern>"`
+  - `<step> if <element> does not match datetime format "<datetimePattern>"`
+  - `<step> if <element> does not match number format "<numberPattern>"`
+  - `<step> while <element> matches datetime format "<datetimePattern>"`
+  - `<step> while <element> matches number format "<numberPattern>"`
+  - `<step> while <element> does not match datetime format "<datetimePattern>"`
+  - `<step> while <element> does not match number format "<numberPattern>"`
+  - `<step> until <element> matches datetime format "<datetimePattern>"`
+  - `<step> until <element> matches number format "<numberPattern>"`
+  - `<step> until <element> does not match datetime format "<datetimePattern>"`
+  - `<step> until <element> does not match number format "<numberPattern>"`
+
 4.14.2
 ======
 29 Mar 2026

@@ -16,6 +16,8 @@
 
 package gwen.core.eval.support
 
+import scala.util.Try
+
 import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -63,6 +65,14 @@ trait TextFormatSupport {
     } getOrElse {
       formatter(sValue.orNull, sFormat.orNull, targetFormat)
     }
+  }
+
+  def matchesDateTimeFormat(value: String, targetFormat: String): Boolean = {
+    Try(formatDateTime(value, targetFormat, targetFormat) == value).getOrElse(false)
+  }
+
+  def matchesNumberFormat(value: String, format: String): Boolean = {
+    Try(formatNumber(value, format, format) == value).getOrElse(false)
   }
 
   private def splitOrdinal(format: String): Option[(String, String)] = {

@@ -70,6 +70,17 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     formatDateTime("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm") should be ("17 Mar 2026, 1:29")
   }
 
+  "Dates and Times" should "match" in {
+    matchesDateTimeFormat("2026-03-17", "yyyy-MM-dd") should be (true)
+    matchesDateTimeFormat("13:29:21", "HH:mm:ss") should be (true)
+    matchesDateTimeFormat("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss") should be (true)
+    matchesDateTimeFormat("1st March 2026", "d(st|nd|rd|th) MMMM yyyy") should be (true)
+    matchesDateTimeFormat("2026-03-17", "yyyy-MM-d") should be (true)
+    matchesDateTimeFormat("2026-03-17", "yyyy-MM-dd") should be (true)
+    matchesDateTimeFormat("2026-03-7", "yyyy-MM-d") should be (true)
+    matchesDateTimeFormat("2026-03-32", "yyyy-MM-dd") should be (false)
+  }
+
   "Number" should "convert to dollars" in {
     formatNumber("1234", "#", "$#,##0.00") should be ("$1,234.00")
   }
@@ -146,6 +157,12 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     formatNumber("1524th", "#(st|nd|rd|th)", "#") should be ("1524")
     formatNumber("1630th", "#(st|nd|rd|th)", "#") should be ("1630")
     formatNumber("1731st", "#(st|nd|rd|th)", "#") should be ("1731")
+  }
+
+  "Numbers" should "match" in {
+    matchesNumberFormat("1234", "#") should be (true)
+    matchesNumberFormat("$1,234.00", "$#,##0.00") should be (true)
+    matchesNumberFormat("1st", "#(st|nd|rd|th)") should be (true)
   }
 
 }

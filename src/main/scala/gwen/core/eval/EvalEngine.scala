@@ -86,9 +86,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", this))
       case r"""(.+)$doStep if (.+?)$attribute is( not)?$negation "(.*?)"$expression""" =>
         Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, this))
-      case r"""(.+)$doStep if (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression""" =>
+      case r"""(.+)$doStep if (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file|matches datetime format|matches number format)$operator "(.*?)"$expression""" =>
         Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.fromModal(operator), false, expression, this))
-      case r"""(.+)$doStep if (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
+      case r"""(.+)$doStep if (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file|match datetime format|match number format)$operator "(.*?)"$expression""" =>
         Some(new IfCompareCondition(doStep, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
       case r"""(.+)$doStep if(?:(?!\bif\b))( not)?$negation (.+)$condition""" if !condition.contains('"') =>
         Some(new IfCondition(doStep, condition, Option(negation).nonEmpty, this))
@@ -110,9 +110,9 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, "", this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute is( not)?$negation "(.*?)"$expression""" if (doStep != "I wait")  =>
         Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.be, Option(negation).nonEmpty, expression, this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute (contains|starts with|ends with|matches regex|matches xpath|matches json path|matches template|matches template file|matches datetime format|matches number format)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
         Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.fromModal(operator), false, expression, this))
-      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
+      case r"""(.+?)$doStep (until|while)$operation (.+?)$attribute does not (contain|start with|end with|match regex|match xpath|match json path|match template|match template file|match datetime format|match number format)$operator "(.*?)"$expression""" if (doStep != "I wait")  =>
         Some(new RepeatIfCompareCondition(doStep, operation, attribute, ComparisonOperator.valueOf(operator), true, expression, this))
       case r"""(.+?)$doStep (until|while)$operation (.+?)$condition""" if (doStep != "I wait" && !condition.contains('"') && !step.expression.matches(""".*".*(until|while).*".*""")) =>
         Some(new RepeatJS(doStep, operation, condition, this))
@@ -219,7 +219,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new UpdateBySQL(dbName, step.orDocString(updateStmt))
       case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation be (blank|empty|true|false)$literal""" =>
         new CompareByPath(source, BindingType.valueOf(matcher), path, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty)
-      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file)$operator "(.*?)"$expression""" =>
+      case r"""(.+?)$source at (json path|xpath)$matcher "(.+?)"$path should( not)?$negation (be|contain|start with|end with|match regex|match template|match template file|match datetime format|match number format)$operator "(.*?)"$expression""" =>
         new CompareByPath(source, BindingType.valueOf(matcher), path, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation (be|be less than|be at most|be more than|be at least)$operator (\d+(?:\.\d*)?)$percentage% similar to "(.+?)"$value2""" =>
         new CheckSimilarity(attribute, None, Some(value2), SimilarityOperator.valueOf(operator), percentage.toDouble, Option(negation).nonEmpty)
@@ -239,7 +239,7 @@ abstract class EvalEngine[T <: EvalContext] extends NodeEventDispatcher with Uni
         new CompareFile(None, Some(filepathRef), FileComparisonOperator.empty, Option(negation).nonEmpty)
       case r"""(.+?)$attribute should( not)?$negation be (blank|empty|true|false)$literal""" =>
         new Compare(attribute, ValueLiteral.valueOf(literal).value, ComparisonOperator.be, Option(negation).nonEmpty, None)
-      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file)$operator "(.*?)"$expression""" =>
+      case r"""(.+?)$attribute should( not)?$negation (be|contain|start with|end with|match regex|match xpath|match json path|match template|match template file|match datetime format|match number format)$operator "(.*?)"$expression""" =>
         new Compare(attribute, step.orDocString(expression), ComparisonOperator.valueOf(operator), Option(negation).nonEmpty, None)
       case r"""I attach "(.+?)"$filepath as "(.+?)"$name""" =>
         new AttachFile(Some(name), filepath)

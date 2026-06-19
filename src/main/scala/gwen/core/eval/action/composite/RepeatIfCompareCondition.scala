@@ -35,17 +35,7 @@ class RepeatIfCompareCondition[T <: EvalContext](doStep: String, operation: Stri
         if (negate) {
           if (operator == ComparisonOperator.be) "is not" else s"does not $operator"
         } else {
-          operator match {
-            case ComparisonOperator.be => "is"
-            case ComparisonOperator.contain => "contains"
-            case ComparisonOperator.`start with` => "starts with"
-            case ComparisonOperator.`end with` => "ends with"
-            case ComparisonOperator.`match regex` => "matches regex"
-            case ComparisonOperator.`match xpath` => "matches xpath"
-            case ComparisonOperator.`match json path` => "matches json path"
-            case ComparisonOperator.`match template` => "matches template"
-            case ComparisonOperator.`match template file` => "matches template file"
-          }
+          operator.toModal()
         }
       ) + s""" "${if (expression == "") "blank" else expression}"""",
       engine) {

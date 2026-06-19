@@ -128,6 +128,8 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
       case ComparisonOperator.`match regex` => actual.matches(expected)
       case ComparisonOperator.`match xpath` => !evaluateXPath(expected, actual, XMLNodeType.text).isEmpty
       case ComparisonOperator.`match json path` => !evaluateJsonPath(expected, actual).isEmpty
+      case ComparisonOperator.`match datetime format` => matchesDateTimeFormat(actual, expected)
+      case ComparisonOperator.`match number format` => matchesNumberFormat(actual, expected)
       case ComparisonOperator.`match template` | ComparisonOperator.`match template file` =>
         matchTemplate(expected, actual, sourceName, mask, topScope) match {
           case Success(result) =>
