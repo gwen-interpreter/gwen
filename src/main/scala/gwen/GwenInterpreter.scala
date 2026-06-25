@@ -72,6 +72,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     printBanner("Welcome to ")
     val start = System.nanoTime
     try {
+      initProperties(args)
       val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
       GwenSettings.check()
       initLogging(options)
@@ -150,6 +151,19 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
             logger.warn(s"Could not close context: $e")
         }
       }
+    }
+  }
+
+  private def initProperties(args: Array[String]): Unit = {
+    // initialise system property with profile name
+    Option(args.indexOf("-p")).filter(_ != -1) orElse {
+      Option(args.indexOf("--profile")).filter(_ != -1)
+    } map { idx => 
+      if (args.length > idx) {
+        sys.props += ((ImplicitValueKeys.`gwen.profile.name`, args(idx + 1)))
+      }
+    } getOrElse {
+      sys.props += ((ImplicitValueKeys.`gwen.profile.name`, ""))
     }
   }
 

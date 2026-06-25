@@ -1,7 +1,8 @@
 4.15.1
 ======
-25 Jun 2026
+26 Jun 2026
 - Include all settings in interpolation when normalising specs
+- Assign implicit profile property at launch time
 
 4.15.0
 ======

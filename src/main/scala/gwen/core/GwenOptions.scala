@@ -80,7 +80,9 @@ case class GwenOptions(
     pretty: Boolean = GwenOptions.Defaults.pretty,
     formatFiles: List[File] = Nil) extends GwenInfo {
 
-  sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
+  if (sys.props.get(ImplicitValueKeys.`gwen.profile.name`).isEmpty) {
+    sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
+  }
 
   lazy val resultFiles: List[ResultFile] = GwenSettings.`gwen.report.results.files`(this)
 
