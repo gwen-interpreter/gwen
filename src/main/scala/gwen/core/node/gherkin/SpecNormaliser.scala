@@ -42,7 +42,7 @@ trait SpecNormaliser extends BehaviorRules {
 
   private def dataInterpolator(dataRecord: Option[DataRecord]) = {
     new Interpolator( name => {
-      Settings.getEnvOpt(name).orElse {
+      Settings.getOpt(name).orElse {
         dataRecord.flatMap { rec =>
           rec.data.filter(_._1 == name).headOption.map(_._2)
         }

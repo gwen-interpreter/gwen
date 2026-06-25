@@ -108,6 +108,7 @@ case class GwenOptions(
             case "initDir" => Option(initDir)
             case "pretty" => Some(options.pretty)
             case "formatFiles" => Some(options.formatFiles.mkString(" "))
+            case "profile" => Some(options.profile.name)
             case _ => None
           }).map(_.toString)
         } else {

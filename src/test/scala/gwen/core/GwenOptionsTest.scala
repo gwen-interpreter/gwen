@@ -1051,6 +1051,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.interpolate("initDir is $<gwen.options.initDir>, yep") should be (s"initDir is ${Option(initDir).getOrElse("")}, yep")
     options.interpolate("pretty is $<gwen.options.pretty>, yep") should be (s"pretty is $pretty, yep")
     options.interpolate("formatFiles is $<gwen.options.formatFiles>, yep") should be (s"formatFiles is ${formatFiles.mkString(" ")}, yep")
+    options.interpolate("profile is $<gwen.options.profile>, yep") should be (s"profile is ${profile.name}, yep")
 
   }
 

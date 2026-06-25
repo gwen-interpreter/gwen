@@ -1,3 +1,8 @@
+4.15.1
+======
+25 Jun 2026
+- Include all settings in interpolation when normalising specs
+
 4.15.0
 ======
 19 Jun 2026
