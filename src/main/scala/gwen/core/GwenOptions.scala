@@ -36,7 +36,7 @@ import org.apache.commons.lang3.SystemUtils
 /**
   * Captures gwen command line options.
   *
-  * @param profile optional profile name to launch
+  * @param profiles list of profiles to launch
   * @param repl true to open REPL regardless of batch and feature options
   * @param batch true to run in batch mode, false for interactive REPL (default is false)
   * @param parallel true to run features or scenarios in parallel depending on state level (default is false)
@@ -59,7 +59,7 @@ import org.apache.commons.lang3.SystemUtils
   * @author Branko Juric
   */
 case class GwenOptions(
-    profile: Profile = GwenOptions.Defaults.profile,
+    profiles: List[Profile] = List(GwenOptions.Defaults.profile),
     repl: Boolean = GwenOptions.Defaults.repl,
     batch: Boolean = GwenOptions.Defaults.batch,
     parallel: Boolean = GwenOptions.Defaults.parallel,
@@ -79,10 +79,6 @@ case class GwenOptions(
     initDir: File = GwenOptions.Defaults.initDir,
     pretty: Boolean = GwenOptions.Defaults.pretty,
     formatFiles: List[File] = Nil) extends GwenInfo {
-
-  if (sys.props.get(ImplicitValueKeys.`gwen.profile.name`).isEmpty) {
-    sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
-  }
 
   lazy val resultFiles: List[ResultFile] = GwenSettings.`gwen.report.results.files`(this)
 
@@ -110,7 +106,7 @@ case class GwenOptions(
             case "initDir" => Option(initDir)
             case "pretty" => Some(options.pretty)
             case "formatFiles" => Some(options.formatFiles.mkString(" "))
-            case "profile" => Some(options.profile.name)
+            case "profile" => Some(profiles.map(_.name).mkString(","))
             case _ => None
           }).map(_.toString)
         } else {
@@ -193,10 +189,10 @@ object GwenOptions {
       opt[String]('p', "profile") action {
         (ps, c) => {
           c.copy(
-            profile = new Profile(ps, baseDir)
+            profiles = ps.split(",").toList.map(p => new Profile(p, baseDir))
           )
         }
-      } valueName "name" text "Name of profile to launch"
+      } valueName "names" text "Names of profiles to launch (comma separated)"
       
       opt[Unit]('b', "batch") action {
         (_, c) => c.copy(batch = true)
@@ -238,7 +234,7 @@ object GwenOptions {
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
       } valueName "reports" text s"""|Report formats to include in output (comma separated)
-                                                                                               |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html})""".stripMargin
+                                     |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html})""".stripMargin
 
       opt[String]('t', "tags") action {
         (ts, c) =>
@@ -333,15 +329,15 @@ object GwenOptions {
     }
 
     (parser.parse(args, GwenOptions()) flatMap { options =>
-      if (options.profile.isDefault) {
-        Some(options)
-      } else {
-        Settings.init(options.profile.settingsFile.toList)
+      if (options.profiles.size == 1 && !options.profiles.head.isDefault) {
+        Settings.init(options.profiles.head.settingsFile.toList)
         parser.parse(args, GwenOptions())
+      } else {
+        Some(options)
       }
     } map { options =>
       new GwenOptions(
-        options.profile,
+        options.profiles,
         options.repl,
         options.batch && !options.repl,
         options.parallel,
@@ -366,7 +362,7 @@ object GwenOptions {
         else options
       } tap { options =>
         options foreach { opt =>
-          if (opt.batch && opt.features.isEmpty && opt.profile.isDefault) {
+          if (opt.batch && opt.features.isEmpty && opt.profiles.size == 1 && opt.profiles.head.isDefault) {
             Errors.invocationError("No feature files or directories provided")
           }
           if (opt.reportFormats.nonEmpty && opt.reportDir.isEmpty) {
@@ -376,9 +372,11 @@ object GwenOptions {
           if (opt.debug && opt.parallel) {
             Errors.invocationError("Debug mode not supported for parallel executions")
           }
-          opt.profile.settingsFile foreach { psFile =>
-            if (opt.features.diff(GwenOptions.Defaults.features).nonEmpty) Errors.invocationError(s"Cannot specify features on command line when launching ${opt.profile.name} profile (use gwen.launch.options.features setting in ${psFile} file instead)")
-            if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${opt.profile.name} profile (use gwen.launch.options.meta setting in ${psFile} file instead)")
+          opt.profiles foreach { profile =>
+            profile.settingsFile foreach { psFile =>
+              if (opt.features.diff(GwenOptions.Defaults.features).nonEmpty) Errors.invocationError(s"Cannot specify features on command line when launching ${profile.name} profile (use gwen.launch.options.features setting in ${psFile} file instead)")
+              if (opt.metas.diff(GwenOptions.Defaults.meta).nonEmpty) Errors.invocationError(s"Cannot specify meta on command line when launching ${profile.name} profile (use gwen.launch.options.meta setting in ${psFile} file instead)")
+            }
           }
         }
       }).getOrElse(Errors.invocationError("Gwen invocation failed - check arguments (specify --help for launch options)"))

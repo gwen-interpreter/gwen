@@ -166,7 +166,7 @@ object Settings extends LazyLogging with TextFormatSupport {
       getEnvOpt(name) match {
         case None => 
           name match {
-            case r"gwen.now" => 
+            case "gwen.now" => 
               Some(new Date().toString)
             case r"gwen.now:(.+?)$f" => 
               Some(formatDateTime(new Date(), f))
@@ -181,6 +181,9 @@ object Settings extends LazyLogging with TextFormatSupport {
                   Option(configProps.getProperty(name)) orElse {
                     Try(config.getString(name)).map(v => Option(v)).getOrElse {
                       SensitiveData.maskedValue(name)
+                    } orElse {
+                      if (name == ImplicitValueKeys.`gwen.profile.name`) Some("")
+                      else None
                     }
                   }
                 }

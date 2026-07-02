@@ -55,7 +55,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
     doReturn(Skipped).when(interpreter).run(options, Some(mockCtx))
     doReturn(mockRepl).when(interpreter).createRepl(mockCtx)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Skipped)
 
     verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
@@ -71,7 +71,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
 
     doReturn(Skipped).when(interpreter).run(options, None)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Skipped)
 
     verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()
@@ -92,7 +92,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
     doReturn(Passed(1)).when(interpreter).run(options, Some(mockCtx))
     doReturn(mockRepl).when(interpreter).createRepl(mockCtx)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Passed)
 
     verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
@@ -114,7 +114,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
     doReturn(Passed(1)).when(interpreter).run(options, Some(mockCtx))
     doReturn(mockRepl).when(interpreter).createRepl(mockCtx)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Passed)
 
     verify(mockEngine).init(same(options), any[EnvState])
     verify(mockCtx).close()
@@ -130,7 +130,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
 
     doReturn(Passed(1)).when(interpreter).run(options, None)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Passed)
 
     verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()
@@ -146,7 +146,7 @@ class GwenInterpreterTest extends BaseTest with Matchers with MockitoSugar {
 
     doReturn(Passed(1)).when(interpreter).run(options, None)
 
-    interpreter.run(options) should be (0)
+    interpreter.run(options).keyword should be (StatusKeyword.Passed)
 
     verify(mockEngine, never()).init(same(options), any[EnvState])
     verify(mockRepl, never()).run()

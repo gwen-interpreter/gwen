@@ -51,14 +51,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with existing profile option" should "parse" in {
     parseOptions(Array("-p", "single"), singleProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, profile = Profile("single", singleProfileBaseDir))
+        assertOptions(options, profiles = List(Profile("single", singleProfileBaseDir)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
     parseOptions(Array("--profile", "single"), singleProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, profile = Profile("single", singleProfileBaseDir))
+        assertOptions(options, profiles = List(Profile("single", singleProfileBaseDir)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
@@ -68,14 +68,14 @@ class GwenOptionsTest extends BaseTest with Matchers {
   "Options with no profile option" should "parse when multiple profilees exist" in {
     parseOptions(Array(), multiProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, profile = Profile("", multiProfileBaseDir))
+        assertOptions(options, profiles = List(Profile("", multiProfileBaseDir)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
     }
     parseOptions(Array(), multiProfileBaseDir) match {
       case Success(options) => {
-        assertOptions(options, profile = Profile("", multiProfileBaseDir))
+        assertOptions(options, profiles = List(Profile("", multiProfileBaseDir)))
       }
       case Failure(error) =>
         fail(s"expected options but failed with error: $error")
@@ -835,7 +835,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Success(options) => {
         assertOptions(
           options,
-          profile = Profile("", noProfileBaseDir),
+          profiles = List(Profile("", noProfileBaseDir)),
           repl = false,
           batch = true,
           parallel = true,
@@ -859,7 +859,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
       case Success(options) => {
         assertOptions(
           options,
-          profile = Profile("", noProfileBaseDir),
+          profiles = List(Profile("", noProfileBaseDir)),
           repl = false,
           batch = true,
           parallel = true,
@@ -971,7 +971,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
 
   private def assertOptions(
                              options: GwenOptions,
-                             profile: Profile = GwenOptions.Defaults.profile,
+                             profiles: List[Profile] = List(GwenOptions.Defaults.profile),
                              repl: Boolean = GwenOptions.Defaults.repl,
                              batch: Boolean = GwenOptions.Defaults.batch,
                              parallel: Boolean = GwenOptions.Defaults.parallel,
@@ -993,8 +993,8 @@ class GwenOptionsTest extends BaseTest with Matchers {
                              pretty: Boolean = GwenOptions.Defaults.pretty,
                              formatFiles: List[File] = Nil): Unit = {
 
-    options.profile.name should be (profile.name)
-    options.profile.settingsFile.map(_.getCanonicalPath) should be (profile.settingsFile.map(_.getCanonicalPath))
+    options.profiles.map(_.name) should be (profiles.map(_.name))
+    options.profiles.flatMap(_.settingsFile).map(_.getCanonicalPath) should be (profiles.flatMap(_.settingsFile).map(_.getCanonicalPath))
     options.batch should be (batch && !repl)
     options.repl should be (repl)
     options.parallel should be (parallel)
@@ -1051,7 +1051,7 @@ class GwenOptionsTest extends BaseTest with Matchers {
     options.interpolate("initDir is $<gwen.options.initDir>, yep") should be (s"initDir is ${Option(initDir).getOrElse("")}, yep")
     options.interpolate("pretty is $<gwen.options.pretty>, yep") should be (s"pretty is $pretty, yep")
     options.interpolate("formatFiles is $<gwen.options.formatFiles>, yep") should be (s"formatFiles is ${formatFiles.mkString(" ")}, yep")
-    options.interpolate("profile is $<gwen.options.profile>, yep") should be (s"profile is ${profile.name}, yep")
+    options.interpolate("profile is $<gwen.options.profile>, yep") should be (s"profile is ${profiles.last.name}, yep")
 
   }
 

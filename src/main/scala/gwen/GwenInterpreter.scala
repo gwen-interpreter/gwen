@@ -25,6 +25,7 @@ import gwen.core.init.NoopProjectInitialiser
 import gwen.core.node.gherkin.Dialect
 import gwen.core.report.console.ConsoleReporter
 import gwen.core.state.EnvState
+import gwen.core.status.EvalStatus
 import gwen.core.status.Failed
 import gwen.core.status.Pending
 
@@ -71,13 +72,39 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     val start = System.nanoTime
+    Dialect.instance
     try {
-      initProperties(args)
-      val options = init(GwenOptions(args, GwenSettings.`gwen.baseDir`))
-      GwenSettings.check()
-      initLogging(options)
-      Dialect.instance
-      System.exit(run(options))
+      val profileIdx = argIndexOf("-p", "--profile", args)
+      val profiles = profileIdx map { idx => 
+        args(idx + 1).split(",").map(_.trim)
+      } getOrElse Array("")
+      val dryRun = GwenOptions(args, GwenSettings.`gwen.baseDir`).dryRun
+      val results = profiles.foldLeft(List[(String, EvalStatus)]()) { (acc, profile) =>  
+        sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile))
+        val pArgs = profileIdx map { idx => 
+          args.zipWithIndex map { (a, i) => 
+            if (i == (idx + 1)) profile else a
+          }
+        } getOrElse args
+        if (!acc.exists(_._2.exitCode != 0) || dryRun) {
+          val options = init(GwenOptions(pArgs, GwenSettings.`gwen.baseDir`))
+          System.out.println(s"Launching: ${options.commandString}")
+          System.out.println()
+          GwenSettings.check()
+          initLogging(options)
+          (profile, run(options)) :: acc
+        } else {
+          acc
+        }
+      }
+      val exitCode = if (results.map(_._2.exitCode).sum == 0) 0 else 1
+      if (exitCode != 0 && results.size > 1) {
+        val consoleReporter = new ConsoleReporter(GwenOptions())
+        results.reverse.filter(_._2.isFailed) foreach { (profile, evalStatus) =>
+          println(s"- ${profile}\n\n${consoleReporter.printError(evalStatus.asInstanceOf[Failed]).linesIterator.map(l => s"    $l").mkString("\n")}\n")
+        }
+      }
+      System.exit(exitCode)
     } catch {
       case _: Errors.GwenInterruptException =>
         System.exit(1) // user cntl-c initiated exit
@@ -90,10 +117,14 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
   }
 
+  def argIndexOf(shortArg: String, longArg: String, args: Array[String]): Option[Int] = {
+    Option(args.indexOf(shortArg)).filter(_ != -1) orElse {
+      Option(args.indexOf(longArg)).filter(_ != -1)
+    }
+  }
+
   def init(options: GwenOptions): GwenOptions = {
-    System.out.println(s"Launching: ${options.commandString}")
-    System.out.println()
-    val profile = options.profile
+    val profile = options.profiles.head
     logger.info("Initialising settings")
     Settings.init(profile.settingsFile.toList ++ options.settingsFiles)
     (if (options.repl && options.features.nonEmpty) {
@@ -125,23 +156,23 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     * @param launcher Gwen launcher
     * @return 0 if successful; 1 otherwise
     */
-  private [gwen] def run(options: GwenOptions): Int = {
+  private [gwen] def run(options: GwenOptions): EvalStatus = {
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
       Some(engine.init(options, EnvState()))
     }
     try {
-      val evalStatus = run(options, ctxOpt)
-      if (!options.init) {
-        ctxOpt foreach { ctx =>
-          if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
-            printBanner("")
+      run(options, ctxOpt) tap { evalStatus =>
+        if (!options.init) {
+          ctxOpt foreach { ctx =>
+            if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
+              printBanner("")
+            }
+            createRepl(ctx).run()
           }
-          createRepl(ctx).run()
         }
       }
-      evalStatus.exitCode
     } finally {
       ctxOpt foreach { ctx =>
         try {
@@ -151,19 +182,6 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
             logger.warn(s"Could not close context: $e")
         }
       }
-    }
-  }
-
-  private def initProperties(args: Array[String]): Unit = {
-    // initialise system property with profile name
-    Option(args.indexOf("-p")).filter(_ != -1) orElse {
-      Option(args.indexOf("--profile")).filter(_ != -1)
-    } map { idx => 
-      if (args.length > idx) {
-        sys.props += ((ImplicitValueKeys.`gwen.profile.name`, args(idx + 1)))
-      }
-    } getOrElse {
-      sys.props += ((ImplicitValueKeys.`gwen.profile.name`, ""))
     }
   }
 
