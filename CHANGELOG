@@ -1,3 +1,9 @@
+4.16.1
+======
+3 Jul 2026
+- Include results of all profiles at end when more than one are given
+- Only open repl if on last profile or execution of prior one fails
+
 4.16.0
 ======
 2 Jul 2026

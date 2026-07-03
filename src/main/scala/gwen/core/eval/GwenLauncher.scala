@@ -133,7 +133,7 @@ abstract class GwenLauncher[T <: EvalContext](engine: EvalEngine[T]) extends Laz
         val failure = Failed(System.nanoTime - startNanos, e)
         if (options.batch) {
           val consoleReporter = new ConsoleReporter(options)
-          logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure), e)
+          logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printStatus(failure), e)
           println()
           failure
         } else {

@@ -79,7 +79,8 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         args(idx + 1).split(",").map(_.trim)
       } getOrElse Array("")
       val dryRun = GwenOptions(args, GwenSettings.`gwen.baseDir`).dryRun
-      val results = profiles.foldLeft(List[(String, EvalStatus)]()) { (acc, profile) =>  
+      val results = (profiles.zipWithIndex.foldLeft(List[(String, EvalStatus)]()) { (acc, profileAndIndex) =>  
+        val (profile, pIndex) = profileAndIndex
         sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile))
         val pArgs = profileIdx map { idx => 
           args.zipWithIndex map { (a, i) => 
@@ -92,18 +93,21 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
           System.out.println()
           GwenSettings.check()
           initLogging(options)
-          (profile, run(options)) :: acc
+          (profile, run(options, pIndex == (profiles.size - 1))) :: acc
         } else {
           acc
         }
+      }).reverse
+      if (results.size > 1) {
+        val consoleReporter = new ConsoleReporter(GwenOptions())
+        val maxlen = profiles.maxBy(_.length).length
+        println("Profiles:\n")
+        results foreach { (profile, evalStatus) =>
+          println(s"  ${Formatting.leftPad(profile, maxlen)}  ${consoleReporter.printStatus(evalStatus).linesIterator.zipWithIndex.map((l, i) => if (i == 0) l else s"${" " * (maxlen)}    $l").mkString("\n")}")
+        }
+        println()
       }
       val exitCode = if (results.map(_._2.exitCode).sum == 0) 0 else 1
-      if (exitCode != 0 && results.size > 1) {
-        val consoleReporter = new ConsoleReporter(GwenOptions())
-        results.reverse.filter(_._2.isFailed) foreach { (profile, evalStatus) =>
-          println(s"- ${profile}\n\n${consoleReporter.printError(evalStatus.asInstanceOf[Failed]).linesIterator.map(l => s"    $l").mkString("\n")}\n")
-        }
-      }
       System.exit(exitCode)
     } catch {
       case _: Errors.GwenInterruptException =>
@@ -111,7 +115,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
       case e: Throwable =>
         val failure = Failed(System.nanoTime - start, e)
         val consoleReporter = new ConsoleReporter(GwenOptions())
-        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printError(failure), e)
+        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printStatus(failure), e)
         println()
         System.exit(1)
     }
@@ -156,7 +160,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     * @param launcher Gwen launcher
     * @return 0 if successful; 1 otherwise
     */
-  private [gwen] def run(options: GwenOptions): EvalStatus = {
+  private [gwen] def run(options: GwenOptions, lastProfile: Boolean): EvalStatus = {
     val ctxOpt = if (options.batch || options.init || options.pretty) {
       None 
     } else {
@@ -164,7 +168,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
     try {
       run(options, ctxOpt) tap { evalStatus =>
-        if (!options.init) {
+        if (!options.init && (lastProfile || evalStatus.isFailed)) {
           ctxOpt foreach { ctx =>
             if (options.verbose || (evalStatus.isEvaluated && options.features.nonEmpty)) {
               printBanner("")

@@ -25,6 +25,7 @@ import gwen.core.node.event.NodeEventListener
 import gwen.core.result.ResultsSummary
 import gwen.core.result.SpecResult
 import gwen.core.state.StateLevel
+import gwen.core.status.EvalStatus
 import gwen.core.status.Failed
 import gwen.core.report.ReportFormat
 
@@ -304,8 +305,8 @@ class ConsoleReporter(options: GwenOptions)
     }
   }
 
-  def printError(failure: Failed): String = {
-    printer.printStatus("", failure, Some(failure.message), true, true)
+  def printStatus(status: EvalStatus): String = {
+    printer.printStatus("", status, Some(status.message), true, true)
   }
   
 }
