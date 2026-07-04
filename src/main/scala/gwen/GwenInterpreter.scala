@@ -28,6 +28,7 @@ import gwen.core.state.EnvState
 import gwen.core.status.EvalStatus
 import gwen.core.status.Failed
 import gwen.core.status.Pending
+import gwen.core.status.Skipped
 
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.joran.JoranConfigurator
@@ -72,40 +73,21 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
   def main(args: Array[String]): Unit = {
     printBanner("Welcome to ")
     val start = System.nanoTime
-    Dialect.instance
     try {
-      val profileIdx = argIndexOf("-p", "--profile", args)
-      val profiles = profileIdx map { idx => 
-        args(idx + 1).split(",").map(_.trim)
-      } getOrElse Array("")
-      val dryRun = GwenOptions(args, GwenSettings.`gwen.baseDir`).dryRun
-      val results = (profiles.zipWithIndex.foldLeft(List[(String, EvalStatus)]()) { (acc, profileAndIndex) =>  
+      val options = GwenOptions(args, GwenSettings.`gwen.baseDir`)
+      Dialect.instance
+      initLogging(options)
+      GwenSettings.check()
+      val results = (options.profiles.zipWithIndex.foldLeft(List[(Profile, EvalStatus)]()) { (acc, profileAndIndex) =>  
         val (profile, pIndex) = profileAndIndex
-        sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile))
-        val pArgs = profileIdx map { idx => 
-          args.zipWithIndex map { (a, i) => 
-            if (i == (idx + 1)) profile else a
-          }
-        } getOrElse args
-        if (!acc.exists(_._2.exitCode != 0) || dryRun) {
-          val options = init(GwenOptions(pArgs, GwenSettings.`gwen.baseDir`))
-          System.out.println(s"Launching: ${options.commandString}")
-          System.out.println()
-          GwenSettings.check()
-          initLogging(options)
-          (profile, run(options, pIndex == (profiles.size - 1))) :: acc
+        if (!acc.exists(_._2.exitCode != 0) || options.dryRun) {
+          (profile, runProfile(options, profile, pIndex)) :: acc
         } else {
-          acc
+          (profile, Skipped) :: acc
         }
       }).reverse
-      if (results.size > 1) {
-        val consoleReporter = new ConsoleReporter(GwenOptions())
-        val maxlen = profiles.maxBy(_.length).length
-        println("Profiles:\n")
-        results foreach { (profile, evalStatus) =>
-          println(s"  ${Formatting.leftPad(profile, maxlen)}  ${consoleReporter.printStatus(evalStatus).linesIterator.zipWithIndex.map((l, i) => if (i == 0) l else s"${" " * (maxlen)}    $l").mkString("\n")}")
-        }
-        println()
+      if (results.nonEmpty) {
+        println(ConsoleReporter(GwenOptions()).printProfileResults(results))
       }
       val exitCode = if (results.map(_._2.exitCode).sum == 0) 0 else 1
       System.exit(exitCode)
@@ -114,17 +96,30 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
         System.exit(1) // user cntl-c initiated exit
       case e: Throwable =>
         val failure = Failed(System.nanoTime - start, e)
-        val consoleReporter = new ConsoleReporter(GwenOptions())
-        logger.error(s"${e.getClass.getSimpleName}\n\n" + consoleReporter.printStatus(failure), e)
+        logger.error(s"${e.getClass.getSimpleName}\n\n" + new ConsoleReporter(GwenOptions()).printStatus(failure), e)
         println()
         System.exit(1)
     }
   }
 
-  def argIndexOf(shortArg: String, longArg: String, args: Array[String]): Option[Int] = {
-    Option(args.indexOf(shortArg)).filter(_ != -1) orElse {
-      Option(args.indexOf(longArg)).filter(_ != -1)
+  private def runProfile(topOptions: GwenOptions, profile: Profile, profileIndex: Int): EvalStatus = {
+    sys.props += ((ImplicitValueKeys.`gwen.profile.name`, profile.name))
+    val options = topOptions.args.map { args => 
+      GwenOptions(
+        args.foldLeft(Array[String]()) { (acc, arg) => 
+          acc :+ (
+            acc.lastOption.filter(a => a == "-p" || a == "--profile") map { a =>
+              profile.name
+            } getOrElse arg
+          )
+        },
+        GwenSettings.`gwen.baseDir`
+      )
+    } getOrElse {
+      topOptions.copy(profiles = List(profile))
     }
+    println(s"Launching: ${options.commandString}\n")
+    run(init(options), profileIndex == (topOptions.profiles.size - 1))
   }
 
   def init(options: GwenOptions): GwenOptions = {

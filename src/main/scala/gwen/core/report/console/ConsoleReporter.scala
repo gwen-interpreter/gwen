@@ -300,13 +300,21 @@ class ConsoleReporter(options: GwenOptions)
         }
       }
       System.out.println()
-      System.out.println(printer.printStatus("", summary.evalStatus, None, withIcon = true, withStatusIcon = true))
-      System.out.println()
     }
   }
 
   def printStatus(status: EvalStatus): String = {
     printer.printStatus("", status, Some(status.message), true, true)
+  }
+
+  def printProfileResults(results: List[(Profile, EvalStatus)]): String = {
+    val maxlen = results.map(_._1.name).maxBy(_.length).length
+    StringPrinter.withPrinter { out =>  
+      out.println(s"Result${if (results.size > 1) "s" else ""}:\n")
+      results foreach { (profile, evalStatus) =>
+        out.println(s"  ${Formatting.leftPad(profile.name, maxlen)}  ${printStatus(evalStatus).linesIterator.zipWithIndex.map((l, i) => if (i == 0) l else s"${" " * (maxlen)}    $l").mkString("\n")}")
+      }
+    }
   }
   
 }
