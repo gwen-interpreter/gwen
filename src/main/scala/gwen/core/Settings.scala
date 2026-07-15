@@ -23,6 +23,7 @@ import scala.collection.mutable
 import scala.util.chaining._
 import scala.util.Try
 
+import org.apache.commons.lang3.LocaleUtils
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigValueType
@@ -38,6 +39,7 @@ import java.util.Properties
 import java.io.FileReader
 import java.util.TimeZone
 import java.util.Date
+import java.util.Locale
 
 object Settings extends LazyLogging with TextFormatSupport {
 
@@ -314,6 +316,17 @@ object Settings extends LazyLogging with TextFormatSupport {
   def getLongOpt(name: String, deprecatedName: Option[String] = None): Option[Long] = {
     getOptAndConvert(name, deprecatedName, "Long integers") { value =>
       value.toLong 
+    }
+  }
+
+  def getLocale(name: String): Locale = {
+    getLocaleOpt(name).getOrElse(Errors.missingSettingError(name))
+  }
+
+  def getLocaleOpt(name: String): Option[Locale] = {
+    val validValues = "[language], [language]_[COUNTRY], [language]-[COUNTRY], [language]_[NUMERIC_CODE], [language]_[COUNTRY]_[variant], _[COUNTRY]"
+    getOptAndConvert(name, None, validValues) { value =>
+      LocaleUtils.toLocale(value)
     }
   }
 

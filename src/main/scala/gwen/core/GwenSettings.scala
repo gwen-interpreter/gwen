@@ -31,6 +31,7 @@ import java.io.File
 import java.util.logging.Level
 
 import com.typesafe.scalalogging.LazyLogging
+import java.util.Locale
 
 /**
   * Provides access to all Gwen settings.
@@ -73,6 +74,7 @@ object GwenSettings extends LazyLogging {
     `gwen.video.timeoutSecs`
     `gwen.logLevel.deprecations`
     `gwen.input.data.readOnly`
+    `gwen.format.date.locale`
   }
 
   /**
@@ -500,6 +502,14 @@ object GwenSettings extends LazyLogging {
     */
   def `gwen.input.data.maskFields`: List[String] = {
     Settings.getList("gwen.input.data.maskFields", None).map(_.trim)
+  }
+
+  /**
+    * Provides access to the `gwen.format.date.locale` setting used to control which locale to
+    * user in for date formatting
+    */
+  def `gwen.format.date.locale`: Locale = {
+    Settings.getLocale("gwen.format.date.locale")
   }
 
 }

@@ -47,6 +47,41 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     formatDateTime("2026-03-31", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("31st Mar 2026") 
   }
 
+  "June ISO date" should "convert to date with ordinal day suffix" in {
+    formatDateTime("2026-06-01", "yyyy-MM-dd", "d(st|nd|rd|th) MMMM yyyy") should be ("1st June 2026")
+    formatDateTime("2026-06-03", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("3rd Jun 2026")
+    formatDateTime("2026-06-04", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("4th Jun 2026")
+    formatDateTime("2026-06-10", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("10th Jun 2026")
+    formatDateTime("2026-06-11", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("11th Jun 2026")
+    formatDateTime("2026-06-12", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("12th Jun 2026")
+    formatDateTime("2026-06-13", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("13th Jun 2026")
+    formatDateTime("2026-06-14", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("14th Jun 2026")
+    formatDateTime("2026-06-20", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("20th Jun 2026")
+    formatDateTime("2026-06-21", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("21st Jun 2026")
+    formatDateTime("2026-06-22", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("22nd Jun 2026")
+    formatDateTime("2026-06-23", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("23rd Jun 2026")
+    formatDateTime("2026-06-24", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("24th Jun 2026")
+    formatDateTime("2026-06-30", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("30th Jun 2026")
+  }
+
+  "July ISO date" should "convert to date with ordinal day suffix" in {
+    formatDateTime("2026-07-01", "yyyy-MM-dd", "d(st|nd|rd|th) MMMM yyyy") should be ("1st July 2026")
+    formatDateTime("2026-07-03", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("3rd Jul 2026")
+    formatDateTime("2026-07-04", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("4th Jul 2026")
+    formatDateTime("2026-07-10", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("10th Jul 2026")
+    formatDateTime("2026-07-11", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("11th Jul 2026")
+    formatDateTime("2026-07-12", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("12th Jul 2026")
+    formatDateTime("2026-07-13", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("13th Jul 2026")
+    formatDateTime("2026-07-14", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("14th Jul 2026")
+    formatDateTime("2026-07-20", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("20th Jul 2026")
+    formatDateTime("2026-07-21", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("21st Jul 2026")
+    formatDateTime("2026-07-22", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("22nd Jul 2026")
+    formatDateTime("2026-07-23", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("23rd Jul 2026")
+    formatDateTime("2026-07-24", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("24th Jul 2026")
+    formatDateTime("2026-07-30", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("30th Jul 2026")
+    formatDateTime("2026-07-31", "yyyy-MM-dd", "d(st|nd|rd|th) MMM yyyy") should be ("31st Jul 2026") 
+  }
+
   "Date with ordinal day suffix" should "convert to ISO" in {
     formatDateTime("1st Mar 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-03-01")
     formatDateTime("2nd Mar 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-03-02")
@@ -66,8 +101,47 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     formatDateTime("31st Mar 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-03-31") 
   }
 
+  "June date with ordinal day suffix" should "convert to ISO" in {
+    formatDateTime("1st Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-01")
+    formatDateTime("2nd Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-02")
+    formatDateTime("3rd Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-03")
+    formatDateTime("4th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-04")
+    formatDateTime("10th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-10")
+    formatDateTime("11th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-11")
+    formatDateTime("12th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-12")
+    formatDateTime("13th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-13")
+    formatDateTime("14th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-14")
+    formatDateTime("20th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-20")
+    formatDateTime("21st Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-21")
+    formatDateTime("22nd Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-22")
+    formatDateTime("23rd Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-23")
+    formatDateTime("24th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-24")
+    formatDateTime("30th Jun 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-06-30")
+  }
+
+  "July date with ordinal day suffix" should "convert to ISO" in {
+    formatDateTime("1st Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-01")
+    formatDateTime("2nd Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-02")
+    formatDateTime("3rd Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-03")
+    formatDateTime("4th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-04")
+    formatDateTime("10th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-10")
+    formatDateTime("11th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-11")
+    formatDateTime("12th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-12")
+    formatDateTime("13th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-13")
+    formatDateTime("14th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-14")
+    formatDateTime("20th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-20")
+    formatDateTime("21st Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-21")
+    formatDateTime("22nd Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-22")
+    formatDateTime("23rd Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-23")
+    formatDateTime("24th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-24")
+    formatDateTime("30th Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-30")
+    formatDateTime("31st Jul 2026", "d(st|nd|rd|th) MMM yyyy", "yyyy-MM-dd") should be ("2026-07-31") 
+  }
+
   "Dates and Times" should "format" in {
     formatDateTime("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm") should be ("17 Mar 2026, 1:29")
+    formatDateTime("2026-06-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm") should be ("17 Jun 2026, 1:29")
+    formatDateTime("2026-07-17 13:29:21", "yyyy-MM-dd HH:mm:ss", "d MMM yyyy, h:mm") should be ("17 Jul 2026, 1:29")
   }
 
   "Dates and Times" should "match" in {
@@ -75,6 +149,12 @@ class TextFormatSupportTest extends BaseTest with Matchers with TextFormatSuppor
     matchesDateTimeFormat("13:29:21", "HH:mm:ss") should be (true)
     matchesDateTimeFormat("2026-03-17 13:29:21", "yyyy-MM-dd HH:mm:ss") should be (true)
     matchesDateTimeFormat("1st March 2026", "d(st|nd|rd|th) MMMM yyyy") should be (true)
+    matchesDateTimeFormat("1st Jun 2026", "d(st|nd|rd|th) MMM yyyy") should be (true)
+    matchesDateTimeFormat("1st Jul 2026", "d(st|nd|rd|th) MMM yyyy") should be (true)
+    matchesDateTimeFormat("1st June 2026", "d(st|nd|rd|th) MMMM yyyy") should be (true)
+    matchesDateTimeFormat("1st July 2026", "d(st|nd|rd|th) MMMM yyyy") should be (true)
+    matchesDateTimeFormat("1st June 2026", "d(st|nd|rd|th) MMM yyyy") should be (false)
+    matchesDateTimeFormat("1st July 2026", "d(st|nd|rd|th) MMM yyyy") should be (false)
     matchesDateTimeFormat("2026-03-17", "yyyy-MM-d") should be (true)
     matchesDateTimeFormat("2026-03-17", "yyyy-MM-dd") should be (true)
     matchesDateTimeFormat("2026-03-7", "yyyy-MM-d") should be (true)

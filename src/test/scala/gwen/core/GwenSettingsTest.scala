@@ -26,6 +26,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.io.File
 import java.util.logging.Level
+import java.util.Locale
 
 class GwenSettingsTest extends BaseTest with Matchers {
 
@@ -74,5 +75,6 @@ class GwenSettingsTest extends BaseTest with Matchers {
     GwenSettings.`gwen.report.results.files`(GwenOptions()).length should be (0)
     GwenSettings.`gwen.input.data.readOnly` should be (true)
     GwenSettings.`gwen.input.data.maskFields` should be (Nil)
+    GwenSettings.`gwen.format.date.locale` should be (Locale.US)
   }
 }

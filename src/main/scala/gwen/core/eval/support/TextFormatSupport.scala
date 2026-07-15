@@ -25,20 +25,22 @@ import java.util.Date
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
+import gwen.core.GwenSettings
 
 trait TextFormatSupport {
 
   private def Ordinals = "(st|nd|rd|th)"
 
   def formatDateTime(source: String, sourceFormat: String, targetFormat: String): String = {
+    def locale = GwenSettings.`gwen.format.date.locale`
     format(Some(source), Some(sourceFormat), targetFormat) { (s, sf, tf) => 
-      new SimpleDateFormat(sf).parse(s).toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf))
+      new SimpleDateFormat(sf, locale).parse(s).toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf, locale))
     }
   }
 
   def formatDateTime(date: Date, targetFormat: String): String = {
     format(None, None, targetFormat) { (s, sf, tf) => 
-      date.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf))
+      date.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf, GwenSettings.`gwen.format.date.locale`))
     }
   }
 
