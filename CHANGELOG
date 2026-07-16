@@ -1,3 +1,8 @@
+4.17.2
+======
+16 Jul 2026
+- Synchronize number formatters for thread safety
+
 4.17.1
 ======
 16 Jul 2026

@@ -52,14 +52,16 @@ trait TextFormatSupport {
       } map { (sfmt, tfmt) =>
         (sfmt.asInstanceOf[DecimalFormat], tfmt.asInstanceOf[DecimalFormat])
       } map { (sfmt, tfmt) => 
-        sfmt.applyPattern(sf)
-        tfmt.applyPattern(tf)
-        tfmt.format(sfmt.parse(s))
+        sfmt.synchronized {
+          sfmt.applyPattern(sf)
+          tfmt.synchronized {
+            tfmt.applyPattern(tf)
+            tfmt.format(sfmt.parse(s))
+          }
+        }
       } getOrElse {
-        new DecimalFormat(tf).format(DecimalFormat(sf).parse(s))
+        new DecimalFormat(tf) .format(new DecimalFormat(sf).parse(s))
       }
-      
-      //new NumberFormat(tf, locale).format(DecimalFormat(sf).parse(s))
     }
   }
 
