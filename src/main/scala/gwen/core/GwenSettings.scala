@@ -74,7 +74,8 @@ object GwenSettings extends LazyLogging {
     `gwen.video.timeoutSecs`
     `gwen.logLevel.deprecations`
     `gwen.input.data.readOnly`
-    `gwen.format.date.locale`
+    `gwen.format.locale.date`
+    `gwen.format.locale.number`
   }
 
   /**
@@ -505,11 +506,19 @@ object GwenSettings extends LazyLogging {
   }
 
   /**
-    * Provides access to the `gwen.format.date.locale` setting used to control which locale to
+    * Provides access to the `gwen.format.locale.date` setting used to control which locale to
     * user in for date formatting
     */
-  def `gwen.format.date.locale`: Locale = {
-    Settings.getLocale("gwen.format.date.locale")
+  def `gwen.format.locale.date`: Locale = {
+    Settings.getLocale("gwen.format.locale.date", Some("gwen.format.date.locale"))
+  }
+
+  /**
+    * Provides access to the `gwen.format.locale.number` setting used to control which locale to
+    * user in for number formatting
+    */
+  def `gwen.format.locale.number`: Locale = {
+    Settings.getLocale("gwen.format.locale.number")
   }
 
 }

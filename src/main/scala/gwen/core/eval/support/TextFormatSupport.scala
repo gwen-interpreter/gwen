@@ -32,7 +32,7 @@ trait TextFormatSupport {
   private def Ordinals = "(st|nd|rd|th)"
 
   def formatDateTime(source: String, sourceFormat: String, targetFormat: String): String = {
-    def locale = GwenSettings.`gwen.format.date.locale`
+    def locale = GwenSettings.`gwen.format.locale.date`
     format(Some(source), Some(sourceFormat), targetFormat) { (s, sf, tf) => 
       new SimpleDateFormat(sf, locale).parse(s).toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf, locale))
     }
@@ -40,13 +40,26 @@ trait TextFormatSupport {
 
   def formatDateTime(date: Date, targetFormat: String): String = {
     format(None, None, targetFormat) { (s, sf, tf) => 
-      date.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf, GwenSettings.`gwen.format.date.locale`))
+      date.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(DateTimeFormatter.ofPattern(tf, GwenSettings.`gwen.format.locale.date`))
     }
   }
 
   def formatNumber(source: String, sourceFormat: String, targetFormat: String): String = {
+    def locale = GwenSettings.`gwen.format.locale.number`
     format(Some(source), Some(sourceFormat), targetFormat) { (s, sf, tf) => 
-      new DecimalFormat(tf).format(DecimalFormat(sf).parse(s))
+      Option((NumberFormat.getNumberInstance(locale), NumberFormat.getNumberInstance(locale))) filter { (sfmt, tfmt) =>
+        sfmt.isInstanceOf[DecimalFormat] && tfmt.isInstanceOf[DecimalFormat]
+      } map { (sfmt, tfmt) =>
+        (sfmt.asInstanceOf[DecimalFormat], tfmt.asInstanceOf[DecimalFormat])
+      } map { (sfmt, tfmt) => 
+        sfmt.applyPattern(sf)
+        tfmt.applyPattern(tf)
+        tfmt.format(sfmt.parse(s))
+      } getOrElse {
+        new DecimalFormat(tf).format(DecimalFormat(sf).parse(s))
+      }
+      
+      //new NumberFormat(tf, locale).format(DecimalFormat(sf).parse(s))
     }
   }
 

@@ -319,13 +319,13 @@ object Settings extends LazyLogging with TextFormatSupport {
     }
   }
 
-  def getLocale(name: String): Locale = {
-    getLocaleOpt(name).getOrElse(Errors.missingSettingError(name))
+  def getLocale(name: String, deprecatedName: Option[String] = None): Locale = {
+    getLocaleOpt(name, deprecatedName).getOrElse(Errors.missingSettingError(name))
   }
 
-  def getLocaleOpt(name: String): Option[Locale] = {
+  def getLocaleOpt(name: String, deprecatedName: Option[String] = None): Option[Locale] = {
     val validValues = "[language], [language]_[COUNTRY], [language]-[COUNTRY], [language]_[NUMERIC_CODE], [language]_[COUNTRY]_[variant], _[COUNTRY]"
-    getOptAndConvert(name, None, validValues) { value =>
+    getOptAndConvert(name, deprecatedName, validValues) { value =>
       LocaleUtils.toLocale(value)
     }
   }

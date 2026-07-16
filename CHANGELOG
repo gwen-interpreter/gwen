@@ -1,8 +1,17 @@
+4.17.1
+======
+16 Jul 2026
+- Introduce setting for configuring the locale used for number formatting
+  - `gwen.format.locale.number`
+  - Default value is `en-US`
+- Rename `gwen.format.date.locale` to `gwen.format.locale.date` (and deprecate former)
+  - Default value is `en-US` so that MMM formats June/July as Jun/Jul
+
 4.17.0
 ======
 15 Jul 2026
 - Introduce setting for configuring the locale used for date/time formatting
-  - `gwen.format.date.locale` (default is `en-US` - so that MMM formats June as Jun and July as Jul)
+  - `gwen.format.date.locale` (default is `en-US` - so that MMM formats June/July as Jun/Jul)
 
 4.16.2
 ======
