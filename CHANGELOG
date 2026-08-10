@@ -2,6 +2,13 @@
 ======
 11 Aug 2026
 - Check that the header and data rows in input CSVs have the same number of columns
+- Update dependencies:
+  - Update gherkin from v40.0.0 to v42.0.1
+  - Update jline from v4.2.0 to v4.3.1
+  - Update logback-core from v1.5.34 to v1.6.1
+  - Update commons-codec from v1.22.0 to v1.22.1
+  - Update jackson-databind from v2.22.0 to v2.22.1
+  - Update pdfbox from v3.0.7 to v3.0.8
 
 4.17.2
 ======

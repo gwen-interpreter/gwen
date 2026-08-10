@@ -38,14 +38,14 @@ val slf4j = ""
 
 lazy val mainDependencies = {
   Seq(
-    "io.cucumber" % "gherkin" % "40.0.0",
+    "io.cucumber" % "gherkin" % "42.0.1",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "4.2.0",
+    "org.jline" % "jline" % "4.3.1",
     "org.slf4j" % "jul-to-slf4j" % "2.0.18",
-    "ch.qos.logback" % "logback-core" % "1.5.34",
-    "ch.qos.logback" % "logback-classic" % "1.5.34",
-    "commons-codec" % "commons-codec" % "1.22.0",
+    "ch.qos.logback" % "logback-core" % "1.6.1",
+    "ch.qos.logback" % "logback-classic" % "1.6.1",
+    "commons-codec" % "commons-codec" % "1.22.1",
     "org.apache.commons" % "commons-text" % "1.15.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "3.0.0",
@@ -53,11 +53,11 @@ lazy val mainDependencies = {
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.3",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.0",
-    "org.apache.pdfbox" % "pdfbox" % "3.0.7" excludeAll(
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.1",
+    "org.apache.pdfbox" % "pdfbox" % "3.0.8" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
-    "org.apache.pdfbox" % "pdfbox-io" % "3.0.7" excludeAll(
+    "org.apache.pdfbox" % "pdfbox-io" % "3.0.8" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     )
   ) ++ mainOverrides
@@ -73,8 +73,8 @@ lazy val testDependencies = {
     "org.scalatest" %% "scalatest" % "3.2.20",
     "org.scalatestplus" %% "mockito-5-12" % "3.2.19.0",
     "org.mockito" % "mockito-core" % "5.23.0",
-    "org.graalvm.js" % "js-scriptengine" % "25.0.3",
-    "org.graalvm.js" % "js" % "25.0.3"
+    "org.graalvm.js" % "js-scriptengine" % "25.2.4",
+    "org.graalvm.js" % "js" % "25.2.4"
   ).map(_ % Test)
 }
 
