@@ -121,6 +121,7 @@ object Errors extends LazyLogging {
   def immutableModificationError(name: String, annotation: Annotations) = throw new ImmutableModificationException(name, annotation)
   def resultsFileError(error: String) = resultsFileErrors(List(error))
   def resultsFileErrors(errors: List[String]) = throw new ResultsFileException(errors)
+  def inputDataError(file: File, msg: String) = throw new InputDataException(file, msg)
 
   def at(sourceRef: Option[SourceRef]): String = at(sourceRef.map(_.toString).getOrElse(""))
   private def at(file: Option[File], line: Option[Long], column: Option[Long]): String = at(SourceRef.toString(file, line, column))
@@ -359,5 +360,8 @@ object Errors extends LazyLogging {
 
   /** Thrown when an attempt to mutate a constant binding is detected. */
   class ImmutableModificationException(name: String, annotation: Annotations) extends GwenException(s"Cannot modify read only ${annotation.toString.toLowerCase}: ${name.takeWhile(_ != '/')}")
+
+  /** Thrown when an error is detected with input data. */
+  class InputDataException(file: File, msg: String) extends GwenException(s"Input data error in $file file: $msg")
 
 }

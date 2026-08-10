@@ -75,7 +75,18 @@ class CsvDataSource(override val dataFile: File) extends DataSource {
   override lazy val table: List[List[String]] = {
     parseFile(dataFile) { file => 
       val trim = GwenSettings.`gwen.auto.trim.data.csv`
-      val data = CSVReader.open(file).all().filter(ignoreEmpty).zipWithIndex.map((v, i) => if (i == 0 || trim) v.map(_.trim) else v)
+      val csv = CSVReader.open(file).all().filter(ignoreEmpty)
+      val data = csv.zipWithIndex.map((v, i) => if (i == 0 || trim) v.map(_.trim) else v)
+      if (data.nonEmpty && data.tail.nonEmpty) {
+        def headers = csv.head.map(_.trim)
+        def headerSize = headers.size
+        data.tail.zipWithIndex foreach { (row, idx) => 
+          val rowSize = row.size
+          if (headerSize != rowSize) {
+            Errors.inputDataError(dataFile, s"Header declares $headerSize data column${if (headerSize > 1) "s" else ""} but $rowSize found in record ${idx + 1}.")
+          }
+        }
+      }
       data match {
         case Nil => data
         case header :: Nil => List(parseHeader(header))
