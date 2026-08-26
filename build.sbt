@@ -1,6 +1,6 @@
 enablePlugins(GitVersioning)
 
-git.baseVersion := "4.17.3"
+git.baseVersion := "4.17.4"
 git.useGitDescribe := true
 
 lazy val gwen = (project in file("."))
@@ -43,8 +43,7 @@ lazy val mainDependencies = {
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
     "org.jline" % "jline" % "4.3.1",
     "org.slf4j" % "jul-to-slf4j" % "2.0.18",
-    "ch.qos.logback" % "logback-core" % "1.6.1",
-    "ch.qos.logback" % "logback-classic" % "1.6.1",
+    "org.slf4j" % "slf4j-simple" % "2.0.18",
     "commons-codec" % "commons-codec" % "1.22.1",
     "org.apache.commons" % "commons-text" % "1.15.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
@@ -82,10 +81,12 @@ Compile / packageBin / mappings ++= Seq(
   file("README.md") -> "README.txt",
   file("LICENSE") -> "LICENSE.txt",
   file("NOTICE") -> "NOTICE.txt",
-  file("LICENSE-THIRDPARTY") -> "LICENSE-THIRDPARTY.txt",
+  ((Compile / dumpLicenseReport).value / "gwen-web-licenses.md") -> "LICENSE-THIRDPARTY.txt",
   file("CHANGELOG") -> "CHANGELOG.txt"
 )
 
 Test / parallelExecution := false
 
 Test / testOptions += Tests.Argument("-oF")
+
+licenseConfigurations := Set("compile", "provided")

@@ -2,6 +2,8 @@
 ======
 26 Aug 2026
 - Use slf4jsimple logger instead of logback
+- Check third party licenses at package time
+- Auto generate third party licenses file
 
 4.17.3
 ======
