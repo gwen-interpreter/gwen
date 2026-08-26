@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2024 Branko Juric, Brady Wood
+ * Copyright 2014-2026 Branko Juric, Brady Wood
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import gwen.core.status.Failed
 import gwen.core.status.Pending
 import gwen.core.status.Skipped
 
-import ch.qos.logback.classic.LoggerContext
-import ch.qos.logback.classic.joran.JoranConfigurator
 import com.typesafe.scalalogging.LazyLogging
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.LoggerFactory;
@@ -46,7 +44,6 @@ import java.net.URL
 import java.util.{ logging => jul}
 import java.util.Date
 import gwen.core.node.FeatureStream
-
 
 /**
   * Default Gwen interpreter application.
@@ -191,12 +188,7 @@ class GwenInterpreter[T <: EvalContext](engine: EvalEngine[T]) extends GwenLaunc
     }
 
     if (options.verbose) {
-      val context = LoggerFactory.getILoggerFactory().asInstanceOf[LoggerContext]
-      val configurator = new JoranConfigurator()
-      val config = getClass.getResource("/logback-verbose.xml")
-      configurator.setContext(context)
-      context.reset()
-      configurator.doConfigure(config)
+      System.setProperty("org.slf4j.simpleLogger.log.gwen", "info")
     } else {
       
       // suppress error stream
