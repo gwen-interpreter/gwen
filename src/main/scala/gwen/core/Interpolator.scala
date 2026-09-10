@@ -41,7 +41,7 @@ object Interpolator {
  */
 class Interpolator(resolver: String => Option[String]) extends LazyLogging {
 
-  /** Resolves all ${property} and $<param> references in the given string.*/
+  /** Resolves all \${property} and $<param> references in the given string.*/
   def interpolate(source: String): String = {
     source match {
       case Interpolator.propertySyntax(prefix, p, s) =>

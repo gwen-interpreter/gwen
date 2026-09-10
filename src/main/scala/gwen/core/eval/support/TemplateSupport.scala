@@ -30,7 +30,7 @@ import scala.util.matching.Regex
 
 /**
   * Can be mixed into evaluation engines to provide template matching support. This will allow users to match any
-  * source content with a target template and also extract (@{name}), ignore (@{*}), and inject (${name}) attributes
+  * source content with a target template and also extract (@{name}), ignore (@{*}), and inject (\${name}) attributes
   * in scope.
   */
 trait TemplateSupport {

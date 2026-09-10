@@ -1,6 +1,6 @@
 enablePlugins(GitVersioning)
 
-git.baseVersion := "4.17.4"
+git.baseVersion := "4.17.5"
 git.useGitDescribe := true
 
 lazy val gwen = (project in file("."))
@@ -12,7 +12,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.8.4",
+  scalaVersion := "3.9.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -41,9 +41,9 @@ lazy val mainDependencies = {
     "io.cucumber" % "gherkin" % "42.0.1",
     "com.github.scopt" %% "scopt" % "4.1.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "4.3.1",
-    "org.slf4j" % "jul-to-slf4j" % "2.0.18",
-    "org.slf4j" % "slf4j-simple" % "2.0.18",
+    "org.jline" % "jline" % "4.4.3",
+    "org.slf4j" % "jul-to-slf4j" % "2.0.19",
+    "org.slf4j" % "slf4j-simple" % "2.0.19",
     "commons-codec" % "commons-codec" % "1.22.1",
     "org.apache.commons" % "commons-text" % "1.15.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
@@ -52,7 +52,7 @@ lazy val mainDependencies = {
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.3",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.1",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.2",
     "org.apache.pdfbox" % "pdfbox" % "3.0.8" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),

@@ -440,7 +440,7 @@ object GwenSettings extends LazyLogging {
   }
 
   /**
-   * Gets the video output directory (default is ${gwen.outDir}/.video).
+   * Gets the video output directory (default is \${gwen.outDir}/.video).
    */
   def `gwen.video.dir`: File = {
     Settings.getFileOpt("gwen.video.dir").getOrElse(new File(`gwen.outDir`, ".video"))

@@ -1,3 +1,12 @@
+4.17.5
+======
+11 Sep 2026
+- Update dependencies
+  - Update scala from v3.8.4 to v3.9.0
+  - Update jline from v4.3.1 to v4.4.3
+  - Update jul-to-slf4j from v2.0.18 to v2.0.19
+  - Update jackson-databind from v2.22.1 to v2.22.2
+
 4.17.4
 ======
 26 Aug 2026

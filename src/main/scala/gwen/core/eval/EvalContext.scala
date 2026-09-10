@@ -60,14 +60,14 @@ class EvalContext(val options: GwenOptions, envState: EnvState)
   private def paramInterpolator: Interpolator = new Interpolator(paramScope.getOpt)
 
   /** 
-   * Interpolates a given string by resolving all $<param> and ${property} references. 
+   * Interpolates a given string by resolving all $<param> and \${property} references. 
    * 
    * @param source the string to interpolate
    */
   def interpolate(source: String): String = interpolator.interpolate(source)
 
   /** 
-   * Interpolates a given string by resolving all $<param> and ${property} references. 
+   * Interpolates a given string by resolving all $<param> and \${property} references. 
    * 
    * @param source the string to interpolate
    */

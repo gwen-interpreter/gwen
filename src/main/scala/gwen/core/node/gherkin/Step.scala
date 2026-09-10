@@ -352,7 +352,7 @@ object Step {
     val docString = step.getDocString.toScala.filter(_.getContent().trim.length > 0) map { ds =>
       (Long2long(ds.getLocation.getLine.toLong), ds.getContent, ds.getMediaType.toScala.filter(_.trim.length > 0))
     }
-    val (name, tagList, message, dryValues): (String, List[Tag], Option[String], List[(String, String)]) = {
+    val (name, tagList, message, dryValues) = {
       val (n, t) = Formatting.escapeNewLineChars(step.getText.trim) match {
         case r"""((?:@\w+(?:\(\S+\))?\s+)+)$ts(.*)$name""" => 
           (name, ts.split("\\s+").toList.map(n => Tag(n.trim)))
