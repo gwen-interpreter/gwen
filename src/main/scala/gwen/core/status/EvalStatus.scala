@@ -173,4 +173,7 @@ object EvalStatus {
   def isAssertionError(e: Throwable): Boolean =
     e.isInstanceOf[Errors.GwenAssertionError]
 
+  def isTimeoutError(e: Throwable): Boolean =
+    e.isInstanceOf[Errors.WaitTimeoutException]
+
 }

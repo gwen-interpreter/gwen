@@ -1,6 +1,7 @@
 4.17.5
 ======
 11 Sep 2026
+- Allow `@Message` annotation for overriding timeout messages
 - Update dependencies
   - Update scala from v3.8.4 to v3.9.0
   - Update jline from v4.3.1 to v4.4.3
