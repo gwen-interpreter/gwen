@@ -126,6 +126,7 @@ class TopScope(stateLevel: StateLevel) extends ScopedData(stateLevel.toString) w
     }
     featureScope.set(`gwen.data.record.number`, rec.occurrence.number.toString)
     featureScope.set(`gwen.data.record.index`, rec.occurrence.index.toString)
+    featureScope.set(`gwen.data.record.count`, rec.occurrence.total.toString)
   }
 
   override def get(name: String): String = getImplicitOpt(name).getOrElse(super.get(name))

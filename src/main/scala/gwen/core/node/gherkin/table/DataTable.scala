@@ -64,7 +64,11 @@ class DataTable(val orientation: TableOrientation, val records: List[List[String
             (s"data[$name]", value)
           }
         )
-        ++ List((`gwen.table.record.index`, s"$recordIndex"), (`gwen.table.record.number`, s"${recordIndex + 1}"))
+        ++ List(
+          (`gwen.table.record.index`, s"$recordIndex"), 
+          (`gwen.table.record.number`, s"${recordIndex + 1}"), 
+          (`gwen.table.record.count`, s"${records.size}")
+        )
       ).filter(pred)
   }
 

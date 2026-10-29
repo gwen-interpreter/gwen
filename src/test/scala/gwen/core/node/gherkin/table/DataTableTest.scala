@@ -226,13 +226,14 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       val record = dataTable.recordScope(recIndex)
       record.get(`gwen.table.record.index`) should be (s"$recIndex")
       record.get(`gwen.table.record.number`) should be (s"$recNo")
+      record.get(`gwen.table.record.count`) should be (s"${dataTable.records.size}")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("name[2]") should be (table.get("name[2]"))
       record.get("name[3]") should be (table.get("name[3]"))
       record.get("data[a]") should be (table.get(s"data[$recNo][a]"))
       record.get("data[b]") should be (table.get(s"data[$recNo][b]"))
       record.get("data[c]") should be (table.get(s"data[$recNo][c]"))
-      record.findEntries(_ => true).size should be (8)
+      record.findEntries(_ => true).size should be (9)
     }
 
   }
@@ -384,13 +385,14 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       val record = dataTable.recordScope(recIndex)
       record.get(`gwen.table.record.index`) should be (s"$recIndex")
       record.get(`gwen.table.record.number`) should be (s"$recNo")
+      record.get(`gwen.table.record.count`) should be (s"${dataTable.records.size}")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("name[2]") should be (table.get("name[2]"))
       record.get("name[3]") should be (table.get("name[3]"))
       record.get("data[a]") should be (table.get(s"data[$recNo][a]"))
       record.get("data[b]") should be (table.get(s"data[$recNo][b]"))
       record.get("data[c]") should be (table.get(s"data[$recNo][c]"))
-      record.findEntries(_ => true).size should be (8)
+      record.findEntries(_ => true).size should be (9)
     }
 
   }
@@ -530,9 +532,10 @@ class DataTableTest extends BaseTest with Matchers with GherkinParser with Impli
       val record = dataTable.recordScope(recIndex)
       record.get(`gwen.table.record.index`) should be (s"$recIndex")
       record.get(`gwen.table.record.number`) should be (s"$recNo")
+      record.get(`gwen.table.record.count`) should be (s"${dataTable.records.size}")
       record.get("name[1]") should be (table.get("name[1]"))
       record.get("data[a]") should be (table.get("data[1][a]"))
-      record.findEntries(_ => true).size should be (4)
+      record.findEntries(_ => true).size should be (5)
     }
 
   }

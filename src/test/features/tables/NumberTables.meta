@@ -75,6 +75,7 @@ Feature: Number tables meta
       And name[1] should be "decimal"
       And name[2] should be "binary"
       And gwen.table.record.number should match regex "\d+"
+      And gwen.table.record.count should match regex "\d+"
 
   @StepDef
   @DataTable
