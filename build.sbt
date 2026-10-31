@@ -12,7 +12,7 @@ lazy val gwen = (project in file("."))
 lazy val projectSettings = Seq(
   name := "gwen",
   description := "Core Gwen interpreter",
-  scalaVersion := "3.9.0",
+  scalaVersion := "3.10.0",
   organization := "org.gweninterpreter",
   homepage := Some(url("https://gweninterpreter.org")),
   organizationHomepage := Some(url("https://github.com/gwen-interpreter")),
@@ -39,12 +39,12 @@ val slf4j = ""
 lazy val mainDependencies = {
   Seq(
     "io.cucumber" % "gherkin" % "42.0.1",
-    "com.github.scopt" %% "scopt" % "4.1.0",
+    "com.github.scopt" %% "scopt" % "4.2.0",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
-    "org.jline" % "jline" % "4.4.3",
-    "org.slf4j" % "jul-to-slf4j" % "2.0.19",
-    "org.slf4j" % "slf4j-simple" % "2.0.19",
-    "commons-codec" % "commons-codec" % "1.22.1",
+    "org.jline" % "jline" % "4.4.8",
+    "org.slf4j" % "jul-to-slf4j" % "2.0.20",
+    "org.slf4j" % "slf4j-simple" % "2.0.20",
+    "commons-codec" % "commons-codec" % "1.23.0",
     "org.apache.commons" % "commons-text" % "1.15.0",
     "com.github.tototoshi" %% "scala-csv" % "2.0.0",
     "com.jayway.jsonpath" % "json-path" % "3.0.0",
@@ -52,7 +52,7 @@ lazy val mainDependencies = {
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.29",
     "com.typesafe" % "config" % "1.4.3",
     "org.fusesource.jansi" % "jansi" % "2.4.3",
-    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.2",
+    "com.fasterxml.jackson.core" %  "jackson-databind" % "2.22.4",
     "org.apache.pdfbox" % "pdfbox" % "3.0.8" excludeAll(
       ExclusionRule(organization = "org.junit.jupiter")
     ),
@@ -72,8 +72,8 @@ lazy val testDependencies = {
     "org.scalatest" %% "scalatest" % "3.2.20",
     "org.scalatestplus" %% "mockito-5-12" % "3.2.19.0",
     "org.mockito" % "mockito-core" % "5.23.0",
-    "org.graalvm.js" % "js-scriptengine" % "25.2.4",
-    "org.graalvm.js" % "js" % "25.2.4"
+    "org.graalvm.js" % "js-scriptengine" % "25.4.4.1.1",
+    "org.graalvm.js" % "js" % "25.4.4.1.1"
   ).map(_ % Test)
 }
 

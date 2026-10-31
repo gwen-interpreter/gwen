@@ -170,50 +170,48 @@ object GwenOptions {
 
     val parser = new OptionParser[GwenOptions]("gwen") {
 
-      version("version") text "Print Gwen version"
+      version("version").text("Print Gwen version")
 
-      help("help") text "Print CLI usage"
+      help("help").text("Print CLI usage")
 
-      opt[Unit]("parallel") action {
-        (_, c) => {
-          c.copy(parallel = true)
-        }
-      } text """|Execute features or scenarios in parallel
+      opt[Unit]("parallel").action(
+        (_, c) => c.copy(parallel = true)
+      ).text("""|Execute features or scenarios in parallel
                 |- features if gwen.state.level = feature (default)
-                |- scenarios if gwen.state.level = scenario""".stripMargin
+                |- scenarios if gwen.state.level = scenario""".stripMargin)
 
-      opt[Unit]("repl") action {
+      opt[Unit]("repl").action(
         (_, c) => c.copy(repl = true)
-      } text "Open REPL (forcefully) regardless of other options"
+      ).text("Open REPL (forcefully) regardless of other options")
 
-      opt[String]('p', "profile") action {
+      opt[String]('p', "profile").action(
         (ps, c) => {
           c.copy(
             profiles = ps.split(",").toList.map(p => new Profile(p, baseDir))
           )
         }
-      } valueName "names" text "Names of profiles to launch (comma separated)"
+      ).valueName("names").text("Names of profiles to launch (comma separated)")
       
-      opt[Unit]('b', "batch") action {
+      opt[Unit]('b', "batch").action(
         (_, c) => c.copy(batch = true)
-      } text "Exit when execution completes (ignored if --repl is specified)"
+      ).text("Exit when execution completes (ignored if --repl is specified)")
 
-      opt[Unit]('v', "verbose") action {
+      opt[Unit]('v', "verbose").action(
         (_, c) => c.copy(verbose = true)
-      } text "Enable verbose log output"
+      ).text("Enable verbose log output")
 
-      opt[Unit]('n', "dry-run") action {
+      opt[Unit]('n', "dry-run").action(
         (_, c) => c.copy(dryRun = true)
-      } text "Check all syntax and bindings and report errors"
+      ).text("Check all syntax and bindings and report errors")
 
-      opt[Unit]('d', "debug") action {
+      opt[Unit]('d', "debug").action(
         (_, c) => c.copy(debug = true)
-      } text "Enable breakpoints and debugging"
+      ).text("Enable breakpoints and debugging")
 
-      opt[String]('c', "conf") action {
+      opt[String]('c', "conf").action(
         (cs, c) =>
           c.copy(settingsFiles = c.settingsFiles ++ cs.split(",").toList.map(new File(_)))
-      } validate { cs =>
+      ).validate( cs =>
         ((cs.split(",") flatMap { f =>
           val file = new File(f)
           if (!FileIO.hasFileExtension("conf", file) && !FileIO.hasFileExtension("json", file) && !FileIO.hasFileExtension("properties", file)) {
@@ -224,107 +222,107 @@ object GwenOptions {
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "files" text "Settings files: conf, json or properties (comma separated)"
+      ).valueName("files").text("Settings files: conf, json or properties (comma separated)")
 
-      opt[File]('r', "report") action {
+      opt[File]('r', "report").action(
         (f, c) => c.copy(reportDir = Some(f))
-      } valueName "dir" text "Directory to output generated report(s) to"
+      ).valueName("dir").text("Directory to output generated report(s) to")
 
-      opt[String]('f', "formats") action {
+      opt[String]('f', "formats").action(
         (fs, c) =>
           c.copy(reportFormats = fs.split(",").toList.map(f => ReportFormat.valueOf(f)))
-      } valueName "reports" text s"""|Report formats to include in output (comma separated)
-                                     |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html})""".stripMargin
+      ).valueName("reports").text(s"""|Report formats to include in output (comma separated)
+                                      |- ${ReportFormat.values.filter(_.isCliOption).mkString(",")} (default = ${ReportFormat.html})""".stripMargin)
 
-      opt[String]('t', "tags") action {
+      opt[String]('t', "tags").action(
         (ts, c) =>
           c.copy(tags = ts.split(",").toList.map(t => (Tag(t), t.startsWith("@"))))
-      } validate { ts =>
+      ).validate(ts =>
         ((ts.split(",") flatMap { t =>
           if (t.matches("""^(~?@\w+,?)+$""")) None
           else Some(s"Invalid tag $t: tags must start with @ or ~@")
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "filter" text "Tags to @include or ~@exclude (comma separated)"
+      ).valueName("filter").text("Tags to @include or ~@exclude (comma separated)")
 
-      opt[File]('i', "input-data") action {
+      opt[File]('i', "input-data").action(
         (d, c) => c.copy(dataFile = Some(d))
-      } validate { d =>
+      ).validate(d =>
         if (!d.exists) failure(new Errors.MissingFileException("Input data file", d).getMessage)
         else success
-      } valueName "file" text "Input data feed (csv or json file)"
+      ).valueName("file").text("Input data feed (csv or json file)")
 
-      opt[String]('m', "meta") action {
+      opt[String]('m', "meta").action(
         (ms, c) =>
           c.copy(metas = ms.split(",").toList.map(new File(_)))
-      } validate { ms =>
+      ).validate(ms =>
         ((ms.split(",") flatMap { m =>
           if (new File(m).exists()) None
           else Some(new Errors.MissingFileException("Meta file or directory", new File(m)).getMessage)
         }) collectFirst {
           case error => failure(error)
         }).getOrElse(success)
-      } valueName "files|dirs" text "Meta files or directories to load (comma separated)"
+      ).valueName("files|dirs").text("Meta files or directories to load (comma separated)")
 
-      arg[File]("files|dirs").unbounded().optional().action {
+      arg[File]("files|dirs").unbounded().optional().action(
         (f, c) =>
           c.copy(features = c.features :+ f)
-      } validate {
+      ).validate(
         f => if (f.exists) success else failure(new Errors.MissingFileException("Feature file or directory", f).getMessage)
-      } text "Feature files or directories to execute (space separated)"
+      ).text("Feature files or directories to execute (space separated)")
 
-      cmd("init").action { 
+      cmd("init").action(
         (_, c) => 
           c.copy(init = true) 
 
-      } children {
+      ).children(
           
-          opt[Unit]("docker") action {
+          opt[Unit]("docker").action(
             (_, c) => {
               c.copy(initOptions = InitOption.docker :: c.initOptions)
             }
-          } text "Generate files in project for running Gwen in Docker"
+          ).text("Generate files in project for running Gwen in Docker"),
 
-          opt[Unit]("jenkins") action {
+          opt[Unit]("jenkins").action(
             (_, c) => {
               c.copy(initOptions = InitOption.jenkins :: c.initOptions)
             }
-          } text "Generate files in project for running Gwen on Jenkins"
+          ).text("Generate files in project for running Gwen on Jenkins"),
 
-          opt[Unit]("force") action {
+          opt[Unit]("force").action(
             (_, c) => {
               c.copy(initOptions = InitOption.force :: c.initOptions)
             }
-          } text "Regenerate and overwrite previously initialised files"
+          ).text("Regenerate and overwrite previously initialised files"),
 
-          arg[File]("dir").optional().action {
+          arg[File]("dir").optional().action(
             (d, c) =>
               c.copy(initDir = d)
-          } text s"Project directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})"
+          ).text(s"Project directory to initialise (default is ${GwenOptions.Defaults.initDir.getPath()})")
 
-      } text "Initialise project directory"
+      ).text("Initialise project directory")
 
-      cmd("format").action { 
+      cmd("format").action(
         (_, c) => 
           c.copy(pretty = true) 
 
-      } children {
+      ).children(
           
-        opt[Unit]("pretty") action {
+        opt[Unit]("pretty").action(
             (_, c) => {
               c.copy(pretty = true)
             }
-          } text "Pretty Gherkin format (default)"
+          ).text("Pretty Gherkin format (default)"),
 
-        arg[File]("files|dirs").unbounded().required().action {
+        arg[File]("files|dirs").unbounded().required().action(
           (f, c) =>
             c.copy(formatFiles = c.formatFiles :+ f)
-        } validate {
+        ).validate(
           f => if (f.exists) success else failure(s"File/dir not found: $f")
-        } text s"Feature/meta files or dirs to format (space separated)"
+        ).text(s"Feature/meta files or dirs to format (space separated)")
 
-      } text "Format feature and meta files"
+      ).text("Format feature and meta files")
 
     }
 
